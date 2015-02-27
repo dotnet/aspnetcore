@@ -37,27 +37,27 @@
 
     <!-- Fallback to static href -->
     <link href="/site.min.css" rel="stylesheet" data-extra="test" />
-<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling;if(e.defaultView.getComputedStyle(g)[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
+<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
 
     <!-- Fallback to static href with no primary href -->
     <link rel="stylesheet" data-extra="test" />
-<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling;if(e.defaultView.getComputedStyle(g)[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
+<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
 
     <!-- Fallback to globbed href -->
     <link href="/site.min.css" rel="stylesheet" data-extra="test" />
-<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling;if(e.defaultView.getComputedStyle(g)[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
+<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
 
     <!-- Fallback to static and globbed href -->
     <link href="/site.min.css" rel="stylesheet" data-extra="test" />
-<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling;if(e.defaultView.getComputedStyle(g)[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css","\/sub\/site2.css"]);</script>
+<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css","\/sub\/site2.css"]);</script>
 
     <!-- Fallback to static and globbed href should dedupe -->
     <link href="/site.min.css" rel="stylesheet" data-extra="test" />
-<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling;if(e.defaultView.getComputedStyle(g)[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
+<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
 
     <!-- Fallback to static and globbed href with exclude -->
     <link href="/site.min.css" rel="stylesheet" data-extra="test" />
-<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling;if(e.defaultView.getComputedStyle(g)[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css","\/sub\/site2.css"]);</script>
+<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css","\/sub\/site2.css"]);</script>
 
     <!-- Fallback to globbed href that doesn't exist -->
     <link href="/site.min.css" rel="stylesheet" data-extra="test" />

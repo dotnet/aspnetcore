@@ -16,9 +16,12 @@
         scriptElements = doc.getElementsByTagName("SCRIPT"),
         // Find the meta tag before this script tag, that's the element we're going to test the CSS property on
         meta = scriptElements[scriptElements.length - 1].previousElementSibling,
+        // Get the current style of the meta tag starting with standards-based API and falling back to <=IE8 API
+        metaStyle = (doc.defaultView && doc.defaultView.getComputedStyle) ? doc.defaultView.getComputedStyle(meta)
+            : meta.currentStyle,
         i;
 
-    if (doc.defaultView.getComputedStyle(meta)[cssTestPropertyName] !== cssTestPropertyValue) {
+    if (metaStyle && metaStyle[cssTestPropertyName] !== cssTestPropertyValue) {
         for (i = 0; i < fallbackHref.length; i++) {
             doc.write('<link rel="stylesheet" href="' + fallbackHref[i] + '"/>');
         }
