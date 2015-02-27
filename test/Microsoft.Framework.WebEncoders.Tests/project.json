@@ -1,0 +1,18 @@
+{
+    "dependencies": {
+        "Microsoft.Framework.WebEncoders": "1.0.0-*",
+        "Moq": "4.2.1312.1622",
+        "Newtonsoft.Json": "6.0.6",
+        "xunit.runner.kre": "1.0.0-*"
+    },
+    "commands": {
+        "test": "xunit.runner.kre"
+    },
+    "compilationOptions": {
+        "allowUnsafe": true
+    },
+    "frameworks": {
+        "aspnet50": { }
+    },
+    "resources": "..\\..\\unicode\\UnicodeData.txt"
+}

@@ -152,6 +152,18 @@ namespace Microsoft.Framework.WebEncoders
         }
 
         /// <summary>
+        /// Disallows all characters through the filter.
+        /// </summary>
+        /// <returns>
+        /// The 'this' instance.
+        /// </returns>
+        public CodePointFilter Clear()
+        {
+            _allowedCharsBitmap.Clear();
+            return this;
+        }
+
+        /// <summary>
         /// Disallows all characters in the specified Unicode character block through the filter.
         /// </summary>
         /// <returns>

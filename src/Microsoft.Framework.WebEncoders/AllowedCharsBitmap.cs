@@ -25,6 +25,13 @@ namespace Microsoft.Framework.WebEncoders
             _allowedCharsBitmap[index] |= 0x1U << offset;
         }
 
+        // Marks all characters as forbidden (must be returned encoded)
+        public void Clear()
+        {
+            Array.Clear(_allowedCharsBitmap, 0, _allowedCharsBitmap.Length);
+        }
+
+        // Creates a deep copy of this bitmap
         public AllowedCharsBitmap Clone()
         {
             AllowedCharsBitmap retVal;
