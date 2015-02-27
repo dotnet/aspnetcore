@@ -4,6 +4,7 @@
         "Microsoft.AspNet.RequestContainer": "1.0.0-*",
         "Microsoft.AspNet.StaticFiles": "1.0.0-*",
         "Microsoft.AspNet.TestHost": "1.0.0-*",
+        "Microsoft.AspNet.Testing.Logging": "1.0.0-*",
         "xunit.runner.kre": "1.0.0-*"
     },
     "commands": {

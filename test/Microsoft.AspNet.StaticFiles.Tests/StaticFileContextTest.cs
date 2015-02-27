@@ -8,7 +8,7 @@ using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.Framework.Expiration.Interfaces;
-using Microsoft.Framework.Logging;
+using Microsoft.AspNet.Testing.Logging;
 using Xunit;
 
 namespace Microsoft.AspNet.StaticFiles
