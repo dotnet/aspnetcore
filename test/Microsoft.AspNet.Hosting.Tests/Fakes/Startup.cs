@@ -9,7 +9,7 @@ using System;
 
 namespace Microsoft.AspNet.Hosting.Fakes
 {
-    public class Startup
+    public class Startup : StartupBase
     {
         public Startup()
         {

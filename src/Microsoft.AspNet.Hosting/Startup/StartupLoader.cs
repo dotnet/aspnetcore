@@ -25,8 +25,8 @@ namespace Microsoft.AspNet.Hosting.Startup
         {
             var methodNameWithEnv = string.Format(CultureInfo.InvariantCulture, methodName, environmentName);
             var methodNameWithNoEnv = string.Format(CultureInfo.InvariantCulture, methodName, "");
-            var methodInfo = startupType.GetTypeInfo().GetDeclaredMethod(methodNameWithEnv)
-                ?? startupType.GetTypeInfo().GetDeclaredMethod(methodNameWithNoEnv);
+            var methodInfo = startupType.GetMethod(methodNameWithEnv, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)
+                ?? startupType.GetMethod(methodNameWithNoEnv, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
             if (methodInfo == null)
             {
                 if (required)
