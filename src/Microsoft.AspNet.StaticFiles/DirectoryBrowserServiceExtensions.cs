@@ -29,7 +29,7 @@ namespace Microsoft.Framework.DependencyInjection
         /// <returns></returns>
         public static IServiceCollection AddDirectoryBrowser([NotNull] this IServiceCollection services, IConfiguration configuration)
         {
-            return services.AddEncoders(configuration);
+            return services.AddWebEncoders();
         }
     }
 }
