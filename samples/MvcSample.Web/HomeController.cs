@@ -108,7 +108,7 @@ namespace MvcSample.Web
 
             foreach (var f in files)
             {
-                await f.SaveAsAsync(Path.Combine(HostingEnvironment.WebRoot, "test-file" + files.IndexOf(f)));
+                await f.SaveAsAsync(Path.Combine(HostingEnvironment.WebRootPath, "test-file" + files.IndexOf(f)));
             }
             return View();
         }
