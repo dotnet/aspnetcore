@@ -193,7 +193,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var containerExplorer = metadataProvider.GetModelExplorerForType(containerType, model);
 
             var propertyMetadata = metadataProvider.GetMetadataForProperty(containerType, "Text");
-            var modelExplorer = containerExplorer.GetExplorerForExpression(propertyMetadata, modelAccessor);
+            var modelExplorer = containerExplorer.GetExplorerForExpression(propertyMetadata, modelAccessor());
 
             var modelExpression = new ModelExpression(nameAndId.Name, modelExplorer);
 
@@ -278,7 +278,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var containerExplorer = metadataProvider.GetModelExplorerForType(containerType, model);
 
             var propertyMetadata = metadataProvider.GetMetadataForProperty(containerType, "Text");
-            var modelExplorer = containerExplorer.GetExplorerForExpression(propertyMetadata, modelAccessor);
+            var modelExplorer = containerExplorer.GetExplorerForExpression(propertyMetadata, modelAccessor());
 
             var modelExpression = new ModelExpression(nameAndId.Name, modelExplorer);
 
@@ -374,20 +374,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var metadataProvider = new EmptyModelMetadataProvider();
             string model = null;
-            var metadata = metadataProvider.GetModelExplorerForType(typeof(string), model);
+            var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), model);
 
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator.Object, metadataProvider);
 
             // Simulate a (model => model) scenario. E.g. the calling helper may appear in a low-level template.
-            var modelExpression = new ModelExpression(string.Empty, metadata);
+            var modelExpression = new ModelExpression(string.Empty, modelExplorer);
             viewContext.ViewData.TemplateInfo.HtmlFieldPrefix = propertyName;
 
             ICollection<string> selectedValues = new string[0];
             htmlGenerator
                 .Setup(real => real.GenerateSelect(
                     viewContext,
-                    metadata,
+                    modelExplorer,
                     null,         // optionLabel
                     string.Empty, // name
                     expectedItems,

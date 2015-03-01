@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var containerExplorer = metadataProvider.GetModelExplorerForType(containerType, model);
 
             var propertyMetadata = metadataProvider.GetMetadataForProperty(containerType, "Text");
-            var modelExplorer = containerExplorer.GetExplorerForExpression(propertyMetadata, modelAccessor);
+            var modelExplorer = containerExplorer.GetExplorerForExpression(propertyMetadata, modelAccessor());
 
             var modelExpression = new ModelExpression(propertyPath, modelExplorer);
             var tagHelper = new LabelTagHelper

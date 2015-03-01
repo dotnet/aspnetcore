@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             const string errorMessage = "A different error message";
 
-            var metadata = _metadataProvider.GetModelExplorerForType(typeof(object), new object());
+            var modelExplorer = _metadataProvider.GetModelExplorerForType(typeof(object), new object());
 
             var attribute = new Mock<ValidationAttribute> { CallBase = true };
             attribute.Protected()
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                      .Returns(new ValidationResult(errorMessage, new[] { "FirstName" }));
 
             var validator = new DataAnnotationsModelValidator(attribute.Object);
-            var validationContext = CreateValidationContext(metadata);
+            var validationContext = CreateValidationContext(modelExplorer);
 
             // Act
             var results = validator.Validate(validationContext);
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ValidateReturnsMemberNameIfItIsDifferentFromDisplayName()
         {
             // Arrange
-            var metadata = _metadataProvider.GetModelExplorerForType(typeof(SampleModel), new SampleModel());
+            var modelExplorer = _metadataProvider.GetModelExplorerForType(typeof(SampleModel), new SampleModel());
 
             var attribute = new Mock<ValidationAttribute> { CallBase = true };
             attribute.Protected()
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                      .Returns(new ValidationResult("Name error", new[] { "Name" }));
 
             var validator = new DataAnnotationsModelValidator(attribute.Object);
-            var validationContext = CreateValidationContext(metadata);
+            var validationContext = CreateValidationContext(modelExplorer);
 
             // Act
             var results = validator.Validate(validationContext);

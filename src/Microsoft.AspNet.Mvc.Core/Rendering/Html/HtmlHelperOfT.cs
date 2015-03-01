@@ -143,8 +143,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] Expression<Func<TModel, TResult>> expression,
             object htmlAttributes)
         {
-            var metadata = GetModelExplorer(expression);
-            return GenerateHidden(metadata, GetExpressionName(expression), metadata.Model, useViewData: false,
+            var modelExplorer = GetModelExplorer(expression);
+            return GenerateHidden(
+                modelExplorer,
+                GetExpressionName(expression),
+                modelExplorer.Model,
+                useViewData: false,
                 htmlAttributes: htmlAttributes);
         }
 
@@ -160,8 +164,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string labelText,
             object htmlAttributes)
         {
-            var metadata = GetModelExplorer(expression);
-            return GenerateLabel(metadata, ExpressionHelper.GetExpressionText(expression), labelText, htmlAttributes);
+            var modelExplorer = GetModelExplorer(expression);
+            return GenerateLabel(
+                modelExplorer,
+                ExpressionHelper.GetExpressionText(expression),
+                labelText,
+                htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -170,10 +178,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
             IEnumerable<SelectListItem> selectList,
             object htmlAttributes)
         {
-            var metadata = GetModelExplorer(expression);
+            var modelExplorer = GetModelExplorer(expression);
             var name = ExpressionHelper.GetExpressionText(expression);
 
-            return GenerateListBox(metadata, name, selectList, htmlAttributes);
+            return GenerateListBox(modelExplorer, name, selectList, htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -188,8 +196,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] Expression<Func<TModel, TResult>> expression,
             object htmlAttributes)
         {
-            var metadata = GetModelExplorer(expression);
-            return GeneratePassword(metadata, GetExpressionName(expression), value: null,
+            var modelExplorer = GetModelExplorer(expression);
+            return GeneratePassword(
+                modelExplorer,
+                GetExpressionName(expression),
+                value: null,
                 htmlAttributes: htmlAttributes);
         }
 
@@ -199,8 +210,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] object value,
             object htmlAttributes)
         {
-            var metadata = GetModelExplorer(expression);
-            return GenerateRadioButton(metadata, GetExpressionName(expression), value, isChecked: null,
+            var modelExplorer = GetModelExplorer(expression);
+            return GenerateRadioButton(
+                modelExplorer,
+                GetExpressionName(expression),
+                value,
+                isChecked: null,
                 htmlAttributes: htmlAttributes);
         }
 
@@ -211,8 +226,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             int columns,
             object htmlAttributes)
         {
-            var metadata = GetModelExplorer(expression);
-            return GenerateTextArea(metadata, GetExpressionName(expression), rows, columns, htmlAttributes);
+            var modelExplorer = GetModelExplorer(expression);
+            return GenerateTextArea(modelExplorer, GetExpressionName(expression), rows, columns, htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -221,8 +236,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string format,
             object htmlAttributes)
         {
-            var metadata = GetModelExplorer(expression);
-            return GenerateTextBox(metadata, GetExpressionName(expression), metadata.Model, format, htmlAttributes);
+            var modelExplorer = GetModelExplorer(expression);
+            return GenerateTextBox(
+                modelExplorer,
+                GetExpressionName(expression),
+                modelExplorer.Model,
+                format,
+                htmlAttributes);
         }
 
         protected string GetExpressionName<TResult>([NotNull] Expression<Func<TModel, TResult>> expression)
@@ -258,8 +278,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <inheritdoc />
         public string ValueFor<TResult>([NotNull] Expression<Func<TModel, TResult>> expression, string format)
         {
-            var metadata = GetModelExplorer(expression);
-            return GenerateValue(ExpressionHelper.GetExpressionText(expression), metadata.Model, format,
+            var modelExplorer = GetModelExplorer(expression);
+            return GenerateValue(
+                ExpressionHelper.GetExpressionText(expression),
+                modelExplorer.Model,
+                format,
                 useViewData: false);
         }
     }
