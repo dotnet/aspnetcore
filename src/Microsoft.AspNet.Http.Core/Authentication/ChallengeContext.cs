@@ -3,23 +3,22 @@
 
 using System;
 using System.Collections.Generic;
-using System.Security.Claims;
-using Microsoft.AspNet.Http.Interfaces.Security;
+using Microsoft.AspNet.Http.Interfaces.Authentication;
 
-namespace Microsoft.AspNet.Http.Core.Security
+namespace Microsoft.AspNet.Http.Core.Authentication
 {
-    public class SignInContext : ISignInContext
+    public class ChallengeContext : IChallengeContext
     {
         private List<string> _accepted;
 
-        public SignInContext([NotNull] IEnumerable<ClaimsIdentity> identities, IDictionary<string, string> dictionary)
+        public ChallengeContext([NotNull] IEnumerable<string> authenticationSchemes, IDictionary<string, string> properties)
         {
-            Identities = identities;
-            Properties = dictionary ?? new Dictionary<string, string>(StringComparer.Ordinal);
+            AuthenticationSchemes = authenticationSchemes;
+            Properties = properties ?? new Dictionary<string, string>(StringComparer.Ordinal);
             _accepted = new List<string>();
         }
 
-        public IEnumerable<ClaimsIdentity> Identities { get; private set; }
+        public IEnumerable<string> AuthenticationSchemes { get; private set; }
 
         public IDictionary<string, string> Properties { get; private set; }
 

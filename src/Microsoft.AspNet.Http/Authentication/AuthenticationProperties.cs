@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
-namespace Microsoft.AspNet.Http.Security
+namespace Microsoft.AspNet.Http.Authentication
 {
     /// <summary>
     /// Dictionary used to store state values about the authentication session.

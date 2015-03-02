@@ -4,14 +4,14 @@
 using System.Collections.Generic;
 using System.Security.Claims;
 
-namespace Microsoft.AspNet.Http.Interfaces.Security
+namespace Microsoft.AspNet.Http.Interfaces.Authentication
 {
     public interface IAuthenticateContext
     {
-        IEnumerable<string> AuthenticationTypes { get; }
+        IEnumerable<string> AuthenticationSchemes { get; }
 
-        void Authenticated(ClaimsIdentity identity, IDictionary<string, string> properties, IDictionary<string, object> description);
+        void Authenticated(ClaimsPrincipal principal, IDictionary<string, string> properties, IDictionary<string, object> description);
 
-        void NotAuthenticated(string authenticationType, IDictionary<string, string> properties, IDictionary<string, object> description);
+        void NotAuthenticated(string authenticationScheme, IDictionary<string, string> properties, IDictionary<string, object> description);
     }
 }

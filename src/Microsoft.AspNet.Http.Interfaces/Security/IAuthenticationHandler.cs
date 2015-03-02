@@ -3,11 +3,11 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Http.Interfaces.Security
+namespace Microsoft.AspNet.Http.Interfaces.Authentication
 {
     public interface IAuthenticationHandler
     {
-        void GetDescriptions(IAuthTypeContext context);
+        void GetDescriptions(IDescribeSchemesContext context);
 
         void Authenticate(IAuthenticateContext context);
         Task AuthenticateAsync(IAuthenticateContext context);

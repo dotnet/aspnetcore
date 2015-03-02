@@ -3,9 +3,9 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Http.Interfaces.Security
+namespace Microsoft.AspNet.Http.Interfaces.Authentication
 {
-    public interface IAuthTypeContext
+    public interface IDescribeSchemesContext
     {
         void Accept(IDictionary<string,object> description);
     }

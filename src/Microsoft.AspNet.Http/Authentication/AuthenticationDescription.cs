@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Microsoft.AspNet.Http.Security
+namespace Microsoft.AspNet.Http.Authentication
 {
     /// <summary>
     /// Contains information describing an authentication provider.
@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Http.Security
     public class AuthenticationDescription
     {
         private const string CaptionPropertyKey = "Caption";
-        private const string AuthenticationTypePropertyKey = "AuthenticationType";
+        private const string AuthenticationSchemePropertyKey = "AuthenticationScheme";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticationDescription"/> class
@@ -40,10 +40,10 @@ namespace Microsoft.AspNet.Http.Security
         /// <summary>
         /// Gets or sets the name used to reference the authentication middleware instance.
         /// </summary>
-        public string AuthenticationType
+        public string AuthenticationScheme
         {
-            get { return GetString(AuthenticationTypePropertyKey); }
-            set { Dictionary[AuthenticationTypePropertyKey] = value; }
+            get { return GetString(AuthenticationSchemePropertyKey); }
+            set { Dictionary[AuthenticationSchemePropertyKey] = value; }
         }
 
         /// <summary>

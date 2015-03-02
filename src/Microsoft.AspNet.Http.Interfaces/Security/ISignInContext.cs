@@ -4,13 +4,15 @@
 using System.Collections.Generic;
 using System.Security.Claims;
 
-namespace Microsoft.AspNet.Http.Interfaces.Security
+namespace Microsoft.AspNet.Http.Interfaces.Authentication
 {
     public interface ISignInContext
     {
-        IEnumerable<ClaimsIdentity> Identities { get; }
+        //IEnumerable<ClaimsPrincipal> Principals { get; }
+        ClaimsPrincipal Principal { get; }
         IDictionary<string, string> Properties { get; }
+        string AuthenticationScheme { get; }
 
-        void Accept(string authenticationType, IDictionary<string, object> description);
+        void Accept(IDictionary<string, object> description);
     }
 }

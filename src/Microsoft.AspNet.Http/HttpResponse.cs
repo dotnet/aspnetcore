@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Claims;
-using Microsoft.AspNet.Http.Security;
+using Microsoft.AspNet.Http.Authentication;
 
 namespace Microsoft.AspNet.Http
 {
@@ -44,70 +44,40 @@ namespace Microsoft.AspNet.Http
             Challenge(properties, new string[0]);
         }
 
-        public virtual void Challenge(string authenticationType)
+        public virtual void Challenge(string authenticationScheme)
         {
-            Challenge(new[] { authenticationType });
+            Challenge(new[] { authenticationScheme });
         }
 
-        public virtual void Challenge(AuthenticationProperties properties, string authenticationType)
+        public virtual void Challenge(AuthenticationProperties properties, string authenticationScheme)
         {
-            Challenge(properties, new[] { authenticationType });
+            Challenge(properties, new[] { authenticationScheme });
         }
 
-        public virtual void Challenge(params string[] authenticationTypes)
+        public virtual void Challenge(params string[] authenticationSchemes)
         {
-            Challenge((IEnumerable<string>)authenticationTypes);
+            Challenge((IEnumerable<string>)authenticationSchemes);
         }
 
-        public virtual void Challenge(IEnumerable<string> authenticationTypes)
+        public virtual void Challenge(IEnumerable<string> authenticationSchemes)
         {
-            Challenge(properties: null, authenticationTypes:  authenticationTypes);
+            Challenge(properties: null, authenticationSchemes:  authenticationSchemes);
         }
 
-        public virtual void Challenge(AuthenticationProperties properties, params string[] authenticationTypes)
+        public virtual void Challenge(AuthenticationProperties properties, params string[] authenticationSchemes)
         {
-            Challenge(properties, (IEnumerable<string>)authenticationTypes);
+            Challenge(properties, (IEnumerable<string>)authenticationSchemes);
         }
 
-        public abstract void Challenge(AuthenticationProperties properties, IEnumerable<string> authenticationTypes);
+        public abstract void Challenge(AuthenticationProperties properties, IEnumerable<string> authenticationSchemes);
 
-        public virtual void SignIn(ClaimsIdentity identity)
-        {
-            SignIn(properties: null, identity: identity);
-        }
-
-        public virtual void SignIn(AuthenticationProperties properties, ClaimsIdentity identity)
-        {
-            SignIn(properties, new[] { identity });
-        }
-
-        public virtual void SignIn(params ClaimsIdentity[] identities)
-        {
-            SignIn(properties: null, identities: (IEnumerable<ClaimsIdentity>)identities);
-        }
-
-        public virtual void SignIn(IEnumerable<ClaimsIdentity> identities)
-        {
-            SignIn(properties: null, identities: identities);
-        }
-
-        public virtual void SignIn(AuthenticationProperties properties, params ClaimsIdentity[] identities)
-        {
-            SignIn(properties, (IEnumerable<ClaimsIdentity>)identities);
-        }
-
-        public abstract void SignIn(AuthenticationProperties properties, IEnumerable<ClaimsIdentity> identities);
+        public abstract void SignIn(string authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties properties = null);
 
         public virtual void SignOut()
         {
-            SignOut(new string[0]);
+            SignOut(authenticationScheme: null);
         }
 
-        public virtual void SignOut(string authenticationType)
-        {
-            SignOut(new[] { authenticationType });
-        }
-
-        public abstract void SignOut(IEnumerable<string> authenticationTypes);
+        public abstract void SignOut(string authenticationScheme);
     }
 }

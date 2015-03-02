@@ -9,14 +9,13 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Infrastructure;
-using Microsoft.AspNet.Http.Security;
-using Microsoft.AspNet.Http.Interfaces;
-using Microsoft.AspNet.Http.Interfaces.Security;
 using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Http.Core.Infrastructure;
-using Microsoft.AspNet.Http.Core.Security;
+using Microsoft.AspNet.Http.Core.Authentication;
+using Microsoft.AspNet.Http.Infrastructure;
+using Microsoft.AspNet.Http.Interfaces;
+using Microsoft.AspNet.Http.Interfaces.Authentication;
+using Microsoft.AspNet.Http.Authentication;
 
 namespace Microsoft.AspNet.Http.Core
 {
@@ -201,7 +200,7 @@ namespace Microsoft.AspNet.Http.Core
             _features[type] = instance;
         }
 
-        public override IEnumerable<AuthenticationDescription> GetAuthenticationTypes()
+        public override IEnumerable<AuthenticationDescription> GetAuthenticationSchemes()
         {
             var handler = HttpAuthenticationFeature.Handler;
             if (handler == null)
@@ -209,46 +208,46 @@ namespace Microsoft.AspNet.Http.Core
                 return new AuthenticationDescription[0];
             }
 
-            var authTypeContext = new AuthTypeContext();
-            handler.GetDescriptions(authTypeContext);
-            return authTypeContext.Results;
+            var describeContext = new DescribeSchemesContext();
+            handler.GetDescriptions(describeContext);
+            return describeContext.Results;
         }
 
-        public override IEnumerable<AuthenticationResult> Authenticate([NotNull] IEnumerable<string> authenticationTypes)
+        public override IEnumerable<AuthenticationResult> Authenticate([NotNull] IEnumerable<string> authenticationSchemes)
         {
             var handler = HttpAuthenticationFeature.Handler;
 
-            var authenticateContext = new AuthenticateContext(authenticationTypes);
+            var authenticateContext = new AuthenticateContext(authenticationSchemes);
             if (handler != null)
             {
                 handler.Authenticate(authenticateContext);
             }
 
             // Verify all types ack'd
-            IEnumerable<string> leftovers = authenticationTypes.Except(authenticateContext.Accepted);
+            IEnumerable<string> leftovers = authenticationSchemes.Except(authenticateContext.Accepted);
             if (leftovers.Any())
             {
-                throw new InvalidOperationException("The following authentication types were not accepted: " + string.Join(", ", leftovers));
+                throw new InvalidOperationException("The following authentication schemes were not accepted: " + string.Join(", ", leftovers));
             }
 
             return authenticateContext.Results;
         }
 
-        public override async Task<IEnumerable<AuthenticationResult>> AuthenticateAsync([NotNull] IEnumerable<string> authenticationTypes)
+        public override async Task<IEnumerable<AuthenticationResult>> AuthenticateAsync([NotNull] IEnumerable<string> authenticationSchemes)
         {
             var handler = HttpAuthenticationFeature.Handler;
 
-            var authenticateContext = new AuthenticateContext(authenticationTypes);
+            var authenticateContext = new AuthenticateContext(authenticationSchemes);
             if (handler != null)
             {
                 await handler.AuthenticateAsync(authenticateContext);
             }
 
             // Verify all types ack'd
-            IEnumerable<string> leftovers = authenticationTypes.Except(authenticateContext.Accepted);
+            IEnumerable<string> leftovers = authenticationSchemes.Except(authenticateContext.Accepted);
             if (leftovers.Any())
             {
-                throw new InvalidOperationException("The following authentication types were not accepted: " + string.Join(", ", leftovers));
+                throw new InvalidOperationException("The following authentication schemes were not accepted: " + string.Join(", ", leftovers));
             }
 
             return authenticateContext.Results;

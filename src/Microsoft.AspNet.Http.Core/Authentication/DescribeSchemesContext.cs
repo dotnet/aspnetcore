@@ -1,18 +1,17 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Http.Security;
-using Microsoft.AspNet.Http.Interfaces.Security;
+using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.Http.Interfaces.Authentication;
 
-namespace Microsoft.AspNet.Http.Core.Security
+namespace Microsoft.AspNet.Http.Core.Authentication
 {
-    public class AuthTypeContext : IAuthTypeContext
+    public class DescribeSchemesContext : IDescribeSchemesContext
     {
         private List<AuthenticationDescription> _results;
 
-        public AuthTypeContext()
+        public DescribeSchemesContext()
         {
             _results = new List<AuthenticationDescription>();
         }

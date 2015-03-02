@@ -8,7 +8,7 @@ using System.Net.WebSockets;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Security;
+using Microsoft.AspNet.Http.Authentication;
 
 namespace Microsoft.AspNet.Http
 {
@@ -52,21 +52,21 @@ namespace Microsoft.AspNet.Http
             SetFeature(typeof(T), instance);
         }
 
-        public abstract IEnumerable<AuthenticationDescription> GetAuthenticationTypes();
+        public abstract IEnumerable<AuthenticationDescription> GetAuthenticationSchemes();
 
-        public virtual AuthenticationResult Authenticate(string authenticationType)
+        public virtual AuthenticationResult Authenticate(string authenticationScheme)
         {
-            return Authenticate(new[] { authenticationType }).SingleOrDefault();
+            return Authenticate(new[] { authenticationScheme }).SingleOrDefault();
         }
 
-        public abstract IEnumerable<AuthenticationResult> Authenticate(IEnumerable<string> authenticationTypes);
+        public abstract IEnumerable<AuthenticationResult> Authenticate(IEnumerable<string> authenticationSchemes);
 
-        public virtual async Task<AuthenticationResult> AuthenticateAsync(string authenticationType)
+        public virtual async Task<AuthenticationResult> AuthenticateAsync(string authenticationScheme)
         {
-            return (await AuthenticateAsync(new[] { authenticationType })).SingleOrDefault();
+            return (await AuthenticateAsync(new[] { authenticationScheme })).SingleOrDefault();
         }
 
-        public abstract Task<IEnumerable<AuthenticationResult>> AuthenticateAsync(IEnumerable<string> authenticationTypes);
+        public abstract Task<IEnumerable<AuthenticationResult>> AuthenticateAsync(IEnumerable<string> authenticationSchemes);
 
         public virtual Task<WebSocket> AcceptWebSocketAsync()
         {
