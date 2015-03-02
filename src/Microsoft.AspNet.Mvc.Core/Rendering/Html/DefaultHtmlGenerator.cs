@@ -409,9 +409,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 if (string.IsNullOrEmpty(expression))
                 {
-                    // Avoid ViewData.Eval() throwing an ArgumentException with a different parameter name. Note this
-                    // is an extreme case since users must pass a non-null selectList to use CheckBox() or ListBox()
-                    // in a template, where a null or empty name has meaning.
+                    // Do not call ViewData.Eval(); that would return ViewData.Model, which is not correct here.
+                    // Note this case has a simple workaround: users must pass a non-null selectList to use
+                    // DropDownList() or ListBox() in a template, where a null or empty name has meaning.
                     throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(expression));
                 }
 
@@ -422,16 +422,21 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var type = allowMultiple ? typeof(string[]) : typeof(string);
             var defaultValue = GetModelStateValue(viewContext, fullName, type);
 
-            // If we haven't already used ViewData to get the entire list of items then we need to
-            // use the ViewData-supplied value before using the parameter-supplied value.
-            if (defaultValue == null && !string.IsNullOrEmpty(expression))
+            // If ModelState did not contain a current value, fall back to ViewData- or ModelExplorer-supplied value.
+            if (defaultValue == null)
             {
-                if (!usedViewData)
+                if (modelExplorer == null)
                 {
-                    defaultValue = viewContext.ViewData.Eval(expression);
+                    // Html.DropDownList() and Html.ListBox() helper case.
+                    // Cannot use ViewData if it contains the select list.
+                    if (!usedViewData)
+                    {
+                        defaultValue = viewContext.ViewData.Eval(expression);
+                    }
                 }
-                else if (modelExplorer != null)
+                else
                 {
+                    // <select/>, Html.DropDownListFor() and Html.ListBoxFor() helper case. Do not use ViewData.
                     defaultValue = modelExplorer.Model;
                 }
             }

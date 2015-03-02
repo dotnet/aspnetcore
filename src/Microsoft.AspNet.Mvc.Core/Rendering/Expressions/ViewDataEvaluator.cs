@@ -1,16 +1,23 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering.Expressions
 {
     public static class ViewDataEvaluator
     {
-        public static ViewDataInfo Eval([NotNull] ViewDataDictionary viewData, [NotNull] string expression)
+        public static ViewDataInfo Eval([NotNull] ViewDataDictionary viewData, string expression)
         {
+            if (string.IsNullOrEmpty(expression))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(expression));
+            }
+
             // Given an expression "one.two.three.four" we look up the following (pseudocode):
             //  this["one.two.three.four"]
             //  this["one.two.three"]["four"]
@@ -24,8 +31,13 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
             return EvalComplexExpression(viewData, expression);
         }
 
-        public static ViewDataInfo Eval(object indexableObject, [NotNull] string expression)
+        public static ViewDataInfo Eval(object indexableObject, string expression)
         {
+            if (string.IsNullOrEmpty(expression))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(expression));
+            }
+
             // Run through same cases as other Eval() overload but allow a null container.
             return (indexableObject == null) ? null : EvalComplexExpression(indexableObject, expression);
         }

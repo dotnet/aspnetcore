@@ -971,16 +971,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
             else if (useViewData)
             {
-                if (string.IsNullOrEmpty(expression))
-                {
-                    // case 2(a): format the value from ViewData for the current model
-                    resolvedValue = FormatValue(ViewData.Model, format);
-                }
-                else
-                {
-                    // case 2(b): format the value from ViewData
-                    resolvedValue = DefaultHtmlGenerator.EvalString(ViewContext, expression, format);
-                }
+                // case 2: format the value from ViewData
+                resolvedValue = DefaultHtmlGenerator.EvalString(ViewContext, expression, format);
             }
             else
             {

@@ -333,7 +333,8 @@ namespace Microsoft.AspNet.Mvc
         {
             if (string.IsNullOrEmpty(expression))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "expression");
+                // Null or empty expression name means current model.
+                return new ViewDataInfo(container: null, value: Model);
             }
 
             return ViewDataEvaluator.Eval(this, expression);

@@ -6,7 +6,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Testing;
 using Microsoft.Framework.Internal;
 using Moq;
 using Xunit;
@@ -605,13 +604,18 @@ namespace Microsoft.AspNet.Mvc.Core
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void EvalThrowsIfExpressionIsNullOrEmpty(string expression)
+        public void Eval_ReturnsModel_IfExpressionIsNullOrEmpty(string expression)
         {
             // Arrange
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
+            var model = new object();
+            viewData = new ViewDataDictionary(viewData, model);
 
-            // Act & Assert
-            ExceptionAssert.ThrowsArgumentNullOrEmpty(() => viewData.Eval(expression), "expression");
+            // Act
+            var result = viewData.Eval(expression);
+
+            // Assert
+            Assert.Same(model, result);
         }
 
         [Fact]
