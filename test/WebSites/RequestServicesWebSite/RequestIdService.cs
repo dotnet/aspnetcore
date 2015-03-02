@@ -11,7 +11,7 @@ namespace RequestServicesWebSite
         // This service can only be instantiated by a request-scoped container
         public RequestIdService(IServiceProvider services, IHttpContextAccessor contextAccessor)
         {
-            if (contextAccessor.Value.RequestServices != services)
+            if (contextAccessor.HttpContext.RequestServices != services)
             {
                 throw new InvalidOperationException();
             }

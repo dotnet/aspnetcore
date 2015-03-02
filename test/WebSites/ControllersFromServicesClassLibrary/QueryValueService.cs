@@ -12,7 +12,7 @@ namespace ControllersFromServicesClassLibrary
 
         public QueryValueService(IHttpContextAccessor httpContextAccessor)
         {
-            _context = httpContextAccessor.Value;
+            _context = httpContextAccessor.HttpContext;
         }
 
         public string GetValue()
