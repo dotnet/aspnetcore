@@ -1,0 +1,12 @@
+{
+    "version": "1.0.0-*",
+    "description": "ASP.NET middleware that enables an application to use cookie based authentication, similar to ASP.NET's forms authentication.",
+    "dependencies": {
+        "Microsoft.AspNet.Authentication": "1.0.0-*",
+        "Newtonsoft.Json": "6.0.6"
+    },
+    "frameworks": {
+        "aspnet50": { },
+        "aspnetcore50": { }
+    }
+}

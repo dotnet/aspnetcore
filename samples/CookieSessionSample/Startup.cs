@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Security.Cookies;
+using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.Framework.DependencyInjection;
 
 namespace CookieSessionSample
@@ -32,8 +32,7 @@ namespace CookieSessionSample
                     {
                         claims.Add(new Claim(ClaimTypes.Role, "SomeRandomGroup" + i, ClaimValueTypes.String, "IssuedByBob", "OriginalIssuerJoe"));
                     }
-                    context.Response.SignIn(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationType));                    
-
+                    context.Response.SignIn(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity(claims)));
                     context.Response.ContentType = "text/plain";
                     await context.Response.WriteAsync("Hello First timer");
                     return;

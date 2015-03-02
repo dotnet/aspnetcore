@@ -1,0 +1,20 @@
+{
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
+    "dependencies": {
+        "Microsoft.AspNet.Authorization": "1.0.0-*",
+        "Moq": "4.2.1312.1622",
+        "xunit.runner.kre": "1.0.0-*"
+    },
+    "commands": {
+        "test": "xunit.runner.kre"
+    },
+    "frameworks": {
+        "aspnet50": {
+            "dependencies": {
+                "Shouldly": "1.1.1.1"
+            }
+        }
+    }
+}

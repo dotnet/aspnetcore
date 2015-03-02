@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Security;
-using Microsoft.AspNet.Security;
-using Microsoft.AspNet.Security.Cookies;
-using Microsoft.AspNet.Security.OpenIdConnect;
+using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.Authentication;
+using Microsoft.AspNet.Authentication.Cookies;
+using Microsoft.AspNet.Authentication.OpenIdConnect;
 using Microsoft.Framework.DependencyInjection;
 
 namespace OpenIdConnectSample
@@ -17,7 +17,7 @@ namespace OpenIdConnectSample
                 services.AddDataProtection();
                 services.Configure<ExternalAuthenticationOptions>(options =>
                 {
-                    options.SignInAsAuthenticationType = CookieAuthenticationDefaults.AuthenticationType;
+                    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 });
 
             });
@@ -37,7 +37,7 @@ namespace OpenIdConnectSample
             {
                 if (context.User == null || !context.User.Identity.IsAuthenticated)
                 {
-                    context.Response.Challenge(new AuthenticationProperties { RedirectUri = "/" }, OpenIdConnectAuthenticationDefaults.AuthenticationType);
+                    context.Response.Challenge(new AuthenticationProperties { RedirectUri = "/" }, OpenIdConnectAuthenticationDefaults.AuthenticationScheme);
 
                     context.Response.ContentType = "text/plain";
                     await context.Response.WriteAsync("Hello First timer");

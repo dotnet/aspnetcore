@@ -1,11 +1,11 @@
 {
     "dependencies": {
         "Microsoft.AspNet.Diagnostics": "1.0.0-*",
-        "Microsoft.AspNet.Security.Cookies": "1.0.0-*",
-        "Microsoft.AspNet.Security.Facebook": "1.0.0-*",
-        "Microsoft.AspNet.Security.Google": "1.0.0-*",
-        "Microsoft.AspNet.Security.MicrosoftAccount": "1.0.0-*",
-        "Microsoft.AspNet.Security.Twitter": "1.0.0-*",
+        "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
+        "Microsoft.AspNet.Authentication.Facebook": "1.0.0-*",
+        "Microsoft.AspNet.Authentication.Google": "1.0.0-*",
+        "Microsoft.AspNet.Authentication.MicrosoftAccount": "1.0.0-*",
+        "Microsoft.AspNet.Authentication.Twitter": "1.0.0-*",
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
         "Kestrel": "1.0.0-*"

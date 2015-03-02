@@ -4,12 +4,12 @@ using System.Security.Claims;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Security;
-using Microsoft.AspNet.Security;
-using Microsoft.AspNet.Security.Cookies;
-using Microsoft.AspNet.Security.Google;
-using Microsoft.AspNet.Security.MicrosoftAccount;
-using Microsoft.AspNet.Security.OAuth;
+using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.Authentication;
+using Microsoft.AspNet.Authentication.Cookies;
+using Microsoft.AspNet.Authentication.Google;
+using Microsoft.AspNet.Authentication.MicrosoftAccount;
+using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json.Linq;
 
@@ -26,7 +26,7 @@ namespace CookieSample
                 services.AddDataProtection();
                 services.Configure<ExternalAuthenticationOptions>(options =>
                 {
-                    options.SignInAsAuthenticationType = CookieAuthenticationDefaults.AuthenticationType;
+                    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 });
             });
 
@@ -121,6 +121,7 @@ namespace CookieSample
                 options.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
                 options.TokenEndpoint = "https://github.com/login/oauth/access_token";
                 options.UserInformationEndpoint = "https://api.github.com/user";
+                options.ClaimsIssuer = "OAuth2-Github";
                 // Retrieving user information is unique to each provider.
                 options.Notifications = new OAuthAuthenticationNotifications()
                 {
@@ -136,7 +137,7 @@ namespace CookieSample
                         JObject user = JObject.Parse(text);
 
                         var identity = new ClaimsIdentity(
-                            context.Options.AuthenticationType,
+                            context.Options.AuthenticationScheme,
                             ClaimsIdentity.DefaultNameClaimType,
                             ClaimsIdentity.DefaultRoleClaimType);
 
@@ -144,25 +145,25 @@ namespace CookieSample
                         var id = user.TryGetValue("id", out value) ? value.ToString() : null;
                         if (!string.IsNullOrEmpty(id))
                         {
-                            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, id, ClaimValueTypes.String, context.Options.AuthenticationType));
+                            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, id, ClaimValueTypes.String, context.Options.ClaimsIssuer));
                         }
                         var userName = user.TryGetValue("login", out value) ? value.ToString() : null;
                         if (!string.IsNullOrEmpty(userName))
                         {
-                            identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, userName, ClaimValueTypes.String, context.Options.AuthenticationType));
+                            identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, userName, ClaimValueTypes.String, context.Options.ClaimsIssuer));
                         }
                         var name = user.TryGetValue("name", out value) ? value.ToString() : null;
                         if (!string.IsNullOrEmpty(name))
                         {
-                            identity.AddClaim(new Claim("urn:github:name", name, ClaimValueTypes.String, context.Options.AuthenticationType));
+                            identity.AddClaim(new Claim("urn:github:name", name, ClaimValueTypes.String, context.Options.ClaimsIssuer));
                         }
                         var link = user.TryGetValue("url", out value) ? value.ToString() : null;
                         if (!string.IsNullOrEmpty(link))
                         {
-                            identity.AddClaim(new Claim("urn:github:url", link, ClaimValueTypes.String, context.Options.AuthenticationType));
+                            identity.AddClaim(new Claim("urn:github:url", link, ClaimValueTypes.String, context.Options.ClaimsIssuer));
                         }
 
-                        context.Identity = identity;
+                        context.Principal = new ClaimsPrincipal(identity);
                     },
                 };
             });
@@ -172,7 +173,7 @@ namespace CookieSample
             {
                 signoutApp.Run(async context =>
                 {
-                    string authType = context.Request.Query["authtype"];
+                    string authType = context.Request.Query["authscheme"];
                     if (!string.IsNullOrEmpty(authType))
                     {
                         // By default the client will be redirect back to the URL that issued the challenge (/login?authtype=foo),
@@ -183,10 +184,10 @@ namespace CookieSample
 
                     context.Response.ContentType = "text/html";
                     await context.Response.WriteAsync("<html><body>");
-                    await context.Response.WriteAsync("Choose an authentication type: <br>");
-                    foreach (var type in context.GetAuthenticationTypes())
+                    await context.Response.WriteAsync("Choose an authentication scheme: <br>");
+                    foreach (var type in context.GetAuthenticationSchemes())
                     {
-                        await context.Response.WriteAsync("<a href=\"?authtype=" + type.AuthenticationType + "\">" + (type.Caption ?? "(suppressed)") + "</a><br>");
+                        await context.Response.WriteAsync("<a href=\"?authscheme=" + type.AuthenticationScheme + "\">" + (type.Caption ?? "(suppressed)") + "</a><br>");
                     }
                     await context.Response.WriteAsync("</body></html>");
                 });
@@ -197,7 +198,7 @@ namespace CookieSample
             {
                 signoutApp.Run(async context =>
                 {
-                    context.Response.SignOut(CookieAuthenticationDefaults.AuthenticationType);
+                    context.Response.SignOut(CookieAuthenticationDefaults.AuthenticationScheme);
                     context.Response.ContentType = "text/html";
                     await context.Response.WriteAsync("<html><body>");
                     await context.Response.WriteAsync("You have been logged out. Goodbye " + context.User.Identity.Name + "<br>");
