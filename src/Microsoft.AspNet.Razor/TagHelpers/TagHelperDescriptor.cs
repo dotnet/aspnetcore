@@ -14,9 +14,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <summary>
         /// Internal for testing.
         /// </summary>
-        internal TagHelperDescriptor([NotNull] string tagName,
-                                     [NotNull] string typeName,
-                                     [NotNull] string assemblyName)
+        internal TagHelperDescriptor(
+            [NotNull] string tagName,
+            [NotNull] string typeName,
+            [NotNull] string assemblyName)
             : this(
                 tagName,
                 typeName,
@@ -34,11 +35,30 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             [NotNull] string assemblyName,
             [NotNull] IEnumerable<TagHelperAttributeDescriptor> attributes)
             : this(
+                tagName,
+                typeName,
+                assemblyName,
+                attributes,
+                requiredAttributes: Enumerable.Empty<string>())
+        {
+        }
+
+        /// <summary>
+        /// Internal for testing.
+        /// </summary>
+        internal TagHelperDescriptor(
+            [NotNull] string tagName,
+            [NotNull] string typeName,
+            [NotNull] string assemblyName,
+            [NotNull] IEnumerable<TagHelperAttributeDescriptor> attributes,
+            [NotNull] IEnumerable<string> requiredAttributes)
+            : this(
                 prefix: string.Empty,
-                tagName: tagName, 
-                typeName: typeName, 
-                assemblyName: assemblyName, 
-                attributes: attributes)
+                tagName: tagName,
+                typeName: typeName,
+                assemblyName: assemblyName,
+                attributes: attributes,
+                requiredAttributes: requiredAttributes)
         {
         }
 
@@ -57,12 +77,16 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <param name="attributes">
         /// The <see cref="TagHelperAttributeDescriptor"/>s to request from the HTML tag.
         /// </param>
+        /// <param name="requiredAttributes">
+        /// The attribute names required for the tag helper to target the HTML tag.
+        /// </param>
         public TagHelperDescriptor(
             string prefix,
             [NotNull] string tagName,
             [NotNull] string typeName,
             [NotNull] string assemblyName,
-            [NotNull] IEnumerable<TagHelperAttributeDescriptor> attributes)
+            [NotNull] IEnumerable<TagHelperAttributeDescriptor> attributes,
+            [NotNull] IEnumerable<string> requiredAttributes)
         {
             Prefix = prefix ?? string.Empty;
             TagName = tagName;
@@ -70,6 +94,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             TypeName = typeName;
             AssemblyName = assemblyName;
             Attributes = new List<TagHelperAttributeDescriptor>(attributes);
+            RequiredAttributes = new List<string>(requiredAttributes);
         }
 
         /// <summary>
@@ -102,6 +127,11 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <summary>
         /// The list of attributes the tag helper expects.
         /// </summary>
-        public virtual List<TagHelperAttributeDescriptor> Attributes { get; private set; }
+        public IList<TagHelperAttributeDescriptor> Attributes { get; private set; }
+
+        /// <summary>
+        /// The list of required attribute names the tag helper expects to target an element.
+        /// </summary>
+        public IList<string> RequiredAttributes { get; private set; }
     }
 }

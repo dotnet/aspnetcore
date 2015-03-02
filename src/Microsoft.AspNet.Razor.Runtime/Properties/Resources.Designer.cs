@@ -75,19 +75,19 @@ namespace Microsoft.AspNet.Razor.Runtime
         }
 
         /// <summary>
-        /// Tag name cannot be null or whitespace.
+        /// {0} name cannot be null or whitespace.
         /// </summary>
-        internal static string HtmlElementNameAttribute_ElementNameCannotBeNullOrWhitespace
+        internal static string TargetElementAttribute_NameCannotBeNullOrWhitespace
         {
-            get { return GetString("HtmlElementNameAttribute_ElementNameCannotBeNullOrWhitespace"); }
+            get { return GetString("TargetElementAttribute_NameCannotBeNullOrWhitespace"); }
         }
 
         /// <summary>
-        /// Tag name cannot be null or whitespace.
+        /// {0} name cannot be null or whitespace.
         /// </summary>
-        internal static string FormatHtmlElementNameAttribute_ElementNameCannotBeNullOrWhitespace()
+        internal static string FormatTargetElementAttribute_NameCannotBeNullOrWhitespace(object p0)
         {
-            return GetString("HtmlElementNameAttribute_ElementNameCannotBeNullOrWhitespace");
+            return string.Format(CultureInfo.CurrentCulture, GetString("TargetElementAttribute_NameCannotBeNullOrWhitespace"), p0);
         }
 
         /// <summary>
@@ -123,19 +123,19 @@ namespace Microsoft.AspNet.Razor.Runtime
         }
 
         /// <summary>
-        /// Tag helpers cannot target element name '{0}' because it contains a '{1}' character.
+        /// Tag helpers cannot target {0} name '{1}' because it contains a '{2}' character.
         /// </summary>
-        internal static string HtmlElementNameAttribute_InvalidElementName
+        internal static string TargetElementAttribute_InvalidName
         {
-            get { return GetString("HtmlElementNameAttribute_InvalidElementName"); }
+            get { return GetString("TargetElementAttribute_InvalidName"); }
         }
 
         /// <summary>
-        /// Tag helpers cannot target element name '{0}' because it contains a '{1}' character.
+        /// Tag helpers cannot target {0} name '{1}' because it contains a '{2}' character.
         /// </summary>
-        internal static string FormatHtmlElementNameAttribute_InvalidElementName(object p0, object p1)
+        internal static string FormatTargetElementAttribute_InvalidName(object p0, object p1, object p2)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("HtmlElementNameAttribute_InvalidElementName"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("TargetElementAttribute_InvalidName"), p0, p1, p2);
         }
 
         /// <summary>
@@ -168,6 +168,38 @@ namespace Microsoft.AspNet.Razor.Runtime
         internal static string FormatTagHelperDescriptorResolver_InvalidTagHelperPrefixValue(object p0, object p1, object p2)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorResolver_InvalidTagHelperPrefixValue"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// Attribute
+        /// </summary>
+        internal static string TagHelperDescriptorFactory_Attribute
+        {
+            get { return GetString("TagHelperDescriptorFactory_Attribute"); }
+        }
+
+        /// <summary>
+        /// Attribute
+        /// </summary>
+        internal static string FormatTagHelperDescriptorFactory_Attribute()
+        {
+            return GetString("TagHelperDescriptorFactory_Attribute");
+        }
+
+        /// <summary>
+        /// Tag
+        /// </summary>
+        internal static string TagHelperDescriptorFactory_Tag
+        {
+            get { return GetString("TagHelperDescriptorFactory_Tag"); }
+        }
+
+        /// <summary>
+        /// Tag
+        /// </summary>
+        internal static string FormatTagHelperDescriptorFactory_Tag()
+        {
+            return GetString("TagHelperDescriptorFactory_Tag");
         }
 
         private static string GetString(string name, params string[] formatterNames)

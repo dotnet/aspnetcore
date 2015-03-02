@@ -6,7 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNet.Razor.Text;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -28,34 +31,52 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         // TODO: Investigate if we should cache TagHelperDescriptors for types:
         // https://github.com/aspnet/Razor/issues/165
 
+        public static ICollection<char> InvalidNonWhitespaceNameCharacters { get; } = new HashSet<char>(
+            new[] { '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'' });
+
         /// <summary>
         /// Creates a <see cref="TagHelperDescriptor"/> from the given <paramref name="type"/>.
         /// </summary>
         /// <param name="assemblyName">The assembly name that contains <paramref name="type"/>.</param>
         /// <param name="type">The type to create a <see cref="TagHelperDescriptor"/> from.</param>
         /// <returns>A <see cref="TagHelperDescriptor"/> that describes the given <paramref name="type"/>.</returns>
-        public static IEnumerable<TagHelperDescriptor> CreateDescriptors(string assemblyName, Type type)
+        public static IEnumerable<TagHelperDescriptor> CreateDescriptors(
+            string assemblyName,
+            [NotNull] Type type,
+            [NotNull] ParserErrorSink errorSink)
         {
-            var tagNames = GetTagNames(type);
-            var typeName = type.FullName;
+            var typeInfo = type.GetTypeInfo();
             var attributeDescriptors = GetAttributeDescriptors(type);
+            var targetElementAttributes = GetValidTargetElementAttributes(typeInfo, errorSink);
+            var tagHelperDescriptors =
+                BuildTagHelperDescriptors(
+                    typeInfo,
+                    assemblyName,
+                    attributeDescriptors,
+                    targetElementAttributes);
 
-            return tagNames.Select(tagName =>
-                new TagHelperDescriptor(
-                    prefix: string.Empty,
-                    tagName: tagName,
-                    typeName: typeName,
-                    assemblyName: assemblyName,
-                    attributes: attributeDescriptors));
+            return tagHelperDescriptors.Distinct(TagHelperDescriptorComparer.Default);
         }
 
-        private static IEnumerable<string> GetTagNames(Type tagHelperType)
+        private static IEnumerable<TargetElementAttribute> GetValidTargetElementAttributes(
+            TypeInfo typeInfo,
+            ParserErrorSink errorSink)
         {
-            var typeInfo = tagHelperType.GetTypeInfo();
-            var attributes = typeInfo.GetCustomAttributes<HtmlElementNameAttribute>(inherit: false);
+            var targetElementAttributes = typeInfo.GetCustomAttributes<TargetElementAttribute>(inherit: false);
+
+            return targetElementAttributes.Where(attribute => ValidTargetElementAttributeNames(attribute, errorSink));
+        }
+
+        private static IEnumerable<TagHelperDescriptor> BuildTagHelperDescriptors(
+            TypeInfo typeInfo,
+            string assemblyName,
+            IEnumerable<TagHelperAttributeDescriptor> attributeDescriptors,
+            IEnumerable<TargetElementAttribute> targetElementAttributes)
+        {
+            var typeName = typeInfo.FullName;
 
             // If there isn't an attribute specifying the tag name derive it from the name
-            if (!attributes.Any())
+            if (!targetElementAttributes.Any())
             {
                 var name = typeInfo.Name;
 
@@ -64,11 +85,122 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     name = name.Substring(0, name.Length - TagHelperNameEnding.Length);
                 }
 
-                return new[] { ToHtmlCase(name) };
+                return new[]
+                {
+                    BuildTagHelperDescriptor(
+                        ToHtmlCase(name),
+                        typeName,
+                        assemblyName,
+                        attributeDescriptors,
+                        requiredAttributes: Enumerable.Empty<string>())
+                };
             }
 
-            // Remove duplicate tag names.
-            return attributes.SelectMany(attribute => attribute.Tags).Distinct();
+            return targetElementAttributes.Select(
+                attribute => BuildTagHelperDescriptor(typeName, assemblyName, attributeDescriptors, attribute));
+        }
+
+        private static TagHelperDescriptor BuildTagHelperDescriptor(
+            string typeName,
+            string assemblyName,
+            IEnumerable<TagHelperAttributeDescriptor> attributeDescriptors,
+            TargetElementAttribute targetElementAttribute)
+        {
+            var requiredAttributes = GetCommaSeparatedValues(targetElementAttribute.Attributes);
+
+            return BuildTagHelperDescriptor(
+                targetElementAttribute.Tag,
+                typeName,
+                assemblyName,
+                attributeDescriptors,
+                requiredAttributes);
+        }
+
+        private static TagHelperDescriptor BuildTagHelperDescriptor(
+            string tagName,
+            string typeName,
+            string assemblyName,
+            IEnumerable<TagHelperAttributeDescriptor> attributeDescriptors,
+            IEnumerable<string> requiredAttributes)
+        {
+            return new TagHelperDescriptor(
+                prefix: string.Empty,
+                tagName: tagName,
+                typeName: typeName,
+                assemblyName: assemblyName,
+                attributes: attributeDescriptors,
+                requiredAttributes: requiredAttributes);
+        }
+
+        /// <summary>
+        /// Internal for testing.
+        /// </summary>
+        internal static IEnumerable<string> GetCommaSeparatedValues(string text)
+        {
+            // We don't want to remove empty entries, need to notify users of invalid values.
+            return text?.Split(',').Select(tagName => tagName.Trim()) ?? Enumerable.Empty<string>();
+        }
+
+        /// <summary>
+        /// Internal for testing.
+        /// </summary>
+        internal static bool ValidTargetElementAttributeNames(
+            TargetElementAttribute attribute,
+            ParserErrorSink errorSink)
+        {
+            var validTagName = ValidateName(attribute.Tag, targetingAttributes: false, errorSink: errorSink);
+            var validAttributeNames = true;
+            var attributeNames = GetCommaSeparatedValues(attribute.Attributes);
+
+            foreach (var attributeName in attributeNames)
+            {
+                if (!ValidateName(attributeName, targetingAttributes: true, errorSink: errorSink))
+                {
+                    validAttributeNames = false;
+                }
+            }
+
+            return validTagName && validAttributeNames;
+        }
+
+        private static bool ValidateName(
+            string name,
+            bool targetingAttributes,
+            ParserErrorSink errorSink)
+        {
+            var targetName = targetingAttributes ?
+                Resources.TagHelperDescriptorFactory_Attribute :
+                Resources.TagHelperDescriptorFactory_Tag;
+            var validName = true;
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                errorSink.OnError(
+                    SourceLocation.Zero,
+                    Resources.FormatTargetElementAttribute_NameCannotBeNullOrWhitespace(targetName));
+
+                validName = false;
+            }
+            else
+            {
+                foreach (var character in name)
+                {
+                    if (char.IsWhiteSpace(character) ||
+                        InvalidNonWhitespaceNameCharacters.Contains(character))
+                    {
+                        errorSink.OnError(
+                            SourceLocation.Zero,
+                            Resources.FormatTargetElementAttribute_InvalidName(
+                                targetName.ToLower(),
+                                name,
+                                character));
+
+                        validName = false;
+                    }
+                }
+            }
+
+            return validName;
         }
 
         private static IEnumerable<TagHelperAttributeDescriptor> GetAttributeDescriptors(Type type)

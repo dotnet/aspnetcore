@@ -25,8 +25,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 { TagHelperDirectiveType.RemoveTagHelper, SyntaxConstants.CSharp.RemoveTagHelperKeyword },
                 { TagHelperDirectiveType.TagHelperPrefix, SyntaxConstants.CSharp.TagHelperPrefixKeyword },
             };
-        private static readonly HashSet<char> InvalidNonWhitespacePrefixCharacters =
-            new HashSet<char>(new[] { '@', '!', '<', '!', '/', '?', '[', '>', ']', '=', '"', '\'' });
 
         private readonly TagHelperTypeResolver _typeResolver;
 
@@ -131,7 +129,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Convert types to TagHelperDescriptors
             var descriptors = tagHelperTypes.SelectMany(
-                type => TagHelperDescriptorFactory.CreateDescriptors(assemblyName, type));
+                type => TagHelperDescriptorFactory.CreateDescriptors(assemblyName, type, errorSink));
 
             return descriptors;
         }
@@ -150,7 +148,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         descriptor.TagName,
                         descriptor.TypeName,
                         descriptor.AssemblyName,
-                        descriptor.Attributes));
+                        descriptor.Attributes,
+                        descriptor.RequiredAttributes));
             }
 
             return descriptors;
@@ -198,7 +197,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             {
                 // Prefixes are correlated with tag names, tag names cannot have whitespace.
                 if (char.IsWhiteSpace(character) ||
-                    InvalidNonWhitespacePrefixCharacters.Contains(character))
+                    TagHelperDescriptorFactory.InvalidNonWhitespaceNameCharacters.Contains(character))
                 {
                     errorSink.OnError(
                         directiveLocation,

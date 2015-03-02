@@ -129,8 +129,8 @@
   <data name="ScopeManager_EndCannotBeCalledWithoutACallToBegin" xml:space="preserve">
     <value>Must call '{2}.{1}' before calling '{2}.{0}'.</value>
   </data>
-  <data name="HtmlElementNameAttribute_ElementNameCannotBeNullOrWhitespace" xml:space="preserve">
-    <value>Tag name cannot be null or whitespace.</value>
+  <data name="TargetElementAttribute_NameCannotBeNullOrWhitespace" xml:space="preserve">
+    <value>{0} name cannot be null or whitespace.</value>
   </data>
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>The value cannot be null or empty.</value>
@@ -138,13 +138,19 @@
   <data name="TagHelperDescriptorResolver_EncounteredUnexpectedError" xml:space="preserve">
     <value>Encountered an unexpected error when attempting to resolve tag helper directive '{0}' with value '{1}'. Error: {2}</value>
   </data>
-  <data name="HtmlElementNameAttribute_InvalidElementName" xml:space="preserve">
-    <value>Tag helpers cannot target element name '{0}' because it contains a '{1}' character.</value>
+  <data name="TargetElementAttribute_InvalidName" xml:space="preserve">
+    <value>Tag helpers cannot target {0} name '{1}' because it contains a '{2}' character.</value>
   </data>
   <data name="TagHelperDescriptorResolver_InvalidTagHelperDirective" xml:space="preserve">
     <value>Invalid tag helper directive '{0}'. Cannot have multiple '{0}' directives on a page.</value>
   </data>
   <data name="TagHelperDescriptorResolver_InvalidTagHelperPrefixValue" xml:space="preserve">
     <value>Invalid tag helper directive '{0}' value. '{1} is not allowed in prefix '{2}'.</value>
+  </data>
+  <data name="TagHelperDescriptorFactory_Attribute" xml:space="preserve">
+    <value>Attribute</value>
+  </data>
+  <data name="TagHelperDescriptorFactory_Tag" xml:space="preserve">
+    <value>Tag</value>
   </data>
 </root>

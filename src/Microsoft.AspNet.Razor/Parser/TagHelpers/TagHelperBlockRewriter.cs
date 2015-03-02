@@ -224,9 +224,16 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
             if (name == null)
             {
-                errorSink.OnError(span.Start,
-                                  RazorResources.TagHelperBlockRewriter_TagHelperAttributesMustBeWelformed,
-                                  span.Content.Length);
+                // We couldn't find a name, if the original span content was whitespace it ultimately means the tag
+                // that owns this "attribute" is malformed and is expecting a user to type a new attribute.
+                // ex: <myTH class="btn"| |
+                if (!string.IsNullOrWhiteSpace(span.Content))
+                {
+                    errorSink.OnError(
+                        span.Start,
+                        RazorResources.TagHelperBlockRewriter_TagHelperAttributesMustBeWelformed,
+                        span.Content.Length);
+                }
 
                 attribute = default(KeyValuePair<string, SyntaxTreeNode>);
 
