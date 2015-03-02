@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Identity.Test
             options.Setup(a => a.Options).Returns(identityOptions);
             var httpContext = new Mock<HttpContext>();
             var contextAccessor = new Mock<IHttpContextAccessor>();
-            contextAccessor.Setup(a => a.Value).Returns(httpContext.Object);
+            contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
             var signInManager = new Mock<SignInManager<IdentityUser>>(userManager.Object,
                 contextAccessor.Object, claimsManager.Object, options.Object, null);
             signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsIdentity>(), user.Id)).ReturnsAsync(user).Verifiable();
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Identity.Test
             options.Setup(a => a.Options).Returns(identityOptions);
             var httpContext = new Mock<HttpContext>();
             var contextAccessor = new Mock<IHttpContextAccessor>();
-            contextAccessor.Setup(a => a.Value).Returns(httpContext.Object);
+            contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
             var signInManager = new Mock<SignInManager<IdentityUser>>(userManager.Object,
                 contextAccessor.Object, claimsManager.Object, options.Object, null);
             signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsIdentity>(), user.Id)).ReturnsAsync(null).Verifiable();
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Identity.Test
             var options = new Mock<IOptions<IdentityOptions>>();
             options.Setup(a => a.Options).Returns(identityOptions);
             var contextAccessor = new Mock<IHttpContextAccessor>();
-            contextAccessor.Setup(a => a.Value).Returns(httpContext.Object);
+            contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
             var signInManager = new Mock<SignInManager<IdentityUser>>(userManager.Object,
                 contextAccessor.Object, claimsManager.Object, options.Object, null);
             signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsIdentity>(), user.Id)).ReturnsAsync(null).Verifiable();
@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.Identity.Test
             var options = new Mock<IOptions<IdentityOptions>>();
             options.Setup(a => a.Options).Returns(identityOptions);
             var contextAccessor = new Mock<IHttpContextAccessor>();
-            contextAccessor.Setup(a => a.Value).Returns(httpContext.Object);
+            contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
             var signInManager = new Mock<SignInManager<IdentityUser>>(userManager.Object,
                 contextAccessor.Object, claimsManager.Object, options.Object, null);
             signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsIdentity>(), user.Id)).Throws(new Exception("Shouldn't be called"));

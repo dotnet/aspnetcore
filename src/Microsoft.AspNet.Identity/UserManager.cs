@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Identity
             }
             Store = store;
             Options = optionsAccessor?.Options ?? new IdentityOptions();
-            _context = contextAccessor?.Value;
+            _context = contextAccessor?.HttpContext;
             PasswordHasher = passwordHasher;
             KeyNormalizer = keyNormalizer;
             ErrorDescriber = errors;

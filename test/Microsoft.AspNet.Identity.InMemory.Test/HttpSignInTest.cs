@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             context.Setup(c => c.Response).Returns(response.Object).Verifiable();
             response.Setup(r => r.SignIn(It.Is<AuthenticationProperties>(v => v.IsPersistent == isPersistent), It.IsAny<ClaimsIdentity>())).Verifiable();
             var contextAccessor = new Mock<IHttpContextAccessor>();
-            contextAccessor.Setup(a => a.Value).Returns(context.Object);
+            contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
             app.UseServices(services =>
             {
                 services.AddInstance(contextAccessor.Object);

@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException(nameof(userManager));
             }
-            if (contextAccessor == null || contextAccessor.Value == null)
+            if (contextAccessor == null || contextAccessor.HttpContext == null)
             {
                 throw new ArgumentNullException(nameof(contextAccessor));
             }
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Identity
             }
 
             UserManager = userManager;
-            Context = contextAccessor.Value;
+            Context = contextAccessor.HttpContext;
             ClaimsFactory = claimsFactory;
             Options = optionsAccessor?.Options ?? new IdentityOptions();
 

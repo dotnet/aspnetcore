@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Identity
             Store = store;
             KeyNormalizer = keyNormalizer ?? new UpperInvariantLookupNormalizer();
             ErrorDescriber = errors ?? new IdentityErrorDescriber();
-            _context = contextAccessor?.Value;
+            _context = contextAccessor?.HttpContext;
 
             if (roleValidators != null)
             {
