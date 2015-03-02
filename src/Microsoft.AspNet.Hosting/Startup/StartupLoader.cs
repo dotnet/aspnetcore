@@ -31,9 +31,10 @@ namespace Microsoft.AspNet.Hosting.Startup
             {
                 if (required)
                 {
-                    throw new Exception(string.Format("TODO: {0} or {1} method not found",
+                    throw new Exception(string.Format("A method named '{0}' or '{1}' in the type '{2}' could not be found.",
                         methodNameWithEnv,
-                        methodNameWithNoEnv));
+                        methodNameWithNoEnv,
+                        startupType.FullName));
 
                 }
                 return null;
@@ -42,8 +43,10 @@ namespace Microsoft.AspNet.Hosting.Startup
             {
                 if (required)
                 {
-                    throw new Exception(string.Format("TODO: {0} method does not return " + returnType.Name,
-                        methodInfo.Name));
+                    throw new Exception(string.Format("The '{0}' method in the type '{1}' must have a return type of '{2}'.",
+                        methodInfo.Name,
+                        startupType.FullName,
+                        returnType.Name));
                 }
                 return null;
             }
@@ -75,10 +78,11 @@ namespace Microsoft.AspNet.Hosting.Startup
                     catch (Exception)
                     {
                         throw new Exception(string.Format(
-                            "TODO: Unable to resolve service for {0} method {1} {2}",
-                            methodInfo.Name,
+                            "Could not resolve a service of type '{0}' for the parameter '{1}' of method '{2}' on type '{3}'.",
+                            parameterInfo.ParameterType.FullName,
                             parameterInfo.Name,
-                            parameterInfo.ParameterType.FullName));
+                            methodInfo.Name,
+                            methodInfo.DeclaringType.FullName));
                     }
                 }
             }
@@ -98,26 +102,26 @@ namespace Microsoft.AspNet.Hosting.Startup
             var assembly = Assembly.Load(new AssemblyName(applicationName));
             if (assembly == null)
             {
-                throw new Exception(String.Format("TODO: assembly {0} failed to load message", applicationName));
+                throw new Exception(String.Format("The assembly '{0}' failed to load.", applicationName));
             }
 
-            var startupName1 = "Startup" + environmentName;
-            var startupName2 = "Startup";
+            var startupNameWithEnv = "Startup" + environmentName;
+            var startupNameWithoutEnv = "Startup";
 
             // Check the most likely places first
             var type =
-                assembly.GetType(startupName1) ??
-                assembly.GetType(applicationName + "." + startupName1) ??
-                assembly.GetType(startupName2) ??
-                assembly.GetType(applicationName + "." + startupName2);
+                assembly.GetType(startupNameWithEnv) ??
+                assembly.GetType(applicationName + "." + startupNameWithEnv) ??
+                assembly.GetType(startupNameWithoutEnv) ??
+                assembly.GetType(applicationName + "." + startupNameWithoutEnv);
 
             if (type == null)
             {
                 // Full scan
                 var definedTypes = assembly.DefinedTypes.ToList();
 
-                var startupType1 = definedTypes.Where(info => info.Name.Equals(startupName1, StringComparison.Ordinal));
-                var startupType2 = definedTypes.Where(info => info.Name.Equals(startupName2, StringComparison.Ordinal));
+                var startupType1 = definedTypes.Where(info => info.Name.Equals(startupNameWithEnv, StringComparison.Ordinal));
+                var startupType2 = definedTypes.Where(info => info.Name.Equals(startupNameWithoutEnv, StringComparison.Ordinal));
 
                 var typeInfo = startupType1.Concat(startupType2).FirstOrDefault();
                 if (typeInfo != null)
@@ -128,9 +132,9 @@ namespace Microsoft.AspNet.Hosting.Startup
 
             if (type == null)
             {
-                throw new Exception(String.Format("TODO: {0} or {1} class not found in assembly {2}",
-                    startupName1,
-                    startupName2,
+                throw new Exception(String.Format("A type named '{0}' or '{1}' could not be found in assembly '{2}'.",
+                    startupNameWithEnv,
+                    startupNameWithoutEnv,
                     applicationName));
             }
 

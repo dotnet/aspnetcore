@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Hosting
                 catch (Exception ex)
                 {
                     var logger = loggerFactory.Create<Program>();
-                    logger.WriteError("TODO: Dispose threw an exception", ex);
+                    logger.WriteError("Dispose threw an exception.", ex);
                 }
                 shutdownHandle.Set();
             });

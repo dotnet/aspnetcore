@@ -114,7 +114,25 @@ namespace Microsoft.AspNet.Hosting.Tests
             var diagnosticMessages = new List<string>();
 
             var ex = Assert.Throws<Exception>(() => loader.LoadStartup("Microsoft.AspNet.Hosting.Tests", "Boom", diagnosticMessages));
-            Assert.True(ex.Message.Contains("ConfigureBoom or Configure method not found"));
+            Assert.Equal("A method named 'ConfigureBoom' or 'Configure' in the type 'Microsoft.AspNet.Hosting.Fakes.StartupBoom' could not be found.", ex.Message);
+        }
+
+        [Fact]
+        public void StartupWithConfigureServicesNotResolvedThrows()
+        {
+            var serviceCollection = HostingServices.Create();
+            var services = serviceCollection.BuildServiceProvider();
+            var loader = services.GetRequiredService<IStartupLoader>();
+            var diagnosticMessages = new List<string>();
+
+            var startup = loader.LoadStartup("Microsoft.AspNet.Hosting.Tests", "WithConfigureServicesNotResolved", diagnosticMessages);
+
+
+            var app = new ApplicationBuilder(services);
+
+            var ex = Assert.Throws<Exception>(() => startup.Invoke(app));
+
+            Assert.Equal("Could not resolve a service of type 'System.Int32' for the parameter 'notAService' of method 'Configure' on type 'Microsoft.AspNet.Hosting.Fakes.StartupWithConfigureServicesNotResolved'.", ex.Message);
         }
 
         [Fact]

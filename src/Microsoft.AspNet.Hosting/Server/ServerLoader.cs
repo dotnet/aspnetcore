@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Hosting.Server
             var assembly = Assembly.Load(new AssemblyName(assemblyName));
             if (assembly == null)
             {
-                throw new Exception(String.Format("TODO: assembly {0} failed to load message", assemblyName));
+                throw new Exception(string.Format("The assembly {0} failed to load.", assemblyName));
             }
 
             Type type = null;
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Hosting.Server
 
                 if (type == null)
                 {
-                    throw new Exception(String.Format("TODO: type {0} failed to load message", typeName ?? "<null>"));
+                    throw new Exception(string.Format("The type {0} failed to load.", typeName ?? "<null>"));
                 }
             }
             else
@@ -59,14 +59,14 @@ namespace Microsoft.AspNet.Hosting.Server
 
                 if (type == null)
                 {
-                    throw new Exception(String.Format("TODO: type {0} failed to load message", typeName ?? "<null>"));
+                    throw new Exception(String.Format("The type {0} failed to load.", typeName ?? "<null>"));
                 }
 
                 interfaceInfo = type.GetTypeInfo().ImplementedInterfaces.FirstOrDefault(interf => interf.Equals(typeof(IServerFactory)));
 
                 if (interfaceInfo == null)
                 {
-                    throw new Exception("TODO: IServerFactory interface not found");
+                    throw new Exception(string.Format("The type '{0}' does not implement the '{1}' interface.", type, typeof(IServerFactory).FullName));
                 }
             }
 
