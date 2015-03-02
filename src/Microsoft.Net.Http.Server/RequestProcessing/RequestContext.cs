@@ -55,7 +55,7 @@ namespace Microsoft.Net.Http.Server
             _request = new Request(this, _memoryBlob);
             _response = new Response(this);
             _request.ReleasePins();
-            AuthenticationChallenges = server.AuthenticationManager.AuthenticationTypes & ~AuthenticationTypes.AllowAnonymous;
+            AuthenticationChallenges = server.AuthenticationManager.AuthenticationSchemes & ~AuthenticationSchemes.AllowAnonymous;
         }
 
         public Request Request
@@ -134,9 +134,9 @@ namespace Microsoft.Net.Http.Server
 
         /// <summary>
         /// The authentication challengest that will be added to the response if the status code is 401.
-        /// This must be a subset of the AuthenticationTypes enabled on the server.
+        /// This must be a subset of the AuthenticationSchemes enabled on the server.
         /// </summary>
-        public AuthenticationTypes AuthenticationChallenges { get; set; }
+        public AuthenticationSchemes AuthenticationChallenges { get; set; }
 
         public bool IsUpgradableRequest
         {

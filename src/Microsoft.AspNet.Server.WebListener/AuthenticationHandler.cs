@@ -26,7 +26,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Interfaces.Security;
+using Microsoft.AspNet.Http.Interfaces.Authentication;
 using Microsoft.Net.Http.Server;
 
 namespace Microsoft.AspNet.Server.WebListener
@@ -34,14 +34,14 @@ namespace Microsoft.AspNet.Server.WebListener
     internal class AuthenticationHandler : IAuthenticationHandler
     {
         private RequestContext _requestContext;
-        private AuthenticationTypes _authTypes;
-        private AuthenticationTypes _customChallenges;
+        private AuthenticationSchemes _authSchemes;
+        private AuthenticationSchemes _customChallenges;
 
         internal AuthenticationHandler(RequestContext requestContext)
         {
             _requestContext = requestContext;
-            _authTypes = requestContext.AuthenticationChallenges;
-            _customChallenges = AuthenticationTypes.None;
+            _authSchemes = requestContext.AuthenticationChallenges;
+            _customChallenges = AuthenticationSchemes.None;
         }
 
         public void Authenticate(IAuthenticateContext context)
@@ -49,19 +49,19 @@ namespace Microsoft.AspNet.Server.WebListener
             var user = _requestContext.User;
             var identity = user == null ? null : (ClaimsIdentity)user.Identity;
 
-            foreach (var authType in ListEnabledAuthTypes())
+            foreach (var authType in ListEnabledAuthSchemes())
             {
-                string authString = authType.ToString();
-                if (context.AuthenticationTypes.Contains(authString, StringComparer.Ordinal))
+                string authScheme = authType.ToString();
+                if (context.AuthenticationSchemes.Contains(authScheme, StringComparer.Ordinal))
                 {
                     if (identity != null && identity.IsAuthenticated
-                         && string.Equals(authString, identity.AuthenticationType, StringComparison.Ordinal))
+                        && string.Equals(authScheme, identity.AuthenticationType, StringComparison.Ordinal))
                     {
-                        context.Authenticated((ClaimsIdentity)user.Identity, properties: null, description: GetDescription(user.Identity.AuthenticationType));
+                        context.Authenticated(new ClaimsPrincipal(user.Identity), properties: null, description: GetDescription(authScheme));
                     }
                     else
                     {
-                        context.NotAuthenticated(authString, properties: null, description: GetDescription(user.Identity.AuthenticationType));
+                        context.NotAuthenticated(authScheme, properties: null, description: GetDescription(authScheme));
                     }
                 }
             }
@@ -75,27 +75,27 @@ namespace Microsoft.AspNet.Server.WebListener
 
         public void Challenge(IChallengeContext context)
         {
-            foreach (var authType in ListEnabledAuthTypes())
+            foreach (var scheme in ListEnabledAuthSchemes())
             {
-                var authString = authType.ToString();
+                var authScheme = scheme.ToString();
                 // Not including any auth types means it's a blanket challenge for any auth type.
-                if (context.AuthenticationTypes == null || !context.AuthenticationTypes.Any()
-                    || context.AuthenticationTypes.Contains(authString, StringComparer.Ordinal))
+                if (context.AuthenticationSchemes == null || !context.AuthenticationSchemes.Any()
+                    || context.AuthenticationSchemes.Contains(authScheme, StringComparer.Ordinal))
                 {
-                    _customChallenges |= authType;
-                    context.Accept(authString, GetDescription(authType.ToString()));
+                    _customChallenges |= scheme;
+                    context.Accept(authScheme, GetDescription(authScheme));
                 }
             }
             // A challenge was issued, it overrides any pre-set auth types.
             _requestContext.AuthenticationChallenges = _customChallenges;
         }
 
-        public void GetDescriptions(IAuthTypeContext context)
+        public void GetDescriptions(IDescribeSchemesContext context)
         {
             // TODO: Caching, this data doesn't change per request.
-            foreach (var authType in ListEnabledAuthTypes())
+            foreach (var scheme in ListEnabledAuthSchemes())
             {
-                context.Accept(GetDescription(authType.ToString()));
+                context.Accept(GetDescription(scheme.ToString()));
             }
         }
 
@@ -109,39 +109,39 @@ namespace Microsoft.AspNet.Server.WebListener
             // Not supported
         }
 
-        private IDictionary<string, object> GetDescription(string authenticationType)
+        private IDictionary<string, object> GetDescription(string authenticationScheme)
         {
             return new Dictionary<string, object>()
             {
-                { "AuthenticationType", authenticationType },
-                { "Caption", "Windows:" + authenticationType },
+                { "AuthenticationScheme", authenticationScheme },
+                { "Caption", "Windows:" + authenticationScheme },
             };
         }
 
-        private IEnumerable<AuthenticationTypes> ListEnabledAuthTypes()
+        private IEnumerable<AuthenticationSchemes> ListEnabledAuthSchemes()
         {
             // Order by strength.
-            if ((_authTypes & AuthenticationTypes.Kerberos) == AuthenticationTypes.Kerberos)
+            if ((_authSchemes & AuthenticationSchemes.Kerberos) == AuthenticationSchemes.Kerberos)
             {
-                yield return AuthenticationTypes.Kerberos;
+                yield return AuthenticationSchemes.Kerberos;
             }
-            if ((_authTypes & AuthenticationTypes.Negotiate) == AuthenticationTypes.Negotiate)
+            if ((_authSchemes & AuthenticationSchemes.Negotiate) == AuthenticationSchemes.Negotiate)
             {
-                yield return AuthenticationTypes.Negotiate;
+                yield return AuthenticationSchemes.Negotiate;
             }
-            if ((_authTypes & AuthenticationTypes.NTLM) == AuthenticationTypes.NTLM)
+            if ((_authSchemes & AuthenticationSchemes.NTLM) == AuthenticationSchemes.NTLM)
             {
-                yield return AuthenticationTypes.NTLM;
+                yield return AuthenticationSchemes.NTLM;
             }
-            /*if ((_authTypes & AuthenticationTypes.Digest) == AuthenticationTypes.Digest)
+            /*if ((_authSchemes & AuthenticationSchemes.Digest) == AuthenticationSchemes.Digest)
             {
                 // TODO:
                 throw new NotImplementedException("Digest challenge generation has not been implemented.");
-                yield return AuthenticationTypes.Digest;
+                yield return AuthenticationSchemes.Digest;
             }*/
-            if ((_authTypes & AuthenticationTypes.Basic) == AuthenticationTypes.Basic)
+            if ((_authSchemes & AuthenticationSchemes.Basic) == AuthenticationSchemes.Basic)
             {
-                yield return AuthenticationTypes.Basic;
+                yield return AuthenticationSchemes.Basic;
             }
         }
     }

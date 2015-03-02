@@ -33,7 +33,7 @@ namespace SelfHostServer
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
             var info = (ServerInformation)app.Server;
-            info.Listener.AuthenticationManager.AuthenticationTypes = AuthenticationTypes.AllowAnonymous;
+            info.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.AllowAnonymous;
 
             loggerfactory.AddConsole(LogLevel.Verbose);
 

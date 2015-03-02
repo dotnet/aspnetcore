@@ -27,7 +27,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http.Interfaces;
-using Microsoft.AspNet.Http.Interfaces.Security;
+using Microsoft.AspNet.Http.Interfaces.Authentication;
 using Microsoft.Net.Http.Server;
 using Microsoft.Net.WebSockets;
 

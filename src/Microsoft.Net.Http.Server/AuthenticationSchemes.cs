@@ -19,8 +19,9 @@ using System;
 
 namespace Microsoft.Net.Http.Server
 {
+    // REVIEW: this appears to be very similar to System.Net.AuthenticationSchemes
     [Flags]
-    public enum AuthenticationTypes
+    public enum AuthenticationSchemes
     {
         None = 0x0,
         Basic = 0x1,

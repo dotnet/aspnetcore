@@ -33,22 +33,22 @@ namespace Microsoft.AspNet.Server.WebListener
         internal static IDisposable CreateHttpServer(out string baseAddress, AppFunc app)
         {
             string root;
-            return CreateDynamicHttpServer(string.Empty, AuthenticationTypes.AllowAnonymous, out root, out baseAddress, app);
+            return CreateDynamicHttpServer(string.Empty, AuthenticationSchemes.AllowAnonymous, out root, out baseAddress, app);
         }
 
         internal static IDisposable CreateHttpServerReturnRoot(string path, out string root, AppFunc app)
         {
             string baseAddress;
-            return CreateDynamicHttpServer(path, AuthenticationTypes.AllowAnonymous, out root, out baseAddress, app);
+            return CreateDynamicHttpServer(path, AuthenticationSchemes.AllowAnonymous, out root, out baseAddress, app);
         }
 
-        internal static IDisposable CreateHttpAuthServer(AuthenticationTypes authType, out string baseAddress, AppFunc app)
+        internal static IDisposable CreateHttpAuthServer(AuthenticationSchemes authType, out string baseAddress, AppFunc app)
         {
             string root;
             return CreateDynamicHttpServer(string.Empty, authType, out root, out baseAddress, app);
         }
 
-        internal static IDisposable CreateDynamicHttpServer(string basePath, AuthenticationTypes authType, out string root, out string baseAddress, AppFunc app)
+        internal static IDisposable CreateDynamicHttpServer(string basePath, AuthenticationSchemes authType, out string root, out string baseAddress, AppFunc app)
         {
             var factory = new ServerFactory(loggerFactory: null);
             lock (PortLock)
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
                     var serverInfo = (ServerInformation)factory.Initialize(configuration: null);
                     serverInfo.Listener.UrlPrefixes.Add(prefix);
-                    serverInfo.Listener.AuthenticationManager.AuthenticationTypes = authType;
+                    serverInfo.Listener.AuthenticationManager.AuthenticationSchemes = authType;
                     try
                     {
                         return factory.Start(serverInfo, app);

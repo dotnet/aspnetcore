@@ -592,7 +592,7 @@ namespace Microsoft.Net.Http.Server
             if (!AuthenticationManager.AllowAnonymous && !AuthenticationManager.CheckAuthenticated(requestV2->pRequestInfo))
             {
                 SendError(requestMemory.RequestBlob->RequestId, HttpStatusCode.Unauthorized,
-                    AuthenticationManager.GenerateChallenges(AuthenticationManager.AuthenticationTypes));
+                    AuthenticationManager.GenerateChallenges(AuthenticationManager.AuthenticationSchemes));
                 return false;
             }
             return true;

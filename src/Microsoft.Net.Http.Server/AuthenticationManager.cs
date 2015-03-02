@@ -23,7 +23,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
@@ -48,29 +47,29 @@ namespace Microsoft.Net.Http.Server
 #endif
 
         private WebListener _server;
-        private AuthenticationTypes _authTypes;
+        private AuthenticationSchemes _authSchemes;
 
         internal AuthenticationManager(WebListener listener)
         {
             _server = listener;
-            _authTypes = AuthenticationTypes.AllowAnonymous;
+            _authSchemes = AuthenticationSchemes.AllowAnonymous;
         }
 
         #region Properties
 
-        public AuthenticationTypes AuthenticationTypes
+        public AuthenticationSchemes AuthenticationSchemes
         {
             get
             {
-                return _authTypes;
+                return _authSchemes;
             }
             set
             {
-                if (_authTypes == AuthenticationTypes.None)
+                if (_authSchemes == AuthenticationSchemes.None)
                 {
                     throw new ArgumentException("value", "'None' is not a valid authentication type. Use 'AllowAnonymous' instead.");
                 }
-                _authTypes = value;
+                _authSchemes = value;
                 SetServerSecurity();
             }
         }
@@ -79,7 +78,7 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                return ((_authTypes & AuthenticationTypes.AllowAnonymous) == AuthenticationTypes.AllowAnonymous);
+                return ((_authSchemes & AuthenticationSchemes.AllowAnonymous) == AuthenticationSchemes.AllowAnonymous);
             }
         }
 
@@ -91,10 +90,10 @@ namespace Microsoft.Net.Http.Server
                 new UnsafeNclNativeMethods.HttpApi.HTTP_SERVER_AUTHENTICATION_INFO();
 
             authInfo.Flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
-            var authTypes = (UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_TYPES)(_authTypes & ~AuthenticationTypes.AllowAnonymous);
-            if (authTypes != UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_TYPES.NONE)
+            var authSchemes = (UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_TYPES)(_authSchemes & ~AuthenticationSchemes.AllowAnonymous);
+            if (authSchemes != UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_TYPES.NONE)
             {
-                authInfo.AuthSchemes = authTypes;
+                authInfo.AuthSchemes = authSchemes;
 
                 // TODO:
                 // NTLM auth sharing (on by default?) DisableNTLMCredentialCaching
@@ -111,35 +110,35 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal static IList<string> GenerateChallenges(AuthenticationTypes authTypes)
+        internal static IList<string> GenerateChallenges(AuthenticationSchemes authSchemes)
         {
             IList<string> challenges = new List<string>();
 
-            if (authTypes == AuthenticationTypes.None)
+            if (authSchemes == AuthenticationSchemes.None)
             {
                 return challenges;
             }
 
             // Order by strength.
-            if ((authTypes & AuthenticationTypes.Kerberos) == AuthenticationTypes.Kerberos)
+            if ((authSchemes & AuthenticationSchemes.Kerberos) == AuthenticationSchemes.Kerberos)
             {
                 challenges.Add("Kerberos");
             }
-            if ((authTypes & AuthenticationTypes.Negotiate) == AuthenticationTypes.Negotiate)
+            if ((authSchemes & AuthenticationSchemes.Negotiate) == AuthenticationSchemes.Negotiate)
             {
                 challenges.Add("Negotiate");
             }
-            if ((authTypes & AuthenticationTypes.NTLM) == AuthenticationTypes.NTLM)
+            if ((authSchemes & AuthenticationSchemes.NTLM) == AuthenticationSchemes.NTLM)
             {
                 challenges.Add("NTLM");
             }
-            /*if ((_authTypes & AuthenticationTypes.Digest) == AuthenticationTypes.Digest)
+            /*if ((_authSchemes & AuthenticationSchemes.Digest) == AuthenticationSchemes.Digest)
             {
                 // TODO:
                 throw new NotImplementedException("Digest challenge generation has not been implemented.");
                 // challenges.Add("Digest");
             }*/
-            if ((authTypes & AuthenticationTypes.Basic) == AuthenticationTypes.Basic)
+            if ((authSchemes & AuthenticationSchemes.Basic) == AuthenticationSchemes.Basic)
             {
                 // TODO: Realm
                 challenges.Add("Basic");
@@ -180,20 +179,20 @@ namespace Microsoft.Net.Http.Server
             return new ClaimsPrincipal(new ClaimsIdentity()); // Anonymous / !IsAuthenticated
         }
 
-        private static AuthenticationTypes GetAuthTypeFromRequest(UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE input)
+        private static AuthenticationSchemes GetAuthTypeFromRequest(UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE input)
         {
             switch (input)
             {
                 case UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeBasic:
-                    return AuthenticationTypes.Basic;
+                    return AuthenticationSchemes.Basic;
                 // case UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeDigest:
-                //  return AuthenticationTypes.Digest;
+                //  return AuthenticationSchemes.Digest;
                 case UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeNTLM:
-                    return AuthenticationTypes.NTLM;
+                    return AuthenticationSchemes.NTLM;
                 case UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeNegotiate:
-                    return AuthenticationTypes.Negotiate;
+                    return AuthenticationSchemes.Negotiate;
                 case UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeKerberos:
-                    return AuthenticationTypes.Kerberos;
+                    return AuthenticationSchemes.Kerberos;
                 default:
                     throw new NotImplementedException(input.ToString());
             }
