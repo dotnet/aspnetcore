@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Hosting.Internal
         public Task Invoke(IFeatureCollection featureCollection)
         {
             var httpContext = _httpContextFactory.CreateHttpContext(featureCollection);
-            _contextAccessor.Value = httpContext;
+            _contextAccessor.HttpContext = httpContext;
             return _requestDelegate(httpContext);
         }
 

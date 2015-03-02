@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.TestHost
                 app.Run(context =>
                 {
                     var accessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
-                    return context.Response.WriteAsync("HasContext:"+(accessor.Value != null));
+                    return context.Response.WriteAsync("HasContext:"+(accessor.HttpContext != null));
                 });
             });
 

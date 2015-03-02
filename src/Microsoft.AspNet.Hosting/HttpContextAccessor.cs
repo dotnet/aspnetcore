@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Hosting
 #if ASPNET50
         private const string LogicalDataKey = "__HttpContext_Current__";
 
-        public HttpContext Value
+        public HttpContext HttpContext
         {
             get
             {
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Hosting
 
 #elif ASPNETCORE50
         private AsyncLocal<HttpContext> _httpContextCurrent = new AsyncLocal<HttpContext>();
-        public HttpContext Value
+        public HttpContext HttpContext
         {
             get
             {
