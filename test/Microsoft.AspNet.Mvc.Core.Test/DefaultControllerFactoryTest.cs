@@ -144,58 +144,6 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
-        public void CreateController_PopulatesServicesFromServiceContainer()
-        {
-            // Arrange
-            var actionDescriptor = new ControllerActionDescriptor
-            {
-                ControllerTypeInfo = typeof(ControllerWithActivateAndFromServices).GetTypeInfo()
-            };
-            var services = GetServices();
-            var urlHelper = services.GetRequiredService<IUrlHelper>();
-
-            var httpContext = new DefaultHttpContext
-            {
-                RequestServices = services
-            };
-            var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
-            var factory = new DefaultControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
-
-            // Act
-            var result = factory.CreateController(context);
-
-            // Assert
-            var controller = Assert.IsType<ControllerWithActivateAndFromServices>(result);
-            Assert.Same(urlHelper, controller.Helper);
-        }
-
-        [Fact]
-        public void CreateController_PopulatesUserServicesFromServiceContainer()
-        {
-            // Arrange
-            var actionDescriptor = new ControllerActionDescriptor
-            {
-                ControllerTypeInfo = typeof(ControllerWithActivateAndFromServices).GetTypeInfo()
-            };
-            var services = GetServices();
-            var testService = services.GetService<TestService>();
-
-            var httpContext = new DefaultHttpContext
-            {
-                RequestServices = services
-            };
-            var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
-            var factory = new DefaultControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
-
-            // Act
-            var result = factory.CreateController(context);
-
-            // Assert
-            var controller = Assert.IsType<ControllerWithActivateAndFromServices>(result);
-            Assert.Same(testService, controller.TestService);
-        }
-
-        [Fact]
         public void CreateController_IgnoresPropertiesThatAreNotDecoratedWithActivateAttribute()
         {
             // Arrange

@@ -11,12 +11,20 @@ namespace ModelBindingWebSite.Controllers
     [Route("Validation/[Action]")]
     public class ValidationController : Controller
     {
+        [FromServices]
+        public ITestService ControllerService { get; set; }
+
         public bool SkipValidation(Resident resident)
         {
             return ModelState.IsValid;
         }
 
         public bool AvoidRecursive(SelfishPerson selfishPerson)
+        {
+            return ModelState.IsValid;
+        }
+
+        public bool DoNotValidateParameter([FromServices] ITestService service)
         {
             return ModelState.IsValid;
         }

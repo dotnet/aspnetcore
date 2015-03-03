@@ -147,6 +147,24 @@ namespace Microsoft.AspNet.Mvc.Description
                 }
             }
 
+            if (context.ActionDescriptor.BoundProperties != null)
+            {
+                foreach (var actionParameter in context.ActionDescriptor.BoundProperties)
+                {
+                    var visitor = new PseudoModelBindingVisitor(context, actionParameter);
+                    var modelMetadata = context.MetadataProvider.GetMetadataForProperty(
+                        containerType: context.ActionDescriptor.ControllerTypeInfo.AsType(),
+                        propertyName: actionParameter.Name);
+
+                    var bindingContext = ApiParameterDescriptionContext.GetContext(
+                        modelMetadata,
+                        actionParameter.BindingInfo,
+                        propertyName: actionParameter.Name);
+
+                    visitor.WalkParameter(bindingContext);
+                }
+            }
+
             for (var i = context.Results.Count - 1; i >= 0; i--)
             {
                 // Remove any 'hidden' parameters. These are things that can't come from user input,

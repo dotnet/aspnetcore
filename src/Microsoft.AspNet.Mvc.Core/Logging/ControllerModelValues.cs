@@ -23,6 +23,7 @@ namespace Microsoft.AspNet.Mvc.Logging
                 ApiExplorer = new ApiExplorerModelValues(inner.ApiExplorer);
                 Actions = inner.Actions.Select(a => new ActionModelValues(a)).ToList();
                 Attributes = inner.Attributes.Select(a => a.GetType()).ToList();
+                ControllerProperties = inner.ControllerProperties.Select(p => new PropertyModelValues(p)).ToList();
                 Filters = inner.Filters.Select(f => new FilterValues(f)).ToList();
                 ActionConstraints = inner.ActionConstraints?.Select(a => new ActionConstraintValues(a))?.ToList();
                 RouteConstraints = inner.RouteConstraints.Select(
@@ -42,6 +43,11 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// The <see cref="Type"/> of the controller. See <see cref="ControllerModel.ControllerType"/>.
         /// </summary>
         public Type ControllerType { get; }
+
+        /// <summary>
+        /// The <see cref="Type"/> of the controller. See <see cref="ControllerModel.ControllerType"/>.
+        /// </summary>
+        public IList<PropertyModelValues> ControllerProperties { get; }
 
         /// <summary>
         /// See <see cref="ControllerModel.ApiExplorer"/>.

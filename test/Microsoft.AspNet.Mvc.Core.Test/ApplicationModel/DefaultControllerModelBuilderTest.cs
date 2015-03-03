@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using Moq;
@@ -69,6 +70,27 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
             // Assert
             Assert.Single(model.Filters, f => f is CorsAuthorizationFilterFactory);
+        }
+
+        [Fact]
+        public void BuildControllerModel_AddsControllerProperties()
+        {
+            // Arrange
+            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
+                                                            NullLoggerFactory.Instance,
+                                                            null);
+            var typeInfo = typeof(ModelBinderController).GetTypeInfo();
+
+            // Act
+            var model = builder.BuildControllerModel(typeInfo);
+
+            // Assert
+            Assert.Equal(2, model.ControllerProperties.Count);
+            Assert.Equal("Bound", model.ControllerProperties[0].PropertyName);
+            Assert.Equal(BindingSource.Query, model.ControllerProperties[0].BindingInfo.BindingSource);
+            Assert.NotNull(model.ControllerProperties[0].Controller);
+            var attribute = Assert.Single(model.ControllerProperties[0].Attributes);
+            Assert.IsType<FromQueryAttribute>(attribute);
         }
 
         [Fact]
@@ -166,6 +188,14 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         [DisableCors]
         public class DisableCorsController
         {
+        }
+
+        public class ModelBinderController
+        {
+            [FromQuery]
+            public string Bound { get; set; }
+
+            public string Unbound { get; set; }
         }
 
         public class SomeFiltersController : IAsyncActionFilter, IResultFilter

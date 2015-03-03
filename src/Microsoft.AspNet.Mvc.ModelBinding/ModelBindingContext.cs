@@ -64,18 +64,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <returns>A new instance of <see cref="ModelBindingContext"/>.</returns>
         public static ModelBindingContext GetModelBindingContext(
             [NotNull] ModelMetadata metadata,
-            [NotNull] BindingInfo bindingInfo,
+            BindingInfo bindingInfo,
             string modelName)
         {
-            var binderModelName = bindingInfo.BinderModelName ?? metadata.BinderModelName;
+            var binderModelName = bindingInfo?.BinderModelName ?? metadata.BinderModelName;
             var propertyPredicateProvider = 
-                bindingInfo.PropertyBindingPredicateProvider ?? metadata.PropertyBindingPredicateProvider;
+                bindingInfo?.PropertyBindingPredicateProvider ?? metadata.PropertyBindingPredicateProvider;
             return new ModelBindingContext()
             {
                 ModelMetadata = metadata,
-                BindingSource = bindingInfo.BindingSource ?? metadata.BindingSource,
+                BindingSource = bindingInfo?.BindingSource ?? metadata.BindingSource,
                 PropertyFilter = propertyPredicateProvider?.PropertyFilter,
-                BinderType = bindingInfo.BinderType ?? metadata.BinderType,
+                BinderType = bindingInfo?.BinderType ?? metadata.BinderType,
                 BinderModelName = binderModelName,
                 ModelName = binderModelName ?? metadata.PropertyName ?? modelName,
                 FallbackToEmptyPrefix = binderModelName == null,

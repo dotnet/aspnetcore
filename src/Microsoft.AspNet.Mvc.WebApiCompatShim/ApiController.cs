@@ -424,9 +424,10 @@ namespace System.Web.Http
 
             var modelValidationContext = new ModelValidationContext(
                 keyPrefix,
-                BindingContext.ValidatorProvider,
-                ModelState,
-                modelExplorer);
+                bindingSource: null,
+                validatorProvider: BindingContext.ValidatorProvider,
+                modelState: ModelState,
+                modelExplorer: modelExplorer);
 
             ObjectValidator.Validate(modelValidationContext);
         }

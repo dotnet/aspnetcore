@@ -58,6 +58,8 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             controller.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().Build()));
             controller.RouteConstraints.Add(new AreaAttribute("Admin"));
             controller.Properties.Add(new KeyValuePair<object, object>("test key", "test value"));
+            controller.ControllerProperties.Add(
+                new PropertyModel(typeof(TestController).GetProperty("TestProperty"), new List<object>()));
 
             // Act
             var controller2 = new ControllerModel(controller);
@@ -67,7 +69,8 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             {
                 if (property.Name.Equals("Actions") ||
                     property.Name.Equals("AttributeRoutes") ||
-                    property.Name.Equals("ApiExplorer"))
+                    property.Name.Equals("ApiExplorer") ||
+                    property.Name.Equals("ControllerProperties"))
                 {
                     // This test excludes other ApplicationModel objects on purpose because we deep copy them.
                     continue;
@@ -110,6 +113,8 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
         private class TestController
         {
+            public string TestProperty { get; set; }
+
             public void Edit()
             {
             }

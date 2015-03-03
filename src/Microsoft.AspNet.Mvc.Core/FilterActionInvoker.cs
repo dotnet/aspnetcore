@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Mvc.Core
 
         protected abstract Task<IActionResult> InvokeActionAsync(ActionExecutingContext actionExecutingContext);
 
-        protected abstract Task<IDictionary<string, object>> GetActionArgumentsAsync(
+        protected abstract Task<IDictionary<string, object>> BindActionArgumentsAsync(
             [NotNull] ActionContext context,
             [NotNull] ActionBindingContext bindingContext);
 
@@ -434,7 +434,7 @@ namespace Microsoft.AspNet.Mvc.Core
 
             Instance = CreateInstance();
 
-            var arguments = await GetActionArgumentsAsync(ActionContext, ActionBindingContext);
+            var arguments = await BindActionArgumentsAsync(ActionContext, ActionBindingContext);
 
             _actionExecutingContext = new ActionExecutingContext(
                 ActionContext,

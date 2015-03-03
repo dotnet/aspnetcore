@@ -279,7 +279,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
         private static ModelValidationContext CreateValidationContext(ModelExplorer modelExplorer)
         {
-            return new ModelValidationContext(null, null, null, modelExplorer);
+            return new ModelValidationContext(
+                rootPrefix: null,
+                bindingSource: null,
+                modelState: null,
+                validatorProvider: null,
+                modelExplorer: modelExplorer);
         }
 
         private class DerivedRequiredAttribute : RequiredAttribute

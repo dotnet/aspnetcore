@@ -901,6 +901,41 @@ namespace Microsoft.AspNet.Mvc.Description
             Assert.Equal(typeof(int), id.Type);
         }
 
+        [Fact]
+        public void GetApiDescription_WithControllerProperties_Merges_ParameterDescription()
+        {
+            // Arrange
+            var action = CreateActionDescriptor("FromQueryName", typeof(TestController));
+            var parameterDescriptor = action.Parameters.Single();
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+               // Assert
+            var description = Assert.Single(descriptions);
+            Assert.Equal(5, description.ParameterDescriptions.Count);
+
+            var name = Assert.Single(description.ParameterDescriptions, p => p.Name == "name");
+            Assert.Same(BindingSource.Query, name.Source);
+            Assert.Equal(typeof(string), name.Type);
+        
+            var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Id");
+            Assert.Same(BindingSource.Path, id.Source);
+            Assert.Equal(typeof(int), id.Type);
+
+            var product = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product");
+            Assert.Same(BindingSource.Body, product.Source);
+            Assert.Equal(typeof(Product), product.Type);
+
+            var userId = Assert.Single(description.ParameterDescriptions, p => p.Name == "UserId");
+            Assert.Same(BindingSource.Header, userId.Source);
+            Assert.Equal(typeof(string), userId.Type);
+
+            var comments = Assert.Single(description.ParameterDescriptions, p => p.Name == "Comments");
+            Assert.Same(BindingSource.ModelBinding, comments.Source);
+            Assert.Equal(typeof(string), comments.Type);
+        }
+
         private IReadOnlyList<ApiDescription> GetApiDescriptions(ActionDescriptor action)
         {
             return GetApiDescriptions(action, CreateFormatters());
@@ -950,17 +985,42 @@ namespace Microsoft.AspNet.Mvc.Description
             return formatters;
         }
 
-        private ControllerActionDescriptor CreateActionDescriptor(string methodName = null)
+        private ControllerActionDescriptor CreateActionDescriptor(string methodName = null, Type controllerType = null)
         {
             var action = new ControllerActionDescriptor();
             action.SetProperty(new ApiDescriptionActionData());
 
-            action.MethodInfo = GetType().GetMethod(
-                methodName ?? "ReturnsObject",
-                BindingFlags.Instance | BindingFlags.NonPublic);
+            if (controllerType != null)
+            {
+                action.MethodInfo = controllerType.GetMethod(
+                    methodName ?? "ReturnsObject",
+                    BindingFlags.Instance | BindingFlags.Public);
+
+                action.ControllerTypeInfo = controllerType.GetTypeInfo();
+                action.BoundProperties = new List<ParameterDescriptor>();
+
+                foreach (var property in action.ControllerTypeInfo.GetProperties())
+                {
+                    var bindingInfo = BindingInfo.GetBindingInfo(property.GetCustomAttributes().OfType<object>());
+                    if (bindingInfo != null)
+                    {
+                        action.BoundProperties.Add(new ParameterDescriptor()
+                        {
+                            BindingInfo = bindingInfo,
+                            Name = property.Name,
+                            ParameterType = property.PropertyType,
+                        });
+                    }
+                }
+            }
+            else
+            {
+                action.MethodInfo = GetType().GetMethod(
+                    methodName ?? "ReturnsObject",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+            }
 
             action.Parameters = new List<ParameterDescriptor>();
-
             foreach (var parameter in action.MethodInfo.GetParameters())
             {
                 action.Parameters.Add(new ParameterDescriptor()
@@ -1116,6 +1176,27 @@ namespace Microsoft.AspNet.Mvc.Description
 
         private void FromBody([FromBody] int id)
         {
+        }
+
+        private class TestController
+        {
+            [FromRoute]
+            public int Id { get; set; }
+
+            [FromBody]
+            public Product Product { get; set; }
+
+            [FromHeader]
+            public string UserId { get; set; }
+
+            [ModelBinder]
+            public string Comments { get; set; }
+
+            public string NotBound { get; set; }
+
+            public void FromQueryName([FromQuery] string name)
+            {
+            }
         }
 
         private class Product

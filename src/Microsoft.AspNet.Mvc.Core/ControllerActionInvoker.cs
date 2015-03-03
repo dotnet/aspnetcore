@@ -80,11 +80,11 @@ namespace Microsoft.AspNet.Mvc.Core
             return actionResult;
         }
 
-        protected override Task<IDictionary<string, object>> GetActionArgumentsAsync(
+        protected override Task<IDictionary<string, object>> BindActionArgumentsAsync(
             ActionContext context, 
             ActionBindingContext bindingContext)
         {
-            return _argumentBinder.GetActionArgumentsAsync(context, bindingContext);
+            return _argumentBinder.BindActionArgumentsAsync(context, bindingContext, Instance);
         }
 
         // Marking as internal for Unit Testing purposes.

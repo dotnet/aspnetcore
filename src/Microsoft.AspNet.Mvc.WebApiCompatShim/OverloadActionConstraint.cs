@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             foreach (var parameter in candidate.Action.Parameters)
             {
                 // We only consider parameters that are marked as bound from the URL.
-                var source = parameter.BindingInfo.BindingSource;
+                var source = parameter.BindingInfo?.BindingSource;
                 if (source == null)
                 {
                     continue;
@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                         }
                     }
 
-                    var prefix = parameter.BindingInfo.BinderModelName ?? parameter.Name;
+                    var prefix = parameter.BindingInfo?.BinderModelName ?? parameter.Name;
 
                     parameters.Add(new OverloadedParameter()
                     {

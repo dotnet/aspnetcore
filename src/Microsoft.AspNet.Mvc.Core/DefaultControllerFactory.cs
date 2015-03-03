@@ -149,13 +149,7 @@ namespace Microsoft.AspNet.Mvc
                                                         type,
                                                         typeof(ActivateAttribute),
                                                         CreateActivateInfo);
-            var activatorsForFromServiceProperties = PropertyActivator<ActionContext>.GetPropertiesToActivate(
-                                                        type,
-                                                        typeof(FromServicesAttribute),
-                                                        CreateFromServicesInfo);
-
-            return Enumerable.Concat(activatorsForActivateProperties, activatorsForFromServiceProperties)
-                             .ToArray();
+            return activatorsForActivateProperties;
         }
 
         private PropertyActivator<ActionContext> CreateActivateInfo(

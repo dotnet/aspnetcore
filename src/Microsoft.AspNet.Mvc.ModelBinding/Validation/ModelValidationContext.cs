@@ -11,6 +11,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             [NotNull] ModelBindingContext bindingContext,
             [NotNull] ModelExplorer modelExplorer)
             : this(bindingContext.ModelName,
+                   bindingContext.BindingSource,
                    bindingContext.OperationBindingContext.ValidatorProvider,
                    bindingContext.ModelState,
                    modelExplorer)
@@ -19,6 +20,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
         public ModelValidationContext(
             string rootPrefix,
+            BindingSource bindingSource,
             [NotNull] IModelValidatorProvider validatorProvider,
             [NotNull] ModelStateDictionary modelState,
             [NotNull] ModelExplorer modelExplorer)
@@ -27,24 +29,36 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             RootPrefix = rootPrefix;
             ValidatorProvider = validatorProvider;
             ModelExplorer = modelExplorer;
+            BindingSource = bindingSource;
         }
 
-        public ModelValidationContext(
+        /// <summary>
+        /// Constructs a new instance of the <see cref="ModelValidationContext"/> class using the
+        /// <paramref name="parentContext" /> and <paramref name="modelExplorer"/>.
+        /// </summary>
+        /// <param name="parentContext">Existing <see cref="ModelValidationContext"/>.</param>
+        /// <param name="modelExplorer"><see cref="ModelExplorer"/> associated with the new 
+        /// <see cref="ModelValidationContext"/>.</param>
+        /// <returns></returns>
+        public static ModelValidationContext GetChildValidationContext(
             [NotNull] ModelValidationContext parentContext,
             [NotNull] ModelExplorer modelExplorer)
         {
-            ModelExplorer = modelExplorer;
-            ModelState = parentContext.ModelState;
-            RootPrefix = parentContext.RootPrefix;
-            ValidatorProvider = parentContext.ValidatorProvider;
+            return new ModelValidationContext(
+                parentContext.RootPrefix,
+                modelExplorer.Metadata.BindingSource,
+                parentContext.ValidatorProvider,
+                parentContext.ModelState,
+                modelExplorer);
         }
-
 
         public ModelExplorer ModelExplorer { get; }
 
         public ModelStateDictionary ModelState { get; }
 
         public string RootPrefix { get; set; }
+
+        public BindingSource BindingSource { get; set; }
 
         public IModelValidatorProvider ValidatorProvider { get; }
     }

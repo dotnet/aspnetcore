@@ -5,12 +5,50 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.ApplicationModels;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class ControllerActionDescriptorBuilderTest
     {
+        [Fact]
+        public void Build_WithControllerPropertiesSet_AddsPropertiesWithBinderMetadataSet()
+        {
+            // Arrange
+            var applicationModel = new ApplicationModel();
+            var controller = new ControllerModel(typeof(TestController).GetTypeInfo(),
+                                                 new List<object>() { });
+            controller.ControllerProperties.Add(
+                new PropertyModel(
+                    controller.ControllerType.GetProperty("BoundProperty"),
+                    new List<object>() { })
+                {
+                    BindingInfo = BindingInfo.GetBindingInfo(new object[] { new FromQueryAttribute() }),
+                    PropertyName = "BoundProperty"
+                });
+
+            controller.ControllerProperties.Add(
+               new PropertyModel(controller.ControllerType.GetProperty("UnboundProperty"), new List<object>() { }));
+
+            controller.Application = applicationModel;
+            applicationModel.Controllers.Add(controller);
+
+            var methodInfo = typeof(TestController).GetMethod("SomeAction");
+            var actionModel = new ActionModel(methodInfo, new List<object>() { });
+            actionModel.Controller = controller;
+            controller.Actions.Add(actionModel);
+
+            // Act
+            var descriptors = ControllerActionDescriptorBuilder.Build(applicationModel);
+
+            // Assert
+            var property = Assert.Single(descriptors.Single().BoundProperties);
+            Assert.Equal("BoundProperty", property.Name);
+            Assert.Equal(typeof(string), property.ParameterType);
+            Assert.Equal(BindingSource.Query, property.BindingInfo.BindingSource);
+        }
+
         [Fact]
         public void Build_WithPropertiesSet_FromApplicationModel()
         {
@@ -88,6 +126,11 @@ namespace Microsoft.AspNet.Mvc
 
         private class TestController
         {
+            [FromQuery]
+            public string BoundProperty { get; set; }
+
+            public string UnboundProperty { get; set; }
+
             public void SomeAction() { }
         }
     }

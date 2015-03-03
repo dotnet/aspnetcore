@@ -41,10 +41,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public static BindingInfo GetBindingInfo(IEnumerable<object> attributes)
         {
             var bindingInfo = new BindingInfo();
+            var isBindingInfoPresent = false;
 
             // BinderModelName
             foreach (var binderModelNameAttribute in attributes.OfType<IModelNameProvider>())
             {
+                isBindingInfoPresent = true;
                 if (binderModelNameAttribute?.Name != null)
                 {
                     bindingInfo.BinderModelName = binderModelNameAttribute.Name;
@@ -55,6 +57,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // BinderType
             foreach (var binderTypeAttribute in attributes.OfType<IBinderTypeProviderMetadata>())
             {
+                isBindingInfoPresent = true;
                 if (binderTypeAttribute.BinderType != null)
                 {
                     bindingInfo.BinderType = binderTypeAttribute.BinderType;
@@ -65,6 +68,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // BindingSource
             foreach (var bindingSourceAttribute in attributes.OfType<IBindingSourceMetadata>())
             {
+                isBindingInfoPresent = true;
                 if (bindingSourceAttribute.BindingSource != null)
                 {
                     bindingInfo.BindingSource = bindingSourceAttribute.BindingSource;
@@ -76,11 +80,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var predicateProviders = attributes.OfType<IPropertyBindingPredicateProvider>().ToArray();
             if (predicateProviders.Length > 0)
             {
+                isBindingInfoPresent = true;
                 bindingInfo.PropertyBindingPredicateProvider = new CompositePredicateProvider(
                     predicateProviders);
             }
 
-            return bindingInfo;
+            return isBindingInfoPresent ? bindingInfo : null;
         }
 
         private class CompositePredicateProvider : IPropertyBindingPredicateProvider

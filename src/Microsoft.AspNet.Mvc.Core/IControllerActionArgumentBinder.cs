@@ -14,12 +14,15 @@ namespace Microsoft.AspNet.Mvc
     {
         /// <summary>
         /// Returns a dictionary of representing the parameter-argument name-value pairs,
-        /// which can be used to invoke the action.
+        /// which can be used to invoke the action. Also binds properties explicitly marked properties on the 
+        /// <paramref name="controller"/>.
         /// </summary>
         /// <param name="context">The action context assoicated with the current action.</param>
         /// <param name="bindingContext">The <see cref="ActionBindingContext"/>.</param>
-        Task<IDictionary<string, object>> GetActionArgumentsAsync(
+        /// <param name="controller">The controller object which contains the action.</param>
+        Task<IDictionary<string, object>> BindActionArgumentsAsync(
             [NotNull] ActionContext context, 
-            [NotNull] ActionBindingContext bindingContext);
+            [NotNull] ActionBindingContext bindingContext,
+            [NotNull] object controller);
     }
 }

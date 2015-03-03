@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                 {
                     // Some IBindingSourceMetadata attributes like ModelBinder attribute return null 
                     // as their binding source. Special case to ensure we do not ignore them.
-                    if (parameter.BindingInfo.BindingSource != null ||
+                    if (parameter.BindingInfo?.BindingSource != null ||
                         parameter.Attributes.OfType<IBindingSourceMetadata>().Any())
                     {
                         // This has a binding behavior configured, just leave it alone.
@@ -30,12 +30,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                     else if (ValueProviderResult.CanConvertFromString(parameter.ParameterInfo.ParameterType))
                     {
                         // Simple types are by-default from the URI.
-                        
+                        parameter.BindingInfo = parameter.BindingInfo ?? new BindingInfo();
                         parameter.BindingInfo.BindingSource = uriBindingSource;
                     }
                     else
                     {
                         // Complex types are by-default from the body.
+                        parameter.BindingInfo = parameter.BindingInfo ?? new BindingInfo();
                         parameter.BindingInfo.BindingSource = BindingSource.Body;
                     }
 

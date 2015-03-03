@@ -1293,9 +1293,10 @@ namespace Microsoft.AspNet.Mvc
 
             var validationContext = new ModelValidationContext(
                 modelName,
-                BindingContext.ValidatorProvider,
-                ModelState,
-                modelExplorer);
+                bindingSource: null,
+                validatorProvider: BindingContext.ValidatorProvider,
+                modelState: ModelState,
+                modelExplorer: modelExplorer);
 
             ObjectValidator.Validate(validationContext);
             return ModelState.IsValid;

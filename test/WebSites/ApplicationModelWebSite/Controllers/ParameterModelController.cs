@@ -23,6 +23,7 @@ namespace ApplicationModelWebSite
         {
             public void Apply(ParameterModel model)
             {
+                model.BindingInfo = model.BindingInfo ?? new BindingInfo();
                 model.BindingInfo.BindingSource = BindingSource.Custom;
                 model.BindingInfo.BinderModelName = "CoolMetadata";
             }

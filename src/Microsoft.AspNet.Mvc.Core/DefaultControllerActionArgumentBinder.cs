@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
@@ -34,9 +35,10 @@ namespace Microsoft.AspNet.Mvc
             _validator = validator;
         }
 
-        public async Task<IDictionary<string, object>> GetActionArgumentsAsync(
+        public async Task<IDictionary<string, object>> BindActionArgumentsAsync(
             ActionContext actionContext,
-            ActionBindingContext actionBindingContext)
+            ActionBindingContext actionBindingContext, 
+            object controller)
         {
             var actionDescriptor = actionContext.ActionDescriptor as ControllerActionDescriptor;
             if (actionDescriptor == null)
@@ -47,31 +49,48 @@ namespace Microsoft.AspNet.Mvc
                         nameof(actionContext));
             }
 
+            var operationBindingContext = GetOperationBindingContext(actionContext, actionBindingContext);
+            var controllerProperties = new Dictionary<string, object>(StringComparer.Ordinal);
+            await PopulateArgumentsAsync(
+                operationBindingContext,
+                actionContext.ModelState,
+                controllerProperties,
+                actionDescriptor.BoundProperties);
+            var controllerType = actionDescriptor.ControllerTypeInfo.AsType();
+            ActivateProperties(controller, controllerType, controllerProperties);
+
             var actionArguments = new Dictionary<string, object>(StringComparer.Ordinal);
             await PopulateArgumentsAsync(
-                actionContext,
-                actionBindingContext,
+                operationBindingContext,
+                actionContext.ModelState,
                 actionArguments,
                 actionDescriptor.Parameters);
             return actionArguments;
         }   
 
+        private void ActivateProperties(object controller, Type containerType, Dictionary<string, object> properties)
+        {
+            var propertyHelpers = PropertyHelper.GetProperties(controller);
+            foreach (var property in properties)
+            {
+                var propertyHelper = propertyHelpers.First(helper => helper.Name == property.Key);
+                if (propertyHelper.Property == null || !propertyHelper.Property.CanWrite)
+                {
+                    // nothing to do
+                    return;
+                }
+
+                var setter = PropertyHelper.MakeFastPropertySetter(propertyHelper.Property);
+                setter(controller, property.Value);
+            }
+        }
+
         private async Task PopulateArgumentsAsync(
-            ActionContext actionContext,
-            ActionBindingContext bindingContext,
+            OperationBindingContext operationContext,
+            ModelStateDictionary modelState,
             IDictionary<string, object> arguments,
             IEnumerable<ParameterDescriptor> parameterMetadata)
         {
-            var operationBindingContext = new OperationBindingContext
-            {
-                ModelBinder = bindingContext.ModelBinder,
-                ValidatorProvider = bindingContext.ValidatorProvider,
-                MetadataProvider = _modelMetadataProvider,
-                HttpContext = actionContext.HttpContext,
-                ValueProvider = bindingContext.ValueProvider,
-            };
-
-            var modelState = actionContext.ModelState;
             modelState.MaxAllowedErrors = _options.MaxModelValidationErrors;
             foreach (var parameter in parameterMetadata)
             {
@@ -82,9 +101,9 @@ namespace Microsoft.AspNet.Mvc
                     metadata,
                     parameter.BindingInfo,
                     modelState,
-                    operationBindingContext);
+                    operationContext);
 
-                var modelBindingResult = await bindingContext.ModelBinder.BindModelAsync(modelBindingContext);
+                var modelBindingResult = await operationContext.ModelBinder.BindModelAsync(modelBindingContext);
                 if (modelBindingResult != null && modelBindingResult.IsModelSet)
                 {
                     var modelExplorer = new ModelExplorer(
@@ -95,8 +114,9 @@ namespace Microsoft.AspNet.Mvc
                     arguments[parameter.Name] = modelBindingResult.Model;
                     var validationContext = new ModelValidationContext(
                         modelBindingResult.Key,
-                        bindingContext.ValidatorProvider,
-                        actionContext.ModelState,
+                        modelBindingContext.BindingSource,
+                        operationContext.ValidatorProvider,
+                        modelState,
                         modelExplorer);
                     _validator.Validate(validationContext);
                 }
@@ -120,6 +140,20 @@ namespace Microsoft.AspNet.Mvc
             modelBindingContext.OperationBindingContext = operationBindingContext;
 
             return modelBindingContext;
+        }
+
+        private OperationBindingContext GetOperationBindingContext(
+            ActionContext actionContext,
+            ActionBindingContext bindingContext)
+        {
+            return new OperationBindingContext
+            {
+                ModelBinder = bindingContext.ModelBinder,
+                ValidatorProvider = bindingContext.ValidatorProvider,
+                MetadataProvider = _modelMetadataProvider,
+                HttpContext = actionContext.HttpContext,
+                ValueProvider = bindingContext.ValueProvider,
+            };
         }
     }
 }

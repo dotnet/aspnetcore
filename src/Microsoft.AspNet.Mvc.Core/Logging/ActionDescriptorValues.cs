@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.Mvc.Logging
             Name = inner.Name;
             DisplayName = inner.DisplayName;
             Parameters = inner.Parameters.Select(p => new ParameterDescriptorValues(p)).ToList();
+            BoundProperties = inner.BoundProperties.Select(p => new ParameterDescriptorValues(p)).ToList();
             FilterDescriptors = inner.FilterDescriptors.Select(f => new FilterDescriptorValues(f)).ToList();
             RouteConstraints = inner.RouteConstraints.Select(r => new RouteDataActionConstraintValues(r)).ToList();
             AttributeRouteInfo = new AttributeRouteInfoValues(inner.AttributeRouteInfo);
@@ -53,6 +54,12 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// See <see cref="ActionDescriptor.Parameters"/>.
         /// </summary>
         public IList<ParameterDescriptorValues> Parameters { get; }
+
+        /// <summary>
+        /// The parameters of the action as <see cref="ParameterDescriptorValues"/>.
+        /// See <see cref="ActionDescriptor.BoundProperties"/>.
+        /// </summary>
+        public IList<ParameterDescriptorValues> BoundProperties { get; }
 
         /// <summary>
         /// The filters of the action as <see cref="FilterDescriptorValues"/>.

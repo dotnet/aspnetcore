@@ -26,6 +26,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Filters = new List<IFilter>();
             RouteConstraints = new List<IRouteConstraintProvider>();
             Properties = new Dictionary<object, object>();
+            ControllerProperties = new List<PropertyModel>();
         }
 
         public ControllerModel([NotNull] ControllerModel other)
@@ -48,6 +49,8 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             ApiExplorer = new ApiExplorerModel(other.ApiExplorer);
             AttributeRoutes = new List<AttributeRouteModel>(
                 other.AttributeRoutes.Select(a => new AttributeRouteModel(a)));
+            ControllerProperties =
+                new List<PropertyModel>(other.ControllerProperties.Select(p => new PropertyModel(p)));
         }
 
         public IList<IActionConstraintMetadata> ActionConstraints { get; private set; }
@@ -75,6 +78,8 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public string ControllerName { get; set; }
 
         public TypeInfo ControllerType { get; private set; }
+
+        public IList<PropertyModel> ControllerProperties { get; }
 
         public IList<IFilter> Filters { get; private set; }
 

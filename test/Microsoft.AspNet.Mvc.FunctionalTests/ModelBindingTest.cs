@@ -26,6 +26,22 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly Action<IServiceCollection> _configureServices = new ModelBindingWebSite.Startup().ConfigureServices;
 
         [Fact]
+        public async Task DoNotValidate_ParametersOrControllerProperties_IfSourceNotFromRequest()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Validation/DoNotValidateParameter");
+
+            // Assert
+            var stringValue = await response.Content.ReadAsStringAsync();
+            var isModelStateValid = JsonConvert.DeserializeObject<bool>(stringValue);
+            Assert.True(isModelStateValid);
+        }
+
+        [Fact]
         public async Task TypeBasedExclusion_ForBodyAndNonBodyBoundModels()
         {
             // Arrange
@@ -172,6 +188,74 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await client.GetAsync("http://localhost/FromAttributes/FromBodyParametersThrows");
+
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal(typeof(InvalidOperationException).FullName, exception.ExceptionType);
+            Assert.Equal(
+                "More than one parameter and/or property is bound to the HTTP request's content.",
+                exception.ExceptionMessage);
+        }
+
+        [Fact]
+        public async Task ControllerPropertyAndAnActionWithoutFromBody_InvokesWithoutErrors()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/FromBodyControllerProperty/GetSiteUser");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ControllerPropertyAndAnActionParameterWithFromBody_Throws()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/FromBodyControllerProperty/AddUser");
+
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal(typeof(InvalidOperationException).FullName, exception.ExceptionType);
+            Assert.Equal(
+                "More than one parameter and/or property is bound to the HTTP request's content.",
+                exception.ExceptionMessage);
+        }
+
+        [Fact]
+        public async Task ControllerPropertyAndAModelPropertyWithFromBody_Throws()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/FromBodyControllerProperty/AddUser");
+
+            // Assert
+            var exception = response.GetServerException();
+            Assert.Equal(typeof(InvalidOperationException).FullName, exception.ExceptionType);
+            Assert.Equal(
+                "More than one parameter and/or property is bound to the HTTP request's content.",
+                exception.ExceptionMessage);
+        }
+
+        [Fact]
+        public async Task MultipleControllerPropertiesMarkedWithFromBody_Throws()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/MultiplePropertiesFromBody/GetUser");
 
             // Assert
             var exception = response.GetServerException();

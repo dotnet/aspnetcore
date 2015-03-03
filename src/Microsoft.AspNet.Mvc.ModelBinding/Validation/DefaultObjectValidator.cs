@@ -31,7 +31,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         /// <inheritdoc />
         public void Validate([NotNull] ModelValidationContext modelValidationContext)
         {
-            var modelExplorer = modelValidationContext.ModelExplorer;
             var validationContext = new ValidationContext()
             {
                 ModelValidationContext = modelValidationContext,
@@ -40,23 +39,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             ValidateNonVisitedNodeAndChildren(
                 modelValidationContext.RootPrefix,
-                modelExplorer, 
                 validationContext, 
                 validators: null);
         }
 
         private bool ValidateNonVisitedNodeAndChildren(
             string modelKey,
-            ModelExplorer modelExplorer, 
             ValidationContext validationContext, 
             IList<IModelValidator> validators)
         {
+            var modelValidationContext = validationContext.ModelValidationContext;
+            var modelExplorer = modelValidationContext.ModelExplorer;
+
             // Recursion guard to avoid stack overflows
             RuntimeHelpers.EnsureSufficientExecutionStack();
 
-            var modelState = validationContext.ModelValidationContext.ModelState;
+            var modelState = modelValidationContext.ModelState;
 
-            var bindingSource = modelExplorer.Metadata.BindingSource;
+            var bindingSource = modelValidationContext.BindingSource;
             if (bindingSource != null && !bindingSource.IsFromRequest)
             {
                 // Short circuit if the metadata represents something that was not bound using request data.
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 var validationState = modelState.GetFieldValidationState(modelKey);
                 if (validationState == ModelValidationState.Unvalidated)
                 {
-                    validationContext.ModelValidationContext.ModelState.MarkFieldSkipped(modelKey);
+                    modelValidationContext.ModelState.MarkFieldSkipped(modelKey);
                 }
 
                 // For validation purposes this model is valid.
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 // The validators are not null in the case of validating an array. Since the validators are
                 // the same for all the elements of the array, we do not do GetValidators for each element,
                 // instead we just pass them over. See ValidateElements function.
-                var validatorProvider = validationContext.ModelValidationContext.ValidatorProvider;
+                var validatorProvider = modelValidationContext.ValidatorProvider;
                 var validatorProviderContext = new ModelValidatorProviderContext(modelExplorer.Metadata);
                 validatorProvider.GetValidators(validatorProviderContext);
 
@@ -160,7 +160,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             }
         }
 
-        private bool ValidateProperties(string currentModelKey, ModelExplorer modelExplorer, ValidationContext validationContext)
+        private bool ValidateProperties(
+            string currentModelKey,
+            ModelExplorer modelExplorer,
+            ValidationContext validationContext)
         {
             var isValid = true;
 
@@ -168,13 +171,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             {
                 var propertyExplorer = modelExplorer.GetExplorerForProperty(property.PropertyName);
                 var propertyMetadata = propertyExplorer.Metadata;
+                var propertyValidationContext = new ValidationContext()
+                {
+                    ModelValidationContext = ModelValidationContext.GetChildValidationContext(
+                        validationContext.ModelValidationContext,
+                        propertyExplorer),
+                    Visited = validationContext.Visited
+                };
 
                 var propertyBindingName = propertyMetadata.BinderModelName ?? propertyMetadata.PropertyName;
                 var childKey = ModelBindingHelper.CreatePropertyModelName(currentModelKey, propertyBindingName);
                 if (!ValidateNonVisitedNodeAndChildren(
                     childKey, 
-                    propertyExplorer, 
-                    validationContext, 
+                    propertyValidationContext,
                     validators: null))
                 {
                     isValid = false;
@@ -209,7 +218,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 {
                     var elementExplorer = new ModelExplorer(_modelMetadataProvider, elementMetadata, element);
                     var elementKey = ModelBindingHelper.CreateIndexModelName(currentKey, index);
-                    if (!ValidateNonVisitedNodeAndChildren(elementKey, elementExplorer, validationContext, validators))
+                    var elementValidationContext = new ValidationContext()
+                    {
+                        ModelValidationContext = ModelValidationContext.GetChildValidationContext(
+                            validationContext.ModelValidationContext,
+                            elementExplorer),
+                        Visited = validationContext.Visited
+                    };
+
+                    if (!ValidateNonVisitedNodeAndChildren(elementKey, elementValidationContext, validators))
                     {
                         isValid = false;
                     }
@@ -245,9 +262,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             // In a large array (tens of thousands or more) scenario it's very significant.
             if (validators == null || validators.Count > 0)
             {
-                var modelValidationContext =
-                        new ModelValidationContext(validationContext.ModelValidationContext, modelExplorer);
-                
+                var modelValidationContext = ModelValidationContext.GetChildValidationContext(
+                    validationContext.ModelValidationContext,
+                    modelExplorer);
+
                 var modelValidationState = modelState.GetValidationState(modelKey);
 
                 // If either the model or its properties are unvalidated, validate them now.
