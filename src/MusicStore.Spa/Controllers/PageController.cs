@@ -1,6 +1,5 @@
-﻿using System.Security.Claims;
+﻿using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Security;
 
 namespace MusicStore.Spa.Controllers
 {

@@ -6,7 +6,7 @@
     //Func<string, HtmlString> js = input => Html.Raw(HttpUtility.JavaScriptStringEncode(input, false));
 }
 
-@if (User.Identity.IsAuthenticated)
+@if (User.IsSignedIn())
 {
     using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
     {

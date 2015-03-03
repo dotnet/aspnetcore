@@ -31,7 +31,7 @@
     "Microsoft.AspNet.StaticFiles": "1.0.0-*",
     "EntityFramework.InMemory": "7.0.0-*",
     "EntityFramework.SqlServer": "7.0.0-*",
-    "Microsoft.AspNet.Security.Cookies": "1.0.0-*",
+    "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
     "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-*",
     "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
     "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*"

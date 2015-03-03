@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNet.Builder;
+﻿using Microsoft.AspNet.Authorization;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Security;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
@@ -58,7 +58,7 @@ namespace MusicStore.Spa
             // Configure Auth
             services.Configure<AuthorizationOptions>(options =>
             {
-                options.AddPolicy("app-ManageStore", new AuthorizationPolicyBuilder().RequiresClaim("app-ManageStore", "Allowed").Build());
+                options.AddPolicy("app-ManageStore", new AuthorizationPolicyBuilder().RequireClaim("app-ManageStore", "Allowed").Build());
             });
 
         }

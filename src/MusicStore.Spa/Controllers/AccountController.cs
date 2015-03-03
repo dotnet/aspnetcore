@@ -1,9 +1,8 @@
 ﻿using System.Security.Principal;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Security;
 using MusicStore.Models;
 
 namespace MusicStore.Controllers
