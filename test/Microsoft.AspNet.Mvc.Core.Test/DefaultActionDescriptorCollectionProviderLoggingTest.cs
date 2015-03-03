@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Security;
 using Microsoft.Framework.Logging;
 using Xunit;
 

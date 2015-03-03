@@ -4,10 +4,9 @@
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http.Security;
-using Microsoft.AspNet.Security;
-using Microsoft.AspNet.Security.Infrastructure;
+using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Framework.OptionsModel;
 
 namespace FiltersWebSite
@@ -24,15 +23,16 @@ namespace FiltersWebSite
 
         protected override AuthenticationTicket AuthenticateCore()
         {
-            var id = new ClaimsIdentity(
+            var principal = new ClaimsPrincipal();
+            principal.AddIdentity(new ClaimsIdentity(
                 new Claim[] {
                     new Claim("Permission", "CanViewPage"),
                     new Claim("Manager", "yes"),
                     new Claim(ClaimTypes.Role, "Administrator"),
                     new Claim(ClaimTypes.NameIdentifier, "John")
                 },
-                Options.AuthenticationType);
-            return new AuthenticationTicket(id, new AuthenticationProperties());
+                Options.AuthenticationScheme));
+            return new AuthenticationTicket(principal, new AuthenticationProperties(), Options.AuthenticationScheme);
         }
     }
 }

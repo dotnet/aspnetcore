@@ -4,10 +4,10 @@
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authentication;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http.Security;
-using Microsoft.AspNet.Security;
-using Microsoft.AspNet.Security.Infrastructure;
+using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Framework.OptionsModel;
 
 namespace FiltersWebSite
@@ -18,9 +18,9 @@ namespace FiltersWebSite
             RequestDelegate next, 
             IServiceProvider services, 
             IOptions<BasicOptions> options,
-            string authType) : 
+            string authScheme) : 
                 base(next, services, options, 
-                    new ConfigureOptions<BasicOptions>(o => o.AuthenticationType = authType) { Name = authType })
+                    new ConfigureOptions<BasicOptions>(o => o.AuthenticationScheme = authScheme) { Name = authScheme })
         {
         }
 

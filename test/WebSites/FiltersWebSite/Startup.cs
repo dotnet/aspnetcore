@@ -3,9 +3,9 @@
 
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Security;
 using Microsoft.Framework.DependencyInjection;
 
 namespace FiltersWebSite
@@ -25,26 +25,26 @@ namespace FiltersWebSite
                     options.AddPolicy("Impossible", policy => { });
                     options.AddPolicy("Api", policy =>
                     {
-                        policy.ActiveAuthenticationTypes.Add("Api");
-                        policy.RequiresClaim(ClaimTypes.NameIdentifier);
+                        policy.ActiveAuthenticationSchemes.Add("Api");
+                        policy.RequireClaim(ClaimTypes.NameIdentifier);
                     });
                     options.AddPolicy("Api-Manager", policy =>
                     {
-                        policy.ActiveAuthenticationTypes.Add("Api");
+                        policy.ActiveAuthenticationSchemes.Add("Api");
                         policy.Requirements.Add(Operations.Edit);
                     });
                     options.AddPolicy("Interactive", policy =>
                     {
-                        policy.ActiveAuthenticationTypes.Add("Interactive");
-                        policy.RequiresClaim(ClaimTypes.NameIdentifier)
-                              .RequiresClaim("Permission", "CanViewPage");
+                        policy.ActiveAuthenticationSchemes.Add("Interactive");
+                        policy.RequireClaim(ClaimTypes.NameIdentifier)
+                              .RequireClaim("Permission", "CanViewPage");
                     });
                 });
                 services.AddSingleton<RandomNumberFilter>();
                 services.AddSingleton<RandomNumberService>();
                 services.AddTransient<IAuthorizationHandler, ManagerHandler>();
-                services.Configure<BasicOptions>(o => o.AuthenticationType = "Api", "Api");
-                services.Configure<BasicOptions>(o => o.AuthenticationType = "Interactive", "Interactive");
+                services.Configure<BasicOptions>(o => o.AuthenticationScheme = "Api", "Api");
+                services.Configure<BasicOptions>(o => o.AuthenticationScheme = "Interactive", "Interactive");
 
                 services.Configure<MvcOptions>(options =>
                 {

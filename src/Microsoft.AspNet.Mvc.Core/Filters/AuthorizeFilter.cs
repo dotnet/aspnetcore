@@ -4,7 +4,7 @@
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Security;
+using Microsoft.AspNet.Authorization;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
@@ -33,12 +33,17 @@ namespace Microsoft.AspNet.Mvc
         public virtual async Task OnAuthorizationAsync([NotNull] AuthorizationContext context)
         {
             // Build a ClaimsPrincipal with the Policy's required authentication types
-            if (Policy.ActiveAuthenticationTypes != null && Policy.ActiveAuthenticationTypes.Any())
+            if (Policy.ActiveAuthenticationSchemes != null && Policy.ActiveAuthenticationSchemes.Any())
             {
-                var results = await context.HttpContext.AuthenticateAsync(Policy.ActiveAuthenticationTypes);
+                var results = await context.HttpContext.AuthenticateAsync(Policy.ActiveAuthenticationSchemes);
                 if (results != null)
                 {
-                    context.HttpContext.User = new ClaimsPrincipal(results.Where(r => r.Identity != null).Select(r => r.Identity));
+                    var newPrincipal = new ClaimsPrincipal();
+                    foreach (var principal in results.Where(r => r.Principal != null).Select(r => r.Principal))
+                    {
+                        newPrincipal.AddIdentities(principal.Identities);
+                    }
+                    context.HttpContext.User = newPrincipal;
                 }
             }
 
@@ -56,7 +61,7 @@ namespace Microsoft.AspNet.Mvc
                 !httpContext.User.Identities.Any(i => i.IsAuthenticated) ||
                 !await authService.AuthorizeAsync(httpContext.User, context, Policy))
             {
-                context.Result = new ChallengeResult(Policy.ActiveAuthenticationTypes.ToArray());
+                context.Result = new ChallengeResult(Policy.ActiveAuthenticationSchemes.ToArray());
             }
         }
     }

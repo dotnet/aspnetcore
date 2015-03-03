@@ -5,6 +5,7 @@
         "warningsAsErrors": true
     },
     "dependencies": {
+        "Microsoft.AspNet.Authorization": "1.0.0-*",
         "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
         "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
         "Microsoft.Framework.Cache.Memory": "1.0.0-*",

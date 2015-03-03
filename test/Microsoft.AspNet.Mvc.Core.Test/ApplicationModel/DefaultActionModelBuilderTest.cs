@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Security;
+using Microsoft.AspNet.Authorization;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using Moq;
@@ -329,8 +329,8 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         {
             // Arrange
             var options = new AuthorizationOptions();
-            options.AddPolicy("Base", policy => policy.RequiresClaim("Basic").RequiresClaim("Basic2"));
-            options.AddPolicy("Derived", policy => policy.RequiresClaim("Derived"));
+            options.AddPolicy("Base", policy => policy.RequireClaim("Basic").RequireClaim("Basic2"));
+            options.AddPolicy("Derived", policy => policy.RequireClaim("Derived"));
             var builder = CreateTestDefaultActionModelBuilder(options);
             var typeInfo = typeof(DerivedController).GetTypeInfo();
             var actionName = nameof(DerivedController.Authorize);

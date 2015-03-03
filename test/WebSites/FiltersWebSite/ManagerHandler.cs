@@ -3,14 +3,14 @@
 
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Security;
+using Microsoft.AspNet.Authorization;
 using Microsoft.Framework.DependencyInjection;
 
 namespace FiltersWebSite
 {
     public class ManagerHandler : AuthorizationHandler<OperationAuthorizationRequirement>
     {
-        public override void Handle(Microsoft.AspNet.Security.AuthorizationContext context, OperationAuthorizationRequirement requirement)
+        public override void Handle(AuthorizationContext context, OperationAuthorizationRequirement requirement)
         {
             if (context.User.HasClaim("Manager", "yes"))
             {

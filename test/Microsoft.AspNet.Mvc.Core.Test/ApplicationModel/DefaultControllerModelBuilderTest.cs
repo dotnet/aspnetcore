@@ -5,8 +5,8 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Security;
 using Microsoft.Framework.Internal;
 using Xunit;
 

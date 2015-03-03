@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNet.Security;
+using Microsoft.AspNet.Authorization;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
