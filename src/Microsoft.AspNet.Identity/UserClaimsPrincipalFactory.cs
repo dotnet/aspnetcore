@@ -11,11 +11,11 @@ using Microsoft.Framework.OptionsModel;
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    /// Provides methods to create a claims identity for a given user.
+    /// Provides methods to create a claims principal for a given user.
     /// </summary>
     /// <typeparam name="TUser">The type used to represent a user.</typeparam>
     /// <typeparam name="TRole">The type used to represent a role.</typeparam>
-    public class ClaimsIdentityFactory<TUser, TRole> : IClaimsIdentityFactory<TUser>
+    public class UserClaimsPrincipalFactory<TUser, TRole> : IUserClaimsPrincipalFactory<TUser>
         where TUser : class
         where TRole : class
     {
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="userManager">The <see cref="UserManager{TUser}"/> to retrieve user information from.</param>
         /// <param name="roleManager">The <see cref="RoleManager{TRole}"/> to retrieve a user's roles from.</param>
         /// <param name="optionsAccessor">The configured <see cref="IdentityOptions"/>.</param>
-        public ClaimsIdentityFactory(
+        public UserClaimsPrincipalFactory(
             UserManager<TUser> userManager, 
             RoleManager<TRole> roleManager, 
             IOptions<IdentityOptions> optionsAccessor)
@@ -72,12 +72,11 @@ namespace Microsoft.AspNet.Identity
         public IdentityOptions Options { get; private set; }
 
         /// <summary>
-        /// Creates a populated <see cref="ClaimsIdentity"/> for the specified <paramref name="user"/>.
+        /// Creates a populated <see cref="ClaimsPrincipal"/> for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user instance to create claims on.</param>
-        /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the tasks to complete.</param>
         /// <returns>A <see cref="Task{TResult}"/> that represents the started task.</returns>
-        public virtual async Task<ClaimsIdentity> CreateAsync(TUser user)
+        public virtual async Task<ClaimsPrincipal> CreateAsync(TUser user)
         {
             if (user == null)
             {
@@ -85,10 +84,11 @@ namespace Microsoft.AspNet.Identity
             }
             var userId = await UserManager.GetUserIdAsync(user);
             var userName = await UserManager.GetUserNameAsync(user);
-            var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationType, Options.ClaimsIdentity.UserNameClaimType,
+            var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationType, 
+                Options.ClaimsIdentity.UserNameClaimType,
                 Options.ClaimsIdentity.RoleClaimType);
             id.AddClaim(new Claim(Options.ClaimsIdentity.UserIdClaimType, userId));
-            id.AddClaim(new Claim(Options.ClaimsIdentity.UserNameClaimType, userName, ClaimValueTypes.String));
+            id.AddClaim(new Claim(Options.ClaimsIdentity.UserNameClaimType, userName));
             if (UserManager.SupportsUserSecurityStamp)
             {
                 id.AddClaim(new Claim(Options.ClaimsIdentity.SecurityStampClaimType, 
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Identity
                 var roles = await UserManager.GetRolesAsync(user);
                 foreach (var roleName in roles)
                 {
-                    id.AddClaim(new Claim(Options.ClaimsIdentity.RoleClaimType, roleName, ClaimValueTypes.String));
+                    id.AddClaim(new Claim(Options.ClaimsIdentity.RoleClaimType, roleName));
                     if (RoleManager.SupportsRoleClaims)
                     {
                         var role = await RoleManager.FindByNameAsync(roleName);
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Identity
             {
                 id.AddClaims(await UserManager.GetClaimsAsync(user));
             }
-            return id;
+            return new ClaimsPrincipal(id);
         }
     }
 }

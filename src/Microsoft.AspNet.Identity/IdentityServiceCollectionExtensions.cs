@@ -5,8 +5,8 @@ using System;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Security;
-using Microsoft.AspNet.Security.Cookies;
+using Microsoft.AspNet.Authentication;
+using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.Framework.DependencyInjection
@@ -65,7 +65,7 @@ namespace Microsoft.Framework.DependencyInjection
             // No interface for the error describer so we can add errors without rev'ing the interface
             services.TryAdd(describe.Transient<IdentityErrorDescriber, IdentityErrorDescriber>());
             services.TryAdd(describe.Scoped<ISecurityStampValidator, SecurityStampValidator<TUser>>());
-            services.TryAdd(describe.Scoped<IClaimsIdentityFactory<TUser>, ClaimsIdentityFactory<TUser, TRole>>());
+            services.TryAdd(describe.Scoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser, TRole>>());
             services.TryAdd(describe.Scoped<UserManager<TUser>, UserManager<TUser>>());
             services.TryAdd(describe.Scoped<SignInManager<TUser>, SignInManager<TUser>>());
             services.TryAdd(describe.Scoped<RoleManager<TRole>, RoleManager<TRole>>());
@@ -76,39 +76,39 @@ namespace Microsoft.Framework.DependencyInjection
             }
             services.Configure<ExternalAuthenticationOptions>(options =>
             {
-                options.SignInAsAuthenticationType = IdentityOptions.ExternalCookieAuthenticationType;
+                options.SignInScheme = IdentityOptions.ExternalCookieAuthenticationScheme;
             });
 
             // Configure all of the cookie middlewares
             services.Configure<CookieAuthenticationOptions>(options =>
             {
-                options.AuthenticationType = IdentityOptions.ApplicationCookieAuthenticationType;
+                options.AuthenticationScheme = IdentityOptions.ApplicationCookieAuthenticationScheme;
                 options.LoginPath = new PathString("/Account/Login");
                 options.Notifications = new CookieAuthenticationNotifications
                 {
-                    OnValidateIdentity = SecurityStampValidator.ValidateIdentityAsync
+                    OnValidatePrincipal = SecurityStampValidator.ValidatePrincipalAsync
                 };
-            }, IdentityOptions.ApplicationCookieAuthenticationType);
+            }, IdentityOptions.ApplicationCookieAuthenticationScheme);
             services.Configure<CookieAuthenticationOptions>(options =>
             {
-                options.AuthenticationType = IdentityOptions.ExternalCookieAuthenticationType;
-                options.AuthenticationMode = AuthenticationMode.Passive;
-                options.CookieName = IdentityOptions.ExternalCookieAuthenticationType;
+                options.AuthenticationScheme = IdentityOptions.ExternalCookieAuthenticationScheme;
+                options.AutomaticAuthentication = false;
+                options.CookieName = IdentityOptions.ExternalCookieAuthenticationScheme;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
-            }, IdentityOptions.ExternalCookieAuthenticationType);
+            }, IdentityOptions.ExternalCookieAuthenticationScheme);
             services.Configure<CookieAuthenticationOptions>(options =>
             {
-                options.AuthenticationType = IdentityOptions.TwoFactorRememberMeCookieAuthenticationType;
-                options.AuthenticationMode = AuthenticationMode.Passive;
-                options.CookieName = IdentityOptions.TwoFactorRememberMeCookieAuthenticationType;
-            }, IdentityOptions.TwoFactorRememberMeCookieAuthenticationType);
+                options.AuthenticationScheme = IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme;
+                options.AutomaticAuthentication = false;
+                options.CookieName = IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme;
+            }, IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme);
             services.Configure<CookieAuthenticationOptions>(options =>
             {
-                options.AuthenticationType = IdentityOptions.TwoFactorUserIdCookieAuthenticationType;
-                options.AuthenticationMode = AuthenticationMode.Passive;
-                options.CookieName = IdentityOptions.TwoFactorUserIdCookieAuthenticationType;
+                options.AuthenticationScheme = IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme;
+                options.AutomaticAuthentication = false;
+                options.CookieName = IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
-            }, IdentityOptions.TwoFactorUserIdCookieAuthenticationType);
+            }, IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme);
 
             return new IdentityBuilder(typeof(TUser), typeof(TRole), services);
         }

@@ -23,10 +23,10 @@ namespace Microsoft.AspNet.Builder
             {
                 throw new ArgumentNullException("app");
             }
-            app.UseCookieAuthentication(null, IdentityOptions.ExternalCookieAuthenticationType);
-            app.UseCookieAuthentication(null, IdentityOptions.TwoFactorRememberMeCookieAuthenticationType);
-            app.UseCookieAuthentication(null, IdentityOptions.TwoFactorUserIdCookieAuthenticationType);
-            app.UseCookieAuthentication(null, IdentityOptions.ApplicationCookieAuthenticationType);
+            app.UseCookieAuthentication(null, IdentityOptions.ExternalCookieAuthenticationScheme);
+            app.UseCookieAuthentication(null, IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme);
+            app.UseCookieAuthentication(null, IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme);
+            app.UseCookieAuthentication(null, IdentityOptions.ApplicationCookieAuthenticationScheme);
             return app;
         }
     }

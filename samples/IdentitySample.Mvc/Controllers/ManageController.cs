@@ -2,9 +2,9 @@
 using System.Security.Principal;
 using System.Threading.Tasks;
 using IdentitySample.Models;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Security;
 
 namespace IdentitySample
 {
@@ -300,7 +300,7 @@ namespace IdentitySample
                 return View("Error");
             }
             var userLogins = await UserManager.GetLoginsAsync(user);
-            var otherLogins = SignInManager.GetExternalAuthenticationTypes().Where(auth => userLogins.All(ul => auth.AuthenticationType != ul.LoginProvider)).ToList();
+            var otherLogins = SignInManager.GetExternalAuthenticationSchemes().Where(auth => userLogins.All(ul => auth.AuthenticationScheme != ul.LoginProvider)).ToList();
             ViewBag.ShowRemoveButton = user.PasswordHash != null || userLogins.Count > 1;
             return View(new ManageLoginsViewModel
             {
@@ -317,7 +317,7 @@ namespace IdentitySample
         {
             // Request a redirect to the external login provider to link a login for the current user
             var redirectUrl = Url.Action("LinkLoginCallback", "Manage");
-            var properties = SignInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, User.Identity.GetUserId());
+            var properties = SignInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, User.GetUserId());
             return new ChallengeResult(provider, properties);
         }
 
@@ -331,7 +331,7 @@ namespace IdentitySample
             {
                 return View("Error");
             }
-            var info = await SignInManager.GetExternalLoginInfoAsync(User.Identity.GetUserId());
+            var info = await SignInManager.GetExternalLoginInfoAsync(User.GetUserId());
             if (info == null)
             {
                 return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
@@ -353,7 +353,7 @@ namespace IdentitySample
 
         private async Task<bool> HasPhoneNumber()
         {
-            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+            var user = await UserManager.FindByIdAsync(User.GetUserId());
             if (user != null)
             {
                 return user.PhoneNumber != null;
@@ -375,7 +375,7 @@ namespace IdentitySample
 
         private async Task<ApplicationUser> GetCurrentUserAsync()
         {
-            return await UserManager.FindByIdAsync(Context.User.Identity.GetUserId());
+            return await UserManager.FindByIdAsync(Context.User.GetUserId());
         }
 
         private IActionResult RedirectToLocal(string returnUrl)

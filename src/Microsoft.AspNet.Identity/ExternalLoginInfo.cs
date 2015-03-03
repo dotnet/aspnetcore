@@ -7,12 +7,12 @@ namespace Microsoft.AspNet.Identity
 {
     public class ExternalLoginInfo : UserLoginInfo
     {
-        public ExternalLoginInfo(ClaimsIdentity externalIdentity, string loginProvider, string providerKey, 
+        public ExternalLoginInfo(ClaimsPrincipal externalPrincipal, string loginProvider, string providerKey, 
             string displayName) : base(loginProvider, providerKey, displayName)
         {
-            ExternalIdentity = externalIdentity;
+            ExternalPrincipal = externalPrincipal;
         }
 
-        public ClaimsIdentity ExternalIdentity { get; set; }
+        public ClaimsPrincipal ExternalPrincipal { get; set; }
     }
 }
