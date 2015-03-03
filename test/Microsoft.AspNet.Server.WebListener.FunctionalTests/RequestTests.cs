@@ -63,6 +63,11 @@ namespace Microsoft.AspNet.Server.WebListener
                     Assert.NotEqual(0, connectionInfo.LocalPort);
                     Assert.True(connectionInfo.IsLocal);
 
+                    // Trace identifier
+                    var requestIdentifierFeature = httpContext.GetFeature<IRequestIdentifierFeature>();
+                    Assert.NotNull(requestIdentifierFeature);
+                    Assert.NotNull(requestIdentifierFeature.TraceIdentifier);
+
                     // Note: Response keys are validated in the ResponseTests
                 }
                 catch (Exception ex)
@@ -95,12 +100,17 @@ namespace Microsoft.AspNet.Server.WebListener
                 {
                     var requestInfo = httpContext.GetFeature<IHttpRequestFeature>();
                     var connectionInfo = httpContext.GetFeature<IHttpConnectionFeature>();
+                    var requestIdentifierFeature = httpContext.GetFeature<IRequestIdentifierFeature>();
 
                     // Request Keys
                     Assert.Equal("http", requestInfo.Scheme);
                     Assert.Equal(expectedPath, requestInfo.Path);
                     Assert.Equal(expectedPathBase, requestInfo.PathBase);
                     Assert.Equal(string.Empty, requestInfo.QueryString);
+
+                    // Trace identifier
+                    Assert.NotNull(requestIdentifierFeature);
+                    Assert.NotNull(requestIdentifierFeature.TraceIdentifier);
                 }
                 catch (Exception ex)
                 {
@@ -135,10 +145,15 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var requestInfo = httpContext.GetFeature<IHttpRequestFeature>();
+                var requestIdentifierFeature = httpContext.GetFeature<IRequestIdentifierFeature>();
                 try
                 {
                     Assert.Equal(expectedPath, requestInfo.Path);
                     Assert.Equal(expectedPathBase, requestInfo.PathBase);
+
+                    // Trace identifier
+                    Assert.NotNull(requestIdentifierFeature);
+                    Assert.NotNull(requestIdentifierFeature.TraceIdentifier);
                 }
                 catch (Exception ex)
                 {

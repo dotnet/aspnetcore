@@ -22,7 +22,6 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
-using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
@@ -42,7 +41,8 @@ namespace Microsoft.AspNet.Server.WebListener
         IHttpRequestLifetimeFeature,
         IHttpWebSocketFeature,
         IHttpAuthenticationFeature,
-        IHttpUpgradeFeature
+        IHttpUpgradeFeature,
+        IRequestIdentifierFeature
     {
         private RequestContext _requestContext;
         private FeatureCollection _features;
@@ -109,6 +109,8 @@ namespace Microsoft.AspNet.Server.WebListener
                 _features.Add(typeof(IHttpUpgradeFeature), this);
                 _features.Add(typeof(IHttpWebSocketFeature), this);
             }
+
+            _features.Add(typeof(IRequestIdentifierFeature), this);
 
             // TODO:
             /*
@@ -431,6 +433,14 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             get { return _authHandler; }
             set { _authHandler = value; }
+        }
+
+        Guid IRequestIdentifierFeature.TraceIdentifier
+        {
+            get
+            {
+                return _requestContext.TraceIdentifier;
+            }
         }
     }
 }

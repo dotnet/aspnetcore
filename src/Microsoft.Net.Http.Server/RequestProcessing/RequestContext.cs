@@ -132,6 +132,19 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
+        public unsafe Guid TraceIdentifier
+        {
+            get
+            {
+                // This is the base GUID used by HTTP.SYS for generating the activity ID.
+                // HTTP.SYS overwrites the first 8 bytes of the base GUID with RequestId to generate ETW activity ID.
+
+                var guid = new Guid(0xffcb4c93, 0xa57f, 0x453c, 0xb6, 0x3f, 0x84, 0x71, 0xc, 0x79, 0x67, 0xbb);
+                *((ulong*)&guid) = Request.RequestId;
+                return guid;
+            }
+        }
+
         /// <summary>
         /// The authentication challengest that will be added to the response if the status code is 401.
         /// This must be a subset of the AuthenticationSchemes enabled on the server.
