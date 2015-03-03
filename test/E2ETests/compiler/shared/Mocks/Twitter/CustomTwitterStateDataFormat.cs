@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNet.Security;
-using Microsoft.AspNet.Security.Twitter.Messages;
+﻿using Microsoft.AspNet.Authentication;
+using Microsoft.AspNet.Authentication.Twitter.Messages;
 using Newtonsoft.Json;
 
 namespace MusicStore.Mocks.Twitter

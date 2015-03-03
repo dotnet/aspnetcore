@@ -3,13 +3,14 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Security;
+using Microsoft.AspNet.Authentication;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Logging.Console;
 using MusicStore.Models;
+using Microsoft.AspNet.Authorization;
 
 namespace MusicStore
 {
@@ -93,7 +94,7 @@ namespace MusicStore
             // Configure Auth
             services.Configure<AuthorizationOptions>(options =>
             {
-                options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequiresClaim("ManageStore", "Allowed").Build());
+                options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequireClaim("ManageStore", "Allowed").Build());
             });
         }
 

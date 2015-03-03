@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNet.Security;
+﻿using Microsoft.AspNet.Authentication;
 
 namespace MusicStore.Mocks.OpenIdConnect
 {

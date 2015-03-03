@@ -4,7 +4,7 @@ using System.Security.Principal;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Diagnostics.Entity;
-using Microsoft.AspNet.Security;
+using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Server.WebListener;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.ConfigurationModel;
@@ -13,6 +13,7 @@ using Microsoft.Framework.Logging;
 using Microsoft.Framework.Logging.Console;
 using Microsoft.Net.Http.Server;
 using MusicStore.Models;
+using Microsoft.AspNet.Authorization;
 
 namespace MusicStore
 {
@@ -65,7 +66,7 @@ namespace MusicStore
             // Configure Auth
             services.Configure<AuthorizationOptions>(options =>
             {
-                options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequiresClaim("ManageStore", "Allowed").Build());
+                options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequireClaim("ManageStore", "Allowed").Build());
             });
         }
 
@@ -84,7 +85,7 @@ namespace MusicStore
             if ((app.Server as ServerInformation) != null)
             {
                 var serverInformation = (ServerInformation)app.Server;
-                serverInformation.Listener.AuthenticationManager.AuthenticationTypes = AuthenticationTypes.NTLM;
+                serverInformation.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.NTLM;
             }
 
             app.UseDatabaseErrorPage(DatabaseErrorPageOptions.ShowAll);
@@ -99,7 +100,7 @@ namespace MusicStore
                 //Who will get admin access? For demo sake I'm listing the currently logged on user as the application administrator. But this can be changed to suit the needs.
                 var identity = (ClaimsIdentity)context.User.Identity;
 
-                if (identity.GetUserName() == Environment.GetEnvironmentVariable("USERDOMAIN") + "\\" + Environment.GetEnvironmentVariable("USERNAME"))
+                if (context.User.GetUserName() == Environment.GetEnvironmentVariable("USERDOMAIN") + "\\" + Environment.GetEnvironmentVariable("USERNAME"))
                 {
                     identity.AddClaim(new Claim("ManageStore", "Allowed"));
                 }

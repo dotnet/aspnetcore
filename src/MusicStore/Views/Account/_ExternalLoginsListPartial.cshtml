@@ -6,7 +6,7 @@
 <h4>Use another service to log in.</h4>
 <hr />
 @{
-    var loginProviders = SignInManager.GetExternalAuthenticationTypes();
+    var loginProviders = SignInManager.GetExternalAuthenticationSchemes();
     if (loginProviders.Count() == 0)
     {
         <div>
@@ -25,7 +25,7 @@
                 <p>
                     @foreach (AuthenticationDescription p in loginProviders.Where(a => a.Caption != null))
                     {
-                        <button type="submit" class="btn btn-default" id="@p.AuthenticationType" name="provider" value="@p.AuthenticationType" title="Log in using your @p.Caption account">@p.AuthenticationType</button>
+                        <button type="submit" class="btn btn-default" id="@p.AuthenticationScheme" name="provider" value="@p.AuthenticationScheme" title="Log in using your @p.Caption account">@p.AuthenticationScheme</button>
                     }
                 </p>
             </div>

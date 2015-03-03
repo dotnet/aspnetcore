@@ -1,9 +1,9 @@
 ﻿using System.Linq;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Security;
 using MusicStore.Models;
 
 namespace MusicStore.Controllers
@@ -287,7 +287,7 @@ namespace MusicStore.Controllers
                 return View("Error");
             }
             var userLogins = await UserManager.GetLoginsAsync(user);
-            var otherLogins = SignInManager.GetExternalAuthenticationTypes().Where(auth => userLogins.All(ul => auth.AuthenticationType != ul.LoginProvider)).ToList();
+            var otherLogins = SignInManager.GetExternalAuthenticationSchemes().Where(auth => userLogins.All(ul => auth.AuthenticationScheme != ul.LoginProvider)).ToList();
             ViewBag.ShowRemoveButton = user.PasswordHash != null || userLogins.Count > 1;
             return View(new ManageLoginsViewModel
             {
@@ -304,7 +304,7 @@ namespace MusicStore.Controllers
         {
             // Request a redirect to the external login provider to link a login for the current user
             var redirectUrl = Url.Action("LinkLoginCallback", "Manage");
-            var properties = SignInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, User.Identity.GetUserId());
+            var properties = SignInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, User.GetUserId());
             return new ChallengeResult(provider, properties);
         }
 
@@ -318,7 +318,7 @@ namespace MusicStore.Controllers
                 return View("Error");
             }
 
-            var loginInfo = await SignInManager.GetExternalLoginInfoAsync(User.Identity.GetUserId());
+            var loginInfo = await SignInManager.GetExternalLoginInfoAsync(User.GetUserId());
             if (loginInfo == null)
             {
                 return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
@@ -353,7 +353,7 @@ namespace MusicStore.Controllers
 
         private async Task<ApplicationUser> GetCurrentUserAsync()
         {
-            return await UserManager.FindByIdAsync(Context.User.Identity.GetUserId());
+            return await UserManager.FindByIdAsync(Context.User.GetUserId());
         }
         
         #endregion

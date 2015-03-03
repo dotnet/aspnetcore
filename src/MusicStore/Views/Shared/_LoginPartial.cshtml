@@ -1,6 +1,6 @@
 ﻿@using System.Security.Principal
 
-@if (User.Identity.IsAuthenticated)
+@if (User.IsSignedIn())
 {
     //Either NTLM will be used or social authentication will be used. Based on the authentication schemes enabled remove an unused block.
     if (User.Identity.AuthenticationType != "NTLM")
@@ -11,7 +11,7 @@
 
             <ul class="nav navbar-nav navbar-right">
                 <li>
-                    @Html.ActionLink("Hello " + User.Identity.GetUserName() + "!", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" })
+                    @Html.ActionLink("Hello " + User.GetUserName() + "!", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" })
                 </li>
                 <li><a href="javascript:document.getElementById('logoutForm').submit()">Log off</a></li>
             </ul>
@@ -22,7 +22,7 @@
         //This code block necessary only for NTLM authentication
         <ul class="nav navbar-nav navbar-right">
             <li>
-                <p class="nav navbar-text navbar-right">Hello, @User.Identity.GetUserName()!</p>
+                <p class="nav navbar-text navbar-right">Hello, @User.GetUserName()!</p>
             </li>
         </ul>
     }

@@ -14,7 +14,7 @@ using MusicStore.ViewModels;
 namespace MusicStore.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Microsoft.AspNet.Security.Authorize("ManageStore")]
+    [Microsoft.AspNet.Authorization.Authorize("ManageStore")]
     public class StoreManagerController : Controller
     {
         private IConnectionManager _connectionManager;

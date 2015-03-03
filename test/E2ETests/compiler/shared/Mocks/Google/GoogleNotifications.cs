@@ -3,8 +3,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Security.Google;
-using Microsoft.AspNet.Security.OAuth;
+using Microsoft.AspNet.Authentication.Google;
+using Microsoft.AspNet.Authentication.OAuth;
 using MusicStore.Mocks.Common;
 
 namespace MusicStore.Mocks.Google
@@ -16,7 +16,7 @@ namespace MusicStore.Mocks.Google
     {
         internal static async Task OnAuthenticated(GoogleAuthenticatedContext context)
         {
-            if (context.Identity != null)
+            if (context.Principal != null)
             {
                 Helpers.ThrowIfConditionFailed(() => context.AccessToken == "ValidAccessToken", "Access token is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.RefreshToken == "ValidRefreshToken", "Refresh token is not valid");
@@ -26,7 +26,7 @@ namespace MusicStore.Mocks.Google
                 Helpers.ThrowIfConditionFailed(() => context.Name == "AspnetvnextTest AspnetvnextTest", "Name is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.ExpiresIn.Value == TimeSpan.FromSeconds(1200), "ExpiresIn is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.User != null, "User object is not valid");
-                context.Identity.AddClaim(new Claim("ManageStore", "false"));
+                context.Principal.Identities.First().AddClaim(new Claim("ManageStore", "false"));
             }
 
             await Task.FromResult(0);
@@ -34,14 +34,15 @@ namespace MusicStore.Mocks.Google
 
         internal static async Task OnReturnEndpoint(OAuthReturnEndpointContext context)
         {
-            if (context.Identity != null && context.SignInAsAuthenticationType == IdentityOptions.ExternalCookieAuthenticationType)
+            if (context.Principal != null && context.SignInScheme == IdentityOptions.ExternalCookieAuthenticationScheme)
             {
                 //This way we will know all notifications were fired.
-                var manageStoreClaim = context.Identity.Claims.Where(c => c.Type == "ManageStore" && c.Value == "false").FirstOrDefault();
+                var identity = context.Principal.Identities.First();
+                var manageStoreClaim = identity?.Claims.Where(c => c.Type == "ManageStore" && c.Value == "false").FirstOrDefault();
                 if (manageStoreClaim != null)
                 {
-                    context.Identity.RemoveClaim(manageStoreClaim);
-                    context.Identity.AddClaim(new Claim("ManageStore", "Allowed"));
+                    identity.RemoveClaim(manageStoreClaim);
+                    identity.AddClaim(new Claim("ManageStore", "Allowed"));
                 }
             }
 

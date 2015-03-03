@@ -2,11 +2,11 @@
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Security;
 using Microsoft.Framework.DependencyInjection;
 using MusicStore.Models;
 
@@ -371,7 +371,7 @@ namespace MusicStore.Controllers
                 ViewBag.ReturnUrl = returnUrl;
                 ViewBag.LoginProvider = loginInfo.LoginProvider;
                 // REVIEW: handle case where email not in claims?
-                var email = loginInfo.ExternalIdentity.FindFirstValue(ClaimTypes.Email);
+                var email = loginInfo.ExternalPrincipal.FindFirstValue(ClaimTypes.Email);
                 return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email });
             }
         }
@@ -383,7 +383,7 @@ namespace MusicStore.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl = null)
         {
-            if (User.Identity.IsAuthenticated)
+            if (User.IsSignedIn())
             {
                 return RedirectToAction("Index", "Manage");
             }
@@ -401,7 +401,7 @@ namespace MusicStore.Controllers
 
 #if TESTING
                 //Just for automated testing adding a claim named 'ManageStore' - Not required for production
-                var manageClaim = info.ExternalIdentity.Claims.Where(c => c.Type == "ManageStore").FirstOrDefault();
+                var manageClaim = info.ExternalPrincipal.Claims.Where(c => c.Type == "ManageStore").FirstOrDefault();
                 if (manageClaim != null)
                 {
                     await UserManager.AddClaimAsync(user, manageClaim);
@@ -463,7 +463,7 @@ namespace MusicStore.Controllers
 
         private async Task<ApplicationUser> GetCurrentUserAsync()
         {
-            return await UserManager.FindByIdAsync(Context.User.Identity.GetUserId());
+            return await UserManager.FindByIdAsync(Context.User.GetUserId());
         }
 
         private ActionResult RedirectToLocal(string returnUrl)

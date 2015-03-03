@@ -4,7 +4,7 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Security;
+using Microsoft.AspNet.Authorization;
 using MusicStore.Models;
 
 namespace MusicStore.Controllers
@@ -42,7 +42,7 @@ namespace MusicStore.Controllers
                 }
                 else
                 {
-                    order.Username = Context.User.Identity.GetUserName();
+                    order.Username = Context.User.GetUserName();
                     order.OrderDate = DateTime.Now;
 
                     //Add the Order
@@ -73,7 +73,7 @@ namespace MusicStore.Controllers
             // Validate customer owns this order
             bool isValid = await DbContext.Orders.AnyAsync(
                 o => o.OrderId == id &&
-                o.Username == Context.User.Identity.GetUserName());
+                o.Username == Context.User.GetUserName());
 
             if (isValid)
             {
