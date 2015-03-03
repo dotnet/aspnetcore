@@ -32,7 +32,8 @@ namespace Microsoft.AspNet.Owin
         IHttpRequestLifetimeFeature,
         IHttpAuthenticationFeature,
         IHttpWebSocketFeature,
-        IOwinEnvironmentFeature
+        IOwinEnvironmentFeature,
+        IRequestIdentifierFeature
     {
         public IDictionary<string, object> Environment { get; set; }
         private bool _headersSent;
@@ -425,6 +426,22 @@ namespace Microsoft.AspNet.Owin
         public bool IsReadOnly
         {
             get { return true; }
+        }
+
+        Guid IRequestIdentifierFeature.TraceIdentifier
+        {
+            get
+            {
+                var requestId = Prop<string>(OwinConstants.RequestId);
+                Guid requestIdentifier;
+
+                if (requestId != null && Guid.TryParse(requestId, out requestIdentifier))
+                {
+                    return requestIdentifier;
+                }
+
+                return Guid.Empty;
+            }
         }
 
         public bool Remove(KeyValuePair<Type, object> item)

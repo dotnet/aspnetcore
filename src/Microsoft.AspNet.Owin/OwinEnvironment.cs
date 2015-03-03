@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Owin
                 { OwinConstants.Security.User, new FeatureMap<IHttpAuthenticationFeature>(feature => feature.User,
                     ()=> null, (feature, value) => feature.User = Utilities.MakeClaimsPrincipal((IPrincipal)value),
                     () => new HttpAuthenticationFeature())
-                },
+                }
             };
 
             // owin.CallCancelled is required but the feature may not be present.
@@ -113,6 +113,9 @@ namespace Microsoft.AspNet.Owin
             }
 
             _context.Items[typeof(HttpContext).FullName] = _context; // Store for lookup when we transition back out of OWIN
+
+            // The request identifier is a string per the spec.
+            _entries[OwinConstants.RequestId] = new FeatureMap<IRequestIdentifierFeature>(feature => feature.TraceIdentifier.ToString());
         }
 
         // Public in case there's a new/custom feature interface that needs to be added.
@@ -369,7 +372,7 @@ namespace Microsoft.AspNet.Owin
             }
 
             public FeatureMap(Func<TFeature, object> getter, Func<object> defaultFactory, Action<TFeature, object> setter)
-                : base(typeof(TFeature), feature => getter((TFeature)feature), defaultFactory,(feature, value) => setter((TFeature)feature, value))
+                : base(typeof(TFeature), feature => getter((TFeature)feature), defaultFactory, (feature, value) => setter((TFeature)feature, value))
             {
             }
 
