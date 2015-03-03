@@ -31,9 +31,17 @@ namespace ValidationWebSite.Controllers
         {
             // Clear ModelState entry. TryValidateModel should not add entries except those found within the
             // passed model.
-            ModelState["theImpossibleString"].Errors.Clear();
+            ModelState.ClearValidationState("theImpossibleString");
 
             TryValidateModel(product);
+
+            return CreateValidationDictionary();
+        }
+
+        [HttpPost]
+        public object TryValidateModelWithCollectionsModel([FromBody] List<ProductViewModel> products)
+        {
+            TryValidateModel(products);
 
             return CreateValidationDictionary();
         }

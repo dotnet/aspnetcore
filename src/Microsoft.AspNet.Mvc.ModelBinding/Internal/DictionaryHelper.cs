@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
@@ -26,6 +27,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
                 if (key.Length <= prefix.Length)
                 {
                     continue;
+                }
+
+                if (key.StartsWith("[", StringComparison.OrdinalIgnoreCase))
+                {
+                    key = key.Substring(key.IndexOf('.') + 1);
+                    if (string.Equals(prefix, key, StringComparison.Ordinal))
+                    {
+                        yield return entry;
+                        continue;
+                    }
                 }
 
                 if (!key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))

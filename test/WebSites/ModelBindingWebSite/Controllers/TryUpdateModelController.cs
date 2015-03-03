@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using System.Collections.Generic;
-using Microsoft.AspNet.Http.Core.Collections;
+using Microsoft.AspNet.WebUtilities;
 using ModelBindingWebSite.Models;
 
 namespace ModelBindingWebSite.Controllers
@@ -158,6 +160,37 @@ namespace ModelBindingWebSite.Controllers
             return user;
         }
 
+        public async Task<IActionResult> TryUpdateModel_ClearsModelStateEntries()
+        {
+            var result = new ObjectResult(null);
+
+            // Invalid model.
+            var model = new MyModel
+            {
+                Id = 1,
+                Price = -1
+            };
+
+            // Validate model first and subsequent TryUpdateModel should remove
+            //modelstate entries for model and re-validate.
+            TryValidateModel(model);
+
+            // Update Name to a valid value and call TryUpdateModel
+            model.Price = 1;
+            await TryUpdateModelAsync<MyModel>(model);
+
+            if (ModelState.IsValid)
+            {
+                result.StatusCode = StatusCodes.Status204NoContent;
+            }
+            else
+            {
+                result.StatusCode = StatusCodes.Status500InternalServerError;
+            } 
+
+            return result;
+        }
+
         private User GetUser(int id)
         {
             return new User
@@ -166,6 +199,14 @@ namespace ModelBindingWebSite.Controllers
                 Id = id,
                 Key = id + 20,
             };
+        }
+
+        private class MyModel
+        {
+            public int Id { get; set; }
+
+            [Range(0,10)]
+            public double Price { get; set; }
         }
 
         public class CustomValueProvider : IValueProvider

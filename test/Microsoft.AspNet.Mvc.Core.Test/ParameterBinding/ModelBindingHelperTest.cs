@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -667,6 +668,126 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.Equal(expectedMessage, exception.Message);
         }
 
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void ClearValidationStateForModel_EmtpyModelKey(string modelKey)
+        {
+            // Arrange
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var dictionary = new ModelStateDictionary();
+            dictionary["Name"] = new ModelState { ValidationState = ModelValidationState.Invalid };
+            dictionary.AddModelError("Name", "MyProperty invalid.");
+            dictionary["Id"] = new ModelState { ValidationState = ModelValidationState.Invalid };
+            dictionary.AddModelError("Id", "Id invalid.");
+            dictionary.AddModelError("Id", "Id is required.");
+            dictionary["Category"] = new ModelState { ValidationState = ModelValidationState.Valid };
+
+            // Act
+            ModelBindingHelper.ClearValidationStateForModel(
+                typeof(Product),
+                dictionary,
+                metadataProvider,
+                modelKey);
+
+            // Assert
+            Assert.Equal(0, dictionary["Name"].Errors.Count);
+            Assert.Equal(ModelValidationState.Unvalidated, dictionary["Name"].ValidationState);
+            Assert.Equal(0, dictionary["Id"].Errors.Count);
+            Assert.Equal(ModelValidationState.Unvalidated, dictionary["Id"].ValidationState);
+            Assert.Equal(0, dictionary["Category"].Errors.Count);
+            Assert.Equal(ModelValidationState.Unvalidated, dictionary["Category"].ValidationState);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void ClearValidationStateForCollectionsModel_EmtpyModelKey(string modelKey)
+        {
+            // Arrange
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var dictionary = new ModelStateDictionary();
+            dictionary["[0].Name"] = new ModelState { ValidationState = ModelValidationState.Invalid };
+            dictionary.AddModelError("[0].Name", "Name invalid.");
+            dictionary["[0].Id"] = new ModelState { ValidationState = ModelValidationState.Invalid };
+            dictionary.AddModelError("[0].Id", "Id invalid.");
+            dictionary.AddModelError("[0].Id", "Id required.");
+            dictionary["[0].Category"] = new ModelState { ValidationState = ModelValidationState.Valid };
+
+            dictionary["[1].Name"] = new ModelState { ValidationState = ModelValidationState.Valid };
+            dictionary["[1].Id"] = new ModelState { ValidationState = ModelValidationState.Valid };
+            dictionary["[1].Category"] = new ModelState { ValidationState = ModelValidationState.Invalid };
+            dictionary.AddModelError("[1].Category", "Category invalid.");
+
+            // Act
+            ModelBindingHelper.ClearValidationStateForModel(
+                typeof(List<Product>),
+                dictionary,
+                metadataProvider,
+                modelKey);
+
+            // Assert
+            Assert.Equal(0, dictionary["[0].Name"].Errors.Count);
+            Assert.Equal(ModelValidationState.Unvalidated, dictionary["[0].Name"].ValidationState);
+            Assert.Equal(0, dictionary["[0].Id"].Errors.Count);
+            Assert.Equal(ModelValidationState.Unvalidated, dictionary["[0].Id"].ValidationState);
+            Assert.Equal(0, dictionary["[0].Category"].Errors.Count);
+            Assert.Equal(ModelValidationState.Unvalidated, dictionary["[0].Category"].ValidationState);
+            Assert.Equal(0, dictionary["[1].Name"].Errors.Count);
+            Assert.Equal(ModelValidationState.Unvalidated, dictionary["[1].Name"].ValidationState);
+            Assert.Equal(0, dictionary["[1].Id"].Errors.Count);
+            Assert.Equal(ModelValidationState.Unvalidated, dictionary["[1].Id"].ValidationState);
+            Assert.Equal(0, dictionary["[1].Category"].Errors.Count);
+            Assert.Equal(ModelValidationState.Unvalidated, dictionary["[1].Category"].ValidationState);
+        }
+
+        [Theory]
+        [InlineData("product")]
+        [InlineData("product.Name")]
+        [InlineData("product.Order[0].Name")]
+        [InlineData("product.Order[0].Address.Street")]
+        [InlineData("product.Category.Name")]
+        [InlineData("product.Order")]
+        public void ClearValidationStateForModel_NonEmtpyModelKey(string prefix)
+        {
+            // Arrange
+            var metadataProvider = new TestModelMetadataProvider();
+
+            var dictionary = new ModelStateDictionary();
+            dictionary["product.Name"] = new ModelState { ValidationState = ModelValidationState.Invalid };
+            dictionary.AddModelError("product.Name", "Name invalid.");
+            dictionary["product.Id"] = new ModelState { ValidationState = ModelValidationState.Invalid };
+            dictionary.AddModelError("product.Id", "Id invalid.");
+            dictionary.AddModelError("product.Id", "Id required.");
+            dictionary["product.Category"] = new ModelState { ValidationState = ModelValidationState.Valid };
+            dictionary["product.Category.Name"] = new ModelState { ValidationState = ModelValidationState.Valid };
+            dictionary["product.Order[0].Name"] = new ModelState { ValidationState = ModelValidationState.Invalid };
+            dictionary.AddModelError("product.Order[0].Name", "Order name invalid.");
+            dictionary["product.Order[0].Address.Street"] = 
+                new ModelState { ValidationState = ModelValidationState.Invalid };
+            dictionary.AddModelError("product.Order[0].Address.Street", "Street invalid.");
+            dictionary["product.Order[1].Name"] = new ModelState { ValidationState = ModelValidationState.Valid };
+            dictionary["product.Order[0]"] = new ModelState { ValidationState = ModelValidationState.Invalid };
+            dictionary.AddModelError("product.Order[0]", "Order invalid.");
+
+            // Act
+            ModelBindingHelper.ClearValidationStateForModel(
+                typeof(Product),
+                dictionary,
+                metadataProvider,
+                prefix);
+
+            // Assert
+            foreach (var entry in dictionary.Keys)
+            {
+                if (entry.StartsWith(prefix))
+                {
+                    Assert.Equal(0, dictionary[entry].Errors.Count);
+                    Assert.Equal(ModelValidationState.Unvalidated, dictionary[entry].ValidationState);
+                }
+            }
+        }
+
         private static IModelBinder GetCompositeBinder(params IModelBinder[] binders)
         {
             return new CompositeModelBinder(binders);
@@ -709,6 +830,25 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             public string IncludedProperty { get; set; }
 
             public string ExcludedProperty { get; set; }
+        }
+
+        private class Product
+        {
+            public string Name { get; set; }
+            public int Id { get; set; }
+            public Category Category { get; set; }
+            public List<Order> Orders { get; set; }
+        }
+
+        public class Category
+        {
+            public string Name { get; set; }
+        }
+
+        public class Order
+        {
+            public string Name { get; set; }
+            public Address Address { get; set; }
         }
     }
 }

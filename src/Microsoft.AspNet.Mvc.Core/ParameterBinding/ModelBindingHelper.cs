@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -254,6 +257,9 @@ namespace Microsoft.AspNet.Mvc
 
             var modelMetadata = metadataProvider.GetMetadataForType(modelType);
 
+            // Clear ModelStateDictionary entries for the model so that it will be re-validated.
+            ClearValidationStateForModel(modelType, modelState, metadataProvider, prefix);
+
             var operationBindingContext = new OperationBindingContext
             {
                 ModelBinder = modelBinder,
@@ -380,6 +386,63 @@ namespace Microsoft.AspNet.Mvc
             {
                 return prefix + "." + propertyName;
             }
+        }
+
+        /// <summary>
+        /// Clears <see cref="ModelStateDictionary"/> entries for <see cref="ModelMetadata"/>.
+        /// </summary>
+        /// <param name="modelMetadata">The <see cref="ModelMetadata"/>.</param>
+        /// <param name="modelKey">The entry to clear. </param>
+        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
+        public static void ClearValidationStateForModel(
+            [NotNull] Type modelType,
+            [NotNull] ModelStateDictionary modelstate,
+            [NotNull] IModelMetadataProvider metadataProvider,
+            string modelKey)
+        {
+            // If modelkey is empty, we need to iterate through properties (obtained from ModelMetadata) and
+            // clear validation state for all entries in ModelStateDictionary that start with each property name.
+            // If modelkey is non-empty, clear validation state for all entries in ModelStateDictionary 
+            // that start with modelKey
+            if (string.IsNullOrEmpty(modelKey))
+            {
+                var modelMetadata = metadataProvider.GetMetadataForType(modelType);
+                if (modelMetadata.IsCollectionType)
+                {
+                    var elementType = GetElementType(modelMetadata.ModelType);
+                    modelMetadata = metadataProvider.GetMetadataForType(elementType);
+                }
+
+                foreach (var property in modelMetadata.Properties)
+                {
+                    var childKey = property.BinderModelName ?? property.PropertyName;
+                    modelstate.ClearValidationState(childKey);
+                }
+            }
+            else
+            {
+                modelstate.ClearValidationState(modelKey);
+            }
+        }
+
+        private static Type GetElementType(Type type)
+        {
+            Debug.Assert(typeof(IEnumerable).IsAssignableFrom(type));
+            if (type.IsArray)
+            {
+                return type.GetElementType();
+            }
+
+            foreach (var implementedInterface in type.GetInterfaces())
+            {
+                if (implementedInterface.IsGenericType() &&
+                    implementedInterface.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                {
+                    return implementedInterface.GetGenericArguments()[0];
+                }
+            }
+
+            return typeof(object);
         }
     }
 }

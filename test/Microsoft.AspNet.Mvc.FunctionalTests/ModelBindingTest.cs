@@ -2066,6 +2066,23 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.False(result[1].Checked);
         }
 
+        [Fact]
+        public async Task TryUpdateModel_ClearsModelStateEntries()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName);
+            var client = server.CreateClient();
+            var url = "http://localhost/TryUpdateModel/TryUpdateModel_ClearsModelStateEntries";
+
+            // Act
+            var response = await client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal(string.Empty, body);
+        }
+
         private async Task<TVal> ReadValue<TVal>(HttpResponseMessage response)
         {
             Assert.True(response.IsSuccessStatusCode);

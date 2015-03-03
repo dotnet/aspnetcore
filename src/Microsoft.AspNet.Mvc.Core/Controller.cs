@@ -910,7 +910,7 @@ namespace Microsoft.AspNet.Mvc
         public virtual Task<bool> TryUpdateModelAsync<TModel>([NotNull] TModel model)
             where TModel : class
         {
-            return TryUpdateModelAsync(model, prefix: null);
+            return TryUpdateModelAsync(model, prefix: string.Empty);
         }
 
         /// <summary>
@@ -1240,6 +1240,14 @@ namespace Microsoft.AspNet.Mvc
             var modelExplorer = MetadataProvider.GetModelExplorerForType(model.GetType(), model);
 
             var modelName = prefix ?? string.Empty;
+
+            // Clear ModelStateDictionary entries for the model so that it will be re-validated.
+            ModelBindingHelper.ClearValidationStateForModel(
+                model.GetType(),
+                ModelState,
+                MetadataProvider,
+                modelName);
+
             var validationContext = new ModelValidationContext(
                 modelName,
                 BindingContext.ValidatorProvider,

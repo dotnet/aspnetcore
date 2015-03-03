@@ -369,6 +369,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             GetModelStateForKey(key).Value = value;
         }
 
+        /// <summary>
+        /// Clears <see cref="ModelStateDictionary"/> entries that match the key that is passed as parameter.
+        /// </summary>
+        /// <param name="key">The key of <see cref="ModelStateDictionary"/> to clear.</param>
+        public void ClearValidationState(string key)
+        {
+            // If key is null or empty, clear all entries in the dictionary
+            // else just clear the ones that have key as prefix
+            var entries  = (string.IsNullOrEmpty(key)) ?
+                _innerDictionary : DictionaryHelper.FindKeysWithPrefix(this, key);
+
+            foreach (var entry in entries)
+            {
+                entry.Value.Errors.Clear();
+                entry.Value.ValidationState = ModelValidationState.Unvalidated;
+            }
+        }
+
         private ModelState GetModelStateForKey([NotNull] string key)
         {
             ModelState modelState;
