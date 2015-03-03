@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             return descriptors;
         }
 
-        private class ViewStartAddRemoveTagHelperVisitor : AddOrRemoveTagHelperSpanVisitor
+        private class ViewStartAddRemoveTagHelperVisitor : TagHelperDirectiveSpanVisitor
         {
             private readonly IEnumerable<TagHelperDirectiveDescriptor> _viewStartDirectiveDescriptors;
 

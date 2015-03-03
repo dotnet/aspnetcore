@@ -63,10 +63,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.NotNull(descriptors);
             Assert.Equal(2, descriptors.Count);
 
-            Assert.Equal("Remove Tag Helper", descriptors[0].LookupText);
+            Assert.Equal("Remove Tag Helper", descriptors[0].DirectiveText);
             Assert.Equal(SourceLocation.Undefined, descriptors[0].Location);
 
-            Assert.Equal("Add Tag Helper", descriptors[1].LookupText);
+            Assert.Equal("Add Tag Helper", descriptors[1].DirectiveText);
             Assert.Equal(TagHelperDirectiveType.AddTagHelper, descriptors[1].DirectiveType);
             Assert.Equal(SourceLocation.Undefined, descriptors[1].Location);
         }
