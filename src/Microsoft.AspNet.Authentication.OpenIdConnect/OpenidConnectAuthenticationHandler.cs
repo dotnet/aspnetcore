@@ -220,7 +220,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             }
 
             OpenIdConnectMessage openIdConnectMessage = null;
-
+            
             // assumption: if the ContentType is "application/x-www-form-urlencoded" it should be safe to read as it is small.
             if (string.Equals(Request.Method, "POST", StringComparison.OrdinalIgnoreCase)
               && !string.IsNullOrWhiteSpace(Request.ContentType)
@@ -566,7 +566,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             {
                 if (ticket.Principal != null)
                 {
-                    Request.HttpContext.Response.SignIn(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
+                    Request.HttpContext.Response.SignIn(Options.SignInScheme, ticket.Principal, ticket.Properties);
                 }
 
                 // Redirect back to the original secured resource, if any.
