@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// </summary>
     public class MvcRazorParser : RazorParser
     {
-        private readonly IEnumerable<TagHelperDirectiveDescriptor> _viewStartDirectiveDescriptors;
+        private readonly IEnumerable<TagHelperDirectiveDescriptor> _globalImportDirectiveDescriptors;
 
         /// <summary>
         /// Initializes a new instance of <see cref="MvcRazorParser"/>.
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             : base(parser)
         {
             // Construct tag helper descriptors from @addTagHelper and @removeTagHelper chunks
-            _viewStartDirectiveDescriptors = GetTagHelperDescriptors(inheritedCodeTrees, defaultInheritedChunks);
+            _globalImportDirectiveDescriptors = GetTagHelperDirectiveDescriptors(inheritedCodeTrees, defaultInheritedChunks);
         }
 
         /// <inheritdoc />
@@ -44,13 +44,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             [NotNull] Block documentRoot,
             [NotNull] ParserErrorSink errorSink)
         {
-            var visitor = new ViewStartAddRemoveTagHelperVisitor(TagHelperDescriptorResolver,
-                                                                 _viewStartDirectiveDescriptors,
-                                                                 errorSink);
+            var visitor = new GlobalImportAddRemoveTagHelperVisitor(
+                TagHelperDescriptorResolver,
+                _globalImportDirectiveDescriptors,
+                errorSink);
             return visitor.GetDescriptors(documentRoot);
         }
 
-        private static IEnumerable<TagHelperDirectiveDescriptor> GetTagHelperDescriptors(
+        private static IEnumerable<TagHelperDirectiveDescriptor> GetTagHelperDirectiveDescriptors(
            IReadOnlyList<CodeTree> inheritedCodeTrees,
            IReadOnlyList<Chunk> defaultInheritedChunks)
         {
@@ -89,17 +90,17 @@ namespace Microsoft.AspNet.Mvc.Razor
             return descriptors;
         }
 
-        private class ViewStartAddRemoveTagHelperVisitor : TagHelperDirectiveSpanVisitor
+        private class GlobalImportAddRemoveTagHelperVisitor : TagHelperDirectiveSpanVisitor
         {
-            private readonly IEnumerable<TagHelperDirectiveDescriptor> _viewStartDirectiveDescriptors;
+            private readonly IEnumerable<TagHelperDirectiveDescriptor> _globalImportDirectiveDescriptors;
 
-            public ViewStartAddRemoveTagHelperVisitor(
+            public GlobalImportAddRemoveTagHelperVisitor(
                 ITagHelperDescriptorResolver descriptorResolver,
-                IEnumerable<TagHelperDirectiveDescriptor> viewStartDirectiveDescriptors,
+                IEnumerable<TagHelperDirectiveDescriptor> globalImportDirectiveDescriptors,
                 ParserErrorSink errorSink)
                 : base(descriptorResolver, errorSink)
             {
-                _viewStartDirectiveDescriptors = viewStartDirectiveDescriptors;
+                _globalImportDirectiveDescriptors = globalImportDirectiveDescriptors;
             }
 
             protected override TagHelperDescriptorResolutionContext GetTagHelperDescriptorResolutionContext(
@@ -107,7 +108,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 ParserErrorSink errorSink)
             {
                 return base.GetTagHelperDescriptorResolutionContext(
-                    _viewStartDirectiveDescriptors.Concat(descriptors),
+                    _globalImportDirectiveDescriptors.Concat(descriptors),
                     errorSink);
             }
         }
