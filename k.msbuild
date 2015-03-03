@@ -358,8 +358,9 @@
                 <term>UK</term>
                 <Justification>text appears in base64 encoded string of an image</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)\**\Microsoft.AspNet.Security.Cookies.xml;
-                                    $(PoliCheckPath)\**\src\Microsoft.AspNet.Security.Cookies\Infrastructure\ICookieManager.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Authentication.Cookies\Infrastructure\ICookieManager.cs;
+                                    $(PoliCheckPath)**\Microsoft.AspNet.Authentication.Cookies.dll;
+                                    $(PoliCheckPath)**\Microsoft.AspNet.Authentication.Cookies.xml">
                 <term>chunking</term>
                 <Justification>Used to describe network chunks</Justification>
             </SrcExclusions>
