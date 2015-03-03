@@ -136,12 +136,13 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
                             AuthenticationTicket = ticket
                         };
 
-                        if (securityTokenReceivedNotification.HandledResponse)
+                        await Options.Notifications.SecurityTokenValidated(securityTokenValidatedNotification);
+                        if (securityTokenValidatedNotification.HandledResponse)
                         {
                             return securityTokenValidatedNotification.AuthenticationTicket;
                         }
 
-                        if (securityTokenReceivedNotification.Skipped)
+                        if (securityTokenValidatedNotification.Skipped)
                         {
                             return null;
                         }
