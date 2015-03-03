@@ -89,7 +89,10 @@ namespace Microsoft.AspNet.Authentication.Twitter
         public PathString CallbackPath { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of another authentication middleware which will be responsible for actually issuing a user <see cref="System.Security.Claims.ClaimsIdentity"/>.
+        /// Gets or sets the authentication scheme corresponding to the middleware
+        /// responsible of persisting user's identity after a successful authentication.
+        /// This value typically corresponds to a cookie middleware registered in the Startup class.
+        /// When omitted, <see cref="ExternalAuthenticationOptions.SignInScheme"/> is used as a fallback value.
         /// </summary>
         public string SignInScheme { get; set; }
 

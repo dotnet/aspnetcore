@@ -233,13 +233,12 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         public string Scope { get; set; }
 
         /// <summary>
-        /// Gets or sets the AuthenticationScheme used when creating the <see cref="System.Security.Claims.ClaimsIdentity"/>.
+        /// Gets or sets the authentication scheme corresponding to the middleware
+        /// responsible of persisting user's identity after a successful authentication.
+        /// This value typically corresponds to a cookie middleware registered in the Startup class.
+        /// When omitted, <see cref="ExternalAuthenticationOptions.SignInScheme"/> is used as a fallback value.
         /// </summary>
-        public string SignInScheme
-        {
-            get { return TokenValidationParameters.AuthenticationType; }
-            set { TokenValidationParameters.AuthenticationType = value; }
-        }
+        public string SignInScheme { get; set; }
 
         /// <summary>
         /// Gets or sets the type used to secure data handled by the middleware.

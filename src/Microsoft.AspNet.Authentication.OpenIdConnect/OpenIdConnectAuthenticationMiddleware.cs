@@ -7,12 +7,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens;
 using System.Net.Http;
 using System.Text;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.DataProtection;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Authentication.DataHandler;
 using Microsoft.AspNet.Authentication.DataHandler.Encoder;
 using Microsoft.AspNet.Authentication.DataHandler.Serializer;
+using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.DataProtection;
+using Microsoft.AspNet.Http;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.IdentityModel.Protocols;
@@ -45,9 +45,14 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         {
             _logger = loggerFactory.CreateLogger<OpenIdConnectAuthenticationMiddleware>();
 
+            if (string.IsNullOrEmpty(Options.SignInScheme))
+            {
+                Options.SignInScheme = externalOptions.Options.SignInScheme;
+            }
+
             if (string.IsNullOrWhiteSpace(Options.TokenValidationParameters.AuthenticationType))
             {
-                Options.TokenValidationParameters.AuthenticationType = externalOptions.Options.SignInScheme;
+                Options.TokenValidationParameters.AuthenticationType = Options.AuthenticationScheme;
             }
 
             if (Options.StateDataFormat == null)
