@@ -3,8 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting.Builder;
-using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.RequestContainer;
 using Microsoft.Framework.DependencyInjection;
@@ -81,14 +79,11 @@ namespace Microsoft.AspNet.Hosting.Tests
         }
 
         [Theory]
-        [InlineData(typeof(IHostingEngine))]
-        [InlineData(typeof(IServerLoader))]
-        [InlineData(typeof(IApplicationBuilderFactory))]
-        [InlineData(typeof(IHttpContextFactory))]
         [InlineData(typeof(ITypeActivator))]
-        [InlineData(typeof(IApplicationLifetime))]
+        [InlineData(typeof(IHostingEnvironment))]
         [InlineData(typeof(ILoggerFactory))]
         [InlineData(typeof(IHttpContextAccessor))]
+        [InlineData(typeof(IApplicationLifetime))]
         public void UseRequestServicesHostingImportedServicesAreDefined(Type service)
         {
             var baseServiceProvider = HostingServices.Create().BuildServiceProvider();
@@ -96,7 +91,10 @@ namespace Microsoft.AspNet.Hosting.Tests
 
             builder.UseRequestServices();
 
-            Assert.NotNull(builder.ApplicationServices.GetRequiredService(service));
+            var fromAppServices = builder.ApplicationServices.GetRequiredService(service);
+
+            Assert.NotNull(fromAppServices);
+            Assert.Equal(baseServiceProvider.GetRequiredService(service), fromAppServices);
         }
     }
 }
