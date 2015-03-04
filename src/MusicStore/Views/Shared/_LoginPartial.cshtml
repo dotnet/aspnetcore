@@ -15,7 +15,7 @@
     }
 }
 //Either NTLM will be used or social authentication will be used. Based on the authentication schemes enabled remove an unused block.
-else if (User.Identity.IsAuthenticated && User.Identity.AuthenticationType == "NTLM")
+else if (User.Identity.IsAuthenticated)
 {
     //This code block necessary only for NTLM authentication
     <ul class="nav navbar-nav navbar-right">
