@@ -50,7 +50,7 @@ This will use the currently released version of `kvm` (from the `release` branch
 
 ```
 
-##### Optimisitc
+##### Optimistic
 If you want to run on the bleeding edge and install the latest development version of KVM, run the following command:
 
 ```
