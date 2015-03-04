@@ -40,13 +40,17 @@ That said, you can also try out ASP.NET 5 with just a command-prompt and a text 
 The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager). We use the K Version Manager to install different versions of the ASP.NET 5 runtime and switch between them.
 
 #### Windows
-To install KVM on Windows run the following command, which will download and run a script that installs KVM for the current user (requires admin privileges for Powershell). This will use the currently released version of `kvm` (from the `release` branch of this repo).
+To install KVM on Windows run the following command, which will download and run a script that installs KVM for the current user (requires admin privileges for Powershell).
+
+##### Stable(ish)
+This will use the currently released version of `kvm` (from the `release` branch of this repo).
 
 ```
 @powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.ps1'))"
 
 ```
 
+##### Optimisitc
 If you want to run on the bleeding edge and install the latest development version of KVM, run the following command:
 
 ```
