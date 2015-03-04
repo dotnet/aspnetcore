@@ -2,30 +2,27 @@
 
 @if (User.IsSignedIn())
 {
-    //Either NTLM will be used or social authentication will be used. Based on the authentication schemes enabled remove an unused block.
-    if (User.Identity.AuthenticationType != "NTLM")
+    using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
     {
-        using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
-        {
-            @Html.AntiForgeryToken()
+        @Html.AntiForgeryToken()
 
-            <ul class="nav navbar-nav navbar-right">
-                <li>
-                    @Html.ActionLink("Hello " + User.GetUserName() + "!", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" })
-                </li>
-                <li><a href="javascript:document.getElementById('logoutForm').submit()">Log off</a></li>
-            </ul>
-        }
-    }
-    else
-    {
-        //This code block necessary only for NTLM authentication
         <ul class="nav navbar-nav navbar-right">
             <li>
-                <p class="nav navbar-text navbar-right">Hello, @User.GetUserName()!</p>
+                @Html.ActionLink("Hello " + User.GetUserName() + "!", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" })
             </li>
+            <li><a href="javascript:document.getElementById('logoutForm').submit()">Log off</a></li>
         </ul>
     }
+}
+//Either NTLM will be used or social authentication will be used. Based on the authentication schemes enabled remove an unused block.
+else if (User.Identity.IsAuthenticated && User.Identity.AuthenticationType == "NTLM")
+{
+    //This code block necessary only for NTLM authentication
+    <ul class="nav navbar-nav navbar-right">
+        <li>
+            <p class="nav navbar-text navbar-right">Hello, @User.GetUserName()!</p>
+        </li>
+    </ul>
 }
 else
 {
