@@ -2,7 +2,8 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_KVM_BUILDNUMBER="10321"
+_KVM_BUILDNUMBER="t150304224119"
+_KVM_AUTHORS="Microsoft Open Technologies, Inc."
 _KVM_RUNTIME_PACKAGE_NAME="kre"
 _KVM_RUNTIME_FRIENDLY_NAME="K Runtime"
 _KVM_RUNTIME_SHORT_NAME="KRE"
@@ -11,6 +12,8 @@ _KVM_COMMAND_NAME="kvm"
 _KVM_VERSION_MANAGER_NAME="K Version Manager"
 _KVM_DEFAULT_FEED="https://www.myget.org/F/aspnetvnext/api/v2"
 _KVM_HOME_VAR_NAME="KRE_HOME"
+
+[ "$_KVM_BUILDNUMBER" = "{{*" ] && _KVM_BUILDNUMBER="HEAD"
 
 __kvm_has() {
     type "$1" > /dev/null 2>&1
@@ -170,7 +173,8 @@ kvm()
     case $1 in
         "help" )
             echo ""
-            echo "$_KVM_VERSION_MANAGER_NAME - Build $_KVM_BUILDNUMBER"
+            echo "$_KVM_VERSION_MANAGER_NAME - Version 1.0.0-$_KVM_BUILDNUMBER"
+            [ "$_KVM_AUTHORS" != "{{*" ] && echo "By $_KVM_AUTHORS"
             echo ""
             echo "USAGE: $_KVM_COMMAND_NAME <command> [options]"
             echo ""

@@ -1,188 +1,371 @@
-param(
-  [parameter(Position=0)]
-  [string] $Command,
-  [string] $Proxy,
-  [switch] $Verbosity = $false,
-  [alias("p")][switch] $Persistent = $false,
-  [alias("f")][switch] $Force = $false,
-  [alias("r")][string] $Runtime,
+#Requires -Version 4
 
-  [alias("arch")][string] $Architecture,
-  [switch] $X86 = $false,
-  [alias("amd64")][switch] $X64 = $false,
+$ScriptPath = $MyInvocation.MyCommand.Definition
 
-  [alias("w")][switch] $Wait = $false,
-  [alias("a")]
-  [string] $Alias = $null,
-  [switch] $NoNative = $false,
-  [parameter(Position=1, ValueFromRemainingArguments=$true)]
-  [string[]]$Args=@(),
-  [switch] $Quiet,
-  [string] $OutputVariable,
-  [switch] $AssumeElevated
-)
+$Script:UseWriteHost = $true
+function _WriteDebug($msg) {
+    if($Script:UseWriteHost) {
+        try {
+            Write-Debug $msg
+        } catch {
+            $Script:UseWriteHost = $false
+            _WriteDebug $msg
+        }
+    }
+}
 
-# Constants
-Set-Variable -Option Constant "BuildNumber" "10321"
+function _WriteOut {
+    param(
+        [Parameter(Mandatory=$false, Position=0, ValueFromPipeline=$true)][string]$msg,
+        [Parameter(Mandatory=$false)][ConsoleColor]$ForegroundColor,
+        [Parameter(Mandatory=$false)][ConsoleColor]$BackgroundColor,
+        [Parameter(Mandatory=$false)][switch]$NoNewLine)
+
+    if(!$Script:UseWriteHost) {
+        if(!$msg) {
+            $msg = ""
+        }
+        if($NoNewLine) {
+            [Console]::Write($msg)
+        } else {
+            [Console]::WriteLine($msg)
+        }
+    }
+    else {
+        try {
+            if(!$ForegroundColor) {
+                $ForegroundColor = $host.UI.RawUI.ForegroundColor
+            }
+            if(!$BackgroundColor) {
+                $BackgroundColor = $host.UI.RawUI.BackgroundColor
+            }
+
+            Write-Host $msg -ForegroundColor:$ForegroundColor -BackgroundColor:$BackgroundColor -NoNewLine:$NoNewLine
+        } catch {
+            $Script:UseWriteHost = $false
+            _WriteOut $msg
+        }
+    }
+
+    if($__TeeTo) {
+        $cur = Get-Variable -Name $__TeeTo -ValueOnly -Scope Global -ErrorAction SilentlyContinue
+        $val = $cur + "$msg"
+        if(!$NoNewLine) {
+            $val += [Environment]::NewLine
+        }
+        Set-Variable -Name $__TeeTo -Value $val -Scope Global -Force
+    }
+}
+
+### Constants
+$ProductVersion="1.0.0"
+$BuildVersion="t150304224119"
+$Authors="Microsoft Open Technologies, Inc."
+
+# If the Version hasn't been replaced...
+# We can't compare directly with the build version token
+# because it'll just get replaced here as well :)
+if($BuildVersion.StartsWith("{{")) {
+    # We're being run from source code rather than the "compiled" artifact
+    $BuildVersion = "HEAD"
+}
+$FullVersion="$ProductVersion-$BuildVersion"
+
+Set-Variable -Option Constant "CommandName" ([IO.Path]::GetFileNameWithoutExtension($ScriptPath))
+Set-Variable -Option Constant "CommandFriendlyName" "K Runtime Version Manager"
+Set-Variable -Option Constant "DefaultUserDirectoryName" ".k"
+Set-Variable -Option Constant "OldUserDirectoryName" ".kre"
 Set-Variable -Option Constant "RuntimePackageName" "kre"
-Set-Variable -Option Constant "RuntimeFriendlyName" "K Runtime"
-Set-Variable -Option Constant "RuntimeShortName" "KRE"
-Set-Variable -Option Constant "RuntimeFolderName" ".k"
-Set-Variable -Option Constant "CommandName" "kvm"
-Set-Variable -Option Constant "VersionManagerName" "K Version Manager"
 Set-Variable -Option Constant "DefaultFeed" "https://www.myget.org/F/aspnetvnext/api/v2"
 Set-Variable -Option Constant "CrossGenCommand" "k-crossgen"
+Set-Variable -Option Constant "CommandPrefix" "kvm-"
+Set-Variable -Option Constant "DefaultArchitecture" "x86"
+Set-Variable -Option Constant "DefaultRuntime" "clr"
+Set-Variable -Option Constant "AliasExtension" ".txt"
+
+# These are intentionally using "%" syntax. The environment variables are expanded whenever the value is used.
+Set-Variable -Option Constant "OldUserHome" "%USERPROFILE%\.kre"
+Set-Variable -Option Constant "DefaultUserHome" "%USERPROFILE%\.k"
 Set-Variable -Option Constant "HomeEnvVar" "KRE_HOME"
-Set-Variable -Option Constant "UserHomeEnvVar" "KRE_USER_HOME"
-Set-Variable -Option Constant "FeedEnvVar" "KRE_FEED"
 
+Set-Variable -Option Constant "AsciiArt" @"
+   __ ___   ____  ___
+  / //_/ | / /  |/  /
+ / ,<  | |/ / /|_/ / 
+/_/|_| |___/_/  /_/  
+"@
 
-$selectedArch=$null;
-$defaultArch="x86"
-$selectedRuntime=$null
-$defaultRuntime="clr"
-
-function getenv($name) {
-  if(Test-Path "env:\$name") {
-    cat "env:\$name"
-  }
+$ExitCodes = @{
+    "Success"                   = 0
+    "AliasDoesNotExist"         = 1001
+    "UnknownCommand"            = 1002
+    "InvalidArguments"          = 1003
 }
 
-# Get or calculate userHome
-$userHome = (getenv $UserHomeEnvVar)
-if(!$userHome) { $userHome = $env:USERPROFILE + "\$RuntimeFolderName" }
-$userRuntimesPath = $userHome + "\runtimes"
-
-# Get the feed from the environment variable or set it to the default value
-$feed = (getenv $FeedEnvVar)
-if (!$feed)
-{
-    $feed = $DefaultFeed;
-}
-$feed = $feed.TrimEnd("/")
-
-# In some environments, like Azure Websites, the Write-* cmdlets don't work
-$useHostOutputMethods = $true
-
-function String-IsEmptyOrWhitespace([string]$str) {
-     return [string]::IsNullOrEmpty($str) -or $str.Trim().length -eq 0
+$ColorScheme = $KvmColors
+if(!$ColorScheme) {
+    $ColorScheme = @{
+        "Banner"=[ConsoleColor]::Cyan
+        "RuntimeName"=[ConsoleColor]::Yellow
+        "Help_Header"=[ConsoleColor]::Yellow
+        "Help_Switch"=[ConsoleColor]::Green
+        "Help_Argument"=[ConsoleColor]::Cyan
+        "Help_Optional"=[ConsoleColor]::Gray
+        "Help_Command"=[ConsoleColor]::DarkYellow
+        "Help_Executable"=[ConsoleColor]::DarkYellow
+    }
 }
 
-$scriptPath = $myInvocation.MyCommand.Definition
+Set-Variable -Option Constant "OptionPadding" 20
 
-function _Help {
-@"
-$VersionManagerName - Build $BuildNumber
-
-USAGE: $CommandName <command> [options]
-
-$CommandName upgrade [-X86|-X64] [-r|-Runtime CLR|CoreCLR] [-g|-Global] [-f|-Force] [-Proxy <ADDRESS>] [-NoNative]
-  install latest $RuntimeShortName from feed
-  set 'default' alias to installed version
-  add $RuntimeShortName bin to user PATH environment variable
-  -g|-Global        install to machine-wide location
-  -f|-Force         upgrade even if latest is already installed
-  -Proxy <ADDRESS>  use given address as proxy when accessing remote server (e.g. https://username:password@proxyserver:8080/). Alternatively set proxy using http_proxy environment variable.
-  -NoNative         Do not generate native images (Effective only for CoreCLR flavors)
-
-$CommandName install <semver>|<alias>|<nupkg>|latest [-X86|-X64] [-r|-Runtime CLR|CoreCLR] [-a|-Alias <alias>] [-f|-Force] [-Proxy <ADDRESS>] [-NoNative]
-  <semver>|<alias>  install requested $RuntimeShortName from feed
-  <nupkg>           install requested $RuntimeShortName from package on local filesystem
-  latest            install latest $RuntimeShortName from feed
-  add $RuntimeShortName bin to path of current command line
-  -p|-Persistent    add $RuntimeShortName bin to PATH environment variables persistently
-  -a|-Alias <alias> set alias <alias> for requested $RuntimeShortName on install
-  -f|-Force         install even if specified version is already installed
-  -Proxy <ADDRESS>  use given address as proxy when accessing remote server (e.g. https://username:password@proxyserver:8080/). Alternatively set proxy using http_proxy environment variable.
-  -NoNative         Do not generate native images (Effective only for CoreCLR flavors)
-
-$CommandName use <semver>|<alias>|<package>|none [-X86|-X64] [-r|-Runtime CLR|CoreCLR] [-p|-Persistent]
-  <semver>|<alias>|<package>  add $RuntimeShortName bin to path of current command line
-  none                        remove $RuntimeShortName bin from path of current command line
-  -p|-Persistent              add $RuntimeShortName bin to PATH environment variable across all processes run by the current user
-
-$CommandName list
-  list $RuntimeShortName versions installed
-
-$CommandName alias
-  list $RuntimeShortName aliases which have been defined
-
-$CommandName alias <alias>
-  display value of the specified alias
-
-$CommandName alias <alias> <semver>|<alias>|<package> [-X86|-X64] [-r|-Runtime CLR|CoreCLR]
-  <alias>                      the name of the alias to set
-  <semver>|<alias>|<package>   the $RuntimeShortName version to set the alias to. Alternatively use the version of the specified alias
-
-$CommandName unalias <alias>
-  remove the specified alias
-
-"@ -replace "`n","`r`n" | Console-Write
+# Test Control Variables
+if($__TeeTo) {
+    _WriteDebug "Saving output to '$__TeeTo' variable"
+    Set-Variable -Name $__TeeTo -Value "" -Scope Global -Force
 }
 
-function _Global-Setup {
-  # Sets up the version manager tool and adds the user-local runtime install directory to the home variable
-  # Note: We no longer do global install via this tool. The MSI handles global install of runtimes AND will set
-  # the machine level home value.
+# Commands that have been deprecated but do still work.
+$DeprecatedCommands = @("unalias")
 
-  # In this configuration, the user-level path will OVERRIDE the global path because it is placed first.
+# Load Environment variables
+$RuntimeHomes = $env:KRE_HOME
+$UserHome = $env:KRE_USER_HOME
+$ActiveFeed = $env:KRE_FEED
 
-  $cmdBinPath = "$userHome\bin"
+# Default Exit Code
+$Script:ExitCode = $ExitCodes.Success
 
-  If (Needs-Elevation)
-  {
-    $arguments = "-ExecutionPolicy unrestricted & '$scriptPath' setup -wait"
-    Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList $arguments -Wait
-    Console-Write "Adding $cmdBinPath to process PATH"
-    Set-Path (Change-Path $env:Path $cmdBinPath ($cmdBinPath))
-    Console-Write "Adding %USERPROFILE%\$RuntimeFolderName to process $HomeEnvVar"
-    $envRuntimeHome = (getenv $HomeEnvVar)
-    $envRuntimeHome = Change-Path $envRuntimeHome "%USERPROFILE%\$RuntimeFolderName" ("%USERPROFILE%\$RuntimeFolderName")
-    Set-Content "env:\$HomeEnvVar" $envRuntimeHome
-    Console-Write "Setup complete"
-    break
-  }
+############################################################
+### Below this point, the terms "KVM", "KRE", "K", etc.  ###
+### should never be used. Instead, use the Constants     ###
+### defined above                                        ###
+############################################################
+# An exception to the above: The commands are defined by functions
+# named "kvm-[command name]" so that extension functions can be added
 
-  $scriptFolder = [System.IO.Path]::GetDirectoryName($scriptPath)
+$StartPath = $env:PATH
 
-  Console-Write "Copying file $cmdBinPath\$CommandName.ps1"
-  md $cmdBinPath -Force | Out-Null
-  copy "$scriptFolder\$CommandName.ps1" "$cmdBinPath\$CommandName.ps1"
-
-  Console-Write "Copying file $cmdBinPath\$CommandName.cmd"
-  copy "$scriptFolder\$CommandName.cmd" "$cmdBinPath\$CommandName.cmd"
-
-  Console-Write "Adding $cmdBinPath to process PATH"
-  Set-Path (Change-Path $env:Path $cmdBinPath ($cmdBinPath))
-
-  Console-Write "Adding $cmdBinPath to user PATH"
-  $userPath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
-  $userPath = Change-Path $userPath $cmdBinPath ($cmdBinPath)
-  [Environment]::SetEnvironmentVariable("Path", $userPath, [System.EnvironmentVariableTarget]::User)
-
-  Console-Write "Adding %USERPROFILE%\$RuntimeFolderName to process $HomeEnvVar"
-  $envRuntimeHome = (getenv $HomeEnvVar)
-  $envRuntimeHome = Change-Path $envRuntimeHome "%USERPROFILE%\$RuntimeFolderName" ("%USERPROFILE%\$RuntimeFolderName")
-  Set-Content "env:\$HomeEnvVar" $envRuntimeHome
-
-  Console-Write "Adding %USERPROFILE%\$RuntimeFolderName to machine $HomeEnvVar"
-  $machineruntimeHome = [Environment]::GetEnvironmentVariable($HomeEnvVar, [System.EnvironmentVariableTarget]::Machine)
-  $machineruntimeHome = Change-Path $machineruntimeHome "%USERPROFILE%\$RuntimeFolderName" ("%USERPROFILE%\$RuntimeFolderName")
-  [Environment]::SetEnvironmentVariable($HomeEnvVar, $machineruntimeHome, [System.EnvironmentVariableTarget]::Machine)
+if($CmdPathFile) {
+    if(Test-Path $CmdPathFile) {
+        _WriteDebug "Cleaning old CMD PATH file: $CmdPathFile"
+        Remove-Item $CmdPathFile -Force
+    }
+    _WriteDebug "Using CMD PATH file: $CmdPathFile"
 }
 
-function _Upgrade {
+if(!$ActiveFeed) {
+    $ActiveFeed = $DefaultFeed
+}
+
+# Determine where runtimes can exist (RuntimeHomes)
+if(!$RuntimeHomes) {
+    # Set up a default value for the runtime home
+    $UnencodedHomes = "%USERPROFILE%\$DefaultUserDirectoryName"
+} else {
+    $UnencodedHomes = $RuntimeHomes
+}
+
+$UnencodedHomes = $UnencodedHomes.Split(";")
+$RuntimeHomes = $UnencodedHomes | ForEach-Object { [Environment]::ExpandEnvironmentVariables($_) }
+$RuntimeDirs = $RuntimeHomes | ForEach-Object { Join-Path $_ "runtimes" }
+
+# Determine the default installation directory (UserHome)
+if(!$UserHome) {
+    _WriteDebug "Detecting User Home..."
+    $pf = $env:ProgramFiles
+    if(Test-Path "env:\ProgramFiles(x86)") {
+        $pf32 = cat "env:\ProgramFiles(x86)"
+    }
+
+    # Canonicalize so we can do StartsWith tests
+    if(!$pf.EndsWith("\")) { $pf += "\" }
+    if($pf32 -and !$pf32.EndsWith("\")) { $pf32 += "\" }
+
+    $UserHome = $RuntimeHomes | Where-Object {
+        # Take the first path that isn't under program files
+        !($_.StartsWith($pf) -or $_.StartsWith($pf32))
+    } | Select-Object -First 1
+
+    _WriteDebug "Found: $UserHome"
+    
+    if(!$UserHome) {
+        $UserHome = "$env:USERPROFILE\$DefaultUserDirectoryName"
+    }
+}
+
+_WriteDebug ""
+_WriteDebug "=== Running $CommandName ==="
+_WriteDebug "Runtime Homes: $RuntimeHomes"
+_WriteDebug "User Home: $UserHome"
+$AliasesDir = Join-Path $UserHome "alias"
+$RuntimesDir = Join-Path $UserHome "runtimes"
+$Aliases = $null
+
+### Helper Functions
+function GetArch($Architecture, $FallBackArch = $DefaultArchitecture) {
+    if(![String]::IsNullOrWhiteSpace($Architecture)) {
+        $Architecture
+    } elseif($CompatArch) {
+        $CompatArch
+    } else {
+        $FallBackArch
+    }
+}
+
+function GetRuntime($Runtime) {
+    if(![String]::IsNullOrWhiteSpace($Runtime)) {
+        $Runtime
+    } else {
+        $DefaultRuntime
+    }
+}
+
+function Write-Usage {
+    _WriteOut -ForegroundColor $ColorScheme.Banner $AsciiArt
+    _WriteOut "$CommandFriendlyName v$FullVersion"
+    if(!$Authors.StartsWith("{{")) {
+        _WriteOut "By $Authors"
+    }
+    _WriteOut
+    _WriteOut -NoNewLine -ForegroundColor $ColorScheme.Help_Header "usage:"
+    _WriteOut -NoNewLine -ForegroundColor $ColorScheme.Help_Executable " $CommandName"
+    _WriteOut -NoNewLine -ForegroundColor $ColorScheme.Help_Command " <command>"
+    _WriteOut -ForegroundColor $ColorScheme.Help_Argument " [<arguments...>]"
+}
+
+function Get-RuntimeAlias {
+    if($Aliases -eq $null) {
+        _WriteDebug "Scanning for aliases in $AliasesDir"
+        if(Test-Path $AliasesDir) {
+            $Aliases = @(Get-ChildItem ($UserHome + "\alias\") | Select-Object @{label='Alias';expression={$_.BaseName}}, @{label='Name';expression={Get-Content $_.FullName }})
+        } else {
+            $Aliases = @()
+        }
+    }
+    $Aliases
+}
+
+function IsOnPath {
+    param($dir)
+
+    $env:Path.Split(';') -icontains $dir
+}
+
+function Get-RuntimeId(
+    [Parameter()][string]$Architecture,
+    [Parameter()][string]$Runtime) {
+
+    $Architecture = GetArch $Architecture
+    $Runtime = GetRuntime $Runtime
+
+    "$RuntimePackageName-$Runtime-win-$Architecture".ToLowerInvariant()
+}
+
+function Get-RuntimeName(
+    [Parameter(Mandatory=$true)][string]$Version,
+    [Parameter()][string]$Architecture,
+    [Parameter()][string]$Runtime) {
+
+    $aliasPath = Join-Path $AliasesDir "$Version$AliasExtension"
+
+    if(Test-Path $aliasPath) {
+        $BaseName = Get-Content $aliasPath
+
+        $Architecture = GetArch $Architecture (Get-PackageArch $BaseName)
+        $Runtime = GetRuntime $Runtime (Get-PackageArch $BaseName)
+        $Version = Get-PackageVersion $BaseName
+    }
+    
+    "$(Get-RuntimeId $Architecture $Runtime).$Version"
+}
+
+filter List-Parts {
+    param($aliases)
+
+    $binDir = Join-Path $_.FullName "bin"
+    if (!(Test-Path $binDir)) {
+        return
+    }
+    $active = IsOnPath $binDir
+    
+    $fullAlias=""
+    $delim=""
+
+    foreach($alias in $aliases) {
+        if($_.Name.Split('\', 2) -contains $alias.Name) {
+            $fullAlias += $delim + $alias.Alias
+            $delim = ", "
+        }
+    }
+
+    $parts1 = $_.Name.Split('.', 2)
+    $parts2 = $parts1[0].Split('-', 4)
+    return New-Object PSObject -Property @{
+        Active = $active
+        Version = $parts1[1]
+        Runtime = $parts2[1]
+        OperatingSystem = $parts2[2]
+        Architecture = $parts2[3]
+        Location = $_.Parent.FullName
+        Alias = $fullAlias
+    }
+}
+
+function Read-Alias($Name) {
+    _WriteDebug "Listing aliases matching '$Name'"
+
+    $aliases = Get-RuntimeAlias
+
+    $result = @($aliases | Where-Object { !$Name -or ($_.Alias.Contains($Name)) })
+    if($Name -and ($result.Length -eq 1)) {
+        _WriteOut "Alias '$Name' is set to '$($result[0].Name)'"
+    } elseif($Name -and ($result.Length -eq 0)) {
+        _WriteOut "Alias does not exist: '$Name'"
+        $Script:ExitCode = $ExitCodes.AliasDoesNotExist
+    } else {
+        $result
+    }
+}
+
+function Write-Alias {
+    param(
+        [Parameter(Mandatory=$true)][string]$Name,
+        [Parameter(Mandatory=$true)][string]$Version,
+        [Parameter(Mandatory=$false)][string]$Architecture,
+        [Parameter(Mandatory=$false)][string]$Runtime)
+
+    $runtimeFullName = Get-RuntimeName $Version $Architecture $Runtime
+    $aliasFilePath = Join-Path $AliasesDir "$Name.txt"
+    $action = if (Test-Path $aliasFilePath) { "Updating" } else { "Setting" }
+    
+    if(!(Test-Path $AliasesDir)) {
+        _WriteDebug "Creating alias directory: $AliasesDir"
+        New-Item -Type Directory $AliasesDir | Out-Null
+    }
+    _WriteOut "$action alias '$Name' to '$runtimeFullName'"
+    $runtimeFullName | Out-File $aliasFilePath ascii
+}
+
+function Delete-Alias {
+    param(
+        [Parameter(Mandatory=$true)][string]$Name)
+
+    $aliasPath = Join-Path $AliasesDir "$Name.txt"
+    if (Test-Path -literalPath "$aliasPath") {
+        _WriteOut "Removing alias $Name"
+
+        # Delete with "-Force" because we already confirmed above
+        Remove-Item -literalPath $aliasPath -Force
+    } else {
+        _WriteOut "Cannot remove alias '$Name'. It does not exist."
+        $Script:ExitCode = $ExitCodes.AliasDoesNotExist # Return non-zero exit code for scripting
+    }
+}
+
+function Apply-Proxy {
 param(
-  [boolean] $isGlobal
-)
-  $Persistent = $true
-  $Alias="default"
-  _Install "latest" $isGlobal
-}
-
-function Add-Proxy-If-Specified {
-param(
-  [System.Net.WebClient] $wc
+  [System.Net.WebClient] $wc,
+  [string]$Proxy
 )
   if (!$Proxy) {
     $Proxy = $env:http_proxy
@@ -199,592 +382,855 @@ param(
   }
 }
 
-function _Find-Latest {
-param(
-  [string] $platform,
-  [string] $architecture
-)
-  Console-Write "Determining latest version"
+function Find-Latest {
+    param(
+        [string]$runtime = "",
+        [string]$architecture = "",
+        [string]$Feed,
+        [string]$Proxy
+    )
+    if(!$Feed) { $Feed = $ActiveFeed }
 
-  $url = "$feed/GetUpdates()?packageIds=%27$RuntimePackageName-$platform-win-$architecture%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
+    _WriteOut "Determining latest version"
 
-  $wc = New-Object System.Net.WebClient
-  Add-Proxy-If-Specified($wc)
-  Write-Verbose "Downloading $url ..."
-  [xml]$xml = $wc.DownloadString($url)
+    $RuntimeId = Get-RuntimeId -Architecture:"$architecture" -Runtime:"$runtime"
+    $url = "$Feed/GetUpdates()?packageIds=%27$RuntimeId%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
 
-  $version = Select-Xml "//d:Version" -Namespace @{d='http://schemas.microsoft.com/ado/2007/08/dataservices'} $xml
+    # NOTE: DO NOT use Invoke-WebRequest. It requires PowerShell 4.0!
 
-  if (String-IsEmptyOrWhitespace($version)) {
-    throw "There are no runtimes for platform '$platform', architecture '$architecture' in the feed '$feed'"
-  }
+    $wc = New-Object System.Net.WebClient
+    Apply-Proxy $wc -Proxy:$Proxy
+    _WriteDebug "Downloading $url ..."
+    [xml]$xml = $wc.DownloadString($url)
 
-  return $version
-}
+    $version = Select-Xml "//d:Version" -Namespace @{d='http://schemas.microsoft.com/ado/2007/08/dataservices'} $xml
 
-function Do-Download {
-param(
-  [string] $runtimeFullName,
-  [string] $runtimesFolder
-)
-  $parts = $runtimeFullName.Split(".", 2)
-
-  $url = "$feed/package/" + $parts[0] + "/" + $parts[1]
-  $runtimeFolder = Join-Path $runtimesFolder $runtimeFullName
-  $runtimeFile = Join-Path $runtimeFolder "$runtimeFullName.nupkg"
-
-  If (Test-Path $runtimeFolder) {
-    if($Force)
-    {
-      rm $runtimeFolder -Recurse -Force
-    } else {
-      Console-Write "$runtimeFullName already installed."
-      return;
+    if (![String]::IsNullOrWhiteSpace($version)) {
+        _WriteDebug "Found latest version: $version"
+        $version
     }
-  }
-
-  Console-Write "Downloading $runtimeFullName from $feed"
-
-  #Downloading to temp location
-  $runtimeTempDownload = Join-Path $runtimesFolder "temp"
-  $tempDownloadFile = Join-Path $runtimeTempDownload "$runtimeFullName.nupkg"
-
-  if(Test-Path $runtimeTempDownload) {
-    del "$runtimeTempDownload\*" -recurse
-  } else {
-    md $runtimeTempDownload -Force | Out-Null
-  }
-
-  $wc = New-Object System.Net.WebClient
-  Add-Proxy-If-Specified($wc)
-  Write-Verbose "Downloading $url ..."
-  $wc.DownloadFile($url, $tempDownloadFile)
-
-  Do-Unpack $tempDownloadFile $runtimeTempDownload
-
-  md $runtimeFolder -Force | Out-Null
-  Console-Write "Installing to $runtimeFolder"
-  mv "$runtimeTempDownload\*" $runtimeFolder
-  Remove-Item "$runtimeTempDownload" -Force | Out-Null
 }
 
-function Do-Unpack {
-param(
-  [string] $runtimeFile,
-  [string] $runtimeFolder
-)
-  Console-Write "Unpacking to $runtimeFolder"
+function Get-PackageVersion() {
+    param(
+        [string] $runtimeFullName
+    )
+    return $runtimeFullName -replace '[^.]*.(.*)', '$1'
+}
 
-  $compressionLib = [System.Reflection.Assembly]::LoadWithPartialName('System.IO.Compression.FileSystem')
+function Get-PackageRuntime() {
+    param(
+        [string] $runtimeFullName
+    )
+    return $runtimeFullName -replace "$RuntimePackageName-([^-]*).*", '$1'
+}
 
-  if($compressionLib -eq $null) {
+function Get-PackageArch() {
+    param(
+        [string] $runtimeFullName
+    )
+    return $runtimeFullName -replace "$RuntimePackageName-[^-]*-[^-]*-([^.]*).*", '$1'
+}
+
+function Download-Package(
+    [string]$Version,
+    [string]$Architecture,
+    [string]$Runtime,
+    [string]$DestinationFile,
+    [string]$Feed,
+    [string]$Proxy) {
+
+    if(!$Feed) { $Feed = $ActiveFeed }
+    
+    $url = "$Feed/package/" + (Get-RuntimeId $Architecture $Runtime) + "/" + $Version
+    
+    _WriteOut "Downloading $runtimeFullName from $feed"
+
+    $wc = New-Object System.Net.WebClient
+    Apply-Proxy $wc -Proxy:$Proxy
+    _WriteDebug "Downloading $url ..."
+    $wc.DownloadFile($url, $DestinationFile)
+}
+
+function Unpack-Package([string]$DownloadFile, [string]$UnpackFolder) {
+    _WriteDebug "Unpacking $DownloadFile to $UnpackFolder"
+
+    $compressionLib = [System.Reflection.Assembly]::LoadWithPartialName('System.IO.Compression.FileSystem')
+
+    if($compressionLib -eq $null) {
       try {
           # Shell will not recognize nupkg as a zip and throw, so rename it to zip
-          $runtimeZip = [System.IO.Path]::ChangeExtension($runtimeFile, "zip")
+          $runtimeZip = [System.IO.Path]::ChangeExtension($DownloadFile, "zip")
           Rename-Item $runtimeFile $runtimeZip
           # Use the shell to uncompress the nupkg
           $shell_app=new-object -com shell.application
           $zip_file = $shell_app.namespace($runtimeZip)
-          $destination = $shell_app.namespace($runtimeFolder)
+          $destination = $shell_app.namespace($UnpackFolder)
           $destination.Copyhere($zip_file.items(), 0x14) #0x4 = don't show UI, 0x10 = overwrite files
       }
       finally {
-        # make it a nupkg again
-        Rename-Item $runtimeZip $runtimeFile
+        # Clean up the package file itself.
+        Remove-Item $runtimeZip -Force
       }
-  } else {
-      [System.IO.Compression.ZipFile]::ExtractToDirectory($runtimeFile, $runtimeFolder)
-  }
-
-  If (Test-Path ($runtimeFolder + "\[Content_Types].xml")) {
-    Remove-Item ($runtimeFolder + "\[Content_Types].xml")
-  }
-  If (Test-Path ($runtimeFolder + "\_rels\")) {
-    Remove-Item ($runtimeFolder + "\_rels\") -Force -Recurse
-  }
-  If (Test-Path ($runtimeFolder + "\package\")) {
-    Remove-Item ($runtimeFolder + "\package\") -Force -Recurse
-  }
-
-  # Clean up the package file itself.
-  Remove-Item $runtimeFile -Force
-}
-
-function _Install {
-param(
-  [string] $versionOrAlias,
-  [boolean] $isGlobal
-)
-  if ($versionOrAlias -eq "latest") {
-    $versionOrAlias = _Find-Latest (Requested-Platform $defaultRuntime) (Requested-Architecture $defaultArch)
-  }
-
-  if ($versionOrAlias.EndsWith(".nupkg")) {
-    $runtimeFullName = [System.IO.Path]::GetFileNameWithoutExtension($versionOrAlias)
-  } else {
-    $runtimeFullName =  Requested-VersionOrAlias $versionOrAlias
-  }
-
-  $packageFolder = $userRuntimesPath
-
-  if ($versionOrAlias.EndsWith(".nupkg")) {
-    Set-Variable -Name "selectedArch" -Value (Package-Arch $runtimeFullName) -Scope Script
-    Set-Variable -Name "selectedRuntime" -Value (Package-Platform $runtimeFullName) -Scope Script
-
-    $runtimeFolder = "$packageFolder\$runtimeFullName"
-    $folderExists = Test-Path $runtimeFolder
-
-    if ($folderExists -and $Force) {
-      del $runtimeFolder -Recurse -Force
-      $folderExists = $false;
-    }
-
-    if ($folderExists) {
-      Console-Write "Target folder '$runtimeFolder' already exists"
     } else {
-      $tempUnpackFolder = Join-Path $packageFolder "temp"
-      $tempDownloadFile = Join-Path $tempUnpackFolder "$runtimeFullName.nupkg"
-
-      if(Test-Path $tempUnpackFolder) {
-          del "$tempUnpackFolder\*" -recurse
-      } else {
-          md $tempUnpackFolder -Force | Out-Null
-      }
-      copy $versionOrAlias $tempDownloadFile
-
-      Do-Unpack $tempDownloadFile $tempUnpackFolder
-      md $runtimeFolder -Force | Out-Null
-      Console-Write "Installing to $runtimeFolder"
-      mv "$tempUnpackFolder\*" $runtimeFolder
-      Remove-Item "$tempUnpackFolder" -Force | Out-Null
+        [System.IO.Compression.ZipFile]::ExtractToDirectory($DownloadFile, $UnpackFolder)
+        
+        # Clean up the package file itself.
+        Remove-Item $DownloadFile -Force
     }
 
-    $packageVersion = Package-Version $runtimeFullName
-
-    _Use $packageVersion
-    if (!$(String-IsEmptyOrWhitespace($Alias))) {
-        _Alias-Set $Alias $packageVersion
+    If (Test-Path -LiteralPath ($UnpackFolder + "\[Content_Types].xml")) {
+        Remove-Item -LiteralPath ($UnpackFolder + "\[Content_Types].xml")
     }
-  }
-  else
-  {
-    Do-Download $runtimeFullName $packageFolder
-    _Use $versionOrAlias
-    if (!$(String-IsEmptyOrWhitespace($Alias))) {
-        _Alias-Set "$Alias" $versionOrAlias
+    If (Test-Path ($UnpackFolder + "\_rels\")) {
+        Remove-Item -LiteralPath ($UnpackFolder + "\_rels\") -Force -Recurse
     }
-  }
-
-  if ($runtimeFullName.Contains("CoreCLR")) {
-    if ($NoNative) {
-      Console-Write "Native image generation is skipped"
+    If (Test-Path ($UnpackFolder + "\package\")) {
+        Remove-Item -LiteralPath ($UnpackFolder + "\package\") -Force -Recurse
     }
-    else {
-      Console-Write "Compiling native images for $runtimeFullName to improve startup performance..."
-      Start-Process $CrossGenCommand -Wait
-      Console-Write "Finished native image compilation."
+}
+
+function Get-RuntimePath($runtimeFullName) {
+    _WriteDebug "Resolving $runtimeFullName"
+    foreach($RuntimeHome in $RuntimeHomes) {
+        $runtimeBin = "$RuntimeHome\runtimes\$runtimeFullName\bin"
+        _WriteDebug " Candidate $runtimeBin"
+        if (Test-Path "$runtimeBin") {
+            _WriteDebug " Found in $runtimeBin"
+            return $runtimeBin
+        }
     }
-  }
-}
-
-function _List {
-  $runtimeHome = (getenv $HomeEnvVar)
-  if (!$runtimeHome) {
-    $runtimeHome = "$userHome"
-  }
-
-  md ($userHome + "\alias\") -Force | Out-Null
-  $aliases = Get-ChildItem ($userHome + "\alias\") | Select @{label='Alias';expression={$_.BaseName}}, @{label='Name';expression={Get-Content $_.FullName }}
-
-  $items = @()
-  foreach($portion in $runtimeHome.Split(';')) {
-    $path = [System.Environment]::ExpandEnvironmentVariables($portion)
-    if (Test-Path("$path\runtimes")) {
-      $items += Get-ChildItem ("$path\runtimes\$RuntimePackageName-*") | List-Parts $aliases
-    }
-  }
-
-  $items | Sort-Object Version, Runtime, Architecture, Alias | Format-Table -AutoSize -Property @{name="Active";expression={$_.Active};alignment="center"}, "Version", "Runtime", "Architecture", "Location", "Alias"
-}
-
-filter List-Parts {
-  param($aliases)
-
-  $hasBin = Test-Path($_.FullName+"\bin")
-  if (!$hasBin) {
-    return
-  }
-  $active = $false
-  foreach($portion in $env:Path.Split(';')) {
-    # Append \ to the end because otherwise you might see
-    # multiple active versions if the folders have the same
-    # name prefix (like 1.0-beta and 1.0)
-    if ($portion.StartsWith($_.FullName + "\")) {
-      $active = $true
-    }
-  }
-
-  $fullAlias=""
-  $delim=""
-
-  foreach($alias in $aliases){
-    if($_.Name.Split('\', 2) -contains $alias.Name){
-        $fullAlias += $delim + $alias.Alias
-        $delim = ", "
-    }
-  }
-
-  $parts1 = $_.Name.Split('.', 2)
-  $parts2 = $parts1[0].Split('-', 4)
-  return New-Object PSObject -Property @{
-    Active = if ($active) { "*" } else { "" }
-    Version = $parts1[1]
-    Runtime = $parts2[1]
-    OperatingSystem = $parts2[2]
-    Architecture = $parts2[3]
-    Location = $_.Parent.FullName
-    Alias = $fullAlias
-  }
-}
-
-function _Use {
-param(
-  [string] $versionOrAlias
-)
-  Validate-Full-Package-Name-Arguments-Combination $versionOrAlias
-
-  if ($versionOrAlias -eq "none") {
-    Console-Write "Removing $RuntimeShortName from process PATH"
-    Set-Path (Change-Path $env:Path "" ($userRuntimesPath))
-
-    if ($Persistent) {
-      Console-Write "Removing $RuntimeShortName from user PATH"
-      $userPath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
-      $userPath = Change-Path $userPath "" ($userRuntimesPath)
-      [Environment]::SetEnvironmentVariable("Path", $userPath, [System.EnvironmentVariableTarget]::User)
-    }
-    return;
-  }
-
-  $runtimeFullName = Requested-VersionOrAlias $versionOrAlias
-
-  $runtimeBin = Locate-RuntimeBinFromFullName $runtimeFullName
-  if ($runtimeBin -eq $null) {
-    throw "Cannot find $runtimeFullName, do you need to run '$CommandName install $versionOrAlias'?"
-  }
-
-  Console-Write "Adding $runtimeBin to process PATH"
-  Set-Path (Change-Path $env:Path $runtimeBin ($userRuntimesPath))
-
-  if ($Persistent) {
-    Console-Write "Adding $runtimeBin to user PATH"
-    $userPath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
-    $userPath = Change-Path $userPath $runtimeBin ($userRuntimesPath)
-    [Environment]::SetEnvironmentVariable("Path", $userPath, [System.EnvironmentVariableTarget]::User)
-  }
-}
-
-function _Alias-List {
-  md ($userHome + "\alias\") -Force | Out-Null
-
-  Get-ChildItem ($userHome + "\alias\") | Select @{label='Alias';expression={$_.BaseName}}, @{label='Name';expression={Get-Content $_.FullName }} | Format-Table -AutoSize
-}
-
-function _Alias-Get {
-param(
-  [string] $name
-)
-  md ($userHome + "\alias\") -Force | Out-Null
-  $aliasFilePath=$userHome + "\alias\" + $name + ".txt"
-  if (!(Test-Path $aliasFilePath)) {
-    Console-Write "Alias '$name' does not exist"
-    $script:exitCode = 1 # Return non-zero exit code for scripting
-  } else {
-    $aliasValue = (Get-Content ($userHome + "\alias\" + $name + ".txt"))
-    Console-Write "Alias '$name' is set to $aliasValue"
-  }
-}
-
-function _Alias-Set {
-param(
-  [string] $name,
-  [string] $value
-)
-  $runtimeFullName = Requested-VersionOrAlias $value
-  $aliasFilePath = $userHome + "\alias\" + $name + ".txt"
-  $action = if (Test-Path $aliasFilePath) { "Updating" } else { "Setting" }
-  Console-Write "$action alias '$name' to '$runtimeFullName'"
-  md ($userHome + "\alias\") -Force | Out-Null
-  $runtimeFullName | Out-File ($aliasFilePath) ascii
-}
-
-function _Unalias {
-param(
-  [string] $name
-)
-  $aliasPath=$userHome + "\alias\" + $name + ".txt"
-  if (Test-Path -literalPath "$aliasPath") {
-      Console-Write "Removing alias $name"
-      Remove-Item -literalPath $aliasPath
-  } else {
-      Console-Write "Cannot remove alias, '$name' is not a valid alias name"
-      $script:exitCode = 1 # Return non-zero exit code for scripting
-  }
-}
-
-function Locate-RuntimeBinFromFullName() {
-param(
-  [string] $runtimeFullName
-)
-  $runtimeHome = (getenv $HomeEnvVar)
-  if (!$runtimeHome) {
-    $runtimeHome = $userHome
-  }
-  foreach($portion in $runtimeHome.Split(';')) {
-    $path = [System.Environment]::ExpandEnvironmentVariables($portion)
-    $runtimeBin = "$path\runtimes\$runtimeFullName\bin"
-    if (Test-Path "$runtimeBin") {
-      return $runtimeBin
-    }
-  }
-  return $null
-}
-
-function Package-Version() {
-param(
-  [string] $runtimeFullName
-)
-  return $runtimeFullName -replace '[^.]*.(.*)', '$1'
-}
-
-function Package-Platform() {
-param(
-  [string] $runtimeFullName
-)
-  return $runtimeFullName -replace "$RuntimePackageName-([^-]*).*", '$1'
-}
-
-function Package-Arch() {
-param(
-  [string] $runtimeFullName
-)
-  return $runtimeFullName -replace "$RuntimePackageName-[^-]*-[^-]*-([^.]*).*", '$1'
-}
-
-
-function Requested-VersionOrAlias() {
-param(
-  [string] $versionOrAlias
-)
-  Validate-Full-Package-Name-Arguments-Combination $versionOrAlias
-
-  $runtimeBin = Locate-RuntimeBinFromFullName $versionOrAlias
-
-  # If the name specified is an existing package, just use it as is
-  if ($runtimeBin -ne $null) {
-    return $versionOrAlias
-  }
-
-  If (Test-Path ($userHome + "\alias\" + $versionOrAlias + ".txt")) {
-    $aliasValue = Get-Content ($userHome + "\alias\" + $versionOrAlias + ".txt")
-    # Split runtime-coreclr-win-x86.1.0.0-beta3-10922 into version and name sections
-    $parts = $aliasValue.Split('.', 2)
-    $pkgVersion = $parts[1]
-    # runtime-coreclr-win-x86
-    $parts = $parts[0].Split('-', 4)
-    $pkgPlatform = Requested-Platform $parts[1]
-    $pkgArchitecture = Requested-Architecture $parts[3]
-  } else {
-    $pkgVersion = $versionOrAlias
-    $pkgPlatform = Requested-Platform $defaultRuntime
-    $pkgArchitecture = Requested-Architecture $defaultArch
-  }
-  return $RuntimePackageName + "-" + $pkgPlatform + "-win-" + $pkgArchitecture + "." + $pkgVersion
-}
-
-function Requested-Platform() {
-param(
-  [string] $default
-)
-  if (!(String-IsEmptyOrWhitespace($selectedRuntime))) {return $selectedRuntime}
-  return $default
-}
-
-function Requested-Architecture() {
-param(
-  [string] $default
-)
-  if (!(String-IsEmptyOrWhitespace($selectedArch))) {return $selectedArch}
-  return $default
+    return $null
 }
 
 function Change-Path() {
-param(
-  [string] $existingPaths,
-  [string] $prependPath,
-  [string[]] $removePaths
-)
-  $newPath = $prependPath
-  foreach($portion in $existingPaths.Split(';')) {
-    $skip = $portion -eq ""
-    foreach($removePath in $removePaths) {
-      if ($removePath -and ($portion.StartsWith($removePath))) {
-        $skip = $true
-      }
+    param(
+        [string] $existingPaths,
+        [string] $prependPath,
+        [string[]] $removePaths
+    )
+    _WriteDebug "Updating value to prepend '$prependPath' and remove '$removePaths'"
+    
+    $newPath = $prependPath
+    foreach($portion in $existingPaths.Split(';')) {
+        $skip = $portion -eq ""
+        foreach($removePath in $removePaths) {
+            $removePrefix = if($removePath.EndsWith("\")) { $removePath } else { "$removePath\" }
+
+            if ($removePath -and (($portion -eq $removePath) -or ($portion.StartsWith($removePrefix)))) {
+                _WriteDebug " Removing '$portion' because it matches '$removePath'"
+                $skip = $true
+            }
+        }
+        if (!$skip) {
+            if(![String]::IsNullOrWhiteSpace($newPath)) {
+                $newPath += ";"
+            }
+            $newPath += $portion
+        }
     }
-    if (!$skip) {
-      $newPath = $newPath + ";" + $portion
-    }
-  }
-  return $newPath
+    return $newPath
 }
 
 function Set-Path() {
-param(
-  [string] $newPath
-)
-  md $userHome -Force | Out-Null
-  $env:Path = $newPath
-@"
+    param(
+        [string] $newPath
+    )
+
+    $env:PATH = $newPath
+
+    if($CmdPathFile) {
+        $Parent = Split-Path -Parent $CmdPathFile
+        if(!(Test-Path $Parent)) {
+            New-Item -Type Directory $Parent -Force | Out-Null
+        }
+        _WriteDebug " Writing PATH file for CMD script"
+        @"
 SET "PATH=$newPath"
-"@ | Out-File ($userHome + "\temp-set-envvars.cmd") ascii
-}
-
-function Needs-Elevation() {
-  if($AssumeElevated) {
-    return $false
-  }
-
-  $user = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
-  $elevated = $user.IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
-  return -NOT $elevated
-}
-
-function Requested-Switches() {
-  $arguments = ""
-  if ($X86) {$arguments = "$arguments -x86"}
-  if ($X64) {$arguments = "$arguments -x64"}
-  if ($selectedRuntime) {$arguments = "$arguments -runtime $selectedRuntime"}
-  if ($Persistent) {$arguments = "$arguments -persistent"}
-  if ($Force) {$arguments = "$arguments -force"}
-  if (!$(String-IsEmptyOrWhitespace($Alias))) {$arguments = "$arguments -alias '$Alias'"}
-  return $arguments
-}
-
-function Validate-And-Santitize-Switches()
-{
-  if ($X86 -and $X64) {throw "You cannot select both x86 and x64 architectures"}
-
-  if ($Runtime) {
-    $validRuntimes = "CoreCLR", "CLR"
-    $match = $validRuntimes | ? { $_ -like $Runtime } | Select -First 1
-    if (!$match) {throw "'$runtime' is not a valid runtime"}
-    Set-Variable -Name "selectedRuntime" -Value $match.ToLowerInvariant() -Scope Script
-  }
-
-  if($Architecture) {
-    $validArchitectures = "x64", "x86"
-    $match = $validArchitectures | ? { $_ -like $Architecture } | Select -First 1
-    if(!$match) {throw "'$architecture' is not a valid architecture"}
-    Set-Variable -Name "selectedArch" -Value $match.ToLowerInvariant() -Scope Script
-  }
-  else {
-    if ($X64) {
-      Set-Variable -Name "selectedArch" -Value "x64" -Scope Script
-    } elseif ($X86) {
-      Set-Variable -Name "selectedArch" -Value "x86" -Scope Script
+"@ | Out-File $CmdPathFile ascii
     }
-  }
-
 }
 
-$script:capturedOut = @()
-function Console-Write() {
-param(
-  [Parameter(ValueFromPipeline=$true)]
-  [string] $message
-)
-  if($OutputVariable) {
-    # Update the capture output
-    $script:capturedOut += @($message)
-  }
+function Ngen-Library(
+    [Parameter(Mandatory=$true)]
+    [string]$runtimeBin,
 
-  if(!$Quiet) {
-    if ($useHostOutputMethods) {
-      try {
-        Write-Host $message
-      }
-      catch {
-        $script:useHostOutputMethods = $false
-        Console-Write $message
-      }
+    [ValidateSet("x86","x64")]
+    [Parameter(Mandatory=$true)]
+    [string]$architecture) {
+
+    if ($architecture -eq 'x64') {
+        $regView = [Microsoft.Win32.RegistryView]::Registry64
+    }
+    elseif ($architecture -eq 'x86') {
+        $regView = [Microsoft.Win32.RegistryView]::Registry32
     }
     else {
-      [Console]::WriteLine($message)
+        _WriteOut "Installation does not understand architecture $architecture, skipping ngen..."
+        return
     }
-  }
-}
 
-function Console-Write-Error() {
-param(
-  [Parameter(ValueFromPipeline=$true)]
-  [string] $message
-)
-  if ($useHostOutputMethods) {
-    try {
-      Write-Error $message
+    $regHive = [Microsoft.Win32.RegistryHive]::LocalMachine
+    $regKey = [Microsoft.Win32.RegistryKey]::OpenBaseKey($regHive, $regView)
+    $frameworkPath = $regKey.OpenSubKey("SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full").GetValue("InstallPath")
+    $ngenExe = Join-Path $frameworkPath 'ngen.exe'
+
+    $ngenCmds = ""
+    foreach ($bin in Get-ChildItem $runtimeBin -Filter "Microsoft.CodeAnalysis.CSharp.dll") {
+        $ngenCmds += "$ngenExe install $($bin.FullName);"
     }
-    catch {
-      $script:useHostOutputMethods = $false
-      Console-Write-Error $message
+
+    $ngenProc = Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList "-ExecutionPolicy unrestricted & $ngenCmds" -Wait -PassThru
+}
+
+function Is-Elevated() {
+    $user = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
+    return $user.IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+}
+
+### Commands
+
+<#
+.SYNOPSIS
+    Displays a list of commands, and help for specific commands
+.PARAMETER Command
+    A specific command to get help for
+#>
+function kvm-help {
+    [CmdletBinding(DefaultParameterSetName="GeneralHelp")]
+    param(
+        [Parameter(Mandatory=$true,Position=0,ParameterSetName="SpecificCommand")][string]$Command,
+        [switch]$PassThru)
+
+    if($Command) {
+        $cmd = Get-Command "kvm-$Command" -ErrorAction SilentlyContinue
+        if(!$cmd) {
+            _WriteOut "No such command: $Command"
+            kvm-help
+            $Script:ExitCodes = $ExitCodes.UnknownCommand
+            return
+        }
+        $help = Get-Help "kvm-$Command"
+        if($PassThru) {
+            $help
+        } else {
+            _WriteOut -ForegroundColor $ColorScheme.Help_Header "$CommandName-$Command"
+            _WriteOut "  $($help.Synopsis.Trim())"
+            _WriteOut
+            _WriteOut -ForegroundColor $ColorScheme.Help_Header "usage:"
+            $help.Syntax.syntaxItem | ForEach-Object {
+                _WriteOut -NoNewLine -ForegroundColor $ColorScheme.Help_Executable "  $CommandName "
+                _WriteOut -NoNewLine -ForegroundColor $ColorScheme.Help_Command "$Command"
+                if($_.parameter) {
+                    $_.parameter | ForEach-Object {
+                        $cmdParam = $cmd.Parameters[$_.name]
+                        $name = $_.name
+                        if($cmdParam.Aliases.Length -gt 0) {
+                            $name = $cmdParam.Aliases | Sort-Object | Select-Object -First 1
+                        }
+
+                        _WriteOut -NoNewLine " "
+                        
+                        if($_.required -ne "true") {
+                            _WriteOut -NoNewLine -ForegroundColor $ColorScheme.Help_Optional "["
+                        }
+
+                        if($_.position -eq "Named") {
+                            _WriteOut -NoNewLine -ForegroundColor $ColorScheme.Help_Switch "-$name"
+                        }
+                        if($_.parameterValue) {
+                            if($_.position -eq "Named") {
+                                _WriteOut -NoNewLine " "       
+                            }
+                            _WriteOut -NoNewLine -ForegroundColor $ColorScheme.Help_Argument "<$($_.name)>"
+                        }
+
+                        if($_.required -ne "true") {
+                            _WriteOut -NoNewLine -ForegroundColor $ColorScheme.Help_Optional "]"
+                        }
+                    }
+                }
+                _WriteOut
+            }
+
+            if($help.parameters -and $help.parameters.parameter) {
+                _WriteOut
+                _WriteOut -ForegroundColor $ColorScheme.Help_Header "options:"
+                $help.parameters.parameter | ForEach-Object {
+                    $cmdParam = $cmd.Parameters[$_.name]
+                    $name = $_.name
+                    if($cmdParam.Aliases.Length -gt 0) {
+                        $name = $cmdParam.Aliases | Sort-Object | Select-Object -First 1
+                    }
+                    
+                    _WriteOut -NoNewLine "  "
+                    
+                    if($_.position -eq "Named") {
+                        _WriteOut -NoNewLine -ForegroundColor $ColorScheme.Help_Switch "-$name".PadRight($OptionPadding)
+                    } else {
+                        _WriteOut -NoNewLine -ForegroundColor $ColorScheme.Help_Argument "<$($_.name)>".PadRight($OptionPadding)
+                    }
+                    _WriteOut " $($_.description.Text)"
+                }
+            }
+
+            if($help.description) {
+                _WriteOut
+                _WriteOut -ForegroundColor $ColorScheme.Help_Header "remarks:"
+                $help.description.Text.Split(@("`r","`n"), "RemoveEmptyEntries") | 
+                    ForEach-Object { _WriteOut "  $_" }
+            }
+
+            if($DeprecatedCommands -contains $Command) {
+                _WriteOut "This command has been deprecated and should not longer be used"
+            }
+        }
+    } else {
+        Write-Usage
+        _WriteOut
+        _WriteOut -ForegroundColor $ColorScheme.Help_Header "commands: "
+        Get-Command "$CommandPrefix*" | 
+            ForEach-Object {
+                $h = Get-Help $_.Name
+                $name = $_.Name.Substring($CommandPrefix.Length)
+                if($DeprecatedCommands -notcontains $name) {
+                    _WriteOut -NoNewLine "    "
+                    _WriteOut -NoNewLine -ForegroundColor $ColorScheme.Help_Command $name.PadRight(10)
+                    _WriteOut " $($h.Synopsis.Trim())"
+                }
+            }
     }
-  }
-  else {
-   [Console]::Error.WriteLine($message)
-  }
 }
 
-function Validate-Full-Package-Name-Arguments-Combination() {
-param(
-  [string] $versionOrAlias
-)
-  if ($versionOrAlias -like "$RuntimePackageName-*" -and
-      ($selectedArch -or $selectedRuntime)) {
-    throw "Runtime or architecture cannot be specified when using the full package name."
-  }
+<#
+.SYNOPSIS
+    Lists available runtimes
+.PARAMETER PassThru
+    Set this switch to return unformatted powershell objects for use in scripting
+#>
+function kvm-list {
+    param(
+        [Parameter(Mandatory=$false)][switch]$PassThru)
+    $aliases = Get-RuntimeAlias
+
+    $items = @()
+    $RuntimeHomes | ForEach-Object {
+        _WriteDebug "Scanning $_ for runtimes..."
+        if (Test-Path "$_\runtimes") {
+            $items += Get-ChildItem "$_\runtimes\$RuntimePackageName-*" | List-Parts $aliases
+        }
+    }
+
+    if($PassThru) {
+        $items
+    } else {
+        $items | 
+            Sort-Object Version, Runtime, Architecture, Alias | 
+            Format-Table -AutoSize -Property @{name="Active";expression={if($_.Active) { "*" } else { "" }};alignment="center"}, "Version", "Runtime", "Architecture", "Location", "Alias"
+    }
 }
 
-$script:exitCode = 0
-try {
-  Validate-And-Santitize-Switches
-  switch -wildcard ($Command + " " + $Args.Count) {
-    "setup 0"           {_Global-Setup}
-    "upgrade 0"         {_Upgrade $false}
-    "install 1"         {_Install $Args[0] $false}
-    "list 0"            {_List}
-    "use 1"             {_Use $Args[0]}
-    "alias 0"           {_Alias-List}
-    "alias 1"           {_Alias-Get $Args[0]}
-    "alias 2"           {_Alias-Set $Args[0] $Args[1]}
-    "unalias 1"         {_Unalias $Args[0]}
-    "help 0"            {_Help}
-    " 0"                {_Help}
-    default             {throw "Unknown command"};
-  }
-}
-catch {
-  Console-Write-Error $_
-  Console-Write "Type '$CommandName help' for help on how to use $CommandName."
-  $script:exitCode = -1
-}
-if ($Wait) {
-  Console-Write "Press any key to continue ..."
-  $x = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,AllowCtrlC")
+<#
+.SYNOPSIS
+    Lists and manages aliases
+.PARAMETER Name
+    The name of the alias to read/create/delete
+.PARAMETER Version
+    The version to assign to the new alias
+.PARAMETER Architecture
+    The architecture of the runtime to assign to this alias
+.PARAMETER Runtime
+    The flavor of the runtime to assign to this alias
+.PARAMETER Delete
+    Set this switch to delete the alias with the specified name
+.DESCRIPTION
+    If no arguments are provided, this command lists all aliases. If <Name> is provided,
+    the value of that alias, if present, is displayed. If <Name> and <Version> are
+    provided, the alias <Name> is set to the runtime defined by <Version>, <Architecture>
+    (defaults to 'x86') and <Runtime> (defaults to 'clr').
+
+    Finally, if the '-d' switch is provided, the alias <Name> is deleted, if it exists.
+#>
+function kvm-alias {
+    param(
+        [Alias("d")]
+        [Parameter(ParameterSetName="Delete",Mandatory=$true)]
+        [switch]$Delete,
+
+        [Parameter(ParameterSetName="Read",Mandatory=$false,Position=0)]
+        [Parameter(ParameterSetName="Write",Mandatory=$true,Position=0)]
+        [Parameter(ParameterSetName="Delete",Mandatory=$true,Position=0)]
+        [string]$Name,
+        
+        [Parameter(ParameterSetName="Write",Mandatory=$true,Position=1)]
+        [string]$Version,
+
+        [Alias("arch")]
+        [ValidateSet("", "x86","x64")]
+        [Parameter(ParameterSetName="Write", Mandatory=$false)]
+        [string]$Architecture = "",
+
+        [Alias("r")]
+        [ValidateSet("", "clr","coreclr")]
+        [Parameter(ParameterSetName="Write")]
+        [string]$Runtime = "")
+
+    switch($PSCmdlet.ParameterSetName) {
+        "Read" { Read-Alias $Name }
+        "Write" { Write-Alias $Name $Version -Architecture $Architecture -Runtime $Runtime }
+        "Delete" { Delete-Alias $Name }
+    }
 }
 
-# If the user specified an output variable, push the value up to the parent scope
-if($OutputVariable) {
-  Set-Variable $OutputVariable $script:capturedOut -Scope 1
+<#
+.SYNOPSIS
+    [DEPRECATED] Removes an alias
+.PARAMETER Name
+    The name of the alias to remove
+#>
+function kvm-unalias {
+    param(
+        [Parameter(Mandatory=$true,Position=0)][string]$Name)
+    _WriteOut "This command has been deprecated. Use '$CommandName alias -d' instead"
+    kvm-alias -Delete -Name $Name
 }
 
-exit $script:exitCode
+<#
+.SYNOPSIS
+    Installs the latest version of the runtime and reassigns the specified alias to point at it
+.PARAMETER Alias
+    The alias to upgrade (default: 'default')
+.PARAMETER Architecture
+    The processor architecture of the runtime to install (default: x86)
+.PARAMETER Runtime
+    The runtime flavor to install (default: clr)
+.PARAMETER Force
+    Overwrite an existing runtime if it already exists
+.PARAMETER Proxy
+    Use the given address as a proxy when accessing remote server
+.PARAMETER NoNative
+    Skip generation of native images
+.PARAMETER Ngen
+    For CLR flavor only. Ngen XRE libraries for faster startup. This option requires elevated privilege and will be automatically turned on if the script is running in administrative mode. To opt-out in administrative mode, use -NoNative switch.
+#>
+function kvm-upgrade {
+    param(
+        [Alias("a")]
+        [Parameter(Mandatory=$false, Position=0)]
+        [string]$Alias = "default",
+
+        [Alias("arch")]
+        [ValidateSet("", "x86","x64")]
+        [Parameter(Mandatory=$false)]
+        [string]$Architecture = "",
+
+        [Alias("r")]
+        [ValidateSet("", "clr","coreclr")]
+        [Parameter(Mandatory=$false)]
+        [string]$Runtime = "",
+
+        [Alias("f")]
+        [Parameter(Mandatory=$false)]
+        [switch]$Force,
+
+        [Parameter(Mandatory=$false)]
+        [string]$Proxy,
+
+        [Parameter(Mandatory=$false)]
+        [switch]$NoNative,
+
+        [Parameter(Mandatory=$false)]
+        [switch]$Ngen)
+
+    kvm-install "latest" -Alias:$Alias -Architecture:$Architecture -Runtime:$Runtime -Force:$Force -Proxy:$Proxy -NoNative:$NoNative -Ngen:$Ngen
+}
+
+<#
+.SYNOPSIS
+    Installs a version of the runtime
+.PARAMETER VersionOrNuPkg
+    The version to install from the current channel, the path to a '.nupkg' file to install, or 'latest' to
+    install the latest available version from the current channel.
+.PARAMETER Architecture
+    The processor architecture of the runtime to install (default: x86)
+.PARAMETER Runtime
+    The runtime flavor to install (default: clr)
+.PARAMETER Alias
+    Set alias <Alias> to the installed runtime
+.PARAMETER Force
+    Overwrite an existing runtime if it already exists
+.PARAMETER Proxy
+    Use the given address as a proxy when accessing remote server
+.PARAMETER NoNative
+    Skip generation of native images
+.PARAMETER Ngen
+    For CLR flavor only. Ngen XRE libraries for faster startup. This option requires elevated privilege and will be automatically turned on if the script is running in administrative mode. To opt-out in administrative mode, use -NoNative switch.
+
+.DESCRIPTION
+    A proxy can also be specified by using the 'http_proxy' environment variable
+
+#>
+function kvm-install {
+    param(
+        [Parameter(Mandatory=$false, Position=0)]
+        [string]$VersionOrNuPkg,
+
+        [Alias("arch")]
+        [ValidateSet("", "x86","x64")]
+        [Parameter(Mandatory=$false)]
+        [string]$Architecture = "",
+
+        [Alias("r")]
+        [ValidateSet("", "clr","coreclr")]
+        [Parameter(Mandatory=$false)]
+        [string]$Runtime = "",
+
+        [Alias("a")]
+        [Parameter(Mandatory=$false)]
+        [string]$Alias,
+
+        [Alias("f")]
+        [Parameter(Mandatory=$false)]
+        [switch]$Force,
+
+        [Parameter(Mandatory=$false)]
+        [string]$Proxy,
+
+        [Parameter(Mandatory=$false)]
+        [switch]$NoNative,
+
+        [Parameter(Mandatory=$false)]
+        [switch]$Ngen)
+
+    if(!$VersionOrNuPkg) {
+        _WriteOut "A version, nupkg path, or the string 'latest' must be provided."
+        kvm-help install
+        $Script:ExitCode = $ExitCodes.InvalidArguments
+        return
+    }
+
+    if ($VersionOrNuPkg -eq "latest") {
+        $VersionOrNuPkg = Find-Latest $Runtime $Architecture
+    }
+
+    $IsNuPkg = $VersionOrNuPkg.EndsWith(".nupkg")
+
+    if ($IsNuPkg) {
+        if(!(Test-Path $VersionOrNuPkg)) {
+            throw "Unable to locate package file: '$VersionOrNuPkg'"
+        }
+        $runtimeFullName = [System.IO.Path]::GetFileNameWithoutExtension($VersionOrNuPkg)
+        $Architecture = Get-PackageArch $runtimeFullName
+        $Runtime = Get-PackageRuntime $runtimeFullName
+    } else {
+        $runtimeFullName = Get-RuntimeName $VersionOrNuPkg -Architecture:$Architecture -Runtime:$Runtime
+    }
+
+    $PackageVersion = Get-PackageVersion $runtimeFullName
+    
+    _WriteDebug "Preparing to install runtime '$runtimeFullName'"
+    _WriteDebug "Architecture: $Architecture"
+    _WriteDebug "Runtime: $Runtime"
+    _WriteDebug "Version: $PackageVersion"
+
+    $RuntimeFolder = Join-Path $RuntimesDir $runtimeFullName
+    _WriteDebug "Destination: $RuntimeFolder"
+
+    if((Test-Path $RuntimeFolder) -and $Force) {
+        _WriteOut "Cleaning existing installation..."
+        Remove-Item $RuntimeFolder -Recurse -Force
+    }
+
+    if(Test-Path $RuntimeFolder) {
+        _WriteOut "'$runtimeFullName' is already installed."
+    }
+    else {
+        $Architecture = GetArch $Architecture
+        $Runtime = GetRuntime $Runtime
+        $UnpackFolder = Join-Path $RuntimesDir "temp"
+        $DownloadFile = Join-Path $UnpackFolder "$runtimeFullName.nupkg"
+
+        if(Test-Path $UnpackFolder) {
+            _WriteDebug "Cleaning temporary directory $UnpackFolder"
+            Remove-Item $UnpackFolder -Recurse -Force
+        }
+        New-Item -Type Directory $UnpackFolder | Out-Null
+
+        if($IsNuPkg) {
+            _WriteDebug "Copying local nupkg $VersionOrNuPkg to $DownloadFile"
+            Copy-Item $VersionOrNuPkg $DownloadFile
+        } else {
+            # Download the package
+            _WriteDebug "Downloading version $VersionOrNuPkg to $DownloadFile"
+            Download-Package $VersionOrNuPkg $Architecture $Runtime $DownloadFile -Proxy:$Proxy
+        }
+
+        Unpack-Package $DownloadFile $UnpackFolder
+
+        New-Item -Type Directory $RuntimeFolder -Force | Out-Null
+        _WriteOut "Installing to $RuntimeFolder"
+        _WriteDebug "Moving package contents to $RuntimeFolder"
+        Move-Item "$UnpackFolder\*" $RuntimeFolder
+        _WriteDebug "Cleaning temporary directory $UnpackFolder"
+        Remove-Item $UnpackFolder -Force | Out-Null
+
+        kvm-use $PackageVersion -Architecture:$Architecture -Runtime:$Runtime
+
+        if ($Runtime -eq "clr") {
+            if (-not $NoNative) {
+                if ((Is-Elevated) -or $Ngen) {
+                    $runtimeBin = Get-RuntimePath $runtimeFullName
+                    Ngen-Library $runtimeBin $Architecture
+                }
+                else {
+                    _WriteOut "Native image generation (ngen) is skipped. Include -Ngen switch to turn on native image generation to improve application startup time."
+                }
+            }
+        }
+        elseif ($Runtime -eq "coreclr") {
+            if ($NoNative) {
+              _WriteOut "Skipping native image compilation."
+            }
+            else {
+              _WriteOut "Compiling native images for $runtimeFullName to improve startup performance..."
+              Start-Process $CrossGenCommand -Wait
+              _WriteOut "Finished native image compilation."
+            }
+        }
+        else {
+            _WriteOut "Unexpected platform: $Runtime. No optimization would be performed on the package installed."
+        }
+    }
+
+    if($Alias) {
+        _WriteDebug "Aliasing installed runtime to '$Alias'"
+        kvm-alias $Alias $PackageVersion -Architecture:$Architecture -Runtime:$Runtime
+    }
+}
+
+
+<#
+.SYNOPSIS
+    Adds a runtime to the PATH environment variable for your current shell
+.PARAMETER VersionOrAlias
+    The version or alias of the runtime to place on the PATH
+.PARAMETER Architecture
+    The processor architecture of the runtime to place on the PATH (default: x86, or whatever the alias specifies in the case of use-ing an alias)
+.PARAMETER Runtime
+    The runtime flavor of the runtime to place on the PATH (default: clr, or whatever the alias specifies in the case of use-ing an alias)
+.PARAMETER Persistent
+    Make the change persistent across all processes run by the current user
+#>
+function kvm-use {
+    param(
+        [Parameter(Mandatory=$false, Position=0)]
+        [string]$VersionOrAlias,
+
+        [Alias("arch")]
+        [ValidateSet("", "x86","x64")]
+        [Parameter(Mandatory=$false)]
+        [string]$Architecture = "",
+
+        [Alias("r")]
+        [ValidateSet("", "clr","coreclr")]
+        [Parameter(Mandatory=$false)]
+        [string]$Runtime = "",
+
+        [Alias("p")]
+        [Parameter(Mandatory=$false)]
+        [switch]$Persistent)
+
+    if([String]::IsNullOrWhiteSpace($VersionOrAlias)) {
+        _WriteOut "Missing version or alias to add to path"
+        kvm-help use
+        $Script:ExitCode = $ExitCodes.InvalidArguments
+        return
+    }
+
+    if ($versionOrAlias -eq "none") {
+        _WriteOut "Removing all runtimes from process PATH"
+        Set-Path (Change-Path $env:Path "" ($RuntimeDirs))
+
+        if ($Persistent) {
+            Console-Write "Removing all runtimes from user PATH"
+            $userPath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
+            $userPath = Change-Path $userPath "" ($RuntimeDirs)
+            [Environment]::SetEnvironmentVariable("Path", $userPath, [System.EnvironmentVariableTarget]::User)
+        }
+        return;
+    }
+
+    $runtimeFullName = Get-RuntimeName $VersionOrAlias $Architecture $Runtime
+    $runtimeBin = Get-RuntimePath $runtimeFullName
+    if ($runtimeBin -eq $null) {
+        throw "Cannot find $runtimeFullName, do you need to run '$CommandName install $versionOrAlias'?"
+    }
+
+    _WriteOut "Adding $runtimeBin to process PATH"
+    Set-Path (Change-Path $env:Path $runtimeBin ($RuntimeDirs))
+
+    if ($Persistent) {
+        Console-Write "Adding $runtimeBin to user PATH"
+        $userPath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
+        $userPath = Change-Path $userPath $runtimeBin ($RuntimeDirs)
+        [Environment]::SetEnvironmentVariable("Path", $userPath, [System.EnvironmentVariableTarget]::User)
+    }
+}
+
+<#
+.SYNOPSIS
+    Gets the full name of a runtime
+.PARAMETER VersionOrAlias
+    The version or alias of the runtime to place on the PATH
+.PARAMETER Architecture
+    The processor architecture of the runtime to place on the PATH (default: x86, or whatever the alias specifies in the case of use-ing an alias)
+.PARAMETER Runtime
+    The runtime flavor of the runtime to place on the PATH (default: clr, or whatever the alias specifies in the case of use-ing an alias)
+#>
+function kvm-name {
+    param(
+        [Parameter(Mandatory=$false, Position=0)]
+        [string]$VersionOrAlias,
+
+        [Alias("arch")]
+        [ValidateSet("x86","x64")]
+        [Parameter(Mandatory=$false)]
+        [string]$Architecture = "",
+
+        [Alias("r")]
+        [ValidateSet("clr","coreclr")]
+        [Parameter(Mandatory=$false)]
+        [string]$Runtime = "")
+
+    Get-RuntimeName $VersionOrAlias $Architecture $Runtime
+}
+
+<#
+.SYNOPSIS
+    Installs the version manager into your User profile directory
+.PARAMETER SkipUserEnvironmentInstall
+    Set this switch to skip configuring the user-level KRE_HOME and PATH environment variables
+#>
+function kvm-setup {
+    param(
+        [switch]$SkipUserEnvironmentInstall)
+
+    $DestinationHome = "$env:USERPROFILE\$DefaultUserDirectoryName"
+
+    # Install scripts
+    $Destination = "$DestinationHome\bin"
+    _WriteOut "Installing $CommandFriendlyName to $Destination"
+
+    $ScriptFolder = Split-Path -Parent $ScriptPath
+
+    if(!(Test-Path $Destination)) {
+        New-Item -Type Directory $Destination | Out-Null
+    }
+
+    $ps1Command = Join-Path $ScriptFolder "$CommandName.ps1"
+    if(Test-Path $ps1Command) {
+        _WriteOut "Installing '$CommandName.ps1' to '$Destination' ..."
+        Copy-Item $ps1Command $Destination -Force
+    } else {
+        _WriteOut "WARNING: Could not find '$CommandName.ps1' in '$ScriptFolder'. Unable to install!"
+    }
+    $cmdCommand = Join-Path $ScriptFolder "$CommandName.cmd"
+    if(Test-Path $cmdCommand) {
+        _WriteOut "Installing '$CommandName.cmd' to '$Destination' ..."
+        Copy-Item $cmdCommand $Destination -Force
+    } else {
+        _WriteOut "WARNING: Could not find '$CommandName.cmd' in '$ScriptFolder'. Unable to install!"
+    }
+
+    # Configure Environment Variables
+    # Also, clean old user home values if present
+
+    # We'll be removing any existing homes, both
+    $PathsToRemove = @(
+        "%USERPROFILE%\$DefaultUserDirectoryName",
+        [Environment]::ExpandEnvironmentVariables($OldUserHome),
+        $DestinationHome,
+        $OldUserHome)
+
+    # First: PATH
+    _WriteOut "Adding $Destination to Process PATH"
+    Set-Path (Change-Path $env:PATH $Destination $PathsToRemove)
+
+    if(!$SkipUserEnvironmentInstall) {
+        _WriteOut "Adding $Destination to User PATH"
+        $userPath = [Environment]::GetEnvironmentVariable("PATH", "User")
+        $userPath = Change-Path $userPath $Destination $PathsToRemove
+        [Environment]::SetEnvironmentVariable("PATH", $userPath, "User")
+    }
+
+    # Now the HomeEnvVar
+    _WriteOut "Adding $DestinationHome to Process $HomeEnvVar"
+    $processHome = ""
+    if(Test-Path "env:\$HomeEnvVar") {
+        $processHome = cat "env:\$HomeEnvVar"
+    }
+    $processHome = Change-Path $processHome "%USERPROFILE%\$DefaultUserDirectoryName" $PathsToRemove
+    Set-Content "env:\$HomeEnvVar" $processHome
+
+    if(!$SkipUserEnvironmentInstall) {
+        _WriteOut "Adding $DestinationHome to User $HomeEnvVar"
+        $userHomeVal = [Environment]::GetEnvironmentVariable($HomeEnvVar, "User")
+        $userHomeVal = Change-Path $userHomeVal "%USERPROFILE%\$DefaultUserDirectoryName" $PathsToRemove
+        [Environment]::SetEnvironmentVariable($HomeEnvVar, $userHomeVal, "User")
+    }
+}
+
+### The main "entry point"
+
+# Check for old KRE_HOME values
+if($UnencodedHomes -contains $OldUserHome) {
+    _WriteOut -ForegroundColor Yellow "WARNING: Found '$OldUserHome' in your $HomeEnvVar value. This folder has been deprecated."
+    if($UnencodedHomes -notcontains $DefaultUserHome) {
+        _WriteOut -ForegroundColor Yellow "WARNING: Didn't find '$DefaultUserHome' in your $HomeEnvVar value. You should run '$CommandName setup' to upgrade."
+    }
+}
+
+# Read arguments
+
+$cmd = $args[0]
+
+if($args.Length -gt 1) {
+    $cmdargs = @($args[1..($args.Length-1)])
+} else {
+    $cmdargs = @()
+}
+
+# Can't add this as script-level arguments because they mask '-a' arguments in subcommands!
+# So we manually parse them :)
+if($cmdargs -icontains "-amd64") {
+    $CompatArch = "x64"
+    _WriteOut "The -amd64 switch has been deprecated. Use the '-arch x64' parameter instead"
+} elseif($cmdargs -icontains "-x86") {
+    $CompatArch = "x86"
+    _WriteOut "The -x86 switch has been deprecated. Use the '-arch x86' parameter instead"
+} elseif($cmdargs -icontains "-x64") {
+    $CompatArch = "x64"
+    _WriteOut "The -x64 switch has been deprecated. Use the '-arch x64' parameter instead"
+}
+$cmdargs = @($cmdargs | Where-Object { @("-amd64", "-x86", "-x64") -notcontains $_ })
+
+if(!$cmd) {
+    _WriteOut "You must specify a command!"
+    $cmd = "help"
+    $Script:ExitCode = $ExitCodes.InvalidArguments
+}
+
+# Check for the command
+if(Get-Command -Name "$CommandPrefix$cmd" -ErrorAction SilentlyContinue) {
+    _WriteDebug "& kvm-$cmd $cmdargs"
+    & "kvm-$cmd" @cmdargs
+}
+else {
+    _WriteOut "Unknown command: '$cmd'"
+    kvm-help
+    $Script:ExitCode = $ExitCodes.UnknownCommand
+}
+
+_WriteDebug "=== End $CommandName (Exit Code $Script:ExitCode) ==="
+_WriteDebug ""
+exit $Script:ExitCode
