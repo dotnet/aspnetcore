@@ -2,7 +2,7 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_KVM_BUILDNUMBER="beta4-10332"
+_KVM_BUILDNUMBER="beta4-10333"
 _KVM_AUTHORS="Microsoft Open Technologies, Inc."
 _KVM_RUNTIME_PACKAGE_NAME="kre"
 _KVM_RUNTIME_FRIENDLY_NAME="K Runtime"

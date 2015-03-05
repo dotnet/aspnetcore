@@ -1,4 +1,4 @@
-#Requires -Version 4
+#Requires -Version 3
 
 $ScriptPath = $MyInvocation.MyCommand.Definition
 
@@ -59,7 +59,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta4-10332"
+$BuildVersion="beta4-10333"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
