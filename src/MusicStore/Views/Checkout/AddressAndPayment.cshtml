@@ -15,6 +15,8 @@
 {
     @Html.AntiForgeryToken()
     <h2>Address And Payment</h2>
+    <hr />
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
     <fieldset>
         <legend>Shipping Information</legend>
 

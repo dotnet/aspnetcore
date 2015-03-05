@@ -16,7 +16,6 @@ namespace MusicStore.Models
         public System.DateTime OrderDate { get; set; }
 
         [BindNever]
-        [Required]
         [ScaffoldColumn(false)]
         public string Username { get; set; }
 
