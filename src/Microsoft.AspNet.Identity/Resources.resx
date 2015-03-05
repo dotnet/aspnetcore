@@ -121,29 +121,9 @@
     <value>Optimistic concurrency failure, object has been modified.</value>
     <comment>Error when optimistic concurrency fails</comment>
   </data>
-  <data name="DefaultEmailTokenProviderBodyFormat" xml:space="preserve">
-    <value>Your security code is: {0}</value>
-    <comment>Default body format for the email</comment>
-  </data>
-  <data name="DefaultEmailTokenProviderName" xml:space="preserve">
-    <value>Email</value>
-    <comment>Default name for the email token provider</comment>
-  </data>
-  <data name="DefaultEmailTokenProviderSubject" xml:space="preserve">
-    <value>Security code</value>
-    <comment>Default subject for the email</comment>
-  </data>
   <data name="DefaultError" xml:space="preserve">
     <value>An unknown failure has occured.</value>
     <comment>Default identity result error message</comment>
-  </data>
-  <data name="DefaultPhoneNumberTokenProviderMessageFormat" xml:space="preserve">
-    <value>Your security code is: {0}</value>
-    <comment>Default message format for the phone number token provider</comment>
-  </data>
-  <data name="DefaultPhoneNumberTokenProviderName" xml:space="preserve">
-    <value>Phone</value>
-    <comment>Default name for the phone number token provider</comment>
   </data>
   <data name="DefaultTokenProvider" xml:space="preserve">
     <value>Default Token Provider</value>
@@ -188,10 +168,6 @@
   <data name="LoginAlreadyAssociated" xml:space="preserve">
     <value>A user with this login already exists.</value>
     <comment>Error when a login already linked</comment>
-  </data>
-  <data name="NoMessageProvider" xml:space="preserve">
-    <value>No IUserMessageProvider named '{0}' is registered.</value>
-    <comment>Error when there is no IUserMessageProvider</comment>
   </data>
   <data name="NoTokenProvider" xml:space="preserve">
     <value>No IUserTokenProvider named '{0}' is registered.</value>

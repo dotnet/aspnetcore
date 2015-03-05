@@ -1,6 +1,4 @@
 using System;
-using System.Globalization;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.OptionsModel;
 
@@ -8,16 +6,7 @@ namespace Microsoft.AspNet.Identity
 {
     public class EmailTokenProviderOptions
     {
-        public string Name { get; set; } = Resources.DefaultEmailTokenProviderName;
-
-        public string MessageProvider { get; set; } = "Email";
-
-        public string Subject { get; set; } = "Security Code";
-
-        /// <summary>
-        ///     Format string which will be used for the email body, it will be passed the token for the first parameter
-        /// </summary>
-        public string BodyFormat { get; set; } = "Your security code is: {0}";
+        public string Name { get; set; } = "Email";
     }
 
     /// <summary>
@@ -64,28 +53,6 @@ namespace Microsoft.AspNet.Identity
         {
             var email = await manager.GetEmailAsync(user);
             return "Email:" + purpose + ":" + email;
-        }
-
-        /// <summary>
-        ///     Notifies the user with a token via email using the Subject and BodyFormat
-        /// </summary>
-        /// <param name="token"></param>
-        /// <param name="manager"></param>
-        /// <param name="user"></param>
-        /// <returns></returns>
-        public override async Task NotifyAsync(string token, UserManager<TUser> manager, TUser user)
-        {
-            if (manager == null)
-            {
-                throw new ArgumentNullException(nameof(manager));
-            }
-            var msg = new IdentityMessage
-            {
-                Destination = await manager.GetEmailAsync(user),
-                Subject = Options.Subject,
-                Body = string.Format(CultureInfo.CurrentCulture, Options.BodyFormat, token)
-            };
-            await manager.SendMessageAsync(Options.MessageProvider, msg);
         }
     }
 }

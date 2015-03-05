@@ -2,13 +2,15 @@
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using IdentitySample.Models;
+using IdentitySamples;
 using Microsoft.AspNet.Authentication;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Authorization;
 
-namespace IdentitySample.Models
+namespace IdentitySample.Controllers
 {
     [Authorize]
     public class AccountController : Controller
@@ -92,13 +94,8 @@ namespace IdentitySample.Models
                 {
                     var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Context.Request.Scheme);
-                    var email = new IdentityMessage
-                    {
-                        Destination = model.Email,
-                        Subject = "Confirm your account",
-                        Body = "Please confirm your account by clicking this link: <a href=\"" + callbackUrl + "\">link</a>"
-                    };
-                    await UserManager.SendMessageAsync("Email", email);
+                    await MessageServices.SendEmailAsync(model.Email, "Confirm your account", 
+                        "Please confirm your account by clicking this link: <a href=\"" + callbackUrl + "\">link</a>");
                     ViewBag.Link = callbackUrl;
                     return View("DisplayEmail");
                 }
@@ -255,13 +252,8 @@ namespace IdentitySample.Models
 
                 var code = await UserManager.GeneratePasswordResetTokenAsync(user);
                 var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Context.Request.Scheme);
-                var email = new IdentityMessage
-                {
-                    Destination = model.Email,
-                    Subject = "Reset Password",
-                    Body = "Please reset your password by clicking here: <a href=\"" + callbackUrl + "\">link</a>"
-                };
-                await UserManager.SendMessageAsync("Email", email);
+                await MessageServices.SendEmailAsync(model.Email, "Reset Password",
+                    "Please reset your password by clicking here: <a href=\"" + callbackUrl + "\">link</a>");
                 ViewBag.Link = callbackUrl;
                 return View("ForgotPasswordConfirmation");
             }
@@ -351,11 +343,29 @@ namespace IdentitySample.Models
                 return View();
             }
 
-            // Generate the token and send it
-            if (!await SignInManager.SendTwoFactorCodeAsync(model.SelectedProvider))
+            var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
+            if (user == null)
             {
                 return View("Error");
             }
+
+            // Generate the token and send it
+            var code = await UserManager.GenerateTwoFactorTokenAsync(user, model.SelectedProvider);
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                return View("Error");
+            }
+
+            var message = "Your security code is: " + code;
+            if (model.SelectedProvider == "Email")
+            {
+                await MessageServices.SendEmailAsync(await UserManager.GetEmailAsync(user), "Security Code", message);
+            }
+            else if (model.SelectedProvider == "Phone")
+            {
+                await MessageServices.SendSmsAsync(await UserManager.GetPhoneNumberAsync(user), message);
+            }
+
             return RedirectToAction("VerifyCode", new { Provider = model.SelectedProvider, ReturnUrl = model.ReturnUrl, RememberMe = model.RememberMe });
         }
 

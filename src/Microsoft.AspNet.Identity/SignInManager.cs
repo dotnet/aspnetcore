@@ -202,24 +202,6 @@ namespace Microsoft.AspNet.Identity
             return identity;
         }
 
-        public virtual async Task<bool> SendTwoFactorCodeAsync(string provider)
-        {
-            var twoFactorInfo = await RetrieveTwoFactorInfoAsync();
-            if (twoFactorInfo == null || twoFactorInfo.UserId == null)
-            {
-                return false;
-            }
-
-            var user = await UserManager.FindByIdAsync(twoFactorInfo.UserId);
-            if (user == null)
-            {
-                return false;
-            }
-            var token = await UserManager.GenerateTwoFactorTokenAsync(user, provider);
-            await UserManager.NotifyTwoFactorTokenAsync(user, provider, token);
-            return await LogResultAsync(true, user);
-        }
-
         public virtual async Task<bool> IsTwoFactorClientRememberedAsync(TUser user)
         {
             var userId = await UserManager.GetUserIdAsync(user);

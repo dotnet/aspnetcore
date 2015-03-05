@@ -66,11 +66,6 @@ namespace Microsoft.AspNet.Identity
             return AddScoped(typeof(IUserTokenProvider<>).MakeGenericType(UserType), provider);
         }
 
-        public virtual IdentityBuilder AddMessageProvider<TProvider>() where TProvider : IIdentityMessageProvider
-        {
-            return AddScoped(typeof(IIdentityMessageProvider), typeof(TProvider));
-        }
-
         public virtual IdentityBuilder AddDefaultTokenProviders()
         {
             Services.Configure<DataProtectionTokenProviderOptions>(options =>

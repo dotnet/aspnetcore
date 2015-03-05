@@ -631,7 +631,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ManagerPublicNullChecks()
         {
             Assert.Throws<ArgumentNullException>("store",
-                () => new UserManager<TestUser>(null, null, null, null, null, null, null, null, null, null, null));
+                () => new UserManager<TestUser>(null, null, null, null, null, null, null, null, null, null));
 
             var manager = MockHelpers.TestUserManager(new NotImplementedStore());
 
@@ -737,8 +737,6 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.VerifyTwoFactorTokenAsync(null, null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
-                async () => await manager.NotifyTwoFactorTokenAsync(null, null, null));
-            await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.GetValidTwoFactorProvidersAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.VerifyUserTokenAsync(null, null, null, null));
@@ -797,7 +795,6 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GenerateEmailConfirmationTokenAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.IsEmailConfirmedAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ConfirmEmailAsync(null, null));
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.SendMessageAsync(null, null));
         }
 
         private class BadPasswordValidator<TUser> : IPasswordValidator<TUser> where TUser : class

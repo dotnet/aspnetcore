@@ -16,18 +16,6 @@ namespace Microsoft.AspNet.Identity
         public abstract string Name { get; }
 
         /// <summary>
-        ///     This token provider does not notify the user by default
-        /// </summary>
-        /// <param name="token"></param>
-        /// <param name="manager"></param>
-        /// <param name="user"></param>
-        /// <returns></returns>
-        public virtual Task NotifyAsync(string token, UserManager<TUser> manager, TUser user)
-        {
-            return Task.FromResult(0);
-        }
-
-        /// <summary>
         ///     Generate a token for the user using their security stamp
         /// </summary>
         /// <param name="purpose"></param>

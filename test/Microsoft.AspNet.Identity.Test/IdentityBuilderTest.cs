@@ -234,7 +234,7 @@ namespace Microsoft.AspNet.Identity.Test
 
         private class MyUserManager : UserManager<TestUser>
         {
-            public MyUserManager(IUserStore<TestUser> store) : base(store, null, null, null, null, null, null, null, null, null, null) { }
+            public MyUserManager(IUserStore<TestUser> store) : base(store, null, null, null, null, null, null, null, null, null) { }
         }
 
         private class MyRoleManager : RoleManager<TestRole>

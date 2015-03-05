@@ -27,54 +27,6 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Your security code is: {0}
-        /// </summary>
-        internal static string DefaultEmailTokenProviderBodyFormat
-        {
-            get { return GetString("DefaultEmailTokenProviderBodyFormat"); }
-        }
-
-        /// <summary>
-        /// Your security code is: {0}
-        /// </summary>
-        internal static string FormatDefaultEmailTokenProviderBodyFormat(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("DefaultEmailTokenProviderBodyFormat"), p0);
-        }
-
-        /// <summary>
-        /// Email
-        /// </summary>
-        internal static string DefaultEmailTokenProviderName
-        {
-            get { return GetString("DefaultEmailTokenProviderName"); }
-        }
-
-        /// <summary>
-        /// Email
-        /// </summary>
-        internal static string FormatDefaultEmailTokenProviderName()
-        {
-            return GetString("DefaultEmailTokenProviderName");
-        }
-
-        /// <summary>
-        /// Security code
-        /// </summary>
-        internal static string DefaultEmailTokenProviderSubject
-        {
-            get { return GetString("DefaultEmailTokenProviderSubject"); }
-        }
-
-        /// <summary>
-        /// Security code
-        /// </summary>
-        internal static string FormatDefaultEmailTokenProviderSubject()
-        {
-            return GetString("DefaultEmailTokenProviderSubject");
-        }
-
-        /// <summary>
         /// An unknown failure has occured.
         /// </summary>
         internal static string DefaultError
@@ -88,38 +40,6 @@ namespace Microsoft.AspNet.Identity
         internal static string FormatDefaultError()
         {
             return GetString("DefaultError");
-        }
-
-        /// <summary>
-        /// Your security code is: {0}
-        /// </summary>
-        internal static string DefaultPhoneNumberTokenProviderMessageFormat
-        {
-            get { return GetString("DefaultPhoneNumberTokenProviderMessageFormat"); }
-        }
-
-        /// <summary>
-        /// Your security code is: {0}
-        /// </summary>
-        internal static string FormatDefaultPhoneNumberTokenProviderMessageFormat(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("DefaultPhoneNumberTokenProviderMessageFormat"), p0);
-        }
-
-        /// <summary>
-        /// Phone
-        /// </summary>
-        internal static string DefaultPhoneNumberTokenProviderName
-        {
-            get { return GetString("DefaultPhoneNumberTokenProviderName"); }
-        }
-
-        /// <summary>
-        /// Phone
-        /// </summary>
-        internal static string FormatDefaultPhoneNumberTokenProviderName()
-        {
-            return GetString("DefaultPhoneNumberTokenProviderName");
         }
 
         /// <summary>
@@ -296,22 +216,6 @@ namespace Microsoft.AspNet.Identity
         internal static string FormatLoginAlreadyAssociated()
         {
             return GetString("LoginAlreadyAssociated");
-        }
-
-        /// <summary>
-        /// No IUserMessageProvider named '{0}' is registered.
-        /// </summary>
-        internal static string NoMessageProvider
-        {
-            get { return GetString("NoMessageProvider"); }
-        }
-
-        /// <summary>
-        /// No IUserMessageProvider named '{0}' is registered.
-        /// </summary>
-        internal static string FormatNoMessageProvider(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("NoMessageProvider"), p0);
         }
 
         /// <summary>

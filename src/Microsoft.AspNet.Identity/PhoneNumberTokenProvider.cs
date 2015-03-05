@@ -7,14 +7,7 @@ namespace Microsoft.AspNet.Identity
 {
     public class PhoneNumberTokenProviderOptions
     {
-        public string Name { get; set; } = Resources.DefaultPhoneNumberTokenProviderName;
-
-        public string MessageProvider { get; set; } = "SMS";
-
-        /// <summary>
-        ///     Message contents which should contain a format string which the token will be the only argument
-        /// </summary>
-        public string MessageFormat { get; set; } = Resources.DefaultPhoneNumberTokenProviderMessageFormat;
+        public string Name { get; set; } = "Phone";
     }
 
     /// <summary>
@@ -68,27 +61,6 @@ namespace Microsoft.AspNet.Identity
             }
             var phoneNumber = await manager.GetPhoneNumberAsync(user);
             return "PhoneNumber:" + purpose + ":" + phoneNumber;
-        }
-
-        /// <summary>
-        ///     Notifies the user with a token via SMS using the MessageFormat
-        /// </summary>
-        /// <param name="token"></param>
-        /// <param name="manager"></param>
-        /// <param name="user"></param>
-        /// <returns></returns>
-        public override async Task NotifyAsync(string token, UserManager<TUser> manager, TUser user)
-        {
-            if (manager == null)
-            {
-                throw new ArgumentNullException("manager");
-            }
-            var msg = new IdentityMessage
-            {
-                Destination = await manager.GetPhoneNumberAsync(user),
-                Body = string.Format(CultureInfo.CurrentCulture, Options.MessageFormat, token)
-            };
-            await manager.SendMessageAsync(Options.MessageProvider, msg);
         }
     }
 }

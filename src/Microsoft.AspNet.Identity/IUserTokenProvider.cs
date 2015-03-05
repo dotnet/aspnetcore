@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
@@ -34,15 +33,6 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user"></param>
         /// <returns></returns>
         Task<bool> ValidateAsync(string purpose, string token, UserManager<TUser> manager, TUser user);
-
-        /// <summary>
-        ///     Notifies the user that a token has been generated, i.e. via email or sms, or can no-op
-        /// </summary>
-        /// <param name="token"></param>
-        /// <param name="manager"></param>
-        /// <param name="user"></param>
-        /// <returns></returns>
-        Task NotifyAsync(string token, UserManager<TUser> manager, TUser user);
 
         /// <summary>
         ///     Returns true if provider can be used for this user to generate two factor tokens, i.e. could require a user to have an email

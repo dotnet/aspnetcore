@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNet.Mvc;
 
-namespace IdentitySample.Models
+namespace IdentitySample.Controllers
 {
     public class HomeController : Controller
     {

@@ -24,8 +24,6 @@ namespace Microsoft.AspNet.Identity
     {
         private readonly Dictionary<string, IUserTokenProvider<TUser>> _tokenProviders =
             new Dictionary<string, IUserTokenProvider<TUser>>();
-        private readonly Dictionary<string, IIdentityMessageProvider> _msgProviders =
-            new Dictionary<string, IIdentityMessageProvider>();
 
         private TimeSpan _defaultLockout = TimeSpan.Zero;
         private bool _disposed;
@@ -42,7 +40,6 @@ namespace Microsoft.AspNet.Identity
         /// <param name="keyNormalizer"></param>
         /// <param name="errors"></param>
         /// <param name="tokenProviders"></param>
-        /// <param name="msgProviders"></param>
         /// <param name="loggerFactory"></param>
         public UserManager(IUserStore<TUser> store,
             IOptions<IdentityOptions> optionsAccessor,
@@ -52,7 +49,6 @@ namespace Microsoft.AspNet.Identity
             ILookupNormalizer keyNormalizer,
             IdentityErrorDescriber errors,
             IEnumerable<IUserTokenProvider<TUser>> tokenProviders,
-            IEnumerable<IIdentityMessageProvider> msgProviders,
             ILogger<UserManager<TUser>> logger,
             IHttpContextAccessor contextAccessor)
         {
@@ -89,13 +85,6 @@ namespace Microsoft.AspNet.Identity
                 foreach (var tokenProvider in tokenProviders)
                 {
                     RegisterTokenProvider(tokenProvider);
-                }
-            }
-            if (msgProviders != null)
-            {
-                foreach (var msgProvider in msgProviders)
-                {
-                    RegisterMessageProvider(msgProvider);
                 }
             }
         }
@@ -1528,20 +1517,6 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Register a user message provider
-        /// </summary>
-        /// <param name="provider"></param>
-        public virtual void RegisterMessageProvider(IIdentityMessageProvider provider)
-        {
-            ThrowIfDisposed();
-            if (provider == null)
-            {
-                throw new ArgumentNullException("provider");
-            }
-            _msgProviders[provider.Name] = provider;
-        }
-
-        /// <summary>
         ///     Returns a list of valid two factor providers for a user
         /// </summary>
         /// <param name="user"></param>
@@ -1619,33 +1594,6 @@ namespace Microsoft.AspNet.Identity
             return token;
         }
 
-        /// <summary>
-        ///     Notify a user with a token from a specific user factor provider
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="tokenProvider"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        public virtual async Task<IdentityResult> NotifyTwoFactorTokenAsync(TUser user, string tokenProvider, string token)
-        {
-            ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
-            if (tokenProvider == null)
-            {
-                throw new ArgumentNullException(nameof(tokenProvider));
-            }
-            if (!_tokenProviders.ContainsKey(tokenProvider))
-            {
-                throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture,
-                    Resources.NoTokenProvider, tokenProvider));
-            }
-            await _tokenProviders[tokenProvider].NotifyAsync(token, this, user);
-            return await LogResultAsync(IdentityResult.Success, user);
-        }
-
         // IUserFactorStore methods
         internal IUserTwoFactorStore<TUser> GetUserTwoFactorStore()
         {
@@ -1690,30 +1638,6 @@ namespace Microsoft.AspNet.Identity
             await store.SetTwoFactorEnabledAsync(user, enabled, CancellationToken);
             await UpdateSecurityStampInternal(user);
             return await LogResultAsync(await UpdateUserAsync(user), user);
-        }
-
-        // Messaging methods
-
-        /// <summary>
-        /// Send a message to the user using the specified provider
-        /// </summary>
-        /// <param name="messageProvider"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        public virtual async Task<IdentityResult> SendMessageAsync(string messageProvider, IdentityMessage message)
-        {
-            ThrowIfDisposed();
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
-            if (!_msgProviders.ContainsKey(messageProvider))
-            {
-                throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture,
-                    Resources.NoMessageProvider, messageProvider));
-            }
-            await _msgProviders[messageProvider].SendAsync(message, CancellationToken);
-            return IdentityResult.Success;
         }
 
         // IUserLockoutStore methods

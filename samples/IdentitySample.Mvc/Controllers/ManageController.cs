@@ -2,11 +2,12 @@
 using System.Security.Principal;
 using System.Threading.Tasks;
 using IdentitySample.Models;
+using IdentitySamples;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 
-namespace IdentitySample
+namespace IdentitySample.Controllers
 {
     [Authorize]
     public class ManageController : Controller
@@ -98,12 +99,7 @@ namespace IdentitySample
             // Generate the token and send it
             var user = await GetCurrentUserAsync();
             var code = await UserManager.GenerateChangePhoneNumberTokenAsync(user, model.Number);
-            var message = new IdentityMessage
-            {
-                Destination = model.Number,
-                Body = "Your security code is: " + code
-            };
-            await UserManager.SendMessageAsync("SMS", message);
+            await MessageServices.SendSmsAsync(model.Number, "Your security code is: " + code);
             return RedirectToAction("VerifyPhoneNumber", new { PhoneNumber = model.Number });
         }
 
