@@ -35,20 +35,17 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
         private readonly IAuthenticatedEncryptorConfigurationFactory _authenticatedEncryptorConfigurationFactory;
         private readonly IServiceProvider _serviceProvider;
-        private readonly ITypeActivator _typeActivator;
         private readonly IXmlRepository _xmlRepository;
         private readonly IXmlEncryptor _xmlEncryptor;
 
         public XmlKeyManager(
             [NotNull] IServiceProvider serviceProvider,
             [NotNull] IAuthenticatedEncryptorConfigurationFactory authenticatedEncryptorConfigurationFactory,
-            [NotNull] ITypeActivator typeActivator,
             [NotNull] IXmlRepository xmlRepository,
             [NotNull] IXmlEncryptor xmlEncryptor)
         {
             _serviceProvider = serviceProvider;
             _authenticatedEncryptorConfigurationFactory = authenticatedEncryptorConfigurationFactory;
-            _typeActivator = typeActivator;
             _xmlRepository = xmlRepository;
             _xmlEncryptor = xmlEncryptor;
         }
@@ -175,7 +172,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             CryptoUtil.Assert(typeof(IAuthenticatedEncryptorConfigurationXmlReader).IsAssignableFrom(encryptorConfigurationParserType),
                 "TODO: typeof(IAuthenticatedEncryptorConfigurationXmlReader).IsAssignableFrom(encryptorConfigurationParserType)");
 
-            var parser = (IAuthenticatedEncryptorConfigurationXmlReader)_typeActivator.CreateInstance(_serviceProvider, encryptorConfigurationParserType);
+            var parser = (IAuthenticatedEncryptorConfigurationXmlReader)ActivatorUtilities.CreateInstance(_serviceProvider, encryptorConfigurationParserType);
             var encryptorConfiguration = parser.FromXml(encryptorConfigurationAsXml);
 
             Guid keyId = (Guid)keyElement.Attribute(IdAttributeName);

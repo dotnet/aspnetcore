@@ -96,7 +96,6 @@ namespace Microsoft.Framework.DependencyInjection
             descriptors.AddRange(new[]
             {
                 ServiceDescriptor.Singleton<IAuthenticatedEncryptorConfigurationFactory, CngCbcAuthenticatedEncryptorConfigurationFactory>(),
-                ServiceDescriptor.Singleton<ITypeActivator, TypeActivator>(),
                 ServiceDescriptor.Singleton<IKeyManager, XmlKeyManager>(),
                 ServiceDescriptor.Singleton<IDataProtectionProvider, DefaultDataProtectionProvider>()
             });

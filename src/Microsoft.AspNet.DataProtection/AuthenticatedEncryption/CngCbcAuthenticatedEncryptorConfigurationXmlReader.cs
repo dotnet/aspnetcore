@@ -13,14 +13,11 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
     internal sealed class CngCbcAuthenticatedEncryptorConfigurationXmlReader : IAuthenticatedEncryptorConfigurationXmlReader
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly ITypeActivator _typeActivator;
 
         public CngCbcAuthenticatedEncryptorConfigurationXmlReader(
-            [NotNull] IServiceProvider serviceProvider,
-            [NotNull] ITypeActivator typeActivator)
+            [NotNull] IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
-            _typeActivator = typeActivator;
         }
 
         public IAuthenticatedEncryptorConfiguration FromXml([NotNull] XElement element)
@@ -51,7 +48,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
             var encryptedSecretElement = element.Element(CngCbcAuthenticatedEncryptorConfiguration.SecretElementName).Elements().Single();
             var secretElementDecryptorTypeName = (string)encryptedSecretElement.Attribute("decryptor");
             var secretElementDecryptorType = Type.GetType(secretElementDecryptorTypeName, throwOnError: true);
-            var secretElementDecryptor = (IXmlDecryptor)_typeActivator.CreateInstance(_serviceProvider, secretElementDecryptorType);
+            var secretElementDecryptor = (IXmlDecryptor)ActivatorUtilities.CreateInstance(_serviceProvider, secretElementDecryptorType);
             var decryptedSecretElement = secretElementDecryptor.Decrypt(encryptedSecretElement);
             CryptoUtil.Assert(decryptedSecretElement.Name == CngCbcAuthenticatedEncryptorConfiguration.SecretElementName,
                 @"TODO: Bad element.");
