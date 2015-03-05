@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.WebEncoders
 {
@@ -19,9 +18,9 @@ namespace Microsoft.Framework.WebEncoders
         /// This method is guaranteed never to return null.
         /// It will return a default encoder instance if the service provider does not contain one.
         /// </remarks>
-        public static IHtmlEncoder GetHtmlEncoder([NotNull] this IServiceProvider serviceProvider)
+        public static IHtmlEncoder GetHtmlEncoder(this IServiceProvider serviceProvider)
         {
-            return serviceProvider.GetService<IHtmlEncoder>() ?? HtmlEncoder.Default;
+            return serviceProvider?.GetService<IHtmlEncoder>() ?? HtmlEncoder.Default;
         }
 
         /// <summary>
@@ -31,9 +30,9 @@ namespace Microsoft.Framework.WebEncoders
         /// This method is guaranteed never to return null.
         /// It will return a default encoder instance if the service provider does not contain one.
         /// </remarks>
-        public static IJavaScriptStringEncoder GetJavaScriptStringEncoder([NotNull] this IServiceProvider serviceProvider)
+        public static IJavaScriptStringEncoder GetJavaScriptStringEncoder(this IServiceProvider serviceProvider)
         {
-            return serviceProvider.GetService<IJavaScriptStringEncoder>() ?? JavaScriptStringEncoder.Default;
+            return serviceProvider?.GetService<IJavaScriptStringEncoder>() ?? JavaScriptStringEncoder.Default;
         }
 
         /// <summary>
@@ -43,9 +42,9 @@ namespace Microsoft.Framework.WebEncoders
         /// This method is guaranteed never to return null.
         /// It will return a default encoder instance if the service provider does not contain one.
         /// </remarks>
-        public static IUrlEncoder GetUrlEncoder([NotNull] this IServiceProvider serviceProvider)
+        public static IUrlEncoder GetUrlEncoder(this IServiceProvider serviceProvider)
         {
-            return serviceProvider.GetService<IUrlEncoder>() ?? UrlEncoder.Default;
+            return serviceProvider?.GetService<IUrlEncoder>() ?? UrlEncoder.Default;
         }
     }
 }

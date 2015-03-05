@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 
@@ -9,17 +10,13 @@ namespace Microsoft.Framework.WebEncoders
 {
     public static class EncoderServices
     {
-        public static IServiceCollection GetDefaultServices()
+        public static IEnumerable<ServiceDescriptor> GetDefaultServices()
         {
-            var services = new ServiceCollection();
-
             // Register the default encoders
             // We want to call the 'Default' property getters lazily since they perform static caching
-            services.AddSingleton<IHtmlEncoder>(CreateFactory(() => HtmlEncoder.Default, filter => new HtmlEncoder(filter)));
-            services.AddSingleton<IJavaScriptStringEncoder>(CreateFactory(() => JavaScriptStringEncoder.Default, filter => new JavaScriptStringEncoder(filter)));
-            services.AddSingleton<IUrlEncoder>(CreateFactory(() => UrlEncoder.Default, filter => new UrlEncoder(filter)));
-
-            return services;
+            yield return ServiceDescriptor.Singleton<IHtmlEncoder>(CreateFactory(() => HtmlEncoder.Default, filter => new HtmlEncoder(filter)));
+            yield return ServiceDescriptor.Singleton<IJavaScriptStringEncoder>(CreateFactory(() => JavaScriptStringEncoder.Default, filter => new JavaScriptStringEncoder(filter)));
+            yield return ServiceDescriptor.Singleton<IUrlEncoder>(CreateFactory(() => UrlEncoder.Default, filter => new UrlEncoder(filter)));
         }
 
         private static Func<IServiceProvider, T> CreateFactory<T>(Func<T> defaultFactory, Func<ICodePointFilter, T> customFilterFactory)
