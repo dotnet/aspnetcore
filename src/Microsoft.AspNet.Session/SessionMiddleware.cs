@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Session
             [NotNull] ConfigureOptions<SessionOptions> configureOptions)
         {
             _next = next;
-            _logger = loggerFactory.Create<SessionMiddleware>();
+            _logger = loggerFactory.CreateLogger<SessionMiddleware>();
             if (configureOptions != null)
             {
                 _options = options.GetNamedOptions(configureOptions.Name);
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Session
                     }
                     catch (Exception ex)
                     {
-                        _logger.WriteError("Error closing the session.", ex);
+                        _logger.LogError("Error closing the session.", ex);
                     }
                 }
             }

@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Session
             _idleTimeout = idleTimeout;
             _tryEstablishSession = tryEstablishSession;
             _store = new Dictionary<EncodedKey, byte[]>();
-            _logger = loggerFactory.Create<DistributedSession>();
+            _logger = loggerFactory.CreateLogger<DistributedSession>();
             _isNewSessionKey = isNewSessionKey;
         }
 
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Session
                 }
                 else if (!_isNewSessionKey)
                 {
-                    _logger.WriteWarning("Accessing expired session {0}", _sessionId);
+                    _logger.LogWarning("Accessing expired session {0}", _sessionId);
                 }
                 _loaded = true;
             }
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Session
                 Stream data;
                 if (_logger.IsEnabled(LogLevel.Information) && !_cache.TryGetValue(_sessionId, out data))
                 {
-                    _logger.WriteInformation("Session {0} started", _sessionId);
+                    _logger.LogInformation("Session {0} started", _sessionId);
                 }
                 _isModified = false;
                 _cache.Set(_sessionId, context => {
