@@ -105,19 +105,19 @@ namespace E2ETests
                         KpmBundle(startParameters, logger, Path.Combine(Environment.GetEnvironmentVariable("SystemDrive") + @"\", @"inetpub\wwwroot"));
 
                         // Drop a Microsoft.AspNet.Hosting.ini with ASPNET_ENV information.
-                        logger.WriteInformation("Creating Microsoft.AspNet.Hosting.ini file with ASPNET_ENV.");
+                        logger.LogInformation("Creating Microsoft.AspNet.Hosting.ini file with ASPNET_ENV.");
                         var iniFile = Path.Combine(startParameters.ApplicationPath, "Microsoft.AspNet.Hosting.ini");
                         File.WriteAllText(iniFile, string.Format("ASPNET_ENV={0}", startParameters.EnvironmentName));
 
                         // Can't use localdb with IIS. Setting an override to use InMemoryStore.
-                        logger.WriteInformation("Creating configoverride.json file to override default config.");
+                        logger.LogInformation("Creating configoverride.json file to override default config.");
                         var overrideConfig = Path.Combine(startParameters.ApplicationPath, "..", "approot", "src", "MusicStore", "configoverride.json");
                         overrideConfig = Path.GetFullPath(overrideConfig);
                         File.WriteAllText(overrideConfig, "{\"UseInMemoryStore\": \"true\"}");
 
                         if (startParameters.ServerType == ServerType.IISNativeModule)
                         {
-                            logger.WriteInformation("Turning runAllManagedModulesForAllRequests=true in web.config.");
+                            logger.LogInformation("Turning runAllManagedModulesForAllRequests=true in web.config.");
                             // Set runAllManagedModulesForAllRequests=true
                             var webConfig = Path.Combine(startParameters.ApplicationPath, "web.config");
                             var configuration = new XmlDocument();
@@ -134,7 +134,7 @@ namespace E2ETests
                             configuration.Save(webConfig);
                         }
 
-                        logger.WriteInformation("Successfully finished IIS application directory setup.");
+                        logger.LogInformation("Successfully finished IIS application directory setup.");
 
                         Thread.Sleep(1 * 1000);
                     }
@@ -189,12 +189,12 @@ namespace E2ETests
             }
 
             //Mono now supports --appbase 
-            logger.WriteInformation("Setting the --appbase to {0}", startParameters.ApplicationPath);
+            logger.LogInformation("Setting the --appbase to {0}", startParameters.ApplicationPath);
 
             var bootstrapper = "klr";
 
             var commandName = startParameters.ServerType == ServerType.Kestrel ? "kestrel" : string.Empty;
-            logger.WriteInformation("Executing command: {klr} {appPath} {command}", bootstrapper, startParameters.ApplicationPath, commandName);
+            logger.LogInformation("Executing command: {klr} {appPath} {command}", bootstrapper, startParameters.ApplicationPath, commandName);
 
             var startInfo = new ProcessStartInfo
             {
@@ -206,11 +206,11 @@ namespace E2ETests
             };
 
             var hostProcess = Process.Start(startInfo);
-            logger.WriteInformation("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
+            logger.LogInformation("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
 
             if (hostProcess.HasExited)
             {
-                logger.WriteError("Host process {processName} exited with code {exitCode} or failed to start.", startInfo.FileName, hostProcess.ExitCode);
+                logger.LogError("Host process {processName} exited with code {exitCode} or failed to start.", startInfo.FileName, hostProcess.ExitCode);
                 throw new Exception("Failed to start host");
             }
 
@@ -249,7 +249,7 @@ namespace E2ETests
 
             var iisExpressPath = GetIISExpressPath(startParameters.RuntimeArchitecture);
 
-            logger.WriteInformation("Executing command : {iisExpress} {args}", iisExpressPath, parameters);
+            logger.LogInformation("Executing command : {iisExpress} {args}", iisExpressPath, parameters);
 
             var startInfo = new ProcessStartInfo
             {
@@ -260,7 +260,7 @@ namespace E2ETests
             };
 
             var hostProcess = Process.Start(startInfo);
-            logger.WriteInformation("Started iisexpress. Process Id : {processId}", hostProcess.Id);
+            logger.LogInformation("Started iisexpress. Process Id : {processId}", hostProcess.Id);
 
             return hostProcess;
         }
@@ -268,7 +268,7 @@ namespace E2ETests
         private static Process StartSelfHost(StartParameters startParameters, ILogger logger)
         {
             var commandName = startParameters.ServerType == ServerType.WebListener ? "web" : "kestrel";
-            logger.WriteInformation("Executing klr.exe --appbase {appPath} \"Microsoft.Framework.ApplicationHost\" {command}", startParameters.ApplicationPath, commandName);
+            logger.LogInformation("Executing klr.exe --appbase {appPath} \"Microsoft.Framework.ApplicationHost\" {command}", startParameters.ApplicationPath, commandName);
 
             var startInfo = new ProcessStartInfo
             {
@@ -284,17 +284,17 @@ namespace E2ETests
 
             if (hostProcess.HasExited)
             {
-                logger.WriteError("Host process {processName} exited with code {exitCode} or failed to start.", startInfo.FileName, hostProcess.ExitCode);
+                logger.LogError("Host process {processName} exited with code {exitCode} or failed to start.", startInfo.FileName, hostProcess.ExitCode);
                 throw new Exception("Failed to start host");
             }
 
             try
             {
-                logger.WriteInformation("Started {fileName}. Process Id : {processId}", hostProcess.MainModule.FileName, hostProcess.Id);
+                logger.LogInformation("Started {fileName}. Process Id : {processId}", hostProcess.MainModule.FileName, hostProcess.Id);
             }
             catch (Win32Exception win32Exception)
             {
-                logger.WriteWarning("Cannot access 64 bit modules from a 32 bit process. Failed with following message.", win32Exception);
+                logger.LogWarning("Cannot access 64 bit modules from a 32 bit process. Failed with following message.", win32Exception);
             }
 
             return hostProcess;
@@ -303,8 +303,8 @@ namespace E2ETests
         private static string SwitchPathToRuntimeFlavor(RuntimeFlavor runtimeFlavor, RuntimeArchitecture runtimeArchitecture, ILogger logger)
         {
             var pathValue = Environment.GetEnvironmentVariable("PATH");
-            logger.WriteInformation(string.Empty);
-            logger.WriteInformation("Current %PATH% value : {0}", pathValue);
+            logger.LogInformation(string.Empty);
+            logger.LogInformation("Current %PATH% value : {0}", pathValue);
 
             var replaceStr = new StringBuilder().
                 Append("kre").
@@ -322,8 +322,8 @@ namespace E2ETests
             // Tweak the %PATH% to the point to the right RUNTIMEFLAVOR.
             Environment.SetEnvironmentVariable("PATH", pathValue);
 
-            logger.WriteInformation(string.Empty);
-            logger.WriteInformation("Changing to use runtime : {runtime}", runtimeName);
+            logger.LogInformation(string.Empty);
+            logger.LogInformation("Changing to use runtime : {runtime}", runtimeName);
             return runtimeName;
         }
 
@@ -332,7 +332,7 @@ namespace E2ETests
             startParameters.BundledApplicationRootPath = Path.Combine(bundleRoot ?? Path.GetTempPath(), Guid.NewGuid().ToString());
 
             var parameters = string.Format("bundle {0} -o {1} --runtime {2}", startParameters.ApplicationPath, startParameters.BundledApplicationRootPath, startParameters.Runtime);
-            logger.WriteInformation("Executing command kpm {args}", parameters);
+            logger.LogInformation("Executing command kpm {args}", parameters);
 
             var startInfo = new ProcessStartInfo
             {
@@ -352,7 +352,7 @@ namespace E2ETests
                 Path.Combine(startParameters.BundledApplicationRootPath, "wwwroot") :
                 Path.Combine(startParameters.BundledApplicationRootPath, "approot", "src", "MusicStore");
 
-            logger.WriteInformation("kpm bundle finished with exit code : {exitCode}", hostProcess.ExitCode);
+            logger.LogInformation("kpm bundle finished with exit code : {exitCode}", hostProcess.ExitCode);
         }
 
         public static void CleanUpApplication(StartParameters startParameters, Process hostProcess, string musicStoreDbName, ILogger logger)
@@ -375,16 +375,16 @@ namespace E2ETests
                 hostProcess.WaitForExit(5 * 1000);
                 if (!hostProcess.HasExited)
                 {
-                    logger.WriteWarning("Unable to terminate the host process with process Id '{processId}", hostProcess.Id);
+                    logger.LogWarning("Unable to terminate the host process with process Id '{processId}", hostProcess.Id);
                 }
                 else
                 {
-                    logger.WriteInformation("Successfully terminated host process with process Id '{processId}'", hostProcess.Id);
+                    logger.LogInformation("Successfully terminated host process with process Id '{processId}'", hostProcess.Id);
                 }
             }
             else
             {
-                logger.WriteWarning("Host process already exited or never started successfully.");
+                logger.LogWarning("Host process already exited or never started successfully.");
             }
 
             if (!Helpers.RunningOnMono)
@@ -405,7 +405,7 @@ namespace E2ETests
                     catch (Exception exception)
                     {
                         //Ignore delete failures - just write a log
-                        logger.WriteWarning("Failed to delete '{config}'. Exception : {exception}", startParameters.ApplicationHostConfigLocation, exception.Message);
+                        logger.LogWarning("Failed to delete '{config}'. Exception : {exception}", startParameters.ApplicationHostConfigLocation, exception.Message);
                     }
                 }
             }
@@ -419,7 +419,7 @@ namespace E2ETests
                 }
                 catch (Exception exception)
                 {
-                    logger.WriteWarning("Failed to delete directory.", exception);
+                    logger.LogWarning("Failed to delete directory.", exception);
                 }
             }
         }

@@ -22,7 +22,7 @@ namespace E2ETests
         {
             var loggerFactory = new LoggerFactory();
             loggerFactory.AddConsole();
-            _logger = loggerFactory.Create<SmokeTests>();
+            _logger = loggerFactory.CreateLogger<SmokeTests>();
         }
 
         [ConditionalTheory]
@@ -94,7 +94,7 @@ namespace E2ETests
         {
             using (_logger.BeginScope("SmokeTestSuite"))
             {
-                _logger.WriteInformation("Variation Details : HostType = {hostType}, DonetFlavor = {flavor}, Architecture = {arch}, applicationBaseUrl = {appBase}",
+                _logger.LogInformation("Variation Details : HostType = {hostType}, DonetFlavor = {flavor}, Architecture = {arch}, applicationBaseUrl = {appBase}",
                     serverType, donetFlavor, architecture, applicationBaseUrl);
 
                 _startParameters = new StartParameters
@@ -108,7 +108,7 @@ namespace E2ETests
                 var testStartTime = DateTime.Now;
                 var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
 
-                _logger.WriteInformation("Pointing MusicStore DB to '{connString}'", string.Format(CONNECTION_STRING_FORMAT, musicStoreDbName));
+                _logger.LogInformation("Pointing MusicStore DB to '{connString}'", string.Format(CONNECTION_STRING_FORMAT, musicStoreDbName));
 
                 //Override the connection strings using environment based configuration
                 Environment.SetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection", string.Format(CONNECTION_STRING_FORMAT, musicStoreDbName));
@@ -142,7 +142,7 @@ namespace E2ETests
                         initializationCompleteTime = DateTime.Now;
                     }, logger: _logger);
 
-                    _logger.WriteInformation("[Time]: Approximate time taken for application initialization : '{t}' seconds",
+                    _logger.LogInformation("[Time]: Approximate time taken for application initialization : '{t}' seconds",
                                 (initializationCompleteTime - testStartTime).TotalSeconds);
 
                     VerifyHomePage(response, responseContent);
@@ -229,15 +229,15 @@ namespace E2ETests
                     LoginWithMicrosoftAccount();
 
                     var testCompletionTime = DateTime.Now;
-                    _logger.WriteInformation("[Time]: All tests completed in '{t}' seconds", (testCompletionTime - initializationCompleteTime).TotalSeconds);
-                    _logger.WriteInformation("[Time]: Total time taken for this test variation '{t}' seconds", (testCompletionTime - testStartTime).TotalSeconds);
+                    _logger.LogInformation("[Time]: All tests completed in '{t}' seconds", (testCompletionTime - initializationCompleteTime).TotalSeconds);
+                    _logger.LogInformation("[Time]: Total time taken for this test variation '{t}' seconds", (testCompletionTime - testStartTime).TotalSeconds);
                     testSuccessful = true;
                 }
                 finally
                 {
                     if (!testSuccessful)
                     {
-                        _logger.WriteError("Some tests failed. Proceeding with cleanup.");
+                        _logger.LogError("Some tests failed. Proceeding with cleanup.");
                     }
 
                     DeploymentUtility.CleanUpApplication(_startParameters, hostProcess, musicStoreDbName, _logger);

@@ -13,7 +13,7 @@ namespace E2ETests
         {
             try
             {
-                logger.WriteInformation("Trying to drop database '{0}'", databaseName);
+                logger.LogInformation("Trying to drop database '{0}'", databaseName);
                 using (var conn = new SqlConnection(@"Server=(localdb)\MSSQLLocalDB;Database=master;Trusted_Connection=True;"))
                 {
                     conn.Open();
@@ -26,13 +26,13 @@ namespace E2ETests
                                           END", databaseName);
                     cmd.ExecuteNonQuery();
 
-                    logger.WriteInformation("Successfully dropped database {0}", databaseName);
+                    logger.LogInformation("Successfully dropped database {0}", databaseName);
                 }
             }
             catch (Exception exception)
             {
                 //Ignore if there is failure in cleanup.
-                logger.WriteWarning("Error occured while dropping database {0}. Exception : {1}", databaseName, exception.ToString());
+                logger.LogWarning("Error occured while dropping database {0}. Exception : {1}", databaseName, exception.ToString());
             }
         }
     }

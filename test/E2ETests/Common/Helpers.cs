@@ -22,7 +22,7 @@ namespace E2ETests
             {
                 try
                 {
-                    logger.WriteWarning("Retry count {retryCount}..", retry + 1);
+                    logger.LogWarning("Retry count {retryCount}..", retry + 1);
                     retryBlock();
                     break; //Went through successfully
                 }
@@ -34,7 +34,7 @@ namespace E2ETests
 #endif
                         )
                     {
-                        logger.WriteWarning("Failed to complete the request.", exception);
+                        logger.LogWarning("Failed to complete the request.", exception);
                         Thread.Sleep(7 * 1000); //Wait for a while before retry.
                     }
                 }
