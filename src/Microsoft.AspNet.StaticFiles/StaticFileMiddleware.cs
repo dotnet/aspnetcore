@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.StaticFiles
             _next = next;
             _options = options;
             _matchUrl = options.RequestPath;
-            _logger = loggerFactory.Create<StaticFileMiddleware>();
+            _logger = loggerFactory.CreateLogger<StaticFileMiddleware>();
         }
 
         /// <summary>
@@ -70,14 +70,14 @@ namespace Microsoft.AspNet.StaticFiles
                         }
                         if (_logger.IsEnabled(LogLevel.Verbose))
                         {
-                            _logger.WriteVerbose(string.Format("Copying file {0} to the response body", fileContext.SubPath));
+                            _logger.LogVerbose(string.Format("Copying file {0} to the response body", fileContext.SubPath));
                         }
                         return fileContext.SendAsync();
 
                     case StaticFileContext.PreconditionState.NotModified:
                         if (_logger.IsEnabled(LogLevel.Verbose))
                         {
-                            _logger.WriteVerbose(string.Format("{0} not modified", fileContext.SubPath));
+                            _logger.LogVerbose(string.Format("{0} not modified", fileContext.SubPath));
                         }
                         return fileContext.SendStatusAsync(Constants.Status304NotModified);
 
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.StaticFiles
 
                     default:
                         var exception = new NotImplementedException(fileContext.GetPreconditionState().ToString());
-                        _logger.WriteError("No precondition state specified", exception);
+                        _logger.LogError("No precondition state specified", exception);
                         throw exception;
                 }
             }

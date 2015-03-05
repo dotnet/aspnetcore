@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.StaticFiles
         public SendFileMiddleware([NotNull] RequestDelegate next, [NotNull] ILoggerFactory loggerFactory)
         {
             _next = next;
-            _logger = loggerFactory.Create<SendFileMiddleware>();
+            _logger = loggerFactory.CreateLogger<SendFileMiddleware>();
         }
 
         public Task Invoke(HttpContext context)
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.StaticFiles
                     fileStream.Seek(offset, SeekOrigin.Begin);
                     if (_logger.IsEnabled(LogLevel.Verbose))
                     {
-                        _logger.WriteVerbose(string.Format("Copying bytes {0}-{1} of file {2} to response body", offset, length != null ? (offset + length).ToString() : "*", fileName));
+                        _logger.LogVerbose(string.Format("Copying bytes {0}-{1} of file {2} to response body", offset, length != null ? (offset + length).ToString() : "*", fileName));
                     }
                     await StreamCopyOperation.CopyToAsync(fileStream, _output, length, cancel);
                 }
