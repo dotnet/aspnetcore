@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Identity.Test
 
         }
 
-        public ILogger Create(string name)
+        public ILogger CreateLogger(string name)
         {
             return new TestLogger();
         }

@@ -1935,11 +1935,11 @@ namespace Microsoft.AspNet.Identity
             var baseMessage = Resources.FormatLoggingResultMessage(methodName, await GetUserIdAsync(user));
             if (result)
             {
-                Logger.WriteInformation(string.Format("{0} : {1}", baseMessage, result.ToString()));
+                Logger.LogInformation(string.Format("{0} : {1}", baseMessage, result.ToString()));
             }
             else
             {
-                Logger.WriteWarning(string.Format("{0} : {1}", baseMessage, result.ToString()));
+                Logger.LogWarning(string.Format("{0} : {1}", baseMessage, result.ToString()));
             }
 
             return result;

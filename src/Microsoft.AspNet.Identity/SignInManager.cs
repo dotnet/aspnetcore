@@ -411,7 +411,7 @@ namespace Microsoft.AspNet.Identity
         /// <returns></returns>
         protected async virtual Task<bool> LogResultAsync(bool result, TUser user, [System.Runtime.CompilerServices.CallerMemberName] string methodName = "")
         {
-            Logger.WriteInformation(Resources.FormatLoggingSigninResult(Resources.FormatLoggingResultMessage(methodName,
+            Logger.LogInformation(Resources.FormatLoggingSigninResult(Resources.FormatLoggingResultMessage(methodName,
                 await UserManager.GetUserIdAsync(user)), result));
 
             return result;

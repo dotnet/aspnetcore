@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Identity.Test
             return true;
         }
 
-        public void Write(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
             LogMessages.Add(state.ToString());
         }
