@@ -22,12 +22,11 @@ namespace Microsoft.Framework.DependencyInjection
         // Review: Need UseDefaultSubkey parameter?
         public static IServiceCollection AddAuthorization([NotNull] this IServiceCollection services, IConfiguration config = null, Action<AuthorizationOptions> configureOptions = null)
         {
-            var describe = new ServiceDescriber(config);
-            services.AddOptions(config);
-            services.TryAdd(describe.Transient<IAuthorizationService, DefaultAuthorizationService>());
-            services.Add(describe.Transient<IAuthorizationHandler, ClaimsAuthorizationHandler>());
-            services.Add(describe.Transient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>());
-            services.Add(describe.Transient<IAuthorizationHandler, PassThroughAuthorizationHandler>());
+            services.AddOptions();
+            services.TryAdd(ServiceDescriptor.Transient<IAuthorizationService, DefaultAuthorizationService>());
+            services.AddTransient<IAuthorizationHandler, ClaimsAuthorizationHandler>();
+            services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
+            services.AddTransient<IAuthorizationHandler, PassThroughAuthorizationHandler>();
             if (configureOptions != null)
             {
                 services.Configure(configureOptions);
