@@ -8,7 +8,6 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.Runtime.Infrastructure;
 
 namespace Microsoft.AspNet.WebSockets.Client.Test
