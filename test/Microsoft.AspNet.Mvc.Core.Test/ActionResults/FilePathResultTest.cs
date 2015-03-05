@@ -10,7 +10,6 @@ using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Http.Interfaces;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Moq;
 using Xunit;
 

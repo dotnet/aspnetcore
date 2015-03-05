@@ -11,7 +11,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Roslyn;
 
@@ -63,7 +62,7 @@ namespace Microsoft.AspNet.Mvc
 
         // TODO: KILL THIS
         private static IServiceProvider BuildFallbackServiceProvider(
-            IEnumerable<IServiceDescriptor> services,
+            IServiceCollection services,
             IServiceProvider fallback)
         {
             var sc = HostingServices.Create(fallback);

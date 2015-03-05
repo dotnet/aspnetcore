@@ -7,7 +7,6 @@ using System.Runtime.Versioning;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Hosting;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.Runtime;
 
 namespace PrecompilationWebSite

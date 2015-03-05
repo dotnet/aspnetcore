@@ -3,7 +3,6 @@
 
 using Microsoft.AspNet.DataProtection;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.WebEncoders;
 using Moq;

@@ -130,9 +130,9 @@ namespace Microsoft.Framework.DependencyInjection
 
         private static void ConfigureDefaultServices(IServiceCollection services, IConfiguration configuration)
         {
-            services.AddOptions(configuration);
-            services.AddDataProtection(configuration);
-            services.AddRouting(configuration);
+            services.AddOptions();
+            services.AddDataProtection();
+            services.AddRouting();
             services.AddAuthorization(configuration);
             services.AddWebEncoders();
             services.Configure<RouteOptions>(routeOptions =>

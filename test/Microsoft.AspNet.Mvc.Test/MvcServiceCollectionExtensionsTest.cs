@@ -30,20 +30,20 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(4, services.Count);
             Assert.Equal(typeof(ControllerTypeA), services[0].ServiceType);
             Assert.Equal(typeof(ControllerTypeA), services[0].ImplementationType);
-            Assert.Equal(LifecycleKind.Transient, services[0].Lifecycle);
+            Assert.Equal(ServiceLifetime.Transient, services[0].Lifetime);
 
             Assert.Equal(typeof(TypeBController), services[1].ServiceType);
             Assert.Equal(typeof(TypeBController), services[1].ImplementationType);
-            Assert.Equal(LifecycleKind.Transient, services[1].Lifecycle);
+            Assert.Equal(ServiceLifetime.Transient, services[1].Lifetime);
 
             Assert.Equal(typeof(IControllerActivator), services[2].ServiceType);
             Assert.Equal(typeof(ServiceBasedControllerActivator), services[2].ImplementationType);
-            Assert.Equal(LifecycleKind.Transient, services[2].Lifecycle);
+            Assert.Equal(ServiceLifetime.Transient, services[2].Lifetime);
 
             Assert.Equal(typeof(IControllerTypeProvider), services[3].ServiceType);
             var typeProvider = Assert.IsType<FixedSetControllerTypeProvider>(services[3].ImplementationInstance);
             Assert.Equal(controllerTypes, typeProvider.ControllerTypes.OrderBy(c => c.Name));
-            Assert.Equal(LifecycleKind.Singleton, services[3].Lifecycle);
+            Assert.Equal(ServiceLifetime.Singleton, services[3].Lifetime);
         }
 
         [Fact]
@@ -69,19 +69,19 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(4, services.Count);
             Assert.Equal(typeof(ControllerTypeA), services[0].ServiceType);
             Assert.Equal(typeof(ControllerTypeA), services[0].ImplementationType);
-            Assert.Equal(LifecycleKind.Transient, services[0].Lifecycle);
+            Assert.Equal(ServiceLifetime.Transient, services[0].Lifetime);
 
             Assert.Equal(typeof(TypeBController), services[1].ServiceType);
             Assert.Equal(typeof(TypeBController), services[1].ImplementationType);
-            Assert.Equal(LifecycleKind.Transient, services[1].Lifecycle);
+            Assert.Equal(ServiceLifetime.Transient, services[1].Lifetime);
 
             Assert.Equal(typeof(IControllerActivator), services[2].ServiceType);
             Assert.Equal(typeof(CustomActivator), services[2].ImplementationType);
-            Assert.Equal(LifecycleKind.Transient, services[2].Lifecycle);
+            Assert.Equal(ServiceLifetime.Transient, services[2].Lifetime);
 
             Assert.Equal(typeof(IControllerTypeProvider), services[3].ServiceType);
             Assert.Equal(typeof(CustomTypeProvider), services[3].ImplementationType);
-            Assert.Equal(LifecycleKind.Singleton, services[3].Lifecycle);
+            Assert.Equal(ServiceLifetime.Singleton, services[3].Lifetime);
         }
 
         [Fact]
@@ -102,21 +102,21 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(4, services.Count);
             Assert.Equal(typeof(ControllerTypeA), services[0].ServiceType);
             Assert.Equal(typeof(ControllerTypeA), services[0].ImplementationType);
-            Assert.Equal(LifecycleKind.Transient, services[0].Lifecycle);
+            Assert.Equal(ServiceLifetime.Transient, services[0].Lifetime);
 
             Assert.Equal(typeof(TypeBController), services[1].ServiceType);
             Assert.Equal(typeof(TypeBController), services[1].ImplementationType);
-            Assert.Equal(LifecycleKind.Transient, services[1].Lifecycle);
+            Assert.Equal(ServiceLifetime.Transient, services[1].Lifetime);
 
 
             Assert.Equal(typeof(IControllerActivator), services[2].ServiceType);
             Assert.Equal(typeof(ServiceBasedControllerActivator), services[2].ImplementationType);
-            Assert.Equal(LifecycleKind.Transient, services[2].Lifecycle);
+            Assert.Equal(ServiceLifetime.Transient, services[2].Lifetime);
 
             Assert.Equal(typeof(IControllerTypeProvider), services[3].ServiceType);
             var typeProvider = Assert.IsType<FixedSetControllerTypeProvider>(services[3].ImplementationInstance);
             Assert.Equal(controllerTypes, typeProvider.ControllerTypes.OrderBy(c => c.Name));
-            Assert.Equal(LifecycleKind.Singleton, services[3].Lifecycle);
+            Assert.Equal(ServiceLifetime.Singleton, services[3].Lifetime);
         }
 
         private class CustomActivator : IControllerActivator

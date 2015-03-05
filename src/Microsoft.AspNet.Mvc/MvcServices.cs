@@ -25,12 +25,12 @@ namespace Microsoft.AspNet.Mvc
 {
     public class MvcServices
     {
-        public static IEnumerable<IServiceDescriptor> GetDefaultServices()
+        public static IEnumerable<ServiceDescriptor> GetDefaultServices()
         {
             return GetDefaultServices(null);
         }
 
-        public static IEnumerable<IServiceDescriptor> GetDefaultServices(IConfiguration configuration)
+        public static IEnumerable<ServiceDescriptor> GetDefaultServices(IConfiguration configuration)
         {
             var describe = new ServiceDescriber(configuration);
 

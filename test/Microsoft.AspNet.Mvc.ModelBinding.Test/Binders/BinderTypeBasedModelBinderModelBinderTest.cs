@@ -9,7 +9,6 @@ using Microsoft.AspNet.Http.Core;
 using Moq;
 using Xunit;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
