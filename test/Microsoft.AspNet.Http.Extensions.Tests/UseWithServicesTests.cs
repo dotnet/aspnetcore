@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Xunit;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.AspNet.Http.Core;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Http.Core;
+using Microsoft.Framework.DependencyInjection;
+using Xunit;
 
 namespace Microsoft.AspNet.Http.Extensions.Tests
 {

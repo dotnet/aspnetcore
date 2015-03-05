@@ -4,7 +4,6 @@
 using System;
 using Xunit;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 
 namespace Microsoft.Framework.WebEncoders
 {
