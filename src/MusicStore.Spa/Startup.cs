@@ -1,14 +1,12 @@
-﻿using Microsoft.AspNet.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
-using AutoMapper;
 using MusicStore.Apis;
 using MusicStore.Models;
-using MusicStore.Spa.Infrastructure;
 
 
 namespace MusicStore.Spa
@@ -46,9 +44,7 @@ namespace MusicStore.Spa
             // Add Identity services to the services container
             services.AddIdentity<ApplicationUser, IdentityRole>(Configuration)
                     .AddEntityFrameworkStores<MusicStoreContext>()
-                    .AddDefaultTokenProviders()
-                    .AddMessageProvider<EmailMessageProvider>()
-                    .AddMessageProvider<SmsMessageProvider>();
+                    .AddDefaultTokenProviders();
 
             // Add application services to the service container
             //services.AddTransient<IModelMetadataProvider, BuddyModelMetadataProvider>();

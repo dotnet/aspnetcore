@@ -148,13 +148,8 @@ namespace MusicStore.Controllers
                     // Send an email with this link
                     string code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Context.Request.Scheme);
-                    var email = new IdentityMessage
-                    {
-                        Destination = model.Email,
-                        Subject = "Confirm your account",
-                        Body = "Please confirm your account by clicking this link: <a href=\"" + callbackUrl + "\">link</a>"
-                    };
-                    await UserManager.SendMessageAsync("Email", email);
+                    await MessageServices.SendEmailAsync(model.Email, "Confirm your account",
+                        "Please confirm your account by clicking this link: <a href=\"" + callbackUrl + "\">link</a>");
 #if !DEMO
                     return RedirectToAction("Index", "Home");
 #else
@@ -180,7 +175,7 @@ namespace MusicStore.Controllers
                 return View("Error");
             }
 
-            var user = await SignInManager.UserManager.FindByIdAsync(userId);
+            var user = await UserManager.FindByIdAsync(userId);
             if (user == null)
             {
                 return View("Error");
@@ -217,13 +212,8 @@ namespace MusicStore.Controllers
                 // Send an email with this link
                 string code = await UserManager.GeneratePasswordResetTokenAsync(user);
                 var callbackUrl = Url.Action("ResetPassword", "Account", new { code = code }, protocol: Context.Request.Scheme);
-                var email = new IdentityMessage
-                {
-                    Destination = model.Email,
-                    Subject = "Reset Password",
-                    Body = "Please reset your password by clicking here: <a href=\"" + callbackUrl + "\">link</a>"
-                };
-                await UserManager.SendMessageAsync("Email", email);
+                await MessageServices.SendEmailAsync(model.Email, "Reset Password",
+                    "Please reset your password by clicking here: <a href=\"" + callbackUrl + "\">link</a>");
 #if !DEMO
                 return RedirectToAction("ForgotPasswordConfirmation");
 #else
@@ -332,11 +322,29 @@ namespace MusicStore.Controllers
                 return View();
             }
 
-            // Generate the token and send it
-            if (!await SignInManager.SendTwoFactorCodeAsync(model.SelectedProvider))
+            var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
+            if (user == null)
             {
                 return View("Error");
             }
+
+            // Generate the token and send it
+            var code = await UserManager.GenerateTwoFactorTokenAsync(user, model.SelectedProvider);
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                return View("Error");
+            }
+
+            var message = "Your security code is: " + code;
+            if (model.SelectedProvider == "Email")
+            {
+                await MessageServices.SendEmailAsync(await UserManager.GetEmailAsync(user), "Security Code", message);
+            }
+            else if (model.SelectedProvider == "Phone")
+            {
+                await MessageServices.SendSmsAsync(await UserManager.GetPhoneNumberAsync(user), message);
+            }
+
             return RedirectToAction("VerifyCode", new { Provider = model.SelectedProvider, ReturnUrl = model.ReturnUrl, RememberMe = model.RememberMe });
         }
 
