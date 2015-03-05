@@ -49,7 +49,6 @@ namespace Microsoft.AspNet.Hosting
                     typeof(ITypeActivator),
                     typeof(IHostingEnvironment),
                     typeof(ILoggerFactory),
-                    typeof(ILogger<>),
                     typeof(IHttpContextAccessor),
                     typeof(IApplicationLifetime)
                 }.Concat(manifest.Services).Distinct();
