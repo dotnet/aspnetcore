@@ -5,7 +5,7 @@
         "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
         "Microsoft.AspNet.Http.Interfaces": "1.0.0-*",
         "Microsoft.Framework.Cache.Distributed": "1.0.0-*",
-        "Microsoft.Framework.Logging": "1.0.0-*"
+        "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
     },
     "compilationOptions": {
         "allowUnsafe": true
