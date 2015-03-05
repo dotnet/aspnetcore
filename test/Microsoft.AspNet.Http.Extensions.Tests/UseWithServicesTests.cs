@@ -38,7 +38,6 @@ namespace Microsoft.AspNet.Http.Extensions.Tests
         {
             var services = new ServiceCollection()
                 .AddScoped<ITestService, TestService>()
-                .AddTransient<ITypeActivator, TypeActivator>()
                 .BuildServiceProvider();
             var builder = new ApplicationBuilder(services);
 
@@ -101,7 +100,6 @@ namespace Microsoft.AspNet.Http.Extensions.Tests
         {
             var services = new ServiceCollection()
                 .AddScoped<ITestService, TestService>()
-                .AddTransient<ITypeActivator, TypeActivator>()
                 .BuildServiceProvider();
             var builder = new ApplicationBuilder(services);
             builder.UseMiddleware<TestMiddleware>();
