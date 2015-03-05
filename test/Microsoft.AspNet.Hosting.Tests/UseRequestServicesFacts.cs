@@ -78,7 +78,6 @@ namespace Microsoft.AspNet.Hosting.Tests
         }
 
         [Theory]
-        [InlineData(typeof(ITypeActivator))]
         [InlineData(typeof(IHostingEnvironment))]
         [InlineData(typeof(ILoggerFactory))]
         [InlineData(typeof(IHttpContextAccessor))]

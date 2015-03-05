@@ -68,7 +68,6 @@ namespace Microsoft.AspNet.Hosting
             public HostingManifest(IServiceCollection hostServices)
             {
                 Services = new Type[] {
-                    typeof(ITypeActivator),
                     typeof(IHostingEnvironment),
                     typeof(ILoggerFactory),
                     typeof(IHttpContextAccessor),
