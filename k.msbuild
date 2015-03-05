@@ -258,10 +258,6 @@
 
         <ItemGroup>
             <!-- List is sorted OridnalIgnoreCase -->
-            <SrcExclusions Include="$(PoliCheckPath)**\NuGet.Packaging\PackageExtraction\PackagePathHelper.cs">
-                <term>hack</term>
-                <Justification>Temporary to unblock build.</Justification>
-            </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Net.Http.Server\WebListener.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\RequestProcessing\HttpReasonPhrase.cs">
                 <term>420</term>
@@ -277,21 +273,15 @@
                 <term>Bengali</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs;
-									$(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
-									$(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
-                <term>Oriya</term>
-                <Justification>Font reference</Justification>
-            </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs;
-									$(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
-									$(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
-                <term>Tibetan</term>
-                <Justification>Font reference</Justification>
-            </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs">
                 <term>butt</term>
                 <Justification>not our code, jquery scripts embedded in .cs file</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Authentication.Cookies\Infrastructure\ICookieManager.cs;
+                                    $(PoliCheckPath)**\Microsoft.AspNet.Authentication.Cookies.dll;
+                                    $(PoliCheckPath)**\Microsoft.AspNet.Authentication.Cookies.xml">
+                <term>chunking</term>
+                <Justification>Used to describe network chunks</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Identity\Rfc6238AuthenticationService.cs">
                 <term>DT</term>
@@ -305,11 +295,16 @@
                 <term>FU</term>
                 <Justification>not our code, jquery scripts embedded in .cs file</Justification>
             </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\NuGet.Packaging\PackageExtraction\PackagePathHelper.cs">
+                <term>hack</term>
+                <Justification>Temporary to unblock build.</Justification>
+            </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Security.Windows\Legacy\GlobalLog.cs">
                 <term>hung</term>
                 <Justification>refers to a stuck process/thread</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\CodePointFilters.cs;
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\CodePointFilters.cs;
                                     $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
                                     $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
                 <term>Oriya</term>
@@ -348,7 +343,8 @@
                 <term>sucks</term>
                 <Justification>expression of sadness</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\CodePointFilters.cs;
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\CodePointFilters.cs;
                                     $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
                                     $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
                 <term>Tibetan</term>
@@ -357,12 +353,6 @@
             <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs">
                 <term>UK</term>
                 <Justification>text appears in base64 encoded string of an image</Justification>
-            </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Authentication.Cookies\Infrastructure\ICookieManager.cs;
-                                    $(PoliCheckPath)**\Microsoft.AspNet.Authentication.Cookies.dll;
-                                    $(PoliCheckPath)**\Microsoft.AspNet.Authentication.Cookies.xml">
-                <term>chunking</term>
-                <Justification>Used to describe network chunks</Justification>
             </SrcExclusions>
         </ItemGroup>
 
