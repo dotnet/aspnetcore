@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
             ConfigureOptions<OAuthBearerAuthenticationOptions> configureOptions)
             : base(next, services, options, configureOptions)
         {
-            _logger = loggerFactory.Create<OAuthBearerAuthenticationMiddleware>();
+            _logger = loggerFactory.CreateLogger<OAuthBearerAuthenticationMiddleware>();
             if (Options.Notifications == null)
             {
                 Options.Notifications = new OAuthBearerAuthenticationNotifications();

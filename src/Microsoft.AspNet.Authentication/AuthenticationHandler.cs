@@ -408,7 +408,7 @@ namespace Microsoft.AspNet.Authentication
             string correlationCookie = Request.Cookies[correlationKey];
             if (string.IsNullOrWhiteSpace(correlationCookie))
             {
-                logger.WriteWarning("{0} cookie not found.", correlationKey);
+                logger.LogWarning("{0} cookie not found.", correlationKey);
                 return false;
             }
 
@@ -424,7 +424,7 @@ namespace Microsoft.AspNet.Authentication
                 correlationKey,
                 out correlationExtra))
             {
-                logger.WriteWarning("{0} state property not found.", correlationKey);
+                logger.LogWarning("{0} state property not found.", correlationKey);
                 return false;
             }
 
@@ -432,7 +432,7 @@ namespace Microsoft.AspNet.Authentication
 
             if (!string.Equals(correlationCookie, correlationExtra, StringComparison.Ordinal))
             {
-                logger.WriteWarning("{0} correlation cookie and state property mismatch.", correlationKey);
+                logger.LogWarning("{0} correlation cookie and state property mismatch.", correlationKey);
                 return false;
             }
 

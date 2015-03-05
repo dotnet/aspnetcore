@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             ConfigureOptions<OpenIdConnectAuthenticationOptions> configureOptions)
             : base(next, services, options, configureOptions)
         {
-            _logger = loggerFactory.Create<OpenIdConnectAuthenticationMiddleware>();
+            _logger = loggerFactory.CreateLogger<OpenIdConnectAuthenticationMiddleware>();
 
             if (string.IsNullOrWhiteSpace(Options.TokenValidationParameters.AuthenticationType))
             {

@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
             AuthenticationTicket ticket = await AuthenticateAsync();
             if (ticket == null)
             {
-                Logger.WriteWarning("Invalid return state, unable to redirect.");
+                Logger.LogWarning("Invalid return state, unable to redirect.");
                 Response.StatusCode = 500;
                 return true;
             }
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
                 var value = query.Get("error");
                 if (!string.IsNullOrEmpty(value))
                 {
-                    Logger.WriteVerbose("Remote server returned an error: " + Request.QueryString);
+                    Logger.LogVerbose("Remote server returned an error: " + Request.QueryString);
                     // TODO: Fail request rather than passing through?
                     return null;
                 }
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
 
                 if (string.IsNullOrWhiteSpace(tokens.AccessToken))
                 {
-                    Logger.WriteWarning("Access token was not found");
+                    Logger.LogWarning("Access token was not found");
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);
                 }
 
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
             }
             catch (Exception ex)
             {
-                Logger.WriteError("Authentication failed", ex);
+                Logger.LogError("Authentication failed", ex);
                 return new AuthenticationTicket(properties, Options.AuthenticationScheme);
             }
         }

@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
 
                 if (requestToken == null)
                 {
-                    _logger.WriteWarning("Invalid state");
+                    _logger.LogWarning("Invalid state");
                     return null;
                 }
 
@@ -71,20 +71,20 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 string returnedToken = query.Get("oauth_token");
                 if (string.IsNullOrWhiteSpace(returnedToken))
                 {
-                    _logger.WriteWarning("Missing oauth_token");
+                    _logger.LogWarning("Missing oauth_token");
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);
                 }
 
                 if (returnedToken != requestToken.Token)
                 {
-                    _logger.WriteWarning("Unmatched token");
+                    _logger.LogWarning("Unmatched token");
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);
                 }
 
                 string oauthVerifier = query.Get("oauth_verifier");
                 if (string.IsNullOrWhiteSpace(oauthVerifier))
                 {
-                    _logger.WriteWarning("Missing or blank oauth_verifier");
+                    _logger.LogWarning("Missing or blank oauth_verifier");
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);
                 }
 
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             }
             catch (Exception ex)
             {
-                _logger.WriteError("Authentication failed", ex);
+                _logger.LogError("Authentication failed", ex);
                 return new AuthenticationTicket(properties, Options.AuthenticationScheme);
             }
         }
@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             }
             else
             {
-                _logger.WriteError("requestToken CallbackConfirmed!=true");
+                _logger.LogError("requestToken CallbackConfirmed!=true");
             }
         }
 
@@ -189,7 +189,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             AuthenticationTicket model = await AuthenticateAsync();
             if (model == null)
             {
-                _logger.WriteWarning("Invalid return state, unable to redirect.");
+                _logger.LogWarning("Invalid return state, unable to redirect.");
                 Response.StatusCode = 500;
                 return true;
             }
@@ -224,7 +224,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
 
         private async Task<RequestToken> ObtainRequestTokenAsync(string consumerKey, string consumerSecret, string callBackUri, AuthenticationProperties properties)
         {
-            _logger.WriteVerbose("ObtainRequestToken");
+            _logger.LogVerbose("ObtainRequestToken");
 
             string nonce = Guid.NewGuid().ToString("N");
 
@@ -285,7 +285,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
         {
             // https://dev.twitter.com/docs/api/1/post/oauth/access_token
 
-            _logger.WriteVerbose("ObtainAccessToken");
+            _logger.LogVerbose("ObtainAccessToken");
 
             string nonce = Guid.NewGuid().ToString("N");
 
@@ -342,7 +342,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.WriteError("AccessToken request failed with a status code of " + response.StatusCode);
+                _logger.LogError("AccessToken request failed with a status code of " + response.StatusCode);
                 response.EnsureSuccessStatusCode(); // throw
             }
 

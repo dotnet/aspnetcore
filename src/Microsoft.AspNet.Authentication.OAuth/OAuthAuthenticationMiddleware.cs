@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "TokenEndpoint"));
             }
 
-            Logger = loggerFactory.Create(this.GetType().FullName);
+            Logger = loggerFactory.CreateLogger(this.GetType().FullName);
 
             if (Options.StateDataFormat == null)
             {

@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "ConsumerKey"));
             }
 
-            _logger = loggerFactory.Create(typeof(TwitterAuthenticationMiddleware).FullName);
+            _logger = loggerFactory.CreateLogger(typeof(TwitterAuthenticationMiddleware).FullName);
 
             if (Options.Notifications == null)
             {

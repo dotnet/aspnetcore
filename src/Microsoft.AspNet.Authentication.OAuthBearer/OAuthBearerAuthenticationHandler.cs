@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
             }
             catch (Exception ex)
             {
-                _logger.WriteError("Exception occurred while processing message", ex);
+                _logger.LogError("Exception occurred while processing message", ex);
 
                 // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the notification.
                 if (Options.RefreshOnIssuerKeyNotFound && ex.GetType().Equals(typeof(SecurityTokenSignatureKeyNotFoundException)))

@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
                 if (ticket == null)
                 {
-                    _logger.WriteWarning(@"Unprotect ticket failed");
+                    _logger.LogWarning(@"Unprotect ticket failed");
                     return null;
                 }
 
@@ -62,14 +62,14 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     Claim claim = ticket.Principal.Claims.FirstOrDefault(c => c.Type.Equals(SessionIdClaim));
                     if (claim == null)
                     {
-                        _logger.WriteWarning(@"SessionId missing");
+                        _logger.LogWarning(@"SessionId missing");
                         return null;
                     }
                     _sessionKey = claim.Value;
                     ticket = await Options.SessionStore.RetrieveAsync(_sessionKey);
                     if (ticket == null)
                     {
-                        _logger.WriteWarning(@"Identity missing in session store");
+                        _logger.LogWarning(@"Identity missing in session store");
                         return null;
                     }
                 }

@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 Options.CookieManager = new ChunkingCookieManager();
             }
 
-            _logger = loggerFactory.Create(typeof(CookieAuthenticationMiddleware).FullName);
+            _logger = loggerFactory.CreateLogger(typeof(CookieAuthenticationMiddleware).FullName);
         }
 
         protected override AuthenticationHandler<CookieAuthenticationOptions> CreateHandler()

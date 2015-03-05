@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     string redirectUri = notification.ProtocolMessage.CreateLogoutRequestUrl();
                     if (!Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute))
                     {
-                        _logger.WriteWarning("The logout redirect URI is malformed: {0}", (redirectUri ?? "null"));
+                        _logger.LogWarning("The logout redirect URI is malformed: {0}", (redirectUri ?? "null"));
                     }
 
                     Response.Redirect(redirectUri);
@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 string redirectUri = notification.ProtocolMessage.CreateAuthenticationRequestUrl();
                 if (!Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute))
                 {
-                    _logger.WriteWarning("Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute) returned 'false', redirectUri is: {0}", (redirectUri ?? "null"));
+                    _logger.LogWarning("Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute) returned 'false', redirectUri is: {0}", (redirectUri ?? "null"));
                 }
 
                 Response.Redirect(redirectUri);
@@ -262,7 +262,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 AuthenticationProperties properties = GetPropertiesFromState(openIdConnectMessage.State);
                 if (properties == null)
                 {
-                    _logger.WriteWarning("The state field is missing or invalid.");
+                    _logger.LogWarning("The state field is missing or invalid.");
                     return null;
                 }
 
@@ -279,7 +279,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 // OpenIdConnect protocol allows a Code to be received without the id_token
                 if (string.IsNullOrWhiteSpace(openIdConnectMessage.IdToken))
                 {
-                    _logger.WriteWarning("The id_token is missing.");
+                    _logger.LogWarning("The id_token is missing.");
                     return null;
                 }
 
@@ -424,7 +424,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             }
             catch (Exception exception)
             {
-                _logger.WriteError("Exception occurred while processing message", exception);
+                _logger.LogError("Exception occurred while processing message", exception);
 
                 // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the notification.
                 if (Options.RefreshOnIssuerKeyNotFound && exception.GetType().Equals(typeof(SecurityTokenSignatureKeyNotFoundException)))
@@ -511,7 +511,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     }
                     catch (Exception ex)
                     {
-                        _logger.WriteWarning("Failed to un-protect the nonce cookie.", ex);
+                        _logger.LogWarning("Failed to un-protect the nonce cookie.", ex);
                     }
                 }
             }
