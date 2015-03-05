@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Diagnostics.Elm
             _store = store;
         }
 
-        public void Write(LogLevel logLevel, int eventId, object state, Exception exception, 
+        public void Log(LogLevel logLevel, int eventId, object state, Exception exception, 
                           Func<object, Exception, string> formatter)
         {
             if (!IsEnabled(logLevel) || (state == null && exception == null))

@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             var store = new ElmStore();
             var options = new ElmOptions() { Filter = filter ?? _filter };
             var provider = new ElmLoggerProvider(store, options);
-            var logger = (ElmLogger)provider.Create(name ?? _name);
+            var logger = (ElmLogger)provider.CreateLogger(name ?? _name);
 
             return new Tuple<ElmLogger, ElmStore>(logger, store);
         }
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             var store = t.Item2;
 
             // Act
-            logger.Write(LogLevel.Information, 0, _state, null, null);
+            logger.Log(LogLevel.Information, 0, _state, null, null);
 
             // Assert
             Assert.Single(store.GetActivities());
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             var store = t.Item2;
 
             // Act
-            logger.Write(LogLevel.Information, 0, null, null, null);
+            logger.Log(LogLevel.Information, 0, null, null, null);
 
             // Assert
             Assert.Empty(store.GetActivities());
@@ -64,11 +64,11 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             var store = t.Item2;
 
             // Act
-            logger.Write(LogLevel.Verbose, 0, _state, null, null);
-            logger.Write(LogLevel.Information, 0, _state, null, null);
-            logger.Write(LogLevel.Warning, 0, _state, null, null);
-            logger.Write(LogLevel.Error, 0, _state, null, null);
-            logger.Write(LogLevel.Critical, 0, _state, null, null);
+            logger.Log(LogLevel.Verbose, 0, _state, null, null);
+            logger.Log(LogLevel.Information, 0, _state, null, null);
+            logger.Log(LogLevel.Warning, 0, _state, null, null);
+            logger.Log(LogLevel.Error, 0, _state, null, null);
+            logger.Log(LogLevel.Critical, 0, _state, null, null);
 
             // Assert
             Assert.Equal(5, (store.GetActivities().SelectMany(a => NodeLogs(a.Root, new List<LogInfo>()))).ToList().Count);
@@ -89,11 +89,11 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             var store = t.Item2;
 
             // Act
-            logger.Write(LogLevel.Verbose, 0, _state, null, null);
-            logger.Write(LogLevel.Information, 0, _state, null, null);
-            logger.Write(LogLevel.Warning, 0, _state, null, null);
-            logger.Write(LogLevel.Error, 0, _state, null, null);
-            logger.Write(LogLevel.Critical, 0, _state, null, null);
+            logger.Log(LogLevel.Verbose, 0, _state, null, null);
+            logger.Log(LogLevel.Information, 0, _state, null, null);
+            logger.Log(LogLevel.Warning, 0, _state, null, null);
+            logger.Log(LogLevel.Error, 0, _state, null, null);
+            logger.Log(LogLevel.Critical, 0, _state, null, null);
 
             // Assert
             Assert.Equal(count, (store.GetActivities().SelectMany(a => NodeLogs(a.Root, new List<LogInfo>()))).ToList().Count);
@@ -112,13 +112,13 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             {
                 for (var i = 0; i < 25; i++)
                 {
-                    logger.WriteWarning("hello world");
+                    logger.LogWarning("hello world");
                 }
                 using (logger.BeginScope("test15"))
                 {
                     for (var i = 0; i < 25; i++)
                     {
-                        logger.WriteCritical("goodbye world");
+                        logger.LogCritical("goodbye world");
                     }
                 }
             }
@@ -142,9 +142,9 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             workerThread.Start();
             using (logger.BeginScope("test1"))
             {
-                logger.WriteWarning("hello world");
+                logger.LogWarning("hello world");
                 Thread.Sleep(1000);
-                logger.WriteCritical("goodbye world");
+                logger.LogCritical("goodbye world");
             }
             workerThread.Join();
 
@@ -168,9 +168,9 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             workerThread.Start();
             using (logger.BeginScope("test2"))
             {
-                logger.WriteWarning("hello world");
+                logger.LogWarning("hello world");
                 Thread.Sleep(1000);
-                logger.WriteCritical("goodbye world");
+                logger.LogCritical("goodbye world");
             }
             workerThread.Join();
 
@@ -239,7 +239,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             {
                 using (logger.BeginScope("test7"))
                 {
-                    logger.WriteVerbose("hi");
+                    logger.LogVerbose("hi");
                 }
             }
 
@@ -258,7 +258,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             // Act
             using (logger.BeginScope("test8"))
             {
-                logger.WriteVerbose("hi");
+                logger.LogVerbose("hi");
                 using (logger.BeginScope("test9"))
                 {
                 }
@@ -283,7 +283,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             {
                 using (logger.BeginScope("test11"))
                 {
-                    logger.WriteInformation("hi");
+                    logger.LogInformation("hi");
                 }
             }
 
@@ -320,20 +320,20 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                 {
                     for (var i = 0; i < 5; i++)
                     {
-                        _logger.WriteVerbose(string.Format("xxx {0}", i));
+                        _logger.LogVerbose(string.Format("xxx {0}", i));
                         Thread.Sleep(5);
                     }
                     using (_logger.BeginScope("test13"))
                     {
                         for (var i = 0; i < 3; i++)
                         {
-                            _logger.WriteVerbose(string.Format("yyy {0}", i));
+                            _logger.LogVerbose(string.Format("yyy {0}", i));
                             Thread.Sleep(200);
                         }
                     }
                     for (var i = 0; i < 7; i++)
                     {
-                        _logger.WriteVerbose(string.Format("zzz {0}", i));
+                        _logger.LogVerbose(string.Format("zzz {0}", i));
                         Thread.Sleep(40);
                     }
                 }

@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Diagnostics.Elm
             _options = options;
         }
 
-        public ILogger Create(string name)
+        public ILogger CreateLogger(string name)
         {
             return new ElmLogger(name, _options, _store);
         }

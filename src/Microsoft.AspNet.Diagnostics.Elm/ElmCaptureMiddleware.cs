@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Diagnostics.Elm
         {
             _next = next;
             _options = options.Options;
-            _logger = factory.Create<ElmCaptureMiddleware>();
+            _logger = factory.CreateLogger<ElmCaptureMiddleware>();
         }
 
         public async Task Invoke(HttpContext context)
