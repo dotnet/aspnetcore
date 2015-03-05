@@ -323,6 +323,41 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
         protected override void ApplyResponseChallenge()
         {
+            if (ShouldConvertChallengeToForbidden())
+            {
+                // Handle 403 by redirecting to AccessDeniedPath if set
+                if (Options.AccessDeniedPath.HasValue)
+                {
+                    try
+                    {
+                        var accessDeniedUri =
+                            Request.Scheme +
+                            "://" +
+                            Request.Host +
+                            Request.PathBase +
+                            Options.AccessDeniedPath;
+
+                        var redirectContext = new CookieApplyRedirectContext(Context, Options, accessDeniedUri);
+                        Options.Notifications.ApplyRedirect(redirectContext);
+                    }
+                    catch (Exception exception)
+                    {
+                        var exceptionContext = new CookieExceptionContext(Context, Options,
+                            CookieExceptionContext.ExceptionLocation.ApplyResponseChallenge, exception, ticket: null);
+                        Options.Notifications.Exception(exceptionContext);
+                        if (exceptionContext.Rethrow)
+                        {
+                            throw;
+                        }
+                    }
+                }
+                else
+                {
+                    Response.StatusCode = 403;
+                }
+                return;
+            }
+
             if (Response.StatusCode != 401 || !Options.LoginPath.HasValue )
             {
                 return;

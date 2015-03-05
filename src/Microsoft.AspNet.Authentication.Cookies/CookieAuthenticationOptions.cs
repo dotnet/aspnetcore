@@ -106,6 +106,15 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public PathString LogoutPath { get; set; }
 
         /// <summary>
+        /// The AccessDeniedPath property informs the middleware that it should change an outgoing 403 Forbidden status
+        /// code into a 302 redirection onto the given path.
+        /// 
+        /// If the AccessDeniedPath is null or empty, the middleware will not look for 403 Forbidden status codes, and it will
+        /// not redirect
+        /// </summary>
+        public PathString AccessDeniedPath { get; set; }
+
+        /// <summary>
         /// The ReturnUrlParameter determines the name of the query string parameter which is appended by the middleware
         /// when a 401 Unauthorized status code is changed to a 302 redirect onto the login path. This is also the query 
         /// string parameter looked for when a request arrives on the login path or logout path, in order to return to the 

@@ -4,8 +4,6 @@
 using System;
 using Microsoft.AspNet.Authentication.Cookies.Infrastructure;
 using Microsoft.AspNet.Authentication.DataHandler;
-using Microsoft.AspNet.Authentication.Cookies.Infrastructure;
-using Microsoft.AspNet.Authentication.DataHandler;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.Framework.Logging;

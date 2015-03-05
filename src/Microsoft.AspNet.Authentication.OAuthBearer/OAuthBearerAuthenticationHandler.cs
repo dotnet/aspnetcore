@@ -7,10 +7,9 @@ using System.IdentityModel.Tokens;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authentication.Notifications;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Authentication;
-using Microsoft.AspNet.Authentication.Notifications;
 using Microsoft.Framework.Logging;
 using Microsoft.IdentityModel.Protocols;
 
@@ -195,6 +194,7 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
             if (ShouldConvertChallengeToForbidden())
             {
                 Response.StatusCode = 403;
+                return;
             }
 
             if ((Response.StatusCode != 401) || (ChallengeContext == null))

@@ -90,23 +90,5 @@ namespace Microsoft.AspNet.Authentication
 
             return Options.AutomaticAuthentication && string.IsNullOrWhiteSpace(authenticationScheme);
         }
-
-        /// <summary>
-        /// Override this method to deal with 401 challenge concerns, if an authentication scheme in question
-        /// deals an authentication interaction as part of it's request flow. (like adding a response header, or
-        /// changing the 401 result to 302 of a login page or external sign-in location.)
-        /// </summary>
-        /// <returns></returns>
-        protected override Task ApplyResponseChallengeAsync()
-        {
-            // If authenticate was called and the the status is still 401, authZ failed so set 403 and stop
-            if (ShouldConvertChallengeToForbidden())
-            {
-                Response.StatusCode = 403;
-                return Task.FromResult(0);
-            }
-            return base.ApplyResponseChallengeAsync();
-        }
-
     }
 }

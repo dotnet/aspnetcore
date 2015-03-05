@@ -421,6 +421,27 @@ namespace Microsoft.AspNet.Authentication.Cookies
         }
 
         [Fact]
+        public async Task CookieTurns401ToAccessDeniedWhenSetAndIfAuthenticated()
+        {
+            var clock = new TestClock();
+            TestServer server = CreateServer(options =>
+            {
+                options.SystemClock = clock;
+                options.AccessDeniedPath = new PathString("/accessdenied");
+            },
+            SignInAsAlice);
+
+            Transaction transaction1 = await SendAsync(server, "http://example.com/testpath");
+
+            Transaction transaction2 = await SendAsync(server, "http://example.com/unauthorized", transaction1.CookieNameValue);
+
+            transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+
+            Uri location = transaction2.Response.Headers.Location;
+            location.LocalPath.ShouldBe("/accessdenied");
+        }
+
+        [Fact]
         public async Task CookieDoesNothingTo401IfNotAuthenticated()
         {
             var clock = new TestClock();
