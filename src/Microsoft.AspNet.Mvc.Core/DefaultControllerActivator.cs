@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc
             _typeActivatorCache = typeActivatorCache;
         }
         /// <inheritdoc />
-        public object Create([NotNull] ActionContext actionContext, [NotNull] Type controllerType)
+        public virtual object Create([NotNull] ActionContext actionContext, [NotNull] Type controllerType)
         {
             var serviceProvider = actionContext.HttpContext.RequestServices;
             return _typeActivatorCache.CreateInstance<object>(serviceProvider, controllerType);
