@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Routing
 
         public static NullLoggerFactory Instance = new NullLoggerFactory();
 
-        public ILogger Create(string name)
+        public ILogger CreateLogger(string name)
         {
             return NullLogger.Instance;
         }

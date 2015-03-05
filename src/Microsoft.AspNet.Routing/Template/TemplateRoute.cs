@@ -363,8 +363,8 @@ namespace Microsoft.AspNet.Routing.Template
             if (_logger == null)
             {
                 var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
-                _logger = factory.Create<TemplateRoute>();
-                _constraintLogger = factory.Create(typeof(RouteConstraintMatcher).FullName);
+                _logger = factory.CreateLogger<TemplateRoute>();
+                _constraintLogger = factory.CreateLogger(typeof(RouteConstraintMatcher).FullName);
             }
         }
 

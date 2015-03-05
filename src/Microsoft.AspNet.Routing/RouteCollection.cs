@@ -229,7 +229,7 @@ namespace Microsoft.AspNet.Routing
             if (_logger == null)
             {
                 var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
-                _logger = factory.Create<RouteCollection>();
+                _logger = factory.CreateLogger<RouteCollection>();
             }
         }
 

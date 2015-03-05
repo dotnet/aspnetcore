@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Builder
             _services = services;
             _router = router;
 
-            _logger = loggerFactory.Create<RouterMiddleware>();
+            _logger = loggerFactory.CreateLogger<RouterMiddleware>();
         }
 
         public async Task Invoke(HttpContext httpContext)
