@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
             _next = next;
             _serviceProvider = serviceProvider;
             _options = options;
-            _logger = loggerFactory.Create<DatabaseErrorPageMiddleware>();
+            _logger = loggerFactory.CreateLogger<DatabaseErrorPageMiddleware>();
 
             _loggerProvider = new DataStoreErrorLoggerProvider();
             loggerFactory.AddProvider(_loggerProvider);
@@ -71,13 +71,13 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                             var dbContext = (DbContext)context.RequestServices.GetService(dbContextType);
                             if (dbContext == null)
                             {
-                                _logger.WriteError(Strings.FormatDatabaseErrorPageMiddleware_ContextNotRegistered(dbContextType.FullName));
+                                _logger.LogError(Strings.FormatDatabaseErrorPageMiddleware_ContextNotRegistered(dbContextType.FullName));
                             }
                             else
                             {
                                 if (!(dbContext.Database is RelationalDatabase))
                                 {
-                                    _logger.WriteVerbose(Strings.DatabaseErrorPage_NotRelationalDatabase);
+                                    _logger.LogVerbose(Strings.DatabaseErrorPage_NotRelationalDatabase);
                                 }
                                 else
                                 {
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                 }
                 catch (Exception e)
                 {
-                    _logger.WriteError(Strings.DatabaseErrorPageMiddleware_Exception, e);
+                    _logger.LogError(Strings.DatabaseErrorPageMiddleware_Exception, e);
                 }
 
                 throw;
@@ -112,11 +112,11 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 
         private static bool ShouldDisplayErrorPage(DataStoreErrorLogger.DataStoreErrorLog lastError, Exception exception, ILogger logger)
         {
-            logger.WriteVerbose(Strings.FormatDatabaseErrorPage_AttemptingToMatchException(exception.GetType()));
+            logger.LogVerbose(Strings.FormatDatabaseErrorPage_AttemptingToMatchException(exception.GetType()));
 
             if (!lastError.IsErrorLogged)
             {
-                logger.WriteVerbose(Strings.DatabaseErrorPage_NoRecordedException);
+                logger.LogVerbose(Strings.DatabaseErrorPage_NoRecordedException);
                 return false;
             }
 
@@ -128,11 +128,11 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 
             if (!match)
             {
-                logger.WriteVerbose(Strings.DatabaseErrorPage_NoMatch);
+                logger.LogVerbose(Strings.DatabaseErrorPage_NoMatch);
                 return false;
             }
 
-            logger.WriteVerbose(Strings.DatabaseErrorPage_Matched);
+            logger.LogVerbose(Strings.DatabaseErrorPage_Matched);
             return true;
         }
     }

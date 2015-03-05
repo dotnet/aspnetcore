@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 
             _next = next;
             _serviceProvider = serviceProvider;
-            _logger = loggerFactory.Create<MigrationsEndPointMiddleware>();
+            _logger = loggerFactory.CreateLogger<MigrationsEndPointMiddleware>();
             _options = options;
         }
 
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 
             if (context.Request.Path.Equals(_options.Path))
             {
-                _logger.WriteVerbose(Strings.FormatMigrationsEndPointMiddleware_RequestPathMatched(context.Request.Path));
+                _logger.LogVerbose(Strings.FormatMigrationsEndPointMiddleware_RequestPathMatched(context.Request.Path));
 
                 using (RequestServicesContainer.EnsureRequestServices(context, _serviceProvider))
                 { 
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                     {
                         try
                         {
-                            _logger.WriteVerbose(Strings.FormatMigrationsEndPointMiddleware_ApplyingMigrations(db.GetType().FullName));
+                            _logger.LogVerbose(Strings.FormatMigrationsEndPointMiddleware_ApplyingMigrations(db.GetType().FullName));
 
                             db.Database.AsRelational().ApplyMigrations();
 
@@ -59,12 +59,12 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                             context.Response.Headers.Add("Pragma", new[] { "no-cache" });
                             context.Response.Headers.Add("Cache-Control", new[] { "no-cache" });
 
-                            _logger.WriteVerbose(Strings.FormatMigrationsEndPointMiddleware_Applied(db.GetType().FullName));
+                            _logger.LogVerbose(Strings.FormatMigrationsEndPointMiddleware_Applied(db.GetType().FullName));
                         }
                         catch (Exception ex)
                         {
                             var message = Strings.FormatMigrationsEndPointMiddleware_Exception(db.GetType().FullName);
-                            _logger.WriteError(message);
+                            _logger.LogError(message);
                             throw new InvalidOperationException(message, ex);
                         }
                     }
@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
             var contextTypeName = form["context"];
             if (string.IsNullOrWhiteSpace(contextTypeName))
             {
-                logger.WriteError(Strings.MigrationsEndPointMiddleware_NoContextType);
+                logger.LogError(Strings.MigrationsEndPointMiddleware_NoContextType);
                 await WriteErrorToResponse(context.Response, Strings.MigrationsEndPointMiddleware_NoContextType).WithCurrentCulture();
                 return null;
             }
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
             if (contextType == null)
             {
                 var message = Strings.FormatMigrationsEndPointMiddleware_InvalidContextType(contextTypeName);
-                logger.WriteError(message);
+                logger.LogError(message);
                 await WriteErrorToResponse(context.Response, message).WithCurrentCulture();
                 return null;
             }
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
             if (db == null)
             {
                 var message = Strings.FormatMigrationsEndPointMiddleware_ContextNotRegistered(contextType.FullName);
-                logger.WriteError(message);
+                logger.LogError(message);
                 await WriteErrorToResponse(context.Response, message).WithCurrentCulture();
                 return null;
             }

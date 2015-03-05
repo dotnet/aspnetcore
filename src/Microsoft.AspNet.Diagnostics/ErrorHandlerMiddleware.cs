@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Diagnostics
         {
             _next = next;
             _options = options;
-            _logger = loggerFactory.Create<ErrorHandlerMiddleware>();
+            _logger = loggerFactory.CreateLogger<ErrorHandlerMiddleware>();
             if (_options.ErrorHandler == null)
             {
                 _options.ErrorHandler = _next;
@@ -36,11 +36,11 @@ namespace Microsoft.AspNet.Diagnostics
             }
             catch (Exception ex)
             {
-                _logger.WriteError("An unhandled exception has occurred: " + ex.Message, ex);
+                _logger.LogError("An unhandled exception has occurred: " + ex.Message, ex);
                 // We can't do anything if the response has already started, just abort.
                 if (responseStarted)
                 {
-                    _logger.WriteWarning("The response has already started, the error handler will not be executed.");
+                    _logger.LogWarning("The response has already started, the error handler will not be executed.");
                     throw;
                 }
 
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Diagnostics
                 catch (Exception ex2)
                 {
                     // Suppress secondary exceptions, re-throw the original.
-                    _logger.WriteError("An exception was thrown attempting to execute the error handler.", ex2);
+                    _logger.LogError("An exception was thrown attempting to execute the error handler.", ex2);
                 }
                 finally
                 {

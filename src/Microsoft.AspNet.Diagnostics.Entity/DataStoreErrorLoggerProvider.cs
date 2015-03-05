@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
     {
         private readonly DataStoreErrorLogger _logger = new DataStoreErrorLogger();
 
-        public virtual ILogger Create(string name)
+        public virtual ILogger CreateLogger(string name)
         {
             return _logger;
         }
