@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public abstract bool ConvertEmptyStringToNull { get; }
 
         /// <summary>
-        /// Gets the name of the <see cref="Model"/>'s datatype.  Overrides <see cref="ModelType"/> in some
+        /// Gets the name of the model's datatype.  Overrides <see cref="ModelType"/> in some
         /// display scenarios.
         /// </summary>
         /// <value><c>null</c> unless set manually or through additional metadata e.g. attributes.</value>
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         /// <summary>
         /// Gets the composite format <see cref="string"/> (see
-        /// http://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to display the <see cref="Model"/>.
+        /// http://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to display the model.
         /// </summary>
         public abstract string DisplayFormatString { get; }
 
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         /// <summary>
         /// Gets the composite format <see cref="string"/> (see
-        /// http://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to edit the <see cref="Model"/>.
+        /// http://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to edit the model.
         /// </summary>
         public abstract string EditFormatString { get; }
 
