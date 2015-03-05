@@ -683,6 +683,16 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
+        /// Creates an <see cref="HttpUnauthorizedResult"/> that produces an Unauthorized (401) response.
+        /// </summary>
+        /// <returns>The created <see cref="HttpUnauthorizedResult"/> for the response.</returns>
+        [NonAction]
+        public virtual HttpUnauthorizedResult HttpUnauthorized()
+        {
+            return new HttpUnauthorizedResult();
+        }
+
+        /// <summary>
         /// Creates an <see cref="HttpNotFoundResult"/> that produces a Not Found (404) response.
         /// </summary>
         /// <returns>The created <see cref="HttpNotFoundResult"/> for the response.</returns>

@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc
 
         protected virtual void Fail([NotNull] AuthorizationContext context)
         {
-            context.Result = new HttpStatusCodeResult(StatusCodes.Status401Unauthorized);
+            context.Result = new HttpUnauthorizedResult();
         }
     }
 }

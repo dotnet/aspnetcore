@@ -641,6 +641,19 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal("someDownloadName", result.FileDownloadName);
         }
 
+        [Fact]
+        public void HttpUnauthorized_SetsStatusCode()
+        {
+            // Arrange 
+            var controller = new TestableController();
+
+            // Act
+            var result = controller.HttpUnauthorized();
+
+            // Assert
+            Assert.IsType<HttpUnauthorizedResult>(result);
+            Assert.Equal(StatusCodes.Status401Unauthorized, result.StatusCode);
+        }
 
         [Fact]
         public void HttpNotFound_SetsStatusCode()

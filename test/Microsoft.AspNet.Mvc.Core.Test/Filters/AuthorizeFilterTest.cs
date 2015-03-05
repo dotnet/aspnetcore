@@ -228,7 +228,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 services.AddInstance(authorizationService.Object)
                 );
 
-            authorizationContext.Result = new HttpStatusCodeResult(StatusCodes.Status401Unauthorized);
+            authorizationContext.Result = new HttpUnauthorizedResult();
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
