@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.Logging
     /// <summary>
     /// Logging representation of the state of a <see cref="ControllerModel"/>. Logged during controller discovery.
     /// </summary>
-    public class ControllerModelValues : LoggerStructureBase
+    public class ControllerModelValues : ReflectionBasedLogValues
     {
         public ControllerModelValues(ControllerModel inner)
         {

@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.Logging
     /// Logging representation of a <see cref="ParameterDescriptor"/>. Logged as a substructure of
     /// <see cref="ActionDescriptorValues"/>.
     /// </summary>
-    public class ParameterDescriptorValues : LoggerStructureBase
+    public class ParameterDescriptorValues : ReflectionBasedLogValues
     {
         public ParameterDescriptorValues([NotNull] ParameterDescriptor inner)
         {

@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.Logging
     /// Logging representation of the state of a <see cref="AttributeRouteInfo"/>. Logged as a substructure of
     /// <see cref="ActionDescriptorValues"/>.
     /// </summary>
-    public class AttributeRouteInfoValues : LoggerStructureBase
+    public class AttributeRouteInfoValues : ReflectionBasedLogValues
     {
         public AttributeRouteInfoValues(AttributeRouteInfo inner)
         {

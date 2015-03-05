@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc
                                              ILoggerFactory loggerFactory)
         {
             _assemblyProvider = assemblyProvider;
-            _logger = loggerFactory.Create<DefaultControllerTypeProvider>();
+            _logger = loggerFactory.CreateLogger<DefaultControllerTypeProvider>();
         }
 
         /// <inheritdoc />
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc
                 {
                     foreach (var assembly in candidateAssemblies)
                     {
-                        _logger.WriteVerbose(new AssemblyValues(assembly));
+                        _logger.LogVerbose(new AssemblyValues(assembly));
                     }
                 }
 

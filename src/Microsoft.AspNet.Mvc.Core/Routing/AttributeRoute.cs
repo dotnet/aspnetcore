@@ -36,8 +36,8 @@ namespace Microsoft.AspNet.Mvc.Routing
             _actionDescriptorsCollectionProvider = actionDescriptorsCollectionProvider;
             _constraintResolver = constraintResolver;
 
-            _routeLogger = loggerFactory.Create<InnerAttributeRoute>();
-            _constraintLogger = loggerFactory.Create(typeof(RouteConstraintMatcher).FullName);
+            _routeLogger = loggerFactory.CreateLogger<InnerAttributeRoute>();
+            _constraintLogger = loggerFactory.CreateLogger(typeof(RouteConstraintMatcher).FullName);
 
              // Force creation of the route to report issues on startup.
             GetInnerRoute();

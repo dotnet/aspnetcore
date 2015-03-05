@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.Logging
     /// Logging representation of the state of a <see cref="RouteDataActionConstraint"/>. Logged as a substructure of
     /// <see cref="ActionDescriptorValues"/>.
     /// </summary>
-    public class RouteDataActionConstraintValues : LoggerStructureBase
+    public class RouteDataActionConstraintValues : ReflectionBasedLogValues
     {
         public RouteDataActionConstraintValues([NotNull] RouteDataActionConstraint inner)
         {

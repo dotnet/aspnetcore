@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.Logging
     /// <see cref="FilterDescriptorValues"/>, and as a substructure of <see cref="ControllerModelValues"/> 
     /// and <see cref="ActionModelValues"/>.
     /// </summary>
-    public class FilterValues : LoggerStructureBase
+    public class FilterValues : ReflectionBasedLogValues
     {
         public FilterValues(IFilter inner)
         {

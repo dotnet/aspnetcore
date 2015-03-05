@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             }
             
-            public ILogger Create(string name)
+            public ILogger CreateLogger(string name)
             {
                 return new TestLogger();
             }
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 return new TestDisposable();
             }
             
-            public void Write(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+            public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
             {
 
             }

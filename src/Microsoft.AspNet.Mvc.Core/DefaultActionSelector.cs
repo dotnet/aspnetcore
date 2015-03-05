@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Core
             _actionDescriptorsCollectionProvider = actionDescriptorsCollectionProvider;
             _decisionTreeProvider = decisionTreeProvider;
             _actionConstraintProviders = actionConstraintProviders.OrderBy(item => item.Order).ToArray();
-            _logger = loggerFactory.Create<DefaultActionSelector>();
+            _logger = loggerFactory.CreateLogger<DefaultActionSelector>();
         }
 
         public Task<ActionDescriptor> SelectAsync([NotNull] RouteContext context)

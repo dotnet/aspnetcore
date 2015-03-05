@@ -12,7 +12,7 @@ namespace ModelBindingWebSite
 
         public DefaultCalculator(ILoggerFactory loggerFactory)
         {
-            _logger = loggerFactory.Create(typeof(DefaultCalculator).FullName);
+            _logger = loggerFactory.CreateLogger(typeof(DefaultCalculator).FullName);
         }
 
         public int Operation(char @operator, int left, int right)
@@ -24,7 +24,7 @@ namespace ModelBindingWebSite
                 case '*': return left * right;
                 case '/': return left / right;
                 default:
-                    _logger.WriteError("Unrecognized operator:" + @operator);
+                    _logger.LogError("Unrecognized operator:" + @operator);
                     throw new InvalidOperationException();
             }
         }

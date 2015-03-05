@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.Logging
     /// <see cref="ActionModelValues"/>, this contains the name, type, and
     /// binder metadata of the parameter.
     /// </summary>
-    public class ParameterModelValues : LoggerStructureBase
+    public class ParameterModelValues : ReflectionBasedLogValues
     {
         public ParameterModelValues([NotNull] ParameterModel inner)
         {

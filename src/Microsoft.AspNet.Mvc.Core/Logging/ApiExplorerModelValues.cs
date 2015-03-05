@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc.Logging
     /// <summary>
     /// Logging representation of an <see cref="ApiExplorerModel"/>.
     /// </summary>
-    public class ApiExplorerModelValues : LoggerStructureBase
+    public class ApiExplorerModelValues : ReflectionBasedLogValues
     {
         public ApiExplorerModelValues(ApiExplorerModel inner)
         {

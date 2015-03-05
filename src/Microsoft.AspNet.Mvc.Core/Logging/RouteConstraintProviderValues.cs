@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.Logging
     /// Logging representation of a <see cref="IRouteConstraintProvider"/>. Logged as a substructure of
     /// <see cref="ControllerModelValues"/>
     /// </summary>
-    public class RouteConstraintProviderValues : LoggerStructureBase
+    public class RouteConstraintProviderValues : ReflectionBasedLogValues
     {
         public RouteConstraintProviderValues([NotNull] IRouteConstraintProvider inner)
         {

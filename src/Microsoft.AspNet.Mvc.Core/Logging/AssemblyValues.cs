@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.Logging
     /// <summary>
     /// Logging representation of the state of an <see cref="Assembly"/>. Logged during Assembly discovery in Startup.
     /// </summary>
-    public class AssemblyValues : LoggerStructureBase
+    public class AssemblyValues : ReflectionBasedLogValues
     {
         public AssemblyValues([NotNull] Assembly inner)
         {

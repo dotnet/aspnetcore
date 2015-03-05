@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.Logging
     /// <summary>
     /// Logging representation of an <see cref="IActionConstraintMetadata"/>. 
     /// </summary>
-    public class ActionConstraintValues : LoggerStructureBase
+    public class ActionConstraintValues : ReflectionBasedLogValues
     {
         public ActionConstraintValues(IActionConstraintMetadata inner)
         {

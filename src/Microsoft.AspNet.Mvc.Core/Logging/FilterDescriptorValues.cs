@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.Logging
     /// Logging representation of the state of a <see cref="FilterDescriptor"/>. Logged as a substructure of
     /// <see cref="ActionDescriptorValues"/>.
     /// </summary>
-    public class FilterDescriptorValues : LoggerStructureBase
+    public class FilterDescriptorValues : ReflectionBasedLogValues
     {
         public FilterDescriptorValues([NotNull] FilterDescriptor inner)
         {

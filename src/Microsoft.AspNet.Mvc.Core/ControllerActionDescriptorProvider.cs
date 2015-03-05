@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.Core
             _applicationModelBuilder = applicationModelBuilder;
             _globalFilters = globalFilters.Filters;
             _conventions = optionsAccessor.Options.Conventions;
-            _logger = loggerFactory.Create<ControllerActionDescriptorProvider>();
+            _logger = loggerFactory.CreateLogger<ControllerActionDescriptorProvider>();
         }
 
         public int Order
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.Core
             {
                 foreach (var controller in applicationModel.Controllers)
                 {
-                    _logger.WriteVerbose(new ControllerModelValues(controller));
+                    _logger.LogVerbose(new ControllerModelValues(controller));
                 }
             }
             return ControllerActionDescriptorBuilder.Build(applicationModel);

@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc
             if (_logger == null)
             {
                 var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
-                _logger = factory.Create<MvcRouteHandler>();
+                _logger = factory.CreateLogger<MvcRouteHandler>();
             }
         }
 

@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             modeMatchResult.LogDetails(logger, tagHelper.Object, uniqueId, viewPath);
 
             // Assert
-            Mock.Get(logger).Verify(l => l.Write(
+            Mock.Get(logger).Verify(l => l.Log(
                 LogLevel.Verbose,
                 It.IsAny<int>(),
                 It.IsAny<object>(),
@@ -51,13 +51,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             modeMatchResult.LogDetails(logger, tagHelper.Object, uniqueId, viewPath);
 
             // Assert
-            Mock.Get(logger).Verify(l => l.Write(
+            Mock.Get(logger).Verify(l => l.Log(
                 LogLevel.Warning,
                 It.IsAny<int>(),
                 It.IsAny<object>(),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<object, Exception, string>>()), Times.Never);
-            Mock.Get(logger).Verify(l => l.Write(
+            Mock.Get(logger).Verify(l => l.Log(
                 LogLevel.Verbose,
                 It.IsAny<int>(),
                 It.IsAny<object>(),
@@ -82,13 +82,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             modeMatchResult.LogDetails(logger, tagHelper.Object, uniqueId, viewPath);
 
             // Assert
-            Mock.Get(logger).Verify(l => l.Write(
+            Mock.Get(logger).Verify(l => l.Log(
                 LogLevel.Warning,
                 It.IsAny<int>(),
                 It.IsAny<object>(),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<object, Exception, string>>()), Times.Once);
-            Mock.Get(logger).Verify(l => l.Write(
+            Mock.Get(logger).Verify(l => l.Log(
                 LogLevel.Verbose,
                 It.IsAny<int>(),
                 It.IsAny<object>(),
@@ -113,13 +113,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             modeMatchResult.LogDetails(logger, tagHelper.Object, uniqueId, viewPath);
 
             // Assert
-            Mock.Get(logger).Verify(l => l.Write(
+            Mock.Get(logger).Verify(l => l.Log(
                 LogLevel.Warning,
                 It.IsAny<int>(),
                 It.IsAny<object>(),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<object, Exception, string>>()), Times.Never);
-            Mock.Get(logger).Verify(l => l.Write(
+            Mock.Get(logger).Verify(l => l.Log(
                 LogLevel.Verbose,
                 It.IsAny<int>(),
                 It.IsAny<object>(),

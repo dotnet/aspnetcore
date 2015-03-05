@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.Logging
     /// Logging representation of the state of an <see cref="ActionDescriptor"/> or 
     /// <see cref="ControllerActionDescriptor"/>. Logged during action discovery.
     /// </summary>
-    public class ActionDescriptorValues : LoggerStructureBase
+    public class ActionDescriptorValues : ReflectionBasedLogValues
     {
         public ActionDescriptorValues([NotNull] ActionDescriptor inner)
         {

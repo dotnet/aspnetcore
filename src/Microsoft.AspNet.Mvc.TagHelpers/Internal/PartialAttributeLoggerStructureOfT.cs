@@ -11,7 +11,7 @@ using Microsoft.Framework.Logging;
 namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 {
     /// <summary>
-    /// An <see cref="ILoggerStructure"/> for log messages regarding <see cref="ITagHelper"/> instances that opt out of
+    /// An <see cref="ILogValues"/> for log messages regarding <see cref="ITagHelper"/> instances that opt out of
     /// processing due to missing attributes for one of several possible modes.
     /// </summary>
     public class PartialModeMatchLoggerStructure<TMode> : PartialModeMatchLoggerStructure

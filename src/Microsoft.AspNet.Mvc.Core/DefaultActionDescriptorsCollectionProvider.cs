@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Core
         public DefaultActionDescriptorsCollectionProvider(IServiceProvider serviceProvider, ILoggerFactory factory)
         {
             _serviceProvider = serviceProvider;
-            _logger = factory.Create<DefaultActionDescriptorsCollectionProvider>();
+            _logger = factory.CreateLogger<DefaultActionDescriptorsCollectionProvider>();
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.Core
             {
                 foreach (var actionDescriptor in context.Results)
                 {
-                    _logger.WriteVerbose(new ActionDescriptorValues(actionDescriptor));
+                    _logger.LogVerbose(new ActionDescriptorValues(actionDescriptor));
                 }
             }
 

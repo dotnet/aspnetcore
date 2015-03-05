@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             IOptions<AuthorizationOptions> options)
         {
             _actionModelBuilder = actionModelBuilder;
-            _logger = loggerFactory.Create<DefaultControllerModelBuilder>();
+            _logger = loggerFactory.CreateLogger<DefaultControllerModelBuilder>();
             _authorizationOptions = options?.Options ?? new AuthorizationOptions();
         }
 

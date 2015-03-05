@@ -1710,8 +1710,8 @@ namespace Microsoft.AspNet.Mvc.Routing
                 new StubRouter(),
                 entries,
                 Enumerable.Empty<AttributeRouteLinkGenerationEntry>(),
-                loggerFactory.Create<AttributeRoute>(),
-                loggerFactory.Create(typeof(RouteConstraintMatcher).FullName),
+                loggerFactory.CreateLogger<AttributeRoute>(),
+                loggerFactory.CreateLogger(typeof(RouteConstraintMatcher).FullName),
                 version: 1);
         }
 

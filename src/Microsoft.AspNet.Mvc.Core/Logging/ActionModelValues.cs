@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.Logging
     /// Represents the state of an <see cref="ActionModel"/>.
     /// Logged as a substructure of <see cref="ControllerModelValues"/>
     /// </summary>
-    public class ActionModelValues : LoggerStructureBase
+    public class ActionModelValues : ReflectionBasedLogValues
     {
         // note: omit the controller as this structure is nested inside the ControllerModelValues it belongs to
         public ActionModelValues(ActionModel inner)
