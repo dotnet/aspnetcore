@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Hosting;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -29,7 +28,7 @@ namespace Microsoft.AspNet.Builder
 
         // Note: Manifests are lost after UseServices, services are flattened into ApplicationServices
 
-        public static IApplicationBuilder UseServices(this IApplicationBuilder builder, IEnumerable<IServiceDescriptor> applicationServices)
+        public static IApplicationBuilder UseServices(this IApplicationBuilder builder, IServiceCollection applicationServices)
         {
             return builder.UseServices(services => services.Add(applicationServices));
         }

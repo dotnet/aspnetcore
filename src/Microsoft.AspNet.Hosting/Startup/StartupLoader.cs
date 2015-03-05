@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 
 namespace Microsoft.AspNet.Hosting.Startup
 {

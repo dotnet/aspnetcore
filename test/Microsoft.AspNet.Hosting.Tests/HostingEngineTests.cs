@@ -10,7 +10,6 @@ using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Xunit;
 
 namespace Microsoft.AspNet.Hosting

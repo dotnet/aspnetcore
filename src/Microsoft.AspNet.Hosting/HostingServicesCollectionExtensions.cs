@@ -13,33 +13,30 @@ namespace Microsoft.Framework.DependencyInjection
     public static class HostingServicesExtensions
     {
         // REVIEW: Logging doesn't depend on DI, where should this live?
-        public static IServiceCollection AddLogging(this IServiceCollection services, IConfiguration config = null)
+        public static IServiceCollection AddLogging(this IServiceCollection services)
         {
-            var describe = new ServiceDescriber(config);
-            services.TryAdd(describe.Singleton<ILoggerFactory, LoggerFactory>());
-            services.TryAdd(describe.Singleton(typeof(ILogger<>), typeof(Logger<>)));
+            services.TryAdd(ServiceDescriptor.Singleton<ILoggerFactory, LoggerFactory>());
+            services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(Logger<>)));
             return services;
         }
 
         public static IServiceCollection AddHosting(this IServiceCollection services, IConfiguration configuration = null)
         {
-            var describer = new ServiceDescriber(configuration);
+            services.TryAdd(ServiceDescriptor.Transient<IHostingEngine, HostingEngine>());
+            services.TryAdd(ServiceDescriptor.Transient<IServerLoader, ServerLoader>());
 
-            services.TryAdd(describer.Transient<IHostingEngine, HostingEngine>());
-            services.TryAdd(describer.Transient<IServerLoader, ServerLoader>());
+            services.TryAdd(ServiceDescriptor.Transient<IStartupLoader, StartupLoader>());
 
-            services.TryAdd(describer.Transient<IStartupLoader, StartupLoader>());
+            services.TryAdd(ServiceDescriptor.Transient<IApplicationBuilderFactory, ApplicationBuilderFactory>());
+            services.TryAdd(ServiceDescriptor.Transient<IHttpContextFactory, HttpContextFactory>());
 
-            services.TryAdd(describer.Transient<IApplicationBuilderFactory, ApplicationBuilderFactory>());
-            services.TryAdd(describer.Transient<IHttpContextFactory, HttpContextFactory>());
-
-            services.TryAdd(describer.Instance<IApplicationLifetime>(new ApplicationLifetime()));
+            services.TryAdd(ServiceDescriptor.Instance<IApplicationLifetime>(new ApplicationLifetime()));
 
             services.AddTypeActivator(configuration);
             // TODO: Do we expect this to be provide by the runtime eventually?
-            services.AddLogging(configuration);
-            services.TryAdd(describer.Singleton<IHostingEnvironment, HostingEnvironment>());
-            services.TryAdd(describer.Singleton<IHttpContextAccessor, HttpContextAccessor>());
+            services.AddLogging();
+            services.TryAdd(ServiceDescriptor.Singleton<IHostingEnvironment, HostingEnvironment>());
+            services.TryAdd(ServiceDescriptor.Singleton<IHttpContextAccessor, HttpContextAccessor>());
 
             // REVIEW: don't try add because we pull out IEnumerable<IConfigureHostingEnvironment>?
             services.AddInstance<IConfigureHostingEnvironment>(new ConfigureHostingEnvironment(configuration));

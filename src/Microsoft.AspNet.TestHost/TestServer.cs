@@ -11,7 +11,6 @@ using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Infrastructure;
 

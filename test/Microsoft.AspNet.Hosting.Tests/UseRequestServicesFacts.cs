@@ -6,7 +6,6 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.RequestContainer;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.Logging;
 using Xunit;
 

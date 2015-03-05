@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Hosting.Fakes;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.Runtime;
 using Xunit;
 

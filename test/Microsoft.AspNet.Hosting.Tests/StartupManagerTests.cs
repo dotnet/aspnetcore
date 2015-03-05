@@ -7,7 +7,6 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting.Fakes;
 using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.OptionsModel;
 using Xunit;
 
