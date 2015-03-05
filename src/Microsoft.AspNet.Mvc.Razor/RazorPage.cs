@@ -298,7 +298,20 @@ namespace Microsoft.AspNet.Mvc.Razor
                     }
                     else
                     {
-                        WriteTo(writer, value.ToString());
+                        // This path is called when GetChildContentAsync() is called in tag helper
+                        // and content is not set.
+                        var tagHelperContent = value as TagHelperContent;
+                        if (tagHelperContent != null)
+                        {
+                            foreach (var entry in tagHelperContent)
+                            {
+                                writer.Write(entry);
+                            }
+                        }
+                        else
+                        {
+                            WriteTo(writer, value.ToString());
+                        }
                     }
                 }
             }

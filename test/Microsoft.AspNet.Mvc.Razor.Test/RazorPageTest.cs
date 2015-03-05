@@ -753,6 +753,32 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.Equal(expectedContent, writer.ToString());
         }
 
+        [Fact]
+        public async Task Write_TagHelperContent_WritesContent()
+        {
+            // Arrange
+            // This writer uses BufferEntryCollection underneath and so can copy the buffer.
+            var writer = new StringCollectionTextWriter(Encoding.UTF8);
+            var context = CreateViewContext(writer);
+            var expectedContent = "Hello World!";
+            var contentToBeCopied = new DefaultTagHelperContent().SetContent("Hello ").Append("World!");
+
+            // Act
+            var page = CreatePage(p =>
+            {
+                p.Write(contentToBeCopied);
+            }, context);
+            await page.ExecuteAsync();
+
+            // Assert
+            Assert.Equal(expectedContent, writer.ToString());
+            Assert.Equal(2, writer.Buffer.BufferEntries.Count);
+            var expectedList = new List<object>();
+            expectedList.Add("Hello ");
+            expectedList.Add("World!");
+            Assert.Equal(expectedList, writer.Buffer.BufferEntries);
+        }
+
         private static TestableRazorPage CreatePage(Action<TestableRazorPage> executeAction,
                                                     ViewContext context = null)
         {
