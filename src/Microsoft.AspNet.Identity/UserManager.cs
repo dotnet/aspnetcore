@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Identity
             ILookupNormalizer keyNormalizer,
             IdentityErrorDescriber errors,
             IEnumerable<IUserTokenProvider<TUser>> tokenProviders,
-            ILogger<UserManager<TUser>> logger,
+            ILoggerFactory logger,
             IHttpContextAccessor contextAccessor)
         {
             if (store == null)
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Identity
                 }
             }
 
-            Logger = logger ?? new Logger<UserManager<TUser>>(new LoggerFactory());
+            Logger = logger?.CreateLogger<UserManager<TUser>>() ?? new Logger<UserManager<TUser>>(new LoggerFactory());
 
             if (tokenProviders != null)
             {
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Identity
 
         internal IdentityErrorDescriber ErrorDescriber { get; set; }
 
-        internal ILogger<UserManager<TUser>> Logger { get; set; }
+        internal ILogger Logger { get; set; }
 
         internal IdentityOptions Options { get; set; }
 

@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Identity
             IHttpContextAccessor contextAccessor,
             IUserClaimsPrincipalFactory<TUser> claimsFactory,
             IOptions<IdentityOptions> optionsAccessor = null,
-            ILogger<SignInManager<TUser>> logger = null)
+            ILoggerFactory logger = null)
         {
             if (userManager == null)
             {
@@ -45,14 +45,14 @@ namespace Microsoft.AspNet.Identity
             ClaimsFactory = claimsFactory;
             Options = optionsAccessor?.Options ?? new IdentityOptions();
 
-            Logger = logger ?? new Logger<SignInManager<TUser>>(new LoggerFactory());
+            Logger = logger?.CreateLogger<SignInManager<TUser>>() ?? new Logger<SignInManager<TUser>>(new LoggerFactory());
         }
 
-        public UserManager<TUser> UserManager { get; private set; }
-        public HttpContext Context { get; private set; }
-        public IUserClaimsPrincipalFactory<TUser> ClaimsFactory { get; private set; }
-        public IdentityOptions Options { get; private set; }
-        public ILogger<SignInManager<TUser>> Logger { get; set; }
+        internal UserManager<TUser> UserManager { get; private set; }
+        internal HttpContext Context { get; private set; }
+        internal IUserClaimsPrincipalFactory<TUser> ClaimsFactory { get; private set; }
+        internal IdentityOptions Options { get; private set; }
+        internal ILogger Logger { get; set; }
 
         // Should this be a func?
         public virtual async Task<ClaimsPrincipal> CreateUserPrincipalAsync(TUser user)

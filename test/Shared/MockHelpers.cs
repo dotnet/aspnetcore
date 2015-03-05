@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Identity.Test
             var userManager = new UserManager<TUser>(store, options.Object, new PasswordHasher<TUser>(),
                 userValidators, pwdValidators, new UpperInvariantLookupNormalizer(),
                 new IdentityErrorDescriber(), Enumerable.Empty<IUserTokenProvider<TUser>>(),
-                new Logger<UserManager<TUser>>(new LoggerFactory()),
+                null,
                 null);
             validator.Setup(v => v.ValidateAsync(userManager, It.IsAny<TUser>()))
                 .Returns(Task.FromResult(IdentityResult.Success)).Verifiable();
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Identity.Test
             return new RoleManager<TRole>(store, roles, 
                 new UpperInvariantLookupNormalizer(), 
                 new IdentityErrorDescriber(),
-                new Logger<RoleManager<TRole>>(new LoggerFactory()),
+                null,
                 null);
         }
 

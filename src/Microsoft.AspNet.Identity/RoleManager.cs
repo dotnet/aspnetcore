@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Identity
             IEnumerable<IRoleValidator<TRole>> roleValidators,
             ILookupNormalizer keyNormalizer,
             IdentityErrorDescriber errors,
-            ILogger<RoleManager<TRole>> logger,
+            ILoggerFactory logger,
             IHttpContextAccessor contextAccessor)
         {
             if (store == null)
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Identity
                 }
             }
 
-            Logger = logger ?? new Logger<RoleManager<TRole>>(new LoggerFactory());
+            Logger = logger?.CreateLogger<RoleManager<TRole>>() ?? new Logger<RoleManager<TRole>>(new LoggerFactory());
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     Used to log results
         /// </summary>
-        internal ILogger<RoleManager<TRole>> Logger { get; set; }
+        internal ILogger Logger { get; set; }
 
         /// <summary>
         ///     Used to normalize user names, role names, emails for uniqueness
