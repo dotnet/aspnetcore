@@ -132,8 +132,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 containerType,
                 model,
                 propertyName: nameof(Model.Text),
-                expressionName: nameAndId.Name,
-                metadataProvider: null);
+                expressionName: nameAndId.Name);
 
             // Act
             await tagHelper.ProcessAsync(context, output);
@@ -680,11 +679,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             string propertyName,
             IModelMetadataProvider metadataProvider = null)
         {
-            if (metadataProvider == null)
-            {
-                metadataProvider = new TestModelMetadataProvider();
-            }
-
             return GetTagHelper(
                 htmlGenerator,
                 container: new Model(),
@@ -734,8 +728,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             object model,
             string propertyName,
             string expressionName,
-            IModelMetadataProvider metadataProvider)
+            IModelMetadataProvider metadataProvider = null)
         {
+            if (metadataProvider == null)
+            {
+                metadataProvider = new TestModelMetadataProvider();
+            }
+
             var containerMetadata = metadataProvider.GetMetadataForType(containerType);
             var containerExplorer = metadataProvider.GetModelExplorerForType(containerType, container);
 
