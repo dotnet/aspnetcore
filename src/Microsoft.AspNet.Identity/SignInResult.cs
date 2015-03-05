@@ -90,23 +90,23 @@ namespace Microsoft.AspNet.Identity
         {
             if (IsLockedOut)
             {
-                logger.WriteInformation(Resources.FormatLoggingSigninResult(message, "Lockedout"));
+                logger.LogInformation(Resources.FormatLoggingSigninResult(message, "Lockedout"));
             }
             else if (IsNotAllowed)
             {
-                logger.WriteInformation(Resources.FormatLoggingSigninResult(message, "NotAllowed"));
+                logger.LogInformation(Resources.FormatLoggingSigninResult(message, "NotAllowed"));
             }
             else if (RequiresTwoFactor)
             {
-                logger.WriteInformation(Resources.FormatLoggingSigninResult(message, "RequiresTwoFactor"));
+                logger.LogInformation(Resources.FormatLoggingSigninResult(message, "RequiresTwoFactor"));
             }
             else if (Succeeded)
             {
-                logger.WriteInformation(Resources.FormatLoggingSigninResult(message, "Succeeded"));
+                logger.LogInformation(Resources.FormatLoggingSigninResult(message, "Succeeded"));
             }
             else
             {
-                logger.WriteInformation(Resources.FormatLoggingSigninResult(message, "Failed"));
+                logger.LogInformation(Resources.FormatLoggingSigninResult(message, "Failed"));
             }
         }
     }

@@ -60,11 +60,11 @@ namespace Microsoft.AspNet.Identity
             // TODO: Take logging level as a parameter
             if (Succeeded)
             {
-                logger.WriteInformation(Resources.FormatLogIdentityResultSuccess(message));
+                logger.LogInformation(Resources.FormatLogIdentityResultSuccess(message));
             }
             else
             {
-                logger.WriteWarning(Resources.FormatLogIdentityResultFailure(message, string.Join(",", Errors.Select(x => x.Code).ToList())));
+                logger.LogWarning(Resources.FormatLogIdentityResultFailure(message, string.Join(",", Errors.Select(x => x.Code).ToList())));
             }
         }
     }
