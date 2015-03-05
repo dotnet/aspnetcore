@@ -6,20 +6,11 @@ using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.Framework.ConfigurationModel;
-using Microsoft.Framework.Logging;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public static class HostingServicesExtensions
     {
-        // REVIEW: Logging doesn't depend on DI, where should this live?
-        public static IServiceCollection AddLogging(this IServiceCollection services)
-        {
-            services.TryAdd(ServiceDescriptor.Singleton<ILoggerFactory, LoggerFactory>());
-            services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(Logger<>)));
-            return services;
-        }
-
         public static IServiceCollection AddHosting(this IServiceCollection services, IConfiguration configuration = null)
         {
             services.TryAdd(ServiceDescriptor.Transient<IHostingEngine, HostingEngine>());
