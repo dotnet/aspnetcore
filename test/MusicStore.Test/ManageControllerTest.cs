@@ -10,7 +10,6 @@ using Microsoft.AspNet.Http.Core.Authentication;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using MusicStore.Models;
 using Xunit;
 

@@ -8,7 +8,6 @@ using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using MusicStore.Models;
 using Xunit;
 

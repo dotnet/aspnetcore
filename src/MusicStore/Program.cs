@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 
 namespace MusicStore
 {

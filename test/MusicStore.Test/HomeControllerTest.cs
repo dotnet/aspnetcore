@@ -6,7 +6,6 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using MusicStore.Models;
 using Xunit;
 
