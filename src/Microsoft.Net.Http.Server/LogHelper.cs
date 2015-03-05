@@ -37,7 +37,7 @@ namespace Microsoft.Net.Http.Server
                 factory = new LoggerFactory();
             }
 
-            return factory.Create(type.FullName);
+            return factory.CreateLogger(type.FullName);
         }
 
         internal static void LogInfo(ILogger logger, string data)
@@ -48,7 +48,7 @@ namespace Microsoft.Net.Http.Server
             }
             else
             {
-                logger.WriteInformation(data);
+                logger.LogInformation(data);
             }
         }
 
@@ -60,7 +60,7 @@ namespace Microsoft.Net.Http.Server
             }
             else
             {
-                logger.WriteVerbose(data);
+                logger.LogVerbose(data);
             }
         }
 
@@ -72,7 +72,7 @@ namespace Microsoft.Net.Http.Server
             }
             else
             {
-                logger.WriteError(location, exception);
+                logger.LogError(location, exception);
             }
         }
 
@@ -84,7 +84,7 @@ namespace Microsoft.Net.Http.Server
             }
             else
             {
-                logger.WriteError(location + "; " + message);
+                logger.LogError(location + "; " + message);
             }
         }
     }

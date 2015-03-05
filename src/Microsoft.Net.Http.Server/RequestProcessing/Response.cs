@@ -366,7 +366,7 @@ namespace Microsoft.Net.Http.Server
 
             if (RequestContext.Logger.IsEnabled(LogLevel.Verbose))
             {
-                RequestContext.Logger.WriteVerbose(new SendResponseLogContext(this));
+                RequestContext.Logger.LogVerbose(new SendResponseLogContext(this));
             }
 
             /*
@@ -845,14 +845,13 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        private class SendResponseLogContext : LoggerStructureBase
+        private class SendResponseLogContext : ReflectionBasedLogValues
         {
             private readonly Response _response;
 
             internal SendResponseLogContext(Response response)
             {
                 _response = response;
-                Message = "Sending Response";
             }
 
             public string Protocol { get { return "HTTP/1.1"; } } // HTTP.SYS only allows 1.1 responses.

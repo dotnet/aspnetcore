@@ -149,7 +149,7 @@ namespace Microsoft.Net.Http.Server
 
             if (_requestContext.Logger.IsEnabled(LogLevel.Verbose))
             {
-                RequestContext.Logger.WriteVerbose(new ReceiveRequestLogContext(this));
+                RequestContext.Logger.LogVerbose(new ReceiveRequestLogContext(this));
             }
         }
 
@@ -514,14 +514,13 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        private class ReceiveRequestLogContext : LoggerStructureBase
+        private class ReceiveRequestLogContext : ReflectionBasedLogValues
         {
             private readonly Request _request;
 
             internal ReceiveRequestLogContext(Request request)
             {
                 _request = request;
-                Message = "Received Request";
             }
 
             public string Method { get { return _request.Method; } }

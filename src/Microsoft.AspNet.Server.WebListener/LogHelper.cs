@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return null;
             }
 
-            return factory.Create(type.FullName);
+            return factory.CreateLogger(type.FullName);
         }
 
         internal static void LogInfo(ILogger logger, string data)
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             else
             {
-                logger.WriteInformation(data);
+                logger.LogInformation(data);
             }
         }
 
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             else
             {
-                logger.WriteVerbose(data);
+                logger.LogVerbose(data);
             }
         }
 
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             else
             {
-                logger.WriteError(location, exception);
+                logger.LogError(location, exception);
             }
         }
 
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             else
             {
-                logger.WriteError(location + "; " + message);
+                logger.LogError(location + "; " + message);
             }
         }
     }
