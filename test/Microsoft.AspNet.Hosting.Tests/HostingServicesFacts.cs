@@ -53,6 +53,73 @@ namespace Microsoft.AspNet.Hosting.Tests
         }
 
         [Fact]
+        public void CreateCanAddAdditionalServices()
+        {
+            // Arrange
+            var fallbackServices = new ServiceCollection();
+            fallbackServices.AddTransient<IFakeService, FakeService>();
+            fallbackServices.AddTransient<IFakeScopedService, FakeService>(); // Don't register in manifest
+
+            fallbackServices.AddInstance<IServiceManifest>(new ServiceManifest(
+                new Type[] {
+                    typeof(IFakeService),
+                }));
+
+            var instance = new FakeService();
+            var factoryInstance = new FakeFactoryService(instance);
+
+            var services = HostingServices.Create(fallbackServices.BuildServiceProvider(),
+                additionalHostServices =>
+                {
+                    additionalHostServices.AddSingleton<IFakeSingletonService, FakeService>();
+                    additionalHostServices.AddInstance<IFakeServiceInstance>(instance);
+                    additionalHostServices.AddSingleton<IFactoryService>(serviceProvider => factoryInstance);
+                });
+
+            // Act
+            var provider = services.BuildServiceProvider();
+            var singleton = provider.GetRequiredService<IFakeSingletonService>();
+            var transient = provider.GetRequiredService<IFakeService>();
+            var factory = provider.GetRequiredService<IFactoryService>();
+            var manifest = provider.GetRequiredService<IServiceManifest>();
+
+            // Assert
+            Assert.Same(singleton, provider.GetRequiredService<IFakeSingletonService>());
+            Assert.NotSame(transient, provider.GetRequiredService<IFakeService>());
+            Assert.Same(instance, provider.GetRequiredService<IFakeServiceInstance>());
+            Assert.Same(factoryInstance, factory);
+            Assert.Same(factory.FakeService, instance);
+            Assert.Null(provider.GetService<INonexistentService>());
+            Assert.Null(provider.GetService<IFakeScopedService>()); // Make sure we don't leak non manifest services
+            Assert.Contains(typeof(IFakeSingletonService), manifest.Services);
+            Assert.Contains(typeof(IFakeServiceInstance), manifest.Services);
+            Assert.Contains(typeof(IFactoryService), manifest.Services);
+        }
+
+        [Fact]
+        public void CreateAdditionalServicesDoNotOverrideFallback()
+        {
+            // Arrange
+            var fallbackServices = new ServiceCollection();
+            fallbackServices.AddTransient<IFakeService, FakeService>();
+
+            fallbackServices.AddInstance<IServiceManifest>(new ServiceManifest(
+                new Type[] {
+                    typeof(IFakeService),
+                }));
+
+            var services = HostingServices.Create(fallbackServices.BuildServiceProvider(), 
+                additionalHostServices => additionalHostServices.AddSingleton<IFakeService, FakeService>());
+
+            // Act
+            var provider = services.BuildServiceProvider();
+            var stillTransient = provider.GetRequiredService<IFakeService>();
+
+            // Assert
+            Assert.NotSame(stillTransient, provider.GetRequiredService<IFakeService>());
+        }
+
+        [Fact]
         public void CanHideImportedServices()
         {
             // Arrange

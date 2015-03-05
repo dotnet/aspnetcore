@@ -11,7 +11,12 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class HostingServicesExtensions
     {
-        public static IServiceCollection AddHosting(this IServiceCollection services, IConfiguration configuration = null)
+        public static IServiceCollection AddHosting(this IServiceCollection services)
+        {
+            return services.AddHosting(configuration: null);
+        }
+
+        public static IServiceCollection AddHosting(this IServiceCollection services, IConfiguration configuration)
         {
             services.TryAdd(ServiceDescriptor.Transient<IHostingEngine, HostingEngine>());
             services.TryAdd(ServiceDescriptor.Transient<IServerLoader, ServerLoader>());

@@ -47,12 +47,22 @@ namespace Microsoft.AspNet.TestHost
 
         public static TestServer Create(Action<IApplicationBuilder> app)
         {
-            return Create(CallContextServiceLocator.Locator.ServiceProvider, app);
+            return Create(CallContextServiceLocator.Locator.ServiceProvider, app, configureHostServices: null);
+        }
+
+        public static TestServer Create(Action<IApplicationBuilder> app, Action<IServiceCollection> configureHostServices)
+        {
+            return Create(CallContextServiceLocator.Locator.ServiceProvider, app, configureHostServices);
         }
 
         public static TestServer Create(IServiceProvider serviceProvider, Action<IApplicationBuilder> app)
         {
-            var appServices = HostingServices.Create(serviceProvider).BuildServiceProvider();
+            return Create(serviceProvider, app, configureHostServices: null);
+        }
+
+        public static TestServer Create(IServiceProvider serviceProvider, Action<IApplicationBuilder> app, Action<IServiceCollection> configureHostServices)
+        {
+            var appServices = HostingServices.Create(serviceProvider, configureHostServices).BuildServiceProvider();
             var config = new Configuration();
             return new TestServer(config, appServices, app);
         }

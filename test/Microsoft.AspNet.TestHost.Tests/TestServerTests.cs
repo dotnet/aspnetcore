@@ -10,6 +10,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 using Xunit;
 
 namespace Microsoft.AspNet.TestHost
@@ -37,9 +38,24 @@ namespace Microsoft.AspNet.TestHost
         }
 
         [Fact]
+        public async Task CanAccessLogger()
+        {
+            TestServer server = TestServer.Create(app =>
+            {
+                app.Run(context =>
+                {
+                    var logger = app.ApplicationServices.GetRequiredService<ILogger<HttpContext>>();
+                    return context.Response.WriteAsync("FoundLogger:" + (logger != null));
+                });
+            });
+
+            string result = await server.CreateClient().GetStringAsync("/path");
+            Assert.Equal("FoundLogger:True", result);
+        }
+
+        [Fact]
         public async Task CanAccessHttpContext()
         {
-            var services = new ServiceCollection().BuildServiceProvider();
             TestServer server = TestServer.Create(app =>
             {
                 app.Run(context =>
@@ -48,6 +64,35 @@ namespace Microsoft.AspNet.TestHost
                     return context.Response.WriteAsync("HasContext:"+(accessor.HttpContext != null));
                 });
             });
+
+            string result = await server.CreateClient().GetStringAsync("/path");
+            Assert.Equal("HasContext:True", result);
+        }
+
+        public class ContextHolder
+        {
+            public ContextHolder(IHttpContextAccessor accessor)
+            {
+                Accessor = accessor;
+            }
+
+            public IHttpContextAccessor Accessor { get; set; }
+        }
+
+        [Fact]
+        public async Task CanAddNewHostServices()
+        {
+            TestServer server = TestServer.Create(app =>
+            {
+                var a = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
+
+                app.Run(context =>
+                {
+                    var b = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
+                    var accessor = app.ApplicationServices.GetRequiredService<ContextHolder>();
+                    return context.Response.WriteAsync("HasContext:" + (accessor.Accessor.HttpContext != null));
+                });
+            }, newHostServices => newHostServices.AddSingleton<ContextHolder>());
 
             string result = await server.CreateClient().GetStringAsync("/path");
             Assert.Equal("HasContext:True", result);
