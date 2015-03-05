@@ -12,23 +12,21 @@ using Microsoft.AspNet.DataProtection.Dpapi;
 using Microsoft.AspNet.DataProtection.KeyManagement;
 using Microsoft.AspNet.DataProtection.Repositories;
 using Microsoft.AspNet.DataProtection.XmlEncryption;
-using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public static class DataProtectionServiceCollectionExtensions
     {
-        public static IServiceCollection AddDataProtection(this IServiceCollection services, IConfiguration configuration = null)
+        public static IServiceCollection AddDataProtection(this IServiceCollection services)
         {
-            services.AddOptions(configuration);
-            var describe = new ServiceDescriber(configuration);
+            services.AddOptions();
             services.TryAdd(OSVersionUtil.IsBCryptOnWin7OrLaterAvailable()
-                ? GetDefaultServicesWindows(describe)
-                : GetDefaultServicesNonWindows(describe));
+                ? GetDefaultServicesWindows()
+                : GetDefaultServicesNonWindows());
             return services;
         }
 
-        private static IEnumerable<IServiceDescriptor> GetDefaultServicesNonWindows(ServiceDescriber describe)
+        private static IEnumerable<ServiceDescriptor> GetDefaultServicesNonWindows()
         {
             // If we're not running on Windows, we can't use CNG.
 
@@ -36,11 +34,11 @@ namespace Microsoft.Framework.DependencyInjection
             // DPAPI routines don't provide authenticity.
             return new[]
             {
-                describe.Instance<IDataProtectionProvider>(new DpapiDataProtectionProvider(DataProtectionScope.CurrentUser))
+                ServiceDescriptor.Instance<IDataProtectionProvider>(new DpapiDataProtectionProvider(DataProtectionScope.CurrentUser))
             };
         }
 
-        private static IEnumerable<IServiceDescriptor> GetDefaultServicesWindows(ServiceDescriber describe)
+        private static IEnumerable<ServiceDescriptor> GetDefaultServicesWindows()
         {
             List<ServiceDescriptor> descriptors = new List<ServiceDescriptor>();
 
@@ -52,8 +50,8 @@ namespace Microsoft.Framework.DependencyInjection
                 // cloud DPAPI service comes online.
                 descriptors.AddRange(new[]
                 {
-                    describe.Singleton<IXmlEncryptor,NullXmlEncryptor>(),
-                    describe.Instance<IXmlRepository>(new FileSystemXmlRepository(azureWebSitesKeysFolder))
+                    ServiceDescriptor.Singleton<IXmlEncryptor,NullXmlEncryptor>(),
+                    ServiceDescriptor.Instance<IXmlRepository>(new FileSystemXmlRepository(azureWebSitesKeysFolder))
                 });
             }
             else
@@ -64,8 +62,8 @@ namespace Microsoft.Framework.DependencyInjection
                 {
                     descriptors.AddRange(new[]
                     {
-                        describe.Instance<IXmlEncryptor>(new DpapiXmlEncryptor(protectToLocalMachine: false)),
-                        describe.Instance<IXmlRepository>(new FileSystemXmlRepository(localAppDataKeysFolder))
+                        ServiceDescriptor.Instance<IXmlEncryptor>(new DpapiXmlEncryptor(protectToLocalMachine: false)),
+                        ServiceDescriptor.Instance<IXmlRepository>(new FileSystemXmlRepository(localAppDataKeysFolder))
                     });
                 }
                 else
@@ -80,15 +78,15 @@ namespace Microsoft.Framework.DependencyInjection
                         // We use same-machine DPAPI since we already know no user profile is loaded.
                         descriptors.AddRange(new[]
                         {
-                            describe.Instance<IXmlEncryptor>(new DpapiXmlEncryptor(protectToLocalMachine: true)),
-                            describe.Instance<IXmlRepository>(hklmRegXmlRepository)
+                            ServiceDescriptor.Instance<IXmlEncryptor>(new DpapiXmlEncryptor(protectToLocalMachine: true)),
+                            ServiceDescriptor.Instance<IXmlRepository>(hklmRegXmlRepository)
                         });
                     }
                     else
                     {
                         // Fall back to DPAPI for now
                         return new[] {
-                            describe.Instance<IDataProtectionProvider>(new DpapiDataProtectionProvider(DataProtectionScope.LocalMachine))
+                            ServiceDescriptor.Instance<IDataProtectionProvider>(new DpapiDataProtectionProvider(DataProtectionScope.LocalMachine))
                         };
                     }
                 }
@@ -97,10 +95,10 @@ namespace Microsoft.Framework.DependencyInjection
             // We use CNG CBC + HMAC by default.
             descriptors.AddRange(new[]
             {
-                describe.Singleton<IAuthenticatedEncryptorConfigurationFactory, CngCbcAuthenticatedEncryptorConfigurationFactory>(),
-                describe.Singleton<ITypeActivator, TypeActivator>(),
-                describe.Singleton<IKeyManager, XmlKeyManager>(),
-                describe.Singleton<IDataProtectionProvider, DefaultDataProtectionProvider>()
+                ServiceDescriptor.Singleton<IAuthenticatedEncryptorConfigurationFactory, CngCbcAuthenticatedEncryptorConfigurationFactory>(),
+                ServiceDescriptor.Singleton<ITypeActivator, TypeActivator>(),
+                ServiceDescriptor.Singleton<IKeyManager, XmlKeyManager>(),
+                ServiceDescriptor.Singleton<IDataProtectionProvider, DefaultDataProtectionProvider>()
             });
 
             return descriptors;

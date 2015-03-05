@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.DataProtection.KeyManagement;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.DataProtection
