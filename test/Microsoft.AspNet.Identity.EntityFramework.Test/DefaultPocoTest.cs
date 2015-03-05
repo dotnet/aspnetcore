@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.AspNet.DataProtection;
-using Xunit;
 using Microsoft.Framework.Runtime.Infrastructure;
+using Xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test
 {

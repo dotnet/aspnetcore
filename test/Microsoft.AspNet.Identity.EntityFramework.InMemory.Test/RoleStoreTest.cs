@@ -5,8 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
-using Microsoft.Framework.Logging;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test

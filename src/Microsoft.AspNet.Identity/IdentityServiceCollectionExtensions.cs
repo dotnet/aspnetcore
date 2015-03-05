@@ -48,27 +48,25 @@ namespace Microsoft.Framework.DependencyInjection
                 }
                 services.Configure<IdentityOptions>(identityConfig);
             }
-            var describe = new ServiceDescriber(identityConfig);
-
             // Services used by identity
-            services.AddOptions(identityConfig);
-            services.AddDataProtection(identityConfig);
-            services.AddLogging(identityConfig);
-            services.TryAdd(describe.Singleton<IHttpContextAccessor, HttpContextAccessor>());
+            services.AddOptions();
+            services.AddDataProtection();
+            services.AddLogging();
+            services.TryAdd(ServiceDescriptor.Singleton<IHttpContextAccessor, HttpContextAccessor>());
 
             // Identity services
-            services.TryAdd(describe.Transient<IUserValidator<TUser>, UserValidator<TUser>>());
-            services.TryAdd(describe.Transient<IPasswordValidator<TUser>, PasswordValidator<TUser>>());
-            services.TryAdd(describe.Transient<IPasswordHasher<TUser>, PasswordHasher<TUser>>());
-            services.TryAdd(describe.Transient<ILookupNormalizer, UpperInvariantLookupNormalizer>());
-            services.TryAdd(describe.Transient<IRoleValidator<TRole>, RoleValidator<TRole>>());
+            services.TryAdd(ServiceDescriptor.Transient<IUserValidator<TUser>, UserValidator<TUser>>());
+            services.TryAdd(ServiceDescriptor.Transient<IPasswordValidator<TUser>, PasswordValidator<TUser>>());
+            services.TryAdd(ServiceDescriptor.Transient<IPasswordHasher<TUser>, PasswordHasher<TUser>>());
+            services.TryAdd(ServiceDescriptor.Transient<ILookupNormalizer, UpperInvariantLookupNormalizer>());
+            services.TryAdd(ServiceDescriptor.Transient<IRoleValidator<TRole>, RoleValidator<TRole>>());
             // No interface for the error describer so we can add errors without rev'ing the interface
-            services.TryAdd(describe.Transient<IdentityErrorDescriber, IdentityErrorDescriber>());
-            services.TryAdd(describe.Scoped<ISecurityStampValidator, SecurityStampValidator<TUser>>());
-            services.TryAdd(describe.Scoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser, TRole>>());
-            services.TryAdd(describe.Scoped<UserManager<TUser>, UserManager<TUser>>());
-            services.TryAdd(describe.Scoped<SignInManager<TUser>, SignInManager<TUser>>());
-            services.TryAdd(describe.Scoped<RoleManager<TRole>, RoleManager<TRole>>());
+            services.TryAdd(ServiceDescriptor.Transient<IdentityErrorDescriber, IdentityErrorDescriber>());
+            services.TryAdd(ServiceDescriptor.Scoped<ISecurityStampValidator, SecurityStampValidator<TUser>>());
+            services.TryAdd(ServiceDescriptor.Scoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser, TRole>>());
+            services.TryAdd(ServiceDescriptor.Scoped<UserManager<TUser>, UserManager<TUser>>());
+            services.TryAdd(ServiceDescriptor.Scoped<SignInManager<TUser>, SignInManager<TUser>>());
+            services.TryAdd(ServiceDescriptor.Scoped<RoleManager<TRole>, RoleManager<TRole>>());
 
             if (configureOptions != null)
             {

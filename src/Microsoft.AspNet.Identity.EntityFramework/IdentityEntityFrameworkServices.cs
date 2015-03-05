@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace Microsoft.AspNet.Identity
 {
@@ -14,17 +13,8 @@ namespace Microsoft.AspNet.Identity
     /// </summary>
     public class IdentityEntityFrameworkServices
     {
-        public static IEnumerable<IServiceDescriptor> GetDefaultServices(Type userType, Type roleType, Type contextType, Type keyType = null, IConfiguration config = null)
+        public static IServiceCollection GetDefaultServices(Type userType, Type roleType, Type contextType, Type keyType = null, IConfiguration config = null)
         {
-            ServiceDescriber describe;
-            if (config == null)
-            {
-                describe = new ServiceDescriber();
-            }
-            else
-            {
-                describe = new ServiceDescriber(config);
-            }
             Type userStoreType;
             Type roleStoreType;
             if (keyType != null)
@@ -38,12 +28,14 @@ namespace Microsoft.AspNet.Identity
                 roleStoreType = typeof(RoleStore<,>).MakeGenericType(roleType, contextType);
             }
 
-            yield return describe.Scoped(
+            var services = new ServiceCollection();
+            services.AddScoped(
                 typeof(IUserStore<>).MakeGenericType(userType),
                 userStoreType);
-            yield return describe.Scoped(
+            services.AddScoped(
                 typeof(IRoleStore<>).MakeGenericType(roleType),
                 roleStoreType);
+            return services;
         }
     }
 }

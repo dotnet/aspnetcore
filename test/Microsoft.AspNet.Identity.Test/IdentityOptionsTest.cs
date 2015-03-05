@@ -7,7 +7,6 @@ using System.Security.Claims;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Runtime.Infrastructure;
 using Xunit;
