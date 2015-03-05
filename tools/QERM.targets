@@ -6,12 +6,9 @@
         <BinScopeTargetDir Condition="'$(BinScopeTarget)' == ''">$(IntermediateOutputPath)BinScope\</BinScopeTargetDir>
         <BinScopeLogFile Condition="'$(BinScopeLogFile)' == ''">$(BinScopeOutDir)BinScopeResults.xml</BinScopeLogFile>
 
-        <BinScope61BetaInstallDir>$(MSBuildProgramFiles32)\Microsoft\BinScope for SDL 6.1 (Beta)\</BinScope61BetaInstallDir>
-        <BinScope61InstallDir>$(MSBuildProgramFiles32)\Microsoft\BinScope for SDL 6.1\</BinScope61InstallDir>
+        <BinScope70InstallDir>$(MSBuildProgramFiles32)\Microsoft\BinScope for SDL 7.0\</BinScope70InstallDir>
 
-        <!-- If nothing is defined, we will assume that it's the 6.1 Beta release. -->
-        <BinScopeInstallDir Condition="('$(BinScopeInstallerDir)' == '') And (Exists('$(BinScope61BetaInstallDir)')) ">$(BinScope61BetaInstallDir)</BinScopeInstallDir>
-        <BinScopeInstallDir Condition="('$(BinScopeInstallerDir)' == '') And (Exists('$(BinScope61InstallDir)'))">$(BinScope61InstallDir)</BinScopeInstallDir>
+        <BinScopeInstallDir Condition="('$(BinScopeInstallerDir)' == '') And (Exists('$(BinScope70InstallDir)'))">$(BinScope70InstallDir)</BinScopeInstallDir>
         <BinScopeEXE Condition="'$(BinScopeEXE)' == ''">$(BinScopeInstallDir)BinScope.EXE</BinScopeEXE>
 
         <BinScopeSymbolOption Condition="'$(BinScopeSymPath)' != ''">/sympath $(BinScopeSymPath)</BinScopeSymbolOption>
@@ -23,7 +20,10 @@
 
         <Copy SourceFiles="@(BinScopeTargetFiles)" DestinationFiles="@(BinScopeTargetFiles->'$(BinScopeTargetDir)%(RecursiveDir)\%(Filename)%(Extension)')" />
 
-        <Exec Command="&quot;$(BinScopeEXE)&quot; /target $(BinScopeTargetDir) $(BinScopeSymbolOption) /logfile $(BinScopeLogFile)" />
+        <WriteLinesToFile File="$(IntermediateOutputPath)BinScope.rsp" Overwrite="true"
+                          Lines="@(BinScopeTargetFiles->'/target $(BinScopeTargetDir)%(RecursiveDir)%(Filename)%(Extension) $(BinScopeSymbolOption)')" />
+
+        <Exec Command="&quot;$(BinScopeEXE)&quot; @$(IntermediateOutputPath)BinScope.rsp /logfile $(BinScopeLogFile) /Xslt" />
     </Target>
 
     <Target Name="BinScope">
