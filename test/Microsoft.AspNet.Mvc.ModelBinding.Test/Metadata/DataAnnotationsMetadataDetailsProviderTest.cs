@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             var display = new DisplayAttribute()
             {
                 Name = "DisplayAttribute_Name",
-                ResourceType = typeof(Test.Resources),
+                ResourceType = typeof(Test.TestResources),
             };
 
             var attributes = new Attribute[] { display };
@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             var display = new DisplayAttribute()
             {
                 Description = "DisplayAttribute_Description",
-                ResourceType = typeof(Test.Resources),
+                ResourceType = typeof(Test.TestResources),
             };
 
             var attributes = new Attribute[] { display };
