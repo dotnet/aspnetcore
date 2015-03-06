@@ -40,6 +40,11 @@ namespace Microsoft.AspNet.Hosting
             return Create(fallbackServices, configureHostServices: null, configuration: null);
         }
 
+        public static IServiceCollection Create(Action<IServiceCollection> configureHostServices)
+        {
+            return Create(CallContextServiceLocator.Locator.ServiceProvider, configureHostServices, configuration: null);
+        }
+
         public static IServiceCollection Create(IServiceProvider fallbackServices, Action<IServiceCollection> configureHostServices)
         {
             return Create(fallbackServices, configureHostServices, configuration: null);
