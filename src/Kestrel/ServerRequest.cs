@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http.Interfaces;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Server.Kestrel.Http;
 
 namespace Kestrel
