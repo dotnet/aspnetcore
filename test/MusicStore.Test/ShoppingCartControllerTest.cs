@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
-using Microsoft.AspNet.Http.Interfaces;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Session;
 using Microsoft.AspNet.Testing.Logging;
