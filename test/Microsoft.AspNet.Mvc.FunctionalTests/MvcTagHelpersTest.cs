@@ -3,13 +3,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Internal;
 using MvcTagHelpersWebSite;
 using Xunit;
 
@@ -333,6 +338,42 @@ Products: Book1, Book2 (1)";
 @"Category: Electronics
 Products: Laptops (3)";
             Assert.Equal(expected3, response4.Trim());
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task FormTagHelper_GeneratesExpectedContent(bool? optionsAntiForgery)
+        {
+            // Arrange
+            var newServices = new ServiceCollection();
+            newServices.ConfigureTagHelpers().ConfigureForm(options => options.GenerateAntiForgeryToken = optionsAntiForgery);
+            var serviceProvider = TestHelper.CreateServices("MvcTagHelpersWebSite", newServices);
+            var server = TestServer.Create(serviceProvider, _app);
+            var client = server.CreateClient();
+            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+
+            // The K runtime compiles every file under compiler/resources as a resource at runtime with the same name
+            // as the file name, in order to update a baseline you just need to change the file in that folder.
+            var resourceName = string.Format(
+                "compiler/resources/MvcTagHelpersWebSite.MvcTagHelper_Home.Form.Options.AntiForgery.{0}.html",
+                optionsAntiForgery?.ToString() ?? "null"
+            );
+            var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(resourceName);
+
+            // Act
+            // The host is not important as everything runs in memory and tests are isolated from each other.
+            var response = await client.GetAsync("http://localhost/MvcTagHelper_Home/Form");
+            var responseContent = await response.Content.ReadAsStringAsync();
+            
+            var forgeryTokens = AntiForgeryTestHelper.RetrieveAntiForgeryTokens(responseContent);
+            expectedContent = string.Format(expectedContent, forgeryTokens.ToArray());
+            
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+            Assert.Equal(expectedContent.Trim(), responseContent.Trim());
         }
     }
 }

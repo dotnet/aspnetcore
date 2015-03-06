@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -13,15 +14,27 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         public static string RetrieveAntiForgeryToken(string htmlContent, string actionUrl)
         {
+            return RetrieveAntiForgeryTokens(
+                htmlContent,
+                attribute => attribute.Value.EndsWith(actionUrl, StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
+        }
+
+        public static IEnumerable<string> RetrieveAntiForgeryTokens(
+            string htmlContent,
+            Func<XAttribute, bool> predicate = null)
+        {
+            predicate = predicate ?? (_ => true);
             htmlContent = "<Root>" + htmlContent + "</Root>";
             var reader = new StringReader(htmlContent);
             var htmlDocument = XDocument.Load(reader);
+
             foreach (var form in htmlDocument.Descendants("form"))
             {
                 foreach (var attribute in form.Attributes())
                 {
-                    if (string.Equals(attribute.Name.LocalName, "action", StringComparison.OrdinalIgnoreCase) &&
-                        attribute.Value.EndsWith(actionUrl, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(attribute.Name.LocalName, "action", StringComparison.OrdinalIgnoreCase)
+                        && predicate(attribute))
                     {
                         foreach (var input in form.Descendants("input"))
                         {
@@ -30,14 +43,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                                 input.Attribute("name").Value == "__RequestVerificationToken" &&
                                 input.Attribute("type").Value == "hidden")
                             {
-                                return input.Attributes("value").First().Value;
+                                yield return input.Attributes("value").First().Value;
                             }
                         }
                     }
                 }
             }
-
-            return null;
         }
 
         public static string RetrieveAntiForgeryCookie(HttpResponseMessage response)

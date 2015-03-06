@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -27,6 +28,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
         [Activate]
         protected internal IHtmlGenerator Generator { get; set; }
+
+        // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
+        [Activate]
+        protected internal IOptions<FormTagHelperOptions> Options { get; set; }
 
         /// <summary>
         /// The name of the action method.
@@ -108,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 }
             }
 
-            if (AntiForgery ?? antiForgeryDefault)
+            if (AntiForgery ?? Options.Options.GenerateAntiForgeryToken ?? antiForgeryDefault)
             {
                 var antiForgeryTagBuilder = Generator.GenerateAntiForgery(ViewContext);
                 if (antiForgeryTagBuilder != null)
