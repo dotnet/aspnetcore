@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 #if ASPNET50
 using Microsoft.AspNet.Routing.Logging;
-using Microsoft.AspNet.Testing.Logging;
+using Microsoft.Framework.Logging.Testing;
 using Moq;
 #endif
 using Xunit;
