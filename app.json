@@ -1,0 +1,7 @@
+{
+    "name": "MusicStore",
+    "description": "ASP.NET 5 Music Store sample app",
+    "env": {
+	"BUILDPACK_URL": "https://github.com/heroku/dotnet-buildpack.git"
+    }
+}
