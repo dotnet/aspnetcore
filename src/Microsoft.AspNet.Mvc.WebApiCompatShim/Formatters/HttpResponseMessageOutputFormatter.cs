@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Interfaces;
+using Microsoft.AspNet.Http;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
