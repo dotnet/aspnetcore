@@ -257,7 +257,6 @@ namespace Microsoft.AspNet.Diagnostics.Views
             }
 
             // Split on line breaks before passing it through the encoder.
-            // We use the static default encoder since we can't depend on DI in the error handling logic.
             return string.Join("<br />" + Environment.NewLine,
                 input.Split(new[] { "\r\n" }, StringSplitOptions.None)
                 .SelectMany(s => s.Split(new[] { '\r', '\n' }, StringSplitOptions.None))
