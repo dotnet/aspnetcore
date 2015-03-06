@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
-using Microsoft.AspNet.Testing.Logging;
+using Microsoft.Framework.Logging.Testing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Xunit;

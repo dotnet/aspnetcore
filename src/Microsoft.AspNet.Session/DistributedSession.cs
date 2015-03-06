@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNet.Http.Interfaces;
+using Microsoft.AspNet.Http;
 using Microsoft.Framework.Cache.Distributed;
 using Microsoft.Framework.Logging;
 
