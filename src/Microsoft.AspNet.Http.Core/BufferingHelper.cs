@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.WebUtilities;
 
 namespace Microsoft.AspNet.Http.Core
@@ -16,11 +15,9 @@ namespace Microsoft.AspNet.Http.Core
         {
             get
             {
-                var temp = Environment.GetEnvironmentVariable("ASPNET_TEMP");
-                if (string.IsNullOrEmpty(temp))
-                {
-                    temp = Environment.GetEnvironmentVariable("TEMP");
-                }
+                // Look for folders in the following order.
+                var temp = Environment.GetEnvironmentVariable("ASPNET_TEMP") ??     // ASPNET_TEMP - User set temporary location.
+                           Path.GetTempPath();                                      // Fall back.
 
                 if (!Directory.Exists(temp))
                 {
