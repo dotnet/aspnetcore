@@ -108,6 +108,37 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
         }
 
         [Fact]
+        public async Task NoAcceptAndContentTypeHeaders_406Formatter_DoesNotTakeEffect()
+        {
+            // Arrange
+            var expectedContentType = "application/json; charset=utf-8";
+
+            var input = 123;
+            var httpResponse = new DefaultHttpContext().Response;
+            httpResponse.Body = new MemoryStream();
+            var actionContext = CreateMockActionContext(
+                outputFormatters: new IOutputFormatter[] 
+                {
+                    new HttpNotAcceptableOutputFormatter(),
+                    new JsonOutputFormatter()
+                },
+                response: httpResponse,
+                requestAcceptHeader: null,
+                requestContentType: null,
+                requestAcceptCharsetHeader: null);
+
+            var result = new ObjectResult(input);
+            result.ContentTypes = new List<MediaTypeHeaderValue>();
+            result.ContentTypes.Add(MediaTypeHeaderValue.Parse(expectedContentType));
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            Assert.Equal(expectedContentType, httpResponse.ContentType);
+        }
+
+        [Fact]
         public async Task ObjectResult_WithSingleContentType_TheGivenContentTypeIsSelected()
         {
             // Arrange
@@ -643,6 +674,103 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             Assert.Equal(expectedMessage, exception.Message);
         }
 
+        [Fact]
+        public async Task ObjectResult_WithStringType_WritesTextPlain_Ignoring406Formatter()
+        {
+            // Arrange
+            var expectedData = "Hello World!";
+            var objectResult = new ObjectResult(expectedData);
+            var outputFormatters = new IOutputFormatter[] 
+            {
+                new HttpNotAcceptableOutputFormatter(),
+                new StringOutputFormatter(),
+                new JsonOutputFormatter()
+            };
+
+            var response = new Mock<HttpResponse>();
+            var responseStream = new MemoryStream();
+            response.SetupGet(r => r.Body).Returns(responseStream);
+
+            var actionContext = CreateMockActionContext(
+                                    outputFormatters,
+                                    response.Object,
+                                    requestAcceptHeader: "application/json");
+
+            // Act
+            await objectResult.ExecuteResultAsync(actionContext);
+
+            // Assert
+            response.VerifySet(r => r.ContentType = "text/plain; charset=utf-8");
+            responseStream.Position = 0;
+            var actual = new StreamReader(responseStream).ReadToEnd();
+            Assert.Equal(expectedData, actual);
+        }
+
+        [Fact]
+        public async Task ObjectResult_WithSingleContentType_Ignores406Formatter()
+        {
+            // Arrange
+            var objectResult = new ObjectResult(new Person() { Name = "John" });
+            objectResult.ContentTypes.Add(new MediaTypeHeaderValue("application/json"));
+            var outputFormatters = new IOutputFormatter[] 
+            {
+                new HttpNotAcceptableOutputFormatter(),
+                new JsonOutputFormatter()
+            };
+            var response = new Mock<HttpResponse>();
+            var responseStream = new MemoryStream();
+            response.SetupGet(r => r.Body).Returns(responseStream);
+            var expectedData = "{\"Name\":\"John\"}";
+
+            var actionContext = CreateMockActionContext(
+                                    outputFormatters,
+                                    response.Object,
+                                    requestAcceptHeader: "application/non-existing",
+                                    requestContentType: "application/non-existing");
+
+            // Act
+            await objectResult.ExecuteResultAsync(actionContext);
+
+            // Assert
+            response.VerifySet(r => r.ContentType = "application/json; charset=utf-8");
+            responseStream.Position = 0;
+            var actual = new StreamReader(responseStream).ReadToEnd();
+            Assert.Equal(expectedData, actual);
+        }
+
+        [Fact]
+        public async Task ObjectResult_WithMultipleContentTypes_Ignores406Formatter()
+        {
+            // Arrange
+            var objectResult = new ObjectResult(new Person() { Name = "John" });
+            objectResult.ContentTypes.Add(new MediaTypeHeaderValue("application/foo"));
+            objectResult.ContentTypes.Add(new MediaTypeHeaderValue("application/json"));
+            var outputFormatters = new IOutputFormatter[] 
+            {
+                new HttpNotAcceptableOutputFormatter(),
+                new JsonOutputFormatter()
+            };
+            var response = new Mock<HttpResponse>();
+            var responseStream = new MemoryStream();
+            response.SetupGet(r => r.Body).Returns(responseStream);
+            var expectedData = "{\"Name\":\"John\"}";
+
+            var actionContext = CreateMockActionContext(
+                                    outputFormatters,
+                                    response.Object,
+                                    requestAcceptHeader: "application/non-existing",
+                                    requestContentType: "application/non-existing");
+
+            // Act
+            await objectResult.ExecuteResultAsync(actionContext);
+
+            // Assert
+            response.VerifySet(r => r.ContentType = "application/json; charset=utf-8");
+            responseStream.Position = 0;
+            var actual = new StreamReader(responseStream).ReadToEnd();
+            Assert.Equal(expectedData, actual);
+        }
+        
         private static ActionContext CreateMockActionContext(
                                                              HttpResponse response = null,
                                                              string requestAcceptHeader = "application/*",

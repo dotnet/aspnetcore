@@ -58,5 +58,23 @@ namespace ContentNegotiationWebSite
 
             return objectResult;
         }
+
+        public IActionResult ReturnString(
+            bool matchFormatterOnObjectType, 
+            [FromServices] IOutputFormattersProvider outputFormattersProvider)
+        {
+            var objectResult = new ObjectResult("Hello World!");
+            if (matchFormatterOnObjectType)
+            {
+                objectResult.Formatters.Add(new HttpNotAcceptableOutputFormatter());
+            }
+
+            foreach (var formatter in outputFormattersProvider.OutputFormatters)
+            {
+                objectResult.Formatters.Add(formatter);
+            }
+
+            return objectResult;
+        }
     }
 }

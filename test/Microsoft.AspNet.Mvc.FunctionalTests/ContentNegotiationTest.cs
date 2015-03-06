@@ -132,6 +132,26 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             XmlAssert.Equal(expectedOutput, actual);
         }
 
+        [Theory]
+        [InlineData("http://localhost/FallbackOnTypeBasedMatch/UseTheFallback_WithDefaultFormatters")]
+        [InlineData("http://localhost/FallbackOnTypeBasedMatch/OverrideTheFallback_WithDefaultFormatters")]
+        public async Task NoAcceptAndRequestContentTypeHeaders_UsesFirstFormatterWhichCanWriteType(string url)
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName);
+            var client = server.CreateClient();
+            var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
+
+            // Act
+            var response = await client.GetAsync(url + "?input=100");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+            var actual = await response.Content.ReadAsStringAsync();
+            Assert.Equal("100", actual);
+        }
+
         [Fact]
         public async Task NoMatchingFormatter_ForTheGivenContentType_Returns406()
         {
@@ -406,6 +426,29 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
             var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, body);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ObjectResult_WithStringReturnType_WritesTextPlainFormat(bool matchFormatterOnObjectType)
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName);
+            var client = server.CreateClient();
+            var targetUri = "http://localhost/FallbackOnTypeBasedMatch/ReturnString?matchFormatterOnObjectType=" +
+                matchFormatterOnObjectType;
+            var request = new HttpRequestMessage(HttpMethod.Get, targetUri);
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.MediaType);
+            var actualBody = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Hello World!", actualBody);
         }
 
         [Theory]

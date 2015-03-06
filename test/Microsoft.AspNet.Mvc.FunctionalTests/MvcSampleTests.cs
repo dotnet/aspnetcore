@@ -69,6 +69,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/FormUrlEncoded/IsValidPerson");
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             request.Content = new StringContent(input, Encoding.UTF8, "application/x-www-form-urlencoded");
 
             // Act

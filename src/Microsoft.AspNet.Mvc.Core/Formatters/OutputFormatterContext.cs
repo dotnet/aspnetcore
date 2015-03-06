@@ -45,5 +45,16 @@ namespace Microsoft.AspNet.Mvc
         /// Null indicates no value set by the <see cref="ObjectResult"/>.
         /// </remarks>
         public int? StatusCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag to indicate that content-negotiation could not find a formatter based on the 
+        /// information on the <see cref="Http.HttpRequest"/>.
+        /// </summary>
+        /// <remarks>
+        /// A <see cref="IOutputFormatter"/> can use this information to decide how to write a response. 
+        /// For example, the <see cref="HttpNotAcceptableOutputFormatter"/> sets a 406 Not Acceptable response 
+        /// when content negotiation has failed.
+        /// </remarks>
+        public bool? FailedContentNegotiation { get; set; }
     }
 }
