@@ -25,8 +25,8 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http.Interfaces;
-using Microsoft.AspNet.Http.Interfaces.Authentication;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Net.Http.Server;
 using Microsoft.Net.WebSockets;
 

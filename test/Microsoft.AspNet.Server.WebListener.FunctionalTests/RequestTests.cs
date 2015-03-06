@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc.
+﻿// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,8 +21,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
-using Microsoft.AspNet.Http.Interfaces;
 using Microsoft.Net.Http.Server;
 using Xunit;
 
