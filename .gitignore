@@ -24,3 +24,5 @@ nuget.exe
 *.ncrunchsolution
 *.*sdf
 *.ipch
+.vs/
+project.lock.json
