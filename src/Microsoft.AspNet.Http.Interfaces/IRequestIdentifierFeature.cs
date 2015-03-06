@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Http.Interfaces
+namespace Microsoft.AspNet.Http
 {
     /// <summary>
     /// Feature to identify a request.

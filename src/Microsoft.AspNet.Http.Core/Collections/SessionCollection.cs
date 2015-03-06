@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Interfaces;
+using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Http.Core.Collections
 {

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Interfaces;
 using Microsoft.AspNet.Http.Core;
 using Xunit;
 

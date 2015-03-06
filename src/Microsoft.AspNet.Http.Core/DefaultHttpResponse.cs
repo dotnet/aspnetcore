@@ -11,8 +11,8 @@ using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Http.Core.Infrastructure;
 using Microsoft.AspNet.Http.Core.Authentication;
 using Microsoft.AspNet.Http.Infrastructure;
-using Microsoft.AspNet.Http.Interfaces;
-using Microsoft.AspNet.Http.Interfaces.Authentication;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Authentication;
 
 namespace Microsoft.AspNet.Http.Core

@@ -3,7 +3,7 @@
 
 using System.Net;
 
-namespace Microsoft.AspNet.Http.Interfaces
+namespace Microsoft.AspNet.Http
 {
     public interface IHttpConnectionFeature
     {

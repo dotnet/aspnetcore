@@ -4,7 +4,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Http.Interfaces
+namespace Microsoft.AspNet.Http
 {
     public interface IHttpUpgradeFeature
     {

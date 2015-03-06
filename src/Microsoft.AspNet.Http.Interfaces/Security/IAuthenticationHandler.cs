@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Http.Interfaces.Authentication
+namespace Microsoft.AspNet.Http.Authentication
 {
     public interface IAuthenticationHandler
     {

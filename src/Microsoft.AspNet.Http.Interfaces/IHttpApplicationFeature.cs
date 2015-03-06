@@ -3,7 +3,7 @@
 
 using System.Threading;
 
-namespace Microsoft.AspNet.Http.Interfaces
+namespace Microsoft.AspNet.Http
 {
     public interface IHttpApplicationFeature
     {

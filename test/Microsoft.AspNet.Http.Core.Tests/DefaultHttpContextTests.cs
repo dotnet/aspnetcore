@@ -8,7 +8,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http.Core.Authentication;
-using Microsoft.AspNet.Http.Interfaces.Authentication;
+using Microsoft.AspNet.Http.Authentication;
 using Xunit;
 
 namespace Microsoft.AspNet.Http.Core.Tests

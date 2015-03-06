@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Http.Interfaces.Authentication
+namespace Microsoft.AspNet.Http.Authentication
 {
     public interface IDescribeSchemesContext
     {
