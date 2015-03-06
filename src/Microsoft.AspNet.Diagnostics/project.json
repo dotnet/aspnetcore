@@ -4,7 +4,8 @@
     "dependencies": {
         "Microsoft.AspNet.Diagnostics.Interfaces": "1.0.0-*",
         "Microsoft.AspNet.RequestContainer": "1.0.0-*",
-        "Microsoft.AspNet.WebUtilities": "1.0.0-*"
+        "Microsoft.AspNet.WebUtilities": "1.0.0-*",
+        "Microsoft.Framework.WebEncoders": "1.0.0-*"
     },
     "frameworks": {
         "aspnet50": {},

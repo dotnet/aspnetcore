@@ -105,7 +105,7 @@ using Views
 #line hidden
             WriteLiteral(": ");
 #line 37 "ErrorPage.cshtml"
-                                                                              Output.Write(WebUtility.HtmlEncode(errorDetail.Error.Message).Replace("\r\n", "<br/>").Replace("\r", "<br/>").Replace("\n", "<br/>")); 
+                                                                              Output.Write(HtmlEncodeAndReplaceLineBreaks(errorDetail.Error.Message)); 
 
 #line default
 #line hidden
@@ -149,8 +149,8 @@ using Views
 #line default
 #line hidden
             WriteLiteral(" in <code");
-            WriteAttribute("title", Tuple.Create(" title=\"", 2089), Tuple.Create("\"", 2113), 
-            Tuple.Create(Tuple.Create("", 2097), Tuple.Create<System.Object, System.Int32>(firstFrame.File, 2097), false));
+            WriteAttribute("title", Tuple.Create(" title=\"", 2027), Tuple.Create("\"", 2051), 
+            Tuple.Create(Tuple.Create("", 2035), Tuple.Create<System.Object, System.Int32>(firstFrame.File, 2035), false));
             WriteLiteral(">");
 #line 52 "ErrorPage.cshtml"
                                                                                Write(System.IO.Path.GetFileName(firstFrame.File));
@@ -398,8 +398,8 @@ using Views
 #line hidden
 
             WriteLiteral("                                <li class=\"frame\"");
-            WriteAttribute("tabindex", Tuple.Create(" tabindex=\"", 4348), Tuple.Create("\"", 4368), 
-            Tuple.Create(Tuple.Create("", 4359), Tuple.Create<System.Object, System.Int32>(tabIndex, 4359), false));
+            WriteAttribute("tabindex", Tuple.Create(" tabindex=\"", 4286), Tuple.Create("\"", 4306), 
+            Tuple.Create(Tuple.Create("", 4297), Tuple.Create<System.Object, System.Int32>(tabIndex, 4297), false));
             WriteLiteral(">\r\n");
 #line 113 "ErrorPage.cshtml"
                                     
@@ -449,8 +449,8 @@ using Views
 #line default
 #line hidden
             WriteLiteral(" in <code");
-            WriteAttribute("title", Tuple.Create(" title=\"", 4795), Tuple.Create("\"", 4814), 
-            Tuple.Create(Tuple.Create("", 4803), Tuple.Create<System.Object, System.Int32>(frame.File, 4803), false));
+            WriteAttribute("title", Tuple.Create(" title=\"", 4733), Tuple.Create("\"", 4752), 
+            Tuple.Create(Tuple.Create("", 4741), Tuple.Create<System.Object, System.Int32>(frame.File, 4741), false));
             WriteLiteral(">");
 #line 120 "ErrorPage.cshtml"
                                                                                     Write(System.IO.Path.GetFileName(frame.File));
@@ -493,8 +493,8 @@ using Views
 #line hidden
 
             WriteLiteral("                                                <ol");
-            WriteAttribute("start", Tuple.Create(" start=\"", 5275), Tuple.Create("\"", 5304), 
-            Tuple.Create(Tuple.Create("", 5283), Tuple.Create<System.Object, System.Int32>(frame.PreContextLine, 5283), false));
+            WriteAttribute("start", Tuple.Create(" start=\"", 5213), Tuple.Create("\"", 5242), 
+            Tuple.Create(Tuple.Create("", 5221), Tuple.Create<System.Object, System.Int32>(frame.PreContextLine, 5221), false));
             WriteLiteral(" class=\"collapsible\">\r\n");
 #line 129 "ErrorPage.cshtml"
                                                     
@@ -530,8 +530,8 @@ using Views
 #line hidden
 
             WriteLiteral("\r\n                                            <ol");
-            WriteAttribute("start", Tuple.Create(" start=\"", 5772), Tuple.Create("\"", 5791), 
-            Tuple.Create(Tuple.Create("", 5780), Tuple.Create<System.Object, System.Int32>(frame.Line, 5780), false));
+            WriteAttribute("start", Tuple.Create(" start=\"", 5710), Tuple.Create("\"", 5729), 
+            Tuple.Create(Tuple.Create("", 5718), Tuple.Create<System.Object, System.Int32>(frame.Line, 5718), false));
             WriteLiteral(" class=\"highlight\">\r\n");
 #line 137 "ErrorPage.cshtml"
                                                 
@@ -574,8 +574,8 @@ using Views
 #line hidden
 
             WriteLiteral("                                                <ol");
-            WriteAttribute("start", Tuple.Create(" start=\'", 6318), Tuple.Create("\'", 6343), 
-            Tuple.Create(Tuple.Create("", 6326), Tuple.Create<System.Object, System.Int32>(frame.Line + 1, 6326), false));
+            WriteAttribute("start", Tuple.Create(" start=\'", 6256), Tuple.Create("\'", 6281), 
+            Tuple.Create(Tuple.Create("", 6264), Tuple.Create<System.Object, System.Int32>(frame.Line + 1, 6264), false));
             WriteLiteral(" class=\"collapsible\">\r\n");
 #line 146 "ErrorPage.cshtml"
                                                     

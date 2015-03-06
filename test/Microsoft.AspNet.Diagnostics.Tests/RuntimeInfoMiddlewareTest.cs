@@ -4,13 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime;
+using Microsoft.Framework.WebEncoders;
 #if ASPNET50
 using Moq;
 #endif
@@ -121,6 +122,9 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                 contextMock
                     .SetupGet(c => c.Response.Body)
                     .Returns(responseStream);
+                contextMock
+                    .SetupGet(c => c.ApplicationServices)
+                    .Returns(() => null);
 
                 // Act
                 await middleware.Invoke(contextMock.Object);
@@ -134,6 +138,53 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                 Assert.True(response.Contains("<td>LibInfo2</td>"));
                 Assert.True(response.Contains("<td>1.0.0-beta2</td>"));
                 Assert.True(response.Contains("<td>Path2</td>"));
+            }
+        }
+
+        [Fact]
+        public async void Invoke_WithMatchingPath_ReturnsInfoPage_UsingCustomHtmlEncoder()
+        {
+            // Arrange
+            var libraryManagerMock = new Mock<ILibraryManager>(MockBehavior.Strict);
+            libraryManagerMock.Setup(l => l.GetLibraries()).Returns(new ILibraryInformation[] {
+                        new FakeLibraryInformation() { Name ="LibInfo1", Version = "1.0.0-beta1", Path = "Path1" },
+                    });
+
+            RequestDelegate next = _ =>
+            {
+                return Task.FromResult<object>(null);
+            };
+
+            var middleware = new RuntimeInfoMiddleware(
+                next,
+                new RuntimeInfoPageOptions(),
+                libraryManagerMock.Object);
+
+            var buffer = new byte[4096];
+            using (var responseStream = new MemoryStream(buffer))
+            {
+                var contextMock = new Mock<HttpContext>(MockBehavior.Strict);
+                contextMock
+                    .SetupGet(c => c.Request.Path)
+                    .Returns(new PathString("/runtimeinfo"));
+                contextMock
+                    .SetupGet(c => c.Response.Body)
+                    .Returns(responseStream);
+                contextMock
+                    .SetupGet(c => c.ApplicationServices)
+                    .Returns(new ServiceCollection().
+                                AddInstance<IHtmlEncoder>(new CustomHtmlEncoder()).
+                                BuildServiceProvider());
+
+                // Act
+                await middleware.Invoke(contextMock.Object);
+
+                // Assert
+                string response = Encoding.UTF8.GetString(buffer);
+
+                Assert.True(response.Contains("<td>[LibInfo1]</td>"));
+                Assert.True(response.Contains("<td>[1.0.0-beta1]</td>"));
+                Assert.True(response.Contains("<td>[Path1]</td>"));
             }
         }
 #endif
@@ -168,6 +219,24 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                 {
                     throw new NotImplementedException("Should not be needed by this middleware");
                 }
+            }
+        }
+
+        private class CustomHtmlEncoder : IHtmlEncoder
+        {
+            public string HtmlEncode(string value)
+            {
+                return "[" + value + "]";
+            }
+
+            public void HtmlEncode(string value, int startIndex, int charCount, TextWriter output)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void HtmlEncode(char[] value, int startIndex, int charCount, TextWriter output)
+            {
+                throw new NotImplementedException();
             }
         }
     }

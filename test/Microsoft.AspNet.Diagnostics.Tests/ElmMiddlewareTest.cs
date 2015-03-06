@@ -101,6 +101,9 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                 contextMock
                     .SetupGet(c => c.Response.Body)
                     .Returns(responseStream);
+                contextMock
+                    .SetupGet(c => c.ApplicationServices)
+                    .Returns(() => null);
 
                 // Act
                 await captureMiddleware.Invoke(contextMock.Object);

@@ -95,7 +95,7 @@ using Views
 #line hidden
             WriteLiteral(": ");
 #line 30 "CompilationErrorPage.cshtml"
-                                                                          Output.Write(WebUtility.HtmlEncode(errorDetail.Error.Message).Replace("\r\n", "<br/>").Replace("\r", "<br/>").Replace("\n", "<br/>")); 
+                                                                          Output.Write(HtmlEncodeAndReplaceLineBreaks(errorDetail.Error.Message)); 
 
 #line default
 #line hidden
@@ -158,8 +158,8 @@ using Views
 #line hidden
 
             WriteLiteral("                    <li class=\"frame\"");
-            WriteAttribute("tabindex", Tuple.Create(" tabindex=\"", 1370), Tuple.Create("\"", 1390), 
-            Tuple.Create(Tuple.Create("", 1381), Tuple.Create<System.Object, System.Int32>(tabIndex, 1381), false));
+            WriteAttribute("tabindex", Tuple.Create(" tabindex=\"", 1308), Tuple.Create("\"", 1328), 
+            Tuple.Create(Tuple.Create("", 1319), Tuple.Create<System.Object, System.Int32>(tabIndex, 1319), false));
             WriteLiteral(">\r\n");
 #line 45 "CompilationErrorPage.cshtml"
                         
@@ -226,8 +226,8 @@ using Views
 #line default
 #line hidden
             WriteLiteral(" in <code");
-            WriteAttribute("title", Tuple.Create(" title=\"", 1990), Tuple.Create("\"", 2009), 
-            Tuple.Create(Tuple.Create("", 1998), Tuple.Create<System.Object, System.Int32>(frame.File, 1998), false));
+            WriteAttribute("title", Tuple.Create(" title=\"", 1928), Tuple.Create("\"", 1947), 
+            Tuple.Create(Tuple.Create("", 1936), Tuple.Create<System.Object, System.Int32>(frame.File, 1936), false));
             WriteLiteral(">");
 #line 58 "CompilationErrorPage.cshtml"
                                                                             Write(System.IO.Path.GetFileName(frame.File));
@@ -242,14 +242,8 @@ using Views
 #line default
 #line hidden
 
-            WriteLiteral("                                    \r\n");
-#line 62 "CompilationErrorPage.cshtml"
-                        
-
-#line default
-#line hidden
-
-#line 62 "CompilationErrorPage.cshtml"
+            WriteLiteral("                        ");
+#line 61 "CompilationErrorPage.cshtml"
                          if (frame.Line != 0 && frame.ContextCode.Any())
                         {
 
@@ -257,13 +251,13 @@ using Views
 #line hidden
 
             WriteLiteral("                            <div class=\"source\">\r\n");
-#line 65 "CompilationErrorPage.cshtml"
+#line 64 "CompilationErrorPage.cshtml"
                                 
 
 #line default
 #line hidden
 
-#line 65 "CompilationErrorPage.cshtml"
+#line 64 "CompilationErrorPage.cshtml"
                                  if (frame.PreContextCode != null)
                                 {
 
@@ -271,16 +265,16 @@ using Views
 #line hidden
 
             WriteLiteral("                                    <ol");
-            WriteAttribute("start", Tuple.Create(" start=\"", 2453), Tuple.Create("\"", 2482), 
-            Tuple.Create(Tuple.Create("", 2461), Tuple.Create<System.Object, System.Int32>(frame.PreContextLine, 2461), false));
+            WriteAttribute("start", Tuple.Create(" start=\"", 2353), Tuple.Create("\"", 2382), 
+            Tuple.Create(Tuple.Create("", 2361), Tuple.Create<System.Object, System.Int32>(frame.PreContextLine, 2361), false));
             WriteLiteral(" class=\"collapsible\">\r\n");
-#line 68 "CompilationErrorPage.cshtml"
+#line 67 "CompilationErrorPage.cshtml"
                                         
 
 #line default
 #line hidden
 
-#line 68 "CompilationErrorPage.cshtml"
+#line 67 "CompilationErrorPage.cshtml"
                                          foreach (var line in frame.PreContextCode)
                                         {
 
@@ -288,36 +282,36 @@ using Views
 #line hidden
 
             WriteLiteral("                                            <li><span>");
-#line 70 "CompilationErrorPage.cshtml"
+#line 69 "CompilationErrorPage.cshtml"
                                                  Write(line);
 
 #line default
 #line hidden
             WriteLiteral("</span></li>\r\n");
-#line 71 "CompilationErrorPage.cshtml"
+#line 70 "CompilationErrorPage.cshtml"
                                         }
 
 #line default
 #line hidden
 
             WriteLiteral("                                    </ol>\r\n");
-#line 73 "CompilationErrorPage.cshtml"
-                                } 
+#line 72 "CompilationErrorPage.cshtml"
+                                }
 
 #line default
 #line hidden
 
-            WriteLiteral("\r\n                                <ol");
-            WriteAttribute("start", Tuple.Create(" start=\"", 2866), Tuple.Create("\"", 2885), 
-            Tuple.Create(Tuple.Create("", 2874), Tuple.Create<System.Object, System.Int32>(frame.Line, 2874), false));
+            WriteLiteral("                                <ol");
+            WriteAttribute("start", Tuple.Create(" start=\"", 2763), Tuple.Create("\"", 2782), 
+            Tuple.Create(Tuple.Create("", 2771), Tuple.Create<System.Object, System.Int32>(frame.Line, 2771), false));
             WriteLiteral(" class=\"highlight\">\r\n");
-#line 76 "CompilationErrorPage.cshtml"
+#line 74 "CompilationErrorPage.cshtml"
                                     
 
 #line default
 #line hidden
 
-#line 76 "CompilationErrorPage.cshtml"
+#line 74 "CompilationErrorPage.cshtml"
                                      foreach (var line in frame.ContextCode)
                                     {
 
@@ -325,26 +319,26 @@ using Views
 #line hidden
 
             WriteLiteral("                                        <li><span>");
-#line 78 "CompilationErrorPage.cshtml"
+#line 76 "CompilationErrorPage.cshtml"
                                              Write(line);
 
 #line default
 #line hidden
             WriteLiteral("</span></li>\r\n");
-#line 79 "CompilationErrorPage.cshtml"
+#line 77 "CompilationErrorPage.cshtml"
                                     }
 
 #line default
 #line hidden
 
-            WriteLiteral("                                </ol>                                    \r\n\r\n");
-#line 82 "CompilationErrorPage.cshtml"
+            WriteLiteral("                                </ol>\r\n");
+#line 79 "CompilationErrorPage.cshtml"
                                 
 
 #line default
 #line hidden
 
-#line 82 "CompilationErrorPage.cshtml"
+#line 79 "CompilationErrorPage.cshtml"
                                  if (frame.PostContextCode != null)
                                 {
 
@@ -352,16 +346,16 @@ using Views
 #line hidden
 
             WriteLiteral("                                    <ol");
-            WriteAttribute("start", Tuple.Create(" start=\'", 3352), Tuple.Create("\'", 3377), 
-            Tuple.Create(Tuple.Create("", 3360), Tuple.Create<System.Object, System.Int32>(frame.Line + 1, 3360), false));
+            WriteAttribute("start", Tuple.Create(" start=\'", 3211), Tuple.Create("\'", 3236), 
+            Tuple.Create(Tuple.Create("", 3219), Tuple.Create<System.Object, System.Int32>(frame.Line + 1, 3219), false));
             WriteLiteral(" class=\"collapsible\">\r\n");
-#line 85 "CompilationErrorPage.cshtml"
+#line 82 "CompilationErrorPage.cshtml"
                                         
 
 #line default
 #line hidden
 
-#line 85 "CompilationErrorPage.cshtml"
+#line 82 "CompilationErrorPage.cshtml"
                                          foreach (var line in frame.PostContextCode)
                                         {
 
@@ -369,41 +363,41 @@ using Views
 #line hidden
 
             WriteLiteral("                                            <li><span>");
-#line 87 "CompilationErrorPage.cshtml"
+#line 84 "CompilationErrorPage.cshtml"
                                                  Write(line);
 
 #line default
 #line hidden
             WriteLiteral("</span></li>\r\n");
-#line 88 "CompilationErrorPage.cshtml"
+#line 85 "CompilationErrorPage.cshtml"
                                         }
 
 #line default
 #line hidden
 
             WriteLiteral("                                    </ol>\r\n");
-#line 90 "CompilationErrorPage.cshtml"
+#line 87 "CompilationErrorPage.cshtml"
                                 } 
 
 #line default
 #line hidden
 
             WriteLiteral("                            </div>\r\n");
-#line 92 "CompilationErrorPage.cshtml"
+#line 89 "CompilationErrorPage.cshtml"
                         } 
 
 #line default
 #line hidden
 
             WriteLiteral("                    </li>\r\n");
-#line 94 "CompilationErrorPage.cshtml"
+#line 91 "CompilationErrorPage.cshtml"
                 }
 
 #line default
 #line hidden
 
             WriteLiteral("                </ul>\r\n            </div>\r\n");
-#line 97 "CompilationErrorPage.cshtml"
+#line 94 "CompilationErrorPage.cshtml"
         }
 
 #line default

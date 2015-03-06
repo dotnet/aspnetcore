@@ -34,7 +34,7 @@
         {
             foreach (var errorDetail in Model.ErrorDetails)
             {
-                <div class="titleerror">@errorDetail.Error.GetType().Name: @{ Output.Write(WebUtility.HtmlEncode(errorDetail.Error.Message).Replace("\r\n", "<br/>").Replace("\r", "<br/>").Replace("\n", "<br/>")); }</div>
+                <div class="titleerror">@errorDetail.Error.GetType().Name: @{ Output.Write(HtmlEncodeAndReplaceLineBreaks(errorDetail.Error.Message)); }</div>
                 @{
                     StackFrame firstFrame = null;
                     firstFrame = errorDetail.StackFrames.FirstOrDefault();

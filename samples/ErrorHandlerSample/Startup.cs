@@ -2,6 +2,7 @@
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.WebEncoders;
 
 namespace ErrorHandlerSample
 {
@@ -24,7 +25,7 @@ namespace ErrorHandlerSample
                     if (error != null)
                     {
                         // This error would not normally be exposed to the client
-                        await context.Response.WriteAsync("<br>Error: " + System.Net.WebUtility.HtmlEncode(error.Error.Message) + "<br>\r\n");
+                        await context.Response.WriteAsync("<br>Error: " + HtmlEncoder.Default.HtmlEncode(error.Error.Message) + "<br>\r\n");
                     }
                     await context.Response.WriteAsync("<br><a href=\"/\">Home</a><br>\r\n");
                     await context.Response.WriteAsync("</body></html>\r\n");

@@ -5,9 +5,10 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Net;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Diagnostics.Views
 {
@@ -37,6 +38,11 @@ namespace Microsoft.AspNet.Diagnostics.Views
         protected StreamWriter Output { get; private set; }
 
         /// <summary>
+        /// Html encoder used to encode content.
+        /// </summary>
+        protected IHtmlEncoder HtmlEncoder { get; set; }
+
+        /// <summary>
         /// Execute an individual request
         /// </summary>
         /// <param name="context"></param>
@@ -46,6 +52,7 @@ namespace Microsoft.AspNet.Diagnostics.Views
             Request = Context.Request;
             Response = Context.Response;
             Output = new StreamWriter(Response.Body);
+            HtmlEncoder = context.ApplicationServices.GetHtmlEncoder();
             await ExecuteAsync();
             Output.Dispose();
         }
@@ -217,7 +224,7 @@ namespace Microsoft.AspNet.Diagnostics.Views
         /// <param name="value">The <see cref="string"/> to write.</param>
         protected void WriteTo(TextWriter writer, string value)
         {
-            WriteLiteralTo(writer, WebUtility.HtmlEncode(value));
+            WriteLiteralTo(writer, HtmlEncoder.HtmlEncode(value));
         }
 
         /// <summary>
@@ -240,6 +247,21 @@ namespace Microsoft.AspNet.Diagnostics.Views
             {
                 writer.Write(value);
             }
+        }
+
+        protected string HtmlEncodeAndReplaceLineBreaks(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return string.Empty;
+            }
+
+            // Split on line breaks before passing it through the encoder.
+            // We use the static default encoder since we can't depend on DI in the error handling logic.
+            return string.Join("<br />" + Environment.NewLine,
+                input.Split(new[] { "\r\n" }, StringSplitOptions.None)
+                .SelectMany(s => s.Split(new[] { '\r', '\n' }, StringSplitOptions.None))
+                .Select(HtmlEncoder.HtmlEncode));
         }
     }
 }
