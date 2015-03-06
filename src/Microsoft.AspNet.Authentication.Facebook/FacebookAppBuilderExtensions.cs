@@ -1,23 +1,17 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Authentication.Facebook;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.OptionsModel;
 using System;
+using Microsoft.AspNet.Authentication.Facebook;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// Extension methods for using <see cref="FacebookAuthenticationMiddleware"/>.
     /// </summary>
-    public static class FacebookAuthenticationExtensions
+    public static class FacebookAppBuilderExtensions
     {
-        public static IServiceCollection ConfigureFacebookAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<FacebookAuthenticationOptions> configure)
-        {
-            return services.Configure(configure);
-        }
-
         /// <summary>
         /// Authenticate users using Facebook.
         /// </summary>

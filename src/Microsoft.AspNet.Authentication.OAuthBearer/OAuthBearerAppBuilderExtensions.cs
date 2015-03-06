@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Authentication.OAuthBearer;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Builder
@@ -11,13 +10,8 @@ namespace Microsoft.AspNet.Builder
     /// <summary>
     /// Extension methods to add OAuth Bearer authentication capabilities to an HTTP application pipeline
     /// </summary>
-    public static class OAuthBearerAuthenticationExtensions
+    public static class OAuthBearerAppBuilderExtensions
     {
-        public static IServiceCollection ConfigureOAuthBearerAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<OAuthBearerAuthenticationOptions> configure)
-        {
-            return services.ConfigureOptions(configure);
-        }
-
         /// <summary>
         /// Adds Bearer token processing to an HTTP application pipeline. This middleware understands appropriately
         /// formatted and secured tokens which appear in the request header. If the Options.AuthenticationMode is Active, the

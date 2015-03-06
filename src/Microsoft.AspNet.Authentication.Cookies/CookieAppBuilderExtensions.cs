@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Authentication.Cookies;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Builder
@@ -11,13 +10,8 @@ namespace Microsoft.AspNet.Builder
     /// <summary>
     /// Extension methods provided by the cookies authentication middleware
     /// </summary>
-    public static class CookieAuthenticationExtensions
+    public static class CookieAppBuilderExtensions
     {
-        public static IServiceCollection ConfigureCookieAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<CookieAuthenticationOptions> configure)
-        {
-            return services.Configure(configure);
-        }
-
         /// <summary>
         /// Adds a cookie-based authentication middleware to your web application pipeline.
         /// </summary>

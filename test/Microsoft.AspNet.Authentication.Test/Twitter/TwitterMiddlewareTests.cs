@@ -8,14 +8,9 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Authentication.Cookies;
-using Microsoft.AspNet.Authentication.Twitter;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.OptionsModel;
-using Newtonsoft.Json;
 using Shouldly;
 using Xunit;
 
