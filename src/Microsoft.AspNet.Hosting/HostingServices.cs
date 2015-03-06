@@ -17,16 +17,19 @@ namespace Microsoft.AspNet.Hosting
         private static IServiceCollection Import(IServiceProvider fallbackProvider, Action<IServiceCollection> configureHostServices)
         {
             var services = new ServiceCollection();
-            if (configureHostServices != null)
-            {
-                configureHostServices(services);
-            }
             var manifest = fallbackProvider.GetRequiredService<IServiceManifest>();
             foreach (var service in manifest.Services)
             {
                 services.AddTransient(service, sp => fallbackProvider.GetService(service));
             }
+
             services.AddSingleton<IServiceManifest>(sp => new HostingManifest(services));
+
+            if (configureHostServices != null)
+            {
+                configureHostServices(services);
+            }
+
             return services;
         }
 
