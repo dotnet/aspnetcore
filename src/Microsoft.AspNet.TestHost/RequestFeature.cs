@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNet.Http.Interfaces;
+using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.TestHost
 {
