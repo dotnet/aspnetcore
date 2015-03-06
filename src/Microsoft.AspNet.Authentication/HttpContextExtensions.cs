@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core.Authentication;
-using Microsoft.AspNet.Http.Interfaces.Authentication;
+using Microsoft.AspNet.Http.Authentication;
 
 namespace Microsoft.AspNet.Authentication
 {

@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.DataHandler.Encoder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Http.Interfaces.Authentication;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Authentication

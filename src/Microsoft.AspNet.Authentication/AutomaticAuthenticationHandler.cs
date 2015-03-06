@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Interfaces.Authentication;
+using Microsoft.AspNet.Http.Authentication;
 
 namespace Microsoft.AspNet.Authentication
 {
