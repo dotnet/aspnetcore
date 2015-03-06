@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         [Theory]
         [InlineData("CompilationFailure", "/Views/ErrorPageMiddleware/CompilationFailure.cshtml(2,16): error CS0029:" +
-                                          " Cannot implicitly convert type &#39;int&#39; to &#39;string&#39;")]
+                                          " Cannot implicitly convert type &#x27;int&#x27; to &#x27;string&#x27;")]
         [InlineData("ParserError", "The code block is missing a closing &quot;}&quot; character.  Make sure you " +
                                     "have a matching &quot;}&quot; character for all the &quot;{&quot; characters " +
                                     "within this block, and that none of the &quot;}&quot; characters are being " +
