@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         }
 
         [Fact]
-        public void CreateAdditionalServicesDoNotOverrideFallback()
+        public void CreateAdditionalServicesOverridesFallback()
         {
             // Arrange
             var fallbackServices = new ServiceCollection();
@@ -108,15 +108,15 @@ namespace Microsoft.AspNet.Hosting.Tests
                     typeof(IFakeService),
                 }));
 
-            var services = HostingServices.Create(fallbackServices.BuildServiceProvider(), 
+            var services = HostingServices.Create(fallbackServices.BuildServiceProvider(),
                 additionalHostServices => additionalHostServices.AddSingleton<IFakeService, FakeService>());
 
             // Act
             var provider = services.BuildServiceProvider();
-            var stillTransient = provider.GetRequiredService<IFakeService>();
+            var singleton = provider.GetRequiredService<IFakeService>();
 
             // Assert
-            Assert.NotSame(stillTransient, provider.GetRequiredService<IFakeService>());
+            Assert.Same(singleton, provider.GetRequiredService<IFakeService>());
         }
 
         [Fact]
