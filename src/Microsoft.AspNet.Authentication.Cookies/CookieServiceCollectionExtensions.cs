@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Authentication.Cookies;
+using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.Framework.DependencyInjection
@@ -14,7 +15,22 @@ namespace Microsoft.Framework.DependencyInjection
     {
         public static IServiceCollection ConfigureCookieAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<CookieAuthenticationOptions> configure)
         {
-            return services.Configure(configure);
+            return services.ConfigureCookieAuthentication(configure, optionsName: "");
+        }
+
+        public static IServiceCollection ConfigureCookieAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<CookieAuthenticationOptions> configure, string optionsName)
+        {
+            return services.Configure(configure, optionsName);
+        }
+
+        public static IServiceCollection ConfigureCookieAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
+        {
+            return services.ConfigureCookieAuthentication(config, optionsName: "");
+        }
+
+        public static IServiceCollection ConfigureCookieAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config, string optionsName)
+        {
+            return services.Configure<CookieAuthenticationOptions>(config, optionsName);
         }
     }
 }

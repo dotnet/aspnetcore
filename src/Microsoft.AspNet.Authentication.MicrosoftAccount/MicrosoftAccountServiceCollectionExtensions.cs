@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Authentication.MicrosoftAccount;
+using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -13,7 +14,22 @@ namespace Microsoft.Framework.DependencyInjection
     {
         public static IServiceCollection ConfigureMicrosoftAccountAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<MicrosoftAccountAuthenticationOptions> configure)
         {
-            return services.Configure(configure);
+            return services.ConfigureMicrosoftAccountAuthentication(configure, optionsName: "");
+        }
+
+        public static IServiceCollection ConfigureMicrosoftAccountAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<MicrosoftAccountAuthenticationOptions> configure, string optionsName)
+        {
+            return services.Configure(configure, optionsName);
+        }
+
+        public static IServiceCollection ConfigureMicrosoftAccountAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
+        {
+            return services.ConfigureMicrosoftAccountAuthentication(config, optionsName: "");
+        }
+
+        public static IServiceCollection ConfigureMicrosoftAccountAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config, string optionsName)
+        {
+            return services.Configure<MicrosoftAccountAuthenticationOptions>(config, optionsName);
         }
     }
 }

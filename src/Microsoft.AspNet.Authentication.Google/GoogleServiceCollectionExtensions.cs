@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Authentication.Google;
+using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -13,7 +14,22 @@ namespace Microsoft.Framework.DependencyInjection
     {
         public static IServiceCollection ConfigureGoogleAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<GoogleAuthenticationOptions> configure)
         {
-            return services.Configure(configure);
+            return services.ConfigureGoogleAuthentication(configure, optionsName: "");
+        }
+
+        public static IServiceCollection ConfigureGoogleAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<GoogleAuthenticationOptions> configure, string optionsName)
+        {
+            return services.Configure(configure, optionsName);
+        }
+
+        public static IServiceCollection ConfigureGoogleAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
+        {
+            return services.ConfigureGoogleAuthentication(config, optionsName: "");
+        }
+
+        public static IServiceCollection ConfigureGoogleAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config, string optionsName)
+        {
+            return services.Configure<GoogleAuthenticationOptions>(config, optionsName);
         }
     }
 }

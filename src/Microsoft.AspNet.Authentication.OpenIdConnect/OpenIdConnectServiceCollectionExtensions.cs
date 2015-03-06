@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Authentication.OpenIdConnect;
+using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -11,9 +12,24 @@ namespace Microsoft.Framework.DependencyInjection
     /// </summary>
     public static class OpenIdConnectServiceCollectionExtensions
     {
-        public static IServiceCollection ConfigureOpenIdConnect(this IServiceCollection services, Action<OpenIdConnectAuthenticationOptions> configure)
+        public static IServiceCollection ConfigureOpenIdConnectAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<OpenIdConnectAuthenticationOptions> configure)
         {
-            return services.ConfigureOptions(configure);
+            return services.ConfigureOpenIdConnectAuthentication(configure, optionsName: "");
+        }
+
+        public static IServiceCollection ConfigureOpenIdConnectAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<OpenIdConnectAuthenticationOptions> configure, string optionsName)
+        {
+            return services.Configure(configure, optionsName);
+        }
+
+        public static IServiceCollection ConfigureOpenIdConnectAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
+        {
+            return services.ConfigureOpenIdConnectAuthentication(config, optionsName: "");
+        }
+
+        public static IServiceCollection ConfigureOpenIdConnectAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config, string optionsName)
+        {
+            return services.Configure<OpenIdConnectAuthenticationOptions>(config, optionsName);
         }
     }
 }

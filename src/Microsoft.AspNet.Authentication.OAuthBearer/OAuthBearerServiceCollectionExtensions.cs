@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Authentication.OAuthBearer;
+using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -13,7 +14,22 @@ namespace Microsoft.Framework.DependencyInjection
     {
         public static IServiceCollection ConfigureOAuthBearerAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<OAuthBearerAuthenticationOptions> configure)
         {
-            return services.ConfigureOptions(configure);
+            return services.ConfigureOAuthBearerAuthentication(configure, optionsName: "");
+        }
+
+        public static IServiceCollection ConfigureOAuthBearerAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<OAuthBearerAuthenticationOptions> configure, string optionsName)
+        {
+            return services.Configure(configure, optionsName);
+        }
+
+        public static IServiceCollection ConfigureOAuthBearerAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
+        {
+            return services.ConfigureOAuthBearerAuthentication(config, optionsName: "");
+        }
+
+        public static IServiceCollection ConfigureOAuthBearerAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config, string optionsName)
+        {
+            return services.Configure<OAuthBearerAuthenticationOptions>(config, optionsName);
         }
     }
 }
