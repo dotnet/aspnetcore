@@ -26,7 +26,7 @@ namespace Microsoft.Framework.WebEncoders
         private readonly JavaScriptStringUnicodeEncoder _innerUnicodeEncoder;
 
         /// <summary>
-        /// Instantiates an encoder using the 'Basic Latin' code table as the allow list.
+        /// Instantiates an encoder using <see cref="UnicodeRanges.BasicLatin"/> as its allow list.
         /// </summary>
         public JavaScriptStringEncoder()
             : this(JavaScriptStringUnicodeEncoder.BasicLatin)
@@ -34,11 +34,11 @@ namespace Microsoft.Framework.WebEncoders
         }
 
         /// <summary>
-        /// Instantiates an encoder specifying which Unicode character blocks are allowed to
+        /// Instantiates an encoder specifying which Unicode character ranges are allowed to
         /// pass through the encoder unescaped.
         /// </summary>
-        public JavaScriptStringEncoder(params UnicodeBlock[] allowedBlocks)
-            : this(new JavaScriptStringUnicodeEncoder(new CodePointFilter(allowedBlocks)))
+        public JavaScriptStringEncoder(params UnicodeRange[] allowedRanges)
+            : this(new JavaScriptStringUnicodeEncoder(new CodePointFilter(allowedRanges)))
         {
         }
 
@@ -57,8 +57,7 @@ namespace Microsoft.Framework.WebEncoders
         }
 
         /// <summary>
-        /// A default instance of the JavaScriptStringEncoder, equivalent to allowing only
-        /// the 'Basic Latin' character range.
+        /// The default <see cref="JavaScriptStringEncoder"/>, which uses <see cref="UnicodeRanges.BasicLatin"/> as its allow list.
         /// </summary>
         public static JavaScriptStringEncoder Default
         {
@@ -124,7 +123,7 @@ namespace Microsoft.Framework.WebEncoders
                     JavaScriptStringUnicodeEncoder encoder = Volatile.Read(ref _basicLatinSingleton);
                     if (encoder == null)
                     {
-                        encoder = new JavaScriptStringUnicodeEncoder(new CodePointFilter(UnicodeBlocks.BasicLatin));
+                        encoder = new JavaScriptStringUnicodeEncoder(new CodePointFilter(UnicodeRanges.BasicLatin));
                         Volatile.Write(ref _basicLatinSingleton, encoder);
                     }
                     return encoder;

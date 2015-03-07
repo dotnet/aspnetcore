@@ -14,7 +14,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Ctor_WithCodePointFilter()
         {
             // Arrange
-            var filter = new CodePointFilter(UnicodeBlocks.None).AllowChars("ab").AllowChars('\0', '&', '\uFFFF', 'd');
+            var filter = new CodePointFilter().AllowChars("ab").AllowChars('\0', '&', '\uFFFF', 'd');
             JavaScriptStringEncoder encoder = new JavaScriptStringEncoder(filter);
 
             // Act & assert
@@ -28,10 +28,10 @@ namespace Microsoft.Framework.WebEncoders
         }
 
         [Fact]
-        public void Ctor_WithUnicodeBlocks()
+        public void Ctor_WithUnicodeRanges()
         {
             // Arrange
-            JavaScriptStringEncoder encoder = new JavaScriptStringEncoder(UnicodeBlocks.Latin1Supplement, UnicodeBlocks.MiscellaneousSymbols);
+            JavaScriptStringEncoder encoder = new JavaScriptStringEncoder(UnicodeRanges.Latin1Supplement, UnicodeRanges.MiscellaneousSymbols);
 
             // Act & assert
             Assert.Equal(@"\u0061", encoder.JavaScriptStringEncode("a"));
@@ -55,7 +55,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Default_EquivalentToBasicLatin()
         {
             // Arrange
-            JavaScriptStringEncoder controlEncoder = new JavaScriptStringEncoder(UnicodeBlocks.BasicLatin);
+            JavaScriptStringEncoder controlEncoder = new JavaScriptStringEncoder(UnicodeRanges.BasicLatin);
             JavaScriptStringEncoder testEncoder = JavaScriptStringEncoder.Default;
 
             // Act & assert
@@ -97,7 +97,7 @@ namespace Microsoft.Framework.WebEncoders
         public void JavaScriptStringEncode_AllRangesAllowed_StillEncodesForbiddenChars_Simple(string input, string expected)
         {
             // Arrange
-            JavaScriptStringEncoder encoder = new JavaScriptStringEncoder(UnicodeBlocks.All);
+            JavaScriptStringEncoder encoder = new JavaScriptStringEncoder(UnicodeRanges.All);
 
             // Act
             string retVal = encoder.JavaScriptStringEncode(input);
@@ -110,7 +110,7 @@ namespace Microsoft.Framework.WebEncoders
         public void JavaScriptStringEncode_AllRangesAllowed_StillEncodesForbiddenChars_Extended()
         {
             // Arrange
-            JavaScriptStringEncoder encoder = new JavaScriptStringEncoder(UnicodeBlocks.All);
+            JavaScriptStringEncoder encoder = new JavaScriptStringEncoder(UnicodeRanges.All);
 
             // Act & assert - BMP chars
             for (int i = 0; i <= 0xFFFF; i++)
@@ -183,7 +183,7 @@ namespace Microsoft.Framework.WebEncoders
         public void JavaScriptStringEncode_BadSurrogates_ReturnsUnicodeReplacementChar()
         {
             // Arrange
-            JavaScriptStringEncoder encoder = new JavaScriptStringEncoder(UnicodeBlocks.All); // allow all codepoints
+            JavaScriptStringEncoder encoder = new JavaScriptStringEncoder(UnicodeRanges.All); // allow all codepoints
 
             // "a<unpaired leading>b<unpaired trailing>c<trailing before leading>d<unpaired trailing><valid>e<high at end of string>"
             const string input = "a\uD800b\uDFFFc\uDFFF\uD800d\uDFFF\uD800\uDFFFe\uD800";
@@ -290,7 +290,7 @@ namespace Microsoft.Framework.WebEncoders
             // \u-escape these characters instead of using \' and \".
 
             // Arrange
-            JavaScriptStringEncoder encoder = new JavaScriptStringEncoder(UnicodeBlocks.All);
+            JavaScriptStringEncoder encoder = new JavaScriptStringEncoder(UnicodeRanges.All);
 
             // Act
             string retVal = encoder.JavaScriptStringEncode(input);
@@ -306,8 +306,8 @@ namespace Microsoft.Framework.WebEncoders
             // by never emitting HTML-sensitive characters unescaped.
 
             // Arrange
-            JavaScriptStringEncoder javaScriptStringEncoder = new JavaScriptStringEncoder(UnicodeBlocks.All);
-            HtmlEncoder htmlEncoder = new HtmlEncoder(UnicodeBlocks.All);
+            JavaScriptStringEncoder javaScriptStringEncoder = new JavaScriptStringEncoder(UnicodeRanges.All);
+            HtmlEncoder htmlEncoder = new HtmlEncoder(UnicodeRanges.All);
 
             // Act & assert
             for (int i = 0; i <= 0x10FFFF; i++)

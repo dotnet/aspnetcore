@@ -20,22 +20,16 @@ namespace UnicodeTablesGenerator
     {
         private const string _codePointFiltersGeneratedFormat = @"
 /// <summary>
-/// Represents the '{0}' Unicode block (U+{1}..U+{2}).
+/// A <see cref=""UnicodeRange""/> corresponding to the '{0}' Unicode block (U+{1}..U+{2}).
 /// </summary>
 /// <remarks>
 /// See http://www.unicode.org/charts/PDF/U{1}.pdf for the full set of characters in this block.
 /// </remarks>
-public static UnicodeBlock {3}
-{{
-    get
-    {{
-        return Volatile.Read(ref _{4}) ?? CreateBlock(ref _{4}, first: '\u{1}', last: '\u{2}');
-    }}
-}}
-private static UnicodeBlock _{4};
+public static UnicodeRange {3} => Volatile.Read(ref _{4}) ?? CreateRange(ref _{4}, first: '\u{1}', last: '\u{2}');
+private static UnicodeRange _{4};
 ";
 
-        private const string _codePointFiltersTestsGeneratedFormat = @"[InlineData('\u{1}', '\u{2}', nameof(UnicodeBlocks.{0}))]";
+        private const string _codePointFiltersTestsGeneratedFormat = @"[InlineData('\u{1}', '\u{2}', nameof(UnicodeRanges.{0}))]";
 
         private static void Main()
         {
@@ -73,8 +67,8 @@ private static UnicodeBlock _{4};
                 testCodeBuilder.AppendLine();
             }
 
-            File.WriteAllText("UnicodeBlocks.generated.txt", runtimeCodeBuilder.ToString());
-            File.WriteAllText("UnicodeBlocksTests.generated.txt", testCodeBuilder.ToString());
+            File.WriteAllText("UnicodeRanges.generated.txt", runtimeCodeBuilder.ToString());
+            File.WriteAllText("UnicodeRangesTests.generated.txt", testCodeBuilder.ToString());
         }
 
         private static string RemoveAllNonAlphanumeric(string blockName)

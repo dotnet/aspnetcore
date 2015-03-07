@@ -26,7 +26,7 @@ namespace Microsoft.Framework.WebEncoders
         private readonly UrlUnicodeEncoder _innerUnicodeEncoder;
 
         /// <summary>
-        /// Instantiates an encoder using the 'Basic Latin' code table as the allow list.
+        /// Instantiates an encoder using <see cref="UnicodeRanges.BasicLatin"/> as its allow list.
         /// </summary>
         public UrlEncoder()
             : this(UrlUnicodeEncoder.BasicLatin)
@@ -34,11 +34,11 @@ namespace Microsoft.Framework.WebEncoders
         }
 
         /// <summary>
-        /// Instantiates an encoder specifying which Unicode character blocks are allowed to
+        /// Instantiates an encoder specifying which Unicode character ranges are allowed to
         /// pass through the encoder unescaped.
         /// </summary>
-        public UrlEncoder(params UnicodeBlock[] allowedBlocks)
-            : this(new UrlUnicodeEncoder(new CodePointFilter(allowedBlocks)))
+        public UrlEncoder(params UnicodeRange[] allowedRanges)
+            : this(new UrlUnicodeEncoder(new CodePointFilter(allowedRanges)))
         {
         }
 
@@ -57,8 +57,7 @@ namespace Microsoft.Framework.WebEncoders
         }
 
         /// <summary>
-        /// A default instance of the UrlEncoder, equivalent to allowing only
-        /// the 'Basic Latin' character range.
+        /// The default <see cref="UrlEncoder"/> which uses <see cref="UnicodeRanges.BasicLatin"/> as its allow list.
         /// </summary>
         public static UrlEncoder Default
         {
@@ -133,8 +132,8 @@ namespace Microsoft.Framework.WebEncoders
                 //    sub-delims     = "!" / "$" / "&" / "'" / "(" / ")"
                 //                   / "*" / "+" / "," / ";" / "="
                 //
-                // From this list, the base encoder blocks "&", "'", "+",
-                // and we'll additionally block "=" since it has special meaning
+                // From this list, the base encoder forbids "&", "'", "+",
+                // and we'll additionally forbid "=" since it has special meaning
                 // in x-www-form-urlencoded representations.
                 //
                 // This means that the full list of allowed characters from the
@@ -163,7 +162,7 @@ namespace Microsoft.Framework.WebEncoders
                     UrlUnicodeEncoder encoder = Volatile.Read(ref _basicLatinSingleton);
                     if (encoder == null)
                     {
-                        encoder = new UrlUnicodeEncoder(new CodePointFilter(UnicodeBlocks.BasicLatin));
+                        encoder = new UrlUnicodeEncoder(new CodePointFilter(UnicodeRanges.BasicLatin));
                         Volatile.Write(ref _basicLatinSingleton, encoder);
                     }
                     return encoder;

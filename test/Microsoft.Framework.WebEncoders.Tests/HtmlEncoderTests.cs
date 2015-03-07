@@ -14,7 +14,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Ctor_WithCodePointFilter()
         {
             // Arrange
-            var filter = new CodePointFilter(UnicodeBlocks.None).AllowChars("ab").AllowChars('\0', '&', '\uFFFF', 'd');
+            var filter = new CodePointFilter().AllowChars("ab").AllowChars('\0', '&', '\uFFFF', 'd');
             HtmlEncoder encoder = new HtmlEncoder(filter);
 
             // Act & assert
@@ -28,10 +28,10 @@ namespace Microsoft.Framework.WebEncoders
         }
 
         [Fact]
-        public void Ctor_WithUnicodeBlocks()
+        public void Ctor_WithUnicodeRanges()
         {
             // Arrange
-            HtmlEncoder encoder = new HtmlEncoder(UnicodeBlocks.Latin1Supplement, UnicodeBlocks.MiscellaneousSymbols);
+            HtmlEncoder encoder = new HtmlEncoder(UnicodeRanges.Latin1Supplement, UnicodeRanges.MiscellaneousSymbols);
 
             // Act & assert
             Assert.Equal("&#x61;", encoder.HtmlEncode("a"));
@@ -55,7 +55,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Default_EquivalentToBasicLatin()
         {
             // Arrange
-            HtmlEncoder controlEncoder = new HtmlEncoder(UnicodeBlocks.BasicLatin);
+            HtmlEncoder controlEncoder = new HtmlEncoder(UnicodeRanges.BasicLatin);
             HtmlEncoder testEncoder = HtmlEncoder.Default;
 
             // Act & assert
@@ -90,7 +90,7 @@ namespace Microsoft.Framework.WebEncoders
         public void HtmlEncode_AllRangesAllowed_StillEncodesForbiddenChars_Simple(string input, string expected)
         {
             // Arrange
-            HtmlEncoder encoder = new HtmlEncoder(UnicodeBlocks.All);
+            HtmlEncoder encoder = new HtmlEncoder(UnicodeRanges.All);
 
             // Act
             string retVal = encoder.HtmlEncode(input);
@@ -103,7 +103,7 @@ namespace Microsoft.Framework.WebEncoders
         public void HtmlEncode_AllRangesAllowed_StillEncodesForbiddenChars_Extended()
         {
             // Arrange
-            HtmlEncoder encoder = new HtmlEncoder(UnicodeBlocks.All);
+            HtmlEncoder encoder = new HtmlEncoder(UnicodeRanges.All);
 
             // Act & assert - BMP chars
             for (int i = 0; i <= 0xFFFF; i++)
@@ -165,7 +165,7 @@ namespace Microsoft.Framework.WebEncoders
         public void HtmlEncode_BadSurrogates_ReturnsUnicodeReplacementChar()
         {
             // Arrange
-            HtmlEncoder encoder = new HtmlEncoder(UnicodeBlocks.All); // allow all codepoints
+            HtmlEncoder encoder = new HtmlEncoder(UnicodeRanges.All); // allow all codepoints
 
             // "a<unpaired leading>b<unpaired trailing>c<trailing before leading>d<unpaired trailing><valid>e<high at end of string>"
             const string input = "a\uD800b\uDFFFc\uDFFF\uD800d\uDFFF\uD800\uDFFFe\uD800";

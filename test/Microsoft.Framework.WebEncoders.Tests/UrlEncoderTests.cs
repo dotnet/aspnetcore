@@ -18,7 +18,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Ctor_WithCodePointFilter()
         {
             // Arrange
-            var filter = new CodePointFilter(UnicodeBlocks.None).AllowChars("ab").AllowChars('\0', '&', '\uFFFF', 'd');
+            var filter = new CodePointFilter().AllowChars("ab").AllowChars('\0', '&', '\uFFFF', 'd');
             UrlEncoder encoder = new UrlEncoder(filter);
 
             // Act & assert
@@ -32,10 +32,10 @@ namespace Microsoft.Framework.WebEncoders
         }
 
         [Fact]
-        public void Ctor_WithUnicodeBlocks()
+        public void Ctor_WithUnicodeRanges()
         {
             // Arrange
-            UrlEncoder encoder = new UrlEncoder(UnicodeBlocks.Latin1Supplement, UnicodeBlocks.MiscellaneousSymbols);
+            UrlEncoder encoder = new UrlEncoder(UnicodeRanges.Latin1Supplement, UnicodeRanges.MiscellaneousSymbols);
 
             // Act & assert
             Assert.Equal("%61", encoder.UrlEncode("a"));
@@ -59,7 +59,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Default_EquivalentToBasicLatin()
         {
             // Arrange
-            UrlEncoder controlEncoder = new UrlEncoder(UnicodeBlocks.BasicLatin);
+            UrlEncoder controlEncoder = new UrlEncoder(UnicodeRanges.BasicLatin);
             UrlEncoder testEncoder = UrlEncoder.Default;
 
             // Act & assert
@@ -88,7 +88,7 @@ namespace Microsoft.Framework.WebEncoders
         public void UrlEncode_AllRangesAllowed_StillEncodesForbiddenChars()
         {
             // Arrange
-            UrlEncoder encoder = new UrlEncoder(UnicodeBlocks.All);
+            UrlEncoder encoder = new UrlEncoder(UnicodeRanges.All);
 
             // Act & assert - BMP chars
             for (int i = 0; i <= 0xFFFF; i++)
@@ -168,7 +168,7 @@ namespace Microsoft.Framework.WebEncoders
         public void UrlEncode_BadSurrogates_ReturnsUnicodeReplacementChar()
         {
             // Arrange
-            UrlEncoder encoder = new UrlEncoder(UnicodeBlocks.All); // allow all codepoints
+            UrlEncoder encoder = new UrlEncoder(UnicodeRanges.All); // allow all codepoints
 
             // "a<unpaired leading>b<unpaired trailing>c<trailing before leading>d<unpaired trailing><valid>e<high at end of string>"
             const string input = "a\uD800b\uDFFFc\uDFFF\uD800d\uDFFF\uD800\uDFFFe\uD800";
@@ -271,8 +271,8 @@ namespace Microsoft.Framework.WebEncoders
             // by never emitting HTML-sensitive characters unescaped.
 
             // Arrange
-            UrlEncoder urlEncoder = new UrlEncoder(UnicodeBlocks.All);
-            HtmlEncoder htmlEncoder = new HtmlEncoder(UnicodeBlocks.All);
+            UrlEncoder urlEncoder = new UrlEncoder(UnicodeRanges.All);
+            HtmlEncoder htmlEncoder = new HtmlEncoder(UnicodeRanges.All);
 
             // Act & assert
             for (int i = 0; i <= 0x10FFFF; i++)

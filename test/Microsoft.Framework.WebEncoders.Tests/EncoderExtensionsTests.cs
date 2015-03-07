@@ -19,7 +19,7 @@ namespace Microsoft.Framework.WebEncoders
         public void HtmlEncode_PositiveTestCase()
         {
             // Arrange
-            IHtmlEncoder encoder = new HtmlEncoder(UnicodeBlocks.All);
+            IHtmlEncoder encoder = new HtmlEncoder(UnicodeRanges.All);
             StringWriter writer = new StringWriter();
 
             // Act
@@ -39,7 +39,7 @@ namespace Microsoft.Framework.WebEncoders
         public void JavaScriptStringEncode_PositiveTestCase()
         {
             // Arrange
-            IJavaScriptStringEncoder encoder = new JavaScriptStringEncoder(UnicodeBlocks.All);
+            IJavaScriptStringEncoder encoder = new JavaScriptStringEncoder(UnicodeRanges.All);
             StringWriter writer = new StringWriter();
 
             // Act
@@ -59,7 +59,7 @@ namespace Microsoft.Framework.WebEncoders
         public void UrlEncode_PositiveTestCase()
         {
             // Arrange
-            IUrlEncoder encoder = new UrlEncoder(UnicodeBlocks.All);
+            IUrlEncoder encoder = new UrlEncoder(UnicodeRanges.All);
             StringWriter writer = new StringWriter();
 
             // Act

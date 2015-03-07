@@ -26,7 +26,7 @@ namespace Microsoft.Framework.WebEncoders
         private readonly HtmlUnicodeEncoder _innerUnicodeEncoder;
 
         /// <summary>
-        /// Instantiates an encoder using the 'Basic Latin' code table as the allow list.
+        /// Instantiates an encoder using <see cref="UnicodeRanges.BasicLatin"/> as its allow list.
         /// </summary>
         public HtmlEncoder()
             : this(HtmlUnicodeEncoder.BasicLatin)
@@ -34,11 +34,11 @@ namespace Microsoft.Framework.WebEncoders
         }
 
         /// <summary>
-        /// Instantiates an encoder specifying which Unicode character blocks are allowed to
+        /// Instantiates an encoder specifying which Unicode character ranges are allowed to
         /// pass through the encoder unescaped.
         /// </summary>
-        public HtmlEncoder(params UnicodeBlock[] allowedBlocks)
-            : this(new HtmlUnicodeEncoder(new CodePointFilter(allowedBlocks)))
+        public HtmlEncoder(params UnicodeRange[] allowedRanges)
+            : this(new HtmlUnicodeEncoder(new CodePointFilter(allowedRanges)))
         {
         }
 
@@ -57,8 +57,7 @@ namespace Microsoft.Framework.WebEncoders
         }
 
         /// <summary>
-        /// A default instance of the HtmlEncoder, equivalent to allowing only
-        /// the 'Basic Latin' character range.
+        /// The default <see cref="HtmlEncoder"/>, which uses <see cref="UnicodeRanges.BasicLatin"/> as its allow list.
         /// </summary>
         public static HtmlEncoder Default
         {
@@ -120,7 +119,7 @@ namespace Microsoft.Framework.WebEncoders
                     HtmlUnicodeEncoder encoder = Volatile.Read(ref _basicLatinSingleton);
                     if (encoder == null)
                     {
-                        encoder = new HtmlUnicodeEncoder(new CodePointFilter(UnicodeBlocks.BasicLatin));
+                        encoder = new HtmlUnicodeEncoder(new CodePointFilter(UnicodeRanges.BasicLatin));
                         Volatile.Write(ref _basicLatinSingleton, encoder);
                     }
                     return encoder;

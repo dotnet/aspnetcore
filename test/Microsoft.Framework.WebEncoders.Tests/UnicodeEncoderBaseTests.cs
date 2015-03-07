@@ -16,7 +16,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Ctor_WithCustomFilters()
         {
             // Arrange
-            var filter = new CodePointFilter(UnicodeBlocks.None).AllowChars("ab").AllowChars('\0', '&', '\uFFFF', 'd');
+            var filter = new CodePointFilter().AllowChars("ab").AllowChars('\0', '&', '\uFFFF', 'd');
             UnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(filter);
 
             // Act & assert
@@ -30,10 +30,10 @@ namespace Microsoft.Framework.WebEncoders
         }
 
         [Fact]
-        public void Ctor_WithUnicodeBlocks()
+        public void Ctor_WithUnicodeRanges()
         {
             // Arrange
-            UnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(new CodePointFilter(UnicodeBlocks.Latin1Supplement, UnicodeBlocks.MiscellaneousSymbols));
+            UnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(new CodePointFilter(UnicodeRanges.Latin1Supplement, UnicodeRanges.MiscellaneousSymbols));
 
             // Act & assert
             Assert.Equal("[U+0061]", encoder.Encode("a"));
@@ -45,7 +45,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Encode_AllRangesAllowed_StillEncodesForbiddenChars_Simple()
         {
             // Arrange
-            UnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeBlocks.All);
+            UnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeRanges.All);
             const string input = "Hello <>&\'\"+ there!";
             const string expected = "Hello [U+003C][U+003E][U+0026][U+0027][U+0022][U+002B] there!";
 
@@ -57,7 +57,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Encode_AllRangesAllowed_StillEncodesForbiddenChars_Extended()
         {
             // Arrange
-            UnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeBlocks.All);
+            UnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeRanges.All);
 
             // Act & assert - BMP chars
             for (int i = 0; i <= 0xFFFF; i++)
@@ -120,7 +120,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Encode_BadSurrogates_ReturnsUnicodeReplacementChar()
         {
             // Arrange
-            UnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeBlocks.All); // allow all codepoints
+            UnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeRanges.All); // allow all codepoints
 
             // "a<unpaired leading>b<unpaired trailing>c<trailing before leading>d<unpaired trailing><valid>e<high at end of string>"
             const string input = "a\uD800b\uDFFFc\uDFFF\uD800d\uDFFF\uD800\uDFFFe\uD800";
@@ -137,7 +137,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Encode_EmptyStringInput_ReturnsEmptyString()
         {
             // Arrange
-            UnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeBlocks.All);
+            UnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeRanges.All);
 
             // Act & assert
             Assert.Equal("", encoder.Encode(""));
@@ -147,7 +147,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Encode_InputDoesNotRequireEncoding_ReturnsOriginalStringInstance()
         {
             // Arrange
-            UnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeBlocks.All);
+            UnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeRanges.All);
             string input = "Hello, there!";
 
             // Act & assert
@@ -158,7 +158,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Encode_NullInput_ReturnsNull()
         {
             // Arrange
-            UnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeBlocks.All);
+            UnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeRanges.All);
 
             // Act & assert
             Assert.Null(encoder.Encode(null));
@@ -167,25 +167,25 @@ namespace Microsoft.Framework.WebEncoders
         [Fact]
         public void Encode_WithCharsRequiringEncodingAtBeginning()
         {
-            Assert.Equal("[U+0026]Hello, there!", new CustomUnicodeEncoderBase(UnicodeBlocks.All).Encode("&Hello, there!"));
+            Assert.Equal("[U+0026]Hello, there!", new CustomUnicodeEncoderBase(UnicodeRanges.All).Encode("&Hello, there!"));
         }
 
         [Fact]
         public void Encode_WithCharsRequiringEncodingAtEnd()
         {
-            Assert.Equal("Hello, there![U+0026]", new CustomUnicodeEncoderBase(UnicodeBlocks.All).Encode("Hello, there!&"));
+            Assert.Equal("Hello, there![U+0026]", new CustomUnicodeEncoderBase(UnicodeRanges.All).Encode("Hello, there!&"));
         }
 
         [Fact]
         public void Encode_WithCharsRequiringEncodingInMiddle()
         {
-            Assert.Equal("Hello, [U+0026]there!", new CustomUnicodeEncoderBase(UnicodeBlocks.All).Encode("Hello, &there!"));
+            Assert.Equal("Hello, [U+0026]there!", new CustomUnicodeEncoderBase(UnicodeRanges.All).Encode("Hello, &there!"));
         }
 
         [Fact]
         public void Encode_WithCharsRequiringEncodingInterspersed()
         {
-            Assert.Equal("Hello, [U+003C]there[U+003E]!", new CustomUnicodeEncoderBase(UnicodeBlocks.All).Encode("Hello, <there>!"));
+            Assert.Equal("Hello, [U+003C]there[U+003E]!", new CustomUnicodeEncoderBase(UnicodeRanges.All).Encode("Hello, <there>!"));
         }
 
         [Fact]
@@ -222,7 +222,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Encode_CharArray_AllCharsValid()
         {
             // Arrange
-            CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeBlocks.All);
+            CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeRanges.All);
             StringWriter output = new StringWriter();
 
             // Act
@@ -236,7 +236,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Encode_CharArray_AllCharsInvalid()
         {
             // Arrange
-            CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeBlocks.None);
+            CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase();
             StringWriter output = new StringWriter();
 
             // Act
@@ -250,7 +250,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Encode_CharArray_SomeCharsValid()
         {
             // Arrange
-            CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeBlocks.All);
+            CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeRanges.All);
             StringWriter output = new StringWriter();
 
             // Act
@@ -294,7 +294,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Encode_StringSubstring_AllCharsValid()
         {
             // Arrange
-            CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeBlocks.All);
+            CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeRanges.All);
             StringWriter output = new StringWriter();
 
             // Act
@@ -308,7 +308,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Encode_StringSubstring_EntireString_AllCharsValid_ForwardDirectlyToOutput()
         {
             // Arrange
-            CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeBlocks.All);
+            CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeRanges.All);
             var mockWriter = new Mock<TextWriter>(MockBehavior.Strict);
             mockWriter.Setup(o => o.Write("abc")).Verifiable();
 
@@ -323,7 +323,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Encode_StringSubstring_AllCharsInvalid()
         {
             // Arrange
-            CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeBlocks.None);
+            CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase();
             StringWriter output = new StringWriter();
 
             // Act
@@ -337,7 +337,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Encode_StringSubstring_SomeCharsValid()
         {
             // Arrange
-            CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeBlocks.All);
+            CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeRanges.All);
             StringWriter output = new StringWriter();
 
             // Act
@@ -351,7 +351,7 @@ namespace Microsoft.Framework.WebEncoders
         public void Encode_StringSubstring_EntireString_SomeCharsValid()
         {
             // Arrange
-            CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeBlocks.All);
+            CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeRanges.All);
             StringWriter output = new StringWriter();
 
             // Act
@@ -392,8 +392,8 @@ namespace Microsoft.Framework.WebEncoders
             {
             }
 
-            public CustomUnicodeEncoderBase(params UnicodeBlock[] allowedBlocks)
-                : this(new CodePointFilter(allowedBlocks))
+            public CustomUnicodeEncoderBase(params UnicodeRange[] allowedRanges)
+                : this(new CodePointFilter(allowedRanges))
             {
             }
 
