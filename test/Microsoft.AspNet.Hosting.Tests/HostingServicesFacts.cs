@@ -120,6 +120,33 @@ namespace Microsoft.AspNet.Hosting.Tests
         }
 
         [Fact]
+        public void CreateAdditionalServices_IncludesServicesInManifest()
+        {
+            // Arrange
+            var fallbackServices = new ServiceCollection();
+            fallbackServices.AddTransient<IFakeService, FakeService>();
+            fallbackServices.AddInstance<IServiceManifest>(new ServiceManifest(
+                new Type[] {
+                    typeof(IFakeService),
+                }));
+            var expectedInstance = new FakeService();
+            var services = HostingServices.Create(
+                fallbackServices.BuildServiceProvider(),
+                additionalHostServices => additionalHostServices.AddInstance<IFakeServiceInstance>(expectedInstance));
+
+            // Act
+            var provider = services.BuildServiceProvider();
+            var instance = provider.GetRequiredService<IFakeServiceInstance>();
+            var anotherInstance = provider.GetRequiredService<IFakeServiceInstance>();
+            var manifest = provider.GetRequiredService<IServiceManifest>();
+
+            // Assert
+            Assert.Same(expectedInstance, instance);
+            Assert.Same(expectedInstance, anotherInstance);
+            Assert.Contains(typeof(IFakeServiceInstance), manifest.Services);
+        }
+
+        [Fact]
         public void CanHideImportedServices()
         {
             // Arrange

@@ -23,12 +23,12 @@ namespace Microsoft.AspNet.Hosting
                 services.AddTransient(service, sp => fallbackProvider.GetService(service));
             }
 
-            services.AddSingleton<IServiceManifest>(sp => new HostingManifest(services));
-
             if (configureHostServices != null)
             {
                 configureHostServices(services);
             }
+
+            services.AddSingleton<IServiceManifest>(sp => new HostingManifest(services));
 
             return services;
         }
