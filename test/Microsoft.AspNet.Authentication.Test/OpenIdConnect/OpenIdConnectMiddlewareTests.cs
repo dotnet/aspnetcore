@@ -125,7 +125,6 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         [Fact]
         public async Task SignOutWithDefaultRedirectUri()
         {
-            ISecureDataFormat<AuthenticationProperties> stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
             var server = CreateServer(options =>
             {
                 options.Authority = "https://login.windows.net/common";
@@ -140,7 +139,6 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         [Fact]
         public async Task SignOutWithCustomRedirectUri()
         {
-            ISecureDataFormat<AuthenticationProperties> stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
             var server = CreateServer(options =>
             {
                 options.Authority = "https://login.windows.net/common";
@@ -151,6 +149,21 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             var transaction = await SendAsync(server, "https://example.com/signout");
             transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
             transaction.Response.Headers.Location.AbsoluteUri.ShouldContain(Uri.EscapeDataString("https://example.com/logout"));
+        }
+
+        [Fact]
+        public async Task SignOutWith_Specific_RedirectUri_From_Authentication_Properites()
+        {
+            var server = CreateServer(options =>
+            {
+                options.Authority = "https://login.windows.net/common";
+                options.ClientId = "Test Id";
+                options.PostLogoutRedirectUri = "https://example.com/logout";
+            });
+
+            var transaction = await SendAsync(server, "https://example.com/signout_with_specific_redirect_uri");
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            transaction.Response.Headers.Location.AbsoluteUri.ShouldContain(Uri.EscapeDataString("http://www.example.com/specific_redirect_uri"));
         }
 
         [Fact]
@@ -211,6 +224,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                     else if (req.Path == new PathString("/signout"))
                     {
                         res.SignOut(OpenIdConnectAuthenticationDefaults.AuthenticationScheme);
+                    }
+                    else if (req.Path == new PathString("/signout_with_specific_redirect_uri"))
+                    {
+                        res.SignOut(
+                            OpenIdConnectAuthenticationDefaults.AuthenticationScheme, 
+                            new AuthenticationProperties() { RedirectUri = "http://www.example.com/specific_redirect_uri" });
                     }
                     else if (handler != null)
                     {
