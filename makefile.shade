@@ -56,7 +56,7 @@ functions
 var buildTarget = "compile"
 
 @{
-    var kBuildVersion = Environment.GetEnvironmentVariable("K_BUILD_VERSION");
+   var kBuildVersion = Environment.GetEnvironmentVariable("DNX_BUILD_VERSION");
     if (!string.IsNullOrEmpty(kBuildVersion))
     {
         VERSION += "-" + kBuildVersion;

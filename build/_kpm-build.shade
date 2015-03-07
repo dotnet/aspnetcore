@@ -11,7 +11,7 @@ configuration=''
 */}
 
 default configuration = 'Debug'
-default build_options='${E("KPM_build_options")}'
+default build_options='${E("NUGET3_build_options")}'
 var projectFolder='${Path.GetDirectoryName(projectFile)}'
 var projectName='${Path.GetFileName(projectFolder)}'
 var projectBin='${Path.Combine(projectFolder, "bin", configuration)}'

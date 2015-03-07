@@ -12,13 +12,13 @@ default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
 default Configuration='${E("Configuration")}'
 
 @{
-  if (string.IsNullOrEmpty(E("K_BUILD_VERSION")))
+  if (string.IsNullOrEmpty(E("DNX_BUILD_VERSION")))
   {
-    E("K_BUILD_VERSION", BuildNumber);
+    E("DNX_BUILD_VERSION", BuildNumber);
   }
-  if (string.IsNullOrEmpty(E("K_AUTHOR")))
+  if (string.IsNullOrEmpty(E("DNX_AUTHOR")))
   {
-    E("K_AUTHOR", AUTHORS);
+    E("DNX_AUTHOR", AUTHORS);
   }
   if (string.IsNullOrEmpty(Configuration))
   {
@@ -126,9 +126,9 @@ default Configuration='${E("Configuration")}'
 
 #--quiet
   @{
-    E("KPM_pack_options"," --quiet");
-    E("KPM_build_options"," --quiet");
-    E("KPM_restore_options"," --quiet");
+    E("NUGET3_pack_options"," --quiet");
+    E("NUGET3_build_options"," --quiet");
+    E("NUGET3_restore_options"," --quiet");
     E("bower_install_options","--quiet");
     E("npm_install_options","--quiet");
   }

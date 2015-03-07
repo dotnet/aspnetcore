@@ -52,5 +52,5 @@ projectFile=''
     }
 }
 
-macro name='K' command='string' workingdir='string' kvmUse='string'
+macro name='K' command='string' workingdir='string' dnvmUse='string'
     k
