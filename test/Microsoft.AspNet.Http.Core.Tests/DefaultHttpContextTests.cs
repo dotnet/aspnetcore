@@ -90,6 +90,8 @@ namespace Microsoft.AspNet.Http.Core.Tests
             Assert.False(handler.SignedIn);
             context.Response.SignIn("ignored", user);
             Assert.True(handler.SignedIn);
+            context.Response.SignOut("ignored", new AuthenticationProperties() { RedirectUri = "~/logout" });
+            Assert.False(handler.SignedIn);
         }
 
         private class AuthHandler : IAuthenticationHandler

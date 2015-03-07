@@ -7,13 +7,11 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.Http.Core.Authentication;
 using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Http.Core.Infrastructure;
-using Microsoft.AspNet.Http.Core.Authentication;
 using Microsoft.AspNet.Http.Infrastructure;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Http.Authentication;
 
 namespace Microsoft.AspNet.Http.Core
 {
@@ -162,11 +160,11 @@ namespace Microsoft.AspNet.Http.Core
             }
         }
 
-        public override void SignOut(string authenticationScheme)
+        public override void SignOut(string authenticationScheme, AuthenticationProperties properties)
         {
             var handler = HttpAuthenticationFeature.Handler;
 
-            var signOutContext = new SignOutContext(authenticationScheme);
+            var signOutContext = new SignOutContext(authenticationScheme, properties?.Dictionary);
             if (handler != null)
             {
                 handler.SignOut(signOutContext);
@@ -177,6 +175,11 @@ namespace Microsoft.AspNet.Http.Core
             {
                 throw new InvalidOperationException("The following authentication scheme was not accepted: " + authenticationScheme);
             }
+        }
+
+        public override void SignOut(string authenticationScheme)
+        {
+            SignOut(authenticationScheme, properties: null);
         }
     }
 }

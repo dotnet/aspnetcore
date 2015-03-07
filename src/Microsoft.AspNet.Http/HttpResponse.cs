@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Http
 
         public virtual void Challenge(IEnumerable<string> authenticationSchemes)
         {
-            Challenge(properties: null, authenticationSchemes:  authenticationSchemes);
+            Challenge(properties: null, authenticationSchemes: authenticationSchemes);
         }
 
         public virtual void Challenge(AuthenticationProperties properties, params string[] authenticationSchemes)
@@ -75,9 +75,11 @@ namespace Microsoft.AspNet.Http
 
         public virtual void SignOut()
         {
-            SignOut(authenticationScheme: null);
+            SignOut(authenticationScheme: null, properties: null);
         }
 
         public abstract void SignOut(string authenticationScheme);
+
+        public abstract void SignOut(string authenticationScheme, AuthenticationProperties properties);
     }
 }
