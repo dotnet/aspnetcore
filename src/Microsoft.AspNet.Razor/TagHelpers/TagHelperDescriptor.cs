@@ -26,17 +26,9 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         }
 
         /// <summary>
-        /// Instantiates a new instance of the <see cref="TagHelperDescriptor"/> class with the given
-        /// <paramref name="attributes"/>.
+        /// Internal for testing.
         /// </summary>
-        /// <param name="tagName">The tag name that the tag helper targets. '*' indicates a catch-all
-        /// <see cref="TagHelperDescriptor"/> which applies to every HTML tag.</param>
-        /// <param name="typeName">The full name of the tag helper class.</param>
-        /// <param name="assemblyName">The name of the assembly containing the tag helper class.</param>
-        /// <param name="attributes">
-        /// The <see cref="TagHelperAttributeDescriptor"/>s to request from the HTML tag.
-        /// </param>
-        public TagHelperDescriptor(
+        internal TagHelperDescriptor(
             [NotNull] string tagName,
             [NotNull] string typeName,
             [NotNull] string assemblyName,

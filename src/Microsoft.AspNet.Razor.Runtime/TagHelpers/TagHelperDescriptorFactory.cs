@@ -41,10 +41,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var attributeDescriptors = GetAttributeDescriptors(type);
 
             return tagNames.Select(tagName =>
-                new TagHelperDescriptor(tagName,
-                                        typeName,
-                                        assemblyName,
-                                        attributeDescriptors));
+                new TagHelperDescriptor(
+                    prefix: string.Empty,
+                    tagName: tagName,
+                    typeName: typeName,
+                    assemblyName: assemblyName,
+                    attributes: attributeDescriptors));
         }
 
         private static IEnumerable<string> GetTagNames(Type tagHelperType)
