@@ -30,11 +30,11 @@ projectFile=''
             ? (Dictionary<string, object>)configsObject
             : new Dictionary<string, object>
                 {
-                    { "aspnet50", new Dictionary<string, object>() } // Assume aspnet50 only if none specified
+                    { "dnx451", new Dictionary<string, object>() } // Assume dnx451 only if none specified
                 };
         
-        // Currently only aspnet* targets are supported. See aspnet/Universe#53
-        var targetFrameworks = configs.Keys.Where(k => k.StartsWith("aspnet", StringComparison.OrdinalIgnoreCase));
+        // Currently only dnx* targets are supported. See aspnet/Universe#53
+        var targetFrameworks = configs.Keys.Where(k => k.StartsWith("dnx", StringComparison.OrdinalIgnoreCase));
         
         foreach (var framework in targetFrameworks)
         {
