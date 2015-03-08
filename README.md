@@ -25,7 +25,7 @@ How to run Coherence-Signed
 4. Run the build file with TestCodeSign=true (because you can't do the
    real signing):
    ```
-   msbuild k.msbuild /P:TestCodeSign=true
+   msbuild dnx.msbuild /P:TestCodeSign=true
    ```
 
 5. The output files will end up in `.\bin\Release\Packages`
@@ -36,8 +36,8 @@ Hints
 
 To change the source of packages, create a local path in the form:
 ```
-    C:\FakeProjectKDrop\Coherence\release\12345
+    C:\FakeDNXDrop\Coherence\release\12345
 ```
 Where `release` is the branch, and `12345` is the build number (the exact number doesn't matter).
-Then in `.\tools\k.settings.targets` change `<ProjectKDropRoot>` to be `C:\FakeProjectKDrop\`.
+Then in `.\tools\dnx.settings.targets` change `<DNXDropRoot>` to be `C:\FakeDNXDrop\`.
 

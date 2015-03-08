@@ -2,15 +2,15 @@
 <Files>
     <!-- Exclusions -->
     <File Name="install.ps1" Ignore="yes" />
-    <File Name="kvm.ps1" Ignore="yes" />
-    <File Name="klr.exe" Ignore="yes" />
-    <File Name="kre.coreclr.dll" Ignore="yes" />
-    <File Name="kre.coreclr.managed.dll" Ignore="yes" />
-    <File Name="kre.host.dll" Ignore="yes" />
-    <File Name="kre.hosting.shared.dll" Ignore="yes" />
-    <File Name="kre.mono.managed.dll" Ignore="yes" />
-    <File Name="kre.clr.dll" Ignore="yes" />
-    <File Name="kre.clr.managed.dll" Ignore="yes" />
+    <File Name="dnvm.ps1" Ignore="yes" />
+    <File Name="dnx.exe" Ignore="yes" />
+    <File Name="dnx.coreclr.dll" Ignore="yes" />
+    <File Name="dnx.coreclr.managed.dll" Ignore="yes" />
+    <File Name="dnx.host.dll" Ignore="yes" />
+    <File Name="dnx.hosting.shared.dll" Ignore="yes" />
+    <File Name="dnx.mono.managed.dll" Ignore="yes" />
+    <File Name="dnx.clr.dll" Ignore="yes" />
+    <File Name="dnx.clr.managed.dll" Ignore="yes" />
     <File Name="libuv.dll" Ignore="yes" />    
     <File Name="Microsoft.CodeAnalysis.CSharp.dll" Ignore="yes" />
     <File Name="Microsoft.CodeAnalysis.dll" Ignore="yes" />

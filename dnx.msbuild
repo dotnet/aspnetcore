@@ -4,7 +4,7 @@
     <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.PoliCheck" />
     <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks.dll" TaskName="Microsoft.Web.MsBuildTasks.RegexReplace" />
 
-    <Import Project="tools\k.settings.targets" />
+    <Import Project="tools\dnx.settings.targets" />
     <Import Project="tools\QERM.targets" />
 
     <Target Name="Build" DependsOnTargets="CopyUnsignedPackages;BinScope;VerifySignatures" />
@@ -69,8 +69,8 @@
 
         <Message Text="%(UnsignedPackages.Identity)" Importance="low" />
 
-        <Exec Command="$(KToolsPath)7za.exe x -y -scsUTF-8 -o@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)') %(UnsignedPackages.Identity)" />
-        <Exec Command="$(KToolsPath)7za.exe x -y -scsUTF-8 -o@(SymbolPackages->'$(UnsignedSymbolPackagesPath)%(Filename)') %(SymbolPackages.Identity)" />
+        <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)') %(UnsignedPackages.Identity)" />
+        <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(SymbolPackages->'$(UnsignedSymbolPackagesPath)%(Filename)') %(SymbolPackages.Identity)" />
 
         <RenameEncodedFolders RootDirectory="$(UnsignedPackagesPath)" />
 
@@ -97,7 +97,7 @@
                          $(UnsignedPackagesPath)**\NuGet.*.dll;
                          $(UnsignedPackagesPath)**\signalrclient.dll;
                          $(UnsignedPackagesPath)**\StyleCop.KRules*.dll;
-                         $(UnsignedPackagesPath)**\klr*.exe"
+                         $(UnsignedPackagesPath)**\dnx*.exe"
             />
 
             <UnsignedPackageBinaries Include="@(_UnsignedPackageBinaries)">
@@ -161,7 +161,6 @@
     <Target Name="UpdateLicenseURLs" DependsOnTargets="SignFiles">
         <ItemGroup>
             <NuSpecEULA Include="$(UnsignedPackagesPath)**\EntityFramework*.nuspec;
-                                 $(UnsignedPackagesPath)**\K.*.nuspec;
                                  $(UnsignedPackagesPath)**\Kestrel*.nuspec;
                                  $(UnsignedPackagesPath)**\dnvm.*.nuspec;
                                  $(UnsignedPackagesPath)**\KoreBuild*.nuspec;
@@ -173,7 +172,7 @@
                                  $(UnsignedPackagesPath)**\StyleCop.KRules*.nuspec"/>
         </ItemGroup>
 
-        <MSBuild Projects="k.msbuild" Properties="NuSpecFileToUpdate=%(NuSpecEULA.Identity);Sign=$(Sign);TestCodeSign=$(TestCodeSign);Configuration=$(Configuration)"
+        <MSBuild Projects="dnx.msbuild" Properties="NuSpecFileToUpdate=%(NuSpecEULA.Identity);Sign=$(Sign);TestCodeSign=$(TestCodeSign);Configuration=$(Configuration)"
                  Targets="AddOrUpdateRequiredNuspecFields"/>
     </Target>
 
@@ -193,7 +192,7 @@
             <NuSpec Include="$(UnsignedPackagesPath)**\*.nuspec" />
         </ItemGroup>
 
-        <MSBuild Projects="K.msbuild"
+        <MSBuild Projects="dnx.msbuild"
                  Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);NuSpecFile=%(NuSpec.Identity);"
                  Targets="RebuildPackage"/>
 
@@ -209,7 +208,7 @@
             <PackageName>$([System.IO.Path]::GetFileName($(WorkingDir)))</PackageName>
         </PropertyGroup>
 
-        <Exec Command="$(KToolsPath)7za.exe a -tzip -mx9 -r -y $(PackagesOutputPath)$(PackageName).nupkg *" WorkingDirectory="$(WorkingDir)" />
+        <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(PackagesOutputPath)$(PackageName).nupkg *" WorkingDirectory="$(WorkingDir)" />
     </Target>
 
     <Target Name="CopyUnsignedPackages" DependsOnTargets="RebuildPackages">
@@ -228,7 +227,7 @@
             <PackagesToVerify Include="$(PackagesOutputPath)**\*.nupkg" />
         </ItemGroup>
 
-        <Exec Command="$(KToolsPath)SignVer.exe /z:$(KToolsPath) /s /m:$(KToolsPath)signver.manifest /i:%(PackagesToVerify.FullPath) /vl /l:$(CodeSignVerificationPath)%(PackagesToVerify.Filename).log "/>
+        <Exec Command="$(DNXToolsPath)SignVer.exe /z:$(DNXToolsPath) /s /m:$(DNXToolsPath)signver.manifest /i:%(PackagesToVerify.FullPath) /vl /l:$(CodeSignVerificationPath)%(PackagesToVerify.Filename).log "/>
     </Target>
 
     <Target Name="PoliCheck" DependsOnTargets="FindLatestDropShare">
@@ -244,7 +243,7 @@
                                         $(SymbolPackagePath)StyleCop.KRules*.symbols.nupkg"/>
         </ItemGroup>
 
-        <Exec Command="$(KToolsPath)7za.exe x -y -scsUTF-8 -o@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)') %(PoliCheckPackages.Identity)" />
+        <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)') %(PoliCheckPackages.Identity)" />
 
         <RemoveDir Directories="@(PoliCheckPackages->'%(PoliCheckPath)%(Filename)\_rels')" />
         <Delete Files="@(PoliCheckPackages->'%(PoliCheckPath)%(Filename)\[Content_Types].xml')" />
@@ -369,14 +368,14 @@
         <!-- Special cases for Native code that don't have symbol packages -->
         <ItemGroup>
             <NativePackages Include="$(PackagesOutputPath)**\Microsoft.AspNet.Loader.IIS.Interop.*.nupkg">
-                <BasePath>$(ProjectKDropRoot)Helios\$(BUILD_BRANCH)\</BasePath>
+                <BasePath>$(DNXDropRoot)Helios\$(BUILD_BRANCH)\</BasePath>
                 <RelativeBinPath>build\Microsoft.AspNet.Loader.IIS.Interop\bin</RelativeBinPath>
             </NativePackages>
         </ItemGroup>
 
         <Message Text="%(NativePackages.Identity)" />
 
-        <MSBuild Projects="K.msbuild"
+        <MSBuild Projects="dnx.msbuild"
                  Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);NativePackageSymbolsBasePath=%(NativePackages.BasePath);
                              NativePackageSymbolsRelativeBinPath=%(NativePackages.RelativeBinPath);NativePackage=%(NativePackages.Identity)"
                  Targets="LocateAndCopyNativeSymbolsUsingBuildNumber" />
@@ -412,7 +411,7 @@
                                                 $(PackagesOutputPath)**\Microsoft.AspNet.Loader.IIS.Interop*.nupkg" />
         </ItemGroup>
 
-        <Exec Command="$(KToolsPath)7za.exe x -y -scsUTF-8 -o@(SignedPackagesForBinScope->'$(BinScopePackagesPath)%(Filename)') %(SignedPackagesForBinScope.Identity)" />
+        <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(SignedPackagesForBinScope->'$(BinScopePackagesPath)%(Filename)') %(SignedPackagesForBinScope.Identity)" />
 
         <ItemGroup>
             <BinScopeTargetFiles Include="$(BinScopePackagesPath)**\Microsoft*.dll" />

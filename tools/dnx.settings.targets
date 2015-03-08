@@ -4,16 +4,16 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <KRootPath>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), k.msbuild))\</KRootPath>
-        <KBinPath>$(KRootPath)bin\</KBinPath>
-        <KToolsPath>$(KRootPath)tools\</KToolsPath>
+        <DNXRootPath>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), dnx.msbuild))\</DNXRootPath>
+        <DNXBinPath>$(DNXRootPath)bin\</DNXBinPath>
+        <DNXToolsPath>$(DNXRootPath)tools\</DNXToolsPath>
     </PropertyGroup>
 
     <PropertyGroup>
-        <IntermediateOutputPath>$(KRootPath)obj\</IntermediateOutputPath>
-        <SignedOutputPath>$(KBinPath)Signed\</SignedOutputPath>
+        <IntermediateOutputPath>$(DNXRootPath)obj\</IntermediateOutputPath>
+        <SignedOutputPath>$(DNXBinPath)Signed\</SignedOutputPath>
         <OutputPath Condition="'$(Sign)' == 'Sign'">$(SignedOutputPath)</OutputPath>
-        <OutputPath Condition="'$(Sign)' != 'Sign'">$(KBinPath)$(Configuration)\</OutputPath>
+        <OutputPath Condition="'$(Sign)' != 'Sign'">$(DNXBinPath)$(Configuration)\</OutputPath>
         <PoliCheckPath>$(IntermediateOutputPath)policheck\</PoliCheckPath>
         <PackagesOutputPath>$(OutputPath)Packages\</PackagesOutputPath>
     </PropertyGroup>
@@ -21,7 +21,7 @@
     <PropertyGroup>
         <UnsignedPackagesPath>$(IntermediateOutputPath)UnsignedPackages\</UnsignedPackagesPath>
         <UnsignedSymbolPackagesPath>$(IntermediateOutputPath)symbols\UnsignedPackages\</UnsignedSymbolPackagesPath>
-        <UnsignedBinariesPath>$(KBinPath)FilesToSign\</UnsignedBinariesPath>
+        <UnsignedBinariesPath>$(DNXBinPath)FilesToSign\</UnsignedBinariesPath>
         <BinScopePackagesPath>$(IntermediateOutputPath)\BinScopePackages\</BinScopePackagesPath>
 
         <CodeSignScriptsPath>$(SignedOutputPath)Scripts\</CodeSignScriptsPath>
@@ -41,7 +41,7 @@
     <ItemDefinitionGroup>
         <BinariesToSign>
             <Certificates>$(CodeSignCertificates)</Certificates>
-            <Description>Signing ProjectK binaries</Description>
+            <Description>Signing DNX binaries</Description>
             <DisplayName>$(CodeSignDisplayName)</DisplayName>
             <Url>$(CodeSignUrl)</Url>
         </BinariesToSign>
