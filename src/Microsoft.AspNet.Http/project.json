@@ -1,10 +1,10 @@
-{
+﻿{
   "version": "1.0.0-*",
   "description": "ASP.NET 5 HTTP object model. HttpContext and family.",
   "dependencies": {},
   "frameworks": {
-    "aspnet50": {},
-    "aspnetcore50": {
+    "dnx451": {},
+    "dnxcore50": {
       "dependencies": {
         "Microsoft.Net.WebSocketAbstractions": "1.0.0-*",
         "System.Collections": "4.0.10-beta-*",

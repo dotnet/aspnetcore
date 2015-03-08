@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.WebUtilities
         {
             throw new NotSupportedException();
         }
-#if ASPNET50
+#if DNX451
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
         {
             throw new NotSupportedException();
@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.WebUtilities
             }
             return read;
         }
-#if ASPNET50
+#if DNX451
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
         {
             var tcs = new TaskCompletionSource<int>(state);

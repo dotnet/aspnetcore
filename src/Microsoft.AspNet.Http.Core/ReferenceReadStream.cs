@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Http.Core
             _position += read;
             return read;
         }
-#if ASPNET50
+#if DNX451
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             ThrowIfDisposed();
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Http.Core
         {
             throw new NotSupportedException();
         }
-#if ASPNET50
+#if DNX451
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             throw new NotSupportedException();

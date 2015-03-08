@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "1.0.0-*",
     "description": "ASP.NET 5 common extension methods for HTTP abstractions and IApplicationBuilder.",
     "dependencies": {
@@ -7,9 +7,9 @@
         "Microsoft.Net.Http.Headers": "1.0.0-*"
     },
     "frameworks" : {
-        "aspnet50" : {
+        "dnx451" : {
         },
-        "aspnetcore50" : {
+        "dnxcore50" : {
             "dependencies": {
                 "System.Reflection.TypeExtensions": "4.0.0-beta-*",
                 "System.Runtime": "4.0.20-beta-*"

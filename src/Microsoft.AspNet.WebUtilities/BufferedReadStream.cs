@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.WebUtilities
         {
             _inner.Write(buffer, offset, count);
         }
-#if ASPNET50
+#if DNX451
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             return _inner.BeginWrite(buffer, offset, count, callback, state);
@@ -193,7 +193,7 @@ namespace Microsoft.AspNet.WebUtilities
 
             return await _inner.ReadAsync(buffer, offset, count, cancellationToken);
         }
-#if ASPNET50
+#if DNX451
         // We only anticipate using ReadAsync
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {

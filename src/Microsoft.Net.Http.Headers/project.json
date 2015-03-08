@@ -4,8 +4,8 @@
     },
     "frameworks" : {
         "net45" : { },
-        "aspnet50" : { },
-        "aspnetcore50" : {
+        "dnx451" : { },
+        "dnxcore50" : {
             "dependencies": {
                 "System.Collections": "4.0.10-beta-*",
                 "System.Diagnostics.Contracts": "4.0.0-beta-*",

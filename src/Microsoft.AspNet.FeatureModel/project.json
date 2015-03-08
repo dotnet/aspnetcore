@@ -1,11 +1,11 @@
-{
+﻿{
   "version": "1.0.0-*",
   "description": "ASP.NET 5 HTTP feature infrastructure.",
   "dependencies": {
   },
   "frameworks": {
-    "aspnet50": {},
-    "aspnetcore50": {
+    "dnx451": {},
+    "dnxcore50": {
       "dependencies": {
         "System.Collections": "4.0.10-beta-*",
         "System.Linq": "4.0.0-beta-*",

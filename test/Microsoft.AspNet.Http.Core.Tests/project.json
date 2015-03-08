@@ -1,4 +1,4 @@
-{
+﻿{
     "dependencies": {
         "Microsoft.AspNet.FeatureModel": "1.0.0-*",
         "Microsoft.AspNet.Http": "1.0.0-*",
@@ -10,7 +10,7 @@
         "test": "xunit.runner.kre"
     },
     "frameworks": {
-        "aspnet50": {
+        "dnx451": {
             "dependencies": {
                 "Moq": "4.2.1312.1622"
             },

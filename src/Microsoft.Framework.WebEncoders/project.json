@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "1.0.0-*",
     "description": "Contains encoders for HTML, JavaScript, and URLs.",
     "compilationOptions": {
@@ -11,8 +11,8 @@
     },
     "frameworks": {
         "net45": { },
-        "aspnet50": { },
-        "aspnetcore50": {
+        "dnx451": { },
+        "dnxcore50": {
             "dependencies": {
                 "System.Diagnostics.Debug": "4.0.10-beta-*",
                 "System.IO": "4.0.10-beta-*",
