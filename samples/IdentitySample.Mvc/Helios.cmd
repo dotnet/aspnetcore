@@ -1,4 +1,4 @@
-SET KRE_HOME=%USERPROFILE%\.kre\
+﻿SET DNX_HOME=%USERPROFILE%\.dnx\
 
 REM copy the AspNet.Loader.dll to the bin folder
 call CopyAspNetLoader.cmd
