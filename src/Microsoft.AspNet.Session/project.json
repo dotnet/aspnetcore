@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "1.0.0-*",
     "description": "ASP.NET 5 session state middleware.",
     "dependencies": {
@@ -11,8 +11,8 @@
         "allowUnsafe": true
     },
     "frameworks": {
-        "aspnet50": { },
-        "aspnetcore50": {
+        "dnx451": { },
+        "dnxcore50": {
             "dependencies": {
                 "System.Security.Cryptography.RandomNumberGenerator": "4.0.0-beta-*"
             }

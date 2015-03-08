@@ -11,6 +11,6 @@
     },
     "commands": { "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
     "frameworks" : {
-        "aspnet50" : { }
+        "dnx451" : { }
     }
 }
