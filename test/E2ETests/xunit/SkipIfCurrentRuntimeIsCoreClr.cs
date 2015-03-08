@@ -19,7 +19,7 @@ namespace E2ETests
         {
             get
             {
-                return "Cannot run these test variations using CoreCLR KRE as helpers are not available on CoreCLR.";
+                return "Cannot run these test variations using CoreCLR DNX as helpers are not available on CoreCLR.";
             }
         }
     }

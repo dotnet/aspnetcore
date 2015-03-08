@@ -64,9 +64,9 @@ namespace E2ETests
         {
             startParameters.ApplicationPath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), APP_RELATIVE_PATH));
 
-            //To avoid the KRE_DEFAULT_LIB of the test process flowing into Helios, set it to empty
-            var backupRuntimeDefaultLibPath = Environment.GetEnvironmentVariable("KRE_DEFAULT_LIB");
-            Environment.SetEnvironmentVariable("KRE_DEFAULT_LIB", string.Empty);
+            //To avoid the DNX_DEFAULT_LIB of the test process flowing into Helios, set it to empty
+            var backupRuntimeDefaultLibPath = Environment.GetEnvironmentVariable("DNX_DEFAULT_LIB");
+            Environment.SetEnvironmentVariable("DNX_DEFAULT_LIB", string.Empty);
 
             if (!string.IsNullOrWhiteSpace(startParameters.EnvironmentName))
             {
@@ -164,8 +164,8 @@ namespace E2ETests
                 }
             }
 
-            //Restore the KRE_DEFAULT_LIB after starting the host process
-            Environment.SetEnvironmentVariable("KRE_DEFAULT_LIB", backupRuntimeDefaultLibPath);
+            //Restore the DNX_DEFAULT_LIB after starting the host process
+            Environment.SetEnvironmentVariable("DNX_DEFAULT_LIB", backupRuntimeDefaultLibPath);
             Environment.SetEnvironmentVariable("ASPNET_ENV", string.Empty);
             return hostProcess;
         }
@@ -174,7 +174,7 @@ namespace E2ETests
         {
             var path = Environment.GetEnvironmentVariable("PATH");
             var runtimeBin = path.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).
-                Where(c => c.Contains("kre-mono")).FirstOrDefault();
+                Where(c => c.Contains("dnx-mono")).FirstOrDefault();
 
             if (string.IsNullOrWhiteSpace(runtimeBin))
             {
@@ -307,13 +307,13 @@ namespace E2ETests
             logger.LogInformation("Current %PATH% value : {0}", pathValue);
 
             var replaceStr = new StringBuilder().
-                Append("kre").
+                Append("dnx").
                 Append((runtimeFlavor == RuntimeFlavor.CoreClr) ? "-coreclr" : "-clr").
                 Append("-win").
                 Append((runtimeArchitecture == RuntimeArchitecture.x86) ? "-x86" : "-x64").
                 ToString();
 
-            pathValue = Regex.Replace(pathValue, "kre-(clr|coreclr)-win-(x86|x64)", replaceStr, RegexOptions.IgnoreCase);
+            pathValue = Regex.Replace(pathValue, "dnx-(clr|coreclr)-win-(x86|x64)", replaceStr, RegexOptions.IgnoreCase);
 
             var startIndex = pathValue.IndexOf(replaceStr); // First instance of this runtime name.
             var runtimeName = pathValue.Substring(startIndex, pathValue.IndexOf(';', startIndex) - startIndex);
