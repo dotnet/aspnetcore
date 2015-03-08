@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _responseStream = responseStream;
         }
 
-#if ASPNET50
+#if DNX451
         public override void Close()
         {
             _requestStream.Close();
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return _responseStream.FlushAsync(cancellationToken);
         }
 
-#if ASPNET50
+#if DNX451
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             return _requestStream.BeginRead(buffer, offset, count, callback, state);
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return _requestStream.CopyToAsync(destination, bufferSize, cancellationToken);
         }
 
-#if ASPNET50
+#if DNX451
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             return _responseStream.BeginWrite(buffer, offset, count, callback, state);

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return ReadAsync(buffer, offset, count).Result;
         }
 
-#if ASPNET50
+#if DNX451
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             var task = ReadAsync(buffer, offset, count, CancellationToken.None, state);

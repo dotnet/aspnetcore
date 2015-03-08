@@ -1,12 +1,12 @@
-{
+﻿{
     "version": "1.0.0-*",
     "dependencies": {
         "xunit.runner.kre": "1.0.0-*",
         "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
     },
     "frameworks": {
-        "aspnet50": { },
-        "aspnetcore50": {
+        "dnx451": { },
+        "dnxcore50": {
             "dependencies": {
                 "System.Net.Sockets": "4.0.0-beta-*",
                 "System.Runtime.Handles": "4.0.0-beta-*",
