@@ -1,60 +1,60 @@
-﻿# kvm.sh
+﻿# dnvm.sh
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_KVM_BUILDNUMBER="beta4-10333"
-_KVM_AUTHORS="Microsoft Open Technologies, Inc."
-_KVM_RUNTIME_PACKAGE_NAME="dnx"
-_KVM_RUNTIME_FRIENDLY_NAME="K Runtime"
-_KVM_RUNTIME_SHORT_NAME="DNX"
-_KVM_RUNTIME_FOLDER_NAME=".k"
-_KVM_COMMAND_NAME="kvm"
-_KVM_VERSION_MANAGER_NAME="K Version Manager"
-_KVM_DEFAULT_FEED="https://www.myget.org/F/aspnetvnext/api/v2"
-_KVM_HOME_VAR_NAME="DNX_HOME"
+_DNVM_BUILDNUMBER="beta4-10333"
+_DNVM_AUTHORS="Microsoft Open Technologies, Inc."
+_DNVM_RUNTIME_PACKAGE_NAME="dnx"
+_DNVM_RUNTIME_FRIENDLY_NAME="K Runtime"
+_DNVM_RUNTIME_SHORT_NAME="DNX"
+_DNVM_RUNTIME_FOLDER_NAME=".k"
+_DNVM_COMMAND_NAME="dnvm"
+_DNVM_VERSION_MANAGER_NAME="K Version Manager"
+_DNVM_DEFAULT_FEED="https://www.myget.org/F/aspnetvnext/api/v2"
+_DNVM_HOME_VAR_NAME="DNX_HOME"
 
-[ "$_KVM_BUILDNUMBER" = "{{*" ] && _KVM_BUILDNUMBER="HEAD"
+[ "$_DNVM_BUILDNUMBER" = "{{*" ] && _DNVM_BUILDNUMBER="HEAD"
 
-__kvm_has() {
+__dnvm_has() {
     type "$1" > /dev/null 2>&1
     return $?
 }
 
-if __kvm_has "unsetopt"; then
+if __dnvm_has "unsetopt"; then
     unsetopt nomatch 2>/dev/null
 fi
 
-if [ -z "$KVM_USER_HOME" ]; then
-    eval KVM_USER_HOME="~/$_KVM_RUNTIME_FOLDER_NAME"
+if [ -z "$DNVM_USER_HOME" ]; then
+    eval DNVM_USER_HOME="~/$_DNVM_RUNTIME_FOLDER_NAME"
 fi
 
-_KVM_USER_PACKAGES="$KVM_USER_HOME/runtimes"
-_KVM_ALIAS_DIR="$KVM_USER_HOME/alias"
+_DNVM_USER_PACKAGES="$DNVM_USER_HOME/runtimes"
+_DNVM_ALIAS_DIR="$DNVM_USER_HOME/alias"
 
 if [ -z "$DNX_FEED" ]; then
-    DNX_FEED="$_KVM_DEFAULT_FEED"
+    DNX_FEED="$_DNVM_DEFAULT_FEED"
 fi
 
-__kvm_find_latest() {
+__dnvm_find_latest() {
     local platform="mono"
 
-    if ! __kvm_has "curl"; then
-        echo "$_KVM_COMMAND_NAME needs curl to proceed." >&2;
+    if ! __dnvm_has "curl"; then
+        echo "$_DNVM_COMMAND_NAME needs curl to proceed." >&2;
         return 1
     fi
 
-    local url="$DNX_FEED/GetUpdates()?packageIds=%27$_KVM_RUNTIME_PACKAGE_NAME-$platform%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
+    local url="$DNX_FEED/GetUpdates()?packageIds=%27$_DNVM_RUNTIME_PACKAGE_NAME-$platform%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
     xml="$(curl $url 2>/dev/null)"
     echo $xml | grep \<[a-zA-Z]:Version\>* >> /dev/null || return 1
     version="$(echo $xml | sed 's/.*<[a-zA-Z]:Version>\([^<]*\).*/\1/')"
     echo $version
 }
 
-__kvm_strip_path() {
-    echo "$1" | sed -e "s#$_KVM_USER_PACKAGES/[^/]*$2[^:]*:##g" -e "s#:$_KVM_USER_PACKAGES/[^/]*$2[^:]*##g" -e "s#$_KVM_USER_PACKAGES/[^/]*$2[^:]*##g"
+__dnvm_strip_path() {
+    echo "$1" | sed -e "s#$_DNVM_USER_PACKAGES/[^/]*$2[^:]*:##g" -e "s#:$_DNVM_USER_PACKAGES/[^/]*$2[^:]*##g" -e "s#$_DNVM_USER_PACKAGES/[^/]*$2[^:]*##g"
 }
 
-__kvm_prepend_path() {
+__dnvm_prepend_path() {
     if [ -z "$1" ]; then
         echo "$2"
     else
@@ -62,27 +62,27 @@ __kvm_prepend_path() {
     fi
 }
 
-__kvm_package_version() {
+__dnvm_package_version() {
     local runtimeFullName="$1"
     echo "$runtimeFullName" | sed "s/[^.]*.\(.*\)/\1/"
 }
 
-__kvm_package_name() {
+__dnvm_package_name() {
     local runtimeFullName="$1"
     echo "$runtimeFullName" | sed "s/\([^.]*\).*/\1/"
 }
 
-__kvm_package_runtime() {
+__dnvm_package_runtime() {
     local runtimeFullName="$1"
-    echo "$runtimeFullName" | sed "s/$_KVM_RUNTIME_PACKAGE_NAME-\([^.-]*\).*/\1/"
+    echo "$runtimeFullName" | sed "s/$_DNVM_RUNTIME_PACKAGE_NAME-\([^.-]*\).*/\1/"
 }
 
-__kvm_download() {
+__dnvm_download() {
     local runtimeFullName="$1"
     local runtimeFolder="$2"
 
-    local pkgName=$(__kvm_package_name "$runtimeFullName")
-    local pkgVersion=$(__kvm_package_version "$runtimeFullName")
+    local pkgName=$(__dnvm_package_name "$runtimeFullName")
+    local pkgVersion=$(__dnvm_package_version "$runtimeFullName")
     local url="$DNX_FEED/package/$pkgName/$pkgVersion"
     local runtimeFile="$runtimeFolder/$runtimeFullName.nupkg"
 
@@ -93,8 +93,8 @@ __kvm_download() {
 
     echo "Downloading $runtimeFullName from $DNX_FEED"
 
-    if ! __kvm_has "curl"; then
-        echo "$_KVM_COMMAND_NAME needs curl to proceed." >&2;
+    if ! __dnvm_has "curl"; then
+        echo "$_DNVM_COMMAND_NAME needs curl to proceed." >&2;
         return 1
     fi
 
@@ -105,18 +105,18 @@ __kvm_download() {
     [[ $httpResult == "404" ]] && echo "$runtimeFullName was not found in repository $DNX_FEED" && return 1
     [[ $httpResult != "302" && $httpResult != "200" ]] && echo "HTTP Error $httpResult fetching $runtimeFullName from $DNX_FEED" && return 1
 
-    __kvm_unpack $runtimeFile $runtimeFolder
+    __dnvm_unpack $runtimeFile $runtimeFolder
     return $?
 }
 
-__kvm_unpack() {
+__dnvm_unpack() {
     local runtimeFile="$1"
     local runtimeFolder="$2"
 
     echo "Installing to $runtimeFolder"
 
-    if ! __kvm_has "unzip"; then
-        echo "$_KVM_COMMAND_NAME needs unzip to proceed." >&2;
+    if ! __dnvm_has "unzip"; then
+        echo "$_DNVM_COMMAND_NAME needs unzip to proceed." >&2;
         return 1
     fi
 
@@ -135,16 +135,16 @@ __kvm_unpack() {
         -exec sh -c "head -c 11 {} | grep '/bin/bash' > /dev/null"  \; -print | xargs chmod 775
 }
 
-__kvm_requested_version_or_alias() {
+__dnvm_requested_version_or_alias() {
     local versionOrAlias="$1"
-    local runtimeBin=$(__kvm_locate_runtime_bin_from_full_name "$versionOrAlias")
+    local runtimeBin=$(__dnvm_locate_runtime_bin_from_full_name "$versionOrAlias")
 
     # If the name specified is an existing package, just use it as is
     if [ -n "$runtimeBin" ]; then
         echo "$versionOrAlias"
     else
-       if [ -e "$_KVM_ALIAS_DIR/$versionOrAlias.alias" ]; then
-           local runtimeFullName=$(cat "$_KVM_ALIAS_DIR/$versionOrAlias.alias")
+       if [ -e "$_DNVM_ALIAS_DIR/$versionOrAlias.alias" ]; then
+           local runtimeFullName=$(cat "$_DNVM_ALIAS_DIR/$versionOrAlias.alias")
            local pkgName=$(echo $runtimeFullName | sed "s/\([^.]*\).*/\1/")
            local pkgVersion=$(echo $runtimeFullName | sed "s/[^.]*.\(.*\)/\1/")
            local pkgPlatform=$(echo "$pkgName" | sed "s/dnx-\([^.-]*\).*/\1/")
@@ -153,74 +153,74 @@ __kvm_requested_version_or_alias() {
             local pkgPlatform="mono"
         fi
 
-        echo "$_KVM_RUNTIME_PACKAGE_NAME-$pkgPlatform.$pkgVersion"
+        echo "$_DNVM_RUNTIME_PACKAGE_NAME-$pkgPlatform.$pkgVersion"
     fi
 }
 
 # This will be more relevant if we support global installs
-__kvm_locate_runtime_bin_from_full_name() {
+__dnvm_locate_runtime_bin_from_full_name() {
     local runtimeFullName=$1
-    [ -e "$_KVM_USER_PACKAGES/$runtimeFullName/bin" ] && echo "$_KVM_USER_PACKAGES/$runtimeFullName/bin" && return
+    [ -e "$_DNVM_USER_PACKAGES/$runtimeFullName/bin" ] && echo "$_DNVM_USER_PACKAGES/$runtimeFullName/bin" && return
 }
 
-kvm()
+dnvm()
 {
     if [ $# -lt 1 ]; then
-        $_KVM_COMMAND_NAME help
+        $_DNVM_COMMAND_NAME help
         return
     fi
 
     case $1 in
         "help" )
             echo ""
-            echo "$_KVM_VERSION_MANAGER_NAME - Version 1.0.0-$_KVM_BUILDNUMBER"
-            [ "$_KVM_AUTHORS" != "{{*" ] && echo "By $_KVM_AUTHORS"
+            echo "$_DNVM_VERSION_MANAGER_NAME - Version 1.0.0-$_DNVM_BUILDNUMBER"
+            [ "$_DNVM_AUTHORS" != "{{*" ] && echo "By $_DNVM_AUTHORS"
             echo ""
-            echo "USAGE: $_KVM_COMMAND_NAME <command> [options]"
+            echo "USAGE: $_DNVM_COMMAND_NAME <command> [options]"
             echo ""
-            echo "$_KVM_COMMAND_NAME upgrade"
-            echo "install latest $_KVM_RUNTIME_SHORT_NAME from feed"
-            echo "add $_KVM_RUNTIME_SHORT_NAME bin to path of current command line"
+            echo "$_DNVM_COMMAND_NAME upgrade"
+            echo "install latest $_DNVM_RUNTIME_SHORT_NAME from feed"
+            echo "add $_DNVM_RUNTIME_SHORT_NAME bin to path of current command line"
             echo "set installed version as default"
             echo ""
-            echo "$_KVM_COMMAND_NAME install <semver>|<alias>|<nupkg>|latest [-a|-alias <alias>] [-p -persistent]"
-            echo "<semver>|<alias>  install requested $_KVM_RUNTIME_SHORT_NAME from feed"
-            echo "<nupkg>           install requested $_KVM_RUNTIME_SHORT_NAME from local package on filesystem"
-            echo "latest            install latest version of $_KVM_RUNTIME_SHORT_NAME from feed"
-            echo "-a|-alias <alias> set alias <alias> for requested $_KVM_RUNTIME_SHORT_NAME on install"
+            echo "$_DNVM_COMMAND_NAME install <semver>|<alias>|<nupkg>|latest [-a|-alias <alias>] [-p -persistent]"
+            echo "<semver>|<alias>  install requested $_DNVM_RUNTIME_SHORT_NAME from feed"
+            echo "<nupkg>           install requested $_DNVM_RUNTIME_SHORT_NAME from local package on filesystem"
+            echo "latest            install latest version of $_DNVM_RUNTIME_SHORT_NAME from feed"
+            echo "-a|-alias <alias> set alias <alias> for requested $_DNVM_RUNTIME_SHORT_NAME on install"
             echo "-p -persistent    set installed version as default"
-            echo "add $_KVM_RUNTIME_SHORT_NAME bin to path of current command line"
+            echo "add $_DNVM_RUNTIME_SHORT_NAME bin to path of current command line"
             echo ""
-            echo "$_KVM_COMMAND_NAME use <semver>|<alias>|<package>|none [-p -persistent]"
-            echo "<semver>|<alias>|<package>  add $_KVM_RUNTIME_SHORT_NAME bin to path of current command line   "
-            echo "none                        remove $_KVM_RUNTIME_SHORT_NAME bin from path of current command line"
+            echo "$_DNVM_COMMAND_NAME use <semver>|<alias>|<package>|none [-p -persistent]"
+            echo "<semver>|<alias>|<package>  add $_DNVM_RUNTIME_SHORT_NAME bin to path of current command line   "
+            echo "none                        remove $_DNVM_RUNTIME_SHORT_NAME bin from path of current command line"
             echo "-p -persistent              set selected version as default"
             echo ""
-            echo "$_KVM_COMMAND_NAME list"
-            echo "list $_KVM_RUNTIME_SHORT_NAME versions installed "
+            echo "$_DNVM_COMMAND_NAME list"
+            echo "list $_DNVM_RUNTIME_SHORT_NAME versions installed "
             echo ""
-            echo "$_KVM_COMMAND_NAME alias"
-            echo "list $_KVM_RUNTIME_SHORT_NAME aliases which have been defined"
+            echo "$_DNVM_COMMAND_NAME alias"
+            echo "list $_DNVM_RUNTIME_SHORT_NAME aliases which have been defined"
             echo ""
-            echo "$_KVM_COMMAND_NAME alias <alias>"
+            echo "$_DNVM_COMMAND_NAME alias <alias>"
             echo "display value of the specified alias"
             echo ""
-            echo "$_KVM_COMMAND_NAME alias <alias> <semver>|<alias>|<package>"
+            echo "$_DNVM_COMMAND_NAME alias <alias> <semver>|<alias>|<package>"
             echo "<alias>                      the name of the alias to set"
-            echo "<semver>|<alias>|<package>   the $_KVM_RUNTIME_SHORT_NAME version to set the alias to. Alternatively use the version of the specified alias"
+            echo "<semver>|<alias>|<package>   the $_DNVM_RUNTIME_SHORT_NAME version to set the alias to. Alternatively use the version of the specified alias"
             echo ""
-            echo "$_KVM_COMMAND_NAME unalias <alias>"
+            echo "$_DNVM_COMMAND_NAME unalias <alias>"
             echo "remove the specified alias"
             echo ""
         ;;
 
         "upgrade" )
-            [ $# -ne 1 ] && kvm help && return
-            $_KVM_COMMAND_NAME install latest -p
+            [ $# -ne 1 ] && dnvm help && return
+            $_DNVM_COMMAND_NAME install latest -p
         ;;
 
         "install" )
-            [ $# -lt 2 ] && kvm help && return
+            [ $# -lt 2 ] && dnvm help && return
             shift
             local persistent=
             local versionOrAlias=
@@ -233,21 +233,21 @@ kvm()
                     local alias=$2
                     shift
                 elif [[ -n $1 ]]; then
-                    [[ -n $versionOrAlias ]] && echo "Invalid option $1" && kvm help && return 1
+                    [[ -n $versionOrAlias ]] && echo "Invalid option $1" && dnvm help && return 1
                     local versionOrAlias=$1
                 fi
                 shift
             done
             if [[ "$versionOrAlias" == "latest" ]]; then
                 echo "Determining latest version"
-                versionOrAlias=$(__kvm_find_latest)
+                versionOrAlias=$(__dnvm_find_latest)
                 [[ $? == 1 ]] && echo "Error: Could not find latest version from feed $DNX_FEED" && return 1
                 echo "Latest version is $versionOrAlias"
             fi
             if [[ "$versionOrAlias" == *.nupkg ]]; then
                 local runtimeFullName=$(basename $versionOrAlias | sed "s/\(.*\)\.nupkg/\1/")
-                local runtimeVersion=$(__kvm_package_version "$runtimeFullName")
-                local runtimeFolder="$_KVM_USER_PACKAGES/$runtimeFullName"
+                local runtimeVersion=$(__dnvm_package_version "$runtimeFullName")
+                local runtimeFolder="$_DNVM_USER_PACKAGES/$runtimeFullName"
                 local runtimeFile="$runtimeFolder/$runtimeFullName.nupkg"
 
                 if [ -e "$runtimeFolder" ]; then
@@ -255,24 +255,24 @@ kvm()
                 else
                   mkdir "$runtimeFolder" > /dev/null 2>&1
                   cp -a "$versionOrAlias" "$runtimeFile"
-                  __kvm_unpack "$runtimeFile" "$runtimeFolder"
+                  __dnvm_unpack "$runtimeFile" "$runtimeFolder"
                   [[ $? == 1 ]] && return 1
                 fi
-                $_KVM_COMMAND_NAME use "$runtimeVersion" "$persistent"
-                [[ -n $alias ]] && kvm alias "$alias" "$runtimeVersion"
+                $_DNVM_COMMAND_NAME use "$runtimeVersion" "$persistent"
+                [[ -n $alias ]] && dnvm alias "$alias" "$runtimeVersion"
             else
-                local runtimeFullName="$(__kvm_requested_version_or_alias $versionOrAlias)"
-                local runtimeFolder="$_KVM_USER_PACKAGES/$runtimeFullName"
-                __kvm_download "$runtimeFullName" "$runtimeFolder"
+                local runtimeFullName="$(__dnvm_requested_version_or_alias $versionOrAlias)"
+                local runtimeFolder="$_DNVM_USER_PACKAGES/$runtimeFullName"
+                __dnvm_download "$runtimeFullName" "$runtimeFolder"
                 [[ $? == 1 ]] && return 1
-                $_KVM_COMMAND_NAME use "$versionOrAlias" "$persistent"
-                [[ -n $alias ]] && kvm alias "$alias" "$versionOrAlias"
+                $_DNVM_COMMAND_NAME use "$versionOrAlias" "$persistent"
+                [[ -n $alias ]] && dnvm alias "$alias" "$versionOrAlias"
             fi
         ;;
 
         "use" )
-            [ $# -gt 3 ] && $_KVM_COMMAND_NAME help && return
-            [ $# -lt 2 ] && $_KVM_COMMAND_NAME help && return
+            [ $# -gt 3 ] && $_DNVM_COMMAND_NAME help && return
+            [ $# -lt 2 ] && $_DNVM_COMMAND_NAME help && return
 
             shift
             local persistent=
@@ -287,50 +287,50 @@ kvm()
             done
 
             if [[ $versionOrAlias == "none" ]]; then
-                echo "Removing $_KVM_RUNTIME_SHORT_NAME from process PATH"
+                echo "Removing $_DNVM_RUNTIME_SHORT_NAME from process PATH"
                 # Strip other version from PATH
-                PATH=$(__kvm_strip_path "$PATH" "/bin")
+                PATH=$(__dnvm_strip_path "$PATH" "/bin")
 
-                if [[ -n $persistent && -e "$_KVM_ALIAS_DIR/default.alias" ]]; then
-                    echo "Setting default $_KVM_RUNTIME_SHORT_NAME to none"
-                    rm "$_KVM_ALIAS_DIR/default.alias"
+                if [[ -n $persistent && -e "$_DNVM_ALIAS_DIR/default.alias" ]]; then
+                    echo "Setting default $_DNVM_RUNTIME_SHORT_NAME to none"
+                    rm "$_DNVM_ALIAS_DIR/default.alias"
                 fi
                 return 0
             fi
 
-            local runtimeFullName=$(__kvm_requested_version_or_alias "$versionOrAlias")
-            local runtimeBin=$(__kvm_locate_runtime_bin_from_full_name "$runtimeFullName")
+            local runtimeFullName=$(__dnvm_requested_version_or_alias "$versionOrAlias")
+            local runtimeBin=$(__dnvm_locate_runtime_bin_from_full_name "$runtimeFullName")
 
             if [[ -z $runtimeBin ]]; then
-                echo "Cannot find $runtimeFullName, do you need to run '$_KVM_COMMAND_NAME install $versionOrAlias'?"
+                echo "Cannot find $runtimeFullName, do you need to run '$_DNVM_COMMAND_NAME install $versionOrAlias'?"
                 return 1
             fi
 
             echo "Adding" $runtimeBin "to process PATH"
 
-            PATH=$(__kvm_strip_path "$PATH" "/bin")
-            PATH=$(__kvm_prepend_path "$PATH" "$runtimeBin")
+            PATH=$(__dnvm_strip_path "$PATH" "/bin")
+            PATH=$(__dnvm_prepend_path "$PATH" "$runtimeBin")
 
             if [[ -n $persistent ]]; then
-                local runtimeVersion=$(__kvm_package_version "$runtimeFullName")
-                $_KVM_COMMAND_NAME alias default "$runtimeVersion"
+                local runtimeVersion=$(__dnvm_package_version "$runtimeFullName")
+                $_DNVM_COMMAND_NAME alias default "$runtimeVersion"
             fi
         ;;
 
         "alias" )
-            [[ $# -gt 3 ]] && kvm help && return
+            [[ $# -gt 3 ]] && dnvm help && return
 
-            [[ ! -e "$_KVM_ALIAS_DIR/" ]] && mkdir "$_KVM_ALIAS_DIR/" > /dev/null
+            [[ ! -e "$_DNVM_ALIAS_DIR/" ]] && mkdir "$_DNVM_ALIAS_DIR/" > /dev/null
 
             if [[ $# == 1 ]]; then
                 echo ""
                 local format="%-20s %s\n"
                 printf "$format" "Alias" "Name"
                 printf "$format" "-----" "----"
-                if [ -d "$_KVM_ALIAS_DIR" ]; then
-                    for __kvm_file in $(find "$_KVM_ALIAS_DIR" -name *.alias); do
-                        local alias="$(basename $__kvm_file | sed 's/\.alias//')"
-                        local name="$(cat $__kvm_file)"
+                if [ -d "$_DNVM_ALIAS_DIR" ]; then
+                    for __dnvm_file in $(find "$_DNVM_ALIAS_DIR" -name *.alias); do
+                        local alias="$(basename $__dnvm_file | sed 's/\.alias//')"
+                        local name="$(cat $__dnvm_file)"
                         printf "$format" "$alias" "$name"
                     done
                 fi
@@ -341,41 +341,41 @@ kvm()
             local name="$2"
 
             if [[ $# == 2 ]]; then
-                [[ ! -e "$_KVM_ALIAS_DIR/$name.alias" ]] && echo "There is no alias called '$name'" && return
-                cat "$_KVM_ALIAS_DIR/$name.alias"
+                [[ ! -e "$_DNVM_ALIAS_DIR/$name.alias" ]] && echo "There is no alias called '$name'" && return
+                cat "$_DNVM_ALIAS_DIR/$name.alias"
                 echo ""
                 return
             fi
 
-            local runtimeFullName=$(__kvm_requested_version_or_alias "$3")
+            local runtimeFullName=$(__dnvm_requested_version_or_alias "$3")
 
-            [[ ! -d "$_KVM_USER_PACKAGES/$runtimeFullName" ]] && echo "$runtimeFullName is not an installed $_KVM_RUNTIME_SHORT_NAME version" && return 1
+            [[ ! -d "$_DNVM_USER_PACKAGES/$runtimeFullName" ]] && echo "$runtimeFullName is not an installed $_DNVM_RUNTIME_SHORT_NAME version" && return 1
 
             local action="Setting"
-            [[ -e "$_KVM_ALIAS_DIR/$name.alias" ]] && action="Updating"
+            [[ -e "$_DNVM_ALIAS_DIR/$name.alias" ]] && action="Updating"
             echo "$action alias '$name' to '$runtimeFullName'"
-            echo "$runtimeFullName" > "$_KVM_ALIAS_DIR/$name.alias"
+            echo "$runtimeFullName" > "$_DNVM_ALIAS_DIR/$name.alias"
         ;;
 
         "unalias" )
-            [[ $# -ne 2 ]] && kvm help && return
+            [[ $# -ne 2 ]] && dnvm help && return
 
             local name=$2
-            local aliasPath="$_KVM_ALIAS_DIR/$name.alias"
+            local aliasPath="$_DNVM_ALIAS_DIR/$name.alias"
             [[ ! -e  "$aliasPath" ]] && echo "Cannot remove alias, '$name' is not a valid alias name" && return 1
             echo "Removing alias $name"
             rm "$aliasPath" >> /dev/null 2>&1
         ;;
 
         "list" )
-            [[ $# -gt 2 ]] && kvm help && return
+            [[ $# -gt 2 ]] && dnvm help && return
 
-            [[ ! -d $_KVM_USER_PACKAGES ]] && echo "$_KVM_RUNTIME_FRIENDLY_NAME is not installed." && return 1
+            [[ ! -d $_DNVM_USER_PACKAGES ]] && echo "$_DNVM_RUNTIME_FRIENDLY_NAME is not installed." && return 1
 
-            local searchGlob="$_KVM_RUNTIME_PACKAGE_NAME-*"
+            local searchGlob="$_DNVM_RUNTIME_PACKAGE_NAME-*"
             if [ $# == 2 ]; then
                 local versionOrAlias=$2
-                local searchGlob=$(__kvm_requested_version_or_alias "$versionOrAlias")
+                local searchGlob=$(__dnvm_requested_version_or_alias "$versionOrAlias")
             fi
             echo ""
 
@@ -387,9 +387,9 @@ kvm()
             # Z shell array-index starts at one.
             local i=1
             local format="%-20s %s\n"
-            if [ -d "$_KVM_ALIAS_DIR" ]; then
-                for __kvm_file in $(find "$_KVM_ALIAS_DIR" -name *.alias); do
-                    arr[$i]="$(basename $__kvm_file | sed 's/\.alias//')/$(cat $__kvm_file)"
+            if [ -d "$_DNVM_ALIAS_DIR" ]; then
+                for __dnvm_file in $(find "$_DNVM_ALIAS_DIR" -name *.alias); do
+                    arr[$i]="$(basename $__dnvm_file | sed 's/\.alias//')/$(cat $__dnvm_file)"
                     let i+=1
                 done
             fi
@@ -398,18 +398,18 @@ kvm()
             printf "$formatString" "Active" "Version" "Runtime" "Location" "Alias"
             printf "$formatString" "------" "-------" "-------" "--------" "-----"
 
-            local formattedHome=`(echo $_KVM_USER_PACKAGES | sed s=$HOME=~=g)`
-            for f in $(find $_KVM_USER_PACKAGES -name "$searchGlob" \( -type d -or -type l \) -prune -exec basename {} \;); do
+            local formattedHome=`(echo $_DNVM_USER_PACKAGES | sed s=$HOME=~=g)`
+            for f in $(find $_DNVM_USER_PACKAGES -name "$searchGlob" \( -type d -or -type l \) -prune -exec basename {} \;); do
                 local active=""
-                [[ $PATH == *"$_KVM_USER_PACKAGES/$f/bin"* ]] && local active="  *"
-                local pkgName=$(__kvm_package_runtime "$f")
-                local pkgVersion=$(__kvm_package_version "$f")
+                [[ $PATH == *"$_DNVM_USER_PACKAGES/$f/bin"* ]] && local active="  *"
+                local pkgName=$(__dnvm_package_runtime "$f")
+                local pkgVersion=$(__dnvm_package_version "$f")
 
                 local alias=""
                 local delim=""
                 for i in "${arr[@]}"; do
-                    temp="$_KVM_RUNTIME_PACKAGE_NAME-$pkgName.$pkgVersion"
-                    temp2="$_KVM_RUNTIME_PACKAGE_NAME-$pkgName-x86.$pkgVersion"
+                    temp="$_DNVM_RUNTIME_PACKAGE_NAME-$pkgName.$pkgVersion"
+                    temp2="$_DNVM_RUNTIME_PACKAGE_NAME-$pkgName-x86.$pkgVersion"
                     if [[ ${i#*/} == $temp || ${i#*/} == $temp2 ]]; then
                         alias+="$delim${i%/*}"
                         delim=", "
@@ -433,4 +433,4 @@ kvm()
 }
 
 # Generate the command function using the constant defined above.
-$_KVM_COMMAND_NAME list default >/dev/null && $_KVM_COMMAND_NAME use default >/dev/null || true
+$_DNVM_COMMAND_NAME list default >/dev/null && $_DNVM_COMMAND_NAME use default >/dev/null || true
