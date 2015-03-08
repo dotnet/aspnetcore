@@ -1,11 +1,11 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-#if ASPNET50
+#if DNX451
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting;
-#elif ASPNETCORE50
+#elif DNXCORE50
 using System.Threading;
 #endif
 using Microsoft.AspNet.Http;
@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Hosting
 {
     public class HttpContextAccessor : IHttpContextAccessor
     {
-#if ASPNET50
+#if DNX451
         private const string LogicalDataKey = "__HttpContext_Current__";
 
         public HttpContext HttpContext
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Hosting
             }
         }
 
-#elif ASPNETCORE50
+#elif DNXCORE50
         private AsyncLocal<HttpContext> _httpContextCurrent = new AsyncLocal<HttpContext>();
         public HttpContext HttpContext
         {
