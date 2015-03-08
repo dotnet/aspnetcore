@@ -22,8 +22,8 @@
             <Output TaskParameter="LatestPath" PropertyName="DropSource"/>
         </FindLatestDrop>
 
-        <FindLatestDrop RootPath="$(kvmRootDrop)" SubFolder="">
-            <Output TaskParameter="LatestPath" PropertyName="kvmDropSource"/>
+        <FindLatestDrop RootPath="$(dnvmRootDrop)" SubFolder="">
+            <Output TaskParameter="LatestPath" PropertyName="dnvmDropSource"/>
         </FindLatestDrop>
 
         <PropertyGroup>
@@ -37,11 +37,11 @@
         <MakeDir Directories="$(OutputPath)" />
         <Copy SourceFiles="$(DropSource)..\commit" DestinationFolder="$(OutputPath)" />
 
-        <!-- kvm doesn't have a package so copy all the scripts and then replace the kvm.ps1 file with the signed copy. -->
+        <!-- dnvm doesn't have a package so copy all the scripts and then replace the dnvm.ps1 file with the signed copy. -->
         <ItemGroup>
-            <kvmFiles Include="$(kvmDropSource)\*.*" />
+            <dnvmFiles Include="$(dnvmDropSource)\*.*" />
         </ItemGroup>
-        <Copy SourceFiles="@(kvmFiles)" DestinationFolder="$(OutputPath)kvm" />
+        <Copy SourceFiles="@(dnvmFiles)" DestinationFolder="$(OutputPath)dnvm" />
 
         <ItemGroup>
             <UnsignedPackages
@@ -108,7 +108,7 @@
 
             <PackageBinariesToSign Include="%(UnsignedPackageBinaries.UnsignedFlatFileName)" />
 
-            <kvmBinariesToSign Include="$(OutputPath)kvm\kvm.ps1" />
+            <dnvmBinariesToSign Include="$(OutputPath)dnvm\dnvm.ps1" />
         </ItemGroup>
 
         <Copy SourceFiles="@(UnsignedPackageBinaries)" DestinationFiles="@(UnsignedPackageBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
@@ -126,9 +126,9 @@
         </ItemGroup>
 
         <ItemGroup>
-            <BinariesToSign Include="@(kvmBinariesToSign)">
-                <CopyScript>kvmAuthentiCode400.bat</CopyScript>
-                <CopyScriptTargetPath>$(SignedOutputPath)kvm</CopyScriptTargetPath>
+            <BinariesToSign Include="@(dnvmBinariesToSign)">
+                <CopyScript>dnvmAuthentiCode400.bat</CopyScript>
+                <CopyScriptTargetPath>$(SignedOutputPath)dnvm</CopyScriptTargetPath>
             </BinariesToSign>
         </ItemGroup>
 
@@ -163,7 +163,7 @@
             <NuSpecEULA Include="$(UnsignedPackagesPath)**\EntityFramework*.nuspec;
                                  $(UnsignedPackagesPath)**\K.*.nuspec;
                                  $(UnsignedPackagesPath)**\Kestrel*.nuspec;
-                                 $(UnsignedPackagesPath)**\kvm.*.nuspec;
+                                 $(UnsignedPackagesPath)**\dnvm.*.nuspec;
                                  $(UnsignedPackagesPath)**\KoreBuild*.nuspec;
                                  $(UnsignedPackagesPath)**\dnx*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.AspNet*.nuspec;

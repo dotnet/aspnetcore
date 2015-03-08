@@ -1,4 +1,4 @@
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     </PropertyGroup>
@@ -28,7 +28,7 @@
         <CodeSignVerificationPath>$(SignedOutputPath)Verification\</CodeSignVerificationPath>
         <SignedBinariesPath>$(SignedOutputPath)</SignedBinariesPath>
 
-        <kvmRootDrop Condition="'$(kvmRootDrop)' == ''">\\projectk-tc\drops\dotnetsdk\dev\</kvmRootDrop>
+        <dnvmRootDrop Condition="'$(dnvmRootDrop)' == ''">\\projectk-tc\drops\dotnetsdk\dev\</dnvmRootDrop>
     </PropertyGroup>
 
     <PropertyGroup>
