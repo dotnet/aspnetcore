@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
-#if ASPNET50
+#if DNX451
 using Microsoft.AspNet.Routing.Logging;
 using Microsoft.Framework.Logging.Testing;
 using Moq;
@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Routing
 {
     public class ConstraintMatcherTest
     {
-#if ASPNET50
+#if DNX451
         private const string _name = "name";
 
         [Fact]

@@ -1,4 +1,4 @@
-{
+﻿{
   "description": "ASP.NET 5 middleware and abstractions for routing requests to application logic and for generating links.",
   "version": "1.0.0-*",
   "compilationOptions": {
@@ -10,8 +10,8 @@
     "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
   },
   "frameworks": {
-    "aspnet50": {},
-    "aspnetcore50": {
+    "dnx451": {},
+    "dnxcore50": {
       "dependencies": {
         "System.Reflection.Extensions": "4.0.0-beta-*",
         "System.Text.RegularExpressions": "4.0.10-beta-*"

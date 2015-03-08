@@ -1,7 +1,7 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+ï»¿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if ASPNET50
+#if DNX451
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Routing
         [Theory]
         [InlineData(@"\u0130", @"\u0130", true)]
         [InlineData(@"\u0049", @"\u0049", true)]
-        [InlineData(@"üino", @"üino", true)]
+        [InlineData(@"ï¿½ino", @"ï¿½ino", true)]
         public void GetVirtualPath_DoesntLowerCaseUrls_Invariant(
             string returnUrl,
             string lowercaseUrl,
