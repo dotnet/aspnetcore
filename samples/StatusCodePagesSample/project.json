@@ -18,7 +18,7 @@
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*"
     },
     "frameworks" : {
-        "aspnet50" : { },
-        "aspnetcore50" : { }
+        "dnx451" : { },
+        "dnxcore50" : { }
     }
 }

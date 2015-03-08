@@ -6,7 +6,7 @@ using Microsoft.AspNet.Diagnostics.Entity.Utilities;
 using Microsoft.Data.Entity.Storage;
 using Microsoft.Framework.Logging;
 using System;
-#if ASPNETCORE50
+#if DNXCORE50
 using System.Threading;
 #else
 using System.Runtime.Remoting.Messaging;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 {
     public class DataStoreErrorLogger : ILogger
     {
-#if ASPNETCORE50
+#if DNXCORE50
         private readonly AsyncLocal<DataStoreErrorLog> _log = new AsyncLocal<DataStoreErrorLog>(); 
 #else
         private const string ContextName = "__DataStoreErrorLog";
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
         {
             get
             {
-#if ASPNETCORE50
+#if DNXCORE50
                 return _log.Value; 
 #else
                 return (DataStoreErrorLog)CallContext.LogicalGetData(ContextName);
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
             // it will not be available to code outside of the current async context. 
             // We create it ahead of time so that any cloning just clones the reference
             // to the object that will hold any errors.
-#if ASPNETCORE50
+#if DNXCORE50
             _log.Value = new DataStoreErrorLog();
 #else
             CallContext.LogicalSetData(ContextName, new DataStoreErrorLog());

@@ -12,7 +12,7 @@
         "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5000"
     },
     "frameworks": {
-        "aspnet50" : { },
-        "aspnetcore50" : { }
+        "dnx451" : { },
+        "dnxcore50" : { }
     }
 }

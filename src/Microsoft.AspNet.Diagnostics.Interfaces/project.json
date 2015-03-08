@@ -3,8 +3,8 @@
 	"description": "ASP.NET 5 diagnostics middleware interfaces.",
 	"compilationOptions": { "warningsAsErrors": true },
 	 "frameworks": {
-        "aspnet50": { },
-        "aspnetcore50": {
+        "dnx451": { },
+        "dnxcore50": {
             "dependencies": {
                 "System.Runtime": "4.0.20-beta-*"
             }

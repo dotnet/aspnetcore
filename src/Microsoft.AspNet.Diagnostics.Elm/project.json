@@ -6,8 +6,8 @@
     },
 
     "frameworks": {
-        "aspnet50": { },
-        "aspnetcore50": {
+        "dnx451": { },
+        "dnxcore50": {
             "dependencies": {
                 "System.Threading": "4.0.10-beta-*"
             }

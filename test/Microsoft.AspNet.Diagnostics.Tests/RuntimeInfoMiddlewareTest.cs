@@ -12,7 +12,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.WebEncoders;
-#if ASPNET50
+#if DNX451
 using Moq;
 #endif
 using Xunit;
@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             Assert.Equal(DefaultPath, options.Path.Value);
         }
 
-#if ASPNET50
+#if DNX451
         [Fact]
         public void CreateRuntimeInfoModel_GetsTheVersionAndAllPackages()
         {

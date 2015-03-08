@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using JetBrains.Annotations;
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 
             try
             {
-#if !ASPNETCORE50
+#if !DNXCORE50
                 // TODO This probably isn't the correct place for this workaround, it
                 //      needs to be called before anything is written to CallContext
                 // http://msdn.microsoft.com/en-us/library/dn458353(v=vs.110).aspx

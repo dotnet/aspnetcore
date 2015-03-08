@@ -10,7 +10,7 @@ using Microsoft.AspNet.Diagnostics.Elm;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
-#if ASPNET50
+#if DNX451
 using Moq;
 #endif
 using Xunit;
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             Assert.Equal(DefaultPath, options.Path.Value);
         }
 
-#if ASPNET50
+#if DNX451
         [Fact]
         public async void Invoke_WithNonMatchingPath_IgnoresRequest()
         {

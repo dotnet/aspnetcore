@@ -1,5 +1,5 @@
 ﻿using System;
-#if ASPNET50
+#if DNX451
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 #endif
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Diagnostics.Elm
 
         public ScopeNode Node { get; set; }
 
-#if ASPNET50
+#if DNX451
         private static string FieldKey = typeof(ElmScope).FullName + ".Value";
         public static ElmScope Current
         {
