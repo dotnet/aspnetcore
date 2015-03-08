@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 _kvmsetup_has() {
     type "$1" > /dev/null 2>&1
@@ -17,8 +17,8 @@ _kvmsetup_update_profile() {
     fi
 }
 
-if [ -z "$KRE_USER_HOME" ]; then
-    eval KRE_USER_HOME=~/.kre
+if [ -z "$DNX_USER_HOME" ]; then
+    eval DNX_USER_HOME=~/.dnx
 fi
 
 if ! _kvmsetup_has "curl"; then
@@ -31,14 +31,14 @@ if [ -z "$KVM_SOURCE" ]; then
 fi
 
 # Downloading to $KVM_DIR
-mkdir -p "$KRE_USER_HOME/kvm"
-if [ -s "$KRE_USER_HOME/kvm/kvm.sh" ]; then
-    echo "kvm is already installed in $KRE_USER_HOME/kvm, trying to update"
+mkdir -p "$DNX_USER_HOME/kvm"
+if [ -s "$DNX_USER_HOME/kvm/kvm.sh" ]; then
+    echo "kvm is already installed in $DNX_USER_HOME/kvm, trying to update"
 else
-    echo "Downloading kvm as script to '$KRE_USER_HOME/kvm'"
+    echo "Downloading kvm as script to '$DNX_USER_HOME/kvm'"
 fi
 
-curl -s "$KVM_SOURCE" -o "$KRE_USER_HOME/kvm/kvm.sh" || {
+curl -s "$KVM_SOURCE" -o "$DNX_USER_HOME/kvm/kvm.sh" || {
     echo >&2 "Failed to download '$KVM_SOURCE'.."
     return 1
 }
@@ -62,7 +62,7 @@ if [ -z "$ZPROFILE" ]; then
     fi
 fi
 
-SOURCE_STR="[ -s \"$KRE_USER_HOME/kvm/kvm.sh\" ] && . \"$KRE_USER_HOME/kvm/kvm.sh\" # Load kvm"
+SOURCE_STR="[ -s \"$DNX_USER_HOME/kvm/kvm.sh\" ] && . \"$DNX_USER_HOME/kvm/kvm.sh\" # Load kvm"
 
 if [ -z "$PROFILE" -a -z "$ZPROFILE" ] || [ ! -f "$PROFILE" -a ! -f "$ZPROFILE" ] ; then
     if [ -z "$PROFILE" ]; then
@@ -85,4 +85,4 @@ else
     [ -n "$ZPROFILE" ] && _kvmsetup_update_profile "$ZPROFILE" "$SOURCE_STR"
 fi
 
-echo "Type 'source $KRE_USER_HOME/kvm/kvm.sh' to start using kvm"
+echo "Type 'source $DNX_USER_HOME/kvm/kvm.sh' to start using kvm"

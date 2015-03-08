@@ -1,4 +1,4 @@
-# dotnetsdk.sh
+﻿# dotnetsdk.sh
 # Source this file from your .bash-profile or script to use
 
 _dotnetsdk_has() {
@@ -58,7 +58,7 @@ _dotnetsdk_package_name() {
 
 _dotnetsdk_package_runtime() {
     local runtimeFullName="$1"
-    echo "$runtimeFullName" | sed "s/KRE-\([^.-]*\).*/\1/"
+    echo "$runtimeFullName" | sed "s/DNX-\([^.-]*\).*/\1/"
 }
 
 _dotnetsdk_download() {

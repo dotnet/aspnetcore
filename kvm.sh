@@ -1,17 +1,17 @@
-# kvm.sh
+﻿# kvm.sh
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
 _KVM_BUILDNUMBER="beta4-10333"
 _KVM_AUTHORS="Microsoft Open Technologies, Inc."
-_KVM_RUNTIME_PACKAGE_NAME="kre"
+_KVM_RUNTIME_PACKAGE_NAME="dnx"
 _KVM_RUNTIME_FRIENDLY_NAME="K Runtime"
-_KVM_RUNTIME_SHORT_NAME="KRE"
+_KVM_RUNTIME_SHORT_NAME="DNX"
 _KVM_RUNTIME_FOLDER_NAME=".k"
 _KVM_COMMAND_NAME="kvm"
 _KVM_VERSION_MANAGER_NAME="K Version Manager"
 _KVM_DEFAULT_FEED="https://www.myget.org/F/aspnetvnext/api/v2"
-_KVM_HOME_VAR_NAME="KRE_HOME"
+_KVM_HOME_VAR_NAME="DNX_HOME"
 
 [ "$_KVM_BUILDNUMBER" = "{{*" ] && _KVM_BUILDNUMBER="HEAD"
 
@@ -31,8 +31,8 @@ fi
 _KVM_USER_PACKAGES="$KVM_USER_HOME/runtimes"
 _KVM_ALIAS_DIR="$KVM_USER_HOME/alias"
 
-if [ -z "$KRE_FEED" ]; then
-    KRE_FEED="$_KVM_DEFAULT_FEED"
+if [ -z "$DNX_FEED" ]; then
+    DNX_FEED="$_KVM_DEFAULT_FEED"
 fi
 
 __kvm_find_latest() {
@@ -43,7 +43,7 @@ __kvm_find_latest() {
         return 1
     fi
 
-    local url="$KRE_FEED/GetUpdates()?packageIds=%27$_KVM_RUNTIME_PACKAGE_NAME-$platform%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
+    local url="$DNX_FEED/GetUpdates()?packageIds=%27$_KVM_RUNTIME_PACKAGE_NAME-$platform%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
     xml="$(curl $url 2>/dev/null)"
     echo $xml | grep \<[a-zA-Z]:Version\>* >> /dev/null || return 1
     version="$(echo $xml | sed 's/.*<[a-zA-Z]:Version>\([^<]*\).*/\1/')"
@@ -83,7 +83,7 @@ __kvm_download() {
 
     local pkgName=$(__kvm_package_name "$runtimeFullName")
     local pkgVersion=$(__kvm_package_version "$runtimeFullName")
-    local url="$KRE_FEED/package/$pkgName/$pkgVersion"
+    local url="$DNX_FEED/package/$pkgName/$pkgVersion"
     local runtimeFile="$runtimeFolder/$runtimeFullName.nupkg"
 
     if [ -e "$runtimeFolder" ]; then
@@ -91,7 +91,7 @@ __kvm_download() {
         return 0
     fi
 
-    echo "Downloading $runtimeFullName from $KRE_FEED"
+    echo "Downloading $runtimeFullName from $DNX_FEED"
 
     if ! __kvm_has "curl"; then
         echo "$_KVM_COMMAND_NAME needs curl to proceed." >&2;
@@ -102,8 +102,8 @@ __kvm_download() {
 
     local httpResult=$(curl -L -D - "$url" -o "$runtimeFile" 2>/dev/null | grep "^HTTP/1.1" | head -n 1 | sed "s/HTTP.1.1 \([0-9]*\).*/\1/")
 
-    [[ $httpResult == "404" ]] && echo "$runtimeFullName was not found in repository $KRE_FEED" && return 1
-    [[ $httpResult != "302" && $httpResult != "200" ]] && echo "HTTP Error $httpResult fetching $runtimeFullName from $KRE_FEED" && return 1
+    [[ $httpResult == "404" ]] && echo "$runtimeFullName was not found in repository $DNX_FEED" && return 1
+    [[ $httpResult != "302" && $httpResult != "200" ]] && echo "HTTP Error $httpResult fetching $runtimeFullName from $DNX_FEED" && return 1
 
     __kvm_unpack $runtimeFile $runtimeFolder
     return $?
@@ -147,7 +147,7 @@ __kvm_requested_version_or_alias() {
            local runtimeFullName=$(cat "$_KVM_ALIAS_DIR/$versionOrAlias.alias")
            local pkgName=$(echo $runtimeFullName | sed "s/\([^.]*\).*/\1/")
            local pkgVersion=$(echo $runtimeFullName | sed "s/[^.]*.\(.*\)/\1/")
-           local pkgPlatform=$(echo "$pkgName" | sed "s/kre-\([^.-]*\).*/\1/")
+           local pkgPlatform=$(echo "$pkgName" | sed "s/dnx-\([^.-]*\).*/\1/")
         else
             local pkgVersion=$versionOrAlias
             local pkgPlatform="mono"
@@ -241,7 +241,7 @@ kvm()
             if [[ "$versionOrAlias" == "latest" ]]; then
                 echo "Determining latest version"
                 versionOrAlias=$(__kvm_find_latest)
-                [[ $? == 1 ]] && echo "Error: Could not find latest version from feed $KRE_FEED" && return 1
+                [[ $? == 1 ]] && echo "Error: Could not find latest version from feed $DNX_FEED" && return 1
                 echo "Latest version is $versionOrAlias"
             fi
             if [[ "$versionOrAlias" == *.nupkg ]]; then
