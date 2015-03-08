@@ -47,7 +47,7 @@
             <UnsignedPackages
                 Include="$(DropSource)**\EntityFramework*.nupkg;
                          $(DropSource)**\Kestrel*.nupkg;
-                         $(DropSource)**\kre*.nupkg;
+                         $(DropSource)**\dnx*.nupkg;
                          $(DropSource)**\KoreBuild*.nupkg;
                          $(DropSource)**\Microsoft.AspNet*.nupkg;
                          $(DropSource)**\Microsoft.Framework*.nupkg;
@@ -59,7 +59,7 @@
                 Include="$(SymbolPackagePath)**\EntityFramework*.nupkg;
                          $(SymbolPackagePath)**\Kestrel*.nupkg;
                          $(SymbolPackagePath)**\KoreBuild*.nupkg;
-                         $(SymbolPackagePath)**\kre*.nupkg;
+                         $(SymbolPackagePath)**\dnx*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.AspNet*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Framework*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Net*.nupkg;
@@ -90,7 +90,7 @@
                          $(UnsignedPackagesPath)**\EntityFramework*\**\init.ps1;
                          $(UnsignedPackagesPath)**\EntityFramework*\**\install.ps1;
                          $(UnsignedPackagesPath)**\Kestrel*.dll;
-                         $(UnsignedPackagesPath)**\kre*.dll;
+                         $(UnsignedPackagesPath)**\dnx*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.AspNet*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.Framework*.dll;                         
                          $(UnsignedPackagesPath)**\Microsoft.Net*.dll;
@@ -165,7 +165,7 @@
                                  $(UnsignedPackagesPath)**\Kestrel*.nuspec;
                                  $(UnsignedPackagesPath)**\kvm.*.nuspec;
                                  $(UnsignedPackagesPath)**\KoreBuild*.nuspec;
-                                 $(UnsignedPackagesPath)**\kre*.nuspec;
+                                 $(UnsignedPackagesPath)**\dnx*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.AspNet*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Framework.*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Net.*.nuspec;
@@ -235,7 +235,7 @@
         <ItemGroup>
             <PoliCheckPackages Include="$(SymbolPackagePath)EntityFramework.*.symbols.nupkg;
                                         $(SymbolPackagePath)Kestrel*.symbols.nupkg;
-                                        $(SymbolPackagePath)kre*.symbols.nupkg;
+                                        $(SymbolPackagePath)dnx*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.AspNet*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Framework*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Net*.symbols.nupkg;
@@ -407,7 +407,7 @@
         <ItemGroup>
             <SignedPackagesForBinScope Include="$(PackagesOutputPath)**\*.nupkg"
                                        Exclude="$(PackagesOutputPath)**\CoreCLR*.nupkg;
-                                                $(PackagesOutputPath)**\kre*.nupkg;
+                                                $(PackagesOutputPath)**\dnx*.nupkg;
                                                 $(PackagesOutputPath)**\Microsoft.CSharp*.nupkg;
                                                 $(PackagesOutputPath)**\Microsoft.AspNet.Loader.IIS.Interop*.nupkg" />
         </ItemGroup>
