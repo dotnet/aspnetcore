@@ -1,4 +1,4 @@
-{
+﻿{
     "authors": [
         "Microsoft"
     ],
@@ -28,9 +28,9 @@
     },
     "webroot": ".",
     "frameworks": {
-        "aspnet50": {
+        "dnx451": {
         },
-        "aspnetcore50": {
+        "dnxcore50": {
         }
     }
 }

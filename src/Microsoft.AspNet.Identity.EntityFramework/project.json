@@ -1,14 +1,14 @@
-{
+﻿{
   "version": "3.0.0-*",
   "dependencies": {
     "Microsoft.AspNet.Identity": "3.0.0-*",
     "EntityFramework.SqlServer": "7.0.0-*"
   },
   "frameworks": {
-    "aspnet50": {
+    "dnx451": {
       "dependencies": { }
     },
-    "aspnetcore50": {
+    "dnxcore50": {
       "dependencies": {
         "System.Collections": "4.0.10-beta-*",
         "System.ComponentModel": "4.0.0-beta-*",
