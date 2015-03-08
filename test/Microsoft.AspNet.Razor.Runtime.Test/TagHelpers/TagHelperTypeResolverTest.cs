@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var documentLocation = new SourceLocation(1, 2, 3);
             var expectedErrorMessage = "Cannot resolve TagHelper containing assembly 'abcd'. Error: " +
                 "Could not load file or assembly '" +
-#if ASPNET50
+#if DNX451
                 "abcd' or one of its dependencies. The system cannot find the file specified.";
 #else
                 "abcd, Culture=neutral, PublicKeyToken=null' or one of its dependencies. Could not find or load a " +

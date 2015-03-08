@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "1.0.0",
     "resources": "TestFiles/**/*",
     "dependencies": {
@@ -11,8 +11,8 @@
         "test": "xunit.runner.kre"
     },
     "frameworks": {
-        "aspnet50": { },
-        "aspnetcore50": {
+        "dnx451": { },
+        "dnxcore50": {
             "dependencies": {
                 "System.Diagnostics.TraceSource": "4.0.0-beta-*",
                 "System.Reflection.TypeExtensions": "4.0.0-beta-*"

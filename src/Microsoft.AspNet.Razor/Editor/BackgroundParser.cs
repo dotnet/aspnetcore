@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -309,7 +309,7 @@ namespace Microsoft.AspNet.Razor.Editor
                     RazorEditorTrace.TraceLine(RazorResources.FormatTrace_BackgroundThreadStart(fileNameOnly));
                     EnsureOnThread();
 
-#if ASPNETCORE50
+#if DNXCORE50
                     var spinWait = new SpinWait();
 #endif
 
@@ -427,7 +427,7 @@ namespace Microsoft.AspNet.Razor.Editor
                         else
                         {
                             RazorEditorTrace.TraceLine(RazorResources.FormatTrace_NoChangesArrived(fileNameOnly));
-#if ASPNETCORE50
+#if DNXCORE50
                             // This does the equivalent of thread.yield under the covers.
                             spinWait.SpinOnce();
 #else

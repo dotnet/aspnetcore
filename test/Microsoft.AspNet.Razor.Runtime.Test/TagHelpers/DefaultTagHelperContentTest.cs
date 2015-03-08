@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
-#if !ASPNETCORE50
+#if !DNXCORE50
 using Moq;
 #endif
 using Xunit;
@@ -333,7 +333,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.Equal(expected, writer.ToString());
         }
 
-#if !ASPNETCORE50
+#if !DNXCORE50
         [Fact]
         public void CanWriteToTextWriter_MultipleAppends()
         {

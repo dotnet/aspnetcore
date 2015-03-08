@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "1.0.0",
     "dependencies": {
         "Microsoft.AspNet.Razor.Runtime": "4.0.0-*",
@@ -9,12 +9,12 @@
         "test": "xunit.runner.kre"
     },
     "frameworks": {
-        "aspnet50": {
+        "dnx451": {
             "dependencies": {
                 "Moq": "4.2.1312.1622"
             }
         },
-        "aspnetcore50": {
+        "dnxcore50": {
             "dependencies": {
                 "System.Reflection.TypeExtensions": "4.0.0-beta-*",
                 "System.Runtime.Extensions": "4.0.10-beta-*"

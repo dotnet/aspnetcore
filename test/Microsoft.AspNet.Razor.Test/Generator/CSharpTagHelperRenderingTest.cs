@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
-#if ASPNETCORE50
+#if DNXCORE50
 using System.Reflection;
 #endif
 using Microsoft.AspNet.Razor.Generator.Compiler;

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,7 +9,7 @@ using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Razor.Test.Framework;
-#if !ASPNETCORE50
+#if !DNXCORE50
 using Moq;
 using Moq.Protected;
 #endif
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
                     factory.Markup(" baz")));
         }
 
-#if !ASPNETCORE50
+#if !DNXCORE50
         [Fact]
         public void GetTagHelperDescriptors_IsInvokedToLocateTagHelperDescriptors()
         {

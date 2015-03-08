@@ -9,7 +9,7 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Parser.TagHelpers;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.Internal.Web.Utils;
-#if !ASPNETCORE50
+#if !DNXCORE50
 using Moq;
 #endif
 using Xunit;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     {
         private static readonly SpanFactory Factory = SpanFactory.CreateCsHtml();
 
-#if !ASPNETCORE50
+#if !DNXCORE50
         [Fact]
         public void GetDescriptors_InvokesResolveOnceForAllDirectives()
         {

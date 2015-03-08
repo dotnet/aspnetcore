@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,7 @@ using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
-#if !ASPNETCORE50
+#if !DNXCORE50
 using Moq;
 #endif
 using Xunit;
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             RunOnEndBlockTest(endBlockCallback => new CallbackVisitor(_ => { }, _ => { }, _ => { }, endBlockCallback));
         }
 
-#if !ASPNETCORE50
+#if !DNXCORE50
         [Fact]
         public void ListenerCallsOnEndSpanCallbackUsingSynchronizationContextIfSpecified()
         {
