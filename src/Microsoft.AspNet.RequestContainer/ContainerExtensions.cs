@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Builder
 
         public static IApplicationBuilder UseServices(this IApplicationBuilder builder, Func<IServiceCollection, IServiceProvider> configureServices)
         {
-            // Import services from hosting/KRE as fallback
+            // Import services from hosting/DNX as fallback
             var serviceCollection = HostingServices.Create(builder.ApplicationServices);
 
             builder.ApplicationServices = configureServices(serviceCollection);
