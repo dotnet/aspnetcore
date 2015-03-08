@@ -1,9 +1,9 @@
-{
+﻿{
     "version": "1.0.0-*",
     "description": "Managed web socket protocol parser.",
     "frameworks": {
         "net45": { },
-        "aspnetcore50": {
+        "dnxcore50": {
             "dependencies": {
                 "Microsoft.Net.WebSocketAbstractions": "1.0.0-*",
                 "System.Diagnostics.Contracts": "4.0.0-beta-*",

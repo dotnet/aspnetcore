@@ -12,7 +12,7 @@
         "kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:12344"
     },
     "frameworks" : {
-        "aspnet50" : { },
-        "aspnetcore50" : { }
+        "dnx451" : { },
+        "dnxcore50" : { }
     }
 }

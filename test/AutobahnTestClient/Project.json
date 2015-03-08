@@ -6,6 +6,6 @@
         "run" : "run"
     },
     "frameworks" : {
-        "aspnet50" : { }
+        "dnx451" : { }
     }
 }
