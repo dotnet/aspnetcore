@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Diagnostics
 
         private static string GetRuntimeVersion()
         {
-            var klr = Assembly.Load(new AssemblyName("kre.host"));
+            var klr = Assembly.Load(new AssemblyName("dnx.host"));
             var version = klr.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
             return version?.InformationalVersion;
         }
