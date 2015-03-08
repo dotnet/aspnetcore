@@ -1,4 +1,4 @@
-{
+﻿{
     "commands": {
         "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.Urls http://localhost:12345/"
     },
@@ -11,8 +11,8 @@
         "Microsoft.Framework.Logging.Console": "1.0.0-*"
     },
     "frameworks": {
-        "aspnet50": {},
-        "aspnetcore50": {}
+        "dnx451": {},
+        "dnxcore50": {}
     },
     "webroot": "wwwroot"
 }

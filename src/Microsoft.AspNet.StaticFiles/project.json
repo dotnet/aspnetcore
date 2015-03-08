@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "1.0.0-*",
     "description": "ASP.NET 5 static files middleware.",
     "dependencies": {
@@ -10,7 +10,7 @@
         "Microsoft.Framework.WebEncoders": "1.0.0-*"
     },
     "frameworks": {
-        "aspnet50": { },
-        "aspnetcore50": { }
+        "dnx451": { },
+        "dnxcore50": { }
     }
 }
