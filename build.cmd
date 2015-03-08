@@ -1,4 +1,4 @@
-@echo off
+﻿@echo off
 cd %~dp0
 
 SETLOCAL
@@ -19,7 +19,7 @@ IF EXIST packages\KoreBuild goto run
 .nuget\NuGet.exe install KoreBuild -ExcludeVersion -o packages -nocache -pre
 .nuget\NuGet.exe install Sake -version 0.2 -o packages -ExcludeVersion
 
-IF "%SKIP_KRE_INSTALL%"=="1" goto run
+IF "%SKIP_DNX_INSTALL%"=="1" goto run
 CALL packages\KoreBuild\build\kvm upgrade -runtime CLR -x86
 CALL packages\KoreBuild\build\kvm install default -runtime CoreCLR -x86
 
