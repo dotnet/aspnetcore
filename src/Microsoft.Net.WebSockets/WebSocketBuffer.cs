@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc.
+﻿// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -50,7 +50,7 @@ namespace Microsoft.Net.WebSockets
         public const int MinSendBufferSize = 16;
         internal const int MinReceiveBufferSize = 256;
         internal const int MaxBufferSize = 64 * 1024;
-#if ASPNETCORE50
+#if DNXCORE50
         private static readonly int SizeOfUInt = Marshal.SizeOf<uint>();
         private static readonly int SizeOfBool = Marshal.SizeOf<bool>();
 #else

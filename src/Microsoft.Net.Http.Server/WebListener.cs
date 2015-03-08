@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc.
+﻿// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,7 +41,7 @@ namespace Microsoft.Net.Http.Server
     public sealed class WebListener : IDisposable
     {
         private const long DefaultRequestQueueLength = 1000;  // Http.sys default.
-#if ASPNETCORE50
+#if DNXCORE50
         private static readonly int RequestChannelBindStatusSize =
             Marshal.SizeOf<UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_CHANNEL_BIND_STATUS>();
         private static readonly int BindingInfoSize =
@@ -749,7 +749,7 @@ namespace Microsoft.Net.Http.Server
 
                     knownHeaderInfo[httpResponse.ResponseInfoCount].Type = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
                     knownHeaderInfo[httpResponse.ResponseInfoCount].Length =
-#if ASPNETCORE50
+#if DNXCORE50
                     (uint)Marshal.SizeOf<UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS>();
 #else
                     (uint)Marshal.SizeOf(typeof(UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS));
@@ -841,7 +841,7 @@ namespace Microsoft.Net.Http.Server
         private static int GetTokenOffsetFromBlob(IntPtr blob)
         {
             Debug.Assert(blob != IntPtr.Zero);
-#if ASPNETCORE50
+#if DNXCORE50
             IntPtr tokenPointer = Marshal.ReadIntPtr(blob, (int)Marshal.OffsetOf<UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_CHANNEL_BIND_STATUS>("ChannelToken"));
 #else
             IntPtr tokenPointer = Marshal.ReadIntPtr(blob, (int)Marshal.OffsetOf(ChannelBindingStatusType, "ChannelToken"));
@@ -853,7 +853,7 @@ namespace Microsoft.Net.Http.Server
         private static int GetTokenSizeFromBlob(IntPtr blob)
         {
             Debug.Assert(blob != IntPtr.Zero);
-#if ASPNETCORE50
+#if DNXCORE50
             return Marshal.ReadInt32(blob, (int)Marshal.OffsetOf<UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_CHANNEL_BIND_STATUS>("ChannelTokenSize"));
 #else
             return Marshal.ReadInt32(blob, (int)Marshal.OffsetOf(ChannelBindingStatusType, "ChannelTokenSize"));

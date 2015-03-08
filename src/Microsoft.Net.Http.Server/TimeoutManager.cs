@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc.
+﻿// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,7 +35,7 @@ namespace Microsoft.Net.Http.Server
     /// </summary>
     public sealed class TimeoutManager
     {
-#if ASPNETCORE50
+#if DNXCORE50
         private static readonly int TimeoutLimitSize =
             Marshal.SizeOf<UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_LIMIT_INFO>();
 #else

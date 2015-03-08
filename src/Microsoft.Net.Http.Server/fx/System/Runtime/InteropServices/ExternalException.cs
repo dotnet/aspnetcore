@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc.
+﻿// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,7 +31,7 @@
 **
 =============================================================================*/
 
-#if ASPNETCORE50
+#if DNXCORE50
 
 namespace System.Runtime.InteropServices
 {

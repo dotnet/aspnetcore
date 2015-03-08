@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc.
+﻿// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 Assert.Equal("Hello World", response);
             }
         }
-#if !ASPNETCORE50
+#if !DNXCORE50
         [Fact]
         public async Task RequestBody_ReadBeginEnd_Success()
         {

@@ -1,4 +1,4 @@
-{
+﻿{
     "webroot": "wwwroot",
     "dependencies": {
         "Microsoft.AspNet.Hosting": "1.0.0-*",
@@ -7,7 +7,7 @@
     },
     "commands": { "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:8080" },
     "frameworks": {
-        "aspnet50": { },
-        "aspnetcore50": { }
+        "dnx451": { },
+        "dnxcore50": { }
     }
 }

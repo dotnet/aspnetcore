@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "1.0.0-*",
     "description": "Implementation of WebSocket abstract base class. Used by WebListener.",
     "dependencies": {
@@ -7,7 +7,7 @@
     "compilationOptions": { "allowUnsafe": true },
     "frameworks": {
         "net45": { },
-        "aspnetcore50": {
+        "dnxcore50": {
             "dependencies": {
                 "System.Collections": "4.0.10-beta-*",
                 "System.Diagnostics.Contracts": "4.0.0-beta-*",

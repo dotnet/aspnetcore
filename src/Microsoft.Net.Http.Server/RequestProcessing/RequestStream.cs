@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc.
+﻿// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -198,7 +198,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-#if ASPNETCORE50
+#if DNXCORE50
         public unsafe IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
 #else
         public override unsafe IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
@@ -291,7 +291,7 @@ namespace Microsoft.Net.Http.Server
             return asyncResult;
         }
 
-#if ASPNETCORE50
+#if DNXCORE50
         public int EndRead(IAsyncResult asyncResult)
 #else
         public override int EndRead(IAsyncResult asyncResult)
@@ -426,7 +426,7 @@ namespace Microsoft.Net.Http.Server
             throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
         }
 
-#if ASPNETCORE50
+#if DNXCORE50
         public IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
 #else
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
@@ -435,7 +435,7 @@ namespace Microsoft.Net.Http.Server
             throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
         }
 
-#if ASPNETCORE50
+#if DNXCORE50
         public void EndWrite(IAsyncResult asyncResult)
 #else
         public override void EndWrite(IAsyncResult asyncResult)
