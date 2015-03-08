@@ -29,7 +29,7 @@ namespace E2ETests
                 catch (AggregateException exception)
                 {
                     if (exception.InnerException is HttpRequestException
-#if ASPNET50
+#if DNX451
                         || exception.InnerException is WebException
 #endif
                         )

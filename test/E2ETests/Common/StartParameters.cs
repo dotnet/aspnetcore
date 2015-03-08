@@ -27,7 +27,7 @@
 
         public string Runtime { get; set; }
 
-#if ASPNET50
+#if DNX451
         public IISApplication IISApplication { get; set; }
 #endif
     }

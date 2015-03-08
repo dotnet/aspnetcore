@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.Facebook;
@@ -187,7 +187,7 @@ namespace MusicStore
                 };
                 options.StateDataFormat = new CustomTwitterStateDataFormat();
                 options.BackchannelHttpHandler = new TwitterMockBackChannelHttpHandler();
-#if ASPNET50
+#if DNX451
                 options.BackchannelCertificateValidator = null;
 #endif
             });

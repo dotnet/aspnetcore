@@ -64,7 +64,7 @@ namespace E2ETests
 
         private string PrefixBaseAddress(string url)
         {
-#if ASPNET50
+#if DNX451
             url = (_startParameters.ServerType == ServerType.IISNativeModule ||
                 _startParameters.ServerType == ServerType.IIS) ?
                 string.Format(url, _startParameters.IISApplication.VirtualDirectoryName) :
@@ -295,7 +295,7 @@ namespace E2ETests
         private string CreateAlbum()
         {
             var albumName = Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 12);
-#if ASPNET50
+#if DNX451
             string dataFromHub = null;
             var OnReceivedEvent = new AutoResetEvent(false);
             var hubConnection = new HubConnection(_applicationBaseUrl + "SignalR");
@@ -328,7 +328,7 @@ namespace E2ETests
             responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Equal<string>(_applicationBaseUrl + "Admin/StoreManager", response.RequestMessage.RequestUri.AbsoluteUri);
             Assert.Contains(albumName, responseContent);
-#if ASPNET50
+#if DNX451
             _logger.LogInformation("Waiting for the SignalR client to receive album created announcement");
             OnReceivedEvent.WaitOne(TimeSpan.FromSeconds(10));
             dataFromHub = dataFromHub ?? "No relevant data received from Hub";

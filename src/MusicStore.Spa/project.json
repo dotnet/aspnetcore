@@ -1,4 +1,4 @@
-{
+﻿{
   "webroot": "wwwroot",
   "exclude": [
     "wwwroot",
@@ -47,7 +47,7 @@
     "prepare": [ "grunt bower:install" ]
   },*/
   "frameworks": {
-    "aspnet50": {},
-    "aspnetcore50": {}
+    "dnx451": {},
+    "dnxcore50": {}
   }
 }

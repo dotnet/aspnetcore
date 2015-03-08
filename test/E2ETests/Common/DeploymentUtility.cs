@@ -97,7 +97,7 @@ namespace E2ETests
                 //Reason to do pack here instead of in a common place is use the right runtime to do the packing. Previous line switches to use the right runtime.
                 if (startParameters.BundleApplicationBeforeStart)
                 {
-#if ASPNET50
+#if DNX451
                     if (startParameters.ServerType == ServerType.IISNativeModule ||
                         startParameters.ServerType == ServerType.IIS)
                     {
@@ -145,7 +145,7 @@ namespace E2ETests
                     }
                 }
 
-#if ASPNET50
+#if DNX451
                 if (startParameters.ServerType == ServerType.IISNativeModule ||
                     startParameters.ServerType == ServerType.IIS)
                 {
@@ -360,7 +360,7 @@ namespace E2ETests
             if (startParameters.ServerType == ServerType.IISNativeModule ||
                 startParameters.ServerType == ServerType.IIS)
             {
-#if ASPNET50
+#if DNX451
                 // Stop & delete the application pool.
                 if (startParameters.IISApplication != null)
                 {
