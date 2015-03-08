@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-#if ASPNET50
+#if DNX451
 using System.ComponentModel;
 #endif
 using System.Diagnostics;
@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                         {
                             // We'd already have failed before getting here. The RouteDataActionConstraint constructor
                             // would throw.
-#if ASPNET50
+#if DNX451
                             throw new InvalidEnumArgumentException(
                                 "item",
                                 (int)constraint.KeyHandling,

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-#if !ASPNETCORE50
+#if !DNXCORE50
 using Moq;
 #endif
 using Xunit;
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             Assert.True(isRequired);
         }
 
-#if !ASPNETCORE50
+#if !DNXCORE50
         [Fact]
         public void PropertiesProperty_CallsProvider()
         {

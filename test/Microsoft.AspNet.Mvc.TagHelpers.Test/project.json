@@ -1,4 +1,4 @@
-{
+﻿{
     "dependencies": {
         "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-*",
         "Microsoft.AspNet.Testing": "1.0.0-*",
@@ -9,7 +9,7 @@
         "test": "xunit.runner.kre"
     },
     "frameworks": {
-        "aspnet50": {
+        "dnx451": {
             "dependencies": {
                 "Moq": "4.2.1312.1622"
             }

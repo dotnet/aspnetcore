@@ -8,7 +8,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.Framework.OptionsModel;
-#if !ASPNETCORE50
+#if !DNXCORE50
 using Moq;
 #endif
 using Xunit;
@@ -46,7 +46,7 @@ namespace System.Net.Http
                 ex.Message);
         }
 
-#if !ASPNETCORE50
+#if !DNXCORE50
 
         [Fact]
         public void CreateResponse_DoingConneg_OnlyContent_RetrievesContentNegotiatorFromServices()

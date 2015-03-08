@@ -22,16 +22,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CompilationOptions_AreUsedByViewsAndPartials()
         {
             // Arrange
-#if ASPNET50
+#if DNX451
             var expected =
-@"This method is running from ASPNET50
+@"This method is running from DNX451
 
-This method is only defined in ASPNET50";
-#elif ASPNETCORE50
+This method is only defined in DNX451";
+#elif DNXCORE50
             var expected = 
-@"This method is running from ASPNETCORE50
+@"This method is running from DNXCORE50
 
-This method is only defined in ASPNETCORE50";
+This method is only defined in DNXCORE50";
 #endif
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();

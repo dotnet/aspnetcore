@@ -1,13 +1,13 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if ASPNET50
+#if DNX451
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 #endif
 using System.Threading.Tasks;
-#if ASPNET50
+#if DNX451
 using Moq;
 #endif
 using Xunit;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
     public class CollectionModelBinderTest
     {
-#if ASPNET50
+#if DNX451
         [Fact]
         public async Task BindComplexCollectionFromIndexes_FiniteIndexes()
         {
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Null(boundCollection);
         }
 
-#if ASPNET50
+#if DNX451
         [Fact]
         public async Task BindSimpleCollection_SubBindingSucceeds()
         {

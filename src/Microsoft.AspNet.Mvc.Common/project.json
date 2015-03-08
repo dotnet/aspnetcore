@@ -1,12 +1,12 @@
-{
+﻿{
     "version": "6.0.0-*",
     "shared": "*.cs",
     "dependencies": {
     },
     "frameworks": {
         "net45": { },
-        "aspnet50": { },
-        "aspnetcore50": {
+        "dnx451": { },
+        "dnxcore50": {
             "dependencies": {
 		"System.ComponentModel.TypeConverter": "4.0.0-beta-*",
                 "System.Reflection.Extensions": "4.0.0-beta-*",

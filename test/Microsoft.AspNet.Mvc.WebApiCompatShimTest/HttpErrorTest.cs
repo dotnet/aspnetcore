@@ -109,7 +109,7 @@ namespace System.Web.Http.Dispatcher
             Assert.DoesNotContain("OH NO", modelStateError["[2].Name"] as IEnumerable<string>);
         }
 
-#if !ASPNETCORE50
+#if !DNXCORE50
 
         [Fact]
         public void HttpError_Roundtrips_WithJsonFormatter()

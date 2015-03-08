@@ -1,10 +1,10 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.Framework.DependencyInjection;
-#if ASPNET50
+#if DNX451
 using Moq;
 #endif
 using Xunit;
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal(isIncluded, predicate(context, property));
         }
 
-#if ASPNET50
+#if DNX451
         [Theory]
         [InlineData("UserName", true)]
         [InlineData("Username", false)]

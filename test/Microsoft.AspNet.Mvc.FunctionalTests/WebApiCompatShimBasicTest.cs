@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 content);
         }
 
-#if !ASPNETCORE50
+#if !DNXCORE50
 
         [Fact]
         public async Task Options_SetsDefaultFormatters()

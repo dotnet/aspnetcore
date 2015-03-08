@@ -15,12 +15,12 @@
         "Microsoft.Framework.PropertyHelper.Internal": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
-        "aspnet50": {
+        "dnx451": {
             "compilationOptions": {
                 "define": [ "CUSTOM_ASPNET50_DEFINE" ]
             }
         },
-        "aspnetcore50": {
+        "dnxcore50": {
             "compilationOptions": {
                 "define": [ "CUSTOM_ASPNETCORE50_DEFINE" ]
             }

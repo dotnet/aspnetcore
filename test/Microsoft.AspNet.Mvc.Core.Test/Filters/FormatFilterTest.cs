@@ -11,7 +11,7 @@ using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
-#if ASPNET50
+#if DNX451
 using Moq;
 using System.Net;
 #endif
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc
             RouteAndQueryData
         }
 
-#if ASPNET50
+#if DNX451
         [Theory]
         [InlineData("json", FormatSource.RouteData, "application/json")]
         [InlineData("json", FormatSource.QueryData, "application/json")]

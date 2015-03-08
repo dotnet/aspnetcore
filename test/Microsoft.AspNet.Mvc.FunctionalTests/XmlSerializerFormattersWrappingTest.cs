@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 result);
         }
 
-#if !ASPNETCORE50
+#if !DNXCORE50
         [Fact]
         public async Task CanWrite_IEnumerableOf_SerializableErrors()
         {

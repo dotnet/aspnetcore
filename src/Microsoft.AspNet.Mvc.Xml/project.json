@@ -11,13 +11,13 @@
         "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
-        "aspnet50": {
+        "dnx451": {
             "frameworkAssemblies": {
                 "System.Xml": "",
                 "System.Runtime.Serialization": ""
             }
         },
-        "aspnetcore50": {
+        "dnxcore50": {
             "dependencies": {
                 "System.Runtime.Serialization.Xml": "4.0.10-beta-*",
                 "System.Xml.XmlSerializer": "4.0.10-beta-*"

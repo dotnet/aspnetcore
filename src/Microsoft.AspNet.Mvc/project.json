@@ -1,4 +1,4 @@
-{
+﻿{
     "description": "ASP.NET MVC is a web framework that gives you a powerful, patterns-based way to build dynamic websites and Web APIs. ASP.NET MVC enables a clean separation of concerns and gives you full control over markup.",
     "version": "6.0.0-*",
     "compilationOptions": {
@@ -13,7 +13,7 @@
         "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
-        "aspnet50": {},
-        "aspnetcore50": {}
+        "dnx451": {},
+        "dnxcore50": {}
     }
 }

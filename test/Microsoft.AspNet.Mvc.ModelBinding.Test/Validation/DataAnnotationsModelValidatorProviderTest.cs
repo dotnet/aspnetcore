@@ -1,11 +1,11 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-#if ASPNET50
+#if DNX451
 using Moq;
 #endif
 using Xunit;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         private readonly IModelMetadataProvider _metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
 
-#if ASPNET50
+#if DNX451
         [Fact]
         public void GetValidators_ReturnsValidatorForIValidatableObject()
         {
@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         // Default IValidatableObject adapter factory
 
-#if ASPNET50
+#if DNX451
         [Fact]
         public void IValidatableObjectGetsAValidator()
         {

@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.Logging
         public AssemblyValues([NotNull] Assembly inner)
         {
             AssemblyName = inner.FullName;
-#if ASPNET50
+#if DNX451
             Location = inner.Location;
 #endif
             IsDynamic = inner.IsDynamic;
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// </summary>
         public string AssemblyName { get; }
 
-#if ASPNET50
+#if DNX451
         /// <summary>
         /// The location of the assembly. See <see cref="Assembly.Location"/>.
         /// </summary>

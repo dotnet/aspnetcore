@@ -9,7 +9,7 @@ using Microsoft.AspNet.Routing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
-#if ASPNET50
+#if DNX451
 using Moq;
 #endif
 

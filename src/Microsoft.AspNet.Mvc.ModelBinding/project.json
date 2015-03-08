@@ -1,4 +1,4 @@
-{
+﻿{
   "description": "The ASP.NET MVC model binding components for binding data from a request to an object model.",
   "version": "6.0.0-*",
   "compilationOptions": {
@@ -16,13 +16,13 @@
     "Newtonsoft.Json": "6.0.6"
   },
   "frameworks": {
-    "aspnet50": {
+    "dnx451": {
       "frameworkAssemblies": {
         "System.ComponentModel.DataAnnotations": "",
         "System.Runtime.Serialization": ""
       }
     },
-    "aspnetcore50": {
+    "dnxcore50": {
       "dependencies": {
         "System.Collections.Concurrent": "4.0.10-beta-*",
         "System.ComponentModel.Annotations": "4.0.10-beta-*",

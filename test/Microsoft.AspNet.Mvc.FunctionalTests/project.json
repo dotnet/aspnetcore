@@ -1,4 +1,4 @@
-{
+﻿{
     "code": [
         "**/*.cs",
         "../Microsoft.AspNet.Mvc.Xml.Test/XmlAssert.cs"
@@ -61,7 +61,7 @@
         "test": "xunit.runner.kre"
     },
     "frameworks": {
-        "aspnet50": {
+        "dnx451": {
             "dependencies": {
                 "AutofacWebSite": "1.0.0"
             }

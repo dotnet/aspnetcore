@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,8 +11,8 @@ namespace Microsoft.AspNet.Mvc
     internal static class TypeExtensions
     {
         // NOTE: Do not make #105 worse! Do not add new extension methods that conflict w/ .NET 4.5 methods. The
-        // exising NETFX_CORE || ASPNETCORE50 methods should go away (soon).
-#if NETFX_CORE || ASPNETCORE50
+        // exising NETFX_CORE || DNXCORE50 methods should go away (soon).
+#if NETFX_CORE || DNXCORE50
         private static bool EqualTo([NotNull] this Type[] t1, [NotNull] Type[] t2)
         {
             if (t1.Length != t2.Length)
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc
                 queryType.GetInterfaces().FirstOrDefault(matchesInterface);
         }
 
-#if NETFX_CORE || ASPNETCORE50
+#if NETFX_CORE || DNXCORE50
         public static Type[] GetGenericArguments([NotNull] this Type type)
         {
             return type.GetTypeInfo().GenericTypeArguments;

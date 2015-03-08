@@ -1,4 +1,4 @@
-{
+﻿{
     "description": "Design time hosting infrastructure for the ASP.NET MVC Razor view engine.",
     "version": "6.0.0-*",
     "compilationOptions": {
@@ -14,12 +14,12 @@
     },
     "frameworks": {
         "net45": {},
-        "aspnet50": {
+        "dnx451": {
             "dependencies": {
                 "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
             }
         },
-        "aspnetcore50": {
+        "dnxcore50": {
             "dependencies": {
                 "System.Collections.Concurrent": "4.0.10-beta-*",
                 "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"

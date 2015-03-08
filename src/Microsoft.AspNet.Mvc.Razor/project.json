@@ -1,4 +1,4 @@
-{
+﻿{
     "description": "The Razor view engine for ASP.NET MVC.",
     "version": "6.0.0-*",
     "compilationOptions": {
@@ -17,7 +17,7 @@
         "Microsoft.Framework.Runtime.Roslyn.Interfaces": "1.0.0-*"
     },
     "frameworks": {
-        "aspnet50": {
+        "dnx451": {
             "frameworkAssemblies": {
                 "System.Collections": "",
                 "System.IO": "",
@@ -26,7 +26,7 @@
                 "System.Threading.Tasks": ""
             }
         },
-        "aspnetcore50": {
+        "dnxcore50": {
             "dependencies": {
                 "System.Threading.Tasks.Parallel": "4.0.0-beta-*"
             }

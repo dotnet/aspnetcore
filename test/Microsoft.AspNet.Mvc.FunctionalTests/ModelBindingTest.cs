@@ -1230,7 +1230,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(trackingId, actual.LastUpdatedTrackingId);
         }
 
-#if ASPNET50
+#if DNX451
         [Fact]
         public async Task UpdateVehicle_WithXml_BindsBodyServicesAndHeaders()
         {

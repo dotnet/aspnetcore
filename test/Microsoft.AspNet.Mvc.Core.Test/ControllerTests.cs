@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,7 +14,7 @@ using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.AspNet.Http.Core;
-#if ASPNET50
+#if DNX451
 using Moq;
 #endif
 using Xunit;
@@ -911,7 +911,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
         // These tests share code with the ActionFilterAttribute tests because the various filter
         // implementations need to behave the same way.
-#if ASPNET50
+#if DNX451
         [Fact]
         public async Task Controller_ActionFilter_SettingResult_ShortCircuits()
         {

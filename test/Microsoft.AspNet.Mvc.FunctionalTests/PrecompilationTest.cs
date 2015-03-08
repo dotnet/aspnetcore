@@ -161,12 +161,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var assemblyNamePrefix = GetAssemblyNamePrefix();
-#if ASPNET50
+#if DNX451
             var expected =
-@"Value set inside ASPNET50 " + assemblyNamePrefix;
-#elif ASPNETCORE50
+@"Value set inside DNX451 " + assemblyNamePrefix;
+#elif DNXCORE50
             var expected =
-@"Value set inside ASPNETCORE50 " + assemblyNamePrefix;
+@"Value set inside DNXCORE50 " + assemblyNamePrefix;
 #endif
 
             var server = TestServer.Create(_services, _app);

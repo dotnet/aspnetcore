@@ -21,7 +21,7 @@ namespace System.Net.Http
     /// </summary>
     public static class HttpRequestMessageExtensions
     {
-#if !ASPNETCORE50
+#if !DNXCORE50
 
         /// <summary>
         /// Helper method for creating an <see cref="HttpResponseMessage"/> message with a "416 (Requested Range Not

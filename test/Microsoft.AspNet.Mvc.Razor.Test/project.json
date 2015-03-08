@@ -1,4 +1,4 @@
-{
+﻿{
     "code": [
         "**/*.cs",
         "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileProvider.cs",
@@ -14,7 +14,7 @@
         "test": "xunit.runner.kre"
     },
     "frameworks": {
-        "aspnet50": {
+        "dnx451": {
             "dependencies": {
                 "Moq": "4.2.1312.1622"
             }

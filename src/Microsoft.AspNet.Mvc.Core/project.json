@@ -1,4 +1,4 @@
-{
+﻿{
   "description": "The core runtime components of ASP.NET MVC.",
   "version": "6.0.0-*",
   "compilationOptions": {
@@ -24,8 +24,8 @@
     "Microsoft.Framework.WebEncoders": "1.0.0-*"
   },
   "frameworks": {
-    "aspnet50": {},
-    "aspnetcore50": {
+    "dnx451": {},
+    "dnxcore50": {
       "dependencies": {
         "Microsoft.CSharp": "4.0.0-beta-*"
       }

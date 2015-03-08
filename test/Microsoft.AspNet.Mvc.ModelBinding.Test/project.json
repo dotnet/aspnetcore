@@ -1,4 +1,4 @@
-{
+﻿{
     "compilationOptions": {
         "warningsAsErrors": "true"
     },
@@ -13,7 +13,7 @@
         "test": "xunit.runner.kre"
     },
     "frameworks": {
-        "aspnet50": { },
-        "aspnetcore50": { }
+        "dnx451": { },
+        "dnxcore50": { }
     }
 }

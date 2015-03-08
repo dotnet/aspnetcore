@@ -19,8 +19,8 @@
         "Microsoft.Framework.PropertyHelper.Internal": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
-        "aspnet50": { },
-        "aspnetcore50": { }
+        "dnx451": { },
+        "dnxcore50": { }
     },
     "webroot": "wwwroot"
 }

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,7 +13,7 @@ using Microsoft.Framework.DependencyInjection;
 using MvcSample.Web.Filters;
 using MvcSample.Web.Services;
 
-#if ASPNET50
+#if DNX451
 using Autofac;
 using Microsoft.Framework.DependencyInjection.Autofac;
 #endif
@@ -27,7 +27,7 @@ namespace MvcSample.Web
             app.UseStatusCodePages();
 
             app.UseFileServer();
-#if ASPNET50
+#if DNX451
             // Set up configuration sources.
             var configuration = new Configuration()
                     .AddJsonFile("config.json")

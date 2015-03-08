@@ -148,7 +148,7 @@ namespace System.Net.Http.Formatting
         {
             get
             {
-#if !ASPNETCORE50
+#if !DNXCORE50
                 // Only mapping and accept makes sense with q != 1.0
                 MediaTypeFormatterMatch matchMapping10 = CreateMatch(1.0, MediaTypeFormatterMatchRanking.MatchOnRequestWithMediaTypeMapping);
                 MediaTypeFormatterMatch matchMapping05 = CreateMatch(0.5, MediaTypeFormatterMatchRanking.MatchOnRequestWithMediaTypeMapping);
@@ -175,7 +175,7 @@ namespace System.Net.Http.Formatting
                     { new List<MediaTypeFormatterMatch>() { matchType10, matchRequest10, matchAcceptAllRange10 }, matchAcceptAllRange10 },
                     { new List<MediaTypeFormatterMatch>() { matchType10, matchRequest10, matchAcceptAllRange10, matchAcceptSubTypeRange10 }, matchAcceptSubTypeRange10 },
                     { new List<MediaTypeFormatterMatch>() { matchType10, matchRequest10, matchAcceptAllRange10, matchAcceptSubTypeRange10, matchAccept10 }, matchAccept10 },
-#if !ASPNETCORE50
+#if !DNXCORE50
                     { new List<MediaTypeFormatterMatch>() { matchType10, matchRequest10, matchAcceptAllRange10, matchAcceptSubTypeRange10, matchAccept10, matchMapping10 }, matchMapping10 },
 #endif
                     { new List<MediaTypeFormatterMatch>() { matchAccept05, matchAccept10 }, matchAccept10 },
@@ -186,7 +186,7 @@ namespace System.Net.Http.Formatting
 
                     { new List<MediaTypeFormatterMatch>() { matchAcceptAllRange05, matchAcceptAllRange10 }, matchAcceptAllRange10 },
                     { new List<MediaTypeFormatterMatch>() { matchAcceptAllRange10, matchAcceptAllRange05 }, matchAcceptAllRange10 },
-#if !ASPNETCORE50
+#if !DNXCORE50
                     { new List<MediaTypeFormatterMatch>() { matchMapping05, matchMapping10 }, matchMapping10 },
                     { new List<MediaTypeFormatterMatch>() { matchMapping10, matchMapping05 }, matchMapping10 },
 
@@ -250,7 +250,7 @@ namespace System.Net.Http.Formatting
             Assert.Null(result);
         }
 
-#if !ASPNETCORE50
+#if !DNXCORE50
 
         [Fact]
         public void Negotiate_MediaTypeMappingTakesPrecedenceOverAcceptHeader()
@@ -358,7 +358,7 @@ namespace System.Net.Http.Formatting
             Assert.IsType<JsonMediaTypeFormatter>(result.Formatter);
         }
 
-#if !ASPNETCORE50
+#if !DNXCORE50
 
         [Fact]
         public void Negotiate_RespectsFormatterOrdering_ForXhrRequestThatDoesNotSpecifyAcceptHeaders()
@@ -455,7 +455,7 @@ namespace System.Net.Http.Formatting
             }
         }
 
-#if !ASPNETCORE50
+#if !DNXCORE50
 
         [Fact]
         public void MatchMediaTypeMapping_ReturnsMatch()
@@ -807,7 +807,7 @@ namespace System.Net.Http.Formatting
             }
         }
 
-#if !ASPNETCORE50
+#if !DNXCORE50
 
         private class MyMediaTypeMapping : MediaTypeMapping
         {

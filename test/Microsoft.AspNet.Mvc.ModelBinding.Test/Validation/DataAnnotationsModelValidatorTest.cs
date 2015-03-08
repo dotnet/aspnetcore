@@ -1,14 +1,14 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-#if ASPNET50
+#if DNX451
 using System.Linq;
 #endif
 using Microsoft.Framework.DependencyInjection;
-#if ASPNET50
+#if DNX451
 using Moq;
 using Moq.Protected;
 #endif
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-#if ASPNET50
+#if DNX451
         [Theory]
         [MemberData(nameof(ValidateSetsMemberNamePropertyDataSet))]
         public void ValidateSetsMemberNamePropertyOfValidationContextForProperties(
