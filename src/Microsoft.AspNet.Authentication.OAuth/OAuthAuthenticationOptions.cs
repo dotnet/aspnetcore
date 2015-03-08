@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// </summary>
         public string UserInformationEndpoint { get; set; }
 
-#if ASPNET50
+#if DNX451
         /// <summary>
         /// Gets or sets the a pinned certificate validator to use to validate the endpoints used
         /// in back channel communications belong to the auth provider.

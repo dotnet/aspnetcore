@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             Caption = AuthenticationScheme;
             CallbackPath = new PathString("/signin-twitter");
             BackchannelTimeout = TimeSpan.FromSeconds(60);
-#if ASPNET50
+#if DNX451
             // Twitter lists its valid Subject Key Identifiers at https://dev.twitter.com/docs/security/using-ssl
             BackchannelCertificateValidator = new CertificateSubjectKeyIdentifierValidator(
                 new[]
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
         /// The back channel timeout.
         /// </value>
         public TimeSpan BackchannelTimeout { get; set; }
-#if ASPNET50
+#if DNX451
         /// <summary>
         /// Gets or sets the a pinned certificate validator to use to validate the endpoints used
         /// in back channel communications belong to Twitter.

@@ -1,4 +1,4 @@
-{
+﻿{
     "dependencies": {
         "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
@@ -11,8 +11,8 @@
         "kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:5004"
     },
     "frameworks": {
-        "aspnet50": { },
-        "aspnetcore50": { }
+        "dnx451": { },
+        "dnxcore50": { }
     },
     "webroot": "wwwroot"
 }

@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
         private static HttpMessageHandler ResolveHttpMessageHandler(OAuthAuthenticationOptions<TNotifications> options)
         {
             HttpMessageHandler handler = options.BackchannelHttpHandler ??
-#if ASPNET50
+#if DNX451
                 new WebRequestHandler();
             // If they provided a validator, apply it or fail.
             if (options.BackchannelCertificateValidator != null)

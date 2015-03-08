@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// If the IdentityProvider does not post to this address, you may end up in a 401 -> IdentityProvider -> Client -> 401 -> ...</remarks>
         public PathString CallbackPath { get; set; }
 
-#if ASPNET50
+#if DNX451
         /// <summary>
         /// Gets or sets the a pinned certificate validator to use to validate the endpoints used
         /// when retrieving metadata.
