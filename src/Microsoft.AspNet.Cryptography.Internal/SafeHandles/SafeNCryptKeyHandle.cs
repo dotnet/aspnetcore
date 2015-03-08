@@ -5,7 +5,7 @@ using System;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
-#if ASPNETCORE50
+#if DNXCORE50
 namespace Microsoft.AspNet.Cryptography.SafeHandles
 {
     /// <summary>

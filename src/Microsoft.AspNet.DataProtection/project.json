@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "1.0.0-*",
     "description": "ASP.NET 5 logic to protect and unprotect data, similar to DPAPI.",
     "dependencies": {
@@ -14,14 +14,14 @@
                 "System.Xml.Linq": ""
             }
         },
-        "aspnet50": {
+        "dnx451": {
             "frameworkAssemblies": { 
                 "System.Security": "",
                 "System.Xml": "",
                 "System.Xml.Linq": ""
             }
         },
-        "aspnetcore50": {
+        "dnxcore50": {
             "dependencies": {
                 "Microsoft.Win32.Registry": "4.0.0-beta-*",
                 "System.IO": "4.0.10-beta-*",

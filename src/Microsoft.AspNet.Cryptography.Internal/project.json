@@ -1,12 +1,12 @@
-{
+﻿{
     "version": "1.0.0-*",
     "description": "Infrastructure for ASP.NET 5 cryptographic packages. Developers should not reference this package.",
     "dependencies": {
     },
     "frameworks": {
         "net451": { },
-        "aspnet50": { },
-        "aspnetcore50": {
+        "dnx451": { },
+        "dnxcore50": {
             "dependencies": {
                 "System.Diagnostics.Debug": "4.0.10-beta-*",
                 "System.Globalization": "4.0.10-beta-*",

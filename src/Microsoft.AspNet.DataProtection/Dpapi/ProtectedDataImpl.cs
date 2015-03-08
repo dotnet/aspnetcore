@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.DataProtection.Dpapi
     {
         public byte[] Protect(byte[] userData, byte[] optionalEntropy, DataProtectionScope scope)
         {
-#if ASPNETCORE50
+#if DNXCORE50
             fixed (byte* pbUserData = userData)
             {
                 fixed (byte* pbOptionalEntropy = optionalEntropy)
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.DataProtection.Dpapi
 
         public byte[] Unprotect(byte[] encryptedData, byte[] optionalEntropy, DataProtectionScope scope)
         {
-#if ASPNETCORE50
+#if DNXCORE50
             Secret blob;
             fixed (byte* pbEncryptedData = encryptedData)
             {

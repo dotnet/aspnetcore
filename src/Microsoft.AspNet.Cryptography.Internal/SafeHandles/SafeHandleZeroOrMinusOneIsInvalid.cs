@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-#if ASPNETCORE50
+#if DNXCORE50
 namespace Microsoft.Win32.SafeHandles
 {
     internal abstract class SafeHandleZeroOrMinusOneIsInvalid : SafeHandle

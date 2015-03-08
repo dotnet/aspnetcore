@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
             using (var memoryStream = new MemoryStream())
             {
                 plaintextElement.Save(memoryStream);
-#if !ASPNETCORE50
+#if !DNXCORE50
                 // If we're on full desktop CLR, utilize the underlying buffer directly as an optimization.
                 byte[] underlyingBuffer = memoryStream.GetBuffer();
                 secret = new Secret(new ArraySegment<byte>(underlyingBuffer, 0, checked((int)memoryStream.Length)));

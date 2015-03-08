@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.AspNet.Cryptography.SafeHandles;
 
-#if !ASPNETCORE50
+#if !DNXCORE50
 using System.Runtime.ConstrainedExecution;
 #endif
 
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Cryptography
         private static readonly byte[] _emptyArray = new byte[0];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if !ASPNETCORE50
+#if !DNXCORE50
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         public static void BlockCopy(void* from, void* to, int byteCount)
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Cryptography
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if !ASPNETCORE50
+#if !DNXCORE50
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         public static void BlockCopy(void* from, void* to, uint byteCount)
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Cryptography
             }
         }
 
-#if !ASPNETCORE50
+#if !DNXCORE50
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 #endif
         public static void BlockCopy(LocalAllocHandle from, void* to, uint byteCount)
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Cryptography
             }
         }
 
-#if !ASPNETCORE50
+#if !DNXCORE50
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 #endif
         public static void BlockCopy(byte* from, LocalAllocHandle to, uint byteCount)
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Cryptography
             }
         }
 
-#if !ASPNETCORE50
+#if !DNXCORE50
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 #endif
         public static void BlockCopy(LocalAllocHandle from, LocalAllocHandle to, IntPtr length)
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Cryptography
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void BlockCopyImpl(byte* from, byte* to, uint byteCount)
         {
-#if ASPNETCORE50
+#if DNXCORE50
             Buffer.MemoryCopy(from, to, (ulong)byteCount, (ulong)byteCount);
 #else
             while (byteCount-- != 0) {
@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.Cryptography
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void BlockCopyImpl(byte* from, byte* to, ulong byteCount)
         {
-#if ASPNETCORE50
+#if DNXCORE50
             Buffer.MemoryCopy(from, to, byteCount, byteCount);
 #else
             while (byteCount-- != 0) {
@@ -142,7 +142,7 @@ namespace Microsoft.AspNet.Cryptography
         /// Securely clears a memory buffer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if !ASPNETCORE50
+#if !DNXCORE50
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         public static void SecureZeroMemory(byte* buffer, int byteCount)
@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.Cryptography
         /// Securely clears a memory buffer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if !ASPNETCORE50
+#if !DNXCORE50
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         public static void SecureZeroMemory(byte* buffer, uint byteCount)
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Cryptography
         /// Securely clears a memory buffer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if !ASPNETCORE50
+#if !DNXCORE50
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         public static void SecureZeroMemory(byte* buffer, ulong byteCount)
@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.Cryptography
         /// <summary>
         /// Securely clears a memory buffer.
         /// </summary>
-#if !ASPNETCORE50
+#if !DNXCORE50
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         public static void SecureZeroMemory(byte* buffer, IntPtr length)

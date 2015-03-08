@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.DataProtection.Cng
             };
             DATA_BLOB dataOut = default(DATA_BLOB);
 
-#if !ASPNETCORE50
+#if !DNXCORE50
             RuntimeHelpers.PrepareConstrainedRegions();
 #endif
             try
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.DataProtection.Cng
                     fixed (byte* pbRetVal = retVal)
                     {
                         bool handleAcquired = false;
-#if !ASPNETCORE50
+#if !DNXCORE50
                         RuntimeHelpers.PrepareConstrainedRegions();
 #endif
                         try
@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.DataProtection.Cng
             };
             DATA_BLOB dataOut = default(DATA_BLOB);
 
-#if !ASPNETCORE50
+#if !DNXCORE50
             RuntimeHelpers.PrepareConstrainedRegions();
 #endif
             try
@@ -275,7 +275,7 @@ namespace Microsoft.AspNet.DataProtection.Cng
             using (unencryptedPayloadHandle)
             {
                 bool handleAcquired = false;
-#if !ASPNETCORE50
+#if !DNXCORE50
                 RuntimeHelpers.PrepareConstrainedRegions();
 #endif
                 try

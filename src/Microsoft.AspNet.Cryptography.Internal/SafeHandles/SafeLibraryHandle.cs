@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 using Microsoft.Win32.SafeHandles;
 
-#if !ASPNETCORE50
+#if !DNXCORE50
 using System.Runtime.ConstrainedExecution;
 #endif
 
@@ -127,12 +127,12 @@ namespace Microsoft.AspNet.Cryptography.SafeHandles
             return UnsafeNativeMethods.FreeLibrary(handle);
         }
 
-#if !ASPNETCORE50
+#if !DNXCORE50
         [SuppressUnmanagedCodeSecurity]
 #endif
         private static class UnsafeNativeMethods
         {
-#if ASPNETCORE50
+#if DNXCORE50
             private const string CORE_LIBRARY_LOADER_LIB = "api-ms-win-core-libraryloader-l1-1-0.dll";
             private const string CORE_LOCALIZATION_LIB = "api-ms-win-core-localization-l1-2-0.dll";
 #else
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Cryptography.SafeHandles
 #endif
 
             // http://msdn.microsoft.com/en-us/library/windows/desktop/ms679351(v=vs.85).aspx
-#if ASPNETCORE50
+#if DNXCORE50
             [DllImport(CORE_LOCALIZATION_LIB, EntryPoint = "FormatMessageW", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
 #else
             [DllImport(KERNEL32_LIB, EntryPoint = "FormatMessageW", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.Cryptography.SafeHandles
 
             // http://msdn.microsoft.com/en-us/library/ms683152(v=vs.85).aspx
             [return: MarshalAs(UnmanagedType.Bool)]
-#if ASPNETCORE50
+#if DNXCORE50
             [DllImport(CORE_LIBRARY_LOADER_LIB, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
 #else
             [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Cryptography.SafeHandles
 
             // http://msdn.microsoft.com/en-us/library/ms683200(v=vs.85).aspx
             [return: MarshalAs(UnmanagedType.Bool)]
-#if ASPNETCORE50
+#if DNXCORE50
             [DllImport(CORE_LIBRARY_LOADER_LIB, EntryPoint = "GetModuleHandleExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
 #else
             [DllImport(KERNEL32_LIB, EntryPoint = "GetModuleHandleExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.Cryptography.SafeHandles
                 [Out] out IntPtr phModule);
 
             // http://msdn.microsoft.com/en-us/library/ms683212(v=vs.85).aspx
-#if ASPNETCORE50
+#if DNXCORE50
             [DllImport(CORE_LIBRARY_LOADER_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
 #else
             [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Cryptography.SafeHandles
                 [In, MarshalAs(UnmanagedType.LPStr)] string lpProcName);
 
             // http://msdn.microsoft.com/en-us/library/windows/desktop/ms684179(v=vs.85).aspx
-#if ASPNETCORE50
+#if DNXCORE50
             [DllImport(CORE_LIBRARY_LOADER_LIB, EntryPoint = "LoadLibraryExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
 #else
             [DllImport(KERNEL32_LIB, EntryPoint = "LoadLibraryExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]

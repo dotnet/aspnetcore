@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "1.0.0-*",
     "description": "ASP.NET 5 blob storage repository for DataProtection.",
     "dependencies": {
@@ -7,7 +7,7 @@
     },
     "frameworks": {
         "net451": {},
-        "aspnet50": {}
+        "dnx451": {}
     },
     "compilationOptions": {
         "warningsAsErrors": true

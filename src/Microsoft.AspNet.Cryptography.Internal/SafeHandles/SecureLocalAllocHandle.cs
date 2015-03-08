@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
 
-#if !ASPNETCORE50
+#if !DNXCORE50
 using System.Runtime.ConstrainedExecution;
 #endif
 
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Cryptography.SafeHandles
             return newHandle;
         }
 
-#if !ASPNETCORE50
+#if !DNXCORE50
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 #endif
         private void AllocateImpl(IntPtr cb)

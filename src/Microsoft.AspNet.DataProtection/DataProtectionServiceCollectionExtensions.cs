@@ -124,7 +124,7 @@ namespace Microsoft.Framework.DependencyInjection
 
         private static DirectoryInfo TryGetLocalAppDataKeysFolderForUser()
         {
-#if !ASPNETCORE50
+#if !DNXCORE50
             // Environment.GetFolderPath returns null if the user profile isn't loaded.
             string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             if (!String.IsNullOrEmpty(folderPath))

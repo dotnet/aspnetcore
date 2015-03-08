@@ -12,13 +12,13 @@ using Microsoft.AspNet.Cryptography.Cng;
 using Microsoft.AspNet.Cryptography.SafeHandles;
 using Microsoft.Win32.SafeHandles;
 
-#if !ASPNETCORE50
+#if !DNXCORE50
 using System.Runtime.ConstrainedExecution;
 #endif
 
 namespace Microsoft.AspNet.Cryptography
 {
-#if !ASPNETCORE50
+#if !DNXCORE50
     [SuppressUnmanagedCodeSecurity]
 #endif
     internal unsafe static class UnsafeNativeMethods
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Cryptography
             [In] uint dwFlags);
 
         [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
-#if !ASPNETCORE50
+#if !DNXCORE50
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375399(v=vs.85).aspx
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Cryptography
             [In] IntPtr hHash);
 
         [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
-#if !ASPNETCORE50
+#if !DNXCORE50
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375404(v=vs.85).aspx
@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.Cryptography
          */
 
         [DllImport(CRYPT32_LIB, CallingConvention = CallingConvention.Winapi)]
-#if !ASPNETCORE50
+#if !DNXCORE50
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa376045(v=vs.85).aspx
@@ -210,7 +210,7 @@ namespace Microsoft.AspNet.Cryptography
             [In] IntPtr pCertContext);
 
         [DllImport(CRYPT32_LIB, CallingConvention = CallingConvention.Winapi)]
-#if !ASPNETCORE50
+#if !DNXCORE50
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa376075(v=vs.85).aspx
@@ -227,7 +227,7 @@ namespace Microsoft.AspNet.Cryptography
 
         [DllImport(CRYPT32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa379885(v=vs.85).aspx
-#if !ASPNETCORE50
+#if !DNXCORE50
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 #endif
         internal static extern bool CryptAcquireCertificatePrivateKey(
@@ -286,7 +286,7 @@ namespace Microsoft.AspNet.Cryptography
          */
 
         [DllImport(NCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
-#if !ASPNETCORE50
+#if !DNXCORE50
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         // http://msdn.microsoft.com/en-us/library/windows/desktop/hh706799(v=vs.85).aspx
