@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Http
 {
@@ -38,7 +39,7 @@ namespace Microsoft.AspNet.Http
         /// <param name="value">The un-encoded parameter value</param>
         public QueryString(string name, string value)
         {
-            _value = "?" + Uri.EscapeDataString(name) + '=' + Uri.EscapeDataString(value);
+            _value = "?" + UrlEncoder.Default.UrlEncode(name) + '=' + UrlEncoder.Default.UrlEncode(value);
         }
 
         /// <summary>

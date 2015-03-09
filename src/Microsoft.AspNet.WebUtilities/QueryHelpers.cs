@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.WebUtilities
 {
@@ -19,7 +20,7 @@ namespace Microsoft.AspNet.WebUtilities
         public static string AddQueryString([NotNull] string uri, [NotNull] string name, [NotNull] string value)
         {
             bool hasQuery = uri.IndexOf('?') != -1;
-            return uri + (hasQuery ? "&" : "?") + Uri.EscapeDataString(name) + "=" + Uri.EscapeDataString(value);
+            return uri + (hasQuery ? "&" : "?") + UrlEncoder.Default.UrlEncode(name) + "=" + UrlEncoder.Default.UrlEncode(value);
         }
 
         /// <summary>
@@ -36,9 +37,9 @@ namespace Microsoft.AspNet.WebUtilities
             foreach (var parameter in queryString)
             {
                 sb.Append(hasQuery ? '&' : '?');
-                sb.Append(Uri.EscapeDataString(parameter.Key));
+                sb.Append(UrlEncoder.Default.UrlEncode(parameter.Key));
                 sb.Append('=');
-                sb.Append(Uri.EscapeDataString(parameter.Value));
+                sb.Append(UrlEncoder.Default.UrlEncode(parameter.Value));
                 hasQuery = true;
             }
             return sb.ToString();

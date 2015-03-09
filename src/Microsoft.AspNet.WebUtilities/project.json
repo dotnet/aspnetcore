@@ -2,6 +2,7 @@
     "version": "1.0.0-*",
     "description": "ASP.NET 5 common helper methods.",
     "dependencies": {
+        "Microsoft.Framework.WebEncoders.Core": "1.0.0-*"
     },
     "frameworks": {
         "dnx451": { },

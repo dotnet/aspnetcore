@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Http
 {
@@ -65,7 +66,7 @@ namespace Microsoft.AspNet.Http
         public string ToUriComponent()
         {
             // TODO: Measure the cost of this escaping and consider optimizing.
-            return HasValue ? String.Join("/", _value.Split('/').Select(Uri.EscapeDataString)) : String.Empty;
+            return HasValue ? string.Join("/", _value.Split('/').Select(UrlEncoder.Default.UrlEncode)) : string.Empty;
         }
 
         /// <summary>

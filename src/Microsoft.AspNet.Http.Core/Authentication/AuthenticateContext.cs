@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Security.Claims;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Http.Authentication;
 
 namespace Microsoft.AspNet.Http.Core.Authentication
 {

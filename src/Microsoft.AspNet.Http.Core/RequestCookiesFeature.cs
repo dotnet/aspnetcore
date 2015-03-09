@@ -4,11 +4,9 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Infrastructure;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Http.Core.Infrastructure;
+using Microsoft.AspNet.Http.Infrastructure;
 
 namespace Microsoft.AspNet.Http.Core
 {

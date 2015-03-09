@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Infrastructure;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Http.Core.Collections
 {
@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Http.Core.Collections
         /// <param name="value"></param>
         public void Append(string key, string value)
         {
-            Headers.AppendValues(Constants.Headers.SetCookie, Uri.EscapeDataString(key) + "=" + Uri.EscapeDataString(value) + "; path=/");
+            Headers.AppendValues(Constants.Headers.SetCookie, UrlEncoder.Default.UrlEncode(key) + "=" + UrlEncoder.Default.UrlEncode(value) + "; path=/");
         }
 
         /// <summary>
@@ -49,9 +49,9 @@ namespace Microsoft.AspNet.Http.Core.Collections
             bool expiresHasValue = options.Expires.HasValue;
 
             string setCookieValue = string.Concat(
-                Uri.EscapeDataString(key),
+                UrlEncoder.Default.UrlEncode(key),
                 "=",
-                Uri.EscapeDataString(value ?? string.Empty),
+                UrlEncoder.Default.UrlEncode(value ?? string.Empty),
                 !domainHasValue ? null : "; domain=",
                 !domainHasValue ? null : options.Domain,
                 !pathHasValue ? null : "; path=",
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Http.Core.Collections
         {
             Func<string, bool> predicate = value => value.StartsWith(key + "=", StringComparison.OrdinalIgnoreCase);
 
-            var deleteCookies = new[] { Uri.EscapeDataString(key) + "=; expires=Thu, 01-Jan-1970 00:00:00 GMT" };
+            var deleteCookies = new[] { UrlEncoder.Default.UrlEncode(key) + "=; expires=Thu, 01-Jan-1970 00:00:00 GMT" };
             IList<string> existingValues = Headers.GetValues(Constants.Headers.SetCookie);
             if (existingValues == null || existingValues.Count == 0)
             {

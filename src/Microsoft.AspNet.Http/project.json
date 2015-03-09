@@ -1,26 +1,28 @@
-{
-  "version": "1.0.0-*",
-  "description": "ASP.NET 5 HTTP object model. HttpContext and family.",
-  "dependencies": {},
-  "frameworks": {
-    "dnx451": {},
-    "dnxcore50": {
-      "dependencies": {
-        "Microsoft.Net.WebSocketAbstractions": "1.0.0-*",
-        "System.Collections": "4.0.10-beta-*",
-        "System.ComponentModel": "4.0.0-beta-*",
-        "System.Diagnostics.Tools": "4.0.0-beta-*",
-        "System.Globalization": "4.0.10-beta-*",
-        "System.Globalization.Extensions": "4.0.0-beta-*",
-        "System.IO": "4.0.10-beta-*",
-        "System.Linq": "4.0.0-beta-*",
-        "System.Runtime": "4.0.20-beta-*",
-        "System.Runtime.Extensions": "4.0.10-beta-*",
-        "System.Runtime.InteropServices": "4.0.20-beta-*",
-        "System.Security.Claims": "4.0.0-beta-*",
-        "System.Security.Principal" : "4.0.0-beta-*",
-        "System.Threading.Tasks": "4.0.10-beta-*"
-      }
+﻿{
+    "version": "1.0.0-*",
+    "description": "ASP.NET 5 HTTP object model. HttpContext and family.",
+    "dependencies": {
+        "Microsoft.Framework.WebEncoders.Core": "1.0.0-*"
+    },
+    "frameworks": {
+        "dnx451": { },
+        "dnxcore50": {
+            "dependencies": {
+                "Microsoft.Net.WebSocketAbstractions": "1.0.0-*",
+                "System.Collections": "4.0.10-beta-*",
+                "System.ComponentModel": "4.0.0-beta-*",
+                "System.Diagnostics.Tools": "4.0.0-beta-*",
+                "System.Globalization": "4.0.10-beta-*",
+                "System.Globalization.Extensions": "4.0.0-beta-*",
+                "System.IO": "4.0.10-beta-*",
+                "System.Linq": "4.0.0-beta-*",
+                "System.Runtime": "4.0.20-beta-*",
+                "System.Runtime.Extensions": "4.0.10-beta-*",
+                "System.Runtime.InteropServices": "4.0.20-beta-*",
+                "System.Security.Claims": "4.0.0-beta-*",
+                "System.Security.Principal": "4.0.0-beta-*",
+                "System.Threading.Tasks": "4.0.10-beta-*"
+            }
+        }
     }
-  }
 }

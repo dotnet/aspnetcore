@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Http.Extensions
 {
@@ -45,9 +45,9 @@ namespace Microsoft.AspNet.Http.Extensions
                 var pair = _params[i];
                 builder.Append(first ? "?" : "&");
                 first = false;
-                builder.Append(Uri.EscapeDataString(pair.Key));
+                builder.Append(UrlEncoder.Default.UrlEncode(pair.Key));
                 builder.Append("=");
-                builder.Append(Uri.EscapeDataString(pair.Value));
+                builder.Append(UrlEncoder.Default.UrlEncode(pair.Value));
             }
 
             return builder.ToString();
