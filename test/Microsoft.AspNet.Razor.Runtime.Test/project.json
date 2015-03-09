@@ -1,4 +1,4 @@
-﻿{
+{
     "version": "1.0.0",
     "dependencies": {
         "Microsoft.AspNet.Razor.Runtime": "4.0.0-*",

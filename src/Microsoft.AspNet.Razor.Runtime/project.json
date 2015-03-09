@@ -1,4 +1,4 @@
-﻿{
+{
     "description": "Runtime components for rendering Razor pages.",
     "version": "4.0.0-*",
     "dependencies": {
