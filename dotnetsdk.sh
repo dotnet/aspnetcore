@@ -1,4 +1,4 @@
-﻿# dotnetsdk.sh
+# dotnetsdk.sh
 # Source this file from your .bash-profile or script to use
 
 _dotnetsdk_has() {
