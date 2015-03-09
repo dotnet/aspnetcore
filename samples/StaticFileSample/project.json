@@ -1,4 +1,4 @@
-﻿{
+{
     "commands": {
         "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.Urls http://localhost:12345/"
     },
