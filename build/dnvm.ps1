@@ -513,20 +513,24 @@ function Change-Path() {
     
     $newPath = $prependPath
     foreach($portion in $existingPaths.Split(';')) {
-        $skip = $portion -eq ""
-        foreach($removePath in $removePaths) {
-            $removePrefix = if($removePath.EndsWith("\")) { $removePath } else { "$removePath\" }
+        if(![string]::IsNullOrWhiteSpace($portion)) {
+            $skip = $portion -eq ""
+            foreach($removePath in $removePaths) {
+                if(![string]::IsNullOrWhiteSpace($removePath)) {
+                    $removePrefix = if($removePath.EndsWith("\")) { $removePath } else { "$removePath\" }
 
-            if ($removePath -and (($portion -eq $removePath) -or ($portion.StartsWith($removePrefix)))) {
-                _WriteDebug " Removing '$portion' because it matches '$removePath'"
-                $skip = $true
+                    if ($removePath -and (($portion -eq $removePath) -or ($portion.StartsWith($removePrefix)))) {
+                        _WriteDebug " Removing '$portion' because it matches '$removePath'"
+                        $skip = $true
+                    }
+                }
             }
-        }
-        if (!$skip) {
-            if(![String]::IsNullOrWhiteSpace($newPath)) {
-                $newPath += ";"
+            if (!$skip) {
+                if(![String]::IsNullOrWhiteSpace($newPath)) {
+                    $newPath += ";"
+                }
+                $newPath += $portion
             }
-            $newPath += $portion
         }
     }
     return $newPath
