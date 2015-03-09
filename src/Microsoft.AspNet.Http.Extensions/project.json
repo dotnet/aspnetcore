@@ -1,4 +1,4 @@
-﻿{
+{
     "version": "1.0.0-*",
     "description": "ASP.NET 5 common extension methods for HTTP abstractions and IApplicationBuilder.",
     "dependencies": {
