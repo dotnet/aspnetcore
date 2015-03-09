@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "3.0.0-*",
   "dependencies": {
     "Microsoft.AspNet.Identity": "3.0.0-*",

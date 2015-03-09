@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "3.0.0-*",
   "dependencies": {
     "Microsoft.AspNet.Authentication" : "1.0.0-*",
