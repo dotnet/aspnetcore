@@ -1,4 +1,4 @@
-﻿{
+{
     "version": "1.0.0-*",
     "description": "Infrastructure for ASP.NET 5 cryptographic packages. Developers should not reference this package.",
     "dependencies": {
