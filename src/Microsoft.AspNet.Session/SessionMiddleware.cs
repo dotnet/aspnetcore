@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Session
                 {
                     Domain = _options.CookieDomain,
                     HttpOnly = _options.CookieHttpOnly,
-                    Path = _options.CookiePath ?? "/",
+                    Path = _options.CookiePath ?? SessionDefaults.CookiePath,
                 };
 
                 _context.Response.Cookies.Append(_options.CookieName, _sessionKey, cookieOptions);
