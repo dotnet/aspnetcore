@@ -58,7 +58,7 @@ namespace MusicStore.Controllers
         public async Task<IActionResult> RemoveFromCart(int id, CancellationToken requestAborted)
         {
             var cookieToken = string.Empty;
-            string formToken = string.Empty;
+            var formToken = string.Empty;
             string[] tokenHeaders = null;
             string[] tokens = null;
 
