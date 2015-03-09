@@ -1,4 +1,4 @@
-﻿{
+{
     "webroot" : "wwwroot",
     "exclude": "wwwroot/**/*.*",
     "dependencies": {

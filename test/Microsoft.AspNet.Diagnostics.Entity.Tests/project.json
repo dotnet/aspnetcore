@@ -1,4 +1,4 @@
-﻿{
+{
     "dependencies": {
         "EntityFramework.InMemory": "7.0.0-*",
         "Microsoft.AspNet.Diagnostics.Entity": "7.0.0-*", 
