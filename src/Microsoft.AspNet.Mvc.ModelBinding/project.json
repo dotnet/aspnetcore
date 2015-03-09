@@ -1,4 +1,4 @@
-﻿{
+{
   "description": "The ASP.NET MVC model binding components for binding data from a request to an object model.",
   "version": "6.0.0-*",
   "compilationOptions": {

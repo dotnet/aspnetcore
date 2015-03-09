@@ -1,4 +1,4 @@
-﻿{
+{
     "description": "Provides compatibility in ASP.NET MVC with ASP.NET Web API 2 to simplify migration of existing Web API implementations.",
     "version": "6.0.0-*",
     "compilationOptions": {

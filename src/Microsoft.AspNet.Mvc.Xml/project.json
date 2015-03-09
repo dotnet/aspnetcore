@@ -1,4 +1,4 @@
-﻿{
+{
     "description": "Contains DataContractSerializer and XmlSerializer based input and output formatters",
     "version": "6.0.0-*",
     "compilationOptions": {

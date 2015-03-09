@@ -1,4 +1,4 @@
-﻿{
+{
   "description": "The core runtime components of ASP.NET MVC.",
   "version": "6.0.0-*",
   "compilationOptions": {

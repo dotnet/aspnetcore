@@ -1,4 +1,4 @@
-﻿{
+{
     "code": [
         "**/*.cs",
         "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileProvider.cs",

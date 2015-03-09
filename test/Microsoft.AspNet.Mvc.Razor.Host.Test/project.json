@@ -1,4 +1,4 @@
-﻿{
+{
     "resources": "TestFiles/**",
     "dependencies": {
         "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",
