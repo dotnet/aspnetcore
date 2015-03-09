@@ -1,4 +1,4 @@
-﻿{
+{
     "webroot": "wwwroot",
     "dependencies": {
         "Microsoft.AspNet.Hosting": "1.0.0-*",

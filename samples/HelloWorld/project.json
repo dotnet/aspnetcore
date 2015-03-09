@@ -1,4 +1,4 @@
-﻿{
+{
     "dependencies": {
         "Microsoft.Net.Http.Server": "1.0.0-*"
     },
