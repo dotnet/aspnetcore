@@ -1,4 +1,4 @@
-﻿REM copy the AspNet.Loader.dll to bin folder
+REM copy the AspNet.Loader.dll to bin folder
 md wwwroot\bin
 
 SET ASPNETLOADER_PACKAGE_BASEPATH=%USERPROFILE%\\.dnx\\packages\Microsoft.AspNet.Loader.IIS.Interop
