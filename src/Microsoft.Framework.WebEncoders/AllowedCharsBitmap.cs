@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.Framework.WebEncoders
 {
-    internal struct AllowedCharsBitmap
+    internal class AllowedCharsBitmap
     {
         private const int ALLOWED_CHARS_BITMAP_LENGTH = 0x10000 / (8 * sizeof(uint));
         private uint[] _allowedCharsBitmap;
@@ -34,7 +34,7 @@ namespace Microsoft.Framework.WebEncoders
         // Creates a deep copy of this bitmap
         public AllowedCharsBitmap Clone()
         {
-            AllowedCharsBitmap retVal;
+            var retVal = new AllowedCharsBitmap();
             retVal._allowedCharsBitmap = (uint[])this._allowedCharsBitmap.Clone();
             return retVal;
         }
