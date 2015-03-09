@@ -191,10 +191,10 @@ namespace E2ETests
             //Mono now supports --appbase 
             logger.LogInformation("Setting the --appbase to {0}", startParameters.ApplicationPath);
 
-            var bootstrapper = "klr";
+            var bootstrapper = "dnx";
 
             var commandName = startParameters.ServerType == ServerType.Kestrel ? "kestrel" : string.Empty;
-            logger.LogInformation("Executing command: {klr} {appPath} {command}", bootstrapper, startParameters.ApplicationPath, commandName);
+            logger.LogInformation("Executing command: {dnx} {appPath} {command}", bootstrapper, startParameters.ApplicationPath, commandName);
 
             var startInfo = new ProcessStartInfo
             {
@@ -268,11 +268,11 @@ namespace E2ETests
         private static Process StartSelfHost(StartParameters startParameters, ILogger logger)
         {
             var commandName = startParameters.ServerType == ServerType.WebListener ? "web" : "kestrel";
-            logger.LogInformation("Executing klr.exe --appbase {appPath} \"Microsoft.Framework.ApplicationHost\" {command}", startParameters.ApplicationPath, commandName);
+            logger.LogInformation("Executing dnx.exe --appbase {appPath} \"Microsoft.Framework.ApplicationHost\" {command}", startParameters.ApplicationPath, commandName);
 
             var startInfo = new ProcessStartInfo
             {
-                FileName = "klr.exe",
+                FileName = "dnx.exe",
                 Arguments = string.Format("--appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, commandName),
                 UseShellExecute = true,
                 CreateNoWindow = true
