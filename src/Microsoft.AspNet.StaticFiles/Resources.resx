@@ -123,9 +123,6 @@
   <data name="Args_NoFormatter" xml:space="preserve">
     <value>No formatter provided.</value>
   </data>
-  <data name="Exception_SendFileNotSupported" xml:space="preserve">
-    <value>This server does not support the sendfile.SendAsync extension.</value>
-  </data>
   <data name="HtmlDir_IndexOf" xml:space="preserve">
     <value>Index of</value>
   </data>
