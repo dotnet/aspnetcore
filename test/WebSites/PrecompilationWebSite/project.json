@@ -17,12 +17,12 @@
     "frameworks": {
         "dnx451": {
             "compilationOptions": {
-                "define": [ "CUSTOM_ASPNET50_DEFINE" ]
+                "define": [ "CUSTOM_DNX451_DEFINE" ]
             }
         },
         "dnxcore50": {
             "compilationOptions": {
-                "define": [ "CUSTOM_ASPNETCORE50_DEFINE" ]
+                "define": [ "CUSTOM_DNXCORE50_DEFINE" ]
             }
         }
     },

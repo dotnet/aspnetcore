@@ -15,14 +15,14 @@ namespace RazorWebSite
         }
 
 #if DNX451_CUSTOM_DEFINE
-        public string ExecuteAspNet50Operation()
+        public string ExecuteDnx451Operation()
         {
             return "This method is only defined in DNX451";
         }
 #endif
 
 #if DNXCORE50_CUSTOM_DEFINE
-        public string ExecuteAspNetCore50Operation()
+        public string ExecuteDnxCore50Operation()
         {
             return "This method is only defined in DNXCORE50";
         }
