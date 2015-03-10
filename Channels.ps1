@@ -1,4 +1,4 @@
-﻿function Use-Volatile
+function Use-Volatile
 {
     Use-Feed "volatile"
 }
