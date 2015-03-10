@@ -1,20 +1,17 @@
-﻿function Use-Volatile
-{
-    Use-Feed "volatile"
-}
+param(
+        [Parameter(Mandatory=$true,Position=0)]
+        [ValidateSet('release','vnext','volatile')]
+        $desiredFeed
+    )
 
-function Use-Release
-{
-    Use-Feed "release"
-}
-
-function Use-Dev
-{
-    Use-Feed "vnext"
-}
-
-function Use-Feed($desiredFeed)
-{
+function Use-Feed{
+    [cmdletbinding()]
+    param(
+        [Parameter(Mandatory=$true,Position=0)]
+        [ValidateSet('release','vnext','volatile')]
+        $desiredFeed
+    )
+    process{
     $feedUrl = "https://www.myget.org/F/aspnet$desiredFeed/api/v2"
 
     Write-Host "Setting environment variable DNX_FEED to $feedUrl"
@@ -85,4 +82,7 @@ function Use-Feed($desiredFeed)
     dnvm.cmd upgrade
     dnvm.cmd install default -r coreclr
     dnvm.cmd use default -r clr -p
+    }
 }
+
+Use-Feed $desiredFeed
