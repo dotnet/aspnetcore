@@ -194,12 +194,12 @@ namespace E2ETests
             var bootstrapper = "dnx";
 
             var commandName = startParameters.ServerType == ServerType.Kestrel ? "kestrel" : string.Empty;
-            logger.LogInformation("Executing command: {dnx} {appPath} {command}", bootstrapper, startParameters.ApplicationPath, commandName);
+            logger.LogInformation("Executing command: {dnx} \"{appPath}\" {command}", bootstrapper, startParameters.ApplicationPath, commandName);
 
             var startInfo = new ProcessStartInfo
             {
                 FileName = bootstrapper,
-                Arguments = string.Format("{0} {1}", startParameters.ApplicationPath, commandName),
+                Arguments = string.Format("\"{0}\" {1}", startParameters.ApplicationPath, commandName),
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardInput = true
@@ -244,7 +244,7 @@ namespace E2ETests
             }
 
             var parameters = string.IsNullOrWhiteSpace(startParameters.ApplicationHostConfigLocation) ?
-                            string.Format("/port:5001 /path:{0}", webroot) :
+                            string.Format("/port:5001 /path:\"{0}\"", webroot) :
                             string.Format("/site:{0} /config:{1}", startParameters.SiteName, startParameters.ApplicationHostConfigLocation);
 
             var iisExpressPath = GetIISExpressPath(startParameters.RuntimeArchitecture);
@@ -273,7 +273,7 @@ namespace E2ETests
             var startInfo = new ProcessStartInfo
             {
                 FileName = "dnx.exe",
-                Arguments = string.Format("--appbase {0} \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, commandName),
+                Arguments = string.Format("--appbase \"{0}\" \"Microsoft.Framework.ApplicationHost\" {1}", startParameters.ApplicationPath, commandName),
                 UseShellExecute = true,
                 CreateNoWindow = true
             };
@@ -302,9 +302,9 @@ namespace E2ETests
 
         private static string SwitchPathToRuntimeFlavor(RuntimeFlavor runtimeFlavor, RuntimeArchitecture runtimeArchitecture, ILogger logger)
         {
-            var pathValue = Environment.GetEnvironmentVariable("PATH");
+            var currentRuntime = Environment.GetCommandLineArgs().First();
             logger.LogInformation(string.Empty);
-            logger.LogInformation("Current %PATH% value : {0}", pathValue);
+            logger.LogInformation("Current runtime is : {0}", currentRuntime);
 
             var replaceStr = new StringBuilder().
                 Append("dnx").
@@ -313,17 +313,15 @@ namespace E2ETests
                 Append((runtimeArchitecture == RuntimeArchitecture.x86) ? "-x86" : "-x64").
                 ToString();
 
-            pathValue = Regex.Replace(pathValue, "dnx-(clr|coreclr)-win-(x86|x64)", replaceStr, RegexOptions.IgnoreCase);
-
-            var startIndex = pathValue.IndexOf(replaceStr); // First instance of this runtime name.
-            var runtimeName = pathValue.Substring(startIndex, pathValue.IndexOf(';', startIndex) - startIndex);
-            runtimeName = runtimeName.Substring(0, runtimeName.IndexOf('\\')); // Trim the \bin from the path.
+            currentRuntime = Regex.Replace(currentRuntime, "dnx-(clr|coreclr)-win-(x86|x64)", replaceStr, RegexOptions.IgnoreCase);
+            currentRuntime = Path.GetDirectoryName(currentRuntime);
 
             // Tweak the %PATH% to the point to the right RUNTIMEFLAVOR.
-            Environment.SetEnvironmentVariable("PATH", pathValue);
+            Environment.SetEnvironmentVariable("PATH", currentRuntime + ";" + Environment.GetEnvironmentVariable("PATH"));
 
+            var runtimeName = new DirectoryInfo(currentRuntime).Parent.Name;
             logger.LogInformation(string.Empty);
-            logger.LogInformation("Changing to use runtime : {runtime}", runtimeName);
+            logger.LogInformation("Changing to use runtime : {runtimeName}", runtimeName);
             return runtimeName;
         }
 
