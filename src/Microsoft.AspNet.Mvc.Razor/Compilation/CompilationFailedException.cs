@@ -31,9 +31,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private static string FormatMessage(ICompilationFailure compilationFailure)
         {
-            return Resources.CompilationFailed +
-                   Environment.NewLine +
-                   string.Join(Environment.NewLine, compilationFailure.Messages.Select(message => message.FormattedMessage));
-    }
+            return Resources.CompilationFailed + Environment.NewLine +
+                string.Join(
+                    Environment.NewLine,
+                    compilationFailure.Messages.Select(message => message.FormattedMessage));
+        }
     }
 }

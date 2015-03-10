@@ -61,7 +61,7 @@ public class MyTestType  {}";
             var libraryManager = GetLibraryManager();
 
             var compilerOptionsProvider = new Mock<ICompilerOptionsProvider>();
-            compilerOptionsProvider.Setup(p => p.GetCompilerOptions(applicationEnvironment.ApplicationBasePath,
+            compilerOptionsProvider.Setup(p => p.GetCompilerOptions(applicationEnvironment.ApplicationName,
                                                                     applicationEnvironment.RuntimeFramework,
                                                                     applicationEnvironment.Configuration))
                                    .Returns(new CompilerOptions());
@@ -100,7 +100,7 @@ public class MyTestType  {}";
             var libraryManager = GetLibraryManager();
 
             var compilerOptionsProvider = new Mock<ICompilerOptionsProvider>();
-            compilerOptionsProvider.Setup(p => p.GetCompilerOptions(applicationEnvironment.ApplicationBasePath,
+            compilerOptionsProvider.Setup(p => p.GetCompilerOptions(applicationEnvironment.ApplicationName,
                                                                     applicationEnvironment.RuntimeFramework,
                                                                     applicationEnvironment.Configuration))
                                    .Returns(new CompilerOptions());
@@ -134,7 +134,7 @@ public class MyTestType  {}";
             var libraryManager = GetLibraryManager();
 
             var compilerOptionsProvider = new Mock<ICompilerOptionsProvider>();
-            compilerOptionsProvider.Setup(p => p.GetCompilerOptions(applicationEnvironment.ApplicationBasePath,
+            compilerOptionsProvider.Setup(p => p.GetCompilerOptions(applicationEnvironment.ApplicationName,
                                                                     applicationEnvironment.RuntimeFramework,
                                                                     applicationEnvironment.Configuration))
                                    .Returns(new CompilerOptions());
