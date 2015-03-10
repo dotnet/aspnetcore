@@ -60,7 +60,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ConnegWebsite", "test\WebSites\ConnegWebSite\ConnegWebsite.kproj", "{C6E5AFFA-890A-448F-8DE3-878B1D3C9FC7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ContentNegotiationWebSite", "test\WebSites\ContentNegotiationWebSite\ContentNegotiationWebSite.kproj", "{C6E5AFFA-890A-448F-8DE3-878B1D3C9FC7}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AntiForgeryWebSite", "test\WebSites\AntiForgeryWebSite\AntiForgeryWebSite.kproj", "{A353B17E-A940-4CE8-8BF9-179E24A9041F}"
 EndProject
@@ -78,7 +78,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "TagHelpersWebSite", "test\W
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FilesWebSite", "test\WebSites\FilesWebSite\FilesWebSite.kproj", "{0EF9860B-10D7-452F-B0F4-A405B88BEBB3}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorInstrumentationWebSite", "test\WebSites\RazorInstrumentationWebSite\RazorInstrumentationWebSite.kproj", "{2B2B9876-903C-4065-8D62-2EE832BBA106}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorPageExecutionInstrumentationWebSite", "test\WebSites\RazorPageExecutionInstrumentationWebSite\RazorPageExecutionInstrumentationWebSite.kproj", "{2B2B9876-903C-4065-8D62-2EE832BBA106}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ApplicationModelWebSite", "test\WebSites\ApplicationModelWebSite\ApplicationModelWebSite.kproj", "{CAE52CB7-0FAC-4B5B-8251-B0FF837DB657}"
 EndProject
@@ -100,7 +100,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PrecompilationWebSite", "te
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RequestServicesWebSite", "test\WebSites\RequestServicesWebSite\RequestServicesWebSite.kproj", "{F12E9CF0-4958-40C6-A6CD-759185157F84}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorViewEngineOptionsWebsite", "test\WebSites\RazorViewEngineOptionsWebsite\RazorViewEngineOptionsWebsite.kproj", "{B18ADE62-35DE-4A06-8E1D-EDD6245F7F4D}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorEmbeddedViewsWebSite", "test\WebSites\RazorEmbeddedViewsWebSite\RazorEmbeddedViewsWebSite.kproj", "{B18ADE62-35DE-4A06-8E1D-EDD6245F7F4D}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CompositeViewEngineWebSite", "test\WebSites\CompositeViewEngineWebSite\CompositeViewEngineWebSite.kproj", "{A853B2BA-4449-4908-A416-5A3C027FC22B}"
 EndProject
