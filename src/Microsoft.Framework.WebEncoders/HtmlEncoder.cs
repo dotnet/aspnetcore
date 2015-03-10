@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace Microsoft.Framework.WebEncoders
@@ -57,20 +58,33 @@ namespace Microsoft.Framework.WebEncoders
         }
 
         /// <summary>
-        /// The default <see cref="HtmlEncoder"/>, which uses <see cref="UnicodeRanges.BasicLatin"/> as its allow list.
+        /// A default instance of <see cref="HtmlEncoder"/>.
         /// </summary>
+        /// <remarks>
+        /// This normally corresponds to <see cref="UnicodeRanges.BasicLatin"/>. However, this property is
+        /// settable so that a developer can change the default implementation application-wide.
+        /// </remarks>
         public static HtmlEncoder Default
         {
             get
             {
-                HtmlEncoder defaultEncoder = Volatile.Read(ref _defaultEncoder);
-                if (defaultEncoder == null)
-                {
-                    defaultEncoder = new HtmlEncoder();
-                    Volatile.Write(ref _defaultEncoder, defaultEncoder);
-                }
-                return defaultEncoder;
+                return Volatile.Read(ref _defaultEncoder) ?? CreateDefaultEncoderSlow();
             }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+                Volatile.Write(ref _defaultEncoder, value);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)] // the JITter can attempt to inline the caller itself without worrying about us
+        private static HtmlEncoder CreateDefaultEncoderSlow()
+        {
+            var onDemandEncoder = new HtmlEncoder();
+            return Interlocked.CompareExchange(ref _defaultEncoder, onDemandEncoder, null) ?? onDemandEncoder;
         }
 
         /// <summary>
