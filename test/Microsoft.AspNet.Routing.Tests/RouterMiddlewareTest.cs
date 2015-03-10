@@ -180,9 +180,9 @@ namespace Microsoft.AspNet.Routing
                 _isHandled = isHandled;
             }
 
-            public string GetVirtualPath(VirtualPathContext context)
+            public VirtualPathData GetVirtualPath(VirtualPathContext context)
             {
-                return "";
+                return new VirtualPathData(this, "");
             }
 
             public Task RouteAsync(RouteContext context)

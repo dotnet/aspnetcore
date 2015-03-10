@@ -9,6 +9,6 @@ namespace Microsoft.AspNet.Routing
     {
         Task RouteAsync(RouteContext context);
 
-        string GetVirtualPath(VirtualPathContext context);
+        VirtualPathData GetVirtualPath(VirtualPathContext context);
     }
 }

@@ -98,11 +98,11 @@ namespace Microsoft.AspNet.Routing
             }
         }
 
-        public virtual string GetVirtualPath(VirtualPathContext context)
+        public virtual VirtualPathData GetVirtualPath(VirtualPathContext context)
         {
             EnsureOptions(context.Context);
 
-            // If we're using Best-Effort link generation then it means that we'll first look for a route where 
+            // If we're using Best-Effort link generation then it means that we'll first look for a route where
             // the route values are validated (context.IsBound == true). If we can't find a match like that, then
             // we'll return the path from the first route to return one.
             var useBestEffort = _options.UseBestEffortLinkGeneration;
@@ -110,11 +110,11 @@ namespace Microsoft.AspNet.Routing
             if (!string.IsNullOrEmpty(context.RouteName))
             {
                 var isValidated = false;
-                string bestPath = null;
+                VirtualPathData bestPathData = null;
                 INamedRouter matchedNamedRoute;
                 if (_namedRoutes.TryGetValue(context.RouteName, out matchedNamedRoute))
                 {
-                    bestPath = matchedNamedRoute.GetVirtualPath(context);
+                    bestPathData = matchedNamedRoute.GetVirtualPath(context);
                     isValidated = context.IsBound;
                 }
 
@@ -125,13 +125,13 @@ namespace Microsoft.AspNet.Routing
                     // reset because we're sharing the context
                     context.IsBound = false;
 
-                    var path = unnamedRoute.GetVirtualPath(context);
-                    if (path == null)
+                    var pathData = unnamedRoute.GetVirtualPath(context);
+                    if (pathData == null)
                     {
                         continue;
                     }
 
-                    if (bestPath != null)
+                    if (bestPathData != null)
                     {
                         // There was already a previous route which matched the name.
                         throw new InvalidOperationException(
@@ -140,15 +140,15 @@ namespace Microsoft.AspNet.Routing
                     else if (context.IsBound)
                     {
                         // This is the first 'validated' match that we've found.
-                        bestPath = path;
+                        bestPathData = pathData;
                         isValidated = true;
                     }
                     else
                     {
-                        Debug.Assert(bestPath == null);
+                        Debug.Assert(bestPathData == null);
 
                         // This is the first 'unvalidated' match that we've found.
-                        bestPath = path;
+                        bestPathData = pathData;
                         isValidated = false;
                     }
                 }
@@ -156,7 +156,16 @@ namespace Microsoft.AspNet.Routing
                 if (isValidated || useBestEffort)
                 {
                     context.IsBound = isValidated;
-                    return NormalizeVirtualPath(bestPath);
+
+                    if (bestPathData != null)
+                    {
+                        bestPathData = new VirtualPathData(
+                            bestPathData.Router,
+                            NormalizeVirtualPath(bestPathData.VirtualPath),
+                            bestPathData.DataTokens);
+                    }
+
+                    return bestPathData;
                 }
                 else
                 {
@@ -165,13 +174,13 @@ namespace Microsoft.AspNet.Routing
             }
             else
             {
-                string bestPath = null;
+                VirtualPathData bestPathData = null;
                 for (var i = 0; i < Count; i++)
                 {
                     var route = this[i];
 
-                    var path = route.GetVirtualPath(context);
-                    if (path == null)
+                    var pathData = route.GetVirtualPath(context);
+                    if (pathData == null)
                     {
                         continue;
                     }
@@ -179,18 +188,24 @@ namespace Microsoft.AspNet.Routing
                     if (context.IsBound)
                     {
                         // This route has validated route values, short circuit.
-                        return NormalizeVirtualPath(path);
+                        return new VirtualPathData(
+                            pathData.Router,
+                            NormalizeVirtualPath(pathData.VirtualPath),
+                            pathData.DataTokens);
                     }
-                    else if (bestPath == null)
+                    else if (bestPathData == null)
                     {
                         // The values aren't validated, but this is the best we've seen so far
-                        bestPath = path;
+                        bestPathData = pathData;
                     }
                 }
 
                 if (useBestEffort)
                 {
-                    return NormalizeVirtualPath(bestPath);
+                    return new VirtualPathData(
+                        bestPathData.Router,
+                        NormalizeVirtualPath(bestPathData.VirtualPath),
+                        bestPathData.DataTokens);
                 }
                 else
                 {
@@ -223,9 +238,9 @@ namespace Microsoft.AspNet.Routing
             }
 
             return url;
-    }
+        }
 
-    private void EnsureLogger(HttpContext context)
+        private void EnsureLogger(HttpContext context)
         {
             if (_logger == null)
             {

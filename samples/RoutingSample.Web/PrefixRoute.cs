@@ -52,7 +52,7 @@ namespace RoutingSample.Web
             }
         }
 
-        public string GetVirtualPath(VirtualPathContext context)
+        public VirtualPathData GetVirtualPath(VirtualPathContext context)
         {
             return null;
         }
