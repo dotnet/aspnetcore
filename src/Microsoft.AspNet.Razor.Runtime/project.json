@@ -5,8 +5,7 @@
         "Microsoft.AspNet.Razor": "4.0.0-*",
         "Microsoft.Framework.BufferEntryCollection.Internal": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Framework.CopyOnWriteDictionary.Internal": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.WebEncoders.Core": "1.0.0-*"
+        "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" }
     },
     "frameworks": {
         "net45": { },

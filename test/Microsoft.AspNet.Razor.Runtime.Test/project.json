@@ -9,11 +9,7 @@
         "test": "xunit.runner.aspnet"
     },
     "frameworks": {
-        "dnx451": {
-            "dependencies": {
-                "Moq": "4.2.1312.1622"
-            }
-        },
+        "dnx451": { },
         "dnxcore50": {
             "dependencies": {
                 "System.Reflection.TypeExtensions": "4.0.0-beta-*",

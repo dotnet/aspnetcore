@@ -38,7 +38,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     .Write(CSharpTagHelperCodeRenderer.RunnerVariableName)
                     .Write(" ?? ")
                     .WriteStartNewObject(_tagHelperContext.RunnerTypeName)
-                    .Write(_tagHelperContext.HtmlEncoderPropertyName)
                     .WriteEndMethodInvocation();
             }
         }

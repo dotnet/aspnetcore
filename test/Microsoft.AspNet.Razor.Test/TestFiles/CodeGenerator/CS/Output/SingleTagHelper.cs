@@ -23,7 +23,7 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            __tagHelperRunner = __tagHelperRunner ?? new TagHelperRunner(HtmlEncoder);
+            __tagHelperRunner = __tagHelperRunner ?? new TagHelperRunner();
             Instrumentation.BeginContext(33, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
@@ -41,22 +41,7 @@ namespace TestOutput
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __PTagHelper.Age);
             __tagHelperExecutionContext.AddHtmlAttribute("class", "Hello World");
             __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
-            WriteLiteral(__tagHelperExecutionContext.Output.GenerateStartTag());
-            Write(__tagHelperExecutionContext.Output.GeneratePreContent());
-            if (__tagHelperExecutionContext.Output.IsContentModified)
-            {
-                Write(__tagHelperExecutionContext.Output.GenerateContent());
-            }
-            else if (__tagHelperExecutionContext.ChildContentRetrieved)
-            {
-                Write(__tagHelperExecutionContext.GetChildContentAsync().Result);
-            }
-            else
-            {
-                __tagHelperExecutionContext.ExecuteChildContentAsync().Wait();
-            }
-            Write(__tagHelperExecutionContext.Output.GeneratePostContent());
-            WriteLiteral(__tagHelperExecutionContext.Output.GenerateEndTag());
+            WriteTagHelperAsync(__tagHelperExecutionContext).Wait();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
         }
         #pragma warning restore 1998

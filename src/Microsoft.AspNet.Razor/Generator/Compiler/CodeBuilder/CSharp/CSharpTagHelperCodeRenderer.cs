@@ -75,15 +75,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             if (!_designTimeMode)
             {
                 RenderRunTagHelpers();
-
-                RenderTagOutput(_tagHelperContext.OutputGenerateStartTagMethodName, methodReturnsString: true);
-                RenderTagOutput(_tagHelperContext.OutputGeneratePreContentMethodName, methodReturnsString: false);
-
-                RenderTagHelperContent();
-
-                RenderTagOutput(_tagHelperContext.OutputGeneratePostContentMethodName, methodReturnsString: false);
-                RenderTagOutput(_tagHelperContext.OutputGenerateEndTagMethodName, methodReturnsString: true);
-
+                RenderWriteTagHelperMethodCall();
                 RenderEndTagHelpersScope();
             }
         }
@@ -360,71 +352,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             }
         }
 
-        private void RenderTagHelperContent()
-        {
-            _writer.Write("if (")
-                   .Write(ExecutionContextVariableName)
-                   .Write(".")
-                   .Write(_tagHelperContext.ExecutionContextOutputPropertyName)
-                   .Write(".")
-                   .Write(_tagHelperContext.OutputIsContentModifiedPropertyName)
-                   .WriteLine(")");
-
-            // At this point in the codegen, TagHelperOutput.Content is set. We need to use this to render the Content 
-            // instead of executing the child content
-            using (_writer.BuildScope())
-            {
-                RenderTagOutput(_tagHelperContext.OutputGenerateContentMethodName, methodReturnsString: false);
-            }
-
-            _writer.Write("else if (")
-                   .Write(ExecutionContextVariableName)
-                   .Write(".")
-                   .Write(_tagHelperContext.ExecutionContextChildContentRetrievedPropertyName)
-                   .WriteLine(")");
-
-            // Render the body of the else if statement, at this point in the codegen the GetChildContentAsync method 
-            // was invoked but the TagHelperOutput's Content was not set. Call into GetChildContentAsync to retrieve
-            // the cached value of the content so we don't execute the child content twice.
-            using (_writer.BuildScope())
-            {
-                RenderStartWriteMethod();
-
-                _writer.WriteInstanceMethodInvocation(ExecutionContextVariableName,
-                                                      _tagHelperContext.ExecutionContextGetChildContentAsyncMethodName,
-                                                      endLine: false);
-
-                _writer.Write(".Result")
-                       .WriteEndMethodInvocation();
-            }
-
-            _writer.WriteLine("else");
-
-            // Render the body of the else statement, at this point in the codegen the GetChildContentAsync method 
-            // was not invoked and the TagHelperOutput's Content was not set. Call into ExecuteChildContentAsync to
-            // to execute and render child content.
-            using (_writer.BuildScope())
-            {
-                if (!string.IsNullOrEmpty(_context.TargetWriterName))
-                {
-                    _writer.WriteMethodInvocation(
-                        _tagHelperContext.StartTagHelperWritingScopeMethodName,
-                        _context.TargetWriterName);
-                }
-
-                _writer.WriteInstanceMethodInvocation(
-                    ExecutionContextVariableName,
-                    _tagHelperContext.ExecutionContextExecuteChildContentAsyncMethodName,
-                    endLine: false);
-                _writer.WriteLine(".Wait();");
-
-                if (!string.IsNullOrEmpty(_context.TargetWriterName))
-                {
-                    _writer.WriteMethodInvocation(_tagHelperContext.EndTagHelperWritingScopeMethodName);
-                }
-            }
-        }
-
         private void RenderEndTagHelpersScope()
         {
             _writer.WriteStartAssignment(ExecutionContextVariableName)
@@ -432,38 +359,24 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                                                   _tagHelperContext.ScopeManagerEndMethodName);
         }
 
-        private void RenderTagOutput(string tagOutputMethodName, bool methodReturnsString)
-        {
-            // If its a string WriteLiteral must be generated.
-            if (methodReturnsString)
-            {
-                CSharpCodeVisitor.RenderPreWriteStart(_writer, _context);
-            }
-            else
-            {
-                RenderStartWriteMethod();
-            }
-
-            _writer.Write(ExecutionContextVariableName)
-                   .Write(".")
-                   .Write(_tagHelperContext.ExecutionContextOutputPropertyName)
-                   .Write(".")
-                   .WriteMethodInvocation(tagOutputMethodName, endLine: false)
-                   .WriteEndMethodInvocation();
-        }
-        private void RenderStartWriteMethod()
+        private void RenderWriteTagHelperMethodCall()
         {
             if (!string.IsNullOrEmpty(_context.TargetWriterName))
             {
                 _writer
-                    .WriteStartMethodInvocation(_context.Host.GeneratedClassContext.WriteToMethodName)
+                    .WriteStartMethodInvocation(_tagHelperContext.WriteTagHelperToAsyncMethodName)
                     .Write(_context.TargetWriterName)
                     .WriteParameterSeparator();
             }
             else
             {
-                _writer.WriteStartMethodInvocation(_context.Host.GeneratedClassContext.WriteMethodName);
+                _writer.WriteStartMethodInvocation(_tagHelperContext.WriteTagHelperAsyncMethodName);
             }
+
+            _writer
+                .Write(ExecutionContextVariableName)
+                .WriteEndMethodInvocation(endLine: false)
+                .WriteLine(".Wait();");
         }
 
         private void RenderRunTagHelpers()

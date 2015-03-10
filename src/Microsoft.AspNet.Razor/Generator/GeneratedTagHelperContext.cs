@@ -17,15 +17,6 @@ namespace Microsoft.AspNet.Razor.Generator
             RunnerRunAsyncMethodName = "RunAsync";
             ScopeManagerBeginMethodName = "Begin";
             ScopeManagerEndMethodName = "End";
-            OutputIsContentModifiedPropertyName = "IsContentModified";
-            OutputGenerateStartTagMethodName = "GenerateStartTag";
-            OutputGeneratePreContentMethodName = "GeneratePreContent";
-            OutputGenerateContentMethodName = "GenerateContent";
-            OutputGeneratePostContentMethodName = "GeneratePostContent";
-            OutputGenerateEndTagMethodName = "GenerateEndTag";
-            ExecutionContextChildContentRetrievedPropertyName = "ChildContentRetrieved";
-            ExecutionContextExecuteChildContentAsyncMethodName = "ExecuteChildContentAsync";
-            ExecutionContextGetChildContentAsyncMethodName = "GetChildContentAsync";
             ExecutionContextAddMethodName = "Add";
             ExecutionContextAddTagHelperAttributeMethodName = "AddTagHelperAttribute";
             ExecutionContextAddHtmlAttributeMethodName = "AddHtmlAttribute";
@@ -35,8 +26,9 @@ namespace Microsoft.AspNet.Razor.Generator
             RunnerTypeName = "TagHelperRunner";
             ScopeManagerTypeName = "TagHelperScopeManager";
             ExecutionContextTypeName = "TagHelperExecutionContext";
-            HtmlEncoderPropertyName = "HtmlEncoder";
             TagHelperContentTypeName = "TagHelperContent";
+            WriteTagHelperAsyncMethodName = "WriteTagHelperAsync";
+            WriteTagHelperToAsyncMethodName = "WriteTagHelperToAsync";
         }
 
         /// <summary>
@@ -58,52 +50,6 @@ namespace Microsoft.AspNet.Razor.Generator
         /// The name of the <see cref="ExecutionContextTypeName"/> method used to end a scope.
         /// </summary>
         public string ScopeManagerEndMethodName { get; set; }
-
-        /// <summary>
-        /// The name of the property used to determine if a tag helper output's content was set.
-        /// </summary>
-        public string OutputIsContentModifiedPropertyName { get; set; }
-
-        /// <summary>
-        /// The name of the method used to generate a tag helper output's start tag.
-        /// </summary>
-        public string OutputGenerateStartTagMethodName { get; set; }
-
-        /// <summary>
-        /// The name of the method used to generate a tag helper output's pre content.
-        /// </summary>
-        public string OutputGeneratePreContentMethodName { get; set; }
-
-        /// <summary>
-        /// The name of the method used to generate a tag helper output's content.
-        /// </summary>
-        public string OutputGenerateContentMethodName { get; set; }
-
-        /// <summary>
-        /// The name of the method used to generate a tag helper output's post-content.
-        /// </summary>
-        public string OutputGeneratePostContentMethodName { get; set; }
-
-        /// <summary>
-        /// The name of the method used to generate a tag helper output's end tag.
-        /// </summary>
-        public string OutputGenerateEndTagMethodName { get; set; }
-
-        /// <summary>
-        /// The name of the <see cref="ExecutionContextTypeName"/> method used to get a 
-        /// <see cref="System.Threading.Tasks.Task"/> that executes tag helper child content.
-        /// </summary>
-        public string ExecutionContextChildContentRetrievedPropertyName { get; set; }
-
-        /// <summary>
-        /// </summary>
-        public string ExecutionContextExecuteChildContentAsyncMethodName { get; set; }
-
-        /// <summary>
-        /// The name of the <see cref="ExecutionContextTypeName"/> method used to execute and retrieve tag helper 
-        /// child content.
-        /// </summary>
-        public string ExecutionContextGetChildContentAsyncMethodName { get; set; }
 
         /// <summary>
         /// The name of the <see cref="ExecutionContextTypeName"/> method used to add tag helper attributes.
@@ -154,16 +100,22 @@ namespace Microsoft.AspNet.Razor.Generator
         public string ExecutionContextTypeName { get; set; }
 
         /// <summary>
-        /// The name of the property used to encode HTML.
-        /// </summary>
-        public string HtmlEncoderPropertyName { get; set; }
-
-        /// <summary>
         /// The name of the type containing tag helper content.
         /// </summary>
         /// <remarks>
         /// Contains the data returned by EndTagHelperWriteScope().
         /// </remarks>
         public string TagHelperContentTypeName { get; set; }
+
+        /// <summary>
+        /// The name of the method used to write <see cref="ExecutionContextTypeName"/>.
+        /// </summary>
+        public string WriteTagHelperAsyncMethodName { get; set; }
+
+        /// <summary>
+        /// The name of the method used to write <see cref="ExecutionContextTypeName"/> to a specified
+        /// <see cref="System.IO.TextWriter"/>.
+        /// </summary>
+        public string WriteTagHelperToAsyncMethodName { get; set; }
     }
 }

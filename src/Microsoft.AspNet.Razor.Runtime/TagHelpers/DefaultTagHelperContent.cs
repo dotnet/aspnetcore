@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// <summary>
     /// Default concrete <see cref="TagHelperContent"/>.
     /// </summary>
-    public class DefaultTagHelperContent : TagHelperContent, ITextWriterCopyable
+    public class DefaultTagHelperContent : TagHelperContent
     {
         private readonly BufferEntryCollection _buffer;
 
@@ -122,15 +122,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public override string GetContent()
         {
             return string.Join(string.Empty, _buffer);
-        }
-
-        /// <inheritdoc />
-        public void CopyTo([NotNull] TextWriter writer)
-        {
-            foreach (var value in _buffer)
-            {
-                writer.Write(value);
-            }
         }
 
         /// <inheritdoc />

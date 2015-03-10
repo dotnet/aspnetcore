@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -15,16 +14,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// </summary>
     public class TagHelperOutput
     {
-        private bool _isTagNameNullOrWhitespace;
-        private string _tagName;
-        private readonly IHtmlEncoder _htmlEncoder;
         private readonly DefaultTagHelperContent _preContent;
         private readonly DefaultTagHelperContent _content;
         private readonly DefaultTagHelperContent _postContent;
 
         // Internal for testing
         internal TagHelperOutput(string tagName)
-            : this(tagName, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), null)
+            : this(tagName, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase))
         {
         }
 
@@ -33,19 +29,15 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </summary>
         /// <param name="tagName">The HTML element's tag name.</param>
         /// <param name="attributes">The HTML attributes.</param>
-        /// <param name="htmlEncoder">The <see cref="IHtmlEncoder"/> used
-        /// to encode HTML attribute values.</param>
         public TagHelperOutput(
             string tagName,
-            [NotNull] IDictionary<string, string> attributes,
-            [NotNull] IHtmlEncoder htmlEncoder)
+            [NotNull] IDictionary<string, string> attributes)
         {
             TagName = tagName;
             Attributes = new Dictionary<string, string>(attributes, StringComparer.OrdinalIgnoreCase);
             _preContent = new DefaultTagHelperContent();
             _content = new DefaultTagHelperContent();
             _postContent = new DefaultTagHelperContent();
-            _htmlEncoder = htmlEncoder;
         }
 
         /// <summary>
@@ -54,18 +46,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <remarks>
         /// A whitespace or <c>null</c> value results in no start or end tag being rendered.
         /// </remarks>
-        public string TagName
-        {
-            get
-            {
-                return _tagName;
-            }
-            set
-            {
-                _tagName = value;
-                _isTagNameNullOrWhitespace = string.IsNullOrWhiteSpace(_tagName);
-            }
-        }
+        public string TagName { get; set; }
 
         /// <summary>
         /// The HTML element's pre content.
@@ -124,107 +105,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// The HTML element's attributes.
         /// </summary>
         public IDictionary<string, string> Attributes { get; }
-
-        /// <summary>
-        /// Generates the <see cref="TagHelperOutput"/>'s start tag.
-        /// </summary>
-        /// <returns><c>string.Empty</c> if <see cref="TagName"/> is <c>null</c> or whitespace. Otherwise, the
-        /// <see cref="string"/> representation of the <see cref="TagHelperOutput"/>'s start tag.</returns>
-        public string GenerateStartTag()
-        {
-            // Only render a start tag if the tag name is not whitespace
-            if (_isTagNameNullOrWhitespace)
-            {
-                return string.Empty;
-            }
-
-            var sb = new StringBuilder();
-
-            sb.Append('<')
-              .Append(TagName);
-
-            foreach (var attribute in Attributes)
-            {
-                var value = _htmlEncoder.HtmlEncode(attribute.Value);
-                sb.Append(' ')
-                  .Append(attribute.Key)
-                  .Append("=\"")
-                  .Append(value)
-                  .Append('"');
-            }
-
-            if (SelfClosing)
-            {
-                sb.Append(" /");
-            }
-
-            sb.Append('>');
-
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// Generates the <see cref="TagHelperOutput"/>'s <see cref="PreContent"/>.
-        /// </summary>
-        /// <returns><c>null</c> if <see cref="TagName"/> is not <c>null</c> or whitespace
-        /// and <see cref="SelfClosing"/> is <c>true</c>.
-        /// Otherwise, an <see cref="ITextWriterCopyable"/> containing the <see cref="PreContent"/>.</returns>
-        public ITextWriterCopyable GeneratePreContent()
-        {
-            if (!_isTagNameNullOrWhitespace && SelfClosing)
-            {
-                return null;
-            }
-
-            return _preContent;
-        }
-
-        /// <summary>
-        /// Generates the <see cref="TagHelperOutput"/>'s body.
-        /// </summary>
-        /// <returns><c>null</c> if <see cref="TagName"/> is not <c>null</c> or whitespace
-        /// and <see cref="SelfClosing"/> is <c>true</c>.
-        /// Otherwise, an <see cref="ITextWriterCopyable"/> containing the <see cref="Content"/>.</returns>
-        public ITextWriterCopyable GenerateContent()
-        {
-            if (!_isTagNameNullOrWhitespace && SelfClosing)
-            {
-                return null;
-            }
-
-            return _content;
-        }
-
-        /// <summary>
-        /// Generates the <see cref="TagHelperOutput"/>'s <see cref="PostContent"/>.
-        /// </summary>
-        /// <returns><c>null</c> if <see cref="TagName"/> is not <c>null</c> or whitespace
-        /// and <see cref="SelfClosing"/> is <c>true</c>.
-        /// Otherwise, an <see cref="ITextWriterCopyable"/> containing the <see cref="PostContent"/>.</returns>
-        public ITextWriterCopyable GeneratePostContent()
-        {
-            if (!_isTagNameNullOrWhitespace && SelfClosing)
-            {
-                return null;
-            }
-
-            return _postContent;
-        }
-
-        /// <summary>
-        /// Generates the <see cref="TagHelperOutput"/>'s end tag.
-        /// </summary>
-        /// <returns><c>string.Empty</c> if <see cref="TagName"/> is <c>null</c> or whitespace. Otherwise, the
-        /// <see cref="string"/> representation of the <see cref="TagHelperOutput"/>'s end tag.</returns>
-        public string GenerateEndTag()
-        {
-            if (SelfClosing || _isTagNameNullOrWhitespace)
-            {
-                return string.Empty;
-            }
-
-            return string.Format(CultureInfo.InvariantCulture, "</{0}>", TagName);
-        }
 
         /// <summary>
         /// Changes <see cref="TagHelperOutput"/> to generate nothing.
