@@ -6,14 +6,15 @@ using System.Diagnostics;
 
 namespace Microsoft.Framework.WebEncoders
 {
-    internal class AllowedCharsBitmap
+    internal struct AllowedCharsBitmap
     {
         private const int ALLOWED_CHARS_BITMAP_LENGTH = 0x10000 / (8 * sizeof(uint));
-        private uint[] _allowedCharsBitmap;
+        private readonly uint[] _allowedCharsBitmap;
 
-        public AllowedCharsBitmap()
+        private AllowedCharsBitmap(uint[] allowedCharsBitmap)
         {
-            _allowedCharsBitmap = new uint[ALLOWED_CHARS_BITMAP_LENGTH];
+            Debug.Assert(allowedCharsBitmap != null);
+            _allowedCharsBitmap = allowedCharsBitmap;
         }
 
         // Marks a character as allowed (can be returned unencoded)
@@ -34,9 +35,13 @@ namespace Microsoft.Framework.WebEncoders
         // Creates a deep copy of this bitmap
         public AllowedCharsBitmap Clone()
         {
-            var retVal = new AllowedCharsBitmap();
-            retVal._allowedCharsBitmap = (uint[])this._allowedCharsBitmap.Clone();
-            return retVal;
+            return new AllowedCharsBitmap((uint[])_allowedCharsBitmap.Clone());
+        }
+
+        // should be called in place of the ctor
+        public static AllowedCharsBitmap CreateNew()
+        {
+            return new AllowedCharsBitmap(new uint[ALLOWED_CHARS_BITMAP_LENGTH]);
         }
 
         // Marks a character as forbidden (must be returned encoded)
@@ -47,7 +52,7 @@ namespace Microsoft.Framework.WebEncoders
             int offset = (int)(codePoint & 0x1FU);
             _allowedCharsBitmap[index] &= ~(0x1U << offset);
         }
-        
+
         public void ForbidUndefinedCharacters()
         {
             // Forbid codepoints which aren't mapped to characters or which are otherwise always disallowed

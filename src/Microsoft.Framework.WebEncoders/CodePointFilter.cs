@@ -19,7 +19,7 @@ namespace Microsoft.Framework.WebEncoders
         /// </summary>
         public CodePointFilter()
         {
-            _allowedCharsBitmap = new AllowedCharsBitmap();
+            _allowedCharsBitmap = AllowedCharsBitmap.CreateNew();
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Microsoft.Framework.WebEncoders
             }
             else
             {
-                _allowedCharsBitmap = new AllowedCharsBitmap();
+                _allowedCharsBitmap = AllowedCharsBitmap.CreateNew();
                 AllowFilter(other);
             }
         }
@@ -45,7 +45,7 @@ namespace Microsoft.Framework.WebEncoders
         /// </summary>
         public CodePointFilter(params UnicodeRange[] allowedRanges)
         {
-            _allowedCharsBitmap = new AllowedCharsBitmap();
+            _allowedCharsBitmap = AllowedCharsBitmap.CreateNew();
             AllowRanges(allowedRanges);
         }
 
