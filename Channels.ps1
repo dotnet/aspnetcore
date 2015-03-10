@@ -15,6 +15,9 @@ function Use-Dev
 
 function Use-Feed($desiredFeed)
 {
+    # TODO: Make this stick
+    $env:DNX_FEED = "https://www.myget.org/F/aspnet$desiredFeed/api/v2"
+    
     $nugetConfigPath = [IO.Path]::Combine($env:AppData, "NuGet", "NuGet.config")
     [xml]$configXml = Get-Content $nugetConfigPath
 
