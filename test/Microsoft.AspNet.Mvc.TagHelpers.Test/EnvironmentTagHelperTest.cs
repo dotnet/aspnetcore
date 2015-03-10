@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
         {
             attributes = attributes ?? new Dictionary<string, string>();
 
-            return new TagHelperOutput(tagName, attributes, new HtmlEncoder());
+            return new TagHelperOutput(tagName, attributes);
         }
     }
 }

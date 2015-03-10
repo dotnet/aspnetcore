@@ -47,8 +47,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "id", "myanchor" },
                     { "asp-route-foo", "bar" },
-                },
-                htmlEncoder: new HtmlEncoder());
+                });
             output.Content.SetContent("Something");
 
             var urlHelper = new Mock<IUrlHelper>();
@@ -98,8 +97,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
             var output = new TagHelperOutput(
                 "a",
-                attributes: new Dictionary<string, string>(),
-                htmlEncoder: new HtmlEncoder());
+                attributes: new Dictionary<string, string>());
             output.Content.SetContent(string.Empty);
 
             var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
@@ -141,8 +139,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
             var output = new TagHelperOutput(
                 "a",
-                attributes: new Dictionary<string, string>(),
-                htmlEncoder: new HtmlEncoder());
+                attributes: new Dictionary<string, string>());
             output.Content.SetContent(string.Empty);
 
             var generator = new Mock<IHtmlGenerator>();
@@ -186,8 +183,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 attributes: new Dictionary<string, string>()
                 {
                     { "href", "http://www.contoso.com" }
-                },
-                htmlEncoder: new HtmlEncoder());
+                });
             if (propertyName == "asp-route-")
             {
                 output.Attributes.Add("asp-route-foo", "bar");
@@ -222,8 +218,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             typeof(AnchorTagHelper).GetProperty(propertyName).SetValue(anchorTagHelper, "Home");
             var output = new TagHelperOutput(
                 "a",
-                attributes: new Dictionary<string, string>(),
-                htmlEncoder: new HtmlEncoder());
+                attributes: new Dictionary<string, string>());
             var expectedErrorMessage = "Cannot determine an 'href' attribute for <a>. An <a> with a specified " +
                 "'asp-route' must not have an 'asp-action' or 'asp-controller' attribute.";
 

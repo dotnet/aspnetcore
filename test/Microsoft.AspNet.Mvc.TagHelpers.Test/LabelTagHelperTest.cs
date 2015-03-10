@@ -200,7 +200,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "class", "form-control" },
             };
-            var output = new TagHelperOutput(expectedTagName, htmlAttributes, new HtmlEncoder());
+            var output = new TagHelperOutput(expectedTagName, htmlAttributes);
             output.PreContent.SetContent(expectedPreContent);
             output.PostContent.SetContent(expectedPostContent);
 
@@ -259,7 +259,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var output = new TagHelperOutput(expectedTagName, expectedAttributes, new HtmlEncoder());
+            var output = new TagHelperOutput(expectedTagName, expectedAttributes);
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);

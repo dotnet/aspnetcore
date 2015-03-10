@@ -52,8 +52,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 attributes: new Dictionary<string, string>
                 {
                     { "id", "myvalidationmessage" }
-                },
-                htmlEncoder: new HtmlEncoder());
+                });
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);
@@ -106,8 +105,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
             var output = new TagHelperOutput(
                 "span",
-                attributes: new Dictionary<string, string>(),
-                htmlEncoder: new HtmlEncoder());
+                attributes: new Dictionary<string, string>());
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);
@@ -147,8 +145,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var output = new TagHelperOutput(
                 "span",
-                attributes: new Dictionary<string, string>(),
-                htmlEncoder: new HtmlEncoder());
+                attributes: new Dictionary<string, string>());
             output.Content.SetContent(outputContent);
 
             var context = new TagHelperContext(
@@ -207,8 +204,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var output = new TagHelperOutput(
                 "span",
-                attributes: new Dictionary<string, string>(),
-                htmlEncoder: new HtmlEncoder());
+                attributes: new Dictionary<string, string>());
 
             var context = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>(),
@@ -263,8 +259,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
             var output = new TagHelperOutput(
                 "span",
-                attributes: new Dictionary<string, string>(),
-                htmlEncoder: new HtmlEncoder());
+                attributes: new Dictionary<string, string>());
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);

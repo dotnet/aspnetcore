@@ -49,8 +49,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "id", "myform" },
                     { "asp-route-foo", "bar" },
-                },
-                htmlEncoder: new HtmlEncoder());
+                });
             output.PostContent.SetContent("Something");
             var urlHelper = new Mock<IUrlHelper>();
             urlHelper
@@ -111,8 +110,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
             var output = new TagHelperOutput(
                 "form",
-                attributes: new Dictionary<string, string>(),
-                htmlEncoder: new HtmlEncoder());
+                attributes: new Dictionary<string, string>());
             var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             generator
                 .Setup(mock => mock.GenerateForm(
@@ -168,8 +166,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "asp-route-val", "hello" },
                     { "asp-roUte--Foo", "bar" }
-                },
-                htmlEncoder: new HtmlEncoder());
+                });
             output.Attributes.Add(expectedAttribute);
 
             var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
@@ -235,8 +232,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
             var output = new TagHelperOutput(
                 "form",
-                attributes: new Dictionary<string, string>(),
-                htmlEncoder: new HtmlEncoder());
+                attributes: new Dictionary<string, string>());
             var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             generator
                 .Setup(mock => mock.GenerateForm(viewContext, "Index", "Home", null, "POST", null))
@@ -279,8 +275,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                                              attributes: new Dictionary<string, string>
                                              {
                                                  { "aCTiON", htmlAction },
-                                             },
-                                             htmlEncoder: new HtmlEncoder());
+                                             });
 
             var context = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>()
@@ -336,8 +331,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                                              attributes: new Dictionary<string, string>
                                              {
                                                  { "aCTiON", "my-action" },
-                                             },
-                                             htmlEncoder: new HtmlEncoder());
+                                             });
             var context = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>(),
                 items: new Dictionary<object, object>(),
@@ -379,8 +373,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 attributes: new Dictionary<string, string>
                 {
                     { "action", "my-action" },
-                },
-                htmlEncoder: new HtmlEncoder());
+                });
             if (propertyName == "asp-route-")
             {
                 tagHelperOutput.Attributes.Add("asp-route-foo", "bar");

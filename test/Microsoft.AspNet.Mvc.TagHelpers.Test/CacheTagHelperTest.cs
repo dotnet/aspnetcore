@@ -245,7 +245,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var childContent = "original-child-content";
             var cache = new MemoryCache(new MemoryCacheOptions());
             var tagHelperContext1 = GetTagHelperContext(id, childContent);
-            var tagHelperOutput1 = new TagHelperOutput("cache", new Dictionary<string, string>(), new HtmlEncoder());
+            var tagHelperOutput1 = new TagHelperOutput("cache", new Dictionary<string, string>());
             var cacheTagHelper1 = new CacheTagHelper
             {
                 VaryByQuery = "key1,key2",
@@ -266,7 +266,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Arrange - 2
             var tagHelperContext2 = GetTagHelperContext(id, "different-content");
-            var tagHelperOutput2 = new TagHelperOutput("cache", new Dictionary<string, string>(), new HtmlEncoder());
+            var tagHelperOutput2 = new TagHelperOutput("cache", new Dictionary<string, string>());
             var cacheTagHelper2 = new CacheTagHelper
             {
                 VaryByQuery = "key1,key2",
@@ -295,8 +295,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var cache = new MemoryCache(new MemoryCacheOptions());
             var tagHelperContext1 = GetTagHelperContext(id, childContent1);
             var tagHelperOutput1 = new TagHelperOutput("cache",
-                                                       new Dictionary<string, string> { { "attr", "value" } },
-                                                       new HtmlEncoder());
+                                                       new Dictionary<string, string> { { "attr", "value" } });
             tagHelperOutput1.PreContent.Append("<cache>");
             tagHelperOutput1.PostContent.SetContent("</cache>");
             var cacheTagHelper1 = new CacheTagHelper
@@ -321,8 +320,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var tagHelperContext2 = GetTagHelperContext(id, childContent2);
             var tagHelperOutput2 = new TagHelperOutput(
                 "cache",
-                new Dictionary<string, string> { { "attr", "value" } },
-                new HtmlEncoder());
+                new Dictionary<string, string> { { "attr", "value" } });
             tagHelperOutput2.PreContent.SetContent("<cache>");
             tagHelperOutput2.PostContent.SetContent("</cache>");
             var cacheTagHelper2 = new CacheTagHelper
@@ -532,8 +530,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var cache = new MemoryCache(new MemoryCacheOptions { Clock = clock.Object });
             var tagHelperContext1 = GetTagHelperContext(id, childContent1);
             var tagHelperOutput1 = new TagHelperOutput("cache",
-                                                       new Dictionary<string, string> { { "attr", "value" } },
-                                                       new HtmlEncoder());
+                                                       new Dictionary<string, string> { { "attr", "value" } });
             tagHelperOutput1.PreContent.SetContent("<cache>");
             tagHelperOutput1.PostContent.SetContent("</cache>");
             var cacheTagHelper1 = new CacheTagHelper
@@ -556,8 +553,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var childContent2 = "different-content";
             var tagHelperContext2 = GetTagHelperContext(id, childContent2);
             var tagHelperOutput2 = new TagHelperOutput("cache",
-                                                       new Dictionary<string, string> { { "attr", "value" } },
-                                                       new HtmlEncoder());
+                                                       new Dictionary<string, string> { { "attr", "value" } });
             tagHelperOutput2.PreContent.SetContent("<cache>");
             tagHelperOutput2.PostContent.SetContent("</cache>");
             var cacheTagHelper2 = new CacheTagHelper
@@ -591,8 +587,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var cache = new MemoryCache(new MemoryCacheOptions { Clock = clock.Object });
             var tagHelperContext1 = GetTagHelperContext(id, childContent1);
             var tagHelperOutput1 = new TagHelperOutput("cache",
-                                                       new Dictionary<string, string> { { "attr", "value" } },
-                                                       new HtmlEncoder());
+                                                       new Dictionary<string, string> { { "attr", "value" } });
             tagHelperOutput1.PreContent.SetContent("<cache>");
             tagHelperOutput1.PostContent.SetContent("</cache>");
             var cacheTagHelper1 = new CacheTagHelper
@@ -616,8 +611,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var childContent2 = "different-content";
             var tagHelperContext2 = GetTagHelperContext(id, childContent2);
             var tagHelperOutput2 = new TagHelperOutput("cache",
-                                                       new Dictionary<string, string> { { "attr", "value" } },
-                                                       new HtmlEncoder());
+                                                       new Dictionary<string, string> { { "attr", "value" } });
             tagHelperOutput2.PreContent.SetContent("<cache>");
             tagHelperOutput2.PostContent.SetContent("</cache>");
             var cacheTagHelper2 = new CacheTagHelper
@@ -650,8 +644,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var cache = new MemoryCache(new MemoryCacheOptions { Clock = clock.Object });
             var tagHelperContext1 = GetTagHelperContext(id, childContent1);
             var tagHelperOutput1 = new TagHelperOutput("cache",
-                                                       new Dictionary<string, string> { { "attr", "value" } },
-                                                       new HtmlEncoder());
+                                                       new Dictionary<string, string> { { "attr", "value" } });
             tagHelperOutput1.PreContent.SetContent("<cache>");
             tagHelperOutput1.PostContent.SetContent("</cache>");
             var cacheTagHelper1 = new CacheTagHelper
@@ -675,8 +668,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var childContent2 = "different-content";
             var tagHelperContext2 = GetTagHelperContext(id, childContent2);
             var tagHelperOutput2 = new TagHelperOutput("cache",
-                                                       new Dictionary<string, string> { { "attr", "value" } },
-                                                       new HtmlEncoder());
+                                                       new Dictionary<string, string> { { "attr", "value" } });
             tagHelperOutput2.PreContent.SetContent("<cache>");
             tagHelperOutput2.PostContent.SetContent("</cache>");
             var cacheTagHelper2 = new CacheTagHelper
@@ -720,8 +712,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     return Task.FromResult<TagHelperContent>(expectedContent);
                 });
             var tagHelperOutput = new TagHelperOutput("cache",
-                                                       new Dictionary<string, string> { { "attr", "value" } },
-                                                       new HtmlEncoder());
+                                                       new Dictionary<string, string> { { "attr", "value" } });
             tagHelperOutput.PreContent.SetContent("<cache>");
             tagHelperOutput.PostContent.SetContent("</cache>");
             var cacheTagHelper = new CacheTagHelper

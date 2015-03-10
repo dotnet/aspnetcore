@@ -58,8 +58,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 attributes: new Dictionary<string, string>
                 {
                     { "class", "form-control" }
-                },
-                htmlEncoder: new HtmlEncoder());
+                });
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent("Custom Content");
@@ -103,8 +102,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, string>(),
-                htmlEncoder: new HtmlEncoder());
+                attributes: new Dictionary<string, string>());
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);
@@ -146,8 +144,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "original content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, string>(),
-                htmlEncoder: new HtmlEncoder());
+                attributes: new Dictionary<string, string>());
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent("Content of validation summary");
@@ -204,8 +201,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, string>(),
-                htmlEncoder: new HtmlEncoder());
+                attributes: new Dictionary<string, string>());
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);
@@ -240,8 +236,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "original content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, string>(),
-                htmlEncoder: new HtmlEncoder());
+                attributes: new Dictionary<string, string>());
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent("Content of validation message");

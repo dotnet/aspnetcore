@@ -208,7 +208,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var output = new TagHelperOutput(expectedTagName, originalAttributes, new HtmlEncoder())
+            var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
                 SelfClosing = true,
             };
@@ -298,7 +298,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var output = new TagHelperOutput(expectedTagName, originalAttributes, new HtmlEncoder())
+            var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
                 SelfClosing = true,
             };
@@ -402,7 +402,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var output = new TagHelperOutput(expectedTagName, originalAttributes, new HtmlEncoder())
+            var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
                 SelfClosing = true
             };
@@ -492,7 +492,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
 
-            var output = new TagHelperOutput(expectedTagName, originalAttributes, new HtmlEncoder());
+            var output = new TagHelperOutput(expectedTagName, originalAttributes);
             var metadataProvider = new EmptyModelMetadataProvider();
             string model = null;
             var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), model);
@@ -562,7 +562,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var output = new TagHelperOutput(tagName, originalAttributes, new HtmlEncoder());
+            var output = new TagHelperOutput(tagName, originalAttributes);
             var metadataProvider = new EmptyModelMetadataProvider();
             var modelExplorer = metadataProvider.GetModelExplorerForType(modelType, model);
             var modelExpression = new ModelExpression(propertyName, modelExplorer);
@@ -622,7 +622,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var output = new TagHelperOutput(expectedTagName, originalAttributes, new HtmlEncoder());
+            var output = new TagHelperOutput(expectedTagName, originalAttributes);
             var tagHelper = new SelectTagHelper
             {
                 Items = Enumerable.Empty<SelectListItem>(),

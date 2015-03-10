@@ -92,15 +92,13 @@ namespace Microsoft.AspNet.Mvc.Razor
                     ScopeManagerBeginMethodName = nameof(TagHelperScopeManager.Begin),
                     ScopeManagerEndMethodName = nameof(TagHelperScopeManager.End),
 
-                    OutputGenerateStartTagMethodName = nameof(TagHelperOutput.GenerateStartTag),
-                    OutputGenerateContentMethodName = nameof(TagHelperOutput.GenerateContent),
-                    OutputGenerateEndTagMethodName = nameof(TagHelperOutput.GenerateEndTag),
-
                     // Can't use nameof because RazorPage is not accessible here.
                     CreateTagHelperMethodName = "CreateTagHelper",
                     StartTagHelperWritingScopeMethodName = "StartTagHelperWritingScope",
                     EndTagHelperWritingScopeMethodName = "EndTagHelperWritingScope",
-                    HtmlEncoderPropertyName = "HtmlEncoder",
+
+                    WriteTagHelperAsyncMethodName = "WriteTagHelperAsync",
+                    WriteTagHelperToAsyncMethodName = "WriteTagHelperToAsync",
                 })
             {
                 ResolveUrlMethodName = "Href",

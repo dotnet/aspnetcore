@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -250,25 +251,88 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// Writes an <see cref="ITextWriterCopyable"/> to the <see cref="Output"/>.
+        /// Writes the content of a specified <paramref name="tagHelperExecutionContext"/>.
         /// </summary>
-        /// <param name="copyableTextWriter">Contains the data to be written.</param>
-        public void Write(ITextWriterCopyable copyableTextWriter)
+        /// <param name="tagHelperExecutionContext">The execution context containing the content.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that on completion writes the <paramref name="tagHelperExecutionContext"/> content.
+        /// </returns>
+        public async Task WriteTagHelperAsync([NotNull] TagHelperExecutionContext tagHelperExecutionContext)
         {
-            WriteTo(Output, copyableTextWriter);
+            await WriteTagHelperToAsync(Output, tagHelperExecutionContext);
         }
 
         /// <summary>
-        /// Writes an <see cref="ITextWriterCopyable"/> to the <paramref name="writer"/>.
+        /// Writes the content of a specified <paramref name="tagHelperExecutionContext"/> to the specified
+        /// <paramref name="writer"/>.
         /// </summary>
-        /// <param name="writer">The <see cref="TextWriter"/> to which the
-        /// <paramref name="copyableTextWriter"/> is written.</param>
-        /// <param name="copyableTextWriter">Contains the data to be written.</param>
-        public void WriteTo([NotNull] TextWriter writer, ITextWriterCopyable copyableTextWriter)
+        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
+        /// <param name="tagHelperExecutionContext">The execution context containing the content.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that on completion writes the <paramref name="tagHelperExecutionContext"/> content
+        /// to the <paramref name="writer"/>.
+        /// </returns>
+        public async Task WriteTagHelperToAsync(
+            [NotNull] TextWriter writer,
+            [NotNull] TagHelperExecutionContext tagHelperExecutionContext)
         {
-            if (copyableTextWriter != null)
+            var tagHelperOutput = tagHelperExecutionContext.Output;
+            var isTagNameNullOrWhitespace = string.IsNullOrWhiteSpace(tagHelperOutput.TagName);
+
+            if (!isTagNameNullOrWhitespace)
             {
-                copyableTextWriter.CopyTo(writer);
+                writer.Write('<');
+                writer.Write(tagHelperOutput.TagName);
+
+                foreach (var attribute in tagHelperOutput.Attributes)
+                {
+                    var value = HtmlEncoder.HtmlEncode(attribute.Value);
+                    writer.Write(' ');
+                    writer.Write(attribute.Key);
+                    writer.Write("=\"");
+                    writer.Write(value);
+                    writer.Write('"');
+                }
+
+                if (tagHelperOutput.SelfClosing)
+                {
+                    writer.Write(" /");
+                }
+
+                writer.Write('>');
+            }
+
+            if (isTagNameNullOrWhitespace || !tagHelperOutput.SelfClosing)
+            {
+                WriteTagHelperContentTo(writer, tagHelperOutput.PreContent);
+                if (tagHelperOutput.IsContentModified)
+                {
+                    WriteTagHelperContentTo(writer, tagHelperOutput.Content);
+                }
+                else if (tagHelperExecutionContext.ChildContentRetrieved)
+                {
+                    var childContent = await tagHelperExecutionContext.GetChildContentAsync();
+                    WriteTagHelperContentTo(writer, childContent);
+                }
+                else
+                {
+                    await tagHelperExecutionContext.ExecuteChildContentAsync();
+                }
+
+                WriteTagHelperContentTo(writer, tagHelperOutput.PostContent);
+            }
+
+            if (!isTagNameNullOrWhitespace && !tagHelperOutput.SelfClosing)
+            {
+                writer.Write(string.Format(CultureInfo.InvariantCulture, "</{0}>", tagHelperOutput.TagName));
+            }
+        }
+
+        private void WriteTagHelperContentTo(TextWriter writer, TagHelperContent content)
+        {
+            foreach (var entry in content)
+            {
+                writer.Write(entry);
             }
         }
 
@@ -310,20 +374,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     }
                     else
                     {
-                        // This path is called when GetChildContentAsync() is called in tag helper
-                        // and content is not set.
-                        var tagHelperContent = value as TagHelperContent;
-                        if (tagHelperContent != null)
-                        {
-                            foreach (var entry in tagHelperContent)
-                            {
-                                writer.Write(entry);
-                            }
-                        }
-                        else
-                        {
-                            WriteTo(writer, value.ToString());
-                        }
+                        WriteTo(writer, value.ToString());
                     }
                 }
             }

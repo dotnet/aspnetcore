@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "class", "form-control" },
             };
-            var output = new TagHelperOutput(expectedTagName, htmlAttributes, new HtmlEncoder())
+            var output = new TagHelperOutput(expectedTagName, htmlAttributes)
             {
                 SelfClosing = true,
             };
@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var output = new TagHelperOutput(expectedTagName, expectedAttributes, new HtmlEncoder())
+            var output = new TagHelperOutput(expectedTagName, expectedAttributes)
             {
                 SelfClosing = true,
             };

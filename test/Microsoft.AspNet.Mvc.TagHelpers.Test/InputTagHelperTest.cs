@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "class", "form-control" },
             };
-            var output = new TagHelperOutput(expectedTagName, originalAttributes, new HtmlEncoder())
+            var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
                 SelfClosing = false,
             };
@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "class", "form-control" },
             };
-            var output = new TagHelperOutput(originalTagName, originalAttributes, new HtmlEncoder())
+            var output = new TagHelperOutput(originalTagName, originalAttributes)
             {
                 SelfClosing = true,
             };
@@ -266,7 +266,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "class", "form-control" },
             };
-            var output = new TagHelperOutput(expectedTagName, originalAttributes, new HtmlEncoder())
+            var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
                 SelfClosing = false,
             };
@@ -365,7 +365,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "class", "form-control" },
             };
-            var output = new TagHelperOutput(expectedTagName, originalAttributes, new HtmlEncoder())
+            var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
                 SelfClosing = false,
             };
@@ -461,7 +461,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "class", "form-control" },
             };
-            var output = new TagHelperOutput(expectedTagName, originalAttributes, new HtmlEncoder())
+            var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
                 SelfClosing = false,
             };
@@ -566,7 +566,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 { "class", "form-control" },
             };
-            var output = new TagHelperOutput(expectedTagName, originalAttributes, new HtmlEncoder())
+            var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
                 SelfClosing = false,
             };
@@ -643,7 +643,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
 
-            var output = new TagHelperOutput(expectedTagName, expectedAttributes, new HtmlEncoder())
+            var output = new TagHelperOutput(expectedTagName, expectedAttributes)
             {
                 SelfClosing = false,
             };
@@ -709,7 +709,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var output = new TagHelperOutput(expectedTagName, originalAttributes, new HtmlEncoder());
+            var output = new TagHelperOutput(expectedTagName, originalAttributes);
             var tagHelper = new InputTagHelper
             {
                 Format = "{0}",

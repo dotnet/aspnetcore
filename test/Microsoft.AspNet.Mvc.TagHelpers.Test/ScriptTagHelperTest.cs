@@ -476,7 +476,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             attributes = attributes ?? new Dictionary<string, string>();
 
-            return new TagHelperOutput(tagName, attributes, new HtmlEncoder());
+            return new TagHelperOutput(tagName, attributes);
         }
 
         private TagHelperLogger<ScriptTagHelper> CreateLogger()
