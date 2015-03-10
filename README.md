@@ -1,5 +1,5 @@
 # ASP.NET 5 Home
-Latest dev version: [![dev version](http://img.shields.io/myget/aspnetvnext/v/kre-clr-win-x86.svg?style=flat)](https://www.myget.org/gallery/aspnetvnext)<br>
+Latest dev version: [![dev version](http://img.shields.io/myget/aspnetvnext/v/dnx-clr-win-x86.svg?style=flat)](https://www.myget.org/gallery/aspnetvnext)<br>
 Latest master version: [![master version](http://img.shields.io/myget/aspnetmaster/v/kre-clr-win-x86.svg?style=flat)](https://www.myget.org/gallery/aspnetmaster)
 
 The Home repository is the starting point for people to learn about ASP.NET 5. This repo contains samples and [documentation](https://github.com/aspnet/Home/wiki) to help folks get started and learn more about what's coming in ASP.NET 5.
@@ -7,6 +7,7 @@ The Home repository is the starting point for people to learn about ASP.NET 5. T
 ASP.NET 5 is being actively developed by the ASP.NET team assigned to the Microsoft Open Tech Hub and in collaboration with a community of open source developers. Together we are dedicated to creating the best possible platform for web development.
 
 The samples provided in this repo are designed to show some of the features of the new framework and to provide a starting point for further exploration. All the component packages are available on NuGet. To try out the latest bits under development switch to the dev branch of the Home repo and use the dev feed in NuGet.config (https://www.myget.org/F/aspnetvnext).
+
 
 ## Contents
 
@@ -29,38 +30,41 @@ These are the current minimum requirements for the latest preview release. They 
  * Mono 3.4.1 or later (Note: On OS X use the Homebrew formula specified below to install the required version of Mono)
  * bash or zsh and curl
 
+
 ## Getting Started
 
 The easiest way to get started with ASP.NET 5 is to try out the latest preview of Visual Studio 2015 Preview. You can find installation instructions and getting started documentation at http://www.asp.net/vnext.
 
 That said, you can also try out ASP.NET 5 with just a command-prompt and a text editor. The following instructions will walk you through getting your dev environment setup.
 
-### Install the K Version Manager (KVM)
+### Install the .NET Version Manager (DNVM)
 
-The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [K Version Manager (KVM)](https://github.com/aspnet/Home/wiki/version-manager). We use the K Version Manager to install different versions of the ASP.NET 5 runtime and switch between them.
+Note: DNVM was formerly called KVM.
+
+The first thing we need to do is setup the tools required to build and run an application. We will start out by getting the [.NET Version Manager (DNVM)](https://github.com/aspnet/Home/wiki/version-manager). We use the .NET Version Manager to install different versions of the .NET Execution Environment (DNX) (used by the ASP.NET 5 runtime) and switch between them.
 
 #### Windows
-To install KVM on Windows run the following command, which will download and run a script that installs KVM for the current user (requires admin privileges for Powershell).
+To install DNVM on Windows run the following command, which will download and run a script that installs DNVM for the current user (requires admin privileges for Powershell).
 
-##### Stable(ish)
-This will use the currently released version of `kvm` (from the `release` branch of this repo).
+##### Stable(ish) (KVM)
+This will use the currently released version of `kvm` (from the `master` branch of this repo). (KVM was renamed to DNVM after the current public release.)
 
 ```
 @powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.ps1'))"
-
 ```
 
-##### Optimistic
-If you want to run on the bleeding edge and install the latest development version of KVM, run the following command:
+##### Optimistic (DNVM)
+If you want to run on the bleeding edge and install the latest development version of DNVM (formerly called KVM), run the following command:
 
 ```
-@powershell -NoProfile -ExecutionPolicy unrestricted -Command "&{$Branch='dev';iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.ps1'))}"
+@powershell -NoProfile -ExecutionPolicy unrestricted -Command "&{$Branch='dev';iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1'))}"
 ```
 
-After the script has run open a new command prompt to start using KVM.
+After the script has run open a new command prompt to start using DNVM.
 
 #### OS X:
 
+##### Stable(ish) (KVM)
 To install KVM and the correct version of Mono on OS X using [Homebrew](http://brew.sh) follow the following steps: 
 
  * Install [Homebrew](http://brew.sh) if it is not already installed.
@@ -70,25 +74,39 @@ To install KVM and the correct version of Mono on OS X using [Homebrew](http://b
 
 #### Linux:
 
+Note that on Linux you need to also install [Mono](http://mono-project.com) 3.4.1 or later.
+
+##### Stable(ish) (KVM)
 Installing KVM requires `curl`. Do verify if that is installed on the machine. Next install KVM on Linux run the following command:
 
 ```
 curl -sSL https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.sh | sh && source ~/.k/kvm/kvm.sh
 ```
 
-If you want to run on the bleeding edge and install the latest development version of KVM, use this command:
+##### Optimistic (DNVM)
+If you want to run on the bleeding edge and install the latest development version of DNVM (formerly called KVM), run the following command:
 
 ```
-curl -sSL https://raw.githubusercontent.com/aspnet/Home/master/kvminstall.sh | KVM_BRANCH=dev sh && source ~/.k/kvm/kvm.sh
+curl -sSL https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.sh | DNX_BRANCH=dev sh && source ~/.dnx/dnvm/dnvm.sh
 ```
 
-Note that on Linux you need to also install [Mono](http://mono-project.com) 3.4.1 or later.
 
-### Install the K Runtime Environment (KRE)
+### Install the .NET Execution Environment (DNX)
 
-Now that you have KVM setup you can install the latest version of the runtime by running the following command: ```kvm upgrade```
+##### Stable(ish) (KRE)
+
+Now that you have KVM set up you can install the latest version of the runtime by running the following command: ```kvm upgrade```
  
-This command will download the specified version of the K Runtime Environment (KRE), and put it on your user profile ready to use. You are now ready to start using ASP.NET 5!
+This command will download the specified version of the KRE, and put it on your user profile ready to use. You are now ready to start using ASP.NET 5 with the KRE!
+
+##### Optimistic (DNX)
+
+Note: DNX was formerly called KRE.
+
+Now that you have DNVM set up you can install the latest version of the runtime by running the following command: ```dnvm upgrade```
+ 
+This command will download the specified version of the DNX, and put it on your user profile ready to use. You are now ready to start using ASP.NET 5 with the DNX!
+
 
 ## Samples
 
@@ -105,19 +123,19 @@ The samples in this repo are basic starting points for you to experiment with.
 2. Change directory to the folder of the sample you want to run
 3. Run ```kpm restore``` to restore the packages required by that sample.
 4. You should see a bunch of output as all the dependencies of the app are downloaded from MyGet. 
-5. Run the sample using the appropriate K command:
-    - For the console app run  ```k run```.
-    - For the web apps run ```k web``` on Windows or ```k kestrel``` on Mono.
+5. Run the sample using the appropriate `dnx` command:
+    - For the console app run  ```dnx . run```.
+    - For the web apps run ```dnx . web``` on Windows or ```dnx . kestrel``` on Mono.
 6. You should see the output of the console app or a message that says the site is now started.
 7. You can navigate to the web apps in a browser by going to "http://localhost:5001" or "http://localhost:5004" if running on Mono.
 
 ### Switching to Core CLR
 
-By default when running ASP.NET 5 applications on the Windows platform you are running on the full .NET Framework. You can switch to use the new Cloud Optimized runtime, or Core CLR, using the KVM command.
+By default when running ASP.NET 5 applications on the Windows platform you are running on the full .NET Framework. You can switch to use the new Cloud Optimized runtime, or Core CLR, using the DNVM command.
 
-1. Run ```kvm upgrade -runtime CoreCLR``` This command gets the latest Core CLR version of the k runtime and sets it as your default. The `-runtime CoreCLR` switch tells it to use Core CLR. You can use `-r CLR` to target desktop again.
-2. Run ```k web``` to run on WebListener. 
-3. The first line of your output should say "Loaded Module: klr.core45.dll" instead of "Loaded Module: klr.net45.dll"
+1. Run ```dnvm upgrade -runtime CoreCLR``` This command gets the latest Core CLR version of the DNX and sets it as your default. The `-runtime CoreCLR` switch tells it to use Core CLR. You can use `-r CLR` to target desktop again.
+2. Run ```dnx . web``` to run on WebListener. 
+3. The first line of your output should say "Loaded Module: dnx.core45.dll" instead of "Loaded Module: dnx.net45.dll"
 4. The HelloWeb app should work the same as when running on the full desktop .NET Framework but now as a fully self-contained app with true side-by-side versioning support.
 
 **NOTE: There are many APIs from the .NET Framework that are not yet available when running on Core CLR. This set should get smaller and smaller as time goes on.**
