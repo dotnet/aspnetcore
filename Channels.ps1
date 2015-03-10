@@ -13,40 +13,62 @@ function Use-Dev
     Use-Feed "vnext"
 }
 
-function Use-Feed($feed)
+function Use-Feed($desiredFeed)
 {
-    [Reflection.Assembly]::LoadWithPartialName("System.Xml.Linq") | Out-Null
-
-    if ($env:DOTNET_FEED)
-    {
-        rm env:DOTNET_FEED
-    }
-    if ($env:KRE_FEED)
-    {
-        rm env:KRE_FEED
-    }
-
-    $env:DNX_FEED = $feed
-
     $nugetConfigPath = [IO.Path]::Combine($env:AppData, "NuGet", "NuGet.config")
-    $configFile = [System.Xml.Linq.XDocument]::Load($nugetConfigPath)
-    
-    $configuration = $configFile.Root
+    [xml]$configXml = Get-Content $nugetConfigPath
 
+    $configuration = $configXml.configuration
     $keyPrefix = "ASP.NET 5"
-    $keyFormat = "$keyPrefix ({0})"
     $aspNet5FeedNames = "vnext", "volatile", "release"
 
-    # Ensure all the ASP.NET 5 feeds are configured
-    $packageSources = $configuration.Descendants("packageSources").FirstOrDefault();
-    if ($packageSources -eq $null)
+    $packageSources = $configuration.packageSources
+    
+    # Create the disabledPackageSources element if it doesn't exist
+    if ($configXml.configuration.disabledPackageSources -eq $null)
     {
-        $packageSources = New-Object System.Xml.Linq.XElement([System.Xml.Linq.XName]"packageSources");
-        $configuration.Add($packageSources);
+        $disabledPackageSources = $configXml.CreateElement("disabledPackageSources")
+        $configXml.configuration.AppendChild($disabledPackageSources)
     }
 
+    ForEach ($feed in $aspNet5FeedNames)
+    {
+        $fullFeedName = "$keyPrefix ($feed)"
+        $currentFeed = $configXml.configuration.packageSources.add | Where-Object key -eq $fullFeedName
     
-    kvm upgrade
-    kvm install default -r coreclr
-    kvm use default -r clr -p
+        if ($currentFeed -eq $null)
+        {
+            # Add package source
+            $newFeed = $configXml.CreateElement("add")
+            $newFeed.Attributes.Append($configXml.CreateAttribute("key"))
+            $newFeed.key = "$keyPrefix ($feed)"
+            $newFeed.Attributes.Append($configXml.CreateAttribute("value"))
+            $newFeed.value = "https://www.myget.org/F/aspnet$feed/api/v2"
+            $configXml.configuration.packageSources.AppendChild($newFeed)
+        }
+
+        $currentFeed = $configXml.configuration.disabledPackageSources.add | Where-Object key -eq $fullFeedName
+
+        if ($currentFeed -eq $null -and (-Not ($feed -eq $desiredFeed)))
+        {
+            # Add disabled packaeg source
+            $newFeed = $configXml.CreateElement("add")
+            $newFeed.Attributes.Append($configXml.CreateAttribute("key"))
+            $newFeed.key = "$keyPrefix ($feed)"
+            $newFeed.Attributes.Append($configXml.CreateAttribute("value"))
+            $newFeed.value = "true"
+            $configXml.configuration.disabledPackageSources.AppendChild($newFeed)
+        }
+        elseif ((-Not ($currentFeed -eq $null)) -and $feed -eq $desiredFeed)
+        {
+            # Remove desired feed from disabledPackageSources list
+            $configXml.configuration.disabledPackageSources.RemoveChild($currentFeed)
+        }
+    }
+
+    $configXml.Save($nugetConfigPath)
+
+    dnvm upgrade
+    dnvm install default -r coreclr
+    dnvm use default -r clr -p
 }
