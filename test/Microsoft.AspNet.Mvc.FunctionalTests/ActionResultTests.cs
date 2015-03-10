@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -307,12 +308,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
-            var input = "{\"SampleInt\":10}";
 
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
                 "http://localhost/ActionResultsVerification/GetNotFoundObjectResultWithContent");
-            request.Content = new StringContent(input, Encoding.UTF8, "application/json");
 
             // Act
             var response = await client.SendAsync(request);
@@ -320,6 +319,38 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             Assert.Equal("{\"SampleInt\":10,\"SampleString\":\"Foo\"}", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task HttpNotFoundObjectResult_WithDisposableObject()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName);
+            var client = server.CreateClient();
+            var nameValueCollection = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("guid", Guid.NewGuid().ToString()),
+            };
+
+            // Act
+            var response1 = await client.PostAsync(
+                "/ActionResultsVerification/GetDisposeCalled",
+                new FormUrlEncodedContent(nameValueCollection));
+
+            await client.PostAsync(
+                "/ActionResultsVerification/GetNotFoundObjectResultWithDisposableObject",
+                new FormUrlEncodedContent(nameValueCollection));
+
+            var response2 = await client.PostAsync(
+                "/ActionResultsVerification/GetDisposeCalled",
+                new FormUrlEncodedContent(nameValueCollection));
+
+            // Assert
+            var isDisposed = Convert.ToBoolean(await response1.Content.ReadAsStringAsync());
+            Assert.False(isDisposed);
+
+            isDisposed = Convert.ToBoolean(await response2.Content.ReadAsStringAsync());
+            Assert.True(isDisposed);
         }
     }
 }

@@ -16,6 +16,7 @@ namespace ActionResultsWebSite
             app.UseServices(services =>
             {
                 services.AddMvc();
+                services.AddInstance(new GuidLookupService());
 
                 services.Configure<MvcOptions>(options =>
                 {

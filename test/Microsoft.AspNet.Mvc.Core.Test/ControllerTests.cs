@@ -424,6 +424,33 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
+        public void Created_IDisposableObject_RegistersForDispose()
+        {
+            // Arrange
+            var mockHttpContext = new Mock<DefaultHttpContext>();
+            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+            var uri = new Uri("/test/url", UriKind.Relative);
+
+            var controller = new TestableController()
+            {
+                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
+            };
+            var input = new DisposableObject();
+
+            // Act
+            var result = controller.Created(uri, input);
+
+            // Assert
+            Assert.IsType<CreatedResult>(result);
+            Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+            Assert.Equal(uri.OriginalString, result.Location);
+            Assert.Same(input, result.Value);
+            mockHttpContext.Verify(
+                x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()),
+                Times.Once());
+        }
+
+        [Fact]
         public void CreatedAtAction_WithParameterActionName_SetsResultActionName()
         {
             // Arrange
@@ -484,6 +511,32 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
+        public void CreatedAtAction_IDisposableObject_RegistersForDispose()
+        {
+            // Arrange
+            var mockHttpContext = new Mock<DefaultHttpContext>();
+            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+
+            var controller = new TestableController()
+            {
+                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
+            };
+            var input = new DisposableObject();
+
+            // Act
+            var result = controller.CreatedAtAction("SampleAction", input);
+
+            // Assert
+            Assert.IsType<CreatedAtActionResult>(result);
+            Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+            Assert.Equal("SampleAction", result.ActionName);
+            Assert.Same(input, result.Value);
+            mockHttpContext.Verify(
+                x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()),
+                Times.Once());
+        }
+
+        [Fact]
         public void CreatedAtRoute_WithParameterRouteName_SetsResultSameRouteName()
         {
             // Arrange
@@ -538,6 +591,32 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
             Assert.Same(routeName, result.RouteName);
             Assert.Equal(expected, result.RouteValues);
+        }
+
+        [Fact]
+        public void CreatedAtRoute_IDisposableObject_RegistersForDispose()
+        {
+            // Arrange
+            var mockHttpContext = new Mock<DefaultHttpContext>();
+            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+
+            var controller = new TestableController()
+            {
+                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
+            };
+            var input = new DisposableObject();
+
+            // Act
+            var result = controller.CreatedAtRoute("SampleRoute", input);
+
+            // Assert
+            Assert.IsType<CreatedAtRouteResult>(result);
+            Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+            Assert.Equal("SampleRoute", result.RouteName);
+            Assert.Same(input, result.Value);
+            mockHttpContext.Verify(
+                x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()),
+                Times.Once());
         }
 
         [Fact]
@@ -612,7 +691,12 @@ namespace Microsoft.AspNet.Mvc.Test
         public void File_WithStream()
         {
             // Arrange
-            var controller = new TestableController();
+            var mockHttpContext = new Mock<DefaultHttpContext>();
+            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+            var controller = new TestableController()
+            {
+                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
+            };
             var fileStream = Stream.Null;
 
             // Act
@@ -629,7 +713,13 @@ namespace Microsoft.AspNet.Mvc.Test
         public void File_WithStreamAndFileDownloadName()
         {
             // Arrange
-            var controller = new TestableController();
+            var mockHttpContext = new Mock<DefaultHttpContext>();
+            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+
+            var controller = new TestableController()
+            {
+                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
+            };
             var fileStream = Stream.Null;
 
             // Act
@@ -640,6 +730,9 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Same(fileStream, result.FileStream);
             Assert.Equal("someContentType", result.ContentType);
             Assert.Equal("someDownloadName", result.FileDownloadName);
+            mockHttpContext.Verify(
+                x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()),
+                Times.Once());
         }
 
         [Fact]
@@ -686,6 +779,31 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
+        public void HttpNotFound_IDisposableObject_RegistersForDispose()
+        {
+            // Arrange
+            var mockHttpContext = new Mock<DefaultHttpContext>();
+            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+
+            var controller = new TestableController()
+            {
+                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
+            };
+            var input = new DisposableObject();
+
+            // Act
+            var result = controller.HttpNotFound(input);
+
+            // Assert
+            Assert.IsType<HttpNotFoundObjectResult>(result);
+            Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
+            Assert.Same(input, result.Value);
+            mockHttpContext.Verify(
+                x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()),
+                Times.Once());
+        }
+
+        [Fact]
         public void BadRequest_SetsStatusCode()
         {
             // Arrange
@@ -713,6 +831,31 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
             Assert.Equal(obj, result.Value);
+        }
+
+        [Fact]
+        public void BadRequest_IDisposableObject_RegistersForDispose()
+        {
+            // Arrange
+            var mockHttpContext = new Mock<DefaultHttpContext>();
+            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+
+            var controller = new TestableController()
+            {
+                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
+            };
+            var input = new DisposableObject();
+
+            // Act
+            var result = controller.HttpBadRequest(input);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
+            Assert.Same(input, result.Value);
+            mockHttpContext.Verify(
+                x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()),
+                Times.Once());
         }
 
         [Fact]
@@ -886,6 +1029,30 @@ namespace Microsoft.AspNet.Mvc.Test
             // Assert
             Assert.IsType<JsonResult>(actualJsonResult);
             Assert.Same(data, actualJsonResult.Value);
+        }
+
+        [Fact]
+        public void Controller_Json_IDisposableObject_RegistersForDispose()
+        {
+            // Arrange
+            var mockHttpContext = new Mock<DefaultHttpContext>();
+            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+
+            var controller = new TestableController()
+            {
+                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
+            };
+            var input = new DisposableObject();
+
+            // Act
+            var result = controller.Json(input);
+
+            // Assert
+            Assert.IsType<JsonResult>(result);
+            Assert.Same(input, result.Value);
+            mockHttpContext.Verify(
+                x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()),
+                Times.Once());
         }
 
         public static IEnumerable<object[]> RedirectTestData
@@ -1402,7 +1569,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var model = new TryValidateModelModel();
-            var validationResult = new []
+            var validationResult = new[]
             {
                 new ModelValidationResult(string.Empty, "Out of range!")
             };
@@ -1568,6 +1735,14 @@ namespace Microsoft.AspNet.Mvc.Test
         private class TestableController : Controller
         {
 
+        }
+
+        private class DisposableObject : IDisposable
+        {
+            public void Dispose()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

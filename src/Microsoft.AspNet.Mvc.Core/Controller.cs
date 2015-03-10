@@ -376,6 +376,12 @@ namespace Microsoft.AspNet.Mvc
         [NonAction]
         public virtual JsonResult Json(object data)
         {
+            var disposableValue = data as IDisposable;
+            if (disposableValue != null)
+            {
+                Response.OnResponseCompleted(_ => disposableValue.Dispose(), state: null);
+            }
+
             return new JsonResult(data);
         }
 
@@ -659,6 +665,11 @@ namespace Microsoft.AspNet.Mvc
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, string fileDownloadName)
         {
+            if (fileStream != null)
+            {
+                Response.OnResponseCompleted(_ => fileStream.Dispose(), state: null);
+            }
+
             return new FileStreamResult(fileStream, contentType) { FileDownloadName = fileDownloadName };
         }
 
@@ -717,6 +728,12 @@ namespace Microsoft.AspNet.Mvc
         [NonAction]
         public virtual HttpNotFoundObjectResult HttpNotFound(object value)
         {
+            var disposableValue = value as IDisposable;
+            if (disposableValue != null)
+            {
+                Response.OnResponseCompleted(_ => disposableValue.Dispose(), state: null);
+            }
+
             return new HttpNotFoundObjectResult(value);
         }
 
@@ -737,6 +754,12 @@ namespace Microsoft.AspNet.Mvc
         [NonAction]
         public virtual BadRequestObjectResult HttpBadRequest(object error)
         {
+            var disposableValue = error as IDisposable;
+            if (disposableValue != null)
+            {
+                Response.OnResponseCompleted(_ => disposableValue.Dispose(), state: null);
+            }
+
             return new BadRequestObjectResult(error);
         }
 
@@ -759,6 +782,12 @@ namespace Microsoft.AspNet.Mvc
         [NonAction]
         public virtual CreatedResult Created([NotNull] string uri, object value)
         {
+            var disposableValue = value as IDisposable;
+            if (disposableValue != null)
+            {
+                Response.OnResponseCompleted(_ => disposableValue.Dispose(), state: null);
+            }
+
             return new CreatedResult(uri, value);
         }
 
@@ -780,7 +809,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 location = uri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
             }
-            return new CreatedResult(location, value);
+
+            return Created(location, value);
         }
 
         /// <summary>
@@ -822,6 +852,12 @@ namespace Microsoft.AspNet.Mvc
                                                              object routeValues,
                                                              object value)
         {
+            var disposableValue = value as IDisposable;
+            if (disposableValue != null)
+            {
+                Response.OnResponseCompleted(_ => disposableValue.Dispose(), state: null);
+            }
+
             return new CreatedAtActionResult(actionName, controllerName, routeValues, value);
         }
 
@@ -859,6 +895,12 @@ namespace Microsoft.AspNet.Mvc
         [NonAction]
         public virtual CreatedAtRouteResult CreatedAtRoute(string routeName, object routeValues, object value)
         {
+            var disposableValue = value as IDisposable;
+            if (disposableValue != null)
+            {
+                Response.OnResponseCompleted(_ => disposableValue.Dispose(), state: null);
+            }
+
             return new CreatedAtRouteResult(routeName, routeValues, value);
         }
 

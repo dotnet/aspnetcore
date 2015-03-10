@@ -10,6 +10,10 @@ namespace ActionResultsWebSite
 {
     public class ActionResultsVerificationController : Controller
     {
+
+        [FromServices]
+        public GuidLookupService Service { get; set; }
+
         public IActionResult Index([FromBody]DummyClass test)
         {
             if (!ModelState.IsValid)
@@ -95,6 +99,22 @@ namespace ActionResultsWebSite
             return HttpNotFound(CreateDummy());
         }
 
+        public IActionResult GetNotFoundObjectResultWithDisposableObject(string guid)
+        {
+            return HttpNotFound(CreateDisposableType(guid));
+        }
+
+        public bool GetDisposeCalled(string guid)
+        {
+            bool value;
+            if (Service.IsDisposed.TryGetValue(guid, out value))
+            {
+                return value;
+            }
+
+            return false;
+        }
+
         public DummyClass GetDummy(int id)
         {
             return CreateDummy();
@@ -107,6 +127,29 @@ namespace ActionResultsWebSite
                 SampleInt = 10,
                 SampleString = "Foo"
             };
+        }
+
+        private DisposableType CreateDisposableType(string guid)
+        {
+            return new DisposableType(Service, guid);
+        }
+
+        private class DisposableType : IDisposable
+        {
+            private GuidLookupService _service;
+            private string _guid;
+
+            public DisposableType(GuidLookupService service, string guid)
+            {
+                _service = service;
+                _guid = guid;
+                _service.IsDisposed[_guid] = false;
+            }
+
+            public void Dispose()
+            {
+                _service.IsDisposed[_guid] = true;
+            }
         }
     }
 }

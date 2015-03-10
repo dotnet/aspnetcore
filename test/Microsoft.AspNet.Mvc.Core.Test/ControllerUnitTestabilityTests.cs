@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.WebUtilities;
@@ -144,7 +145,12 @@ namespace Microsoft.AspNet.Mvc
         public void ControllerFileStream_InvokedInUnitTests(string content, string contentType, string fileName)
         {
             // Arrange
-            var controller = new TestabilityController();
+            var mockHttpContext = new Mock<DefaultHttpContext>();
+            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+            var controller = new TestabilityController()
+            {
+                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
+            };
 
             // Act
             var result = controller.FileStream_Action(content, contentType, fileName);
