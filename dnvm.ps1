@@ -1055,7 +1055,7 @@ function dnvm-use {
         Set-Path (Change-Path $env:Path "" ($RuntimeDirs))
 
         if ($Persistent) {
-            Console-Write "Removing all runtimes from user PATH"
+            _WriteOut "Removing all runtimes from user PATH"
             $userPath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
             $userPath = Change-Path $userPath "" ($RuntimeDirs)
             [Environment]::SetEnvironmentVariable("Path", $userPath, [System.EnvironmentVariableTarget]::User)
@@ -1073,7 +1073,7 @@ function dnvm-use {
     Set-Path (Change-Path $env:Path $runtimeBin ($RuntimeDirs))
 
     if ($Persistent) {
-        Console-Write "Adding $runtimeBin to user PATH"
+        _WriteOut "Adding $runtimeBin to user PATH"
         $userPath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
         $userPath = Change-Path $userPath $runtimeBin ($RuntimeDirs)
         [Environment]::SetEnvironmentVariable("Path", $userPath, [System.EnvironmentVariableTarget]::User)
