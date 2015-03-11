@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.22111.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.Kestrel", "src\Microsoft.AspNet.Server.Kestrel\Microsoft.AspNet.Server.Kestrel.kproj", "{F510611A-3BEE-4B88-A613-5F4A74ED82A1}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.Kestrel", "src\Microsoft.AspNet.Server.Kestrel\Microsoft.AspNet.Server.Kestrel.xproj", "{F510611A-3BEE-4B88-A613-5F4A74ED82A1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.KestrelTests", "test\Microsoft.AspNet.Server.KestrelTests\Microsoft.AspNet.Server.KestrelTests.kproj", "{37F3BFB2-6454-49E5-9D7F-581BF755CCFE}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.KestrelTests", "test\Microsoft.AspNet.Server.KestrelTests\Microsoft.AspNet.Server.KestrelTests.xproj", "{37F3BFB2-6454-49E5-9D7F-581BF755CCFE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7972A5D6-3385-4127-9277-428506DD44FF}"
 	ProjectSection(SolutionItems) = preProject
@@ -15,9 +15,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		makefile.shade = makefile.shade
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SampleApp", "samples\SampleApp\SampleApp.kproj", "{2C3CB3DC-EEBF-4F52-9E1C-4F2F972E76C3}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SampleApp", "samples\SampleApp\SampleApp.xproj", "{2C3CB3DC-EEBF-4F52-9E1C-4F2F972E76C3}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Kestrel", "src\Kestrel\Kestrel.kproj", "{30B7617E-58EF-4382-B3EA-5B2E718CF1A6}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Kestrel", "src\Kestrel\Kestrel.xproj", "{30B7617E-58EF-4382-B3EA-5B2E718CF1A6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2D5D5227-4DBD-499A-96B1-76A36B03B750}"
 EndProject
