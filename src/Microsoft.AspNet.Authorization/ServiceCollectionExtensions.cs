@@ -19,18 +19,18 @@ namespace Microsoft.Framework.DependencyInjection
             return services.Configure(configure);
         }
 
-        // Review: Need UseDefaultSubkey parameter?
-        public static IServiceCollection AddAuthorization([NotNull] this IServiceCollection services, IConfiguration config = null, Action<AuthorizationOptions> configureOptions = null)
+        public static IServiceCollection AddAuthorization([NotNull] this IServiceCollection services)
+        {
+            return services.AddAuthorization(configureOptions: null);
+        }
+
+        public static IServiceCollection AddAuthorization([NotNull] this IServiceCollection services, Action<AuthorizationOptions> configureOptions)
         {
             services.AddOptions();
             services.TryAdd(ServiceDescriptor.Transient<IAuthorizationService, DefaultAuthorizationService>());
             services.AddTransient<IAuthorizationHandler, ClaimsAuthorizationHandler>();
             services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
             services.AddTransient<IAuthorizationHandler, PassThroughAuthorizationHandler>();
-            if (configureOptions != null)
-            {
-                services.Configure(configureOptions);
-            }
             return services;
         }
     }
