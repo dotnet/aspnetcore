@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.DataProtection
         }
 
         /// <summary>
-        /// The key {0:B} was not found in the keyring.
+        /// The key '{0:D}' was not found in the key ring.
         /// </summary>
         internal static string Common_KeyNotFound
         {
@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.DataProtection
         }
 
         /// <summary>
-        /// The key {0:B} was not found in the keyring.
+        /// The key '{0:D}' was not found in the key ring.
         /// </summary>
         internal static string FormatCommon_KeyNotFound()
         {
@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.DataProtection
         }
 
         /// <summary>
-        /// The key {0:B} has been revoked.
+        /// The key '{0:D}' has been revoked.
         /// </summary>
         internal static string Common_KeyRevoked
         {
@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.DataProtection
         }
 
         /// <summary>
-        /// The key {0:B} has been revoked.
+        /// The key '{0:D}' has been revoked.
         /// </summary>
         internal static string FormatCommon_KeyRevoked()
         {
@@ -139,35 +139,35 @@ namespace Microsoft.AspNet.DataProtection
         }
 
         /// <summary>
-        /// The provided payload was not protected with this protection provider.
+        /// The provided payload cannot be decrypted because it was not protected with this protection provider.
         /// </summary>
-        internal static string Common_NotAValidProtectedPayload
+        internal static string ProtectionProvider_BadMagicHeader
         {
-            get { return GetString("Common_NotAValidProtectedPayload"); }
+            get { return GetString("ProtectionProvider_BadMagicHeader"); }
         }
 
         /// <summary>
-        /// The provided payload was not protected with this protection provider.
+        /// The provided payload cannot be decrypted because it was not protected with this protection provider.
         /// </summary>
-        internal static string FormatCommon_NotAValidProtectedPayload()
+        internal static string FormatProtectionProvider_BadMagicHeader()
         {
-            return GetString("Common_NotAValidProtectedPayload");
+            return GetString("ProtectionProvider_BadMagicHeader");
         }
 
         /// <summary>
-        /// The protected payload cannot be decrypted because it was protected with a newer version of the protection provider.
+        /// The provided payload cannot be decrypted because it was protected with a newer version of the protection provider.
         /// </summary>
-        internal static string Common_PayloadProducedByNewerVersion
+        internal static string ProtectionProvider_BadVersion
         {
-            get { return GetString("Common_PayloadProducedByNewerVersion"); }
+            get { return GetString("ProtectionProvider_BadVersion"); }
         }
 
         /// <summary>
-        /// The protected payload cannot be decrypted because it was protected with a newer version of the protection provider.
+        /// The provided payload cannot be decrypted because it was protected with a newer version of the protection provider.
         /// </summary>
-        internal static string FormatCommon_PayloadProducedByNewerVersion()
+        internal static string FormatProtectionProvider_BadVersion()
         {
-            return GetString("Common_PayloadProducedByNewerVersion");
+            return GetString("ProtectionProvider_BadVersion");
         }
 
         /// <summary>
@@ -187,19 +187,195 @@ namespace Microsoft.AspNet.DataProtection
         }
 
         /// <summary>
-        /// The purposes array cannot be null or empty and cannot contain null or empty elements.
+        /// Value must be non-negative.
         /// </summary>
-        internal static string DataProtectionExtensions_NullPurposesArray
+        internal static string Common_ValueMustBeNonNegative
         {
-            get { return GetString("DataProtectionExtensions_NullPurposesArray"); }
+            get { return GetString("Common_ValueMustBeNonNegative"); }
         }
 
         /// <summary>
-        /// The purposes array cannot be null or empty and cannot contain null or empty elements.
+        /// Value must be non-negative.
         /// </summary>
-        internal static string FormatDataProtectionExtensions_NullPurposesArray()
+        internal static string FormatCommon_ValueMustBeNonNegative()
         {
-            return GetString("DataProtectionExtensions_NullPurposesArray");
+            return GetString("Common_ValueMustBeNonNegative");
+        }
+
+        /// <summary>
+        /// The type '{1}' is not assignable to '{0}'.
+        /// </summary>
+        internal static string TypeExtensions_BadCast
+        {
+            get { return GetString("TypeExtensions_BadCast"); }
+        }
+
+        /// <summary>
+        /// The type '{1}' is not assignable to '{0}'.
+        /// </summary>
+        internal static string FormatTypeExtensions_BadCast(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TypeExtensions_BadCast"), p0, p1);
+        }
+
+        /// <summary>
+        /// The default new key lifetime must be at least one week.
+        /// </summary>
+        internal static string KeyLifetimeOptions_MinNewKeyLifetimeViolated
+        {
+            get { return GetString("KeyLifetimeOptions_MinNewKeyLifetimeViolated"); }
+        }
+
+        /// <summary>
+        /// The default new key lifetime must be at least one week.
+        /// </summary>
+        internal static string FormatKeyLifetimeOptions_MinNewKeyLifetimeViolated()
+        {
+            return GetString("KeyLifetimeOptions_MinNewKeyLifetimeViolated");
+        }
+
+        /// <summary>
+        /// The key '{0:D}' already exists in the keyring.
+        /// </summary>
+        internal static string XmlKeyManager_DuplicateKey
+        {
+            get { return GetString("XmlKeyManager_DuplicateKey"); }
+        }
+
+        /// <summary>
+        /// The key '{0:D}' already exists in the keyring.
+        /// </summary>
+        internal static string FormatXmlKeyManager_DuplicateKey()
+        {
+            return GetString("XmlKeyManager_DuplicateKey");
+        }
+
+        /// <summary>
+        /// Argument cannot be null or empty.
+        /// </summary>
+        internal static string Common_ArgumentCannotBeNullOrEmpty
+        {
+            get { return GetString("Common_ArgumentCannotBeNullOrEmpty"); }
+        }
+
+        /// <summary>
+        /// Argument cannot be null or empty.
+        /// </summary>
+        internal static string FormatCommon_ArgumentCannotBeNullOrEmpty()
+        {
+            return GetString("Common_ArgumentCannotBeNullOrEmpty");
+        }
+
+        /// <summary>
+        /// Property {0} must have a non-negative value.
+        /// </summary>
+        internal static string Common_PropertyMustBeNonNegative
+        {
+            get { return GetString("Common_PropertyMustBeNonNegative"); }
+        }
+
+        /// <summary>
+        /// Property {0} must have a non-negative value.
+        /// </summary>
+        internal static string FormatCommon_PropertyMustBeNonNegative(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Common_PropertyMustBeNonNegative"), p0);
+        }
+
+        /// <summary>
+        /// GCM algorithms require the Windows platform.
+        /// </summary>
+        internal static string Platform_WindowsRequiredForGcm
+        {
+            get { return GetString("Platform_WindowsRequiredForGcm"); }
+        }
+
+        /// <summary>
+        /// GCM algorithms require the Windows platform.
+        /// </summary>
+        internal static string FormatPlatform_WindowsRequiredForGcm()
+        {
+            return GetString("Platform_WindowsRequiredForGcm");
+        }
+
+        /// <summary>
+        /// A certificate with the thumbprint '{0}' could not be found.
+        /// </summary>
+        internal static string CertificateXmlEncryptor_CertificateNotFound
+        {
+            get { return GetString("CertificateXmlEncryptor_CertificateNotFound"); }
+        }
+
+        /// <summary>
+        /// A certificate with the thumbprint '{0}' could not be found.
+        /// </summary>
+        internal static string FormatCertificateXmlEncryptor_CertificateNotFound(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("CertificateXmlEncryptor_CertificateNotFound"), p0);
+        }
+
+        /// <summary>
+        /// Decrypting EncryptedXml-encapsulated payloads is not yet supported on Core CLR.
+        /// </summary>
+        internal static string EncryptedXmlDecryptor_DoesNotWorkOnCoreClr
+        {
+            get { return GetString("EncryptedXmlDecryptor_DoesNotWorkOnCoreClr"); }
+        }
+
+        /// <summary>
+        /// Decrypting EncryptedXml-encapsulated payloads is not yet supported on Core CLR.
+        /// </summary>
+        internal static string FormatEncryptedXmlDecryptor_DoesNotWorkOnCoreClr()
+        {
+            return GetString("EncryptedXmlDecryptor_DoesNotWorkOnCoreClr");
+        }
+
+        /// <summary>
+        /// The symmetric algorithm block size of {0} bits is invalid. The block size must be between 64 and 2048 bits, inclusive, and it must be a multiple of 8 bits.
+        /// </summary>
+        internal static string AlgorithmAssert_BadBlockSize
+        {
+            get { return GetString("AlgorithmAssert_BadBlockSize"); }
+        }
+
+        /// <summary>
+        /// The symmetric algorithm block size of {0} bits is invalid. The block size must be between 64 and 2048 bits, inclusive, and it must be a multiple of 8 bits.
+        /// </summary>
+        internal static string FormatAlgorithmAssert_BadBlockSize(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AlgorithmAssert_BadBlockSize"), p0);
+        }
+
+        /// <summary>
+        /// The validation algorithm digest size of {0} bits is invalid. The digest size must be between 128 and 2048 bits, inclusive, and it must be a multiple of 8 bits.
+        /// </summary>
+        internal static string AlgorithmAssert_BadDigestSize
+        {
+            get { return GetString("AlgorithmAssert_BadDigestSize"); }
+        }
+
+        /// <summary>
+        /// The validation algorithm digest size of {0} bits is invalid. The digest size must be between 128 and 2048 bits, inclusive, and it must be a multiple of 8 bits.
+        /// </summary>
+        internal static string FormatAlgorithmAssert_BadDigestSize(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AlgorithmAssert_BadDigestSize"), p0);
+        }
+
+        /// <summary>
+        /// The symmetric algorithm key size of {0} bits is invalid. The key size must be between 128 and 2048 bits, inclusive, and it must be a multiple of 8 bits.
+        /// </summary>
+        internal static string AlgorithmAssert_BadKeySize
+        {
+            get { return GetString("AlgorithmAssert_BadKeySize"); }
+        }
+
+        /// <summary>
+        /// The symmetric algorithm key size of {0} bits is invalid. The key size must be between 128 and 2048 bits, inclusive, and it must be a multiple of 8 bits.
+        /// </summary>
+        internal static string FormatAlgorithmAssert_BadKeySize(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AlgorithmAssert_BadKeySize"), p0);
         }
 
         private static string GetString(string name, params string[] formatterNames)

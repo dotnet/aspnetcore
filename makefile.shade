@@ -1,3 +1,5 @@
+use assembly='WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+use namespace='System.IO.Packaging'
 
 var VERSION='0.1'
 var FULL_VERSION='0.1'
@@ -5,3 +7,39 @@ var AUTHORS='Microsoft Open Technologies, Inc.'
 
 use-standard-lifecycle
 k-standard-goals
+
+#nupkg-patch target='compile'
+    @{
+        var packagePaths = Files.Include("artifacts/build/**/Microsoft.AspNet.DataProtection.SystemWeb.*.nupkg")
+            .Exclude("**/*.symbols.nupkg");
+        foreach (var packagePath in packagePaths)
+        {
+            using (var package = Package.Open(packagePath, FileMode.Open, FileAccess.ReadWrite))
+            {
+                CreatePartFromFile(
+                    package,
+                    @"src\Microsoft.AspNet.DataProtection.SystemWeb\web.config.transform",
+                    @"content\web.config.transform");
+            }
+        }
+    }
+
+functions
+    @{
+        PackagePart CreatePartFromFile(
+            Package destination,
+            string sourceFileName,
+            string partUriString)
+        {
+            var partUri = PackUriHelper.CreatePartUri(new Uri(partUriString, UriKind.Relative));
+            var packagePart = destination.CreatePart(partUri, "application/octet", CompressionOption.Maximum);
+
+            using (var sourceStream = File.OpenRead(sourceFileName))
+            using (var stream = packagePart.GetStream())
+            {
+                sourceStream.CopyTo(stream);
+            }
+
+            return packagePart;
+        }
+    }

@@ -200,44 +200,7 @@ namespace Microsoft.AspNet.Cryptography
         /*
          * CRYPT32.DLL
          */
-
-        [DllImport(CRYPT32_LIB, CallingConvention = CallingConvention.Winapi)]
-#if !DNXCORE50
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-#endif
-        // http://msdn.microsoft.com/en-us/library/windows/desktop/aa376045(v=vs.85).aspx
-        internal static extern SafeCertContextHandle CertDuplicateCertificateContext(
-            [In] IntPtr pCertContext);
-
-        [DllImport(CRYPT32_LIB, CallingConvention = CallingConvention.Winapi)]
-#if !DNXCORE50
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-#endif
-        // http://msdn.microsoft.com/en-us/library/windows/desktop/aa376075(v=vs.85).aspx
-        internal static extern bool CertFreeCertificateContext(
-            [In] IntPtr pCertContext);
-
-        [DllImport(CRYPT32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-        // http://msdn.microsoft.com/en-us/library/windows/desktop/aa376079(v=vs.85).aspx
-        internal static extern bool CertGetCertificateContextProperty(
-            [In] SafeCertContextHandle pCertContext,
-            [In] uint dwPropId,
-            [In] void* pvData,
-            [In, Out] ref uint pcbData);
-
-        [DllImport(CRYPT32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-        // http://msdn.microsoft.com/en-us/library/windows/desktop/aa379885(v=vs.85).aspx
-#if !DNXCORE50
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
-#endif
-        internal static extern bool CryptAcquireCertificatePrivateKey(
-            [In] SafeCertContextHandle pCert,
-            [In] uint dwFlags,
-            [In] void* pvParameters,
-            [Out] out SafeNCryptKeyHandle phCryptProvOrNCryptKey,
-            [Out] out uint pdwKeySpec,
-            [Out] out bool pfCallerFreeProvOrNCryptKey);
-
+         
         [DllImport(CRYPT32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa380261(v=vs.85).aspx
         internal static extern bool CryptProtectData(
@@ -301,16 +264,12 @@ namespace Microsoft.AspNet.Cryptography
             [Out] out NCryptDescriptorHandle phDescriptor);
 
         [DllImport(NCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
-        // http://msdn.microsoft.com/en-us/library/windows/desktop/aa376249(v=vs.85).aspx
-        internal static extern int NCryptDecrypt(
-            [In] SafeNCryptKeyHandle hKey,
-            [In] byte* pbInput,
-            [In] uint cbInput,
-            [In] void* pPaddingInfo,
-            [In] byte* pbOutput,
-            [In] uint cbOutput,
-            [Out] out uint pcbResult,
-            [In] NCryptEncryptFlags dwFlags);
+        // https://msdn.microsoft.com/en-us/library/windows/desktop/hh706801(v=vs.85).aspx
+        internal static extern int NCryptGetProtectionDescriptorInfo(
+            [In] NCryptDescriptorHandle hDescriptor,
+            [In] IntPtr pMemPara,
+            [In] uint dwInfoType,
+            [Out] out LocalAllocHandle ppvInfo);
 
         [DllImport(NCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
         // http://msdn.microsoft.com/en-us/library/windows/desktop/hh706802(v=vs.85).aspx
@@ -335,6 +294,18 @@ namespace Microsoft.AspNet.Cryptography
             [In] IntPtr hWnd,
             [Out] out LocalAllocHandle ppbData,
             [Out] out uint pcbData);
+
+        [DllImport(NCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
+        // http://msdn.microsoft.com/en-us/library/windows/desktop/hh706811(v=vs.85).aspx
+        internal static extern int NCryptUnprotectSecret(
+           [Out] out NCryptDescriptorHandle phDescriptor,
+           [In] uint dwFlags,
+           [In] byte* pbProtectedBlob,
+           [In] uint cbProtectedBlob,
+           [In] IntPtr pMemPara,
+           [In] IntPtr hWnd,
+           [Out] out LocalAllocHandle ppbData,
+           [Out] out uint pcbData);
 
         /*
          * HELPER FUNCTIONS

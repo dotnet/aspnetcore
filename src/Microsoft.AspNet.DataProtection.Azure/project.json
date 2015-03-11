@@ -3,6 +3,7 @@
     "description": "ASP.NET 5 blob storage repository for DataProtection.",
     "dependencies": {
         "Microsoft.AspNet.DataProtection": "1.0.0-*",
+        "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" },
         "WindowsAzure.Storage": "4.3.0"
     },
     "frameworks": {

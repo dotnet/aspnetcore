@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.Cryptography.Cng;
 using Microsoft.AspNet.Cryptography.SafeHandles;
+using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNet.DataProtection.SP800_108;
 
 namespace Microsoft.AspNet.DataProtection.Cng
@@ -38,9 +39,10 @@ namespace Microsoft.AspNet.DataProtection.Cng
 
         public GcmAuthenticatedEncryptor(Secret keyDerivationKey, BCryptAlgorithmHandle symmetricAlgorithmHandle, uint symmetricAlgorithmKeySizeInBytes, IBCryptGenRandom genRandom = null)
         {
-            CryptoUtil.Assert(KEY_MODIFIER_SIZE_IN_BYTES <= symmetricAlgorithmKeySizeInBytes && symmetricAlgorithmKeySizeInBytes <= Constants.MAX_STACKALLOC_BYTES,
-                "KEY_MODIFIER_SIZE_IN_BYTES <= symmetricAlgorithmKeySizeInBytes && symmetricAlgorithmKeySizeInBytes <= Constants.MAX_STACKALLOC_BYTES");
-
+            // Is the key size appropriate?
+            AlgorithmAssert.IsAllowableSymmetricAlgorithmKeySize(checked(symmetricAlgorithmKeySizeInBytes * 8));
+            CryptoUtil.Assert(symmetricAlgorithmHandle.GetCipherBlockLength() == 128 / 8, "GCM requires a block cipher algorithm with a 128-bit block size.");
+            
             _genRandom = genRandom ?? BCryptGenRandomImpl.Instance;
             _sp800_108_ctr_hmac_provider = SP800_108_CTR_HMACSHA512Util.CreateProvider(keyDerivationKey);
             _symmetricAlgorithmHandle = symmetricAlgorithmHandle;

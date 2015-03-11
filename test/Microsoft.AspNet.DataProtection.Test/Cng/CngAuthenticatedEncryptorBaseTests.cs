@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.DataProtection.Cng;
+using Microsoft.AspNet.DataProtection.Test.Shared;
 using Microsoft.AspNet.Testing.xunit;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.DataProtection.Test.Cng
+namespace Microsoft.AspNet.DataProtection.Cng
 {
     public unsafe class CngAuthenticatedEncryptorBaseTests
     {
         [ConditionalFact]
-        [ConditionalRunTestOnlyIfBcryptAvailable]
+        [ConditionalRunTestOnlyOnWindows]
         public void Decrypt_ForwardsArraySegment()
         {
             // Arrange
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.DataProtection.Test.Cng
         }
 
         [ConditionalFact]
-        [ConditionalRunTestOnlyIfBcryptAvailable]
+        [ConditionalRunTestOnlyOnWindows]
         public void Decrypt_HandlesEmptyAADPointerFixup()
         {
             // Arrange
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.DataProtection.Test.Cng
         }
 
         [ConditionalFact]
-        [ConditionalRunTestOnlyIfBcryptAvailable]
+        [ConditionalRunTestOnlyOnWindows]
         public void Decrypt_HandlesEmptyCiphertextPointerFixup()
         {
             // Arrange

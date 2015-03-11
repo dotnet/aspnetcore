@@ -3,6 +3,7 @@
 
 using System;
 using System.Xml.Linq;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
 {
@@ -14,8 +15,12 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         /// <summary>
         /// Decrypts the specified XML element.
         /// </summary>
-        /// <param name="encryptedElement">The encrypted XML element to decrypt. This element is unchanged by the method.</param>
-        /// <returns>The decrypted form of the XML element.</returns>
-        XElement Decrypt(XElement encryptedElement);
+        /// <param name="encryptedElement">An encrypted XML element.</param>
+        /// <returns>The decrypted form of <paramref name="encryptedElement"/>.</returns>
+        /// <remarks>
+        /// Implementations of this method must not mutate the <see cref="XElement"/>
+        /// instance provided by <paramref name="encryptedElement"/>.
+        /// </remarks>
+        XElement Decrypt([NotNull] XElement encryptedElement);
     }
 }

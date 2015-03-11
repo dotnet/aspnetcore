@@ -3,56 +3,40 @@
 
 using System;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
 namespace Microsoft.AspNet.DataProtection.KeyManagement
 {
+    /// <summary>
+    /// The basic implementation of <see cref="IKey"/>.
+    /// </summary>
     internal sealed class Key : IKey
     {
-        private readonly IAuthenticatedEncryptorConfiguration _encryptorConfiguration;
+        private readonly IAuthenticatedEncryptorDescriptor _descriptor;
 
-        public Key(Guid keyId, DateTimeOffset creationDate, DateTimeOffset activationDate, DateTimeOffset expirationDate, IAuthenticatedEncryptorConfiguration encryptorConfiguration)
+        public Key(Guid keyId, DateTimeOffset creationDate, DateTimeOffset activationDate, DateTimeOffset expirationDate, IAuthenticatedEncryptorDescriptor descriptor)
         {
             KeyId = keyId;
             CreationDate = creationDate;
             ActivationDate = activationDate;
             ExpirationDate = expirationDate;
 
-            _encryptorConfiguration = encryptorConfiguration;
+            _descriptor = descriptor;
         }
 
-        public DateTimeOffset ActivationDate
-        {
-            get;
-            private set;
-        }
+        public DateTimeOffset ActivationDate { get; }
 
-        public DateTimeOffset CreationDate
-        {
-            get;
-            private set;
-        }
+        public DateTimeOffset CreationDate { get; }
 
-        public DateTimeOffset ExpirationDate
-        {
-            get;
-            private set;
-        }
+        public DateTimeOffset ExpirationDate { get; }
 
-        public bool IsRevoked
-        {
-            get;
-            private set;
-        }
+        public bool IsRevoked { get; private set; }
 
-        public Guid KeyId
-        {
-            get;
-            private set;
-        }
+        public Guid KeyId { get; }
 
         public IAuthenticatedEncryptor CreateEncryptorInstance()
         {
-            return _encryptorConfiguration.CreateEncryptorInstance();
+            return _descriptor.CreateEncryptorInstance();
         }
 
         internal void SetRevoked()

@@ -6,16 +6,16 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNet.Cryptography.Cng;
-using Microsoft.AspNet.DataProtection.Cng;
+using Microsoft.AspNet.DataProtection.Test.Shared;
 using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNet.DataProtection.Test.Cng
+namespace Microsoft.AspNet.DataProtection.Cng
 {
     public class CbcAuthenticatedEncryptorTests
     {
         [ConditionalFact]
-        [ConditionalRunTestOnlyIfBcryptAvailable]
+        [ConditionalRunTestOnlyOnWindows]
         public void Encrypt_Decrypt_RoundTrips()
         {
             // Arrange
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.DataProtection.Test.Cng
         }
 
         [ConditionalFact]
-        [ConditionalRunTestOnlyIfBcryptAvailable]
+        [ConditionalRunTestOnlyOnWindows]
         public void Encrypt_Decrypt_Tampering_Fails()
         {
             // Arrange
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.DataProtection.Test.Cng
         }
 
         [ConditionalFact]
-        [ConditionalRunTestOnlyIfBcryptAvailable]
+        [ConditionalRunTestOnlyOnWindows]
         public void Encrypt_KnownKey()
         {
             // Arrange

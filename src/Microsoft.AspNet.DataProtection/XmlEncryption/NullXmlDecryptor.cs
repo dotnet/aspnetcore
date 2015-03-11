@@ -4,21 +4,30 @@
 using System;
 using System.Linq;
 using System.Xml.Linq;
-using Microsoft.AspNet.Cryptography;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
 {
     /// <summary>
-    /// A class that can decrypt XML elements which were encrypted using a null encryptor.
+    /// An <see cref="IXmlDecryptor"/> that decrypts XML elements with a null decryptor.
     /// </summary>
-    internal unsafe sealed class NullXmlDecryptor : IXmlDecryptor
+    public sealed class NullXmlDecryptor : IXmlDecryptor
     {
+        /// <summary>
+        /// Decrypts the specified XML element.
+        /// </summary>
+        /// <param name="encryptedElement">An encrypted XML element.</param>
+        /// <returns>The decrypted form of <paramref name="encryptedElement"/>.</returns>
+        /// <remarks>
         public XElement Decrypt([NotNull] XElement encryptedElement)
         {
-            CryptoUtil.Assert(encryptedElement.Name == NullXmlEncryptor.NullEncryptedSecretElementName,
-                "TODO: Incorrect element.");
+            // <unencryptedKey>
+            //   <!-- This key is not encrypted. -->
+            //   <plaintextElement />
+            // </unencryptedKey>
 
-            return encryptedElement.Elements().Single();
+            // Return a clone of the single child node.
+            return new XElement(encryptedElement.Elements().Single());
         }
     }
 }

@@ -5,9 +5,14 @@ using System;
 
 namespace Microsoft.AspNet.Cryptography.Cng
 {
+    /// <summary>
+    /// Wraps utility BCRYPT APIs that don't work directly with handles.
+    /// </summary>
     internal unsafe static class BCryptUtil
     {
-        // helper function that's similar to RNGCryptoServiceProvider, but works directly with pointers
+        /// <summary>
+        /// Fills a buffer with cryptographically secure random data.
+        /// </summary>
         public static void GenRandom(byte* pbBuffer, uint cbBuffer)
         {
             if (cbBuffer != 0)

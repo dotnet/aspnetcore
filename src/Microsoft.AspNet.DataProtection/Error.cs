@@ -9,9 +9,20 @@ namespace Microsoft.AspNet.DataProtection
 {
     internal static class Error
     {
+        public static InvalidOperationException CertificateXmlEncryptor_CertificateNotFound(string thumbprint)
+        {
+            string message = Resources.FormatCertificateXmlEncryptor_CertificateNotFound(thumbprint);
+            return new InvalidOperationException(message);
+        }
+
+        public static ArgumentException Common_ArgumentCannotBeNullOrEmpty(string parameterName)
+        {
+            return new ArgumentException(Resources.Common_ArgumentCannotBeNullOrEmpty, parameterName);
+        }
+
         public static ArgumentException Common_BufferIncorrectlySized(string parameterName, int actualSize, int expectedSize)
         {
-            string message = String.Format(CultureInfo.CurrentCulture, Resources.Common_BufferIncorrectlySized, actualSize, expectedSize);
+            string message = Resources.FormatCommon_BufferIncorrectlySized(actualSize, expectedSize);
             return new ArgumentException(message, parameterName);
         }
 
@@ -29,7 +40,13 @@ namespace Microsoft.AspNet.DataProtection
         public static InvalidOperationException Common_PropertyCannotBeNullOrEmpty(string propertyName)
         {
             string message = String.Format(CultureInfo.CurrentCulture, Resources.Common_PropertyCannotBeNullOrEmpty, propertyName);
-            throw new InvalidOperationException(message);
+            return new InvalidOperationException(message);
+        }
+
+        public static InvalidOperationException Common_PropertyMustBeNonNegative(string propertyName)
+        {
+            string message = String.Format(CultureInfo.CurrentCulture, Resources.Common_PropertyMustBeNonNegative, propertyName);
+            return new InvalidOperationException(message);
         }
 
         public static CryptographicException Common_EncryptionFailed(Exception inner = null)
@@ -49,14 +66,9 @@ namespace Microsoft.AspNet.DataProtection
             return new CryptographicException(message);
         }
 
-        public static CryptographicException Common_NotAValidProtectedPayload()
+        public static ArgumentOutOfRangeException Common_ValueMustBeNonNegative(string paramName)
         {
-            return new CryptographicException(Resources.Common_NotAValidProtectedPayload);
-        }
-
-        public static CryptographicException Common_PayloadProducedByNewerVersion()
-        {
-            return new CryptographicException(Resources.Common_PayloadProducedByNewerVersion);
+            return new ArgumentOutOfRangeException(paramName, Resources.Common_ValueMustBeNonNegative);
         }
 
         public static CryptographicException DecryptionFailed(Exception inner)
@@ -64,11 +76,27 @@ namespace Microsoft.AspNet.DataProtection
             return new CryptographicException(Resources.Common_DecryptionFailed, inner);
         }
 
+        public static CryptographicException ProtectionProvider_BadMagicHeader()
+        {
+            return new CryptographicException(Resources.ProtectionProvider_BadMagicHeader);
+        }
+
+        public static CryptographicException ProtectionProvider_BadVersion()
+        {
+            return new CryptographicException(Resources.ProtectionProvider_BadVersion);
+        }
+
         public static CryptographicException TimeLimitedDataProtector_PayloadExpired(ulong utcTicksExpiration)
         {
             DateTimeOffset expiration = new DateTimeOffset((long)utcTicksExpiration, TimeSpan.Zero).ToLocalTime();
             string message = String.Format(CultureInfo.CurrentCulture, Resources.TimeLimitedDataProtector_PayloadExpired, expiration);
             return new CryptographicException(message);
+        }
+
+        public static InvalidOperationException XmlKeyManager_DuplicateKey(Guid keyId)
+        {
+            string message = String.Format(CultureInfo.CurrentCulture, Resources.XmlKeyManager_DuplicateKey, keyId);
+            return new InvalidOperationException(message);
         }
     }
 }

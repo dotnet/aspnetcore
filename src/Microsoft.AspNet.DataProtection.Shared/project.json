@@ -1,0 +1,20 @@
+{
+    "version": "1.0.0-*",
+    "description": "ASP.NET 5 Data Protection shared code.",
+    "dependencies": {
+    },
+    "frameworks": {
+        "net451": { },
+        "dnx451": { },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Security.Cryptography.Encryption": "4.0.0-beta-*",
+                "System.Text.Encoding.Extensions": "4.0.10-beta-*"
+            }
+        }
+    },
+    "shared": "**\\*.cs",
+    "compilationOptions": {
+        "warningsAsErrors": true
+    }
+}

@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using Microsoft.AspNet.Cryptography.Cng;
+using Microsoft.AspNet.Cryptography.Internal;
 
 #if !DNXCORE50
 using System.Runtime.ConstrainedExecution;
@@ -30,6 +32,24 @@ namespace Microsoft.AspNet.Cryptography
         public static void AssertSafeHandleIsValid(SafeHandle safeHandle)
         {
             Assert(safeHandle != null && !safeHandle.IsInvalid, "Safe handle is invalid.");
+        }
+
+        // Asserts that the current platform is Windows; throws PlatformNotSupportedException otherwise.
+        public static void AssertPlatformIsWindows()
+        {
+            if (!OSVersionUtil.IsWindows())
+            {
+                throw new PlatformNotSupportedException(Resources.Platform_Windows7Required);
+            }
+        }
+
+        // Asserts that the current platform is Windows 8 or above; throws PlatformNotSupportedException otherwise.
+        public static void AssertPlatformIsWindows8OrLater()
+        {
+            if (!OSVersionUtil.IsWindows8OrLater())
+            {
+                throw new PlatformNotSupportedException(Resources.Platform_Windows8Required);
+            }
         }
 
         // This isn't a typical Debug.Fail; an error always occurs, even in retail builds.

@@ -6,6 +6,7 @@ using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.Cryptography.Cng;
 using Microsoft.AspNet.Cryptography.SafeHandles;
 using Microsoft.AspNet.DataProtection.Managed;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.DataProtection
 {
@@ -36,7 +37,7 @@ namespace Microsoft.AspNet.DataProtection
         /// Creates a new Secret from the provided input value, where the input value
         /// is specified as an array.
         /// </summary>
-        public Secret(byte[] value)
+        public Secret([NotNull] byte[] value)
             : this(new ArraySegment<byte>(value))
         {
         }
@@ -49,11 +50,11 @@ namespace Microsoft.AspNet.DataProtection
         {
             if (secret == null)
             {
-                throw new ArgumentNullException("secret");
+                throw new ArgumentNullException(nameof(secret));
             }
             if (secretLength < 0)
             {
-                throw new ArgumentOutOfRangeException("secretLength");
+                throw Error.Common_ValueMustBeNonNegative(nameof(secretLength));
             }
 
             _localAllocHandle = Protect(secret, (uint)secretLength);
@@ -63,13 +64,8 @@ namespace Microsoft.AspNet.DataProtection
         /// <summary>
         /// Creates a new Secret from another secret object.
         /// </summary>
-        public Secret(ISecret secret)
+        public Secret([NotNull] ISecret secret)
         {
-            if (secret == null)
-            {
-                throw new ArgumentNullException("secret");
-            }
-
             Secret other = secret as Secret;
             if (other != null)
             {
@@ -130,7 +126,7 @@ namespace Microsoft.AspNet.DataProtection
             // If we're not running on a platform that supports CryptProtectMemory,
             // shove the plaintext directly into a LocalAlloc handle. Ideally we'd
             // mark this memory page as non-pageable, but this is fraught with peril.
-            if (!OSVersionUtil.IsBCryptOnWin7OrLaterAvailable())
+            if (!OSVersionUtil.IsWindows())
             {
                 SecureLocalAllocHandle handle = SecureLocalAllocHandle.Allocate((IntPtr)checked((int)cbPlaintext));
                 UnsafeBufferUtil.BlockCopy(from: pbPlaintext, to: handle, byteCount: cbPlaintext);
@@ -165,7 +161,10 @@ namespace Microsoft.AspNet.DataProtection
         /// </summary>
         public static Secret Random(int numBytes)
         {
-            CryptoUtil.Assert(numBytes >= 0, "numBytes >= 0");
+            if (numBytes < 0)
+            {
+                throw Error.Common_ValueMustBeNonNegative(nameof(numBytes));
+            }
 
             if (numBytes == 0)
             {
@@ -175,7 +174,7 @@ namespace Microsoft.AspNet.DataProtection
             else
             {
                 // Don't use CNG if we're not on Windows.
-                if (!OSVersionUtil.IsBCryptOnWin7OrLaterAvailable())
+                if (!OSVersionUtil.IsWindows())
                 {
                     return new Secret(ManagedGenRandomImpl.Instance.GenRandom(numBytes));
                 }
@@ -200,7 +199,7 @@ namespace Microsoft.AspNet.DataProtection
         {
             // If we're not running on a platform that supports CryptProtectMemory,
             // the handle contains plaintext bytes.
-            if (!OSVersionUtil.IsBCryptOnWin7OrLaterAvailable())
+            if (!OSVersionUtil.IsWindows())
             {
                 UnsafeBufferUtil.BlockCopy(from: _localAllocHandle, to: pbBuffer, byteCount: _plaintextLength);
                 return;
@@ -209,7 +208,6 @@ namespace Microsoft.AspNet.DataProtection
             if (_plaintextLength % CRYPTPROTECTMEMORY_BLOCK_SIZE == 0)
             {
                 // Case 1: Secret length is an exact multiple of the block size. Copy directly to the buffer and decrypt there.
-                // We go through this code path even for empty plaintexts since we still want SafeHandle dispose semantics.
                 UnsafeBufferUtil.BlockCopy(from: _localAllocHandle, to: pbBuffer, byteCount: _plaintextLength);
                 MemoryProtection.CryptUnprotectMemory(pbBuffer, _plaintextLength);
             }
@@ -237,7 +235,7 @@ namespace Microsoft.AspNet.DataProtection
             buffer.Validate();
             if (buffer.Count != Length)
             {
-                throw Error.Common_BufferIncorrectlySized("buffer", actualSize: buffer.Count, expectedSize: Length);
+                throw Error.Common_BufferIncorrectlySized(nameof(buffer), actualSize: buffer.Count, expectedSize: Length);
             }
 
             // only unprotect if the secret is zero-length, as CLR doesn't like pinning zero-length buffers
@@ -253,6 +251,8 @@ namespace Microsoft.AspNet.DataProtection
         /// <summary>
         /// Writes the secret value to the specified buffer.
         /// </summary>
+        /// <param name="buffer">The buffer into which to write the secret value.</param>
+        /// <param name="bufferLength">The size (in bytes) of the provided buffer.</param>
         /// <remarks>
         /// The 'bufferLength' parameter must exactly match the length of the secret value.
         /// </remarks>
@@ -260,18 +260,17 @@ namespace Microsoft.AspNet.DataProtection
         {
             if (buffer == null)
             {
-                throw new ArgumentNullException("buffer");
-            }
-            if (bufferLength < 0)
-            {
-                throw new ArgumentOutOfRangeException("bufferLength");
+                throw new ArgumentNullException(nameof(buffer));
             }
             if (bufferLength != Length)
             {
-                throw Error.Common_BufferIncorrectlySized("bufferLength", actualSize: bufferLength, expectedSize: Length);
+                throw Error.Common_BufferIncorrectlySized(nameof(bufferLength), actualSize: bufferLength, expectedSize: Length);
             }
 
-            UnprotectInto(buffer);
+            if (Length != 0)
+            {
+                UnprotectInto(buffer);
+            }
         }
     }
 }

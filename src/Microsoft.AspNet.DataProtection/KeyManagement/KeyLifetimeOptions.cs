@@ -1,0 +1,106 @@
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+
+namespace Microsoft.AspNet.DataProtection.KeyManagement
+{
+    public class KeyLifetimeOptions
+    {
+        private readonly TimeSpan _keyExpirationSafetyPeriod = TimeSpan.FromDays(2);
+        private readonly TimeSpan _keyRingRefreshPeriod = TimeSpan.FromHours(24);
+        private readonly TimeSpan _maxServerClockSkew = TimeSpan.FromMinutes(5);
+        private TimeSpan _newKeyLifetime = TimeSpan.FromDays(90);
+
+        public KeyLifetimeOptions()
+        {
+        }
+
+        // copy ctor
+        internal KeyLifetimeOptions(KeyLifetimeOptions other)
+        {
+            if (other != null)
+            {
+                this._newKeyLifetime = other._newKeyLifetime;
+            }
+        }
+
+        /// <summary>
+        /// Specifies the period before key expiration in which a new key should be generated.
+        /// For example, if this period is 72 hours, then a new key will be created and
+        /// persisted to storage approximately 72 hours before expiration.
+        /// </summary>
+        /// <remarks>
+        /// This value is currently fixed at 48 hours.
+        /// </remarks>
+        internal TimeSpan KeyExpirationSafetyPeriod
+        {
+            get
+            {
+                // This value is not settable since there's a complex interaction between
+                // it and the key ring refresh period.
+                return _keyExpirationSafetyPeriod;
+            }
+        }
+
+        /// <summary>
+        /// Controls the auto-refresh period where the key ring provider will
+        /// flush its collection of cached keys and reread the collection from
+        /// backing storage.
+        /// </summary>
+        /// <remarks>
+        /// This value is currently fixed at 24 hours.
+        /// </remarks>
+        internal TimeSpan KeyRingRefreshPeriod
+        {
+            get
+            {
+                // This value is not settable since there's a complex interaction between
+                // it and the key expiration safety period.
+                return _keyRingRefreshPeriod;
+            }
+        }
+
+        /// <summary>
+        /// Specifies the maximum clock skew allowed between servers when reading
+        /// keys from the key ring. The key ring may use a key which has not yet
+        /// been activated or which has expired if the key's valid lifetime is within
+        /// the allowed clock skew window. This value can be set to <see cref="TimeSpan.Zero"/>
+        /// if key activation and expiration times should be strictly honored by this server.
+        /// </summary>
+        /// <remarks>
+        /// This value is currently fixed at 5 minutes.
+        /// </remarks>
+        internal TimeSpan MaxServerClockSkew
+        {
+            get
+            {
+                return _maxServerClockSkew;
+            }
+        }
+
+        /// <summary>
+        /// Controls the lifetime (number of days before expiration)
+        /// for newly-generated keys.
+        /// </summary>
+        /// <remarks>
+        /// The lifetime cannot be less than one week.
+        /// The default value is 90 days.
+        /// </remarks>
+        public TimeSpan NewKeyLifetime
+        {
+            get
+            {
+                return _newKeyLifetime;
+            }
+            set
+            {
+                if (value < TimeSpan.FromDays(7))
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), Resources.KeyLifetimeOptions_MinNewKeyLifetimeViolated);
+                }
+                _newKeyLifetime = value;
+            }
+        }
+    }
+}

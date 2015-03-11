@@ -6,3 +6,4 @@ using System.Runtime.CompilerServices;
 
 // for unit testing
 [assembly: InternalsVisibleTo("Microsoft.AspNet.DataProtection.Test")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

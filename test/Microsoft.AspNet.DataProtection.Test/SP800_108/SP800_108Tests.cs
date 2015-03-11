@@ -4,11 +4,11 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.AspNet.DataProtection.SP800_108;
+using Microsoft.AspNet.DataProtection.Test.Shared;
 using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNet.DataProtection.Test.SP800_108
+namespace Microsoft.AspNet.DataProtection.SP800_108
 {
     public unsafe class SP800_108Tests
     {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.DataProtection.Test.SP800_108
         // The 'numBytesRequested' parameters below are chosen to exercise code paths where
         // this value straddles the digest length of the PRF (which is hardcoded to HMACSHA512).
         [ConditionalTheory]
-        [ConditionalRunTestOnlyIfBcryptAvailable]
+        [ConditionalRunTestOnlyOnWindows]
         [InlineData(512 / 8 - 1, "V47WmHzPSkdC2vkLAomIjCzZlDOAetll3yJLcSvon7LJFjJpEN+KnSNp+gIpeydKMsENkflbrIZ/3s6GkEaH")]
         [InlineData(512 / 8 + 0, "mVaFM4deXLl610CmnCteNzxgbM/VkmKznAlPauHcDBn0le06uOjAKLHx0LfoU2/Ttq9nd78Y6Nk6wArmdwJgJg==")]
         [InlineData(512 / 8 + 1, "GaHPeqdUxriFpjRtkYQYWr5/iqneD/+hPhVJQt4rXblxSpB1UUqGqL00DMU/FJkX0iMCfqUjQXtXyfks+p++Ev4=")]
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.DataProtection.Test.SP800_108
         // The 'numBytesRequested' parameters below are chosen to exercise code paths where
         // this value straddles the digest length of the PRF (which is hardcoded to HMACSHA512).
         [ConditionalTheory]
-        [ConditionalRunTestOnlyIfBcryptAvailable("BCryptKeyDerivation")]
+        [ConditionalRunTestOnlyOnWindows8OrLater]
         [InlineData(512 / 8 - 1, "V47WmHzPSkdC2vkLAomIjCzZlDOAetll3yJLcSvon7LJFjJpEN+KnSNp+gIpeydKMsENkflbrIZ/3s6GkEaH")]
         [InlineData(512 / 8 + 0, "mVaFM4deXLl610CmnCteNzxgbM/VkmKznAlPauHcDBn0le06uOjAKLHx0LfoU2/Ttq9nd78Y6Nk6wArmdwJgJg==")]
         [InlineData(512 / 8 + 1, "GaHPeqdUxriFpjRtkYQYWr5/iqneD/+hPhVJQt4rXblxSpB1UUqGqL00DMU/FJkX0iMCfqUjQXtXyfks+p++Ev4=")]
@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.DataProtection.Test.SP800_108
         // The 'numBytesRequested' parameters below are chosen to exercise code paths where
         // this value straddles the digest length of the PRF (which is hardcoded to HMACSHA512).
         [ConditionalTheory]
-        [ConditionalRunTestOnlyIfBcryptAvailable]
+        [ConditionalRunTestOnlyOnWindows]
         [InlineData(512 / 8 - 1, "rt2hM6kkQ8hAXmkHx0TU4o3Q+S7fie6b3S1LAq107k++P9v8uSYA2G+WX3pJf9ZkpYrTKD7WUIoLkgA1R9lk")]
         [InlineData(512 / 8 + 0, "RKiXmHSrWq5gkiRSyNZWNJrMR0jDyYHJMt9odOayRAE5wLSX2caINpQmfzTH7voJQi3tbn5MmD//dcspghfBiw==")]
         [InlineData(512 / 8 + 1, "KedXO0zAIZ3AfnPqY1NnXxpC3HDHIxefG4bwD3g6nWYEc5+q7pjbam71Yqj0zgHMNC9Z7BX3wS1/tajFocRWZUk=")]
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.DataProtection.Test.SP800_108
         // The 'numBytesRequested' parameters below are chosen to exercise code paths where
         // this value straddles the digest length of the PRF (which is hardcoded to HMACSHA512).
         [ConditionalTheory]
-        [ConditionalRunTestOnlyIfBcryptAvailable("BCryptKeyDerivation")]
+        [ConditionalRunTestOnlyOnWindows8OrLater]
         [InlineData(512 / 8 - 1, "rt2hM6kkQ8hAXmkHx0TU4o3Q+S7fie6b3S1LAq107k++P9v8uSYA2G+WX3pJf9ZkpYrTKD7WUIoLkgA1R9lk")]
         [InlineData(512 / 8 + 0, "RKiXmHSrWq5gkiRSyNZWNJrMR0jDyYHJMt9odOayRAE5wLSX2caINpQmfzTH7voJQi3tbn5MmD//dcspghfBiw==")]
         [InlineData(512 / 8 + 1, "KedXO0zAIZ3AfnPqY1NnXxpC3HDHIxefG4bwD3g6nWYEc5+q7pjbam71Yqj0zgHMNC9Z7BX3wS1/tajFocRWZUk=")]

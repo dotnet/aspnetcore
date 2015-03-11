@@ -3,30 +3,62 @@
 
 using System;
 using System.Xml.Linq;
-using Microsoft.AspNet.DataProtection.KeyManagement;
+using Microsoft.Framework.Internal;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
 {
     /// <summary>
-    /// A class that performs null XML encryption (just returns the plaintext).
+    /// An <see cref="IXmlEncryptor"/> that encrypts XML elements with a null encryptor.
     /// </summary>
     public sealed class NullXmlEncryptor : IXmlEncryptor
     {
-        internal static readonly XName NullEncryptedSecretElementName = XmlKeyManager.KeyManagementXmlNamespace.GetName("nullEncryptedSecret");
+        private readonly ILogger _logger;
 
         /// <summary>
-        /// Encrypts the specified XML element using a null encryptor.
+        /// Creates a new instance of <see cref="NullXmlEncryptor"/>.
         /// </summary>
-        /// <param name="plaintextElement">The plaintext XML element to encrypt. This element is unchanged by the method.</param>
-        /// <returns>The null-encrypted form of the XML element.</returns>
-        public XElement Encrypt([NotNull] XElement plaintextElement)
+        public NullXmlEncryptor()
+            : this(services: null)
         {
-            // <nullEncryptedSecret decryptor="{TYPE}">
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="NullXmlEncryptor"/>.
+        /// </summary>
+        /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
+        public NullXmlEncryptor(IServiceProvider services)
+        {
+            _logger = services.GetLogger<NullXmlEncryptor>();
+        }
+
+        /// <summary>
+        /// Encrypts the specified <see cref="XElement"/> with a null encryptor, i.e.,
+        /// by returning the original value of <paramref name="plaintextElement"/> unencrypted.
+        /// </summary>
+        /// <param name="plaintextElement">The plaintext to echo back.</param>
+        /// <returns>
+        /// An <see cref="EncryptedXmlInfo"/> that contains the null-encrypted value of
+        /// <paramref name="plaintextElement"/> along with information about how to
+        /// decrypt it.
+        /// </returns>
+        public EncryptedXmlInfo Encrypt([NotNull] XElement plaintextElement)
+        {
+            if (_logger.IsWarningLevelEnabled())
+            {
+                _logger.LogWarning("Encrypting using a null encryptor; secret information isn't being protected.");
+            }
+
+            // <unencryptedKey>
+            //   <!-- This key is not encrypted. -->
             //   <plaintextElement />
-            // </nullEncryptedSecret>
-            return new XElement(NullEncryptedSecretElementName,
-                new XAttribute("decryptor", typeof(NullXmlDecryptor).AssemblyQualifiedName),
-                plaintextElement);
+            // </unencryptedKey>
+
+            var newElement = new XElement("unencryptedKey",
+                new XComment(" This key is not encrypted. "),
+                new XElement(plaintextElement) /* copy ctor */);
+
+            return new EncryptedXmlInfo(newElement, typeof(NullXmlDecryptor));
         }
     }
 }

@@ -4,10 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Security.Principal;
 using System.Xml.Linq;
+using Microsoft.Framework.Internal;
+using Microsoft.Framework.Logging;
 using Microsoft.Win32;
 
 namespace Microsoft.AspNet.DataProtection.Repositories
@@ -17,70 +18,96 @@ namespace Microsoft.AspNet.DataProtection.Repositories
     /// </summary>
     public class RegistryXmlRepository : IXmlRepository
     {
+        private static readonly Lazy<RegistryKey> _defaultRegistryKeyLazy = new Lazy<RegistryKey>(GetDefaultHklmStorageKey);
+
+        private readonly ILogger _logger;
+
+        /// <summary>
+        /// Creates a <see cref="RegistryXmlRepository"/> with keys stored in the given registry key.
+        /// </summary>
+        /// <param name="registryKey">The registry key in which to persist key material.</param>
         public RegistryXmlRepository([NotNull] RegistryKey registryKey)
+            : this(registryKey, services: null)
         {
-            RegistryKey = registryKey;
         }
 
-        protected RegistryKey RegistryKey
+        /// <summary>
+        /// Creates a <see cref="RegistryXmlRepository"/> with keys stored in the given registry key.
+        /// </summary>
+        /// <param name="registryKey">The registry key in which to persist key material.</param>
+        public RegistryXmlRepository([NotNull] RegistryKey registryKey, IServiceProvider services)
         {
-            get;
-            private set;
+            RegistryKey = registryKey;
+            Services = services;
+            _logger = services?.GetLogger<RegistryXmlRepository>();
         }
+
+        /// <summary>
+        /// The default key storage directory, which currently corresponds to
+        /// "HKLM\SOFTWARE\Microsoft\ASP.NET\4.0.30319.0\AutoGenKeys\{SID}".
+        /// </summary>
+        /// <remarks>
+        /// This property can return null if no suitable default registry key can
+        /// be found, such as the case when this application is not hosted inside IIS.
+        /// </remarks>
+        public static RegistryKey DefaultRegistryKey => _defaultRegistryKeyLazy.Value;
+
+        /// <summary>
+        /// The registry key into which key material will be written.
+        /// </summary>
+        public RegistryKey RegistryKey { get; }
+
+        /// <summary>
+        /// The <see cref="IServiceProvider"/> provided to the constructor.
+        /// </summary>
+        protected IServiceProvider Services { get; }
 
         public virtual IReadOnlyCollection<XElement> GetAllElements()
         {
             // forces complete enumeration
-            return GetAllElementsImpl().ToArray();
+            return GetAllElementsCore().ToList().AsReadOnly();
         }
 
-        private IEnumerable<XElement> GetAllElementsImpl()
+        private IEnumerable<XElement> GetAllElementsCore()
         {
-            string[] allValueNames = RegistryKey.GetValueNames();
-            foreach (var valueName in allValueNames)
-            {
-                string thisValue = RegistryKey.GetValue(valueName) as string;
-                if (!String.IsNullOrEmpty(thisValue))
-                {
-                    XDocument document;
-                    using (var textReader = new StringReader(thisValue))
-                    {
-                        document = XDocument.Load(textReader);
-                    }
+            // Note: Inability to parse any value is considered a fatal error (since the value may contain
+            // revocation information), and we'll fail the entire operation rather than return a partial
+            // set of elements. If a file contains well-formed XML but its contents are meaningless, we
+            // won't fail that operation here. The caller is responsible for failing as appropriate given
+            // that scenario.
 
-                    // 'yield return' outside the preceding 'using' block so we can release the reader
-                    yield return document.Root;
+            foreach (string valueName in RegistryKey.GetValueNames())
+            {
+                XElement element = ReadElementFromRegKey(RegistryKey, valueName);
+                if (element != null)
+                {
+                    yield return element;
                 }
             }
         }
 
-        internal static RegistryXmlRepository GetDefaultRepositoryForHKLMRegistry()
+        private static RegistryKey GetDefaultHklmStorageKey()
         {
             try
             {
                 // Try reading the auto-generated machine key from HKLM
                 using (var hklmBaseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
                 {
-                    // TODO: Do we need to change the version number below?
+                    // Even though this is in HKLM, WAS ensures that applications hosted in IIS are properly isolated.
+                    // See APP_POOL::EnsureSharedMachineKeyStorage in WAS source for more info.
+                    // The version number will need to change if IIS hosts Core CLR directly.
                     string aspnetAutoGenKeysBaseKeyName = String.Format(CultureInfo.InvariantCulture, @"SOFTWARE\Microsoft\ASP.NET\4.0.30319.0\AutoGenKeys\{0}", WindowsIdentity.GetCurrent().User.Value);
                     var aspnetBaseKey = hklmBaseKey.OpenSubKey(aspnetAutoGenKeysBaseKeyName, writable: true);
-                    if (aspnetBaseKey == null)
+                    if (aspnetBaseKey != null)
                     {
-                        return null; // couldn't find the auto-generated machine key
-                    }
-
-                    using (aspnetBaseKey) {
-                        // TODO: Remove the ".BETA" moniker.
-                        var dataProtectionKey = aspnetBaseKey.OpenSubKey("DataProtection.BETA6", writable: true);
-                        if (dataProtectionKey == null)
+                        using (aspnetBaseKey)
                         {
-                            // TODO: Remove the ".BETA" moniker from here, also.
-                            dataProtectionKey = aspnetBaseKey.CreateSubKey("DataProtection.BETA6");
+                            // We'll create a 'DataProtection' subkey under the auto-gen keys base
+                            return aspnetBaseKey.OpenSubKey("DataProtection", writable: true)
+                                ?? aspnetBaseKey.CreateSubKey("DataProtection");
                         }
-
-                        // Once we've opened the HKLM reg key, return a repository which wraps it.
-                        return new RegistryXmlRepository(dataProtectionKey);
                     }
+                    return null; // couldn't find the auto-generated machine key
                 }
             }
             catch
@@ -90,28 +117,50 @@ namespace Microsoft.AspNet.DataProtection.Repositories
             }
         }
 
-        public virtual void StoreElement([NotNull] XElement element, string friendlyName)
+        private static bool IsSafeRegistryValueName(string filename)
         {
-            // We're going to ignore the friendly name for now and just use a GUID.
-            StoreElement(element, Guid.NewGuid());
+            // Must be non-empty and contain only a-zA-Z0-9, hyphen, and underscore.
+            return (!String.IsNullOrEmpty(filename) && filename.All(c =>
+                c == '-'
+                || c == '_'
+                || ('0' <= c && c <= '9')
+                || ('A' <= c && c <= 'Z')
+                || ('a' <= c && c <= 'z')));
         }
 
-        private void StoreElement(XElement element, Guid id)
+        private XElement ReadElementFromRegKey(RegistryKey regKey, string valueName)
         {
-            // First, serialize the XElement to a string.
-            string serializedString;
-            using (var writer = new StringWriter())
+            if (_logger.IsVerboseLevelEnabled())
             {
-                new XDocument(element).Save(writer);
-                serializedString = writer.ToString();
+                _logger.LogVerbose("Reading data from registry key '{0}', value '{1}'.", regKey.ToString(), valueName);
             }
 
+            string data = regKey.GetValue(valueName) as string;
+            return (!String.IsNullOrEmpty(data)) ? XElement.Parse(data) : null;
+        }
+
+        public virtual void StoreElement([NotNull] XElement element, string friendlyName)
+        {
+            if (!IsSafeRegistryValueName(friendlyName))
+            {
+                string newFriendlyName = Guid.NewGuid().ToString();
+                if (_logger.IsVerboseLevelEnabled())
+                {
+                    _logger.LogVerbose("The name '{0}' is not a safe registry value name, using '{1}' instead.", friendlyName, newFriendlyName);
+                }
+                friendlyName = newFriendlyName;
+            }
+
+            StoreElementCore(element, friendlyName);
+        }
+
+        private void StoreElementCore(XElement element, string valueName)
+        {
             // Technically calls to RegSetValue* and RegGetValue* are atomic, so we don't have to worry about
             // another thread trying to read this value while we're writing it. There's still a small risk of
             // data corruption if power is lost while the registry file is being flushed to the file system,
             // but the window for that should be small enough that we shouldn't have to worry about it.
-            string idAsString = id.ToString("D");
-            RegistryKey.SetValue(idAsString, serializedString, RegistryValueKind.String);
+            RegistryKey.SetValue(valueName, element.ToString(), RegistryValueKind.String);
         }
     }
 }

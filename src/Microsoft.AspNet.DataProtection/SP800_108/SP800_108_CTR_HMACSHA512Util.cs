@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.DataProtection.SP800_108
         // Creates a provider from the given key.
         public static ISP800_108_CTR_HMACSHA512Provider CreateProvider(byte* pbKdk, uint cbKdk)
         {
-            if (OSVersionUtil.IsBCryptOnWin8OrLaterAvailable())
+            if (OSVersionUtil.IsWindows8OrLater())
             {
                 return new Win8SP800_108_CTR_HMACSHA512Provider(pbKdk, cbKdk);
             }

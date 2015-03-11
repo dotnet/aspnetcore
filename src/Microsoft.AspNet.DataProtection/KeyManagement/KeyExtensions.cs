@@ -7,9 +7,9 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 {
     internal static class KeyExtensions
     {
-        public static bool IsExpired(this IKey key, DateTime utcNow)
+        public static bool IsExpired(this IKey key, DateTimeOffset now)
         {
-            return (key.ExpirationDate.UtcDateTime <= utcNow);
+            return (key.ExpirationDate <= now);
         }
     }
 }

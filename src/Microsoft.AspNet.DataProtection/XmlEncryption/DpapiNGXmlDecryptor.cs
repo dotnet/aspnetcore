@@ -2,47 +2,89 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Xml.Linq;
 using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.DataProtection.Cng;
+using Microsoft.Framework.Internal;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
 {
     /// <summary>
-    /// A class that can decrypt XML elements which were encrypted using Windows DPAPI:NG.
+    /// An <see cref="IXmlDecryptor"/> that decrypts XML elements that were encrypted with <see cref="DpapiNGXmlEncryptor"/>.
     /// </summary>
-    internal unsafe sealed class DpapiNGXmlDecryptor : IXmlDecryptor
+    /// <remarks>
+    /// This API is only supported on Windows 8 / Windows Server 2012 and higher.
+    /// </remarks>
+    public sealed class DpapiNGXmlDecryptor : IXmlDecryptor
     {
+        private readonly ILogger _logger;
+
         /// <summary>
-        /// Decrypts the specified XML element using Windows DPAPI:NG.
+        /// Creates a new instance of a <see cref="DpapiNGXmlDecryptor"/>.
         /// </summary>
-        /// <param name="encryptedElement">The encrypted XML element to decrypt. This element is unchanged by the method.</param>
-        /// <returns>The decrypted form of the XML element.</returns>
+        public DpapiNGXmlDecryptor()
+            : this(services: null)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of a <see cref="DpapiNGXmlDecryptor"/>.
+        /// </summary>
+        /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
+        public DpapiNGXmlDecryptor(IServiceProvider services)
+        {
+            CryptoUtil.AssertPlatformIsWindows8OrLater();
+
+            _logger = services.GetLogger<DpapiNGXmlDecryptor>();
+        }
+
+        /// <summary>
+        /// Decrypts the specified XML element.
+        /// </summary>
+        /// <param name="encryptedElement">An encrypted XML element.</param>
+        /// <returns>The decrypted form of <paramref name="encryptedElement"/>.</returns>
+        /// <remarks>
         public XElement Decrypt([NotNull] XElement encryptedElement)
         {
-            CryptoUtil.Assert(encryptedElement.Name == DpapiNGXmlEncryptor.DpapiNGEncryptedSecretElementName,
-                "TODO: Incorrect element.");
-
-            int version = (int)encryptedElement.Attribute("version");
-            CryptoUtil.Assert(version == 1, "TODO: Bad version.");
-
-            byte[] dpapiNGProtectedBytes = Convert.FromBase64String(encryptedElement.Value);
-            using (var secret = DpapiSecretSerializerHelper.UnprotectWithDpapiNG(dpapiNGProtectedBytes))
+            try
             {
-                byte[] plaintextXmlBytes = new byte[secret.Length];
-                try
+                // <encryptedKey>
+                //   <!-- This key is encrypted with {provider}. -->
+                //   <!-- rule string -->
+                //   <value>{base64}</value>
+                // </encryptedKey>
+
+                byte[] protectedSecret = Convert.FromBase64String((string)encryptedElement.Element("value"));
+                if (_logger.IsVerboseLevelEnabled())
                 {
-                    secret.WriteSecretIntoBuffer(new ArraySegment<byte>(plaintextXmlBytes));
-                    using (var memoryStream = new MemoryStream(plaintextXmlBytes, writable: false))
+                    string protectionDescriptorRule;
+                    try
                     {
-                        return XElement.Load(memoryStream);
+                        protectionDescriptorRule = DpapiSecretSerializerHelper.GetRuleFromDpapiNGProtectedPayload(protectedSecret);
                     }
+                    catch
+                    {
+                        // swallow all errors - it's just a log
+                        protectionDescriptorRule = null;
+                    }
+                    _logger.LogVerbose("Decrypting secret element using Windows DPAPI-NG with protection descriptor '{0}'.", protectionDescriptorRule);
                 }
-                finally
+
+                using (Secret secret = DpapiSecretSerializerHelper.UnprotectWithDpapiNG(protectedSecret))
                 {
-                    Array.Clear(plaintextXmlBytes, 0, plaintextXmlBytes.Length);
+                    return secret.ToXElement();
                 }
+            }
+            catch (Exception ex)
+            {
+                // It's OK for us to log the error, as we control the exception, and it doesn't contain
+                // sensitive information.
+                if (_logger.IsErrorLevelEnabled())
+                {
+                    _logger.LogError(ex, "An exception occurred while trying to decrypt the element.");
+                }
+                throw;
             }
         }
     }

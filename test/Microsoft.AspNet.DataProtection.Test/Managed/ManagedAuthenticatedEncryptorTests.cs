@@ -5,10 +5,9 @@ using System;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.AspNet.DataProtection.Managed;
 using Xunit;
 
-namespace Microsoft.AspNet.DataProtection.Test.Managed
+namespace Microsoft.AspNet.DataProtection.Managed
 {
     public class ManagedAuthenticatedEncryptorTests
     {

@@ -10,6 +10,9 @@ using Microsoft.AspNet.Cryptography.Internal;
 
 namespace Microsoft.AspNet.Cryptography.SafeHandles
 {
+    /// <summary>
+    /// Represents a handle to a BCrypt algorithm provider from which keys and hashes can be created.
+    /// </summary>
     internal unsafe sealed class BCryptAlgorithmHandle : BCryptHandle
     {
         // Called by P/Invoke when returning SafeHandles
@@ -20,10 +23,10 @@ namespace Microsoft.AspNet.Cryptography.SafeHandles
         /// </summary>
         public BCryptHashHandle CreateHash()
         {
-            return CreateHashImpl(null, 0);
+            return CreateHashCore(null, 0);
         }
 
-        private BCryptHashHandle CreateHashImpl(byte* pbKey, uint cbKey)
+        private BCryptHashHandle CreateHashCore(byte* pbKey, uint cbKey)
         {
             BCryptHashHandle retVal;
             int ntstatus = UnsafeNativeMethods.BCryptCreateHash(this, out retVal, IntPtr.Zero, 0, pbKey, cbKey, dwFlags: 0);
@@ -40,7 +43,7 @@ namespace Microsoft.AspNet.Cryptography.SafeHandles
         public BCryptHashHandle CreateHmac(byte* pbKey, uint cbKey)
         {
             Debug.Assert(pbKey != null);
-            return CreateHashImpl(pbKey, cbKey);
+            return CreateHashCore(pbKey, cbKey);
         }
 
         /// <summary>

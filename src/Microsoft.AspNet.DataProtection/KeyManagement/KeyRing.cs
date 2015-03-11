@@ -8,66 +8,52 @@ using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
 
 namespace Microsoft.AspNet.DataProtection.KeyManagement
 {
+    /// <summary>
+    /// A basic implementation of <see cref="IKeyRing"/>.
+    /// </summary>
     internal sealed class KeyRing : IKeyRing
     {
-        private readonly AuthenticatedEncryptorHolder _defaultEncryptorHolder;
-        private readonly Dictionary<Guid, AuthenticatedEncryptorHolder> _keyToEncryptorMap;
+        private readonly KeyHolder _defaultKeyHolder;
+        private readonly Dictionary<Guid, KeyHolder> _keyIdToKeyHolderMap;
 
-        public KeyRing(Guid defaultKeyId, IKey[] keys)
+        public KeyRing(Guid defaultKeyId, IEnumerable<IKey> keys)
         {
-            DefaultKeyId = defaultKeyId;
-            _keyToEncryptorMap = CreateEncryptorMap(defaultKeyId, keys, out _defaultEncryptorHolder);
-        }
+            _keyIdToKeyHolderMap = new Dictionary<Guid, KeyHolder>();
+            foreach (IKey key in keys)
+            {
+                _keyIdToKeyHolderMap.Add(key.KeyId, new KeyHolder(key));
+            }
 
-        public KeyRing(Guid defaultKeyId, KeyRing other)
-        {
             DefaultKeyId = defaultKeyId;
-            _keyToEncryptorMap = other._keyToEncryptorMap;
-            _defaultEncryptorHolder = _keyToEncryptorMap[defaultKeyId];
+            _defaultKeyHolder = _keyIdToKeyHolderMap[defaultKeyId];
         }
-
+        
         public IAuthenticatedEncryptor DefaultAuthenticatedEncryptor
         {
             get
             {
                 bool unused;
-                return _defaultEncryptorHolder.GetEncryptorInstance(out unused);
+                return _defaultKeyHolder.GetEncryptorInstance(out unused);
             }
         }
 
-        public Guid DefaultKeyId { get; private set; }
-
-        private static Dictionary<Guid, AuthenticatedEncryptorHolder> CreateEncryptorMap(Guid defaultKeyId, IKey[] keys, out AuthenticatedEncryptorHolder defaultEncryptorHolder)
-        {
-            defaultEncryptorHolder = null;
-
-            var encryptorMap = new Dictionary<Guid, AuthenticatedEncryptorHolder>(keys.Length);
-            foreach (var key in keys)
-            {
-                var holder = new AuthenticatedEncryptorHolder(key);
-                encryptorMap.Add(key.KeyId, holder);
-                if (key.KeyId == defaultKeyId)
-                {
-                    defaultEncryptorHolder = holder;
-                }
-            }
-            return encryptorMap;
-        }
+        public Guid DefaultKeyId { get; }
 
         public IAuthenticatedEncryptor GetAuthenticatedEncryptorByKeyId(Guid keyId, out bool isRevoked)
         {
             isRevoked = false;
-            AuthenticatedEncryptorHolder holder;
-            _keyToEncryptorMap.TryGetValue(keyId, out holder);
+            KeyHolder holder;
+            _keyIdToKeyHolderMap.TryGetValue(keyId, out holder);
             return holder?.GetEncryptorInstance(out isRevoked);
         }
 
-        private sealed class AuthenticatedEncryptorHolder
+        // used for providing lazy activation of the authenticated encryptor instance
+        private sealed class KeyHolder
         {
             private readonly IKey _key;
             private IAuthenticatedEncryptor _encryptor;
 
-            internal AuthenticatedEncryptorHolder(IKey key)
+            internal KeyHolder(IKey key)
             {
                 _key = key;
             }

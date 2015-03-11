@@ -1,0 +1,20 @@
+{
+    "version": "1.0.0-*",
+    "description": "A component to allow the ASP.NET 5 DataProtection stack to work with the ASP.NET 4.x <machineKey> element.",
+    "frameworks": {
+        "net451": {
+            "dependencies": {
+                "Microsoft.AspNet.DataProtection": "1.0.0-*",
+                "Microsoft.Framework.DependencyInjection": "1.0.0-*"
+            },
+            "frameworkAssemblies": {
+                "System.Configuration": "4.0.0.0",
+                "System.Security": "4.0.0.0",
+                "System.Web": "4.0.0.0"
+            }
+        }
+    },
+    "compilationOptions": {
+        "warningsAsErrors": true
+    }
+}

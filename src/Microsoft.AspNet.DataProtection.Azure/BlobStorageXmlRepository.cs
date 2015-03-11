@@ -9,6 +9,7 @@ using System.Net;
 using System.Runtime.ExceptionServices;
 using System.Xml.Linq;
 using Microsoft.AspNet.DataProtection.Repositories;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
@@ -49,7 +50,7 @@ namespace Microsoft.AspNet.DataProtection.Azure
         {
             var blobRef = GetKeyRingBlockBlobReference();
             XDocument document = ReadDocumentFromStorage(blobRef);
-            return document?.Root.Elements().ToArray() ?? new XElement[0];
+            return (IReadOnlyCollection<XElement>)document?.Root.Elements().ToList().AsReadOnly() ?? new XElement[0];
         }
 
         private XDocument ReadDocumentFromStorage(CloudBlockBlob blobRef)

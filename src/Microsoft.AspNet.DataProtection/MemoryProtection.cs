@@ -8,7 +8,7 @@ using Microsoft.AspNet.Cryptography;
 namespace Microsoft.AspNet.DataProtection
 {
     /// <summary>
-    /// Support for generating random data.
+    /// Wrappers around CryptProtectMemory / CryptUnprotectMemory.
     /// </summary>
     internal unsafe static class MemoryProtection
     {

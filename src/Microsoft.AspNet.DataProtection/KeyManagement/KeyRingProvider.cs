@@ -2,205 +2,162 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using Microsoft.AspNet.Cryptography;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.DataProtection.KeyManagement
 {
-    internal sealed class KeyRingProvider : IKeyRingProvider
+    internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvider
     {
-        // TODO: Should the below be 3 months?
-        private static readonly TimeSpan KEY_DEFAULT_LIFETIME = TimeSpan.FromDays(30 * 6); // how long should keys be active once created?
-        private static readonly TimeSpan KEYRING_REFRESH_PERIOD = TimeSpan.FromDays(1); // how often should we check for updates to the repository?
-        private static readonly TimeSpan KEY_EXPIRATION_BUFFER = TimeSpan.FromDays(7); // how close to key expiration should we generate a new key?
-        private static readonly TimeSpan MAX_SERVER_TO_SERVER_CLOCK_SKEW = TimeSpan.FromMinutes(10); // max skew we expect to see between servers using the key ring
-
-        private CachedKeyRing _cachedKeyRing;
-        private readonly object _cachedKeyRingLockObj = new object();
+        private CacheableKeyRing _cacheableKeyRing;
+        private readonly object _cacheableKeyRingLockObj = new object();
+        private readonly ICacheableKeyRingProvider _cacheableKeyRingProvider;
+        private readonly IDefaultKeyResolver _defaultKeyResolver;
+        private readonly KeyLifetimeOptions _keyLifetimeOptions;
         private readonly IKeyManager _keyManager;
+        private readonly ILogger _logger;
 
-        public KeyRingProvider(IKeyManager keyManager)
+        public KeyRingProvider(IKeyManager keyManager, KeyLifetimeOptions keyLifetimeOptions, IServiceProvider services)
         {
+            _keyLifetimeOptions = new KeyLifetimeOptions(keyLifetimeOptions); // clone so new instance is immutable
             _keyManager = keyManager;
+            _cacheableKeyRingProvider = services?.GetService<ICacheableKeyRingProvider>() ?? this;
+            _logger = services?.GetLogger<KeyRingProvider>();
+            _defaultKeyResolver = services?.GetService<IDefaultKeyResolver>()
+                ?? new DefaultKeyResolver(_keyLifetimeOptions.KeyExpirationSafetyPeriod, _keyLifetimeOptions.MaxServerClockSkew, services);
+        }
+        
+        private CacheableKeyRing CreateCacheableKeyRingCore(DateTimeOffset now, bool allowRecursiveCalls = false)
+        {
+            // Refresh the list of all keys
+            var cacheExpirationToken = _keyManager.GetCacheExpirationToken();
+            var allKeys = _keyManager.GetAllKeys();
+
+            // Fetch the current default key from the list of all keys
+            var defaultKeyPolicy = _defaultKeyResolver.ResolveDefaultKeyPolicy(now, allKeys);
+            if (!defaultKeyPolicy.ShouldGenerateNewKey)
+            {
+                CryptoUtil.Assert(defaultKeyPolicy.DefaultKey != null, "Expected to see a default key.");
+                return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, defaultKeyPolicy.DefaultKey, allKeys);
+            }
+
+            if (_logger.IsVerboseLevelEnabled())
+            {
+                _logger.LogVerbose("Policy resolution states that a new key should be added to the key ring.");
+            }
+
+            // At this point, we know we need to generate a new key.
+
+            // This should only occur if a call to CreateNewKey immediately followed by a call to
+            // GetAllKeys returned 'you need to add a key to the key ring'. This should never happen
+            // in practice unless there's corruption in the backing store. Regardless, we can't recurse
+            // forever, so we have to bail now.
+            if (!allowRecursiveCalls)
+            {
+                if (_logger.IsErrorLevelEnabled())
+                {
+                    _logger.LogError("Policy resolution states that a new key should be added to the key ring, even after a call to CreateNewKey.");
+                }
+                throw CryptoUtil.Fail("Policy resolution states that a new key should be added to the key ring, even after a call to CreateNewKey.");
+            }
+
+            if (defaultKeyPolicy.DefaultKey == null)
+            {
+                // The case where there's no default key is the easiest scenario, since it
+                // means that we need to create a new key with immediate activation.
+                _keyManager.CreateNewKey(activationDate: now, expirationDate: now + _keyLifetimeOptions.NewKeyLifetime);
+                return CreateCacheableKeyRingCore(now); // recursively call
+            }
+            else
+            {
+                // If there is a default key, then the new key we generate should become active upon
+                // expiration of the default key. The new key lifetime is measured from the creation
+                // date (now), not the activation date.
+                _keyManager.CreateNewKey(activationDate: defaultKeyPolicy.DefaultKey.ExpirationDate, expirationDate: now + _keyLifetimeOptions.NewKeyLifetime);
+                return CreateCacheableKeyRingCore(now); // recursively call
+            }
         }
 
-        private CachedKeyRing CreateCachedKeyRingInstanceUnderLock(DateTime utcNow, CachedKeyRing existingCachedKeyRing)
+        private CacheableKeyRing CreateCacheableKeyRingCoreStep2(DateTimeOffset now, CancellationToken cacheExpirationToken, IKey defaultKey, IEnumerable<IKey> allKeys)
         {
-            bool shouldCreateNewKeyWithDeferredActivation; // flag stating whether the default key will soon expire and doesn't have a suitable replacement
-
-            // Must we discard the cached keyring and refresh directly from the manager?
-            if (existingCachedKeyRing != null && existingCachedKeyRing.HardRefreshTimeUtc <= utcNow)
+            if (_logger.IsVerboseLevelEnabled())
             {
-                existingCachedKeyRing = null;
+                _logger.LogVerbose("Using key '{0:D}' as the default key.", defaultKey.KeyId);
             }
 
-            // Try to locate the current default key, using the cached keyring if we can.
-            IKey defaultKey;
-            if (existingCachedKeyRing != null)
-            {
-                defaultKey = FindDefaultKey(utcNow, existingCachedKeyRing.Keys, out shouldCreateNewKeyWithDeferredActivation);
-                if (defaultKey != null && !shouldCreateNewKeyWithDeferredActivation)
-                {
-                    return new CachedKeyRing
-                    {
-                        KeyRing = new KeyRing(defaultKey.KeyId, existingCachedKeyRing.KeyRing), // this overload allows us to use existing IAuthenticatedEncryptor instances
-                        Keys = existingCachedKeyRing.Keys,
-                        HardRefreshTimeUtc = existingCachedKeyRing.HardRefreshTimeUtc,
-                        SoftRefreshTimeUtc = MinDateTime(existingCachedKeyRing.HardRefreshTimeUtc, utcNow + KEYRING_REFRESH_PERIOD)
-                    };
-                }
-            }
-
-            // That didn't work, so refresh from the underlying key manager.
-            var allKeys = _keyManager.GetAllKeys().ToArray();
-            defaultKey = FindDefaultKey(utcNow, allKeys, out shouldCreateNewKeyWithDeferredActivation);
-
-            if (defaultKey != null && shouldCreateNewKeyWithDeferredActivation)
-            {
-                // If we need to create a new key with deferred activation, do so now.
-                _keyManager.CreateNewKey(activationDate: defaultKey.ExpirationDate, expirationDate: utcNow + KEY_DEFAULT_LIFETIME);
-                allKeys = _keyManager.GetAllKeys().ToArray();
-                defaultKey = FindDefaultKey(utcNow, allKeys);
-            }
-            else if (defaultKey == null)
-            {
-                // If there's no default key, create one now with immediate activation.
-                _keyManager.CreateNewKey(utcNow, utcNow + KEY_DEFAULT_LIFETIME);
-                allKeys = _keyManager.GetAllKeys().ToArray();
-                defaultKey = FindDefaultKey(utcNow, allKeys);
-            }
-
-            // We really should have a default key at this point.
-            CryptoUtil.Assert(defaultKey != null, "defaultKey != null");
-
-            var cachedKeyRingHardRefreshTime = GetNextHardRefreshTime(utcNow);
-            return new CachedKeyRing
-            {
-                KeyRing = new KeyRing(defaultKey.KeyId, allKeys),
-                Keys = allKeys,
-                HardRefreshTimeUtc = cachedKeyRingHardRefreshTime,
-                SoftRefreshTimeUtc = MinDateTime(defaultKey.ExpirationDate.UtcDateTime, cachedKeyRingHardRefreshTime)
-            };
-        }
-
-        private static IKey FindDefaultKey(DateTime utcNow, IKey[] allKeys)
-        {
-            bool unused;
-            return FindDefaultKey(utcNow, allKeys, out unused);
-        }
-
-        private static IKey FindDefaultKey(DateTime utcNow, IKey[] allKeys, out bool callerShouldGenerateNewKey)
-        {
-            callerShouldGenerateNewKey = false;
-
-            // Find the keys with the nearest past and future activation dates.
-            IKey keyWithNearestPastActivationDate = null;
-            IKey keyWithNearestFutureActivationDate = null;
-            foreach (var candidateKey in allKeys)
-            {
-                // Revoked keys are never eligible candidates to be the default key.
-                if (candidateKey.IsRevoked)
-                {
-                    continue;
-                }
-
-                if (candidateKey.ActivationDate.UtcDateTime <= utcNow)
-                {
-                    if (keyWithNearestPastActivationDate == null || keyWithNearestPastActivationDate.ActivationDate < candidateKey.ActivationDate)
-                    {
-                        keyWithNearestPastActivationDate = candidateKey;
-                    }
-                }
-                else
-                {
-                    if (keyWithNearestFutureActivationDate == null || keyWithNearestFutureActivationDate.ActivationDate > candidateKey.ActivationDate)
-                    {
-                        keyWithNearestFutureActivationDate = candidateKey;
-                    }
-                }
-            }
-
-            // If the most recently activated key hasn't yet expired, use it as the default key.
-            if (keyWithNearestPastActivationDate != null && !keyWithNearestPastActivationDate.IsExpired(utcNow))
-            {
-                // Additionally, if it's about to expire and there will be a gap in the keyring during which there
-                // is no valid default encryption key, the caller should generate a new key with deferred activation.
-                if (keyWithNearestPastActivationDate.ExpirationDate.UtcDateTime - utcNow <= KEY_EXPIRATION_BUFFER)
-                {
-                    if (keyWithNearestFutureActivationDate == null || keyWithNearestFutureActivationDate.ActivationDate > keyWithNearestPastActivationDate.ExpirationDate)
-                    {
-                        callerShouldGenerateNewKey = true;
-                    }
-                }
-
-                return keyWithNearestPastActivationDate;
-            }
-
-            // Failing that, is any key due for imminent activation? If so, use it as the default key.
-            // This allows us to account for clock skew when multiple servers touch the repository.
-            if (keyWithNearestFutureActivationDate != null
-                && (keyWithNearestFutureActivationDate.ActivationDate.UtcDateTime - utcNow) < MAX_SERVER_TO_SERVER_CLOCK_SKEW
-                && !keyWithNearestFutureActivationDate.IsExpired(utcNow) /* sanity check: expiration can't occur before activation */)
-            {
-                return keyWithNearestFutureActivationDate;
-            }
-
-            // Otherwise, there's no default key.
-            return null;
+            // The cached keyring should expire at the earliest of (default key expiration, next auto-refresh time).
+            // Since the refresh period and safety window are not user-settable, we can guarantee that there's at
+            // least one auto-refresh between the start of the safety window and the key's expiration date.
+            // This gives us an opportunity to update the key ring before expiration, and it prevents multiple
+            // servers in a cluster from trying to update the key ring simultaneously.
+            return new CacheableKeyRing(
+                expirationToken: cacheExpirationToken,
+                expirationTime: Min(defaultKey.ExpirationDate, now + GetRefreshPeriodWithJitter(_keyLifetimeOptions.KeyRingRefreshPeriod)),
+                defaultKey: defaultKey,
+                allKeys: allKeys);
         }
 
         public IKeyRing GetCurrentKeyRing()
         {
-            DateTime utcNow = DateTime.UtcNow;
+            return GetCurrentKeyRingCore(DateTime.UtcNow);
+        }
+
+        internal IKeyRing GetCurrentKeyRingCore(DateTime utcNow)
+        {
+            Debug.Assert(utcNow.Kind == DateTimeKind.Utc);
 
             // Can we return the cached keyring to the caller?
-            var existingCachedKeyRing = Volatile.Read(ref _cachedKeyRing);
-            if (existingCachedKeyRing != null && existingCachedKeyRing.SoftRefreshTimeUtc > utcNow)
+            var existingCacheableKeyRing = Volatile.Read(ref _cacheableKeyRing);
+            if (CacheableKeyRing.IsValid(existingCacheableKeyRing, utcNow))
             {
-                return existingCachedKeyRing.KeyRing;
+                return existingCacheableKeyRing.KeyRing;
             }
 
             // The cached keyring hasn't been created or must be refreshed.
-            lock (_cachedKeyRingLockObj)
+            lock (_cacheableKeyRingLockObj)
             {
                 // Did somebody update the keyring while we were waiting for the lock?
-                existingCachedKeyRing = Volatile.Read(ref _cachedKeyRing);
-                if (existingCachedKeyRing != null && existingCachedKeyRing.SoftRefreshTimeUtc > utcNow)
+                existingCacheableKeyRing = Volatile.Read(ref _cacheableKeyRing);
+                if (CacheableKeyRing.IsValid(existingCacheableKeyRing, utcNow))
                 {
-                    return existingCachedKeyRing.KeyRing;
+                    return existingCacheableKeyRing.KeyRing;
+                }
+
+                if (existingCacheableKeyRing != null && _logger.IsVerboseLevelEnabled())
+                {
+                    _logger.LogVerbose("Existing cached key ring is expired. Refreshing.");
                 }
 
                 // It's up to us to refresh the cached keyring.
-                var newCachedKeyRing = CreateCachedKeyRingInstanceUnderLock(utcNow, existingCachedKeyRing);
-                Volatile.Write(ref _cachedKeyRing, newCachedKeyRing);
-                return newCachedKeyRing.KeyRing;
+                // This call is performed *under lock*.
+                var newCacheableKeyRing = _cacheableKeyRingProvider.GetCacheableKeyRing(utcNow);
+                Volatile.Write(ref _cacheableKeyRing, newCacheableKeyRing);
+                return newCacheableKeyRing.KeyRing;
             }
         }
 
-        private static DateTime GetNextHardRefreshTime(DateTime utcNow)
+        private static TimeSpan GetRefreshPeriodWithJitter(TimeSpan refreshPeriod)
         {
-            // We'll fudge the refresh period up to 20% so that multiple applications don't try to
+            // We'll fudge the refresh period up to -20% so that multiple applications don't try to
             // hit a single repository simultaneously. For instance, if the refresh period is 1 hour,
-            // we'll calculate the new refresh time as somewhere between 48 - 60 minutes from now.
-            var skewedRefreshPeriod = TimeSpan.FromTicks((long)(KEYRING_REFRESH_PERIOD.Ticks * ((new Random().NextDouble() / 5) + 0.8d)));
-            return utcNow + skewedRefreshPeriod;
+            // we'll return a value in the vicinity of 48 - 60 minutes. We use the Random class since
+            // we don't need a secure PRNG for this.
+            return TimeSpan.FromTicks((long)(refreshPeriod.Ticks * (1.0d - (new Random().NextDouble() / 5))));
         }
 
-        private static DateTime MinDateTime(DateTime a, DateTime b)
+        private static DateTimeOffset Min(DateTimeOffset a, DateTimeOffset b)
         {
-            Debug.Assert(a.Kind == DateTimeKind.Utc);
-            Debug.Assert(b.Kind == DateTimeKind.Utc);
             return (a < b) ? a : b;
         }
 
-        private sealed class CachedKeyRing
+        CacheableKeyRing ICacheableKeyRingProvider.GetCacheableKeyRing(DateTimeOffset now)
         {
-            internal DateTime HardRefreshTimeUtc;
-            internal KeyRing KeyRing;
-            internal IKey[] Keys;
-            internal DateTime SoftRefreshTimeUtc;
+            // the entry point allows one recursive call
+            return CreateCacheableKeyRingCore(now, allowRecursiveCalls: true);
         }
     }
 }

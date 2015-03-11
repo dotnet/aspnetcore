@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.Cryptography.Cng;
 using Microsoft.AspNet.Cryptography.SafeHandles;
+using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNet.DataProtection.SP800_108;
 
 namespace Microsoft.AspNet.DataProtection.Cng
@@ -25,13 +26,6 @@ namespace Microsoft.AspNet.DataProtection.Cng
         // probability of collision, and this is acceptable for the expected KDK lifetime.
         private const uint KEY_MODIFIER_SIZE_IN_BYTES = 128 / 8;
 
-        // Our analysis re: IV collision resistance only holds if we're working with block ciphers
-        // with a block length of 64 bits or greater.
-        internal const uint SYMMETRIC_ALG_MIN_BLOCK_SIZE_IN_BYTES = 64 / 8;
-
-        // Min security bar: authentication tag must have at least 128 bits of output.
-        internal const uint HASH_ALG_MIN_DIGEST_LENGTH_IN_BYTES = 128 / 8;
-
         private readonly byte[] _contextHeader;
         private readonly IBCryptGenRandom _genRandom;
         private readonly BCryptAlgorithmHandle _hmacAlgorithmHandle;
@@ -44,9 +38,6 @@ namespace Microsoft.AspNet.DataProtection.Cng
 
         public CbcAuthenticatedEncryptor(Secret keyDerivationKey, BCryptAlgorithmHandle symmetricAlgorithmHandle, uint symmetricAlgorithmKeySizeInBytes, BCryptAlgorithmHandle hmacAlgorithmHandle, IBCryptGenRandom genRandom = null)
         {
-            CryptoUtil.Assert(KEY_MODIFIER_SIZE_IN_BYTES <= symmetricAlgorithmKeySizeInBytes && symmetricAlgorithmKeySizeInBytes <= Constants.MAX_STACKALLOC_BYTES,
-                "KEY_MODIFIER_SIZE_IN_BYTES <= symmetricAlgorithmKeySizeInBytes && symmetricAlgorithmKeySizeInBytes <= Constants.MAX_STACKALLOC_BYTES");
-
             _genRandom = genRandom ?? BCryptGenRandomImpl.Instance;
             _sp800_108_ctr_hmac_provider = SP800_108_CTR_HMACSHA512Util.CreateProvider(keyDerivationKey);
             _symmetricAlgorithmHandle = symmetricAlgorithmHandle;
@@ -56,14 +47,10 @@ namespace Microsoft.AspNet.DataProtection.Cng
             _hmacAlgorithmDigestLengthInBytes = hmacAlgorithmHandle.GetHashDigestLength();
             _hmacAlgorithmSubkeyLengthInBytes = _hmacAlgorithmDigestLengthInBytes; // for simplicity we'll generate HMAC subkeys with a length equal to the digest length
 
-            CryptoUtil.Assert(SYMMETRIC_ALG_MIN_BLOCK_SIZE_IN_BYTES <= _symmetricAlgorithmBlockSizeInBytes && _symmetricAlgorithmBlockSizeInBytes <= Constants.MAX_STACKALLOC_BYTES,
-                "SYMMETRIC_ALG_MIN_BLOCK_SIZE_IN_BYTES <= _symmetricAlgorithmBlockSizeInBytes && _symmetricAlgorithmBlockSizeInBytes <= Constants.MAX_STACKALLOC_BYTES");
-
-            CryptoUtil.Assert(HASH_ALG_MIN_DIGEST_LENGTH_IN_BYTES <= _hmacAlgorithmDigestLengthInBytes,
-                "HASH_ALG_MIN_DIGEST_LENGTH_IN_BYTES <= _hmacAlgorithmDigestLengthInBytes");
-
-            CryptoUtil.Assert(KEY_MODIFIER_SIZE_IN_BYTES <= _hmacAlgorithmSubkeyLengthInBytes && _hmacAlgorithmSubkeyLengthInBytes <= Constants.MAX_STACKALLOC_BYTES,
-                "KEY_MODIFIER_SIZE_IN_BYTES <= _hmacAlgorithmSubkeyLengthInBytes && _hmacAlgorithmSubkeyLengthInBytes <= Constants.MAX_STACKALLOC_BYTES");
+            // Argument checking on the algorithms and lengths passed in to us
+            AlgorithmAssert.IsAllowableSymmetricAlgorithmBlockSize(checked(_symmetricAlgorithmBlockSizeInBytes * 8));
+            AlgorithmAssert.IsAllowableSymmetricAlgorithmKeySize(checked(_symmetricAlgorithmSubkeyLengthInBytes * 8));
+            AlgorithmAssert.IsAllowableValidationAlgorithmDigestSize(checked(_hmacAlgorithmDigestLengthInBytes * 8));
 
             _contextHeader = CreateContextHeader();
         }

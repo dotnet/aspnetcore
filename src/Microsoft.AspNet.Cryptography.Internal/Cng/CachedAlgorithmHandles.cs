@@ -23,86 +23,27 @@ namespace Microsoft.AspNet.Cryptography.Cng
         private static CachedAlgorithmInfo _sha512 = new CachedAlgorithmInfo(() => GetHashAlgorithm(algorithm: Constants.BCRYPT_SHA512_ALGORITHM));
         private static CachedAlgorithmInfo _sp800_108_ctr_hmac = new CachedAlgorithmInfo(GetSP800_108_CTR_HMACAlgorithm);
 
-        public static BCryptAlgorithmHandle AES_CBC
-        {
-            get
-            {
-                return CachedAlgorithmInfo.GetAlgorithmHandle(ref _aesCbc);
-            }
-        }
+        public static BCryptAlgorithmHandle AES_CBC => CachedAlgorithmInfo.GetAlgorithmHandle(ref _aesCbc);
 
-        public static BCryptAlgorithmHandle AES_GCM
-        {
-            get
-            {
-                return CachedAlgorithmInfo.GetAlgorithmHandle(ref _aesGcm);
-            }
-        }
+        public static BCryptAlgorithmHandle AES_GCM => CachedAlgorithmInfo.GetAlgorithmHandle(ref _aesGcm);
 
-        public static BCryptAlgorithmHandle HMAC_SHA1
-        {
-            get
-            {
-                return CachedAlgorithmInfo.GetAlgorithmHandle(ref _hmacSha1);
-            }
-        }
+        public static BCryptAlgorithmHandle HMAC_SHA1 => CachedAlgorithmInfo.GetAlgorithmHandle(ref _hmacSha1);
 
-        public static BCryptAlgorithmHandle HMAC_SHA256
-        {
-            get
-            {
-                return CachedAlgorithmInfo.GetAlgorithmHandle(ref _hmacSha256);
-            }
-        }
+        public static BCryptAlgorithmHandle HMAC_SHA256 => CachedAlgorithmInfo.GetAlgorithmHandle(ref _hmacSha256);
 
-        public static BCryptAlgorithmHandle HMAC_SHA512
-        {
-            get
-            {
-                return CachedAlgorithmInfo.GetAlgorithmHandle(ref _hmacSha512);
-            }
-        }
+        public static BCryptAlgorithmHandle HMAC_SHA512 => CachedAlgorithmInfo.GetAlgorithmHandle(ref _hmacSha512);
 
         // Only available on Win8+.
-        public static BCryptAlgorithmHandle PBKDF2
-        {
-            get
-            {
-                return CachedAlgorithmInfo.GetAlgorithmHandle(ref _pbkdf2);
-            }
-        }
+        public static BCryptAlgorithmHandle PBKDF2 => CachedAlgorithmInfo.GetAlgorithmHandle(ref _pbkdf2);
 
-        public static BCryptAlgorithmHandle SHA1
-        {
-            get
-            {
-                return CachedAlgorithmInfo.GetAlgorithmHandle(ref _sha1);
-            }
-        }
+        public static BCryptAlgorithmHandle SHA1 => CachedAlgorithmInfo.GetAlgorithmHandle(ref _sha1);
 
-        public static BCryptAlgorithmHandle SHA256
-        {
-            get
-            {
-                return CachedAlgorithmInfo.GetAlgorithmHandle(ref _sha256);
-            }
-        }
+        public static BCryptAlgorithmHandle SHA256 => CachedAlgorithmInfo.GetAlgorithmHandle(ref _sha256);
 
-        public static BCryptAlgorithmHandle SHA512
-        {
-            get
-            {
-                return CachedAlgorithmInfo.GetAlgorithmHandle(ref _sha512);
-            }
-        }
+        public static BCryptAlgorithmHandle SHA512 => CachedAlgorithmInfo.GetAlgorithmHandle(ref _sha512);
 
-        public static BCryptAlgorithmHandle SP800_108_CTR_HMAC
-        {
-            get
-            {
-                return CachedAlgorithmInfo.GetAlgorithmHandle(ref _sp800_108_ctr_hmac);
-            }
-        }
+        // Only available on Win8+.
+        public static BCryptAlgorithmHandle SP800_108_CTR_HMAC => CachedAlgorithmInfo.GetAlgorithmHandle(ref _sp800_108_ctr_hmac);
 
         private static BCryptAlgorithmHandle GetAesAlgorithm(string chainingMode)
         {

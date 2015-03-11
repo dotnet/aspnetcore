@@ -4,6 +4,7 @@
 using System;
 using System.Text;
 using Microsoft.AspNet.Cryptography.KeyDerivation.PBKDF2;
+using Microsoft.AspNet.DataProtection.Test.Shared;
 using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
@@ -40,7 +41,8 @@ namespace Microsoft.AspNet.Cryptography.KeyDerivation
         // The 'numBytesRequested' parameters below are chosen to exercise code paths where
         // this value straddles the digest length of the PRF. We only use 5 iterations so
         // that our unit tests are fast.
-        [Theory]
+        [ConditionalTheory]
+        [ConditionalRunTestOnlyOnWindows]
         [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 - 1, "efmxNcKD/U1urTEDGvsThlPnHA==")]
         [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 + 0, "efmxNcKD/U1urTEDGvsThlPnHDI=")]
         [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 + 1, "efmxNcKD/U1urTEDGvsThlPnHDLk")]
@@ -67,7 +69,7 @@ namespace Microsoft.AspNet.Cryptography.KeyDerivation
         // this value straddles the digest length of the PRF. We only use 5 iterations so
         // that our unit tests are fast.
         [ConditionalTheory]
-        [ConditionalRunTestOnlyIfBcryptAvailable("BCryptKeyDerivation")]
+        [ConditionalRunTestOnlyOnWindows8OrLater]
         [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 - 1, "efmxNcKD/U1urTEDGvsThlPnHA==")]
         [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 + 0, "efmxNcKD/U1urTEDGvsThlPnHDI=")]
         [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 + 1, "efmxNcKD/U1urTEDGvsThlPnHDLk")]
@@ -97,14 +99,14 @@ namespace Microsoft.AspNet.Cryptography.KeyDerivation
         }
 
         [ConditionalFact]
-        [ConditionalRunTestOnlyIfBcryptAvailable("BCryptDeriveKeyPBKDF2")]
+        [ConditionalRunTestOnlyOnWindows]
         public void RunTest_WithLongPassword_Win7()
         {
             RunTest_WithLongPassword_Impl<Win7Pbkdf2Provider>();
         }
 
         [ConditionalFact]
-        [ConditionalRunTestOnlyIfBcryptAvailable("BCryptKeyDerivation")]
+        [ConditionalRunTestOnlyOnWindows8OrLater]
         public void RunTest_WithLongPassword_Win8()
         {
             RunTest_WithLongPassword_Impl<Win8Pbkdf2Provider>();

@@ -2,47 +2,75 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Xml.Linq;
 using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.DataProtection.Cng;
+using Microsoft.Framework.Internal;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
 {
     /// <summary>
-    /// A class that can decrypt XML elements which were encrypted using Windows DPAPI.
+    /// An <see cref="IXmlDecryptor"/> that decrypts XML elements that were encrypted with <see cref="DpapiXmlEncryptor"/>.
     /// </summary>
-    internal unsafe sealed class DpapiXmlDecryptor : IXmlDecryptor
+    public sealed class DpapiXmlDecryptor : IXmlDecryptor
     {
+        private readonly ILogger _logger;
+
         /// <summary>
-        /// Decrypts the specified XML element using Windows DPAPI.
+        /// Creates a new instance of a <see cref="DpapiXmlDecryptor"/>.
         /// </summary>
-        /// <param name="encryptedElement">The encrypted XML element to decrypt. This element is unchanged by the method.</param>
-        /// <returns>The decrypted form of the XML element.</returns>
+        public DpapiXmlDecryptor()
+            : this(services: null)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of a <see cref="DpapiXmlDecryptor"/>.
+        /// </summary>
+        /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
+        public DpapiXmlDecryptor(IServiceProvider services)
+        {
+            CryptoUtil.AssertPlatformIsWindows();
+
+            _logger = services.GetLogger<DpapiXmlDecryptor>();
+        }
+
+        /// <summary>
+        /// Decrypts the specified XML element.
+        /// </summary>
+        /// <param name="encryptedElement">An encrypted XML element.</param>
+        /// <returns>The decrypted form of <paramref name="encryptedElement"/>.</returns>
+        /// <remarks>
         public XElement Decrypt([NotNull] XElement encryptedElement)
         {
-            CryptoUtil.Assert(encryptedElement.Name == DpapiXmlEncryptor.DpapiEncryptedSecretElementName,
-                "TODO: Incorrect element.");
-
-            int version = (int)encryptedElement.Attribute("version");
-            CryptoUtil.Assert(version == 1, "TODO: Bad version.");
-
-            byte[] dpapiProtectedBytes = Convert.FromBase64String(encryptedElement.Value);
-            using (var secret = DpapiSecretSerializerHelper.UnprotectWithDpapi(dpapiProtectedBytes))
+            if (_logger.IsVerboseLevelEnabled())
             {
-                byte[] plaintextXmlBytes = new byte[secret.Length];
-                try
+                _logger.LogVerbose("Decrypting secret element using Windows DPAPI.");
+            }
+
+            try
+            {
+                // <encryptedKey>
+                //   <!-- This key is encrypted with {provider}. -->
+                //   <value>{base64}</value>
+                // </encryptedKey>
+
+                byte[] protectedSecret = Convert.FromBase64String((string)encryptedElement.Element("value"));
+                using (Secret secret = DpapiSecretSerializerHelper.UnprotectWithDpapi(protectedSecret))
                 {
-                    secret.WriteSecretIntoBuffer(new ArraySegment<byte>(plaintextXmlBytes));
-                    using (var memoryStream = new MemoryStream(plaintextXmlBytes, writable: false))
-                    {
-                        return XElement.Load(memoryStream);
-                    }
+                    return secret.ToXElement();
                 }
-                finally
+            }
+            catch (Exception ex)
+            {
+                // It's OK for us to log the error, as we control the exception, and it doesn't contain
+                // sensitive information.
+                if (_logger.IsErrorLevelEnabled())
                 {
-                    Array.Clear(plaintextXmlBytes, 0, plaintextXmlBytes.Length);
+                    _logger.LogError(ex, "An exception occurred while trying to decrypt the element.");
                 }
+                throw;
             }
         }
     }

@@ -42,6 +42,38 @@ namespace Microsoft.AspNet.Cryptography.Internal
             return string.Format(CultureInfo.CurrentCulture, GetString("BCRYPT_KEY_LENGTHS_STRUCT_InvalidKeyLength"), p0, p1, p2, p3);
         }
 
+        /// <summary>
+        /// This operation requires Windows 7 / Windows Server 2008 R2 or later.
+        /// </summary>
+        internal static string Platform_Windows7Required
+        {
+            get { return GetString("Platform_Windows7Required"); }
+        }
+
+        /// <summary>
+        /// This operation requires Windows 7 / Windows Server 2008 R2 or later.
+        /// </summary>
+        internal static string FormatPlatform_Windows7Required()
+        {
+            return GetString("Platform_Windows7Required");
+        }
+
+        /// <summary>
+        /// This operation requires Windows 8 / Windows Server 2012 or later.
+        /// </summary>
+        internal static string Platform_Windows8Required
+        {
+            get { return GetString("Platform_Windows8Required"); }
+        }
+
+        /// <summary>
+        /// This operation requires Windows 8 / Windows Server 2012 or later.
+        /// </summary>
+        internal static string FormatPlatform_Windows8Required()
+        {
+            return GetString("Platform_Windows8Required");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

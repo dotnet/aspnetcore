@@ -5,7 +5,7 @@ using System;
 using Microsoft.AspNet.DataProtection.Cng;
 using Microsoft.AspNet.DataProtection.Managed;
 
-namespace Microsoft.AspNet.DataProtection.Test
+namespace Microsoft.AspNet.DataProtection
 {
     internal unsafe class SequentialGenRandom : IBCryptGenRandom, IManagedGenRandom
     {

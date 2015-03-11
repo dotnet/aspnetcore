@@ -26,10 +26,10 @@ namespace Microsoft.AspNet.DataProtection
         /// <summary>
         /// Cryptographically protects a piece of plaintext data and assigns an expiration date to the data.
         /// </summary>
-        /// <param name="unprotectedData">The plaintext data to protect.</param>
+        /// <param name="plaintext">The plaintext data to protect.</param>
         /// <param name="expiration">The date after which the data can no longer be unprotected.</param>
         /// <returns>The protected form of the plaintext data.</returns>
-        byte[] Protect(byte[] unprotectedData, DateTimeOffset expiration);
+        byte[] Protect(byte[] plaintext, DateTimeOffset expiration);
 
         /// <summary>
         /// Cryptographically unprotects a piece of protected data.

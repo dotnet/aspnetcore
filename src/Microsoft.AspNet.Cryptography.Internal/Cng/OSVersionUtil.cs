@@ -46,12 +46,12 @@ namespace Microsoft.AspNet.Cryptography.Cng
             }
         }
 
-        public static bool IsBCryptOnWin7OrLaterAvailable()
+        public static bool IsWindows()
         {
             return (_osVersion >= OSVersion.Win7OrLater);
         }
 
-        public static bool IsBCryptOnWin8OrLaterAvailable()
+        public static bool IsWindows8OrLater()
         {
             return (_osVersion >= OSVersion.Win8OrLater);
         }

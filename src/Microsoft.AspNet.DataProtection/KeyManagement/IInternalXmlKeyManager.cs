@@ -1,0 +1,14 @@
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+
+namespace Microsoft.AspNet.DataProtection.KeyManagement
+{
+    // Used for unit testing
+    internal interface IInternalXmlKeyManager
+    {
+        IKey CreateNewKey(Guid keyId, DateTimeOffset creationDate, DateTimeOffset activationDate, DateTimeOffset expirationDate);
+        void RevokeSingleKey(Guid keyId, DateTimeOffset revocationDate, string reason);
+    }
+}

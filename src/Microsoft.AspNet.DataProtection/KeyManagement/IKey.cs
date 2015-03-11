@@ -34,8 +34,8 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         /// </summary>
         /// <remarks>
         /// A revoked key may still be used to decrypt existing payloads, but the payloads
-        /// must be treated as potentially unauthentic unless the application has some
-        /// other assurance that the payloads are authentic.
+        /// must be treated as tampered unless the application has some other assurance
+        /// that the payloads are authentic.
         /// </remarks>
         bool IsRevoked { get; }
 

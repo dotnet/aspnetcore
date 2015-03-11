@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Xunit;
 
-namespace Microsoft.AspNet.DataProtection.Test
+namespace Microsoft.AspNet.DataProtection
 {
     public class EphemeralDataProtectionProviderTests
     {

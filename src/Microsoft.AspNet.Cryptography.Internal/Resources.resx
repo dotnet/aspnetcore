@@ -123,4 +123,10 @@
   <data name="BCRYPT_KEY_LENGTHS_STRUCT_InvalidKeyLength" xml:space="preserve">
     <value>The key length {0} is invalid. Valid key lengths are {1} to {2} bits (step size {3}).</value>
   </data>
+  <data name="Platform_Windows7Required" xml:space="preserve">
+    <value>This operation requires Windows 7 / Windows Server 2008 R2 or later.</value>
+  </data>
+  <data name="Platform_Windows8Required" xml:space="preserve">
+    <value>This operation requires Windows 8 / Windows Server 2012 or later.</value>
+  </data>
 </root>

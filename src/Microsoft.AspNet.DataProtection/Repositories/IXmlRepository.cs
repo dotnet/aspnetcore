@@ -28,6 +28,10 @@ namespace Microsoft.AspNet.DataProtection.Repositories
         /// For instance, if this repository stores XML files on disk, the friendly name may
         /// be used as part of the file name. Repository implementations are not required to
         /// observe this parameter even if it has been provided by the caller.</param>
+        /// <remarks>
+        /// The 'friendlyName' parameter must be unique if specified. For instance, it could
+        /// be the id of the key being stored.
+        /// </remarks>
         void StoreElement(XElement element, string friendlyName);
     }
 }

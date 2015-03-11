@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.Runtime.InteropServices;
 using Microsoft.AspNet.Cryptography.Internal;
 
@@ -14,16 +13,16 @@ namespace Microsoft.AspNet.Cryptography.Cng
     {
         // MSDN says these fields represent the key length in bytes.
         // It's wrong: these key lengths are all actually in bits.
-        private uint dwMinLength;
-        private uint dwMaxLength;
-        private uint dwIncrement;
+        internal uint dwMinLength;
+        internal uint dwMaxLength;
+        internal uint dwIncrement;
 
         public void EnsureValidKeyLength(uint keyLengthInBits)
         {
             if (!IsValidKeyLength(keyLengthInBits))
             {
-                string message = String.Format(CultureInfo.CurrentCulture, Resources.BCRYPT_KEY_LENGTHS_STRUCT_InvalidKeyLength, keyLengthInBits, dwMinLength, dwMaxLength, dwIncrement);
-                throw new ArgumentException(message, "keyLengthInBits");
+                string message = Resources.FormatBCRYPT_KEY_LENGTHS_STRUCT_InvalidKeyLength(keyLengthInBits, dwMinLength, dwMaxLength, dwIncrement);
+                throw new ArgumentOutOfRangeException(nameof(keyLengthInBits), message);
             }
             CryptoUtil.Assert(keyLengthInBits % 8 == 0, "keyLengthInBits % 8 == 0");
         }

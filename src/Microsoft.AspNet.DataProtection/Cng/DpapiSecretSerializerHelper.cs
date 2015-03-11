@@ -23,6 +23,22 @@ namespace Microsoft.AspNet.DataProtection.Cng
 
         private static readonly byte[] _purpose = Encoding.UTF8.GetBytes("DPAPI-Protected Secret");
 
+        // Probes to see if protecting to the current Windows user account is available.
+        // In theory this should never fail if the user profile is available, so it's more a defense-in-depth check.
+        public static bool CanProtectToCurrentUserAccount()
+        {
+            try
+            {
+                Guid dummy;
+                ProtectWithDpapi(new Secret((byte*)&dummy, sizeof(Guid)), protectToLocalMachine: false);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public static byte[] ProtectWithDpapi(ISecret secret, bool protectToLocalMachine = false)
         {
             Debug.Assert(secret != null);
@@ -35,7 +51,7 @@ namespace Microsoft.AspNet.DataProtection.Cng
                     secret.WriteSecretIntoBuffer(new ArraySegment<byte>(plaintextSecret));
                     fixed (byte* pbPurpose = _purpose)
                     {
-                        return ProtectWithDpapiImpl(pbPlaintextSecret, (uint)plaintextSecret.Length, pbPurpose, (uint)_purpose.Length, fLocalMachine: protectToLocalMachine);
+                        return ProtectWithDpapiCore(pbPlaintextSecret, (uint)plaintextSecret.Length, pbPurpose, (uint)_purpose.Length, fLocalMachine: protectToLocalMachine);
                     }
                 }
                 finally
@@ -46,7 +62,7 @@ namespace Microsoft.AspNet.DataProtection.Cng
             }
         }
 
-        internal static byte[] ProtectWithDpapiImpl(byte* pbSecret, uint cbSecret, byte* pbOptionalEntropy, uint cbOptionalEntropy, bool fLocalMachine = false)
+        internal static byte[] ProtectWithDpapiCore(byte* pbSecret, uint cbSecret, byte* pbOptionalEntropy, uint cbOptionalEntropy, bool fLocalMachine = false)
         {
             byte dummy; // provides a valid memory address if the secret or entropy has zero length
 
@@ -110,7 +126,7 @@ namespace Microsoft.AspNet.DataProtection.Cng
                     secret.WriteSecretIntoBuffer(new ArraySegment<byte>(plaintextSecret));
 
                     byte dummy; // used to provide a valid memory address if secret is zero-length
-                    return ProtectWithDpapiNGImpl(
+                    return ProtectWithDpapiNGCore(
                         protectionDescriptorHandle: protectionDescriptorHandle,
                         pbData: (pbPlaintextSecret != null) ? pbPlaintextSecret : &dummy,
                         cbData: (uint)plaintextSecret.Length);
@@ -123,7 +139,7 @@ namespace Microsoft.AspNet.DataProtection.Cng
             }
         }
 
-        private static byte[] ProtectWithDpapiNGImpl(NCryptDescriptorHandle protectionDescriptorHandle, byte* pbData, uint cbData)
+        private static byte[] ProtectWithDpapiNGCore(NCryptDescriptorHandle protectionDescriptorHandle, byte* pbData, uint cbData)
         {
             Debug.Assert(protectionDescriptorHandle != null);
             Debug.Assert(pbData != null);
@@ -141,7 +157,7 @@ namespace Microsoft.AspNet.DataProtection.Cng
                 ppbProtectedBlob: out protectedData,
                 pcbProtectedBlob: out cbProtectedData);
             UnsafeNativeMethods.ThrowExceptionForNCryptStatus(ntstatus);
-            CryptoUtil.Assert(protectedData != null && !protectedData.IsInvalid, "protectedData != null && !protectedData.IsInvalid");
+            CryptoUtil.AssertSafeHandleIsValid(protectedData);
 
             // Copy the data from LocalAlloc-allocated memory into a managed memory buffer.
             using (protectedData)
@@ -181,12 +197,12 @@ namespace Microsoft.AspNet.DataProtection.Cng
             {
                 fixed (byte* pbPurpose = _purpose)
                 {
-                    return UnprotectWithDpapiImpl(pbProtectedSecret, (uint)protectedSecret.Length, pbPurpose, (uint)_purpose.Length);
+                    return UnprotectWithDpapiCore(pbProtectedSecret, (uint)protectedSecret.Length, pbPurpose, (uint)_purpose.Length);
                 }
             }
         }
 
-        internal static Secret UnprotectWithDpapiImpl(byte* pbProtectedData, uint cbProtectedData, byte* pbOptionalEntropy, uint cbOptionalEntropy)
+        internal static Secret UnprotectWithDpapiCore(byte* pbProtectedData, uint cbProtectedData, byte* pbOptionalEntropy, uint cbOptionalEntropy)
         {
             byte dummy; // provides a valid memory address if the secret or entropy has zero length
 
@@ -242,13 +258,13 @@ namespace Microsoft.AspNet.DataProtection.Cng
             fixed (byte* pbProtectedData = protectedData)
             {
                 byte dummy; // used to provide a valid memory address if protected data is zero-length
-                return UnprotectWithDpapiNGImpl(
+                return UnprotectWithDpapiNGCore(
                     pbData: (pbProtectedData != null) ? pbProtectedData : &dummy,
                     cbData: (uint)protectedData.Length);
             }
         }
 
-        private static Secret UnprotectWithDpapiNGImpl(byte* pbData, uint cbData)
+        private static Secret UnprotectWithDpapiNGCore(byte* pbData, uint cbData)
         {
             Debug.Assert(pbData != null);
 
@@ -265,7 +281,7 @@ namespace Microsoft.AspNet.DataProtection.Cng
                 ppbData: out unencryptedPayloadHandle,
                 pcbData: out cbUnencryptedPayload);
             UnsafeNativeMethods.ThrowExceptionForNCryptStatus(ntstatus);
-            CryptoUtil.Assert(unencryptedPayloadHandle != null && !unencryptedPayloadHandle.IsInvalid, "unencryptedPayloadHandle != null && !unencryptedPayloadHandle.IsInvalid");
+            CryptoUtil.AssertSafeHandleIsValid(unencryptedPayloadHandle);
 
             // Copy the data from LocalAlloc-allocated memory into a CryptProtectMemory-protected buffer.
             // There's a small window between NCryptUnprotectSecret returning and the call to PrepareConstrainedRegions
@@ -291,6 +307,51 @@ namespace Microsoft.AspNet.DataProtection.Cng
                         unencryptedPayloadHandle.DangerousRelease();
                     }
                 }
+            }
+        }
+
+        public static string GetRuleFromDpapiNGProtectedPayload(byte[] protectedData)
+        {
+            Debug.Assert(protectedData != null);
+
+            fixed (byte* pbProtectedData = protectedData)
+            {
+                byte dummy; // used to provide a valid memory address if protected data is zero-length
+                return GetRuleFromDpapiNGProtectedPayloadCore(
+                    pbData: (pbProtectedData != null) ? pbProtectedData : &dummy,
+                    cbData: (uint)protectedData.Length);
+            }
+        }
+
+        private static string GetRuleFromDpapiNGProtectedPayloadCore(byte* pbData, uint cbData)
+        {
+            // from ncryptprotect.h
+            const uint NCRYPT_UNPROTECT_NO_DECRYPT = 0x00000001;
+
+            NCryptDescriptorHandle descriptorHandle;
+            LocalAllocHandle unprotectedDataHandle;
+            uint cbUnprotectedData;
+            int ntstatus = UnsafeNativeMethods.NCryptUnprotectSecret(
+                phDescriptor: out descriptorHandle,
+                dwFlags: NCRYPT_UNPROTECT_NO_DECRYPT,
+                pbProtectedBlob: pbData,
+                cbProtectedBlob: cbData,
+                pMemPara: IntPtr.Zero,
+                hWnd: IntPtr.Zero,
+                ppbData: out unprotectedDataHandle,
+                pcbData: out cbUnprotectedData);
+            UnsafeNativeMethods.ThrowExceptionForNCryptStatus(ntstatus);
+            CryptoUtil.AssertSafeHandleIsValid(descriptorHandle);
+
+            if (unprotectedDataHandle != null && !unprotectedDataHandle.IsInvalid)
+            {
+                // we don't care about this value
+                unprotectedDataHandle.Dispose();
+            }
+
+            using (descriptorHandle)
+            {
+                return descriptorHandle.GetProtectionDescriptorRuleString();
             }
         }
     }

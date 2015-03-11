@@ -26,13 +26,6 @@ namespace Microsoft.AspNet.DataProtection.Managed
         // probability of collision, and this is acceptable for the expected KDK lifetime.
         private const int KEY_MODIFIER_SIZE_IN_BYTES = 128 / 8;
 
-        // Our analysis re: IV collision resistance only holds if we're working with block ciphers
-        // with a block length of 64 bits or greater.
-        internal const int SYMMETRIC_ALG_MIN_BLOCK_SIZE_IN_BYTES = 64 / 8;
-
-        // Min security bar: authentication tag must have at least 128 bits of output.
-        internal const int HASH_ALG_MIN_DIGEST_LENGTH_IN_BYTES = 128 / 8;
-
         private static readonly Func<byte[], HashAlgorithm> _kdkPrfFactory = key => new HMACSHA512(key); // currently hardcoded to SHA512
 
         private readonly byte[] _contextHeader;
@@ -47,9 +40,6 @@ namespace Microsoft.AspNet.DataProtection.Managed
 
         public ManagedAuthenticatedEncryptor(Secret keyDerivationKey, Func<SymmetricAlgorithm> symmetricAlgorithmFactory, int symmetricAlgorithmKeySizeInBytes, Func<KeyedHashAlgorithm> validationAlgorithmFactory, IManagedGenRandom genRandom = null)
         {
-            CryptoUtil.Assert(KEY_MODIFIER_SIZE_IN_BYTES <= symmetricAlgorithmKeySizeInBytes && symmetricAlgorithmKeySizeInBytes <= Constants.MAX_STACKALLOC_BYTES,
-                "KEY_MODIFIER_SIZE_IN_BYTES <= symmetricAlgorithmKeySizeInBytes && symmetricAlgorithmKeySizeInBytes <= Constants.MAX_STACKALLOC_BYTES");
-
             _genRandom = genRandom ?? ManagedGenRandomImpl.Instance;
             _keyDerivationKey = keyDerivationKey;
 
@@ -69,14 +59,10 @@ namespace Microsoft.AspNet.DataProtection.Managed
                 _validationAlgorithmSubkeyLengthInBytes = _validationAlgorithmDigestLengthInBytes; // for simplicity we'll generate MAC subkeys with a length equal to the digest length
             }
 
-            CryptoUtil.Assert(SYMMETRIC_ALG_MIN_BLOCK_SIZE_IN_BYTES <= _symmetricAlgorithmBlockSizeInBytes && _symmetricAlgorithmBlockSizeInBytes <= Constants.MAX_STACKALLOC_BYTES,
-                "SYMMETRIC_ALG_MIN_BLOCK_SIZE_IN_BYTES <= _symmetricAlgorithmBlockSizeInBytes && _symmetricAlgorithmBlockSizeInBytes <= Constants.MAX_STACKALLOC_BYTES");
-
-            CryptoUtil.Assert(HASH_ALG_MIN_DIGEST_LENGTH_IN_BYTES <= _validationAlgorithmDigestLengthInBytes,
-                "HASH_ALG_MIN_DIGEST_LENGTH_IN_BYTES <= _validationAlgorithmDigestLengthInBytes");
-
-            CryptoUtil.Assert(KEY_MODIFIER_SIZE_IN_BYTES <= _validationAlgorithmSubkeyLengthInBytes && _validationAlgorithmSubkeyLengthInBytes <= Constants.MAX_STACKALLOC_BYTES,
-                "KEY_MODIFIER_SIZE_IN_BYTES <= _validationAlgorithmSubkeyLengthInBytes && _validationAlgorithmSubkeyLengthInBytes <= Constants.MAX_STACKALLOC_BYTES");
+            // Argument checking on the algorithms and lengths passed in to us
+            AlgorithmAssert.IsAllowableSymmetricAlgorithmBlockSize(checked((uint)_symmetricAlgorithmBlockSizeInBytes * 8));
+            AlgorithmAssert.IsAllowableSymmetricAlgorithmKeySize(checked((uint)_symmetricAlgorithmSubkeyLengthInBytes * 8));
+            AlgorithmAssert.IsAllowableValidationAlgorithmDigestSize(checked((uint)_validationAlgorithmDigestLengthInBytes * 8));
 
             _contextHeader = CreateContextHeader();
         }
