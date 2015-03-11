@@ -7,39 +7,39 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A5A15F1C-885
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F31FF137-390C-49BF-A3BD-7C6ED3597C21}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http.Core", "src\Microsoft.AspNet.Http.Core\Microsoft.AspNet.Http.Core.kproj", "{BCF0F967-8753-4438-BD07-AADCA9CE509A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http.Core", "src\Microsoft.AspNet.Http.Core\Microsoft.AspNet.Http.Core.xproj", "{BCF0F967-8753-4438-BD07-AADCA9CE509A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http", "src\Microsoft.AspNet.Http\Microsoft.AspNet.Http.kproj", "{22071333-15BA-4D16-A1D5-4D5B1A83FBDD}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http", "src\Microsoft.AspNet.Http\Microsoft.AspNet.Http.xproj", "{22071333-15BA-4D16-A1D5-4D5B1A83FBDD}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http.Interfaces", "src\Microsoft.AspNet.Http.Interfaces\Microsoft.AspNet.Http.Interfaces.kproj", "{D9128247-8F97-48B8-A863-F1F21A029FCE}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http.Interfaces", "src\Microsoft.AspNet.Http.Interfaces\Microsoft.AspNet.Http.Interfaces.xproj", "{D9128247-8F97-48B8-A863-F1F21A029FCE}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FeatureModel", "src\Microsoft.AspNet.FeatureModel\Microsoft.AspNet.FeatureModel.kproj", "{32A4C918-30EE-41DB-8E26-8A3BB88ED231}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FeatureModel", "src\Microsoft.AspNet.FeatureModel\Microsoft.AspNet.FeatureModel.xproj", "{32A4C918-30EE-41DB-8E26-8A3BB88ED231}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http.Core.Tests", "test\Microsoft.AspNet.Http.Core.Tests\Microsoft.AspNet.Http.Core.Tests.kproj", "{AA99AF26-F7B1-4A6B-A922-5C25539F6391}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http.Core.Tests", "test\Microsoft.AspNet.Http.Core.Tests\Microsoft.AspNet.Http.Core.Tests.xproj", "{AA99AF26-F7B1-4A6B-A922-5C25539F6391}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FeatureModel.Tests", "test\Microsoft.AspNet.FeatureModel.Tests\Microsoft.AspNet.FeatureModel.Tests.kproj", "{C5D2BAE1-E182-48A0-AA74-1AF14B782BF7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FeatureModel.Tests", "test\Microsoft.AspNet.FeatureModel.Tests\Microsoft.AspNet.FeatureModel.Tests.xproj", "{C5D2BAE1-E182-48A0-AA74-1AF14B782BF7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http.Tests", "test\Microsoft.AspNet.Http.Tests\Microsoft.AspNet.Http.Tests.kproj", "{F16692B8-9F38-4DCA-A582-E43172B989C6}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http.Tests", "test\Microsoft.AspNet.Http.Tests\Microsoft.AspNet.Http.Tests.xproj", "{F16692B8-9F38-4DCA-A582-E43172B989C6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Owin", "src\Microsoft.AspNet.Owin\Microsoft.AspNet.Owin.kproj", "{59BED991-F207-48ED-B24C-0A1D9C986C01}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Owin", "src\Microsoft.AspNet.Owin\Microsoft.AspNet.Owin.xproj", "{59BED991-F207-48ED-B24C-0A1D9C986C01}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Owin.Tests", "test\Microsoft.AspNet.Owin.Tests\Microsoft.AspNet.Owin.Tests.kproj", "{16219571-3268-4D12-8689-12B7163DBA13}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Owin.Tests", "test\Microsoft.AspNet.Owin.Tests\Microsoft.AspNet.Owin.Tests.xproj", "{16219571-3268-4D12-8689-12B7163DBA13}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http.Extensions", "src\Microsoft.AspNet.Http.Extensions\Microsoft.AspNet.Http.Extensions.kproj", "{CCC4363E-81E2-4058-94DD-00494E9E992A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http.Extensions", "src\Microsoft.AspNet.Http.Extensions\Microsoft.AspNet.Http.Extensions.xproj", "{CCC4363E-81E2-4058-94DD-00494E9E992A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http.Extensions.Tests", "test\Microsoft.AspNet.Http.Extensions.Tests\Microsoft.AspNet.Http.Extensions.Tests.kproj", "{AE25EF21-7F91-4B86-B73E-AF746821D339}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Http.Extensions.Tests", "test\Microsoft.AspNet.Http.Extensions.Tests\Microsoft.AspNet.Http.Extensions.Tests.xproj", "{AE25EF21-7F91-4B86-B73E-AF746821D339}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.WebUtilities", "src\Microsoft.AspNet.WebUtilities\Microsoft.AspNet.WebUtilities.kproj", "{A2FB7838-0031-4FAD-BA3E-83C30B3AF406}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.WebUtilities", "src\Microsoft.AspNet.WebUtilities\Microsoft.AspNet.WebUtilities.xproj", "{A2FB7838-0031-4FAD-BA3E-83C30B3AF406}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.WebUtilities.Tests", "test\Microsoft.AspNet.WebUtilities.Tests\Microsoft.AspNet.WebUtilities.Tests.kproj", "{93C10E50-BCBB-4D8E-9492-D46E1396225B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.WebUtilities.Tests", "test\Microsoft.AspNet.WebUtilities.Tests\Microsoft.AspNet.WebUtilities.Tests.xproj", "{93C10E50-BCBB-4D8E-9492-D46E1396225B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Net.Http.Headers", "src\Microsoft.Net.Http.Headers\Microsoft.Net.Http.Headers.kproj", "{60AA2FDB-8121-4826-8D00-9A143FEFAF66}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Net.Http.Headers", "src\Microsoft.Net.Http.Headers\Microsoft.Net.Http.Headers.xproj", "{60AA2FDB-8121-4826-8D00-9A143FEFAF66}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Net.Http.Headers.Tests", "test\Microsoft.Net.Http.Headers.Tests\Microsoft.Net.Http.Headers.Tests.kproj", "{E6BB7AD1-BD10-4A23-B780-F4A86ADF00D1}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Net.Http.Headers.Tests", "test\Microsoft.Net.Http.Headers.Tests\Microsoft.Net.Http.Headers.Tests.xproj", "{E6BB7AD1-BD10-4A23-B780-F4A86ADF00D1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.WebEncoders", "src\Microsoft.Framework.WebEncoders\Microsoft.Framework.WebEncoders.kproj", "{DD2CE416-765E-4000-A03E-C2FF165DA1B6}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.WebEncoders", "src\Microsoft.Framework.WebEncoders\Microsoft.Framework.WebEncoders.xproj", "{DD2CE416-765E-4000-A03E-C2FF165DA1B6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.WebEncoders.Tests", "test\Microsoft.Framework.WebEncoders.Tests\Microsoft.Framework.WebEncoders.Tests.kproj", "{7AE2731D-43CD-4CF8-850A-4914DE2CE930}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.WebEncoders.Tests", "test\Microsoft.Framework.WebEncoders.Tests\Microsoft.Framework.WebEncoders.Tests.xproj", "{7AE2731D-43CD-4CF8-850A-4914DE2CE930}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
