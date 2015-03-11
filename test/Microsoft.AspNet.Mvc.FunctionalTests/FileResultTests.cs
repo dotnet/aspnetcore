@@ -5,21 +5,20 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class FileResultTests
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices("FilesWebSite");
+        private const string SiteName = nameof(FilesWebSite);
         private readonly Action<IApplicationBuilder> _app = new FilesWebSite.Startup().Configure;
 
         [Fact]
         public async Task FileFromDisk_CanBeEnabled_WithMiddleware()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -40,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FileFromDisk_ReturnsFileWithFileName()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -65,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FileFromStream_ReturnsFile()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -86,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FileFromStream_ReturnsFileWithFileName()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -111,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FileFromBinaryData_ReturnsFile()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -132,7 +131,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FileFromBinaryData_ReturnsFileWithFileName()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act

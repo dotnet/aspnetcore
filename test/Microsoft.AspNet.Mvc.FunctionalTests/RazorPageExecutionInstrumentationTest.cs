@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using RazorPageExecutionInstrumentationWebSite;
 using Xunit;
@@ -14,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class RazorPageExecutionInstrumentationTest
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(RazorPageExecutionInstrumentationWebSite));
+        private const string SiteName = nameof(RazorPageExecutionInstrumentationWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         public static IEnumerable<object[]> InstrumentationData
@@ -94,14 +93,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         [Theory]
         [MemberData(nameof(InstrumentationData))]
-        public async Task ViewsAreServedWithoutInstrumentationByDefault(string actionName,
-                                                                        string expected,
-                                                                        IEnumerable<Tuple<int, int, bool>> expectedLineMappings)
+        public async Task ViewsAreServedWithoutInstrumentationByDefault(
+            string actionName,
+            string expected,
+            IEnumerable<Tuple<int, int, bool>> expectedLineMappings)
         {
             // Arrange
             var context = new TestPageExecutionContext();
-            var services = GetServiceProvider(context);
-            var server = TestServer.Create(services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(context));
             var client = server.CreateClient();
 
             // Act
@@ -114,14 +113,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         [Theory]
         [MemberData(nameof(InstrumentationData))]
-        public async Task ViewsAreInstrumentedWhenPageExecutionListenerFeatureIsEnabled(string actionName,
-                                                                                        string expected,
-                                                                                        IEnumerable<Tuple<int, int, bool>> expectedLineMappings)
+        public async Task ViewsAreInstrumentedWhenPageExecutionListenerFeatureIsEnabled(
+            string actionName,
+            string expected,
+            IEnumerable<Tuple<int, int, bool>> expectedLineMappings)
         {
             // Arrange
             var context = new TestPageExecutionContext();
-            var services = GetServiceProvider(context);
-            var server = TestServer.Create(services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(context));
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Add("ENABLE-RAZOR-INSTRUMENTATION", "true");
 
@@ -135,14 +134,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         [Theory]
         [MemberData(nameof(InstrumentationData))]
-        public async Task ViewsCanSwitchFromRegularToInstrumented(string actionName,
-                                                                  string expected,
-                                                                  IEnumerable<Tuple<int, int, bool>> expectedLineMappings)
+        public async Task ViewsCanSwitchFromRegularToInstrumented(
+            string actionName,
+            string expected,
+            IEnumerable<Tuple<int, int, bool>> expectedLineMappings)
         {
             // Arrange - 1
             var context = new TestPageExecutionContext();
-            var services = GetServiceProvider(context);
-            var server = TestServer.Create(services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(context));
             var client = server.CreateClient();
 
             // Act - 1
@@ -184,8 +183,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 Tuple.Create(35, 8, true),
             };
             var context = new TestPageExecutionContext();
-            var services = GetServiceProvider(context);
-            var server = TestServer.Create(services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(context));
             var client = server.CreateClient();
 
             // Act - 1
@@ -202,13 +200,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert - 2
             Assert.Equal(expectedLineMappings, context.Values);
-        }
-
-        private IServiceProvider GetServiceProvider(TestPageExecutionContext pageExecutionContext)
-        {
-            var services = new ServiceCollection();
-            services.AddInstance(pageExecutionContext);
-            return TestHelper.CreateServices(nameof(RazorPageExecutionInstrumentationWebSite), services);
         }
     }
 }

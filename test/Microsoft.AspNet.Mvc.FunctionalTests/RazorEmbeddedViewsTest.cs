@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using RazorEmbeddedViewsWebSite;
 using Xunit;
 
@@ -12,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class RazorEmbeddedViewsTest
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(RazorEmbeddedViewsWebSite));
+        private const string SiteName = nameof(RazorEmbeddedViewsWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
@@ -20,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expectedMessage = "Hello test-user, this is /RazorEmbeddedViews_Home";
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -35,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expectedMessage = "Hello admin-user, this is /Restricted/RazorEmbeddedViews_Admin/Login";
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var target = "http://localhost/Restricted/RazorEmbeddedViews_Admin/Login?AdminUser=admin-user";
 

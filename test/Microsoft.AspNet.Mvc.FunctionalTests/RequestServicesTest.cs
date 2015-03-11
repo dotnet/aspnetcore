@@ -6,7 +6,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -15,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     // PER-REQUEST and does not linger around to impact the next request.
     public class RequestServicesTest
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices(nameof(RequestServicesWebSite));
+        private const string SiteName = nameof(RequestServicesWebSite);
         private readonly Action<IApplicationBuilder> _app = new RequestServicesWebSite.Startup().Configure;
 
         [Theory]
@@ -28,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RequestServices(string url)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act & Assert
@@ -49,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RequestServices_TagHelper()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var url = "http://localhost/Other/FromTagHelper";
@@ -74,7 +73,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RequestServices_ActionConstraint()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var url = "http://localhost/Other/FromActionConstraint";

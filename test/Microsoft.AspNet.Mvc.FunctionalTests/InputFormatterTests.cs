@@ -8,7 +8,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -16,14 +15,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class InputFormatterTests
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices("FormatterWebSite");
+        private const string SiteName = nameof(FormatterWebSite);
         private readonly Action<IApplicationBuilder> _app = new FormatterWebSite.Startup().Configure;
 
         [Fact]
         public async Task CheckIfXmlInputFormatterIsBeingCalled()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var sampleInputInt = 10;
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -48,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonInputFormatter_IsSelectedForJsonRequest(string requestContentType)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var sampleInputInt = 10;
             var input = "{\"SampleInt\":10}";
@@ -80,7 +79,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var actionName = filterHandlesModelStateError ? "ActionFilterHandlesError" : "ActionHandlesError";
             var expectedSource = filterHandlesModelStateError ? "filter" : "action";
 
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var input = "{\"SampleInt\":10}";
             var content = new StringContent(input);
@@ -111,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonInputFormatter_IsModelStateValid_ForValidContentType(string requestContentType, string jsonInput, int expectedSampleIntValue)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var content = new StringContent(jsonInput, Encoding.UTF8, requestContentType);
 
@@ -131,7 +130,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonInputFormatter_IsModelStateInvalid_ForEmptyContentType(string jsonInput)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var content = new StringContent(jsonInput, Encoding.UTF8, "application/json");
             content.Headers.Clear();
@@ -150,7 +149,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonInputFormatter_IsModelStateValid_ForTransferEncodingChunk(string requestContentType, string jsonInput, int expectedSampleIntValue)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var content = new StringContent(jsonInput, Encoding.UTF8, requestContentType);
             client.DefaultRequestHeaders.TransferEncodingChunked = true;
@@ -170,7 +169,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CustomFormatter_IsSelected_ForSupportedContentTypeAndEncoding(string encoding)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var content = new StringContent("Test Content", Encoding.GetEncoding(encoding), "text/plain");
 
@@ -189,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CustomFormatter_NotSelected_ForUnsupportedContentType(string contentType)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var content = new StringContent("Test Content", Encoding.UTF8, contentType);
 

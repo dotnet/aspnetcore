@@ -6,7 +6,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -14,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class WebApiCompatShimActionSelectionTest
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices(nameof(WebApiCompatShimWebSite));
+        private const string SiteName = nameof(WebApiCompatShimWebSite);
         private readonly Action<IApplicationBuilder> _app = new WebApiCompatShimWebSite.Startup().Configure;
 
         [Theory]
@@ -28,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebAPIConvention_TakesHttpMethodFromPrefix_UnnamedAction(string httpMethod, string actionName)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -57,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebAPIConvention_TakesHttpMethodFromPrefix_NamedAction(string httpMethod, string actionName)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -79,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebAPIConvention_TakesHttpMethodFromPrefix_NamedAction_MismatchedVerb()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -97,7 +96,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebAPIConvention_TakesHttpMethodFromPrefix_UnnamedAction_DefaultVerbIsPost_Success()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -119,7 +118,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebAPIConvention_TakesHttpMethodFromPrefix_NamedAction_DefaultVerbIsPost_Success()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -141,7 +140,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebAPIConvention_TakesHttpMethodFromPrefix_UnnamedAction_DefaultVerbIsPost_VerbMismatch()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -159,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebAPIConvention_TakesHttpMethodFromPrefix_NamedAction_DefaultVerbIsPost_VerbMismatch()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -177,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebAPIConvention_TakesHttpMethodFromMethodName_NotActionName_UnnamedAction_Success()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -199,7 +198,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebAPIConvention_TakesHttpMethodFromMethodName_NotActionName_NamedAction_Success()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -221,7 +220,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebAPIConvention_TakesHttpMethodFromMethodName_NotActionName_UnnamedAction_VerbMismatch()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -239,7 +238,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebAPIConvention_TakesHttpMethodFromMethodName_NotActionName_NamedAction_VerbMismatch()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -257,7 +256,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebAPIConvention_HttpMethodOverride_UnnamedAction_Success()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -279,7 +278,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebAPIConvention_HttpMethodOverride_NamedAction_Success()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -301,7 +300,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebAPIConvention_HttpMethodOverride_UnnamedAction_VerbMismatch()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -319,7 +318,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebAPIConvention_HttpMethodOverride_NamedAction_VerbMismatch()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -368,7 +367,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task LegacyActionSelection_OverloadedAction_WithUnnamedAction(string httpMethod, string requestUrl, string expectedActionName)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(new HttpMethod(httpMethod), "http://localhost/" + requestUrl);
@@ -395,7 +394,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task LegacyActionSelection_OverloadedAction_NonIdRouteParameter(string httpMethod, string requestUrl, string expectedActionName)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(new HttpMethod(httpMethod), "http://localhost/" + requestUrl);
@@ -419,7 +418,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task LegacyActionSelection_OverloadedAction_Parameter_Casing(string httpMethod, string requestUrl, string expectedActionName)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(new HttpMethod(httpMethod), "http://localhost/" + requestUrl);
@@ -446,7 +445,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task LegacyActionSelection_RouteWithActionName(string httpMethod, string requestUrl, string expectedActionName)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(new HttpMethod(httpMethod), "http://localhost/" + requestUrl);
@@ -473,7 +472,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task LegacyActionSelection_RouteWithActionName_Casing(string httpMethod, string requestUrl, string expectedActionName)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(new HttpMethod(httpMethod), "http://localhost/" + requestUrl);
@@ -498,7 +497,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task LegacyActionSelection_RouteWithoutActionName(string httpMethod, string requestUrl, string expectedActionName)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(new HttpMethod(httpMethod), "http://localhost/" + requestUrl);
@@ -526,7 +525,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task LegacyActionSelection_ModelBindingParameterAttribute_AreAppliedWhenSelectingActions(string httpMethod, string requestUrl, string expectedActionName)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(new HttpMethod(httpMethod), "http://localhost/" + requestUrl);
@@ -550,7 +549,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task LegacyActionSelection_ActionsThatHaveSubsetOfRouteParameters_AreConsideredForSelection(string httpMethod, string requestUrl, string expectedActionName)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(new HttpMethod(httpMethod), "http://localhost/" + requestUrl);
@@ -572,7 +571,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task LegacyActionSelection_RequestToAmbiguousAction_OnDefaultRoute()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(new HttpMethod("POST"), "http://localhost/api/Admin/Test?name=mario");
@@ -593,7 +592,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task LegacyActionSelection_SelectAction_ReturnsActionDescriptor_ForEnumParameterOverloads(string httpMethod, string requestUrl, string expectedActionName)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(new HttpMethod(httpMethod), "http://localhost/" + requestUrl);

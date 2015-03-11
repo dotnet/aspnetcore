@@ -5,21 +5,20 @@ using System;
 using System.Threading.Tasks;
 using ActivatorWebSite;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class ActivatorTests
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices("ActivatorWebSite");
+        private const string SiteName = nameof(ActivatorWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
         public async Task ControllerThatCannotBeActivated_ThrowsWhenAttemptedToBeInvoked()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var expectedMessage = "The property 'Service' on controller 'ActivatorWebSite.CannotBeActivatedController' " +
@@ -37,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task PropertiesForPocoControllersAreInitialized()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var expected = "4|some-text";
 
@@ -55,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task PropertiesForTypesDerivingFromControllerAreInitialized()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var expected = "Hello world";
 
@@ -70,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ViewActivator_ActivatesDefaultInjectedProperties()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var expected = @"<label for=""Hello"">Hello</label> world! /View/ConsumeServicesFromBaseType";
 
@@ -85,7 +84,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ViewActivator_ActivatesAndContextualizesInjectedServices()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var expected = "4 test-value";
 
@@ -100,7 +99,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ViewActivator_ActivatesServicesFromBaseType()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var expected = @"/content/scripts/test.js";
 
@@ -115,7 +114,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ViewComponentActivator_ActivatesProperties()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var expected = @"Random Number:4";
 
@@ -130,7 +129,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ViewComponentActivator_ActivatesPropertiesAndContextualizesThem()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var expected = "test-value";
 
@@ -145,7 +144,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ViewComponentActivator_ActivatesPropertiesAndContextualizesThem_WhenMultiplePropertiesArePresent()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var expected = "Random Number:4 test-value";
 
@@ -160,7 +159,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ViewComponentThatCannotBeActivated_ThrowsWhenAttemptedToBeInvoked()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var expectedMessage = "No service for type 'ActivatorWebSite.CannotBeActivatedComponent+FakeType' " +
                                    "has been registered.";
@@ -177,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task TagHelperActivation_ActivateHtmlHelper_RendersProperly()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var expected = "<body><h2>Activation Test</h2>" +
                            Environment.NewLine +

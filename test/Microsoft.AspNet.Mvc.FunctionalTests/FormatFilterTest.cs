@@ -5,21 +5,20 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class FormatFilterTest
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(FormatFilterWebSite));
+        private const string SiteName = nameof(FormatFilterWebSite);
         private readonly Action<IApplicationBuilder> _app = new FormatFilterWebSite.Startup().Configure;
 
         [Fact]
         public async Task FormatFilter_NoExtensionInRequest()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -34,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormatFilter_ExtensionInRequest_Default()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -49,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormatFilter_ExtensionInRequest_Optional()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -64,7 +63,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormatFilter_ExtensionInRequest_Custom()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -79,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormatFilter_ExtensionInRequest_CaseInsensitivity()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -94,7 +93,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormatFilter_ExtensionInRequest_NonExistant()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             
             // Act
@@ -108,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormatFilter_And_ProducesFilter_Match()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -123,7 +122,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormatFilter_And_ProducesFilter_Conflict()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -137,7 +136,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormatFilter_And_OverrideProducesFilter()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act

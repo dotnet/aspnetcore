@@ -47,44 +47,6 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public void WithControllersAsServices_UsesConfigurationIfSpecified()
-        {
-            // Arrange
-            var collection = new ServiceCollection();
-            var controllerTypes = new[] { typeof(ControllerTypeA), typeof(TypeBController) };
-            var configuration = new Configuration();
-            configuration.Add(new MemoryConfigurationSource());
-            configuration.Set(typeof(IControllerActivator).FullName,
-                              typeof(CustomActivator).AssemblyQualifiedName);
-            configuration.Set(typeof(IControllerTypeProvider).FullName,
-                              typeof(CustomTypeProvider).AssemblyQualifiedName);
-
-            // Act
-            MvcServiceCollectionExtensions.WithControllersAsServices(collection,
-                                                                     controllerTypes,
-                                                                     configuration);
-
-            // Assert
-            var services = collection.ToList();
-            Assert.Equal(4, services.Count);
-            Assert.Equal(typeof(ControllerTypeA), services[0].ServiceType);
-            Assert.Equal(typeof(ControllerTypeA), services[0].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[0].Lifetime);
-
-            Assert.Equal(typeof(TypeBController), services[1].ServiceType);
-            Assert.Equal(typeof(TypeBController), services[1].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[1].Lifetime);
-
-            Assert.Equal(typeof(IControllerActivator), services[2].ServiceType);
-            Assert.Equal(typeof(CustomActivator), services[2].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[2].Lifetime);
-
-            Assert.Equal(typeof(IControllerTypeProvider), services[3].ServiceType);
-            Assert.Equal(typeof(CustomTypeProvider), services[3].ImplementationType);
-            Assert.Equal(ServiceLifetime.Singleton, services[3].Lifetime);
-        }
-
-        [Fact]
         public void WithControllersAsServices_ScansControllersFromSpecifiedAssemblies()
         {
             // Arrange

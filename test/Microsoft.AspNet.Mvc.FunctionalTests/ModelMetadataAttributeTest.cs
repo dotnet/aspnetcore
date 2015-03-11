@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -15,14 +14,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class ModelMetadataAttributeTest
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(ValidationWebSite));
+        private const string SiteName = nameof(ValidationWebSite);
         private readonly Action<IApplicationBuilder> _app = new ValidationWebSite.Startup().Configure;
 
         [Fact]
         public async Task ModelMetaDataTypeAttribute_ValidBaseClass_EmptyResponseBody()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var input = "{ \"Name\": \"MVC\", \"Contact\":\"4258959019\", \"Category\":\"Technology\"," +
                 "\"CompanyName\":\"Microsoft\", \"Country\":\"USA\",\"Price\": 21, \"ProductDetails\": {\"Detail1\": \"d1\"," +
@@ -43,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ModelMetaDataTypeAttribute_InvalidPropertiesAndSubPropertiesOnBaseClass_ReturnsErrors()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var input = "{ \"Price\": 2, \"ProductDetails\": {\"Detail1\": \"d1\"}}";
             var content = new StringContent(input, Encoding.UTF8, "application/json");
@@ -69,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ModelMetaDataTypeAttribute_InvalidComplexTypePropertyOnBaseClass_ReturnsErrors()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var input = "{ \"Contact\":\"4255678765\", \"Category\":\"Technology\"," +
                 "\"CompanyName\":\"Microsoft\", \"Country\":\"USA\",\"Price\": 21 }";
@@ -91,7 +90,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ModelMetaDataTypeAttribute_InvalidClassAttributeOnBaseClass_ReturnsErrors()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var input = "{ \"Contact\":\"4258959019\", \"Category\":\"Technology\"," +
                 "\"CompanyName\":\"Microsoft\", \"Country\":\"UK\",\"Price\": 21, \"ProductDetails\": {\"Detail1\": \"d1\"," +
@@ -115,7 +114,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ModelMetaDataTypeAttribute_ValidDerivedClass_EmptyResponseBody()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var input = "{ \"Name\": \"MVC\", \"Contact\":\"4258959019\", \"Category\":\"Technology\"," +
                 "\"CompanyName\":\"Microsoft\", \"Country\":\"USA\", \"Version\":\"2\"," +
@@ -136,7 +135,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ModelMetaDataTypeAttribute_InvalidPropertiesOnDerivedClass_ReturnsErrors()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var input = "{ \"Name\": \"MVC\", \"Contact\":\"425-895-9019\", \"Category\":\"Technology\"," +
                 "\"CompanyName\":\"Microsoft\", \"Country\":\"USA\",\"Price\": 2}";
@@ -159,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ModelMetaDataTypeAttribute_InvalidClassAttributeOnBaseClassProduct_ReturnsErrors()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var input = "{ \"Contact\":\"4258959019\", \"Category\":\"Technology\"," +
                 "\"CompanyName\":\"Microsoft\", \"Country\":\"UK\",\"Version\":\"2\"," +
@@ -177,6 +176,5 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(1, json.Count);
             Assert.Equal("Product must be made in the USA if it is not named.", json["software"]);
         }
-
     }
 }

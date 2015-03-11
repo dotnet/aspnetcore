@@ -10,7 +10,6 @@ using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.ViewComponents;
-using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.OptionsModel;
 using Xunit;
 
@@ -19,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     // Tests that various MVC services have the correct order.
     public class DefaultOrderTest
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices(nameof(BasicWebSite));
+        private const string SiteName = nameof(BasicWebSite);
         private readonly Action<IApplicationBuilder> _app = new BasicWebSite.Startup().Configure;
 
         [Theory]
@@ -34,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ServiceOrder_GetOrder(Type serviceType, Type actualType, int order)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var url = "http://localhost/Order/GetServiceOrder?serviceType=" + serviceType.AssemblyQualifiedName;

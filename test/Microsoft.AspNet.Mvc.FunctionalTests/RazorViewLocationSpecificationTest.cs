@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using RazorWebSite;
 using Xunit;
 
@@ -13,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class RazorViewLocationSpecificationTest
     {
         private const string BaseUrl = "http://localhost/ViewNameSpecification_Home/";
-        private readonly IServiceProvider _provider = TestHelper.CreateServices("RazorWebSite");
+        private const string SiteName = nameof(RazorWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Theory]
@@ -27,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 @"<layout>
 _ViewStart that specifies partial Layout
 </layout>";
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -48,7 +47,7 @@ _ViewStart that specifies partial Layout
 @"<non-shared>
 Layout specified in page
 </non-shared>";
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -67,7 +66,7 @@ Layout specified in page
 @"<non-shared>
 Page With Non Partial Layout
 </non-shared>";
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -89,7 +88,7 @@ Page With Non Partial Layout
 Non Shared Partial
 
 </layout>";
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act

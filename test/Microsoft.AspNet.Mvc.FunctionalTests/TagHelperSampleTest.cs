@@ -7,7 +7,6 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.Logging;
 using Xunit;
 
@@ -15,6 +14,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class TagHelperSampleTest
     {
+        private const string SiteName = nameof(TagHelperSample) + "." + nameof(TagHelperSample.Web);
+
+        // Path relative to Mvc\\test\Microsoft.AspNet.Mvc.FunctionalTests
+        private readonly static string SamplesFolder = Path.Combine("..", "..", "samples");
+
         private static readonly List<string> Paths = new List<string>
         {
             string.Empty,
@@ -33,33 +37,27 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         };
 
         private readonly ILoggerFactory _loggerFactory = new TestLoggerFactory();
-        // Path relative to Mvc\\test\Microsoft.AspNet.Mvc.FunctionalTests
-        private readonly IServiceProvider _services =
-            TestHelper.CreateServices("TagHelperSample.Web", Path.Combine("..", "..", "samples"));
         private readonly Action<IApplicationBuilder, ILoggerFactory> _app = new TagHelperSample.Web.Startup().Configure;
 
         [Fact]
         public async Task Home_Pages_ReturnSuccess()
         {
-            using (TestHelper.ReplaceCallContextServiceLocationService(_services))
+            // Arrange
+            var server = TestHelper.CreateServer(app => _app(app, _loggerFactory), SiteName, SamplesFolder);
+            var client = server.CreateClient();
+
+            for (var index = 0; index < Paths.Count; index++)
             {
-                // Arrange
-                var server = TestServer.Create(_services, app => _app(app, _loggerFactory));
-                var client = server.CreateClient();
+                // Act
+                var path = Paths[index];
+                var response = await client.GetAsync("http://localhost" + path);
 
-                for (var index = 0; index < Paths.Count; index++)
-                {
-                    // Act
-                    var path = Paths[index];
-                    var response = await client.GetAsync("http://localhost" + path);
-
-                    // Assert
-                    Assert.NotNull(response);
-                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                }
+                // Assert
+                Assert.NotNull(response);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
         }
-        
+
         private class TestLoggerFactory : ILoggerFactory
         {
             public LogLevel MinimumLevel { get; set; }
@@ -68,36 +66,34 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             {
 
             }
-            
+
             public ILogger CreateLogger(string name)
             {
                 return new TestLogger();
             }
         }
-        
+
         private class TestLogger : ILogger
         {
             public bool IsEnabled(LogLevel level)
             {
                 return false;
             }
-            
+
             public IDisposable BeginScope(object scope)
             {
                 return new TestDisposable();
             }
-            
+
             public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
             {
-
             }
         }
-        
+
         private class TestDisposable : IDisposable
         {
             public void Dispose()
             {
-
             }
         }
     }

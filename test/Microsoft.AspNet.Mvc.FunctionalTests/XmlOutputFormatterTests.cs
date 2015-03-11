@@ -7,26 +7,20 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class XmlOutputFormatterTests
     {
-        private readonly IServiceProvider _services;
+        private const string SiteName = nameof(FormatterWebSite);
         private readonly Action<IApplicationBuilder> _app = new FormatterWebSite.Startup().Configure;
-
-        public XmlOutputFormatterTests()
-        {
-            _services = TestHelper.CreateServices("FormatterWebSite");
-        }
 
         [Fact]
         public async Task XmlDataContractSerializerOutputFormatterIsCalled()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Home/GetDummyClass?sampleInput=10");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
@@ -46,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task XmlSerializerOutputFormatterIsCalled()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/XmlSerializer/GetDummyClass?sampleInput=10");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
@@ -65,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task XmlSerializerFailsAndDataContractSerializerIsCalled()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Post,
                                                  "http://localhost/DataContractSerializer/GetPerson?name=HelloWorld");
@@ -86,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task XmlSerializerOutputFormatter_WhenDerivedClassIsReturned()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(
                 HttpMethod.Post, "http://localhost/XmlSerializer/GetDerivedDummyClass?sampleInput=10");
@@ -107,7 +101,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task XmlDataContractSerializerOutputFormatter_WhenDerivedClassIsReturned()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(
                 HttpMethod.Post, "http://localhost/Home/GetDerivedDummyClass?sampleInput=10");
@@ -128,7 +122,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task XmlSerializerFormatter_DoesNotWriteDictionaryObjects()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(
                 HttpMethod.Post, "http://localhost/XmlSerializer/GetDictionary");

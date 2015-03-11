@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using ValueProvidersWebSite;
 using Xunit;
 
@@ -12,14 +11,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class ValueProviderTest
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(ValueProvidersWebSite));
+        private const string SiteName = nameof(ValueProvidersWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
         public async Task ValueProviderFactories_AreVisitedInSequentialOrder_ForValueProviders()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -33,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ValueProviderFactories_ReturnsValuesFromQueryValueProvider()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -47,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ValueProviderFactories_ReturnsValuesFromRouteValueProvider()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -67,7 +66,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ValueProvider_DeserializesEnumsWithFlags(string url, string expected)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act

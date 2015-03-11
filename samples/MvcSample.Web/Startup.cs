@@ -1,19 +1,25 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if DNX451
 using System;
+using System.IO;
+using Autofac;
+#endif
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
+#if DNX451
 using Microsoft.Framework.ConfigurationModel;
+#endif
 using Microsoft.Framework.DependencyInjection;
+#if DNX451
+using Microsoft.Framework.DependencyInjection.Autofac;
+using Microsoft.Framework.Runtime;
+#endif
 using MvcSample.Web.Filters;
 using MvcSample.Web.Services;
 
-#if DNX451
-using Autofac;
-using Microsoft.Framework.DependencyInjection.Autofac;
-#endif
 
 namespace MvcSample.Web
 {
@@ -22,15 +28,21 @@ namespace MvcSample.Web
         public void Configure(IApplicationBuilder app)
         {
             app.UseStatusCodePages();
-
             app.UseFileServer();
+
 #if DNX451
+            // Fully-qualify configuration path to avoid issues in functional tests. Just "config.json" would be fine
+            // but Configuration uses CallContextServiceLocator.Locator.ServiceProvider to get IApplicationEnvironment.
+            // Functional tests update that service but not in the static provider.
+            var applicationEnvironment = app.ApplicationServices.GetRequiredService<IApplicationEnvironment>();
+            var configurationPath = Path.Combine(applicationEnvironment.ApplicationBasePath, "config.json");
+
             // Set up configuration sources.
             var configuration = new Configuration()
-                    .AddJsonFile("config.json")
-                    .AddEnvironmentVariables();
-            string diSystem;
+                .AddJsonFile(configurationPath)
+                .AddEnvironmentVariables();
 
+            string diSystem;
             if (configuration.TryGet("DependencyInjection", out diSystem) &&
                 diSystem.Equals("AutoFac", StringComparison.OrdinalIgnoreCase))
             {
@@ -46,14 +58,10 @@ namespace MvcSample.Web
                     services.AddSingleton<UserNameService>();
                     services.AddTransient<ITestService, TestService>();
 
-                    // Setup services with a test AssemblyProvider so that only the
-                    // sample's assemblies are loaded. This prevents loading controllers from other assemblies
-                    // when the sample is used in the Functional Tests.
-                    services.AddTransient<IAssemblyProvider, TestAssemblyProvider<Startup>>();
                     services.ConfigureMvcOptions(options =>
                     {
                         options.Filters.Add(typeof(PassThroughAttribute), order: 17);
-                        options.AddXmlDataContractSerializerFormatter();                        
+                        options.AddXmlDataContractSerializerFormatter();
                         options.Filters.Add(new FormatFilterAttribute());
                     });
                     services.ConfigureRazorViewEngineOptions(options =>
@@ -90,11 +98,6 @@ namespace MvcSample.Web
                     services.AddSingleton<PassThroughAttribute>();
                     services.AddSingleton<UserNameService>();
                     services.AddTransient<ITestService, TestService>();
-                    
-                    // Setup services with a test AssemblyProvider so that only the
-                    // sample's assemblies are loaded. This prevents loading controllers from other assemblies
-                    // when the sample is used in the Functional Tests.
-                    services.AddTransient<IAssemblyProvider, TestAssemblyProvider<Startup>>();
 
                     services.ConfigureMvcOptions(options =>
                     {

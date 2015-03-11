@@ -24,30 +24,29 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public class RazorPreCompiler
     {
-        private readonly IServiceProvider _serviceProvider;
         private readonly IFileProvider _fileProvider;
 
-        public RazorPreCompiler([NotNull] IServiceProvider designTimeServiceProvider,
-                                [NotNull] IBeforeCompileContext compileContext,
-                                [NotNull] IMemoryCache precompilationCache,
-                                [NotNull] CompilationSettings compilationSettings) :
-            this(designTimeServiceProvider,
-                 compileContext,
-                 designTimeServiceProvider.GetRequiredService<IAssemblyLoadContextAccessor>(),
-                 designTimeServiceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>(),
-                 precompilationCache,
-                 compilationSettings)
+        public RazorPreCompiler(
+            [NotNull] IServiceProvider designTimeServiceProvider,
+            [NotNull] IBeforeCompileContext compileContext,
+            [NotNull] IMemoryCache precompilationCache,
+            [NotNull] CompilationSettings compilationSettings)
+            : this(
+                compileContext,
+                designTimeServiceProvider.GetRequiredService<IAssemblyLoadContextAccessor>(),
+                designTimeServiceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>(),
+                precompilationCache,
+                compilationSettings)
         {
         }
 
-        public RazorPreCompiler([NotNull] IServiceProvider designTimeServiceProvider,
-                                [NotNull] IBeforeCompileContext compileContext,
-                                [NotNull] IAssemblyLoadContextAccessor loadContextAccessor,
-                                [NotNull] IOptions<RazorViewEngineOptions> optionsAccessor,
-                                [NotNull] IMemoryCache precompilationCache,
-                                [NotNull] CompilationSettings compilationSettings)
+        private RazorPreCompiler(
+            [NotNull] IBeforeCompileContext compileContext,
+            [NotNull] IAssemblyLoadContextAccessor loadContextAccessor,
+            [NotNull] IOptions<RazorViewEngineOptions> optionsAccessor,
+            [NotNull] IMemoryCache precompilationCache,
+            [NotNull] CompilationSettings compilationSettings)
         {
-            _serviceProvider = designTimeServiceProvider;
             CompileContext = compileContext;
             LoadContext = loadContextAccessor.GetLoadContext(GetType().GetTypeInfo().Assembly);
             _fileProvider = optionsAccessor.Options.FileProvider;

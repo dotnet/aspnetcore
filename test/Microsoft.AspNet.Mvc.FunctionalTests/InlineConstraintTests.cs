@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using InlineConstraints;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -16,14 +15,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class InlineConstraintTests
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices("InlineConstraintsWebSite");
+        private const string SiteName = nameof(InlineConstraintsWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
         public async Task RoutingToANonExistantArea_WithExistConstraint_RoutesToCorrectAction()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -39,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RoutingToANonExistantArea_WithoutExistConstraint_RoutesToIncorrectAction()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -57,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetProductById_IntConstraintForOptionalId_IdPresent()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -76,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetProductById_IntConstraintForOptionalId_NoId()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -93,7 +92,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetProductById_IntConstraintForOptionalId_NotIntId()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -107,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetProductByName_AlphaContraintForMandatoryName_ValidName()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -125,7 +124,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetProductByName_AlphaContraintForMandatoryName_NonAlphaName()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -139,7 +138,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetProductByName_AlphaContraintForMandatoryName_NoName()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -153,7 +152,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetProductByManufacturingDate_DateTimeConstraintForMandatoryDateTime_ValidDateTime()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -173,7 +172,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetProductByCategoryName_StringLengthConstraint_ForOptionalCategoryName_ValidCatName()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             
             // Act
@@ -191,7 +190,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetProductByCategoryName_StringLengthConstraint_ForOptionalCategoryName_InvalidCatName()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -206,7 +205,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetProductByCategoryName_StringLength1To20Constraint_ForOptionalCategoryName_NoCatName()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -223,7 +222,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetProductByCategoryId_Int10To100Constraint_ForMandatoryCatId_ValidId()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             
             // Act
@@ -241,7 +240,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetProductByCategoryId_Int10To100Constraint_ForMandatoryCatId_InvalidId()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -255,7 +254,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetProductByCategoryId_Int10To100Constraint_ForMandatoryCatId_NotIntId()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -269,7 +268,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetProductByPrice_FloatContraintForOptionalPrice_Valid()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -287,7 +286,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetProductByPrice_FloatContraintForOptionalPrice_NoPrice()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -304,7 +303,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetProductByManufacturerId_IntMin10Constraint_ForOptionalManufacturerId_Valid()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -322,7 +321,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetProductByManufacturerId_IntMin10Cinstraint_ForOptionalManufacturerId_NoId()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -339,7 +338,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetUserByName_RegExConstraint_ForMandatoryName_Valid()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -357,7 +356,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetUserByName_RegExConstraint_ForMandatoryName_InValid()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -371,7 +370,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetStoreById_GuidConstraintForOptionalId_Valid()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -390,7 +389,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetStoreById_GuidConstraintForOptionalId_NoId()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -407,7 +406,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetStoreById_GuidConstraintForOptionalId_NotGuidId()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -421,7 +420,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetStoreByLocation_StringLengthConstraint_AlphaConstraint_ForMandatoryLocation_Valid()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -439,7 +438,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetStoreByLocation_StringLengthConstraint_AlphaConstraint_ForMandatoryLocation_MoreLength()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -453,7 +452,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetStoreByLocation_StringLengthConstraint_AlphaConstraint_ForMandatoryLocation_LessLength()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -467,7 +466,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GetStoreByLocation_StringLengthConstraint_AlphaConstraint_ForMandatoryLocation_NoAlpha()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -624,7 +623,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             string expectedLink)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act

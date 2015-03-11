@@ -8,21 +8,20 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class AntiForgeryTests
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices("AntiForgeryWebSite");
+        private const string SiteName = nameof(AntiForgeryWebSite);
         private readonly Action<IApplicationBuilder> _app = new AntiForgeryWebSite.Startup().Configure;
 
         [Fact]
         public async Task MultipleAFTokensWithinTheSamePage_GeneratesASingleCookieToken()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -45,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task MultipleFormPostWithingASingleView_AreAllowed()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // do a get response.
@@ -80,7 +79,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task InvalidCookieToken_Throws()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var getResponse = await client.GetAsync("http://localhost/Account/Login");
@@ -112,7 +111,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task InvalidFormToken_Throws()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var getResponse = await client.GetAsync("http://localhost/Account/Login");
@@ -142,7 +141,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task IncompatibleCookieToken_Throws()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // do a get response.
@@ -180,7 +179,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task MissingCookieToken_Throws()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // do a get response.
@@ -210,7 +209,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task MissingAFToken_Throws()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var getResponse = await client.GetAsync("http://localhost/Account/Login");
             var resposneBody = await getResponse.Content.ReadAsStringAsync();
@@ -239,7 +238,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task SetCookieAndHeaderBeforeFlushAsync_GeneratesCookieTokenAndHeader()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -259,7 +258,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task SetCookieAndHeaderBeforeFlushAsync_PostToForm()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // do a get response.

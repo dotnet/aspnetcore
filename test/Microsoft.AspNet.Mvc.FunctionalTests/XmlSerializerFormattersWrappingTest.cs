@@ -5,18 +5,16 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Xml;
-using Microsoft.AspNet.TestHost;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class XmlSerializerFormattersWrappingTest
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(XmlFormattersWebSite));
+        private const string SiteName = nameof(XmlFormattersWebSite);
         private readonly Action<IApplicationBuilder> _app = new XmlFormattersWebSite.Startup().Configure;
 
         [Theory]
@@ -25,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanWrite_ValueTypes(string url)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml-xmlser"));
@@ -48,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanWrite_NonWrappedTypes(string url)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml-xmlser"));
@@ -71,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanWrite_NonWrappedTypes_NullInstance(string url)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml-xmlser"));
@@ -93,7 +91,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanWrite_NonWrappedTypes_Empty(string url)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml-xmlser"));
@@ -115,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanWrite_WrappedTypes(string url)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml-xmlser"));
@@ -139,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanWrite_WrappedTypes_Empty(string url)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml-xmlser"));
@@ -162,7 +160,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanWrite_WrappedTypes_NullInstance(string url)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml-xmlser"));
@@ -183,7 +181,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanWrite_IEnumerableOf_SerializableErrors()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/IEnumerable/SerializableErrors");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml-xmlser"));

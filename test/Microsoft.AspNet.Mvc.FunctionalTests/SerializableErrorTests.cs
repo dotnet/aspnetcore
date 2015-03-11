@@ -9,14 +9,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Xml;
-using Microsoft.AspNet.TestHost;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class SerializableErrorTests
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(XmlFormattersWebSite));
+        private const string SiteName = nameof(XmlFormattersWebSite);
         private readonly Action<IApplicationBuilder> _app = new XmlFormattersWebSite.Startup().Configure;
 
         [Theory]
@@ -27,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ModelStateErrors_AreSerialized(string acceptHeader)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(acceptHeader));
             var expectedXml = "<Error><key1>key1-error</key1><key2>The input was not valid.</key2></Error>";
@@ -52,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task PostedSerializableError_IsBound(string acceptHeader)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(acceptHeader));
             var expectedXml = "<Error><key1>key1-error</key1><key2>The input was not valid.</key2></Error>";
@@ -76,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task IsReturnedInExpectedFormat(string acceptHeader)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<Employee xmlns=\"http://schemas.datacontract.org/2004/07/XmlFormattersWebSite.Models\">" +

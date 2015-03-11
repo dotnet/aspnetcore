@@ -27,7 +27,7 @@
         "FormatFilterWebSite": "1.0.0-*",
         "FormatterWebSite": "1.0.0",
         "InlineConstraintsWebSite": "1.0.0",
-        "LoggingWebSite": "1.0.0",        
+        "LoggingWebSite": "1.0.0",
         "LowercaseUrlsWebSite": "1.0.0-*",
         "Microsoft.AspNet.Mvc": "6.0.0-*",
         "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",

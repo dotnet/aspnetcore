@@ -7,25 +7,24 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class TempDataTest
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices("TempDataWebSite");
+        private const string SiteName = nameof(TempDataWebSite);
         private readonly Action<IApplicationBuilder> _app = new TempDataWebSite.Startup().Configure;
 
         [Fact]
         public async Task ViewRendersTempData()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var nameValueCollection = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string,string>("value", "Foo"),
+                new KeyValuePair<string, string>("value", "Foo"),
             };
             var content = new FormUrlEncodedContent(nameValueCollection);
 

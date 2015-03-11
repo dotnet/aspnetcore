@@ -6,7 +6,6 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using RazorWebSite;
 using Xunit;
@@ -15,15 +14,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class FlushPointTest
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices("RazorWebSite");
+        private const string SiteName = nameof(RazorWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
         public async Task FlushPointsAreExecutedForPagesWithLayouts()
         {
             var waitService = new WaitService();
-            var serviceProvider = GetServiceProvider(waitService);
-            var server = TestServer.Create(serviceProvider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(waitService));
             var client = server.CreateClient();
 
             // Act
@@ -46,9 +44,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FlushPointsAreExecutedForPagesWithoutLayouts()
         {
             var waitService = new WaitService();
-            var serviceProvider = GetServiceProvider(waitService);
-
-            var server = TestServer.Create(serviceProvider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(waitService));
             var client = server.CreateClient();
 
             // Act
@@ -65,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert - 3
             Assert.Equal("Inside partial", GetTrimmedString(stream));
             waitService.WaitForServer();
-                
+
             // Assert - 4
             Assert.Equal(@"After flush inside partial
 <form action=""/FlushPoint/PageWithoutLayout"" method=""post""><input id=""Name1"" name=""Name1"" type=""text"" value="""" />",
@@ -83,9 +79,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FlushPointsAreExecutedForPagesWithComponentsPartialsAndSections(string action, string title)
         {
             var waitService = new WaitService();
-            var serviceProvider = GetServiceProvider(waitService);
-
-            var server = TestServer.Create(serviceProvider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(waitService));
             var client = server.CreateClient();
 
             // Act
@@ -121,9 +115,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var waitService = new WaitService();
-            var serviceProvider = GetServiceProvider(waitService);
-
-            var server = TestServer.Create(serviceProvider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(waitService));
             var client = server.CreateClient();
 
             // Act
@@ -144,9 +136,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FlushBeforeCallingLayout()
         {
             var waitService = new WaitService();
-            var serviceProvider = GetServiceProvider(waitService);
-
-            var server = TestServer.Create(serviceProvider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(waitService));
             var client = server.CreateClient();
 
              var expectedMessage = "A layout page cannot be rendered after 'FlushAsync' has been invoked.";
@@ -167,13 +157,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             {
                 Assert.Equal(expectedMessage, ex.InnerException.Message);
             }
-        }
-
-        private IServiceProvider GetServiceProvider(WaitService waitService)
-        {
-            var services = new ServiceCollection();
-            services.AddInstance(waitService);
-            return TestHelper.CreateServices("RazorWebSite", services);
         }
 
         private string GetTrimmedString(Stream stream)

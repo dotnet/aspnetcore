@@ -10,11 +10,7 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 using MvcTagHelpersWebSite;
 using Xunit;
 
@@ -22,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class MvcTagHelpersTest
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices("MvcTagHelpersWebSite");
+        private const string SiteName = nameof(MvcTagHelpersWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
         private static readonly Assembly _resourcesAssembly = typeof(MvcTagHelpersTest).GetTypeInfo().Assembly;
 
@@ -51,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task MvcTagHelpers_GeneratesExpectedResults(string action, string antiForgeryPath)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
 
@@ -82,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ValidationTagHelpers_GeneratesExpectedSpansAndDivs()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
                 "compiler/resources/MvcTagHelpersWebSite.MvcTagHelper_Customer.Index.html");
@@ -116,7 +112,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var assertFile =
                 "compiler/resources/CacheTagHelper_CanCachePortionsOfViewsPartialViewsAndViewComponents.Assert";
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost");
             client.DefaultRequestHeaders.Add("Locale", "North");
@@ -165,7 +161,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CacheTagHelper_ExpiresContent_BasedOnExpiresParameter()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost");
 
@@ -189,7 +185,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CacheTagHelper_UsesVaryByCookie_ToVaryContent()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost");
 
@@ -221,7 +217,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CacheTagHelper_VariesByRoute()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost");
 
@@ -277,7 +273,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CacheTagHelper_VariesByUserId()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost");
 
@@ -304,7 +300,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CacheTagHelper_BubblesExpirationOfNestedTagHelpers()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost");
 
@@ -349,8 +345,7 @@ Products: Laptops (3)";
             // Arrange
             var newServices = new ServiceCollection();
             newServices.ConfigureTagHelpers().ConfigureForm(options => options.GenerateAntiForgeryToken = optionsAntiForgery);
-            var serviceProvider = TestHelper.CreateServices("MvcTagHelpersWebSite", newServices);
-            var server = TestServer.Create(serviceProvider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.Add(newServices));
             var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
 
@@ -366,10 +361,10 @@ Products: Laptops (3)";
             // The host is not important as everything runs in memory and tests are isolated from each other.
             var response = await client.GetAsync("http://localhost/MvcTagHelper_Home/Form");
             var responseContent = await response.Content.ReadAsStringAsync();
-            
+
             var forgeryTokens = AntiForgeryTestHelper.RetrieveAntiForgeryTokens(responseContent);
             expectedContent = string.Format(expectedContent, forgeryTokens.ToArray());
-            
+
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);

@@ -9,7 +9,6 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;
-using Microsoft.AspNet.TestHost;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -17,14 +16,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class RouteDataTest
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(BasicWebSite));
+        private const string SiteName = nameof(BasicWebSite);
         private readonly Action<IApplicationBuilder> _app = new BasicWebSite.Startup().Configure;
 
         [Fact]
         public async Task RouteData_Routers_ConventionalRoute()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -49,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RouteData_Routers_AttributeRoute()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -79,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RouteData_DataTokens_FilterCanSetDataTokens()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var response = await client.GetAsync("http://localhost/Routing/DataTokens");

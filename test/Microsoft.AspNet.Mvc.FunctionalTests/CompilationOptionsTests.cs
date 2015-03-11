@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using RazorWebSite;
 using Xunit;
 
@@ -15,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     // precompiled and dynamically compiled views.
     public class CompilationOptionsTests
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices(nameof(RazorWebSite));
+        private const string SiteName = nameof(RazorWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
@@ -33,7 +31,7 @@ This method is only defined in DNX451";
 
 This method is only defined in DNXCORE50";
 #endif
-            var server = TestServer.Create(_provider, _app);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
