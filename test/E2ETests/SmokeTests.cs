@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Net.Http;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.Logging.Console;
 using Xunit;
 
 namespace E2ETests
@@ -105,7 +104,7 @@ namespace E2ETests
                     EnvironmentName = "SocialTesting"
                 };
 
-                var testStartTime = DateTime.Now;
+                var stopwatch = Stopwatch.StartNew();
                 var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
 
                 _logger.LogInformation("Pointing MusicStore DB to '{connString}'", string.Format(CONNECTION_STRING_FORMAT, musicStoreDbName));
@@ -132,18 +131,14 @@ namespace E2ETests
 
                     HttpResponseMessage response = null;
                     string responseContent = null;
-                    var initializationCompleteTime = DateTime.MinValue;
 
                     //Request to base address and check if various parts of the body are rendered & measure the cold startup time.
                     Helpers.Retry(() =>
                     {
                         response = _httpClient.GetAsync(string.Empty).Result;
                         responseContent = response.Content.ReadAsStringAsync().Result;
-                        initializationCompleteTime = DateTime.Now;
+                        _logger.LogInformation("[Time]: Approximate time taken for application initialization : '{t}' seconds", stopwatch.Elapsed.TotalSeconds);
                     }, logger: _logger);
-
-                    _logger.LogInformation("[Time]: Approximate time taken for application initialization : '{t}' seconds",
-                                (initializationCompleteTime - testStartTime).TotalSeconds);
 
                     VerifyHomePage(response, responseContent);
 
@@ -228,9 +223,8 @@ namespace E2ETests
                     //MicrosoftAccountLogin
                     LoginWithMicrosoftAccount();
 
-                    var testCompletionTime = DateTime.Now;
-                    _logger.LogInformation("[Time]: All tests completed in '{t}' seconds", (testCompletionTime - initializationCompleteTime).TotalSeconds);
-                    _logger.LogInformation("[Time]: Total time taken for this test variation '{t}' seconds", (testCompletionTime - testStartTime).TotalSeconds);
+                    stopwatch.Stop();
+                    _logger.LogInformation("[Time]: Total time taken for this test variation '{t}' seconds", stopwatch.Elapsed.TotalSeconds);
                     testSuccessful = true;
                 }
                 finally

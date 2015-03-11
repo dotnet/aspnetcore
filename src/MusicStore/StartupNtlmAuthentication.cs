@@ -1,19 +1,17 @@
 using System;
 using System.Security.Claims;
 using System.Security.Principal;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Diagnostics.Entity;
-using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Server.WebListener;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.Logging.Console;
 using Microsoft.Net.Http.Server;
 using MusicStore.Models;
-using Microsoft.AspNet.Authorization;
 
 namespace MusicStore
 {

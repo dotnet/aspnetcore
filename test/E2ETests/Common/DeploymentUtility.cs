@@ -302,9 +302,9 @@ namespace E2ETests
 
         private static string SwitchPathToRuntimeFlavor(RuntimeFlavor runtimeFlavor, RuntimeArchitecture runtimeArchitecture, ILogger logger)
         {
-            var currentRuntime = Environment.GetCommandLineArgs().First();
+            var runtimePath = Environment.GetCommandLineArgs().First();
             logger.LogInformation(string.Empty);
-            logger.LogInformation("Current runtime is : {0}", currentRuntime);
+            logger.LogInformation("Current runtime path is : {0}", runtimePath);
 
             var replaceStr = new StringBuilder().
                 Append("dnx").
@@ -313,13 +313,21 @@ namespace E2ETests
                 Append((runtimeArchitecture == RuntimeArchitecture.x86) ? "-x86" : "-x64").
                 ToString();
 
-            currentRuntime = Regex.Replace(currentRuntime, "dnx-(clr|coreclr)-win-(x86|x64)", replaceStr, RegexOptions.IgnoreCase);
-            currentRuntime = Path.GetDirectoryName(currentRuntime);
+            runtimePath = Regex.Replace(runtimePath, "dnx-(clr|coreclr)-win-(x86|x64)", replaceStr, RegexOptions.IgnoreCase);
+            runtimePath = Path.GetDirectoryName(runtimePath);
 
             // Tweak the %PATH% to the point to the right RUNTIMEFLAVOR.
-            Environment.SetEnvironmentVariable("PATH", currentRuntime + ";" + Environment.GetEnvironmentVariable("PATH"));
+            Environment.SetEnvironmentVariable("PATH", runtimePath + ";" + Environment.GetEnvironmentVariable("PATH"));
 
-            var runtimeName = new DirectoryInfo(currentRuntime).Parent.Name;
+            var runtimeDirectoryInfo = new DirectoryInfo(runtimePath);
+            if (!runtimeDirectoryInfo.Exists)
+            {
+                throw new Exception(
+                    string.Format("Requested runtime at location '{0}' does not exist. Please make sure it is installed before running test.",
+                    runtimeDirectoryInfo.FullName));
+            }
+
+            var runtimeName = runtimeDirectoryInfo.Parent.Name;
             logger.LogInformation(string.Empty);
             logger.LogInformation("Changing to use runtime : {runtimeName}", runtimeName);
             return runtimeName;

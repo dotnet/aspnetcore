@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Authentication;
+﻿using Microsoft.AspNet.Authentication;
+using Microsoft.AspNet.Http.Authentication;
 using Newtonsoft.Json;
 
 namespace MusicStore.Mocks.Common

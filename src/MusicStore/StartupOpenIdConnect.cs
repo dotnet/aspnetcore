@@ -1,16 +1,14 @@
 using System;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Authentication;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.Logging.Console;
 using MusicStore.Models;
-using Microsoft.AspNet.Authorization;
 
 namespace MusicStore
 {
@@ -64,6 +62,12 @@ namespace MusicStore
                     .AddEntityFrameworkStores<MusicStoreContext>()
                     .AddDefaultTokenProviders();
 
+            services.ConfigureOpenIdConnectAuthentication(options =>
+            {
+                options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
+                options.ClientId = "[ClientId]";
+            });
+
             // Add MVC services to the services container
             services.AddMvc();
 
@@ -114,12 +118,7 @@ namespace MusicStore
             app.UseIdentity();
 
             // Create an Azure Active directory application and copy paste the following
-            // https://github.com/aspnet/Security/issues/113
-            app.UseOpenIdConnectAuthentication(options =>
-            {
-                options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
-                options.ClientId = "[ClientId]";
-            });
+            app.UseOpenIdConnectAuthentication();
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>

@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Authentication.Google;
 using Microsoft.AspNet.Authentication.OAuth;
+using Microsoft.AspNet.Identity;
 using MusicStore.Mocks.Common;
 
 namespace MusicStore.Mocks.Google

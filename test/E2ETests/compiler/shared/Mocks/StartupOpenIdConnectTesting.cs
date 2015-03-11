@@ -9,7 +9,6 @@ using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.Logging.Console;
 using MusicStore.Mocks.Common;
 using MusicStore.Mocks.OpenIdConnect;
 using MusicStore.Models;
@@ -52,6 +51,28 @@ namespace MusicStore
             services.AddIdentity<ApplicationUser, IdentityRole>(Configuration)
                     .AddEntityFrameworkStores<MusicStoreContext>()
                     .AddDefaultTokenProviders();
+
+            services.ConfigureOpenIdConnectAuthentication(options =>
+            {
+                options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
+                options.ClientId = "c99497aa-3ee2-4707-b8a8-c33f51323fef";
+                options.BackchannelHttpHandler = new OpenIdConnectBackChannelHttpHandler();
+                options.StringDataFormat = new CustomStringDataFormat();
+                options.StateDataFormat = new CustomStateDataFormat();
+                options.TokenValidationParameters.ValidateLifetime = false;
+                options.ProtocolValidator.RequireNonce = true;
+                options.ProtocolValidator.NonceLifetime = TimeSpan.FromDays(36500);
+                options.UseTokenLifetime = false;
+
+                options.Notifications = new OpenIdConnectAuthenticationNotifications
+                {
+                    MessageReceived = OpenIdConnectNotifications.MessageReceived,
+                    AuthorizationCodeReceived = OpenIdConnectNotifications.AuthorizationCodeReceived,
+                    RedirectToIdentityProvider = OpenIdConnectNotifications.RedirectToIdentityProvider,
+                    SecurityTokenReceived = OpenIdConnectNotifications.SecurityTokenReceived,
+                    SecurityTokenValidated = OpenIdConnectNotifications.SecurityTokenValidated
+                };
+            });
 
             // Add MVC services to the services container
             services.AddMvc();
@@ -103,28 +124,7 @@ namespace MusicStore
             app.UseIdentity();
 
             // Create an Azure Active directory application and copy paste the following
-            // https://github.com/aspnet/Security/issues/113
-            app.UseOpenIdConnectAuthentication(options =>
-            {
-                options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
-                options.ClientId = "c99497aa-3ee2-4707-b8a8-c33f51323fef";
-                options.BackchannelHttpHandler = new OpenIdConnectBackChannelHttpHandler();
-                options.StringDataFormat = new CustomStringDataFormat();
-                options.StateDataFormat = new CustomStateDataFormat();
-                options.TokenValidationParameters.ValidateLifetime = false;
-                options.ProtocolValidator.RequireNonce = true;
-                options.ProtocolValidator.NonceLifetime = TimeSpan.FromDays(36500);
-                options.UseTokenLifetime = false;
-
-                options.Notifications = new OpenIdConnectAuthenticationNotifications
-                {
-                    MessageReceived = OpenIdConnectNotifications.MessageReceived,
-                    AuthorizationCodeReceived = OpenIdConnectNotifications.AuthorizationCodeReceived,
-                    RedirectToIdentityProvider = OpenIdConnectNotifications.RedirectToIdentityProvider,
-                    SecurityTokenReceived = OpenIdConnectNotifications.SecurityTokenReceived,
-                    SecurityTokenValidated = OpenIdConnectNotifications.SecurityTokenValidated
-                };
-            });
+            app.UseOpenIdConnectAuthentication();
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>
