@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4D2B6A51-2F9
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{F8C0AA27-F3FB-4286-8E4C-47EF86B539FF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CookieSample", "samples\CookieSample\CookieSample.kproj", "{558C2C2A-AED8-49DE-BB60-D5F8AE06C714}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CookieSample", "samples\CookieSample\CookieSample.xproj", "{558C2C2A-AED8-49DE-BB60-D5F8AE06C714}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7BF11F3A-60B6-4796-B504-579C67FFBA34}"
 EndProject
@@ -16,35 +16,35 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SocialSample", "samples\SocialSample\SocialSample.kproj", "{8C73D216-332D-41D8-BFD0-45BC4BC36552}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SocialSample", "samples\SocialSample\SocialSample.xproj", "{8C73D216-332D-41D8-BFD0-45BC4BC36552}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CookieSessionSample", "samples\CookieSessionSample\CookieSessionSample.kproj", "{19711880-46DA-4A26-9E0F-9B2E41D27651}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CookieSessionSample", "samples\CookieSessionSample\CookieSessionSample.xproj", "{19711880-46DA-4A26-9E0F-9B2E41D27651}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIdConnectSample", "samples\OpenIdConnectSample\OpenIdConnectSample.kproj", "{BEF0F5C3-EF4E-4649-9C49-D5E279A3CA2B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIdConnectSample", "samples\OpenIdConnectSample\OpenIdConnectSample.xproj", "{BEF0F5C3-EF4E-4649-9C49-D5E279A3CA2B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.Cookies", "src\Microsoft.AspNet.Authentication.Cookies\Microsoft.AspNet.Authentication.Cookies.kproj", "{FC152CC4-054B-457E-8D91-389C5DE3C561}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.Cookies", "src\Microsoft.AspNet.Authentication.Cookies\Microsoft.AspNet.Authentication.Cookies.xproj", "{FC152CC4-054B-457E-8D91-389C5DE3C561}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication", "src\Microsoft.AspNet.Authentication\Microsoft.AspNet.Authentication.kproj", "{2286250A-52C8-4126-9F93-B1E45F0AD078}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication", "src\Microsoft.AspNet.Authentication\Microsoft.AspNet.Authentication.xproj", "{2286250A-52C8-4126-9F93-B1E45F0AD078}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.Facebook", "src\Microsoft.AspNet.Authentication.Facebook\Microsoft.AspNet.Authentication.Facebook.kproj", "{EEAAEE68-607B-4E33-AF3E-45C66B4DBA5A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.Facebook", "src\Microsoft.AspNet.Authentication.Facebook\Microsoft.AspNet.Authentication.Facebook.xproj", "{EEAAEE68-607B-4E33-AF3E-45C66B4DBA5A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.Google", "src\Microsoft.AspNet.Authentication.Google\Microsoft.AspNet.Authentication.Google.kproj", "{76579C39-B829-490D-B8BE-1BD35FE8412E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.Google", "src\Microsoft.AspNet.Authentication.Google\Microsoft.AspNet.Authentication.Google.xproj", "{76579C39-B829-490D-B8BE-1BD35FE8412E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.OpenIdConnect", "src\Microsoft.AspNet.Authentication.OpenIdConnect\Microsoft.AspNet.Authentication.OpenIdConnect.kproj", "{35115D55-B69E-46D4-BB33-C9E9E6EC5E7A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.OpenIdConnect", "src\Microsoft.AspNet.Authentication.OpenIdConnect\Microsoft.AspNet.Authentication.OpenIdConnect.xproj", "{35115D55-B69E-46D4-BB33-C9E9E6EC5E7A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.MicrosoftAccount", "src\Microsoft.AspNet.Authentication.MicrosoftAccount\Microsoft.AspNet.Authentication.MicrosoftAccount.kproj", "{ACB45E19-F520-4D0C-8916-B0CEB9C017FE}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.MicrosoftAccount", "src\Microsoft.AspNet.Authentication.MicrosoftAccount\Microsoft.AspNet.Authentication.MicrosoftAccount.xproj", "{ACB45E19-F520-4D0C-8916-B0CEB9C017FE}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.Twitter", "src\Microsoft.AspNet.Authentication.Twitter\Microsoft.AspNet.Authentication.Twitter.kproj", "{0330FFF6-B4B5-42DD-8C99-26A789569000}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.Twitter", "src\Microsoft.AspNet.Authentication.Twitter\Microsoft.AspNet.Authentication.Twitter.xproj", "{0330FFF6-B4B5-42DD-8C99-26A789569000}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.OAuth", "src\Microsoft.AspNet.Authentication.OAuth\Microsoft.AspNet.Authentication.OAuth.kproj", "{1657C79E-7755-4AEE-9D61-571295B69A30}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.OAuth", "src\Microsoft.AspNet.Authentication.OAuth\Microsoft.AspNet.Authentication.OAuth.xproj", "{1657C79E-7755-4AEE-9D61-571295B69A30}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.Tests", "test\Microsoft.AspNet.Authentication.Test\Microsoft.AspNet.Authentication.Tests.kproj", "{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.Tests", "test\Microsoft.AspNet.Authentication.Test\Microsoft.AspNet.Authentication.Tests.xproj", "{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.OAuthBearer", "src\Microsoft.AspNet.Authentication.OAuthBearer\Microsoft.AspNet.Authentication.OAuthBearer.kproj", "{2755BFE5-7421-4A31-A644-F817DF5CAA98}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.OAuthBearer", "src\Microsoft.AspNet.Authentication.OAuthBearer\Microsoft.AspNet.Authentication.OAuthBearer.xproj", "{2755BFE5-7421-4A31-A644-F817DF5CAA98}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authorization.Tests", "test\Microsoft.AspNet.Authorization.Test\Microsoft.AspNet.Authorization.Tests.kproj", "{7AF5AD96-EB6E-4D0E-8ABE-C0B543C0F4C2}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authorization.Tests", "test\Microsoft.AspNet.Authorization.Test\Microsoft.AspNet.Authorization.Tests.xproj", "{7AF5AD96-EB6E-4D0E-8ABE-C0B543C0F4C2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authorization", "src\Microsoft.AspNet.Authorization\Microsoft.AspNet.Authorization.kproj", "{6AB3E514-5894-4131-9399-DC7D5284ADDB}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authorization", "src\Microsoft.AspNet.Authorization\Microsoft.AspNet.Authorization.xproj", "{6AB3E514-5894-4131-9399-DC7D5284ADDB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
