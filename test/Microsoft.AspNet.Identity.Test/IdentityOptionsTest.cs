@@ -38,10 +38,8 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Equal("AspNet.Identity.SecurityStamp", options.ClaimsIdentity.SecurityStampClaimType);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void IdentityOptionsFromConfig(bool useDefaultSubKey)
+        [Fact]
+        public void IdentityOptionsFromConfig()
         {
             const string roleClaimType = "rolez";
             const string usernameClaimType = "namez";
@@ -67,14 +65,8 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Equal(roleClaimType, config.Get("identity:claimsidentity:roleclaimtype"));
 
             var services = new ServiceCollection();
-            if (useDefaultSubKey)
-            {
-                services.AddIdentity(config);
-            }
-            else
-            {
-                services.AddIdentity(config.GetSubKey("identity"), null, useDefaultSubKey);
-            }
+            services.AddIdentity();
+            services.ConfigureIdentity(config.GetSubKey("identity"));
             var accessor = services.BuildServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(accessor);
             var options = accessor.Options;
@@ -103,8 +95,8 @@ namespace Microsoft.AspNet.Identity.Test
             };
             var config = new Configuration(new MemoryConfigurationSource(dic));
             var services = new ServiceCollection();
-            services.AddIdentity(config, 
-                o => { o.User.RequireUniqueEmail = false; o.Lockout.MaxFailedAccessAttempts++; });
+            services.ConfigureIdentity(config.GetSubKey("identity"));
+            services.AddIdentity<IdentityUser, IdentityRole>(o => { o.User.RequireUniqueEmail = false; o.Lockout.MaxFailedAccessAttempts++; });
             var accessor = services.BuildServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(accessor);
             var options = accessor.Options;

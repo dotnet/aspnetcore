@@ -36,7 +36,7 @@ namespace IdentitySamples
                 options.DefaultAdminPassword = Configuration.Get("DefaultAdminPassword");
             });
 
-            services.AddIdentity<ApplicationUser, IdentityRole>(Configuration)
+            services.AddIdentity<ApplicationUser, IdentityRole>()
                     .AddEntityFrameworkStores<ApplicationDbContext>()
                     .AddDefaultTokenProviders();
 

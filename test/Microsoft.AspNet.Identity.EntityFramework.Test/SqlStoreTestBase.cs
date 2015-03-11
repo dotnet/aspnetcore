@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             builder.UseServices(services =>
             {
                 DbUtil.ConfigureDbServices<TestDbContext>(ConnectionString, services);
-                services.AddIdentity<TUser, TRole>(null, options =>
+                services.AddIdentity<TUser, TRole>(options =>
                 {
                     options.Password.RequiredLength = 1;
                     options.Password.RequireLowercase = false;

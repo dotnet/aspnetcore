@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                 services.AddEntityFramework()
                         .AddSqlServer()
                         .AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(ConnectionString));
-                services.AddIdentity<ApplicationUser, IdentityRole>(null, options =>
+                services.AddIdentity<ApplicationUser, IdentityRole>(options =>
                 {
                     options.Password.RequiredLength = 1;
                     options.Password.RequireLowercase = false;

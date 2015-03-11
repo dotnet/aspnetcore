@@ -18,36 +18,30 @@ namespace Microsoft.Framework.DependencyInjection
             return services.Configure(configure);
         }
 
-        public static IdentityBuilder AddIdentity(this IServiceCollection services)
+        public static IServiceCollection ConfigureIdentity(this IServiceCollection services, IConfiguration config)
         {
-            return services.AddIdentity<IdentityUser, IdentityRole>();
+            return services.Configure<IdentityOptions>(config);
         }
 
-        public static IdentityBuilder AddIdentity(
-            this IServiceCollection services, 
-            IConfiguration identityConfig = null,
-            Action<IdentityOptions> configureOptions = null,
-            bool useDefaultSubKey = true)
+        public static IdentityBuilder AddIdentity(this IServiceCollection services)
         {
-            return services.AddIdentity<IdentityUser, IdentityRole>(identityConfig, configureOptions, useDefaultSubKey);
+            return services.AddIdentity<IdentityUser, IdentityRole>(configureOptions: null);
+        }
+
+        public static IdentityBuilder AddIdentity<TUser, TRole>(
+            this IServiceCollection services)
+            where TUser : class
+            where TRole : class
+        {
+            return services.AddIdentity<TUser, TRole>(configureOptions: null);
         }
 
         public static IdentityBuilder AddIdentity<TUser, TRole>(
             this IServiceCollection services, 
-            IConfiguration identityConfig = null, 
-            Action<IdentityOptions> configureOptions = null, 
-            bool useDefaultSubKey = true)
+            Action<IdentityOptions> configureOptions)
             where TUser : class
             where TRole : class
         {
-            if (identityConfig != null)
-            {
-                if (useDefaultSubKey)
-                {
-                    identityConfig = identityConfig.GetSubKey("identity");
-                }
-                services.Configure<IdentityOptions>(identityConfig);
-            }
             // Services used by identity
             services.AddOptions();
             services.AddDataProtection();
