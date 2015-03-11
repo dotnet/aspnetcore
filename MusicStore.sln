@@ -18,15 +18,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MvcMusicStore.Spa", "src\Mv
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{363D2681-31A6-48C9-90BB-9ACFF4A41F06}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "E2ETests", "test\E2ETests\E2ETests.kproj", "{A319ACCE-060B-4385-9534-9F2202F6180E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "E2ETests", "test\E2ETests\E2ETests.xproj", "{A319ACCE-060B-4385-9534-9F2202F6180E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore", "src\MusicStore\MusicStore.kproj", "{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore", "src\MusicStore\MusicStore.xproj", "{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore.Spa", "src\MusicStore.Spa\MusicStore.Spa.kproj", "{93891170-A8D5-46FD-A291-40F90CF258C2}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore.Spa", "src\MusicStore.Spa\MusicStore.Spa.xproj", "{93891170-A8D5-46FD-A291-40F90CF258C2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore.Test", "test\MusicStore.Test\MusicStore.Test.kproj", "{CA663205-77DE-4E55-B300-85594181B5A9}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore.Test", "test\MusicStore.Test\MusicStore.Test.xproj", "{CA663205-77DE-4E55-B300-85594181B5A9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore.Spa.Test", "test\MusicStore.Spa.Test\MusicStore.Spa.Test.kproj", "{9D3326C4-1F12-4526-9F25-712A1463B3FA}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore.Spa.Test", "test\MusicStore.Spa.Test\MusicStore.Spa.Test.xproj", "{9D3326C4-1F12-4526-9F25-712A1463B3FA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
