@@ -40,10 +40,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
         private void EnsureDeleted()
         {
-            var options = new DbContextOptions();
-            options.UseSqlServer(_connectionString);
+            var optionsBuilder = new DbContextOptionsBuilder();
+            optionsBuilder.UseSqlServer(_connectionString);
 
-            using (var db = new DbContext(options))
+            using (var db = new DbContext(optionsBuilder.Options))
             {
                 db.Database.EnsureDeleted();
             }

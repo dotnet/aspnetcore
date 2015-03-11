@@ -236,9 +236,9 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                         services.AddEntityFramework().AddSqlServer();
                         services.AddScoped<BloggingContextWithMigrations>();
 
-                        var contextOptions = new DbContextOptions();
-                        contextOptions.UseSqlServer(database.ConnectionString);
-                        services.AddInstance<DbContextOptions>(contextOptions);
+                        var optionsBuilder = new DbContextOptionsBuilder();
+                        optionsBuilder.UseSqlServer(database.ConnectionString);
+                        services.AddInstance<DbContextOptions>(optionsBuilder.Options);
                     });
 
                     var options = DatabaseErrorPageOptions.ShowAll;
@@ -271,10 +271,9 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                         services.AddEntityFramework()
                             .AddSqlServer();
 
-                        var options = new DbContextOptions();
-                        options.UseSqlServer(database.ConnectionString);
-
-                        services.AddInstance<DbContextOptions>(options);
+                        var optionsBuilder = new DbContextOptionsBuilder();
+                        optionsBuilder.UseSqlServer(database.ConnectionString);
+                        services.AddInstance<DbContextOptions>(optionsBuilder.Options);
                     });
 
                     app.UseDatabaseErrorPage();
@@ -391,10 +390,9 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
                         services.AddScoped<TContext>();
 
-                        var options = new DbContextOptions();
-                        options.UseSqlServer(database.ConnectionString);
-
-                        services.AddInstance<DbContextOptions>(options);
+                        var optionsBuilder = new DbContextOptionsBuilder();
+                        optionsBuilder.UseSqlServer(database.ConnectionString);
+                        services.AddInstance<DbContextOptions>(optionsBuilder.Options);
                     });
 
                     app.UseDatabaseErrorPage();

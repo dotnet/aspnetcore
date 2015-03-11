@@ -64,8 +64,9 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         {
             using (var database = SqlServerTestStore.CreateScratch())
             {
-                var options = new DbContextOptions();
-                options.UseSqlServer(database.ConnectionString);
+                var optionsBuilder = new DbContextOptionsBuilder();
+                optionsBuilder.UseSqlServer(database.ConnectionString);
+
                 var path = useCustomPath ? new PathString("/EndPoints/ApplyMyMigrations") : MigrationsEndPointOptions.DefaultPath;
 
                 TestServer server = TestServer.Create(app =>
@@ -74,7 +75,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                         {
                             services.AddEntityFramework().AddSqlServer();
                             services.AddScoped<BloggingContextWithMigrations>();
-                            services.AddInstance<DbContextOptions>(options);
+                            services.AddInstance<DbContextOptions>(optionsBuilder.Options);
                         });
 
                     if (useCustomPath)
@@ -182,8 +183,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         {
             using (var database = SqlServerTestStore.CreateScratch())
             {
-                var options = new DbContextOptions();
-                options.UseSqlServer(database.ConnectionString);
+                var optionsBuilder = new DbContextOptionsBuilder();
+                optionsBuilder.UseSqlServer(database.ConnectionString);
 
                 TestServer server = TestServer.Create(app =>
                 {
@@ -191,7 +192,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     {
                         services.AddEntityFramework().AddSqlServer();
                         services.AddScoped<BloggingContextWithSnapshotThatThrows>();
-                        services.AddInstance<DbContextOptions>(options);
+                        services.AddInstance<DbContextOptions>(optionsBuilder.Options);
                     });
 
                     app.UseMigrationsEndPoint();
