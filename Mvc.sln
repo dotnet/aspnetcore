@@ -9,146 +9,146 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{32285FA4-6B4
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc", "src\Microsoft.AspNet.Mvc\Microsoft.AspNet.Mvc.kproj", "{079EFA1F-0B0A-4853-B27B-5780D111CD85}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc", "src\Microsoft.AspNet.Mvc\Microsoft.AspNet.Mvc.xproj", "{079EFA1F-0B0A-4853-B27B-5780D111CD85}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Razor", "src\Microsoft.AspNet.Mvc.Razor\Microsoft.AspNet.Mvc.Razor.kproj", "{314E9AD6-2FFC-4A92-A8AD-510658C64F1E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Razor", "src\Microsoft.AspNet.Mvc.Razor\Microsoft.AspNet.Mvc.Razor.xproj", "{314E9AD6-2FFC-4A92-A8AD-510658C64F1E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Core", "src\Microsoft.AspNet.Mvc.Core\Microsoft.AspNet.Mvc.Core.kproj", "{C48DA9D7-ACB5-4408-AA79-27ECB60A67EF}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Core", "src\Microsoft.AspNet.Mvc.Core\Microsoft.AspNet.Mvc.Core.xproj", "{C48DA9D7-ACB5-4408-AA79-27ECB60A67EF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.ModelBinding", "src\Microsoft.AspNet.Mvc.ModelBinding\Microsoft.AspNet.Mvc.ModelBinding.kproj", "{FA915D3D-22C3-4478-97F2-A81D28B6C503}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.ModelBinding", "src\Microsoft.AspNet.Mvc.ModelBinding\Microsoft.AspNet.Mvc.ModelBinding.xproj", "{FA915D3D-22C3-4478-97F2-A81D28B6C503}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Common", "src\Microsoft.AspNet.Mvc.Common\Microsoft.AspNet.Mvc.Common.kproj", "{F3DF6D0B-16FE-4402-B92C-7243A75CF1FD}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Common", "src\Microsoft.AspNet.Mvc.Common\Microsoft.AspNet.Mvc.Common.xproj", "{F3DF6D0B-16FE-4402-B92C-7243A75CF1FD}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.ModelBinding.Test", "test\Microsoft.AspNet.Mvc.ModelBinding.Test\Microsoft.AspNet.Mvc.ModelBinding.Test.kproj", "{3B8DC0C0-6C55-4034-AD96-DE1000928E6B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.ModelBinding.Test", "test\Microsoft.AspNet.Mvc.ModelBinding.Test\Microsoft.AspNet.Mvc.ModelBinding.Test.xproj", "{3B8DC0C0-6C55-4034-AD96-DE1000928E6B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Razor.Test", "test\Microsoft.AspNet.Mvc.Razor.Test\Microsoft.AspNet.Mvc.Razor.Test.kproj", "{3F6E355E-4869-41D9-943B-D54771221A7F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Razor.Test", "test\Microsoft.AspNet.Mvc.Razor.Test\Microsoft.AspNet.Mvc.Razor.Test.xproj", "{3F6E355E-4869-41D9-943B-D54771221A7F}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Core.Test", "test\Microsoft.AspNet.Mvc.Core.Test\Microsoft.AspNet.Mvc.Core.Test.kproj", "{A8AA326E-8EE8-4F11-B750-23028E0949D7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Core.Test", "test\Microsoft.AspNet.Mvc.Core.Test\Microsoft.AspNet.Mvc.Core.Test.xproj", "{A8AA326E-8EE8-4F11-B750-23028E0949D7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MvcSample.Web", "samples\MvcSample.Web\MvcSample.Web.kproj", "{FBB2B86E-972B-4185-9FF2-62CAB5F8388F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MvcSample.Web", "samples\MvcSample.Web\MvcSample.Web.xproj", "{FBB2B86E-972B-4185-9FF2-62CAB5F8388F}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Razor.Host", "src\Microsoft.AspNet.Mvc.Razor.Host\Microsoft.AspNet.Mvc.Razor.Host.kproj", "{520B3AA4-363A-497C-8C15-80423C5AFC85}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Razor.Host", "src\Microsoft.AspNet.Mvc.Razor.Host\Microsoft.AspNet.Mvc.Razor.Host.xproj", "{520B3AA4-363A-497C-8C15-80423C5AFC85}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Razor.Host.Test", "test\Microsoft.AspNet.Mvc.Razor.Host.Test\Microsoft.AspNet.Mvc.Razor.Host.Test.kproj", "{7C4F5973-0491-4028-B1DC-A9BA73FF9F77}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Razor.Host.Test", "test\Microsoft.AspNet.Mvc.Razor.Host.Test\Microsoft.AspNet.Mvc.Razor.Host.Test.xproj", "{7C4F5973-0491-4028-B1DC-A9BA73FF9F77}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSites", "WebSites", "{16703B76-C9F7-4C75-AE6C-53D92E308E3C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.FunctionalTests", "test\Microsoft.AspNet.Mvc.FunctionalTests\Microsoft.AspNet.Mvc.FunctionalTests.kproj", "{323D0C04-B518-4A8F-8A8E-3546AD153D34}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.FunctionalTests", "test\Microsoft.AspNet.Mvc.FunctionalTests\Microsoft.AspNet.Mvc.FunctionalTests.xproj", "{323D0C04-B518-4A8F-8A8E-3546AD153D34}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BasicWebSite", "test\WebSites\BasicWebSite\BasicWebSite.kproj", "{34DF1487-12C6-476C-BE0A-F31DF1939AE5}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BasicWebSite", "test\WebSites\BasicWebSite\BasicWebSite.xproj", "{34DF1487-12C6-476C-BE0A-F31DF1939AE5}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ActivatorWebSite", "test\WebSites\ActivatorWebSite\ActivatorWebSite.kproj", "{DB79BCBA-9538-4A53-87D9-77728E2BAA39}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ActivatorWebSite", "test\WebSites\ActivatorWebSite\ActivatorWebSite.xproj", "{DB79BCBA-9538-4A53-87D9-77728E2BAA39}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "InlineConstraintsWebSite", "test\WebSites\InlineConstraintsWebSite\InlineConstraintsWebSite.kproj", "{EA34877F-1AC1-42B7-B4E6-15A093F40CAE}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "InlineConstraintsWebSite", "test\WebSites\InlineConstraintsWebSite\InlineConstraintsWebSite.xproj", "{EA34877F-1AC1-42B7-B4E6-15A093F40CAE}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AutofacWebSite", "test\WebSites\AutofacWebSite\AutofacWebSite.kproj", "{07C0E921-FCBB-458C-AC11-3D01CE68B16B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AutofacWebSite", "test\WebSites\AutofacWebSite\AutofacWebSite.xproj", "{07C0E921-FCBB-458C-AC11-3D01CE68B16B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.TestConfiguration", "test\WebSites\Microsoft.AspNet.Mvc.TestConfiguration\Microsoft.AspNet.Mvc.TestConfiguration.kproj", "{680D75ED-601F-4D86-B01B-1072D0C31B8C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.TestConfiguration", "test\WebSites\Microsoft.AspNet.Mvc.TestConfiguration\Microsoft.AspNet.Mvc.TestConfiguration.xproj", "{680D75ED-601F-4D86-B01B-1072D0C31B8C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RoutingWebSite", "test\WebSites\RoutingWebSite\RoutingWebSite.kproj", "{42CDBF4A-E238-4C0F-A416-44588363EB4C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RoutingWebSite", "test\WebSites\RoutingWebSite\RoutingWebSite.xproj", "{42CDBF4A-E238-4C0F-A416-44588363EB4C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Test", "test\Microsoft.AspNet.Mvc.Test\Microsoft.AspNet.Mvc.Test.kproj", "{5F945B82-FE5F-425C-956C-8BC2F2020254}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Test", "test\Microsoft.AspNet.Mvc.Test\Microsoft.AspNet.Mvc.Test.xproj", "{5F945B82-FE5F-425C-956C-8BC2F2020254}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorWebSite", "test\WebSites\RazorWebSite\RazorWebSite.kproj", "{B07CAF59-11ED-40E3-A5DB-E1178F84FA78}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorWebSite", "test\WebSites\RazorWebSite\RazorWebSite.xproj", "{B07CAF59-11ED-40E3-A5DB-E1178F84FA78}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FormatterWebSite", "test\WebSites\FormatterWebSite\FormatterWebSite.kproj", "{62735776-46FF-4170-9392-02E128A69B89}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FormatterWebSite", "test\WebSites\FormatterWebSite\FormatterWebSite.xproj", "{62735776-46FF-4170-9392-02E128A69B89}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ModelBindingWebSite", "test\WebSites\ModelBindingWebSite\ModelBindingWebSite.kproj", "{EE1AB716-F102-4CA3-AD2C-214A44B459A0}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ModelBindingWebSite", "test\WebSites\ModelBindingWebSite\ModelBindingWebSite.xproj", "{EE1AB716-F102-4CA3-AD2C-214A44B459A0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FAD65E9C-3CF3-4F68-9757-C7358604030B}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ContentNegotiationWebSite", "test\WebSites\ContentNegotiationWebSite\ContentNegotiationWebSite.kproj", "{C6E5AFFA-890A-448F-8DE3-878B1D3C9FC7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ContentNegotiationWebSite", "test\WebSites\ContentNegotiationWebSite\ContentNegotiationWebSite.xproj", "{C6E5AFFA-890A-448F-8DE3-878B1D3C9FC7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AntiForgeryWebSite", "test\WebSites\AntiForgeryWebSite\AntiForgeryWebSite.kproj", "{A353B17E-A940-4CE8-8BF9-179E24A9041F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AntiForgeryWebSite", "test\WebSites\AntiForgeryWebSite\AntiForgeryWebSite.xproj", "{A353B17E-A940-4CE8-8BF9-179E24A9041F}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AddServicesWebSite", "test\WebSites\AddServicesWebSite\AddServicesWebSite.kproj", "{6A0B65CE-6B01-40D0-840D-EFF3680D1547}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AddServicesWebSite", "test\WebSites\AddServicesWebSite\AddServicesWebSite.xproj", "{6A0B65CE-6B01-40D0-840D-EFF3680D1547}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FiltersWebSite", "test\WebSites\FiltersWebSite\FiltersWebSite.kproj", "{1976AC4A-FEA4-4587-A158-D9F79736D2B6}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FiltersWebSite", "test\WebSites\FiltersWebSite\FiltersWebSite.xproj", "{1976AC4A-FEA4-4587-A158-D9F79736D2B6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "UrlHelperWebSite", "test\WebSites\UrlHelperWebSite\UrlHelperWebSite.kproj", "{A192E504-2881-41DC-90D1-B7F1DD1134E8}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "UrlHelperWebSite", "test\WebSites\UrlHelperWebSite\UrlHelperWebSite.xproj", "{A192E504-2881-41DC-90D1-B7F1DD1134E8}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ApiExplorerWebSite", "test\WebSites\ApiExplorerWebSite\ApiExplorerWebSite.kproj", "{61061528-071E-424E-965A-07BCC2F02672}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ApiExplorerWebSite", "test\WebSites\ApiExplorerWebSite\ApiExplorerWebSite.xproj", "{61061528-071E-424E-965A-07BCC2F02672}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "VersioningWebSite", "test\WebSites\VersioningWebSite\VersioningWebSite.kproj", "{C6304029-78C8-4604-99BE-2078DCA1DD36}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "VersioningWebSite", "test\WebSites\VersioningWebSite\VersioningWebSite.xproj", "{C6304029-78C8-4604-99BE-2078DCA1DD36}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "TagHelpersWebSite", "test\WebSites\TagHelpersWebSite\TagHelpersWebSite.kproj", "{6DB9B8D0-80F7-4E70-BBB0-0B4C04D79A47}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "TagHelpersWebSite", "test\WebSites\TagHelpersWebSite\TagHelpersWebSite.xproj", "{6DB9B8D0-80F7-4E70-BBB0-0B4C04D79A47}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FilesWebSite", "test\WebSites\FilesWebSite\FilesWebSite.kproj", "{0EF9860B-10D7-452F-B0F4-A405B88BEBB3}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FilesWebSite", "test\WebSites\FilesWebSite\FilesWebSite.xproj", "{0EF9860B-10D7-452F-B0F4-A405B88BEBB3}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorPageExecutionInstrumentationWebSite", "test\WebSites\RazorPageExecutionInstrumentationWebSite\RazorPageExecutionInstrumentationWebSite.kproj", "{2B2B9876-903C-4065-8D62-2EE832BBA106}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorPageExecutionInstrumentationWebSite", "test\WebSites\RazorPageExecutionInstrumentationWebSite\RazorPageExecutionInstrumentationWebSite.xproj", "{2B2B9876-903C-4065-8D62-2EE832BBA106}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ApplicationModelWebSite", "test\WebSites\ApplicationModelWebSite\ApplicationModelWebSite.kproj", "{CAE52CB7-0FAC-4B5B-8251-B0FF837DB657}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ApplicationModelWebSite", "test\WebSites\ApplicationModelWebSite\ApplicationModelWebSite.xproj", "{CAE52CB7-0FAC-4B5B-8251-B0FF837DB657}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.WebApiCompatShim", "src\Microsoft.AspNet.Mvc.WebApiCompatShim\Microsoft.AspNet.Mvc.WebApiCompatShim.kproj", "{23D30B8C-04B1-4577-A604-ED27EA1E4A0E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.WebApiCompatShim", "src\Microsoft.AspNet.Mvc.WebApiCompatShim\Microsoft.AspNet.Mvc.WebApiCompatShim.xproj", "{23D30B8C-04B1-4577-A604-ED27EA1E4A0E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WebApiCompatShimWebSite", "test\WebSites\WebApiCompatShimWebSite\WebApiCompatShimWebSite.kproj", "{B2B7BC91-688E-4C1E-A71F-CE948D958DDF}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WebApiCompatShimWebSite", "test\WebSites\WebApiCompatShimWebSite\WebApiCompatShimWebSite.xproj", "{B2B7BC91-688E-4C1E-A71F-CE948D958DDF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.WebApiCompatShimTest", "test\Microsoft.AspNet.Mvc.WebApiCompatShimTest\Microsoft.AspNet.Mvc.WebApiCompatShimTest.kproj", "{5DE8E4D9-AACD-4B5F-819F-F091383FB996}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.WebApiCompatShimTest", "test\Microsoft.AspNet.Mvc.WebApiCompatShimTest\Microsoft.AspNet.Mvc.WebApiCompatShimTest.xproj", "{5DE8E4D9-AACD-4B5F-819F-F091383FB996}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ViewComponentWebSite", "test\WebSites\ViewComponentWebSite\ViewComponentWebSite.kproj", "{24B59501-5F37-4129-96E6-F02EC34C7E2C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ViewComponentWebSite", "test\WebSites\ViewComponentWebSite\ViewComponentWebSite.xproj", "{24B59501-5F37-4129-96E6-F02EC34C7E2C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "TagHelperSample.Web", "samples\TagHelperSample.Web\TagHelperSample.Web.kproj", "{2223120F-D675-40DA-8CD8-11DC14A0B2C7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "TagHelperSample.Web", "samples\TagHelperSample.Web\TagHelperSample.Web.xproj", "{2223120F-D675-40DA-8CD8-11DC14A0B2C7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.TagHelpers", "src\Microsoft.AspNet.Mvc.TagHelpers\Microsoft.AspNet.Mvc.TagHelpers.kproj", "{B2347320-308E-4D2B-AEC8-005DFA68B0C9}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.TagHelpers", "src\Microsoft.AspNet.Mvc.TagHelpers\Microsoft.AspNet.Mvc.TagHelpers.xproj", "{B2347320-308E-4D2B-AEC8-005DFA68B0C9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.TagHelpers.Test", "test\Microsoft.AspNet.Mvc.TagHelpers.Test\Microsoft.AspNet.Mvc.TagHelpers.Test.kproj", "{860119ED-3DB1-424D-8D0A-30132A8A7D96}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.TagHelpers.Test", "test\Microsoft.AspNet.Mvc.TagHelpers.Test\Microsoft.AspNet.Mvc.TagHelpers.Test.xproj", "{860119ED-3DB1-424D-8D0A-30132A8A7D96}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PrecompilationWebSite", "test\WebSites\PrecompilationWebSite\PrecompilationWebSite.kproj", "{59E1BE90-92C1-4D35-ADCC-B69F49077C81}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PrecompilationWebSite", "test\WebSites\PrecompilationWebSite\PrecompilationWebSite.xproj", "{59E1BE90-92C1-4D35-ADCC-B69F49077C81}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RequestServicesWebSite", "test\WebSites\RequestServicesWebSite\RequestServicesWebSite.kproj", "{F12E9CF0-4958-40C6-A6CD-759185157F84}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RequestServicesWebSite", "test\WebSites\RequestServicesWebSite\RequestServicesWebSite.xproj", "{F12E9CF0-4958-40C6-A6CD-759185157F84}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorEmbeddedViewsWebSite", "test\WebSites\RazorEmbeddedViewsWebSite\RazorEmbeddedViewsWebSite.kproj", "{B18ADE62-35DE-4A06-8E1D-EDD6245F7F4D}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorEmbeddedViewsWebSite", "test\WebSites\RazorEmbeddedViewsWebSite\RazorEmbeddedViewsWebSite.xproj", "{B18ADE62-35DE-4A06-8E1D-EDD6245F7F4D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CompositeViewEngineWebSite", "test\WebSites\CompositeViewEngineWebSite\CompositeViewEngineWebSite.kproj", "{A853B2BA-4449-4908-A416-5A3C027FC22B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CompositeViewEngineWebSite", "test\WebSites\CompositeViewEngineWebSite\CompositeViewEngineWebSite.xproj", "{A853B2BA-4449-4908-A416-5A3C027FC22B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ValueProvidersWebSite", "test\WebSites\ValueProvidersWebSite\ValueProvidersWebSite.kproj", "{14F79E79-AE79-48FA-95DE-D794EF4EABB3}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ValueProvidersWebSite", "test\WebSites\ValueProvidersWebSite\ValueProvidersWebSite.xproj", "{14F79E79-AE79-48FA-95DE-D794EF4EABB3}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MvcTagHelpersWebSite", "test\WebSites\MvcTagHelpersWebSite\MvcTagHelpersWebSite.kproj", "{920F8A0E-6F7D-4BBE-84FF-840B89099BE6}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MvcTagHelpersWebSite", "test\WebSites\MvcTagHelpersWebSite\MvcTagHelpersWebSite.xproj", "{920F8A0E-6F7D-4BBE-84FF-840B89099BE6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ActionResultsWebSite", "test\WebSites\ActionResultsWebSite\ActionResultsWebSite.kproj", "{0A6BB4C0-48D3-4E7F-952B-B8917345E075}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ActionResultsWebSite", "test\WebSites\ActionResultsWebSite\ActionResultsWebSite.xproj", "{0A6BB4C0-48D3-4E7F-952B-B8917345E075}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "LoggingWebSite", "test\WebSites\LoggingWebSite\LoggingWebSite.kproj", "{0AD78AB5-D67C-49BC-81B1-0C51BFA82B5E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "LoggingWebSite", "test\WebSites\LoggingWebSite\LoggingWebSite.xproj", "{0AD78AB5-D67C-49BC-81B1-0C51BFA82B5E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Xml", "src\Microsoft.AspNet.Mvc.Xml\Microsoft.AspNet.Mvc.Xml.kproj", "{9C632DF0-DC06-410B-95AE-B5423702E84F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Xml", "src\Microsoft.AspNet.Mvc.Xml\Microsoft.AspNet.Mvc.Xml.xproj", "{9C632DF0-DC06-410B-95AE-B5423702E84F}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ErrorPageMiddlewareWebSite", "test\WebSites\ErrorPageMiddlewareWebSite\ErrorPageMiddlewareWebSite.kproj", "{AD545A5B-2BA5-4314-88AC-FC2ACF2CC718}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ErrorPageMiddlewareWebSite", "test\WebSites\ErrorPageMiddlewareWebSite\ErrorPageMiddlewareWebSite.xproj", "{AD545A5B-2BA5-4314-88AC-FC2ACF2CC718}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ActionConstraintsWebSite", "test\WebSites\ActionConstraintsWebSite\ActionConstraintsWebSite.kproj", "{AF210F69-9D31-43AF-AC3A-CD366E252218}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ActionConstraintsWebSite", "test\WebSites\ActionConstraintsWebSite\ActionConstraintsWebSite.xproj", "{AF210F69-9D31-43AF-AC3A-CD366E252218}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CustomRouteWebSite", "test\WebSites\CustomRouteWebSite\CustomRouteWebSite.kproj", "{364EC3C6-C9DB-45E0-A0F2-1EE61E4B429B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CustomRouteWebSite", "test\WebSites\CustomRouteWebSite\CustomRouteWebSite.xproj", "{364EC3C6-C9DB-45E0-A0F2-1EE61E4B429B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ResponseCacheWebSite", "test\WebSites\ResponseCacheWebSite\ResponseCacheWebSite.kproj", "{BDEEBE09-C0C4-433C-B0B8-8478C9776996}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ResponseCacheWebSite", "test\WebSites\ResponseCacheWebSite\ResponseCacheWebSite.xproj", "{BDEEBE09-C0C4-433C-B0B8-8478C9776996}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Common.Test", "test\Microsoft.AspNet.Mvc.Common.Test\Microsoft.AspNet.Mvc.Common.Test.kproj", "{0449D6D2-BE1B-4E29-8E1B-444420802C03}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Common.Test", "test\Microsoft.AspNet.Mvc.Common.Test\Microsoft.AspNet.Mvc.Common.Test.xproj", "{0449D6D2-BE1B-4E29-8E1B-444420802C03}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "XmlFormattersWebSite", "test\WebSites\XmlFormattersWebSite\XmlFormattersWebSite.kproj", "{C3123A70-41C4-4122-AD1C-D35DF8958DD7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "XmlFormattersWebSite", "test\WebSites\XmlFormattersWebSite\XmlFormattersWebSite.xproj", "{C3123A70-41C4-4122-AD1C-D35DF8958DD7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ValidationWebSite", "test\WebSites\ValidationWebSite\ValidationWebSite.kproj", "{87AB84B2-22C1-43C6-BB8A-1D327B446FB0}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ValidationWebSite", "test\WebSites\ValidationWebSite\ValidationWebSite.xproj", "{87AB84B2-22C1-43C6-BB8A-1D327B446FB0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Xml.Test", "test\Microsoft.AspNet.Mvc.Xml.Test\Microsoft.AspNet.Mvc.Xml.Test.kproj", "{22019146-BDFA-442E-8C8E-345FB9644578}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Xml.Test", "test\Microsoft.AspNet.Mvc.Xml.Test\Microsoft.AspNet.Mvc.Xml.Test.xproj", "{22019146-BDFA-442E-8C8E-345FB9644578}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FormatFilterWebSite", "test\WebSites\FormatFilterWebSite\FormatFilterWebSite.kproj", "{AC9BE567-540E-4C70-90C2-AAF021307A80}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FormatFilterWebSite", "test\WebSites\FormatFilterWebSite\FormatFilterWebSite.xproj", "{AC9BE567-540E-4C70-90C2-AAF021307A80}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ControllersFromServicesWebSite", "test\WebSites\ControllersFromServicesWebSite\ControllersFromServicesWebSite.kproj", "{983741B2-4424-4ED1-9B03-7675A67230C8}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ControllersFromServicesWebSite", "test\WebSites\ControllersFromServicesWebSite\ControllersFromServicesWebSite.xproj", "{983741B2-4424-4ED1-9B03-7675A67230C8}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ControllersFromServicesClassLibrary", "test\WebSites\ControllersFromServicesClassLibrary\ControllersFromServicesClassLibrary.kproj", "{551DC89E-2A13-4CF2-83D7-1ADD802443D5}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ControllersFromServicesClassLibrary", "test\WebSites\ControllersFromServicesClassLibrary\ControllersFromServicesClassLibrary.xproj", "{551DC89E-2A13-4CF2-83D7-1ADD802443D5}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorCompilerCacheWebSite", "test\WebSites\RazorCompilerCacheWebSite\RazorCompilerCacheWebSite.kproj", "{42C5D417-4060-48F4-BB28-E9E179007779}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorCompilerCacheWebSite", "test\WebSites\RazorCompilerCacheWebSite\RazorCompilerCacheWebSite.xproj", "{42C5D417-4060-48F4-BB28-E9E179007779}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.PageExecutionInstrumentation.Interfaces", "src\Microsoft.AspNet.PageExecutionInstrumentation.Interfaces\Microsoft.AspNet.PageExecutionInstrumentation.Interfaces.kproj", "{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.PageExecutionInstrumentation.Interfaces", "src\Microsoft.AspNet.PageExecutionInstrumentation.Interfaces\Microsoft.AspNet.PageExecutionInstrumentation.Interfaces.xproj", "{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "UserClassLibrary", "test\WebSites\UserClassLibrary\UserClassLibrary.kproj", "{C651F432-4EBE-41A6-BAD2-3E07CCBA209C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "UserClassLibrary", "test\WebSites\UserClassLibrary\UserClassLibrary.xproj", "{C651F432-4EBE-41A6-BAD2-3E07CCBA209C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ControllerDiscoveryConventionsWebSite", "test\WebSites\ControllerDiscoveryConventionsWebSite\ControllerDiscoveryConventionsWebSite.kproj", "{A19022EF-9BA3-4349-94E4-F48E13E1C8AE}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ControllerDiscoveryConventionsWebSite", "test\WebSites\ControllerDiscoveryConventionsWebSite\ControllerDiscoveryConventionsWebSite.xproj", "{A19022EF-9BA3-4349-94E4-F48E13E1C8AE}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BestEffortLinkGenerationWebSite", "test\WebSites\BestEffortLinkGenerationWebSite\BestEffortLinkGenerationWebSite.kproj", "{B11C99C9-E577-4CA2-AC53-4F20EA71AD34}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BestEffortLinkGenerationWebSite", "test\WebSites\BestEffortLinkGenerationWebSite\BestEffortLinkGenerationWebSite.xproj", "{B11C99C9-E577-4CA2-AC53-4F20EA71AD34}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "LowercaseUrlsWebSite", "test\WebSites\LowercaseUrlsWebSite\LowercaseUrlsWebSite.kproj", "{BCDB13A6-7D6E-485E-8424-A156432B71AC}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "LowercaseUrlsWebSite", "test\WebSites\LowercaseUrlsWebSite\LowercaseUrlsWebSite.xproj", "{BCDB13A6-7D6E-485E-8424-A156432B71AC}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "TempDataWebSite", "test\WebSites\TempDataWebSite\TempDataWebSite.kproj", "{8AEB631E-AB74-4D2E-83FB-8931EE10D9D3}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "TempDataWebSite", "test\WebSites\TempDataWebSite\TempDataWebSite.xproj", "{8AEB631E-AB74-4D2E-83FB-8931EE10D9D3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
