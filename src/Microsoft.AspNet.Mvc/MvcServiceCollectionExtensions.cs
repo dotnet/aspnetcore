@@ -15,16 +15,14 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class MvcServiceCollectionExtensions
     {
-        public static IServiceCollection AddMvc([NotNull] this IServiceCollection services)
+        public static IServiceCollection AddMvc([NotNull] this IServiceCollection services, IConfiguration config)
         {
-            return AddMvc(services, configuration: null);
+            return services.AddMvc();
         }
 
-        public static IServiceCollection AddMvc(
-            [NotNull] this IServiceCollection services,
-            IConfiguration configuration)
+        public static IServiceCollection AddMvc([NotNull] this IServiceCollection services)
         {
-            ConfigureDefaultServices(services, configuration);
+            ConfigureDefaultServices(services);
             services.TryAdd(MvcServices.GetDefaultServices());
             return services;
         }
@@ -90,12 +88,12 @@ namespace Microsoft.Framework.DependencyInjection
             return WithControllersAsServices(services, controllerTypes.Select(type => type.AsType()));
         }
 
-        private static void ConfigureDefaultServices(IServiceCollection services, IConfiguration configuration)
+        private static void ConfigureDefaultServices(IServiceCollection services)
         {
             services.AddOptions();
             services.AddDataProtection();
             services.AddRouting();
-            services.AddAuthorization(configuration);
+            services.AddAuthorization();
             services.AddWebEncoders();
             services.Configure<RouteOptions>(
                 routeOptions => routeOptions.ConstraintMap.Add("exists", typeof(KnownRouteValueConstraint)));
