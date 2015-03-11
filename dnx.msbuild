@@ -266,7 +266,7 @@
                 <term>a hole</term>
                 <Justification>valid context</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs;
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeRanges.generated.cs;
 									 $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
 									 $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
                 <term>Bengali</term>
@@ -302,7 +302,7 @@
                 <term>hung</term>
                 <Justification>refers to a stuck process/thread</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeBlocks.generated.cs;
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeRanges.generated.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\CodePointFilters.cs;
                                     $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
                                     $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
