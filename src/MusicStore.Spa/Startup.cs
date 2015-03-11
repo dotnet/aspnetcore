@@ -42,7 +42,7 @@ namespace MusicStore.Spa
                 });
 
             // Add Identity services to the services container
-            services.AddIdentity<ApplicationUser, IdentityRole>(Configuration)
+            services.AddIdentity<ApplicationUser, IdentityRole>()
                     .AddEntityFrameworkStores<MusicStoreContext>()
                     .AddDefaultTokenProviders();
 
