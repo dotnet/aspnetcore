@@ -28,6 +28,7 @@ namespace Microsoft.Framework.WebEncoders
 
         /// <summary>
         /// Instantiates an encoder using <see cref="UnicodeRanges.BasicLatin"/> as its allow list.
+        /// Any character not in the <see cref="UnicodeRanges.BasicLatin"/> range will be escaped.
         /// </summary>
         public JavaScriptStringEncoder()
             : this(JavaScriptStringUnicodeEncoder.BasicLatin)
@@ -36,7 +37,8 @@ namespace Microsoft.Framework.WebEncoders
 
         /// <summary>
         /// Instantiates an encoder specifying which Unicode character ranges are allowed to
-        /// pass through the encoder unescaped.
+        /// pass through the encoder unescaped. Any character not in the set of ranges specified
+        /// by <paramref name="allowedRanges"/> will be escaped.
         /// </summary>
         public JavaScriptStringEncoder(params UnicodeRange[] allowedRanges)
             : this(new JavaScriptStringUnicodeEncoder(new CodePointFilter(allowedRanges)))
@@ -44,7 +46,9 @@ namespace Microsoft.Framework.WebEncoders
         }
 
         /// <summary>
-        /// Instantiates an encoder using a custom code point filter.
+        /// Instantiates an encoder using a custom code point filter. Any character not in the
+        /// set returned by <paramref name="filter"/>'s <see cref="ICodePointFilter.GetAllowedCodePoints"/>
+        /// method will be escaped.
         /// </summary>
         public JavaScriptStringEncoder(ICodePointFilter filter)
             : this(new JavaScriptStringUnicodeEncoder(CodePointFilter.Wrap(filter)))
