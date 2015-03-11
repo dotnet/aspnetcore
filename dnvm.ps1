@@ -59,7 +59,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta4-10339"
+$BuildVersion="beta4-10345"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -100,6 +100,9 @@ $ExitCodes = @{
     "AliasDoesNotExist"         = 1001
     "UnknownCommand"            = 1002
     "InvalidArguments"          = 1003
+    "OtherError"                = 1004
+    "NoSuchPackage"             = 1005
+    "NoRuntimesOnFeed"          = 1006
 }
 
 $ColorScheme = $DnvmColors
@@ -401,7 +404,12 @@ function Find-Latest {
     $wc = New-Object System.Net.WebClient
     Apply-Proxy $wc -Proxy:$Proxy
     _WriteDebug "Downloading $url ..."
-    [xml]$xml = $wc.DownloadString($url)
+    try {
+        [xml]$xml = $wc.DownloadString($url)
+    } catch {
+        $Script:ExitCode = $ExitCodes.NoRuntimesOnFeed
+        throw "Unable to find any runtime packages on the feed!"
+    }
 
     $version = Select-Xml "//d:Version" -Namespace @{d='http://schemas.microsoft.com/ado/2007/08/dataservices'} $xml
 
@@ -449,7 +457,12 @@ function Download-Package(
     $wc = New-Object System.Net.WebClient
     Apply-Proxy $wc -Proxy:$Proxy
     _WriteDebug "Downloading $url ..."
-    $wc.DownloadFile($url, $DestinationFile)
+    try {
+        $wc.DownloadFile($url, $DestinationFile)
+    } catch {
+        $Script:ExitCode = $ExitCodes.NoSuchPackage
+        throw "Could not find $runtimeFullName.$Version on feed: $Feed"
+    }
 }
 
 function Unpack-Package([string]$DownloadFile, [string]$UnpackFolder) {
@@ -852,9 +865,10 @@ function dnvm-upgrade {
 <#
 .SYNOPSIS
     Installs a version of the runtime
-.PARAMETER VersionOrNuPkg
-    The version to install from the current channel, the path to a '.nupkg' file to install, or 'latest' to
-    install the latest available version from the current channel.
+.PARAMETER VersionNuPkgOrAlias
+    The version to install from the current channel, the path to a '.nupkg' file to install, 'latest' to
+    install the latest available version from the current channel, or an alias value to install an alternate
+    runtime or architecture flavor of the specified alias.
 .PARAMETER Architecture
     The processor architecture of the runtime to install (default: x86)
 .PARAMETER Runtime
@@ -876,7 +890,7 @@ function dnvm-upgrade {
 function dnvm-install {
     param(
         [Parameter(Mandatory=$false, Position=0)]
-        [string]$VersionOrNuPkg,
+        [string]$VersionNuPkgOrAlias,
 
         [Alias("arch")]
         [ValidateSet("", "x86","x64")]
@@ -905,28 +919,28 @@ function dnvm-install {
         [Parameter(Mandatory=$false)]
         [switch]$Ngen)
 
-    if(!$VersionOrNuPkg) {
+    if(!$VersionNuPkgOrAlias) {
         _WriteOut "A version, nupkg path, or the string 'latest' must be provided."
         dnvm-help install
         $Script:ExitCode = $ExitCodes.InvalidArguments
         return
     }
 
-    if ($VersionOrNuPkg -eq "latest") {
-        $VersionOrNuPkg = Find-Latest $Runtime $Architecture
+    if ($VersionNuPkgOrAlias -eq "latest") {
+        $VersionNuPkgOrAlias = Find-Latest $Runtime $Architecture
     }
 
-    $IsNuPkg = $VersionOrNuPkg.EndsWith(".nupkg")
+    $IsNuPkg = $VersionNuPkgOrAlias.EndsWith(".nupkg")
 
     if ($IsNuPkg) {
-        if(!(Test-Path $VersionOrNuPkg)) {
-            throw "Unable to locate package file: '$VersionOrNuPkg'"
+        if(!(Test-Path $VersionNuPkgOrAlias)) {
+            throw "Unable to locate package file: '$VersionNuPkgOrAlias'"
         }
-        $runtimeFullName = [System.IO.Path]::GetFileNameWithoutExtension($VersionOrNuPkg)
+        $runtimeFullName = [System.IO.Path]::GetFileNameWithoutExtension($VersionNuPkgOrAlias)
         $Architecture = Get-PackageArch $runtimeFullName
         $Runtime = Get-PackageRuntime $runtimeFullName
     } else {
-        $runtimeFullName = Get-RuntimeName $VersionOrNuPkg -Architecture:$Architecture -Runtime:$Runtime
+        $runtimeFullName = Get-RuntimeName $VersionNuPkgOrAlias -Architecture:$Architecture -Runtime:$Runtime
     }
 
     $PackageVersion = Get-PackageVersion $runtimeFullName
@@ -960,12 +974,12 @@ function dnvm-install {
         New-Item -Type Directory $UnpackFolder | Out-Null
 
         if($IsNuPkg) {
-            _WriteDebug "Copying local nupkg $VersionOrNuPkg to $DownloadFile"
-            Copy-Item $VersionOrNuPkg $DownloadFile
+            _WriteDebug "Copying local nupkg $VersionNuPkgOrAlias to $DownloadFile"
+            Copy-Item $VersionNuPkgOrAlias $DownloadFile
         } else {
             # Download the package
-            _WriteDebug "Downloading version $VersionOrNuPkg to $DownloadFile"
-            Download-Package $VersionOrNuPkg $Architecture $Runtime $DownloadFile -Proxy:$Proxy
+            _WriteDebug "Downloading version $VersionNuPkgOrAlias to $DownloadFile"
+            Download-Package $PackageVersion $Architecture $Runtime $DownloadFile -Proxy:$Proxy
         }
 
         Unpack-Package $DownloadFile $UnpackFolder
@@ -1193,6 +1207,11 @@ if($UnencodedHomes -contains $OldUserHome) {
     }
 }
 
+# Check for old KRE_HOME variable
+if(Test-Path env:\KRE_HOME) {
+    _WriteOut -ForegroundColor Yellow "WARNING: Found a KRE_HOME environment variable. This variable has been deprecated and should be removed, or it may interfere with DNVM and the .NET Execution environment"
+}
+
 # Read arguments
 
 $cmd = $args[0]
@@ -1223,15 +1242,20 @@ if(!$cmd) {
     $Script:ExitCode = $ExitCodes.InvalidArguments
 }
 
-# Check for the command
-if(Get-Command -Name "$CommandPrefix$cmd" -ErrorAction SilentlyContinue) {
-    _WriteDebug "& dnvm-$cmd $cmdargs"
-    & "dnvm-$cmd" @cmdargs
-}
-else {
-    _WriteOut "Unknown command: '$cmd'"
-    dnvm-help
-    $Script:ExitCode = $ExitCodes.UnknownCommand
+# Check for the command and run it
+try {
+    if(Get-Command -Name "$CommandPrefix$cmd" -ErrorAction SilentlyContinue) {
+        _WriteDebug "& dnvm-$cmd $cmdargs"
+        & "dnvm-$cmd" @cmdargs
+    }
+    else {
+        _WriteOut "Unknown command: '$cmd'"
+        dnvm-help
+        $Script:ExitCode = $ExitCodes.UnknownCommand
+    }
+} catch {
+    Write-Error $_
+    if(!$Script:ExitCode) { $Script:ExitCode = $ExitCodes.OtherError }
 }
 
 _WriteDebug "=== End $CommandName (Exit Code $Script:ExitCode) ==="
