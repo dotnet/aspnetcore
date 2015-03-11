@@ -123,13 +123,20 @@ var buildTarget = "compile"
                 var sourceFile = Path.Combine(Directory.GetCurrentDirectory(), templatePath, fileName);
 
                 // Don't update the makefile
-                if(fileName.Equals("makefile.shake", StringComparison.OrdinalIgnoreCase) && File.Exists(targetFile))
+                if (fileName.Equals("makefile.shade", StringComparison.OrdinalIgnoreCase) && File.Exists(targetFile))
                 {
                     continue;
                 }
 
-                if(!File.Exists(sourceFile) || 
-                   (File.ReadAllText(sourceFile) != File.ReadAllText(targetFile)))
+                // Don't update extra configuration files
+                if (fileName.Equals("NuGet.master.config", StringComparison.OrdinalIgnoreCase) ||
+                    fileName.Equals("NuGet.release.config", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (!File.Exists(targetFile) ||
+                    (File.ReadAllText(sourceFile) != File.ReadAllText(targetFile)))
                 {
                     Log.Info("Updating " + fileName + " to " + repo);
                     File.Copy(sourceFile, targetFile, true);
