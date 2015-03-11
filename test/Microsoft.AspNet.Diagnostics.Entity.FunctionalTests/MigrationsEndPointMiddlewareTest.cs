@@ -17,7 +17,6 @@ using Microsoft.Data.Entity.Relational.Migrations.History;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 using Microsoft.AspNet.Diagnostics.Entity.Tests.Helpers;
-using Microsoft.Data.Entity.Infrastructure;
 
 namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 {
