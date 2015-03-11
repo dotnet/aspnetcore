@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     }
                 });
 
-                using (var db = BloggingContextWithMigrations.CreateWithoutExternalServiceProvider(options))
+                using (var db = BloggingContextWithMigrations.CreateWithoutExternalServiceProvider(optionsBuilder.Options))
                 {
                     Assert.False(db.Database.AsRelational().Exists());
 
