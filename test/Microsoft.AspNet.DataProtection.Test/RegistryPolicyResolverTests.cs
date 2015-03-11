@@ -61,8 +61,8 @@ namespace Microsoft.AspNet.DataProtection
             });
 
             var services = serviceCollection.BuildServiceProvider();
-            var keyLifetimeOptions = services.GetService<IOptions<KeyLifetimeOptions>>();
-            Assert.Equal(TimeSpan.FromDays(1024), keyLifetimeOptions.Options.NewKeyLifetime);
+            var keyManagementOptions = services.GetService<IOptions<KeyManagementOptions>>();
+            Assert.Equal(TimeSpan.FromDays(1024), keyManagementOptions.Options.NewKeyLifetime);
         }
 
         [ConditionalFact]

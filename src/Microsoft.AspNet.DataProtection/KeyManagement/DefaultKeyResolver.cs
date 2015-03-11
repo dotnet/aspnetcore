@@ -18,10 +18,10 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         /// and persisted to the keyring to ensure uninterrupted service.
         /// </summary>
         /// <remarks>
-        /// If the expiration window is 5 days and the current key expires within 5 days,
+        /// If the propagation time is 5 days and the current key expires within 5 days,
         /// a new key will be generated.
         /// </remarks>
-        private readonly TimeSpan _keyGenBeforeExpirationWindow;
+        private readonly TimeSpan _keyPropagationWindow;
 
         private readonly ILogger _logger;
 
@@ -36,9 +36,9 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         /// </remarks>
         private readonly TimeSpan _maxServerToServerClockSkew;
 
-        public DefaultKeyResolver(TimeSpan keyGenBeforeExpirationWindow, TimeSpan maxServerToServerClockSkew, IServiceProvider services)
+        public DefaultKeyResolver(TimeSpan keyPropagationWindow, TimeSpan maxServerToServerClockSkew, IServiceProvider services)
         {
-            _keyGenBeforeExpirationWindow = keyGenBeforeExpirationWindow;
+            _keyPropagationWindow = keyPropagationWindow;
             _maxServerToServerClockSkew = maxServerToServerClockSkew;
             _logger = services.GetLogger<DefaultKeyResolver>();
         }
@@ -52,82 +52,61 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
         private IKey FindDefaultKey(DateTimeOffset now, IEnumerable<IKey> allKeys, out bool callerShouldGenerateNewKey)
         {
-            // the key with the most recent activation date where the activation date is in the past
-            IKey keyMostRecentlyActivated = (from key in allKeys
-                                             where key.ActivationDate <= now
-                                             orderby key.ActivationDate descending
-                                             select key).FirstOrDefault();
+            // find the preferred default key (allowing for server-to-server clock skew)
+            var preferredDefaultKey = (from key in allKeys
+                                       where key.ActivationDate <= now + _maxServerToServerClockSkew
+                                       orderby key.ActivationDate descending, key.KeyId ascending
+                                       select key).FirstOrDefault();
 
-            if (keyMostRecentlyActivated != null)
+            if (preferredDefaultKey != null)
             {
                 if (_logger.IsVerboseLevelEnabled())
                 {
-                    _logger.LogVerbose("Considering key '{0:D}' with expiration date {1:u} as default key candidate.", keyMostRecentlyActivated.KeyId, keyMostRecentlyActivated.ExpirationDate);
+                    _logger.LogVerbose("Considering key '{0:D}' with expiration date {1:u} as default key.", preferredDefaultKey.KeyId, preferredDefaultKey.ExpirationDate);
                 }
 
                 // if the key has been revoked or is expired, it is no longer a candidate
-                if (keyMostRecentlyActivated.IsExpired(now) || keyMostRecentlyActivated.IsRevoked)
+                if (preferredDefaultKey.IsExpired(now) || preferredDefaultKey.IsRevoked)
                 {
                     if (_logger.IsVerboseLevelEnabled())
                     {
-                        _logger.LogVerbose("Key '{0:D}' no longer eligible as default key candidate because it is expired or revoked.", keyMostRecentlyActivated.KeyId);
+                        _logger.LogVerbose("Key '{0:D}' is no longer under consideration as default key because it is expired or revoked.", preferredDefaultKey.KeyId);
                     }
-                    keyMostRecentlyActivated = null;
+                    preferredDefaultKey = null;
                 }
             }
 
-            // There's an interesting edge case here. If two keys have an activation date in the past and
-            // an expiration date in the future, and if the most recently activated of those two keys is
-            // revoked, we won't consider the older key a valid candidate. This is intentional: generating
-            // a new key is an implicit signal that we should stop using older keys without explicitly
-            // revoking them.
+            // Only the key that has been most recently activated is eligible to be the preferred default,
+            // and only if it hasn't expired or been revoked. This is intentional: generating a new key is
+            // an implicit signal that we should stop using older keys (even if they're not revoked), so
+            // activating a new key should permanently mark all older keys as non-preferred.
 
-            // if the key's expiration is beyond our safety window, we can use this key
-            if (keyMostRecentlyActivated != null && keyMostRecentlyActivated.ExpirationDate - now > _keyGenBeforeExpirationWindow)
+            if (preferredDefaultKey != null)
             {
-                callerShouldGenerateNewKey = false;
-                return keyMostRecentlyActivated;
-            }
+                // Does *any* key in the key ring fulfill the requirement that its activation date is prior
+                // to the preferred default key's expiration date (allowing for skew) and that it will
+                // remain valid one propagation cycle from now? If so, the caller doesn't need to add a
+                // new key.
+                callerShouldGenerateNewKey = !allKeys.Any(key =>
+                   key.ActivationDate <= (preferredDefaultKey.ExpirationDate + _maxServerToServerClockSkew)
+                   && !key.IsExpired(now + _keyPropagationWindow)
+                   && !key.IsRevoked);
 
-            // the key with the nearest activation date where the activation date is in the future
-            // and the key isn't expired or revoked
-            IKey keyNextPendingActivation = (from key in allKeys
-                                             where key.ActivationDate > now && !key.IsExpired(now) && !key.IsRevoked
-                                             orderby key.ActivationDate ascending
-                                             select key).FirstOrDefault();
-
-            // if we have a valid current key, return it, and signal to the caller that he must perform
-            // the keygen step only if the next key pending activation won't be activated until *after*
-            // the current key expires (allowing for server-to-server skew)
-            if (keyMostRecentlyActivated != null)
-            {
-                callerShouldGenerateNewKey = (keyNextPendingActivation == null || (keyNextPendingActivation.ActivationDate - keyMostRecentlyActivated.ExpirationDate > _maxServerToServerClockSkew));
                 if (callerShouldGenerateNewKey && _logger.IsVerboseLevelEnabled())
                 {
                     _logger.LogVerbose("Default key expiration imminent and repository contains no viable successor. Caller should generate a successor.");
                 }
 
-                return keyMostRecentlyActivated;
+                return preferredDefaultKey;
             }
 
-            // if there's no valid current key but there is a key pending activation, we can use
-            // it only if its activation period is within the server-to-server clock skew
-            if (keyNextPendingActivation != null && keyNextPendingActivation.ActivationDate - now <= _maxServerToServerClockSkew)
-            {
-                if (_logger.IsVerboseLevelEnabled())
-                {
-                    _logger.LogVerbose("Considering key '{0:D}' with expiration date {1:u} as default key candidate.", keyNextPendingActivation.KeyId, keyNextPendingActivation.ExpirationDate);
-                }
+            // If we got this far, the caller must generate a key now.
 
-                callerShouldGenerateNewKey = false;
-                return keyNextPendingActivation;
-            }
-
-            // if we got this far, there was no valid default key in the keyring
             if (_logger.IsVerboseLevelEnabled())
             {
                 _logger.LogVerbose("Repository contains no viable default key. Caller should generate a key with immediate activation.");
             }
+
             callerShouldGenerateNewKey = true;
             return null;
         }

@@ -114,6 +114,36 @@ namespace Microsoft.AspNet.DataProtection
         }
 
         /// <summary>
+        /// Configures the data protection system not to generate new keys automatically.
+        /// </summary>
+        /// <returns>The 'this' instance.</returns>
+        /// <remarks>
+        /// Calling this API corresponds to setting <see cref="KeyManagementOptions.AutoGenerateKeys"/>
+        /// to 'false'. See that property's documentation for more information.
+        /// </remarks>
+        public DataProtectionConfiguration DisableAutomaticKeyGeneration()
+        {
+            Services.Configure<KeyManagementOptions>(options =>
+            {
+                options.AutoGenerateKeys = false;
+            });
+            return this;
+        }
+
+        /// <summary>
+        /// Configures the data protection system to persist keys in storage as plaintext.
+        /// </summary>
+        /// <returns>The 'this' instance.</returns>
+        /// <remarks>
+        /// Caution: cryptographic key material will not be protected at rest.
+        /// </remarks>
+        public DataProtectionConfiguration DisableProtectionOfKeysAtRest()
+        {
+            RemoveAllServicesOfType(typeof(IXmlEncryptor));
+            return this;
+        }
+
+        /// <summary>
         /// Configures the data protection system to persist keys to the specified directory.
         /// This path may be on the local machine or may point to a UNC share.
         /// </summary>
@@ -241,28 +271,15 @@ namespace Microsoft.AspNet.DataProtection
         /// Sets the default lifetime of keys created by the data protection system.
         /// </summary>
         /// <param name="lifetime">The lifetime (time before expiration) for newly-created keys.
-        /// See <see cref="KeyLifetimeOptions.NewKeyLifetime"/> for more information and
+        /// See <see cref="KeyManagementOptions.NewKeyLifetime"/> for more information and
         /// usage notes.</param>
         /// <returns>The 'this' instance.</returns>
         public DataProtectionConfiguration SetDefaultKeyLifetime(TimeSpan lifetime)
         {
-            Services.Configure<KeyLifetimeOptions>(options =>
+            Services.Configure<KeyManagementOptions>(options =>
             {
                 options.NewKeyLifetime = lifetime;
             });
-            return this;
-        }
-
-        /// <summary>
-        /// Configures the data protection system to persist keys in storage as plaintext.
-        /// </summary>
-        /// <returns>The 'this' instance.</returns>
-        /// <remarks>
-        /// Caution: cryptographic key material will not be protected at rest.
-        /// </remarks>
-        public DataProtectionConfiguration SuppressProtectionOfKeysAtRest()
-        {
-            RemoveAllServicesOfType(typeof(IXmlEncryptor));
             return this;
         }
         

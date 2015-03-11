@@ -39,14 +39,14 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         /// <summary>
-        /// An <see cref="IConfigureOptions{KeyLifetimeOptions}"/> where the key lifetime is specified explicitly.
+        /// An <see cref="IConfigureOptions{KeyManagementOptions}"/> where the key lifetime is specified explicitly.
         /// </summary>
 
         public static ServiceDescriptor ConfigureOptions_DefaultKeyLifetime(int numDays)
         {
-            return ServiceDescriptor.Transient<IConfigureOptions<KeyLifetimeOptions>>(services =>
+            return ServiceDescriptor.Transient<IConfigureOptions<KeyManagementOptions>>(services =>
             {
-                return new ConfigureOptions<KeyLifetimeOptions>(options =>
+                return new ConfigureOptions<KeyManagementOptions>(options =>
                 {
                     options.NewKeyLifetime = TimeSpan.FromDays(numDays);
                 });

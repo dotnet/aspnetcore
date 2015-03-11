@@ -5,41 +5,58 @@ using System;
 
 namespace Microsoft.AspNet.DataProtection.KeyManagement
 {
-    public class KeyLifetimeOptions
+    /// <summary>
+    /// Options that control how an <see cref="IKeyManager"/> should behave.
+    /// </summary>
+    public class KeyManagementOptions
     {
-        private readonly TimeSpan _keyExpirationSafetyPeriod = TimeSpan.FromDays(2);
-        private readonly TimeSpan _keyRingRefreshPeriod = TimeSpan.FromHours(24);
-        private readonly TimeSpan _maxServerClockSkew = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan _keyPropagationWindow = TimeSpan.FromDays(2);
+        private static readonly TimeSpan _keyRingRefreshPeriod = TimeSpan.FromHours(24);
+        private static readonly TimeSpan _maxServerClockSkew = TimeSpan.FromMinutes(5);
         private TimeSpan _newKeyLifetime = TimeSpan.FromDays(90);
 
-        public KeyLifetimeOptions()
+        public KeyManagementOptions()
         {
         }
 
         // copy ctor
-        internal KeyLifetimeOptions(KeyLifetimeOptions other)
+        internal KeyManagementOptions(KeyManagementOptions other)
         {
             if (other != null)
             {
+                this.AutoGenerateKeys = other.AutoGenerateKeys;
                 this._newKeyLifetime = other._newKeyLifetime;
             }
         }
 
         /// <summary>
-        /// Specifies the period before key expiration in which a new key should be generated.
-        /// For example, if this period is 72 hours, then a new key will be created and
-        /// persisted to storage approximately 72 hours before expiration.
+        /// Specifies whether the data protection system should auto-generate keys.
+        /// </summary>
+        /// <remarks>
+        /// If this value is 'false', the system will not generate new keys automatically.
+        /// The key ring must contain at least one active non-revoked key, otherwise calls
+        /// to <see cref="IDataProtector.Protect(byte[])"/> may fail. The system may end up
+        /// protecting payloads to expired keys if this property is set to 'false'.
+        /// The default value is 'true'.
+        /// </remarks>
+        public bool AutoGenerateKeys { get; set; } = true;
+
+        /// <summary>
+        /// Specifies the period before key expiration in which a new key should be generated
+        /// so that it has time to propagate fully throughout the key ring. For example, if this
+        /// period is 72 hours, then a new key will be created and persisted to storage
+        /// approximately 72 hours before expiration.
         /// </summary>
         /// <remarks>
         /// This value is currently fixed at 48 hours.
         /// </remarks>
-        internal TimeSpan KeyExpirationSafetyPeriod
+        internal TimeSpan KeyPropagationWindow
         {
             get
             {
                 // This value is not settable since there's a complex interaction between
                 // it and the key ring refresh period.
-                return _keyExpirationSafetyPeriod;
+                return _keyPropagationWindow;
             }
         }
 
@@ -97,7 +114,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             {
                 if (value < TimeSpan.FromDays(7))
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), Resources.KeyLifetimeOptions_MinNewKeyLifetimeViolated);
+                    throw new ArgumentOutOfRangeException(nameof(value), Resources.KeyManagementOptions_MinNewKeyLifetimeViolated);
                 }
                 _newKeyLifetime = value;
             }

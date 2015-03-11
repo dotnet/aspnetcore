@@ -31,9 +31,10 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             // Arrange
             var resolver = CreateDefaultKeyResolver();
             var key1 = CreateKey("2015-03-01 00:00:00Z", "2016-03-01 00:00:00Z");
+            var key2 = CreateKey("2016-03-01 00:00:00Z", "2017-03-01 00:00:00Z");
 
             // Act
-            var resolution = resolver.ResolveDefaultKeyPolicy("2015-04-01 00:00:00Z", key1);
+            var resolution = resolver.ResolveDefaultKeyPolicy("2016-02-20 23:59:00Z", key1, key2);
 
             // Assert
             Assert.Same(key1, resolution.DefaultKey);
@@ -41,15 +42,45 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         }
 
         [Fact]
-        public void ResolveDefaultKeyPolicy_ValidExistingKey_ApproachingSafetyWindow_ReturnsExistingKey_SignalsGenerateNewKey()
+        public void ResolveDefaultKeyPolicy_ValidExistingKey_AllowsForClockSkew_KeysStraddleSkewLine_ReturnsExistingKey()
         {
             // Arrange
             var resolver = CreateDefaultKeyResolver();
-            var key1 = CreateKey("2015-03-01 00:00:00Z", "2015-04-01 00:00:00Z");
-            var key2 = CreateKey("2015-04-01 00:00:00Z", "2015-05-01 00:00:00Z", isRevoked: true);
+            var key1 = CreateKey("2015-03-01 00:00:00Z", "2016-03-01 00:00:00Z");
+            var key2 = CreateKey("2016-03-01 00:00:00Z", "2017-03-01 00:00:00Z");
 
             // Act
-            var resolution = resolver.ResolveDefaultKeyPolicy("2015-03-30 00:00:00Z", key1, key2);
+            var resolution = resolver.ResolveDefaultKeyPolicy("2016-02-29 23:59:00Z", key1, key2);
+
+            // Assert
+            Assert.Same(key2, resolution.DefaultKey);
+            Assert.False(resolution.ShouldGenerateNewKey);
+        }
+
+        [Fact]
+        public void ResolveDefaultKeyPolicy_ValidExistingKey_AllowsForClockSkew_AllKeysInFuture_ReturnsExistingKey()
+        {
+            // Arrange
+            var resolver = CreateDefaultKeyResolver();
+            var key1 = CreateKey("2016-03-01 00:00:00Z", "2017-03-01 00:00:00Z");
+
+            // Act
+            var resolution = resolver.ResolveDefaultKeyPolicy("2016-02-29 23:59:00Z", key1);
+
+            // Assert
+            Assert.Same(key1, resolution.DefaultKey);
+            Assert.False(resolution.ShouldGenerateNewKey);
+        }
+
+        [Fact]
+        public void ResolveDefaultKeyPolicy_ValidExistingKey_NoSuccessor_ReturnsExistingKey_SignalsGenerateNewKey()
+        {
+            // Arrange
+            var resolver = CreateDefaultKeyResolver();
+            var key1 = CreateKey("2015-03-01 00:00:00Z", "2016-03-01 00:00:00Z");
+
+            // Act
+            var resolution = resolver.ResolveDefaultKeyPolicy("2016-02-29 23:59:00Z", key1);
 
             // Assert
             Assert.Same(key1, resolution.DefaultKey);
@@ -57,20 +88,20 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         }
 
         [Fact]
-        public void ResolveDefaultKeyPolicy_ValidExistingKey_ApproachingSafetyWindow_FutureKeyIsValidAndWithinSkew_ReturnsExistingKey_NoSignalToGenerateNewKey()
+        public void ResolveDefaultKeyPolicy_ValidExistingKey_NoLegitimateSuccessor_ReturnsExistingKey_SignalsGenerateNewKey()
         {
             // Arrange
             var resolver = CreateDefaultKeyResolver();
-            var key1 = CreateKey("2015-03-01 00:00:00Z", "2015-04-01 00:00:00Z");
-            var key2 = CreateKey("2015-04-01 00:00:00Z", "2015-05-01 00:00:00Z", isRevoked: true);
-            var key3 = CreateKey("2015-04-01 00:01:00Z", "2015-05-01 00:00:00Z");
+            var key1 = CreateKey("2015-03-01 00:00:00Z", "2016-03-01 00:00:00Z");
+            var key2 = CreateKey("2016-03-01 00:00:00Z", "2017-03-01 00:00:00Z", isRevoked: true);
+            var key3 = CreateKey("2016-03-01 00:00:00Z", "2016-03-02 00:00:00Z"); // key expires too soon
 
             // Act
-            var resolution = resolver.ResolveDefaultKeyPolicy("2015-03-31 23:59:00Z", key1, key2, key3);
+            var resolution = resolver.ResolveDefaultKeyPolicy("2016-02-29 23:50:00Z", key1, key2, key3);
 
             // Assert
             Assert.Same(key1, resolution.DefaultKey);
-            Assert.False(resolution.ShouldGenerateNewKey);
+            Assert.True(resolution.ShouldGenerateNewKey);
         }
 
         [Fact]
@@ -139,7 +170,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         private static IDefaultKeyResolver CreateDefaultKeyResolver()
         {
             return new DefaultKeyResolver(
-                keyGenBeforeExpirationWindow: TimeSpan.FromDays(2),
+                keyPropagationWindow: TimeSpan.FromDays(2),
                 maxServerToServerClockSkew: TimeSpan.FromMinutes(7),
                 services: null);
         }
