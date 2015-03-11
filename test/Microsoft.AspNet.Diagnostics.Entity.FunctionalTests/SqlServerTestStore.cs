@@ -5,6 +5,7 @@ using System;
 using System.Data.SqlClient;
 using System.Threading;
 using Microsoft.Data.Entity;
+using Microsoft.Data.Entity.Infrastructure;
 
 namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 {
