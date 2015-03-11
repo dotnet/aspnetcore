@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
 
         public virtual IReadOnlyCollection<XElement> GetAllElements()
         {
-            // force complete enumeration under lock to avoid races
+            // force complete enumeration under lock for thread safety
             lock (_storedElements)
             {
                 return GetAllElementsCore().ToList().AsReadOnly();
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
         {
             XElement cloned = new XElement(element); // makes a deep copy so caller doesn't inadvertently modify it
 
-            // under lock to avoid races
+            // under lock for thread safety
             lock (_storedElements)
             {
                 _storedElements.Add(cloned);
