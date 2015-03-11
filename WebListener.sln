@@ -11,26 +11,26 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{E183C826-1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{3A1E31E3-2794-4CA3-B8E2-253E96BDE514}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Net.Http.Server", "src\Microsoft.Net.Http.Server\Microsoft.Net.Http.Server.kproj", "{3F5212AA-E287-49DD-8CEC-44BF0A2AC9A1}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Net.Http.Server", "src\Microsoft.Net.Http.Server\Microsoft.Net.Http.Server.xproj", "{3F5212AA-E287-49DD-8CEC-44BF0A2AC9A1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "HelloWorld", "samples\HelloWorld\HelloWorld.kproj", "{6DAF3E6B-8E1B-4E6E-B9FE-7B1E5FDB7DB4}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "HelloWorld", "samples\HelloWorld\HelloWorld.xproj", "{6DAF3E6B-8E1B-4E6E-B9FE-7B1E5FDB7DB4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SelfHostServer", "samples\SelfHostServer\SelfHostServer.kproj", "{1236F93A-AC5C-4A77-9477-C88F040151CA}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SelfHostServer", "samples\SelfHostServer\SelfHostServer.xproj", "{1236F93A-AC5C-4A77-9477-C88F040151CA}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Net.WebSockets", "src\Microsoft.Net.WebSockets\Microsoft.Net.WebSockets.kproj", "{E788AEAE-2CB4-4BFA-8746-D0BB7E93A1BB}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Net.WebSockets", "src\Microsoft.Net.WebSockets\Microsoft.Net.WebSockets.xproj", "{E788AEAE-2CB4-4BFA-8746-D0BB7E93A1BB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.WebListener.FunctionalTests", "test\Microsoft.AspNet.Server.WebListener.FunctionalTests\Microsoft.AspNet.Server.WebListener.FunctionalTests.kproj", "{4492FF4C-9032-411D-853F-46B01755E504}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.WebListener.FunctionalTests", "test\Microsoft.AspNet.Server.WebListener.FunctionalTests\Microsoft.AspNet.Server.WebListener.FunctionalTests.xproj", "{4492FF4C-9032-411D-853F-46B01755E504}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.WebListener", "src\Microsoft.AspNet.Server.WebListener\Microsoft.AspNet.Server.WebListener.kproj", "{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.WebListener", "src\Microsoft.AspNet.Server.WebListener\Microsoft.AspNet.Server.WebListener.xproj", "{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Net.Http.Server.FunctionalTests", "test\Microsoft.Net.Http.Server.FunctionalTests\Microsoft.Net.Http.Server.FunctionalTests.kproj", "{DCB6E0B1-223D-44E6-8696-4767E5B6E6A1}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Net.Http.Server.FunctionalTests", "test\Microsoft.Net.Http.Server.FunctionalTests\Microsoft.Net.Http.Server.FunctionalTests.xproj", "{DCB6E0B1-223D-44E6-8696-4767E5B6E6A1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5E9B546C-17AC-4BDF-BCB3-5955D4755ED8}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "HotAddSample", "samples\HotAddSample\HotAddSample.kproj", "{8BFA392A-8B67-4454-916B-67C545EDFAEF}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "HotAddSample", "samples\HotAddSample\HotAddSample.xproj", "{8BFA392A-8B67-4454-916B-67C545EDFAEF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
