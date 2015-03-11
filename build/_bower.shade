@@ -3,8 +3,11 @@ default nodeDir = '${Path.Combine(currentDir, "bin", "nodejs")}'
 var bowerLibrary = '${ Path.Combine(nodeDir, "node_modules", "bower", "bin", "bower") }'
 var bowerInstalled = '${ File.Exists(bowerLibrary) }'
 
-default bowerGloballyInstalled = '${ !bowerInstalled && TestCommand("bower", "--version") }'
+default bowerGloballyInstalled = '${ !bowerInstalled && TestCommand("bower", "--version --config.interactive=false") }'
 var bowerCmd = '${ bowerGloballyInstalled ? "bower" : bowerLibrary }'
+
+- // Turn off Bower's Insight reporting since this usage is scripted.
+- bowerCommand = bowerCommand + " --config.interactive=false";
 
 - // Install bower locally if not already installed either globally or locally; creates bowerLibrary file if run
 npm npmCommand='install ${E("npm_install_options")} --prefix ${nodeDir} bower' if='!(bowerGloballyInstalled || bowerInstalled)' once='installBower'
