@@ -10,11 +10,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cors.Core", "src\Microsoft.AspNet.Cors.Core\Microsoft.AspNet.Cors.Core.kproj", "{C573AEE1-8D54-4A83-8D6B-61C85E8F713E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cors.Core", "src\Microsoft.AspNet.Cors.Core\Microsoft.AspNet.Cors.Core.xproj", "{C573AEE1-8D54-4A83-8D6B-61C85E8F713E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F32074C7-087C-46CC-A913-422BFD2D6E0A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cors.Core.Test", "test\Microsoft.AspNet.Cors.Core.Test\Microsoft.AspNet.Cors.Core.Test.kproj", "{B4F83A06-EB8E-4186-84C4-C6DAF7EB03D4}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cors.Core.Test", "test\Microsoft.AspNet.Cors.Core.Test\Microsoft.AspNet.Cors.Core.Test.xproj", "{B4F83A06-EB8E-4186-84C4-C6DAF7EB03D4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
