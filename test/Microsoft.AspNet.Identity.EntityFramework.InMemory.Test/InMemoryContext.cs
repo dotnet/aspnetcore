@@ -24,10 +24,10 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
     {
         public InMemoryContext() { }
 
-        protected override void OnConfiguring(DbContextOptions builder)
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             // Want fresh in memory store for tests always for now
-            builder.UseInMemoryStore(persist: false);
+            optionsBuilder.UseInMemoryStore(persist: false);
         }
     }
 }

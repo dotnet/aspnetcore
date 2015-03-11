@@ -10,7 +10,7 @@ namespace IdentitySample.Models
 
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser> { }
 
-    public class IdentityDbContextOptions : DbContextOptions
+    public class IdentityDbContextOptions
     {
         public string DefaultAdminUserName { get; set; }
 
