@@ -50,7 +50,7 @@ namespace MvcSample.Web
 
                 app.UseServices(services =>
                 {
-                    services.AddCachingServices();
+                    services.AddCaching();
                     services.AddSessionServices();
 
                     services.AddMvc();
@@ -91,7 +91,7 @@ namespace MvcSample.Web
             {
                 app.UseServices(services =>
                 {
-                    services.AddCachingServices();
+                    services.AddCaching();
                     services.AddSessionServices();
 
                     services.AddMvc();
