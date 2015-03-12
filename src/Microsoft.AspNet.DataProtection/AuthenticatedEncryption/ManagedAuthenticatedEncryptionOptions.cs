@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using Microsoft.AspNet.Cryptography.Cng;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNet.DataProtection.Managed;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
 {
@@ -68,21 +69,26 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
          * HELPER ROUTINES
          */
 
-        internal ManagedAuthenticatedEncryptor CreateAuthenticatedEncryptorInstance(ISecret secret)
+        internal ManagedAuthenticatedEncryptor CreateAuthenticatedEncryptorInstance(ISecret secret, ILogger logger = null)
         {
             return new ManagedAuthenticatedEncryptor(
                 keyDerivationKey: new Secret(secret),
-                symmetricAlgorithmFactory: GetSymmetricBlockCipherAlgorithmFactory(),
+                symmetricAlgorithmFactory: GetSymmetricBlockCipherAlgorithmFactory(logger),
                 symmetricAlgorithmKeySizeInBytes: EncryptionAlgorithmKeySize / 8,
-                validationAlgorithmFactory: GetKeyedHashAlgorithmFactory());
+                validationAlgorithmFactory: GetKeyedHashAlgorithmFactory(logger));
         }
 
-        private Func<KeyedHashAlgorithm> GetKeyedHashAlgorithmFactory()
+        private Func<KeyedHashAlgorithm> GetKeyedHashAlgorithmFactory(ILogger logger)
         {
             // basic argument checking
             if (ValidationAlgorithmType == null)
             {
                 throw Error.Common_PropertyCannotBeNullOrEmpty(nameof(ValidationAlgorithmType));
+            }
+
+            if (logger.IsVerboseLevelEnabled())
+            {
+                logger.LogVerbose("Using managed keyed hash algorithm '{0}'.", ValidationAlgorithmType.FullName);
             }
 
             if (ValidationAlgorithmType == typeof(HMACSHA256))
@@ -99,7 +105,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
             }
         }
 
-        private Func<SymmetricAlgorithm> GetSymmetricBlockCipherAlgorithmFactory()
+        private Func<SymmetricAlgorithm> GetSymmetricBlockCipherAlgorithmFactory(ILogger logger)
         {
             // basic argument checking
             if (EncryptionAlgorithmType == null)
@@ -110,6 +116,11 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
             if (EncryptionAlgorithmKeySize < 0)
             {
                 throw Error.Common_PropertyMustBeNonNegative(nameof(EncryptionAlgorithmKeySize));
+            }
+
+            if (logger.IsVerboseLevelEnabled())
+            {
+                logger.LogVerbose("Using managed symmetric algorithm '{0}'.", EncryptionAlgorithmType.FullName);
             }
 
             if (EncryptionAlgorithmType == typeof(Aes))
@@ -130,9 +141,9 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
             }
         }
 
-        IInternalAuthenticatedEncryptorConfiguration IInternalAuthenticatedEncryptionOptions.ToConfiguration()
+        IInternalAuthenticatedEncryptorConfiguration IInternalAuthenticatedEncryptionOptions.ToConfiguration(IServiceProvider services)
         {
-            return new ManagedAuthenticatedEncryptorConfiguration(this);
+            return new ManagedAuthenticatedEncryptorConfiguration(this, services);
         }
 
         /// <summary>

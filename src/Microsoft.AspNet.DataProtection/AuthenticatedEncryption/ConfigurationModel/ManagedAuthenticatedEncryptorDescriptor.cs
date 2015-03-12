@@ -5,6 +5,7 @@ using System;
 using System.Security.Cryptography;
 using System.Xml.Linq;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
@@ -14,10 +15,18 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
     /// </summary>
     public sealed class ManagedAuthenticatedEncryptorDescriptor : IAuthenticatedEncryptorDescriptor
     {
+        private readonly ILogger _log;
+
         public ManagedAuthenticatedEncryptorDescriptor([NotNull] ManagedAuthenticatedEncryptionOptions options, [NotNull] ISecret masterKey)
+            : this(options, masterKey, services: null)
+        {
+        }
+
+        public ManagedAuthenticatedEncryptorDescriptor([NotNull] ManagedAuthenticatedEncryptionOptions options, [NotNull] ISecret masterKey, IServiceProvider services)
         {
             Options = options;
             MasterKey = masterKey;
+            _log = services.GetLogger<ManagedAuthenticatedEncryptorDescriptor>();
         }
 
         internal ISecret MasterKey { get; }
@@ -26,7 +35,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
 
         public IAuthenticatedEncryptor CreateEncryptorInstance()
         {
-            return Options.CreateAuthenticatedEncryptorInstance(MasterKey);
+            return Options.CreateAuthenticatedEncryptorInstance(MasterKey, _log);
         }
 
         public XmlSerializedDescriptorInfo ExportToXml()

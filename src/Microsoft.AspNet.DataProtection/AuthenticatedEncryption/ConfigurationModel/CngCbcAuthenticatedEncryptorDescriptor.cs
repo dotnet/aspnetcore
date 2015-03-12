@@ -4,6 +4,7 @@
 using System;
 using System.Xml.Linq;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
@@ -13,10 +14,18 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
     /// </summary>
     public sealed class CngCbcAuthenticatedEncryptorDescriptor : IAuthenticatedEncryptorDescriptor
     {
+        private readonly ILogger _log;
+
         public CngCbcAuthenticatedEncryptorDescriptor([NotNull] CngCbcAuthenticatedEncryptionOptions options, [NotNull] ISecret masterKey)
+            : this(options, masterKey, services: null)
+        {
+        }
+
+        public CngCbcAuthenticatedEncryptorDescriptor([NotNull] CngCbcAuthenticatedEncryptionOptions options, [NotNull] ISecret masterKey, IServiceProvider services)
         {
             Options = options;
             MasterKey = masterKey;
+            _log = services.GetLogger<CngCbcAuthenticatedEncryptorDescriptor>();
         }
 
         internal ISecret MasterKey { get; }
@@ -25,7 +34,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
 
         public IAuthenticatedEncryptor CreateEncryptorInstance()
         {
-            return Options.CreateAuthenticatedEncryptorInstance(MasterKey);
+            return Options.CreateAuthenticatedEncryptorInstance(MasterKey, _log);
         }
 
         public XmlSerializedDescriptorInfo ExportToXml()
@@ -51,7 +60,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
             {
                 hashElement.SetAttributeValue("provider", Options.HashAlgorithmProvider);
             }
-            
+
             var rootElement = new XElement("descriptor",
                 new XComment(" Algorithms provided by Windows CNG, using CBC-mode encryption with HMAC validation "),
                 encryptionElement,

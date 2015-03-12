@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.Cryptography.Cng;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
 {
@@ -54,15 +55,15 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
          * HELPER ROUTINES
          */
 
-        internal IAuthenticatedEncryptor CreateAuthenticatedEncryptorInstance(ISecret secret)
+        internal IAuthenticatedEncryptor CreateAuthenticatedEncryptorInstance(ISecret secret, IServiceProvider services = null)
         {
             return CreateImplementationOptions()
-                .ToConfiguration()
+                .ToConfiguration(services)
                 .CreateDescriptorFromSecret(secret)
                 .CreateEncryptorInstance();
         }
 
-        internal IInternalAuthenticatedEncryptionOptions CreateImplementationOptions()
+        private IInternalAuthenticatedEncryptionOptions CreateImplementationOptions()
         {
             if (IsGcmAlgorithm(EncryptionAlgorithm))
             {
@@ -192,9 +193,9 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
             return (EncryptionAlgorithm.AES_128_GCM <= algorithm && algorithm <= EncryptionAlgorithm.AES_256_GCM);
         }
 
-        IInternalAuthenticatedEncryptorConfiguration IInternalAuthenticatedEncryptionOptions.ToConfiguration()
+        IInternalAuthenticatedEncryptorConfiguration IInternalAuthenticatedEncryptionOptions.ToConfiguration(IServiceProvider services)
         {
-            return new AuthenticatedEncryptorConfiguration(this);
+            return new AuthenticatedEncryptorConfiguration(this, services);
         }
     }
 }

@@ -9,26 +9,31 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
     /// <summary>
     /// Represents a generalized authenticated encryption mechanism.
     /// </summary>
-    public unsafe sealed class AuthenticatedEncryptorConfiguration : IAuthenticatedEncryptorConfiguration, IInternalAuthenticatedEncryptorConfiguration
+    public sealed class AuthenticatedEncryptorConfiguration : IAuthenticatedEncryptorConfiguration, IInternalAuthenticatedEncryptorConfiguration
     {
+        private readonly IServiceProvider _services;
+
         public AuthenticatedEncryptorConfiguration([NotNull] AuthenticatedEncryptionOptions options)
+            : this(options, services: null)
+        {
+        }
+
+        public AuthenticatedEncryptorConfiguration([NotNull] AuthenticatedEncryptionOptions options, IServiceProvider services)
         {
             Options = options;
+            _services = services;
         }
 
         public AuthenticatedEncryptionOptions Options { get; }
 
         public IAuthenticatedEncryptorDescriptor CreateNewDescriptor()
         {
-            // generate a 512-bit secret randomly
-            const int KDK_SIZE_IN_BYTES = 512 / 8;
-            var secret = Secret.Random(KDK_SIZE_IN_BYTES);
-            return ((IInternalAuthenticatedEncryptorConfiguration)this).CreateDescriptorFromSecret(secret);
+            return this.CreateNewDescriptorCore();
         }
-
+        
         IAuthenticatedEncryptorDescriptor IInternalAuthenticatedEncryptorConfiguration.CreateDescriptorFromSecret(ISecret secret)
         {
-            return new AuthenticatedEncryptorDescriptor(Options, secret);
+            return new AuthenticatedEncryptorDescriptor(Options, secret, _services);
         }
     }
 }

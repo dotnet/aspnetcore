@@ -66,8 +66,7 @@ namespace Microsoft.Framework.DependencyInjection
         /// </summary>
         public static ServiceDescriptor IAuthenticatedEncryptorConfiguration_FromOptions(IInternalAuthenticatedEncryptionOptions options)
         {
-            // We don't flow services since there's nothing interesting to flow.
-            return ServiceDescriptor.Singleton<IAuthenticatedEncryptorConfiguration>(services => options.ToConfiguration());
+            return ServiceDescriptor.Singleton<IAuthenticatedEncryptorConfiguration>(options.ToConfiguration);
         }
 
 #if !DNXCORE50 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml

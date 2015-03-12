@@ -7,6 +7,7 @@ using Microsoft.AspNet.Cryptography.Cng;
 using Microsoft.AspNet.Cryptography.SafeHandles;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNet.DataProtection.Cng;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
 {
@@ -69,15 +70,15 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
          * HELPER ROUTINES
          */
 
-        internal GcmAuthenticatedEncryptor CreateAuthenticatedEncryptorInstance(ISecret secret)
+        internal GcmAuthenticatedEncryptor CreateAuthenticatedEncryptorInstance(ISecret secret, ILogger logger = null)
         {
             return new GcmAuthenticatedEncryptor(
                 keyDerivationKey: new Secret(secret),
-                symmetricAlgorithmHandle: GetSymmetricBlockCipherAlgorithmHandle(),
+                symmetricAlgorithmHandle: GetSymmetricBlockCipherAlgorithmHandle(logger),
                 symmetricAlgorithmKeySizeInBytes: (uint)(EncryptionAlgorithmKeySize / 8));
         }
 
-        private BCryptAlgorithmHandle GetSymmetricBlockCipherAlgorithmHandle()
+        private BCryptAlgorithmHandle GetSymmetricBlockCipherAlgorithmHandle(ILogger logger)
         {
             // basic argument checking
             if (String.IsNullOrEmpty(EncryptionAlgorithm))
@@ -90,6 +91,11 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
             }
 
             BCryptAlgorithmHandle algorithmHandle = null;
+
+            if (logger.IsVerboseLevelEnabled())
+            {
+                logger.LogVerbose("Opening CNG algorithm '{0}' from provider '{1}' with chaining mode GCM.", EncryptionAlgorithm, EncryptionAlgorithmProvider);
+            }
 
             // Special-case cached providers
             if (EncryptionAlgorithmProvider == null)
@@ -115,9 +121,9 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
             return algorithmHandle;
         }
 
-        IInternalAuthenticatedEncryptorConfiguration IInternalAuthenticatedEncryptionOptions.ToConfiguration()
+        IInternalAuthenticatedEncryptorConfiguration IInternalAuthenticatedEncryptionOptions.ToConfiguration(IServiceProvider services)
         {
-            return new CngGcmAuthenticatedEncryptorConfiguration(this);
+            return new CngGcmAuthenticatedEncryptorConfiguration(this, services);
         }
     }
 }

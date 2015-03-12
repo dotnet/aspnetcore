@@ -14,6 +14,18 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
     /// </summary>
     public sealed class ManagedAuthenticatedEncryptorDescriptorDeserializer : IAuthenticatedEncryptorDescriptorDeserializer
     {
+        private readonly IServiceProvider _services;
+
+        public ManagedAuthenticatedEncryptorDescriptorDeserializer()
+            : this(services: null)
+        {
+        }
+
+        public ManagedAuthenticatedEncryptorDescriptorDeserializer(IServiceProvider services)
+        {
+            _services = services;
+        }
+
         /// <summary>
         /// Imports the <see cref="ManagedAuthenticatedEncryptorDescriptor"/> from serialized XML.
         /// </summary>
@@ -37,7 +49,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
 
             Secret masterKey = ((string)element.Element("masterKey")).ToSecret();
 
-            return new ManagedAuthenticatedEncryptorDescriptor(options, masterKey);
+            return new ManagedAuthenticatedEncryptorDescriptor(options, masterKey, _services);
         }
 
         // Any changes to this method should also be be reflected

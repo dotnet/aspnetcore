@@ -7,6 +7,7 @@ using Microsoft.AspNet.Cryptography.Cng;
 using Microsoft.AspNet.Cryptography.SafeHandles;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNet.DataProtection.Cng;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
 {
@@ -93,21 +94,26 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
          * HELPER ROUTINES
          */
 
-        internal CbcAuthenticatedEncryptor CreateAuthenticatedEncryptorInstance(ISecret secret)
+        internal CbcAuthenticatedEncryptor CreateAuthenticatedEncryptorInstance(ISecret secret, ILogger logger = null)
         {
             return new CbcAuthenticatedEncryptor(
                 keyDerivationKey: new Secret(secret),
-                symmetricAlgorithmHandle: GetSymmetricBlockCipherAlgorithmHandle(),
+                symmetricAlgorithmHandle: GetSymmetricBlockCipherAlgorithmHandle(logger),
                 symmetricAlgorithmKeySizeInBytes: (uint)(EncryptionAlgorithmKeySize / 8),
-                hmacAlgorithmHandle: GetHmacAlgorithmHandle());
+                hmacAlgorithmHandle: GetHmacAlgorithmHandle(logger));
         }
 
-        private BCryptAlgorithmHandle GetHmacAlgorithmHandle()
+        private BCryptAlgorithmHandle GetHmacAlgorithmHandle(ILogger logger)
         {
             // basic argument checking
             if (String.IsNullOrEmpty(HashAlgorithm))
             {
                 throw Error.Common_PropertyCannotBeNullOrEmpty(nameof(HashAlgorithm));
+            }
+
+            if (logger.IsVerboseLevelEnabled())
+            {
+                logger.LogVerbose("Opening CNG algorithm '{0}' from provider '{1}' with HMAC.", HashAlgorithm, HashAlgorithmProvider);
             }
 
             BCryptAlgorithmHandle algorithmHandle = null;
@@ -134,7 +140,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
             return algorithmHandle;
         }
 
-        private BCryptAlgorithmHandle GetSymmetricBlockCipherAlgorithmHandle()
+        private BCryptAlgorithmHandle GetSymmetricBlockCipherAlgorithmHandle(ILogger logger)
         {
             // basic argument checking
             if (String.IsNullOrEmpty(EncryptionAlgorithm))
@@ -144,6 +150,11 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
             if (EncryptionAlgorithmKeySize < 0)
             {
                 throw Error.Common_PropertyMustBeNonNegative(nameof(EncryptionAlgorithmKeySize));
+            }
+
+            if (logger.IsVerboseLevelEnabled())
+            {
+                logger.LogVerbose("Opening CNG algorithm '{0}' from provider '{1}' with chaining mode CBC.", EncryptionAlgorithm, EncryptionAlgorithmProvider);
             }
 
             BCryptAlgorithmHandle algorithmHandle = null;
@@ -172,9 +183,9 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
             return algorithmHandle;
         }
 
-        IInternalAuthenticatedEncryptorConfiguration IInternalAuthenticatedEncryptionOptions.ToConfiguration()
+        IInternalAuthenticatedEncryptorConfiguration IInternalAuthenticatedEncryptionOptions.ToConfiguration(IServiceProvider services)
         {
-            return new CngCbcAuthenticatedEncryptorConfiguration(this);
+            return new CngCbcAuthenticatedEncryptorConfiguration(this, services);
         }
     }
 }

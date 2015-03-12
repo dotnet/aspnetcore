@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
@@ -18,7 +19,6 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
         /// Creates a new <see cref="IAuthenticatedEncryptorDescriptor"/> instance from this
         /// configuration given specific secret key material.
         /// </summary>
-        /// <returns></returns>
         IAuthenticatedEncryptorDescriptor CreateDescriptorFromSecret(ISecret secret);
     }
 }

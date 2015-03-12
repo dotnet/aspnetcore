@@ -13,6 +13,18 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
     /// </summary>
     public sealed class CngCbcAuthenticatedEncryptorDescriptorDeserializer : IAuthenticatedEncryptorDescriptorDeserializer
     {
+        private readonly IServiceProvider _services;
+
+        public CngCbcAuthenticatedEncryptorDescriptorDeserializer()
+            : this(services: null)
+        {
+        }
+
+        public CngCbcAuthenticatedEncryptorDescriptorDeserializer(IServiceProvider services)
+        {
+            _services = services;
+        }
+
         /// <summary>
         /// Imports the <see cref="CngCbcAuthenticatedEncryptorDescriptor"/> from serialized XML.
         /// </summary>
@@ -24,7 +36,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
             //   <hash algorithm="..." [provider="..."] />
             //   <masterKey>...</masterKey>
             // </descriptor>
-            
+
             var options = new CngCbcAuthenticatedEncryptionOptions();
 
             var encryptionElement = element.Element("encryption");
@@ -38,7 +50,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
 
             Secret masterKey = ((string)element.Element("masterKey")).ToSecret();
 
-            return new CngCbcAuthenticatedEncryptorDescriptor(options, masterKey);
+            return new CngCbcAuthenticatedEncryptorDescriptor(options, masterKey, _services);
         }
     }
 }

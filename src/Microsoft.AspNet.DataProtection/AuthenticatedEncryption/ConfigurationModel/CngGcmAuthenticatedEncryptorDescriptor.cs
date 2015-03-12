@@ -4,6 +4,7 @@
 using System;
 using System.Xml.Linq;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
@@ -13,10 +14,18 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
     /// </summary>
     public sealed class CngGcmAuthenticatedEncryptorDescriptor : IAuthenticatedEncryptorDescriptor
     {
+        private readonly ILogger _log;
+
         public CngGcmAuthenticatedEncryptorDescriptor([NotNull] CngGcmAuthenticatedEncryptionOptions options, [NotNull] ISecret masterKey)
+            : this(options, masterKey, services: null)
+        {
+        }
+
+        public CngGcmAuthenticatedEncryptorDescriptor([NotNull] CngGcmAuthenticatedEncryptionOptions options, [NotNull] ISecret masterKey, IServiceProvider services)
         {
             Options = options;
             MasterKey = masterKey;
+            _log = services.GetLogger<CngGcmAuthenticatedEncryptorDescriptor>();
         }
 
         internal ISecret MasterKey { get; }
@@ -25,7 +34,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
 
         public IAuthenticatedEncryptor CreateEncryptorInstance()
         {
-            return Options.CreateAuthenticatedEncryptorInstance(MasterKey);
+            return Options.CreateAuthenticatedEncryptorInstance(MasterKey, _log);
         }
 
         public XmlSerializedDescriptorInfo ExportToXml()
@@ -43,7 +52,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
             {
                 encryptionElement.SetAttributeValue("provider", Options.EncryptionAlgorithmProvider);
             }
-            
+
             var rootElement = new XElement("descriptor",
                 new XComment(" Algorithms provided by Windows CNG, using Galois/Counter Mode encryption and validation "),
                 encryptionElement,

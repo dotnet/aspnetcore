@@ -13,24 +13,29 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
     /// </summary>
     public sealed class ManagedAuthenticatedEncryptorConfiguration : IAuthenticatedEncryptorConfiguration, IInternalAuthenticatedEncryptorConfiguration
     {
+        private readonly IServiceProvider _services;
+
         public ManagedAuthenticatedEncryptorConfiguration([NotNull] ManagedAuthenticatedEncryptionOptions options)
+            : this(options, services: null)
+        {
+        }
+
+        public ManagedAuthenticatedEncryptorConfiguration([NotNull] ManagedAuthenticatedEncryptionOptions options, IServiceProvider services)
         {
             Options = options;
+            _services = services;
         }
 
         public ManagedAuthenticatedEncryptionOptions Options { get; }
 
         public IAuthenticatedEncryptorDescriptor CreateNewDescriptor()
         {
-            // generate a 512-bit secret randomly
-            const int KDK_SIZE_IN_BYTES = 512 / 8;
-            var secret = Secret.Random(KDK_SIZE_IN_BYTES);
-            return ((IInternalAuthenticatedEncryptorConfiguration)this).CreateDescriptorFromSecret(secret);
+            return this.CreateNewDescriptorCore();
         }
 
         IAuthenticatedEncryptorDescriptor IInternalAuthenticatedEncryptorConfiguration.CreateDescriptorFromSecret(ISecret secret)
         {
-            return new ManagedAuthenticatedEncryptorDescriptor(Options, secret);
+            return new ManagedAuthenticatedEncryptorDescriptor(Options, secret, _services);
         }
     }
 }

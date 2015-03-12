@@ -10,26 +10,31 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
     /// Represents a configured authenticated encryption mechanism which uses
     /// Windows CNG algorithms in CBC encryption + HMAC authentication modes.
     /// </summary>
-    public unsafe sealed class CngCbcAuthenticatedEncryptorConfiguration : IAuthenticatedEncryptorConfiguration, IInternalAuthenticatedEncryptorConfiguration
+    public sealed class CngCbcAuthenticatedEncryptorConfiguration : IAuthenticatedEncryptorConfiguration, IInternalAuthenticatedEncryptorConfiguration
     {
+        private readonly IServiceProvider _services;
+
         public CngCbcAuthenticatedEncryptorConfiguration([NotNull] CngCbcAuthenticatedEncryptionOptions options)
+            : this(options, services: null)
+        {
+        }
+
+        public CngCbcAuthenticatedEncryptorConfiguration([NotNull] CngCbcAuthenticatedEncryptionOptions options, IServiceProvider services)
         {
             Options = options;
+            _services = services;
         }
 
         public CngCbcAuthenticatedEncryptionOptions Options { get; }
 
         public IAuthenticatedEncryptorDescriptor CreateNewDescriptor()
         {
-            // generate a 512-bit secret randomly
-            const int KDK_SIZE_IN_BYTES = 512 / 8;
-            var secret = Secret.Random(KDK_SIZE_IN_BYTES);
-            return ((IInternalAuthenticatedEncryptorConfiguration)this).CreateDescriptorFromSecret(secret);
+            return this.CreateNewDescriptorCore();
         }
 
         IAuthenticatedEncryptorDescriptor IInternalAuthenticatedEncryptorConfiguration.CreateDescriptorFromSecret(ISecret secret)
         {
-            return new CngCbcAuthenticatedEncryptorDescriptor(Options, secret);
+            return new CngCbcAuthenticatedEncryptorDescriptor(Options, secret, _services);
         }
     }
 }

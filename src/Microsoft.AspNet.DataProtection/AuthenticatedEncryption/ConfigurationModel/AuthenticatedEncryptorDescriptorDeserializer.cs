@@ -14,6 +14,18 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
     /// </summary>
     public sealed class AuthenticatedEncryptorDescriptorDeserializer : IAuthenticatedEncryptorDescriptorDeserializer
     {
+        private readonly IServiceProvider _services;
+
+        public AuthenticatedEncryptorDescriptorDeserializer()
+            : this(services: null)
+        {
+        }
+
+        public AuthenticatedEncryptorDescriptorDeserializer(IServiceProvider services)
+        {
+            _services = services;
+        }
+
         /// <summary>
         /// Imports the <see cref="AuthenticatedEncryptorDescriptor"/> from serialized XML.
         /// </summary>
@@ -24,7 +36,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
             //   <validation algorithm="..." /> <!-- only if not GCM -->
             //   <masterKey requiresEncryption="true">...</masterKey>
             // </descriptor>
-            
+
             var options = new AuthenticatedEncryptionOptions();
 
             var encryptionElement = element.Element("encryption");
@@ -38,7 +50,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
             }
 
             Secret masterKey = ((string)element.Elements("masterKey").Single()).ToSecret();
-            return new AuthenticatedEncryptorDescriptor(options, masterKey);
+            return new AuthenticatedEncryptorDescriptor(options, masterKey, _services);
         }
     }
 }

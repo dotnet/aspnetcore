@@ -13,18 +13,27 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
     /// </summary>
     public sealed class AuthenticatedEncryptorDescriptor : IAuthenticatedEncryptorDescriptor
     {
-        private readonly ISecret _masterKey;
-        private readonly AuthenticatedEncryptionOptions _options;
+        private readonly IServiceProvider _services;
 
         public AuthenticatedEncryptorDescriptor([NotNull] AuthenticatedEncryptionOptions options, [NotNull] ISecret masterKey)
+            : this(options, masterKey, services: null)
         {
-            _options = options;
-            _masterKey = masterKey;
         }
 
+        public AuthenticatedEncryptorDescriptor([NotNull] AuthenticatedEncryptionOptions options, [NotNull] ISecret masterKey, IServiceProvider services)
+        {
+            Options = options;
+            MasterKey = masterKey;
+            _services = services;
+        }
+
+        internal ISecret MasterKey { get; }
+
+        internal AuthenticatedEncryptionOptions Options { get; }
+        
         public IAuthenticatedEncryptor CreateEncryptorInstance()
         {
-            return _options.CreateAuthenticatedEncryptorInstance(_masterKey);
+            return Options.CreateAuthenticatedEncryptorInstance(MasterKey, _services);
         }
 
         public XmlSerializedDescriptorInfo ExportToXml()
@@ -36,17 +45,17 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
             // </descriptor>
 
             var encryptionElement = new XElement("encryption",
-                new XAttribute("algorithm", _options.EncryptionAlgorithm));
+                new XAttribute("algorithm", Options.EncryptionAlgorithm));
 
-            var validationElement = (AuthenticatedEncryptionOptions.IsGcmAlgorithm(_options.EncryptionAlgorithm))
+            var validationElement = (AuthenticatedEncryptionOptions.IsGcmAlgorithm(Options.EncryptionAlgorithm))
                 ? (object)new XComment(" AES-GCM includes a 128-bit authentication tag, no extra validation algorithm required. ")
                 : (object)new XElement("validation",
-                    new XAttribute("algorithm", _options.ValidationAlgorithm));
+                    new XAttribute("algorithm", Options.ValidationAlgorithm));
 
             var outerElement = new XElement("descriptor",
                 encryptionElement,
                 validationElement,
-                _masterKey.ToMasterKeyElement());
+                MasterKey.ToMasterKeyElement());
 
             return new XmlSerializedDescriptorInfo(outerElement, typeof(AuthenticatedEncryptorDescriptorDeserializer));
         }
