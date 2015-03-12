@@ -3,8 +3,8 @@
 
 using System;
 using Microsoft.AspNet.Session;
-using Microsoft.Framework.Cache.Distributed;
-using Microsoft.Framework.Cache.Memory;
+using Microsoft.Framework.Caching.Distributed;
+using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
