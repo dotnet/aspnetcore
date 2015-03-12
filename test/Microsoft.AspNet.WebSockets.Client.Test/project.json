@@ -4,12 +4,12 @@
         "Microsoft.AspNet.WebSockets.Client": "1.0.0-*",
         "Microsoft.AspNet.WebSockets.Server": "1.0.0-*",
         "Kestrel": "1.0.0-*",
-        "xunit.runner.kre": "1.0.0-*"
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
     "frameworks": {
         "dnx451": { }
     },
     "commands": {
-        "test": "xunit.runner.kre"
+        "test": "xunit.runner.aspnet"
     }
 }
