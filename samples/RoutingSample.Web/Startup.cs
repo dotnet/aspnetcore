@@ -6,6 +6,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.Framework.DependencyInjection;
 
 namespace RoutingSample.Web
 {
