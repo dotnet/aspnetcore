@@ -22,7 +22,7 @@ namespace ControllersFromServicesWebSite
 
             app.UseServices(services =>
             {
-                services.AddMvc(configuration)
+                services.AddMvc()
                         .WithControllersAsServices(
                          new[]
                          {

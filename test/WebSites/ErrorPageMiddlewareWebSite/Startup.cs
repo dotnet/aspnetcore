@@ -14,7 +14,7 @@ namespace ErrorPageMiddlewareWebSite
 
             app.UseServices(services =>
             {
-                services.AddMvc(configuration);
+                services.AddMvc();
             });
 
             app.UseErrorPage();

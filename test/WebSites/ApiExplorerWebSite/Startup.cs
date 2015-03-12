@@ -16,7 +16,7 @@ namespace ApiExplorerWebSite
 
             app.UseServices(services =>
             {
-                services.AddMvc(configuration);
+                services.AddMvc();
                 services.AddSingleton<ApiExplorerDataFilter>();
 
                 services.Configure<MvcOptions>(options =>

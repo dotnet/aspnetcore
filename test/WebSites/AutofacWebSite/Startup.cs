@@ -17,7 +17,7 @@ namespace AutofacWebSite
 
             app.UseServices(services =>
             {
-                services.AddMvc(configuration);
+                services.AddMvc();
                 services.AddTransient<HelloWorldBuilder>();
 
                 var builder = new ContainerBuilder();

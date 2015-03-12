@@ -14,7 +14,7 @@ namespace FilesWebSite
 
             app.UseServices(services =>
             {
-                services.AddMvc(configuration);
+                services.AddMvc();
             });
 
             app.UseMiddleware<SendFileMiddleware>();

@@ -17,7 +17,7 @@ namespace ContentNegotiationWebSite
             app.UseServices(services =>
             {
                 // Add MVC services to the services container
-                services.AddMvc(configuration);
+                services.AddMvc();
 
                 services.Configure<MvcOptions>(options =>
                 {

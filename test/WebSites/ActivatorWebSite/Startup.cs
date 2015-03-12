@@ -16,7 +16,7 @@ namespace ActivatorWebSite
             app.UseServices(services =>
             {
                 // Add MVC services to the services container
-                services.AddMvc(configuration);
+                services.AddMvc();
                 services.AddInstance(new MyService());
                 services.AddScoped<ViewService, ViewService>();
             });

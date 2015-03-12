@@ -20,7 +20,7 @@ namespace RazorPageExecutionInstrumentationWebSite
             app.UseServices(services =>
             {
                 // Add MVC services to the services container
-                services.AddMvc(configuration);
+                services.AddMvc();
             });
 
             app.Use(async (HttpContext context, Func<Task> next) =>

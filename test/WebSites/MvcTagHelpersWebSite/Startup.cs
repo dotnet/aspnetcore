@@ -14,7 +14,7 @@ namespace MvcTagHelpersWebSite
 
             app.UseServices(services =>
             {
-                services.AddMvc(configuration);
+                services.AddMvc();
                 services.AddSingleton<ProductsService>();
             });
 

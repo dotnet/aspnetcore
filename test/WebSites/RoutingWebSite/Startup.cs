@@ -14,7 +14,7 @@ namespace RoutingWebSite
 
             app.UseServices(services =>
             {
-                services.AddMvc(configuration);
+                services.AddMvc();
 
                 services.AddScoped<TestResponseGenerator>();
             });

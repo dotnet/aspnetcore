@@ -18,7 +18,7 @@ namespace LowercaseUrlsWebSite
 
             app.UseServices(services =>
             {
-                services.AddMvc(configuration);
+                services.AddMvc();
 
                 services.Configure<RouteOptions>(routeOptions => routeOptions.LowercaseUrls = true);
             });

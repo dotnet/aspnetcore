@@ -14,7 +14,7 @@ namespace ControllerDiscoveryConventionsWebSite
 
             app.UseServices(services =>
             {
-                services.AddMvc(configuration);
+                services.AddMvc();
             });
 
             app.UseMvc(routes =>

@@ -14,7 +14,7 @@ namespace RequestServicesWebSite
 
             app.UseServices(services =>
             {
-                services.AddMvc(configuration);
+                services.AddMvc();
 
                 services.AddScoped<RequestIdService>();
             });

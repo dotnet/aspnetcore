@@ -15,7 +15,7 @@ namespace InlineConstraints
 
             app.UseServices(services =>
             {
-                services.AddMvc(configuration);
+                services.AddMvc();
             });
 
             app.UseErrorReporter();

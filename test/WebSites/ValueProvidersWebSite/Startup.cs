@@ -17,7 +17,7 @@ namespace ValueProvidersWebSite
             app.UseServices(services =>
             {
                 // Add MVC services to the services container
-                services.AddMvc(configuration)
+                services.AddMvc()
                         .Configure<MvcOptions>(options =>
                         {
                             options.ValueProviderFactories.Insert(1, new CustomValueProviderFactory());

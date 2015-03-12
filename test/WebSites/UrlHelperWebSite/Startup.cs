@@ -24,7 +24,7 @@ namespace UrlHelperWebSite
                 });
 
                 // Add MVC services to the services container
-                services.AddMvc(configuration);
+                services.AddMvc();
 
                 services.AddScoped<IUrlHelper, CustomUrlHelper>();
             });

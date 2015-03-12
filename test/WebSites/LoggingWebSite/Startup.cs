@@ -20,7 +20,7 @@ namespace LoggingWebSite
                     options.Filter = (loggerName, logLevel) => true;
                 });
 
-                services.AddMvc(configuration);
+                services.AddMvc();
             });
 
             app.Map("/logs", (appBuilder) =>

@@ -18,7 +18,7 @@ namespace FiltersWebSite
 
             app.UseServices(services =>
             {
-                services.AddMvc(configuration);
+                services.AddMvc();
                 services.ConfigureAuthorization(options =>
                 {
                     // This policy cannot succeed since it has no requirements

@@ -13,7 +13,7 @@ namespace AntiForgeryWebSite
             var configuration = app.GetTestConfiguration();
             app.UseServices(services =>
             {
-                services.AddMvc(configuration);
+                services.AddMvc();
             });
 
             app.UseErrorReporter();

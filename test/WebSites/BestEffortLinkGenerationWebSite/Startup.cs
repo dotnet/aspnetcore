@@ -15,7 +15,7 @@ namespace BestEffortLinkGenerationWebSite
 
             app.UseServices(services =>
             {
-                services.AddMvc(configuration);
+                services.AddMvc();
                 services.Configure<RouteOptions>((options) =>
                 {
                     options.UseBestEffortLinkGeneration = true;

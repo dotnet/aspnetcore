@@ -15,7 +15,7 @@ namespace ActionResultsWebSite
 
             app.UseServices(services =>
             {
-                services.AddMvc(configuration);
+                services.AddMvc();
 
                 services.Configure<MvcOptions>(options =>
                 {
