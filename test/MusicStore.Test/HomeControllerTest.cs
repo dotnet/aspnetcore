@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
-using Microsoft.Framework.Cache.Memory;
+using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.DependencyInjection;
 using MusicStore.Models;
 using Xunit;

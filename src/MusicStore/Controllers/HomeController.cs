@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Framework.Cache.Memory;
+using Microsoft.Framework.Caching.Memory;
 using MusicStore.Models;
 
 namespace MusicStore.Controllers
