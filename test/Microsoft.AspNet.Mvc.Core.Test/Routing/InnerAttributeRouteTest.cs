@@ -1471,7 +1471,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             // The new routedata is a copy
             Assert.Equal("Index", context.RouteData.Values["action"]);
             Assert.Equal("Index", nestedRouteData.Values["action"]);
-            Assert.None(context.RouteData.Values, kvp => kvp.Key == "test_route_group");
+            Assert.DoesNotContain(context.RouteData.Values, kvp => kvp.Key == "test_route_group");
             Assert.Single(nestedRouteData.Values, kvp => kvp.Key == "test_route_group");
 
             Assert.Empty(context.RouteData.Routers);
@@ -1514,7 +1514,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             // The new routedata is a copy
             Assert.Equal("Index", context.RouteData.Values["action"]);
             Assert.Equal("Index", nestedRouteData.Values["action"]);
-            Assert.None(context.RouteData.Values, kvp => kvp.Key == "test_route_group");
+            Assert.DoesNotContain(context.RouteData.Values, kvp => kvp.Key == "test_route_group");
             Assert.Single(nestedRouteData.Values, kvp => kvp.Key == "test_route_group");
 
             Assert.Empty(context.RouteData.Routers);

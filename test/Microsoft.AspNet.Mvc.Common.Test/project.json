@@ -8,11 +8,11 @@
         "Microsoft.Framework.PropertyHelper.Internal": { "version": "1.0.0-*", "type": "build" },
         "Microsoft.Framework.CopyOnWriteDictionary.Internal": { "version": "1.0.0-*", "type": "build" },
         "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type": "build" },
-        "xunit.runner.kre": "1.0.0-*",
+        "xunit.runner.aspnet": "2.0.0-aspnet-*",
         "Microsoft.Framework.DependencyInjection": "1.0.0-*"
     },
     "commands": {
-        "test": "xunit.runner.kre"
+        "test": "xunit.runner.aspnet"
     },
     "frameworks": {
         "dnx451": {
