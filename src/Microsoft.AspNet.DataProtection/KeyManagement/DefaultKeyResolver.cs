@@ -46,11 +46,11 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         public DefaultKeyResolution ResolveDefaultKeyPolicy(DateTimeOffset now, IEnumerable<IKey> allKeys)
         {
             DefaultKeyResolution retVal = default(DefaultKeyResolution);
-            retVal.DefaultKey = FindDefaultKey(now, allKeys, out retVal.ShouldGenerateNewKey);
+            retVal.DefaultKey = FindDefaultKey(now, allKeys, out retVal.FallbackKey, out retVal.ShouldGenerateNewKey);
             return retVal;
         }
 
-        private IKey FindDefaultKey(DateTimeOffset now, IEnumerable<IKey> allKeys, out bool callerShouldGenerateNewKey)
+        private IKey FindDefaultKey(DateTimeOffset now, IEnumerable<IKey> allKeys, out IKey fallbackKey, out bool callerShouldGenerateNewKey)
         {
             // find the preferred default key (allowing for server-to-server clock skew)
             var preferredDefaultKey = (from key in allKeys
@@ -97,10 +97,23 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                     _logger.LogVerbose("Default key expiration imminent and repository contains no viable successor. Caller should generate a successor.");
                 }
 
+                fallbackKey = null;
                 return preferredDefaultKey;
             }
 
             // If we got this far, the caller must generate a key now.
+            // We should locate a fallback key, which is a key that can be used to protect payloads if
+            // the caller is configured not to generate a new key. We should try to make sure the fallback
+            // key has propagated to all callers (so its creation date should be before the previous
+            // propagation period), and we cannot use revoked keys. The fallback key may be expired.
+            fallbackKey = (from key in (from key in allKeys
+                                        where key.CreationDate <= now - _keyPropagationWindow
+                                        orderby key.CreationDate descending
+                                        select key).Concat(from key in allKeys
+                                                           orderby key.CreationDate ascending
+                                                           select key)
+                           where !key.IsRevoked
+                           select key).FirstOrDefault();
 
             if (_logger.IsVerboseLevelEnabled())
             {

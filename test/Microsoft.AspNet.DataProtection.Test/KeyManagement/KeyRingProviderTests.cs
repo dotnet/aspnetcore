@@ -262,6 +262,44 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             Assert.Equal(new[] { "GetCacheExpirationToken", "GetAllKeys", "ResolveDefaultKeyPolicy" }, callSequence);
         }
 
+        [Fact]
+        public void CreateCacheableKeyRing_GenerationRequired_WithFallbackKey_KeyGenerationDisabled_DoesNotCreateDefaultKey()
+        {
+            // Arrange
+            var callSequence = new List<string>();
+            var expirationCts = new CancellationTokenSource();
+
+            var now = StringToDateTime("2016-02-01 00:00:00Z");
+            var key1 = CreateKey("2015-03-01 00:00:00Z", "2015-03-01 00:00:00Z");
+            var allKeys = new[] { key1 };
+
+            var keyRingProvider = SetupCreateCacheableKeyRingTestAndCreateKeyManager(
+                callSequence: callSequence,
+                getCacheExpirationTokenReturnValues: new[] { expirationCts.Token },
+                getAllKeysReturnValues: new[] { allKeys },
+                createNewKeyCallbacks: null, // empty
+                resolveDefaultKeyPolicyReturnValues: new[]
+                {
+                        Tuple.Create((DateTimeOffset)now, (IEnumerable<IKey>)allKeys, new DefaultKeyResolution()
+                        {
+                            FallbackKey = key1,
+                            ShouldGenerateNewKey = true
+                        })
+                },
+                keyManagementOptions: new KeyManagementOptions() { AutoGenerateKeys = false });
+
+            // Act
+            var cacheableKeyRing = keyRingProvider.GetCacheableKeyRing(now);
+
+            // Assert
+            Assert.Equal(key1.KeyId, cacheableKeyRing.KeyRing.DefaultKeyId);
+            AssertWithinJitterRange(cacheableKeyRing.ExpirationTimeUtc, now);
+            Assert.True(CacheableKeyRing.IsValid(cacheableKeyRing, now));
+            expirationCts.Cancel();
+            Assert.False(CacheableKeyRing.IsValid(cacheableKeyRing, now));
+            Assert.Equal(new[] { "GetCacheExpirationToken", "GetAllKeys", "ResolveDefaultKeyPolicy" }, callSequence);
+        }
+
         private static ICacheableKeyRingProvider SetupCreateCacheableKeyRingTestAndCreateKeyManager(
             IList<string> callSequence,
             IEnumerable<CancellationToken> getCacheExpirationTokenReturnValues,

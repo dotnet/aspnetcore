@@ -13,6 +13,13 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         public IKey DefaultKey;
 
         /// <summary>
+        /// The fallback key, which should be used only if the caller is configured not to
+        /// honor the <see cref="ShouldGenerateNewKey"/> property. This property may
+        /// be null if there is no viable fallback key.
+        /// </summary>
+        public IKey FallbackKey;
+
+        /// <summary>
         /// 'true' if a new key should be persisted to the keyring, 'false' otherwise.
         /// This value may be 'true' even if a valid default key was found.
         /// </summary>

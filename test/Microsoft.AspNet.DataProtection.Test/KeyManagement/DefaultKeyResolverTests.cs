@@ -167,6 +167,41 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             Assert.False(resolution.ShouldGenerateNewKey);
         }
 
+        [Fact]
+        public void ResolveDefaultKeyPolicy_FallbackKey_SelectsLatestBeforePriorPropagationWindow()
+        {
+            // Arrange
+            var resolver = CreateDefaultKeyResolver();
+            var key1 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-01 00:00:00Z");
+            var key2 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-02 00:00:00Z");
+            var key3 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-03 00:00:00Z", isRevoked: true);
+            var key4 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-04 00:00:00Z");
+
+            // Act
+            var resolution = resolver.ResolveDefaultKeyPolicy("2000-01-05 00:00:00Z", key1, key2, key3, key4);
+
+            // Assert
+            Assert.Same(key2, resolution.FallbackKey);
+            Assert.True(resolution.ShouldGenerateNewKey);
+        }
+
+        [Fact]
+        public void ResolveDefaultKeyPolicy_FallbackKey_NoNonRevokedKeysBeforePriorPropagationWindow_SelectsEarliestNonRevokedKey()
+        {
+            // Arrange
+            var resolver = CreateDefaultKeyResolver();
+            var key1 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-03 00:00:00Z", isRevoked: true);
+            var key2 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-04 00:00:00Z");
+            var key3 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-05 00:00:00Z");
+
+            // Act
+            var resolution = resolver.ResolveDefaultKeyPolicy("2000-01-05 00:00:00Z", key1, key2, key3);
+
+            // Assert
+            Assert.Same(key2, resolution.FallbackKey);
+            Assert.True(resolution.ShouldGenerateNewKey);
+        }
+
         private static IDefaultKeyResolver CreateDefaultKeyResolver()
         {
             return new DefaultKeyResolver(
@@ -175,10 +210,11 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 services: null);
         }
 
-        private static IKey CreateKey(string activationDate, string expirationDate, bool isRevoked = false)
+        private static IKey CreateKey(string activationDate, string expirationDate, string creationDate = null, bool isRevoked = false)
         {
             var mockKey = new Mock<IKey>();
             mockKey.Setup(o => o.KeyId).Returns(Guid.NewGuid());
+            mockKey.Setup(o => o.CreationDate).Returns((creationDate != null) ? DateTimeOffset.ParseExact(creationDate, "u", CultureInfo.InvariantCulture) : DateTimeOffset.MinValue);
             mockKey.Setup(o => o.ActivationDate).Returns(DateTimeOffset.ParseExact(activationDate, "u", CultureInfo.InvariantCulture));
             mockKey.Setup(o => o.ExpirationDate).Returns(DateTimeOffset.ParseExact(expirationDate, "u", CultureInfo.InvariantCulture));
             mockKey.Setup(o => o.IsRevoked).Returns(isRevoked);
