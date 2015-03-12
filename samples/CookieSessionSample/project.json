@@ -2,7 +2,7 @@
     "dependencies": {
         "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-        "Microsoft.Framework.Cache.Memory": "1.0.0-*",
+        "Microsoft.Framework.Caching.Memory": "1.0.0-*",
         "Kestrel": "1.0.0-*",
         "Microsoft.AspNet.Server.IIS": "1.0.0-*"
     },
