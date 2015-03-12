@@ -10,9 +10,9 @@ var bowerCmd = '${ bowerGloballyInstalled ? "bower" : bowerLibrary }'
 - bowerCommand = bowerCommand + " --config.interactive=false";
 
 - // Install bower locally if not already installed either globally or locally; creates bowerLibrary file if run
-npm npmCommand='install ${E("npm_install_options")} --prefix ${nodeDir} bower' if='!(bowerGloballyInstalled || bowerInstalled)' once='installBower'
+npm npmCommand='install ${E("npm_install_options")} --prefix "${nodeDir}" bower' if='!(bowerGloballyInstalled || bowerInstalled)' once='installBower'
 
 - // Run bower
 exec program='cmd' commandline='/C ${bowerCmd} ${bowerCommand}' workingdir='${bowerDir}' if='bowerGloballyInstalled && !IsLinux'
 exec program='${bowerCmd}' commandline='${bowerCommand}' workingdir='${bowerDir}' if='bowerGloballyInstalled && IsLinux'
-node nodeCommand='${bowerCmd} ${bowerCommand}' workingdir='${bowerDir}' if='!bowerGloballyInstalled'
+node nodeCommand='"${bowerCmd}" ${bowerCommand}' workingdir='${bowerDir}' if='!bowerGloballyInstalled'

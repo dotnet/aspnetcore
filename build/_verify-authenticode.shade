@@ -20,7 +20,7 @@ default expectedHash = ''
         WorkingDirectory = workingdir,
         FileName = signToolExe,
         RedirectStandardOutput = true,
-        Arguments = "verify /pa /v " + verifyFilePath,
+        Arguments = "verify /pa /v \"" + verifyFilePath + "\"",
     };
 
     var signTool = Process.Start(processStartInfo);
