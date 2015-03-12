@@ -23,6 +23,11 @@ namespace Microsoft.Framework.DependencyInjection
             return services.Configure<IdentityOptions>(config);
         }
 
+        public static IServiceCollection ConfigureIdentityApplicationCookie(this IServiceCollection services, Action<CookieAuthenticationOptions> configureOptions)
+        {
+            return services.Configure<CookieAuthenticationOptions>(configureOptions, IdentityOptions.ApplicationCookieAuthenticationScheme);
+        }
+
         public static IdentityBuilder AddIdentity(this IServiceCollection services)
         {
             return services.AddIdentity<IdentityUser, IdentityRole>(configureOptions: null);
@@ -72,7 +77,7 @@ namespace Microsoft.Framework.DependencyInjection
             });
 
             // Configure all of the cookie middlewares
-            services.Configure<CookieAuthenticationOptions>(options =>
+            services.ConfigureIdentityApplicationCookie(options =>
             {
                 options.AuthenticationScheme = IdentityOptions.ApplicationCookieAuthenticationScheme;
                 options.LoginPath = new PathString("/Account/Login");
@@ -80,7 +85,7 @@ namespace Microsoft.Framework.DependencyInjection
                 {
                     OnValidatePrincipal = SecurityStampValidator.ValidatePrincipalAsync
                 };
-            }, IdentityOptions.ApplicationCookieAuthenticationScheme);
+            });
             services.Configure<CookieAuthenticationOptions>(options =>
             {
                 options.AuthenticationScheme = IdentityOptions.ExternalCookieAuthenticationScheme;

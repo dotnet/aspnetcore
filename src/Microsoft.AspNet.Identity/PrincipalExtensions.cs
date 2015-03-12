@@ -18,14 +18,13 @@ namespace System.Security.Principal
         /// <param name="principal">The <see cref="IPrincipal"/> instance this method extends.</param>
         /// <returns>The Name claim value, or null if the claim is not present.</returns>
         /// <remarks>The name claim is identified by <see cref="ClaimsIdentity.DefaultNameClaimType"/>.</remarks>
-        public static string GetUserName(this IPrincipal principal)
+        public static string GetUserName(this ClaimsPrincipal principal)
         {
             if (principal == null)
             {
                 throw new ArgumentNullException(nameof(principal));
             }
-            var cp = principal as ClaimsPrincipal;
-            return cp != null ? cp.FindFirstValue(ClaimsIdentity.DefaultNameClaimType) : null;
+            return principal.FindFirstValue(ClaimsIdentity.DefaultNameClaimType);
         }
 
         /// <summary>
@@ -34,14 +33,13 @@ namespace System.Security.Principal
         /// <param name="principal">The <see cref="IPrincipal"/> instance this method extends.</param>
         /// <returns>The User ID claim value, or null if the claim is not present.</returns>
         /// <remarks>The name claim is identified by <see cref="ClaimTypes.NameIdentifier"/>.</remarks>
-        public static string GetUserId(this IPrincipal principal)
+        public static string GetUserId(this ClaimsPrincipal principal)
         {
             if (principal == null)
             {
                 throw new ArgumentNullException(nameof(principal));
             }
-            var ci = principal as ClaimsPrincipal;
-            return ci != null ? ci.FindFirstValue(ClaimTypes.NameIdentifier) : null;
+            return principal.FindFirstValue(ClaimTypes.NameIdentifier);
         }
 
         /// <summary>
@@ -49,15 +47,14 @@ namespace System.Security.Principal
         /// </summary>
         /// <param name="principal">The <see cref="IPrincipal"/> instance this method extends.</param>
         /// <returns>True if the user is logged in with identity.</returns>
-        public static bool IsSignedIn(this IPrincipal principal)
+        public static bool IsSignedIn(this ClaimsPrincipal principal)
         {
             if (principal == null)
             {
                 throw new ArgumentNullException(nameof(principal));
             }
-            var p = principal as ClaimsPrincipal;
-            return p?.Identities != null && 
-                p.Identities.Any(i => i.AuthenticationType == IdentityOptions.ApplicationCookieAuthenticationType);
+            return principal.Identities != null && 
+                principal.Identities.Any(i => i.AuthenticationType == IdentityOptions.ApplicationCookieAuthenticationType);
         }
 
         /// <summary>

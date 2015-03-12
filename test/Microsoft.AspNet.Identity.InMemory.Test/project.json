@@ -1,22 +1,24 @@
 {
   "dependencies": {
+    "Microsoft.AspNet.Authentication" : "1.0.0-*",
+    "Microsoft.AspNet.Authentication.Cookies" : "1.0.0-*",
     "Microsoft.AspNet.Hosting": "1.0.0-*",
     "Microsoft.AspNet.Http" : "1.0.0-*",
     "Microsoft.AspNet.Identity" : "3.0.0-*",
     "Microsoft.AspNet.RequestContainer" : "1.0.0-*",
-    "Microsoft.AspNet.Authentication" : "1.0.0-*",
-    "Microsoft.AspNet.Authentication.Cookies" : "1.0.0-*",
+    "Microsoft.AspNet.TestHost": "1.0.0-*",
     "Microsoft.AspNet.Testing" : "1.0.0-*",
     "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
     "Microsoft.Framework.DependencyInjection" : "1.0.0-*",
     "Microsoft.Framework.OptionsModel" : "1.0.0-*",
+    "Moq": "4.2.1312.1622",
     "xunit.runner.kre": "1.0.0-*"
   },
   "code": "**\\*.cs;..\\Shared\\*.cs",
   "frameworks": {
     "dnx451": {
       "dependencies": {
-        "Moq" : "4.2.1312.1622"
+        "Shouldly": "1.1.1.1"
       }
     }
   },
