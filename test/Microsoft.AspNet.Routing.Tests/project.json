@@ -7,7 +7,7 @@
         "Microsoft.AspNet.Routing": "1.0.0-*",
         "Microsoft.AspNet.Testing": "1.0.0-*",
         "Microsoft.Framework.Logging.Testing": "1.0.0-*",
-        "xunit.runner.kre": "1.0.0-*"
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
     "frameworks": {
         "dnxcore50": { },
@@ -18,6 +18,6 @@
         }
     },
     "commands": {
-        "test": "xunit.runner.kre"
+        "test": "xunit.runner.aspnet"
     }
 }
