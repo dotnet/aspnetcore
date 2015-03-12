@@ -16,7 +16,7 @@ namespace SessionSample
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCachingServices();
+            services.AddCaching();
             services.AddSessionServices();
         }
 
