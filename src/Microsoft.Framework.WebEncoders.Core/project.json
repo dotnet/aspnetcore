@@ -1,0 +1,24 @@
+{
+    "version": "1.0.0-*",
+    "description": "Contains core encoders for HTML, JavaScript strings, and URLs.",
+    "compilationOptions": {
+        "allowUnsafe": true
+    },
+    "dependencies": {
+        "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" }
+    },
+    "frameworks": {
+        "net45": { },
+        "dnx451": { },
+        "dnxcore50": {
+            "dependencies": {
+                "System.ComponentModel": "4.0.0-*",
+                "System.Diagnostics.Debug": "4.0.10-*",
+                "System.IO": "4.0.10-*",
+                "System.Reflection": "4.0.10-*",
+                "System.Runtime.Extensions": "4.0.10-*",
+                "System.Threading": "4.0.10-*"
+            }
+        }
+    }
+}

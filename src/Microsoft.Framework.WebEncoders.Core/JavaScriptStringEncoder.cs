@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.WebEncoders
 {
@@ -50,7 +51,7 @@ namespace Microsoft.Framework.WebEncoders
         /// set returned by <paramref name="filter"/>'s <see cref="ICodePointFilter.GetAllowedCodePoints"/>
         /// method will be escaped.
         /// </summary>
-        public JavaScriptStringEncoder(ICodePointFilter filter)
+        public JavaScriptStringEncoder([NotNull] ICodePointFilter filter)
             : this(new JavaScriptStringUnicodeEncoder(CodePointFilter.Wrap(filter)))
         {
         }
