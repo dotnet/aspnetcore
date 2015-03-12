@@ -16,6 +16,7 @@ functions
         static string BUILD_BRANCH = Environment.GetEnvironmentVariable("BUILD_BRANCH") ?? "dev";
         static string BASE_DIR = Directory.GetCurrentDirectory();
         static string TARGET_DIR = Path.Combine(BASE_DIR, "artifacts", "build");
+        static bool SKIP_NO_CREDENTIALS = Environment.GetEnvironmentVariable("UNIVERSE_SKIP_NO_CREDENTIALS") == "1";
         string[] repos = new[] {
             // The repos list is topologically sorted based on build order
             "Configuration",
@@ -438,6 +439,14 @@ functions
                 if (useHttps &&
                     !IsAccessible(repo))
                 {
+                    if (SKIP_NO_CREDENTIALS) 
+                    {
+                        // This is used on the XPlat CI. Must return because otherwise git will wait for user
+                        // input and hang the build
+                        Log.Warn(string.Format("The repo at '{0}' is not accesible and it will not be cloned.", repoUrl));
+                        return;
+                    }
+
                     Log.Warn(string.Format("The repo at '{0}' is not accessible. If you do not have access to this repository, skip the git prompt" +
                                            " for credentials to skip cloning this repository. To avoid this prompt, re-clone the Universe repository over ssh.",
                                            repoUrl));
