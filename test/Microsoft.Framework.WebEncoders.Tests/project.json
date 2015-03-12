@@ -4,10 +4,10 @@
         "Microsoft.Framework.WebEncoders": "1.0.0-*",
         "Moq": "4.2.1312.1622",
         "Newtonsoft.Json": "6.0.6",
-        "xunit.runner.kre": "1.0.0-*"
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
     "commands": {
-        "test": "xunit.runner.kre"
+        "test": "xunit.runner.aspnet"
     },
     "compilationOptions": {
         "allowUnsafe": true
