@@ -12,6 +12,7 @@ using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Moq;
 using Xunit;
+using System.Text;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -171,6 +172,35 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal("FilePathResultTestFile contents", contents);
         }
 
+        [Fact]
+        public async Task ExecuteResultAsync_WorksWithNonDiskBasedFiles()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.Response.Body = new MemoryStream();
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            var expectedData = "This is an embedded resource";
+            var sourceStream = new MemoryStream(Encoding.UTF8.GetBytes(expectedData));
+            var nonDiskFileInfo = new Mock<IFileInfo>();
+            nonDiskFileInfo.SetupGet(fi => fi.Exists).Returns(true);
+            nonDiskFileInfo.SetupGet(fi => fi.PhysicalPath).Returns(() => null); // set null to indicate non-disk file
+            nonDiskFileInfo.Setup(fi => fi.CreateReadStream()).Returns(sourceStream);
+            var nonDiskFileProvider = new Mock<IFileProvider>();
+            nonDiskFileProvider.Setup(fp => fp.GetFileInfo(It.IsAny<string>())).Returns(nonDiskFileInfo.Object);
+            var filePathResult = new FilePathResult("/SampleEmbeddedFile.txt")
+            {
+                FileProvider = nonDiskFileProvider.Object
+            };
+
+            // Act
+            await filePathResult.ExecuteResultAsync(actionContext);
+
+            // Assert
+            httpContext.Response.Body.Position = 0;
+            var contents = await new StreamReader(httpContext.Response.Body).ReadToEndAsync();
+            Assert.Equal(expectedData, contents);
+        }
+
         [Theory]
         // Root of the file system, forward slash and back slash
         [InlineData("FilePathResultTestFile.txt", "TestFiles/FilePathResultTestFile.txt")]
@@ -202,18 +232,20 @@ namespace Microsoft.AspNet.Mvc
         public void GetFilePath_Resolves_RelativePaths(string path, string relativePathToFile)
         {
             // Arrange
-            var fileProvider = new PhysicalFileProvider(Path.GetFullPath("./TestFiles"));
             var expectedPath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), relativePathToFile));
+            var fileProvider = new PhysicalFileProvider(Path.GetFullPath("./TestFiles"));
             var filePathResult = new FilePathResult(path, "text/plain")
             {
                 FileProvider = fileProvider,
             };
-
+            
             // Act
-            var result = filePathResult.ResolveFilePath(fileProvider);
+            var resolveFilePathResult = filePathResult.ResolveFilePath(fileProvider);
 
             // Assert
-            Assert.Equal(expectedPath, result);
+            Assert.NotNull(resolveFilePathResult);
+            Assert.NotNull(resolveFilePathResult.FileInfo);
+            Assert.Equal(expectedPath, resolveFilePathResult.PhysicalFilePath);
         }
 
         [Theory]
