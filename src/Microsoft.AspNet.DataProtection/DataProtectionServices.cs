@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Cryptography.Cng;
 using Microsoft.AspNet.DataProtection;
+using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNet.DataProtection.Cng;
 using Microsoft.AspNet.DataProtection.KeyManagement;
 using Microsoft.AspNet.DataProtection.Repositories;
@@ -22,9 +23,6 @@ namespace Microsoft.Framework.DependencyInjection
         /// </summary>
         public static IEnumerable<ServiceDescriptor> GetDefaultServices()
         {
-            // Provide the default algorithmic information.
-            yield return DataProtectionServiceDescriptors.IAuthenticatedEncryptorConfiguration_Default();
-
             // The default key services are a strange beast. We don't want to return
             // IXmlEncryptor and IXmlRepository as-is because they almost always have to be
             // set as a matched pair. Instead, our built-in key manager will use a meta-service
@@ -98,10 +96,21 @@ namespace Microsoft.Framework.DependencyInjection
             // Hook up the logic which allows populating default options
             yield return DataProtectionServiceDescriptors.ConfigureOptions_DataProtectionOptions();
 
-            // Finally, read and apply policy from the registry, overriding any other defaults.
+            // Read and apply policy from the registry, overriding any other defaults.
+            bool encryptorConfigurationReadFromRegistry = false;
             foreach (var descriptor in RegistryPolicyResolver.ResolveDefaultPolicy())
             {
                 yield return descriptor;
+                if (descriptor.ServiceType == typeof(IAuthenticatedEncryptorConfiguration))
+                {
+                    encryptorConfigurationReadFromRegistry = true;
+                }
+            }
+
+            // Finally, provide a fallback encryptor configuration if one wasn't already specified.
+            if (!encryptorConfigurationReadFromRegistry)
+            {
+                yield return DataProtectionServiceDescriptors.IAuthenticatedEncryptorConfiguration_Default();
             }
         }
     }

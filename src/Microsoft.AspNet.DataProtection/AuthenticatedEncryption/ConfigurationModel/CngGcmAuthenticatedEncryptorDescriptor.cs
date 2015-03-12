@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
             }
             
             var rootElement = new XElement("descriptor",
-                new XComment(" Algorithms provided by Windows CNG, using GCM mode encryption and validation "),
+                new XComment(" Algorithms provided by Windows CNG, using Galois/Counter Mode encryption and validation "),
                 encryptionElement,
                 MasterKey.ToMasterKeyElement());
 
