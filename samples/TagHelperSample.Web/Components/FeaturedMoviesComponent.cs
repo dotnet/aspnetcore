@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Framework.Cache.Memory;
+using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Expiration.Interfaces;
 using TagHelperSample.Web.Services;
 

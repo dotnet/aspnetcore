@@ -5,8 +5,8 @@ using System;
 using System.Diagnostics;
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Razor.Generator.Compiler;
-using Microsoft.Framework.Cache.Memory;
-using Microsoft.Framework.Cache.Memory.Infrastructure;
+using Microsoft.Framework.Caching.Memory;
+using Microsoft.Framework.Caching.Memory.Infrastructure;
 using Moq;
 using Xunit;
 
