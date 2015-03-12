@@ -13,11 +13,6 @@ namespace Microsoft.AspNet.Builder
 {
     public static class SessionMiddlewareExtensions
     {
-        public static IServiceCollection ConfigureSession([NotNull] this IServiceCollection services, [NotNull] Action<SessionOptions> configure)
-        {
-            return services.ConfigureOptions(configure);
-        }
-
         public static IApplicationBuilder UseInMemorySession([NotNull] this IApplicationBuilder app, IMemoryCache cache = null, Action<SessionOptions> configure = null)
         {
             return app.UseDistributedSession(new LocalCache(cache ?? new MemoryCache(new MemoryCacheOptions())), configure);

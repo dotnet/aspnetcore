@@ -3,7 +3,6 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.Logging.Console;
 
 namespace SessionSample
 {
@@ -17,7 +16,7 @@ namespace SessionSample
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCaching();
-            services.AddSessionServices();
+            services.AddSession();
         }
 
         public void Configure(IApplicationBuilder app)
