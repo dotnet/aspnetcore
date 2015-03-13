@@ -26,13 +26,6 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         {
             public DbSet<User<TKey>> Users { get; set; }
 
-            protected override void OnModelCreating(ModelBuilder modelBuilder)
-            {
-                base.OnModelCreating(modelBuilder);
-
-                modelBuilder.Entity<User<TKey>>().Property(p => p.Id)
-                            .GenerateValueOnAdd(generateValue: false);
-            }
         }
 
         public CustomDbContext<TKey> GetContext<TKey>() where TKey : IEquatable<TKey>
@@ -110,7 +103,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         {
             using (var db = CreateContext<int>(true))
             {
-                var user = new User<int> { Id = 11 };
+                var user = new User<int>();
                 db.Users.Add(user);
                 await db.SaveChangesAsync();
                 user.UserName = "Boo";
@@ -125,7 +118,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         {
             using (var db = CreateContext<int>(true))
             {
-                var user = new User<int> { Id = 11 };
+                var user = new User<int>();
                 var users = db.Set<User<int>>();
                 users.Add(user);
                 await db.SaveChangesAsync();
@@ -142,7 +135,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             using (var db = CreateContext<int>(true))
             {
                 var oldName = Guid.NewGuid().ToString();
-                var user = new User<int> { UserName = oldName, Id = 1 };
+                var user = new User<int> { UserName = oldName};
                 db.Users.Add(user);
                 await db.SaveChangesAsync();
                 var newName = Guid.NewGuid().ToString();
@@ -159,7 +152,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             using (var db = CreateContext<int>(true))
             {
                 var oldName = Guid.NewGuid().ToString();
-                var user = new User<int> { UserName = oldName, Id = 1 };
+                var user = new User<int> { UserName = oldName};
                 db.Set<User<int>>().Add(user);
                 await db.SaveChangesAsync();
                 var newName = Guid.NewGuid().ToString();
