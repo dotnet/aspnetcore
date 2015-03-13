@@ -84,7 +84,7 @@ namespace MusicStore
             services.AddSingleton<IMemoryCache, MemoryCache>();
 
             // Add session related services.
-            services.AddCachingServices();
+            services.AddCaching();
             services.AddSessionServices();
 
             // Configure Auth
