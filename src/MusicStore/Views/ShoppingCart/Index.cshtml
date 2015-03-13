@@ -24,20 +24,26 @@
                 if (recordToDelete != '') {
 
                     // Perform the ajax post
-                    $.post(PostToUrl, { "id": recordToDelete, "RequestVerificationToken": '@GetAntiXsrfToken()' },
-                        function (data) {
-                            // Successful requests get here
-                            // Update the page elements
-                            if (data.ItemCount == 0) {
-                                $('#row-' + data.DeleteId).fadeOut('slow');
-                            } else {
-                                $('#item-count-' + data.DeleteId).text(data.ItemCount);
-                            }
+                    $.ajax(PostToUrl, {
+                        type: "post",
+                        data: { "id": recordToDelete },
+                        dataType: "json",
+                        headers: {
+                            "RequestVerificationToken": '@GetAntiXsrfToken()'
+                        }
+                    }).done(function (data) {
+                        // Successful requests get here
+                        // Update the page elements
+                        if (data.ItemCount == 0) {
+                            $('#row-' + data.DeleteId).fadeOut('slow');
+                        } else {
+                            $('#item-count-' + data.DeleteId).text(data.ItemCount);
+                        }
 
-                            $('#cart-total').text(data.CartTotal);
-                            $('#update-message').text(data.Message);
-                            $('#cart-status').text('Cart (' + data.CartCount + ')');
-                        });
+                        $('#cart-total').text(data.CartTotal);
+                        $('#update-message').text(data.Message);
+                        $('#cart-status').text('Cart (' + data.CartCount + ')');
+                    });
                 }
             });
 

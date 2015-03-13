@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Framework.DependencyInjection;
 using MusicStore.Models;
 using MusicStore.ViewModels;
 
@@ -12,6 +11,9 @@ namespace MusicStore.Controllers
     {
         [FromServices]
         public MusicStoreContext DbContext { get; set; }
+
+        [FromServices]
+        public AntiForgery AntiForgery { get; set; }
 
         //
         // GET: /ShoppingCart/
@@ -55,15 +57,14 @@ namespace MusicStore.Controllers
         [HttpPost]
         public async Task<IActionResult> RemoveFromCart(int id, CancellationToken requestAborted)
         {
-            var formParameters = await Context.Request.ReadFormAsync();
-            var requestVerification = formParameters["RequestVerificationToken"];
-            string cookieToken = null;
-            string formToken = null;
+            var cookieToken = string.Empty;
+            string formToken = string.Empty;
+            string[] tokenHeaders = null;
+            string[] tokens = null;
 
-            if (!string.IsNullOrWhiteSpace(requestVerification))
+            if (Context.Request.Headers.TryGetValue("RequestVerificationToken", out tokenHeaders))
             {
-                var tokens = requestVerification.Split(':');
-
+                tokens = tokenHeaders.First().Split(':');
                 if (tokens != null && tokens.Length == 2)
                 {
                     cookieToken = tokens[0];
@@ -71,8 +72,7 @@ namespace MusicStore.Controllers
                 }
             }
 
-            var antiForgery = Context.RequestServices.GetService<AntiForgery>();
-            antiForgery.Validate(Context, new AntiForgeryTokenSet(formToken, cookieToken));
+            AntiForgery.Validate(Context, new AntiForgeryTokenSet(formToken, cookieToken));
 
             // Retrieve the current user's shopping cart
             var cart = ShoppingCart.GetCart(DbContext, Context);
