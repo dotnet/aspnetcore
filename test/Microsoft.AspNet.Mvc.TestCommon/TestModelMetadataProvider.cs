@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class TestModelMetadataProvider : DefaultModelMetadataProvider
+    internal class TestModelMetadataProvider : DefaultModelMetadataProvider
     {
         // Creates a provider with all the defaults - includes data annotations
         public static IModelMetadataProvider CreateDefaultProvider()
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var property = containerType.GetRuntimeProperty(propertyName);
             Assert.NotNull(property);
 
-            var key = ModelMetadataIdentity.ForProperty(property.PropertyType, property.Name, containerType);
+            var key = ModelMetadataIdentity.ForProperty(property.PropertyType, propertyName, containerType);
 
             var builder = new MetadataBuilder(key);
             _detailsProvider.Builders.Add(builder);
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             public List<MetadataBuilder> Builders { get; } = new List<MetadataBuilder>();
 
-            public void GetBindingMetadata([NotNull] BindingMetadataProviderContext context)
+            public void GetBindingMetadata(BindingMetadataProviderContext context)
             {
                 foreach (var builder in Builders)
                 {
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
 
-            public void GetDisplayMetadata([NotNull] DisplayMetadataProviderContext context)
+            public void GetDisplayMetadata(DisplayMetadataProviderContext context)
             {
                 foreach (var builder in Builders)
                 {
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
 
-            public void GetValidationMetadata([NotNull] ValidationMetadataProviderContext context)
+            public void GetValidationMetadata(ValidationMetadataProviderContext context)
             {
                 foreach (var builder in Builders)
                 {

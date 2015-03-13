@@ -9,7 +9,7 @@ using Microsoft.Framework.Expiration.Interfaces;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    public class TestFileProvider : IFileProvider
+    internal class TestFileProvider : IFileProvider
     {
         private readonly Dictionary<string, IFileInfo> _lookup =
             new Dictionary<string, IFileInfo>(StringComparer.Ordinal);
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             AddFile(path, fileInfo);
         }
 
-        public void AddFile(string path, TestFileInfo contents)
+        public void AddFile(string path, IFileInfo contents)
         {
             _lookup[path] = contents;
         }

@@ -6,7 +6,7 @@ using Microsoft.Framework.Expiration.Interfaces;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    public class TestFileTrigger : IExpirationTrigger
+    internal class TestFileTrigger : IExpirationTrigger
     {
         public bool ActiveExpirationCallbacks { get; } = false;
 

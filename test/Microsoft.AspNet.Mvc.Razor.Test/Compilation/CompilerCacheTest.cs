@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.Framework.Runtime;
 using Moq;
 using Xunit;
@@ -491,7 +492,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         [Theory]
         [MemberData(nameof(GetOrAdd_IgnoresCachedValue_IfGlobalWasChangedSinceCacheWasCreatedData))]
         public void GetOrAdd_IgnoresCachedValue_IfGlobalFileWasChangedSinceCacheWasCreated(
-            RazorFileInfo viewStartRazorFileInfo, TestFileInfo globalFileInfo)
+            RazorFileInfo viewStartRazorFileInfo, IFileInfo globalFileInfo)
         {
             // Arrange
             var expectedType = typeof(RuntimeCompileDifferent);
