@@ -267,8 +267,8 @@
                 <Justification>valid context</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders.Core\UnicodeRanges.generated.cs;
-									 $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
-									 $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
+									 $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.dll;
+									 $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.xml">
                 <term>Bengali</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
@@ -304,8 +304,8 @@
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders.Core\UnicodeRanges.generated.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\CodePointFilters.cs;
-                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
-                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
+                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.dll;
+                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.xml">
                 <term>Oriya</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
@@ -344,8 +344,8 @@
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders.Core\UnicodeRanges.generated.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\CodePointFilters.cs;
-                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.dll;
-                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.xml">
+                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.dll;
+                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.xml">
                 <term>Tibetan</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
