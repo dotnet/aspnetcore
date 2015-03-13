@@ -24,7 +24,7 @@ namespace CustomRouteWebSite
             _next = next;
         }
 
-        public string GetVirtualPath(VirtualPathContext context)
+        public VirtualPathData GetVirtualPath(VirtualPathContext context)
         {
             // We just want to act as a pass-through for link generation
             return _next.GetVirtualPath(context);

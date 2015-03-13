@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc
     {
         private ILogger _logger;
 
-        public string GetVirtualPath([NotNull] VirtualPathContext context)
+        public VirtualPathData GetVirtualPath([NotNull] VirtualPathContext context)
         {
             // The contract of this method is to check that the values coming in from the route are valid;
             // that they match an existing action, setting IsBound = true if the values are OK.

@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         }
 
         /// <inheritdoc />
-        public string GetVirtualPath(VirtualPathContext context)
+        public VirtualPathData GetVirtualPath(VirtualPathContext context)
         {
             var route = GetInnerRoute();
             return route.GetVirtualPath(context);

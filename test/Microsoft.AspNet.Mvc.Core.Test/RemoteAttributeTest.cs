@@ -529,7 +529,7 @@ namespace Microsoft.AspNet.Mvc
             handler
                 .Setup(router => router.GetVirtualPath(It.IsAny<VirtualPathContext>()))
                 .Callback<VirtualPathContext>(context => context.IsBound = isBound)
-                .Returns((string)null);
+                .Returns((VirtualPathData)null);
             builder.DefaultHandler = handler.Object;
 
             return builder;

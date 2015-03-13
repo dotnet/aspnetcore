@@ -923,7 +923,7 @@ namespace Microsoft.AspNet.Mvc
 
 
         private static IRouter GetRouter(
-            IServiceProvider services, 
+            IServiceProvider services,
             string mockRouteName,
             string mockTemplateValue)
         {
@@ -949,7 +949,7 @@ namespace Microsoft.AspNet.Mvc
             mockHttpRoute
                 .Setup(mock => mock.GetVirtualPath(It.Is<VirtualPathContext>(c => string.Equals(c.RouteName, mockRouteName))))
                 .Callback<VirtualPathContext>(c => c.IsBound = true)
-                .Returns(mockTemplateValue);
+                .Returns(new VirtualPathData(mockHttpRoute.Object, mockTemplateValue));
 
             routeBuilder.Routes.Add(mockHttpRoute.Object);
             return routeBuilder.Build();

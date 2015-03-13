@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         }
 
         /// <summary>
-        /// Gets the version of this route. This corresponds to the value of 
+        /// Gets the version of this route. This corresponds to the value of
         /// <see cref="ActionDescriptorsCollection.Version"/> when this route was created.
         /// </summary>
         public int Version { get; }
@@ -142,7 +142,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         }
 
         /// <inheritdoc />
-        public string GetVirtualPath([NotNull] VirtualPathContext context)
+        public VirtualPathData GetVirtualPath([NotNull] VirtualPathContext context)
         {
             // If it's a named route we will try to generate a link directly and
             // if we can't, we will not try to generate it using an unnamed route.
@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             foreach (var match in matches)
             {
-                var path = GenerateLink(context, match.Entry);
+                var path = GenerateVirtualPath(context, match.Entry);
                 if (path != null)
                 {
                     context.IsBound = true;
@@ -168,12 +168,12 @@ namespace Microsoft.AspNet.Mvc.Routing
             return null;
         }
 
-        private string GetVirtualPathForNamedRoute(VirtualPathContext context)
+        private VirtualPathData GetVirtualPathForNamedRoute(VirtualPathContext context)
         {
             AttributeRouteLinkGenerationEntry entry;
             if (_namedEntries.TryGetValue(context.RouteName, out entry))
             {
-                var path = GenerateLink(context, entry);
+                var path = GenerateVirtualPath(context, entry);
                 if (path != null)
                 {
                     context.IsBound = true;
@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             return null;
         }
 
-        private string GenerateLink(VirtualPathContext context, AttributeRouteLinkGenerationEntry entry)
+        private VirtualPathData GenerateVirtualPath(VirtualPathContext context, AttributeRouteLinkGenerationEntry entry)
         {
             // In attribute the context includes the values that are used to select this entry - typically
             // these will be the standard 'action', 'controller' and maybe 'area' tokens. However, we don't
@@ -247,12 +247,12 @@ namespace Microsoft.AspNet.Mvc.Routing
                 ProvidedValues = providedValues,
             };
 
-            var path = _next.GetVirtualPath(childContext);
-            if (path != null)
+            var pathData = _next.GetVirtualPath(childContext);
+            if (pathData != null)
             {
                 // If path is non-null then the target router short-circuited, we don't expect this
                 // in typical MVC scenarios.
-                return path;
+                return pathData;
             }
             else if (!childContext.IsBound)
             {
@@ -260,8 +260,13 @@ namespace Microsoft.AspNet.Mvc.Routing
                 return null;
             }
 
-            path = entry.Binder.BindValues(bindingResult.AcceptedValues);
-            return path;
+            var path = entry.Binder.BindValues(bindingResult.AcceptedValues);
+            if (path == null)
+            {
+                return null;
+            }
+
+            return new VirtualPathData(this, path);
         }
 
         private bool ContextHasSameValue(VirtualPathContext context, string key, object value)
