@@ -3,7 +3,7 @@
         "warningsAsErrors": "true"
     },
     "commands": {
-        "test": "xunit.runner.kre"
+        "test": "xunit.runner.aspnet"
     },
     "dependencies": {
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
@@ -13,7 +13,7 @@
         "Microsoft.Framework.Logging.Console": "1.0.0-*",
         "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
         "Microsoft.Web.Administration": "7.0.0",
-        "xunit.runner.kre": "1.0.0-*"
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
     "frameworks": {
         "dnx451": {
