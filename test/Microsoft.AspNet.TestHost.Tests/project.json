@@ -1,10 +1,10 @@
 {
     "dependencies": {
         "Microsoft.AspNet.TestHost": "1.0.0-*",
-        "xunit.runner.kre": "1.0.0-*"
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
     "commands": {
-        "test": "xunit.runner.kre"
+        "test": "xunit.runner.aspnet"
     },
     "frameworks": {
         "dnx451": { }
