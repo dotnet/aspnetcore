@@ -4,6 +4,7 @@
     "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
     "Microsoft.AspNet.Http.Interfaces": "1.0.0-*",
     "Microsoft.AspNet.Http.Core": "1.0.0-*",
+    "Microsoft.Framework.DependencyInjection": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "commands": {
