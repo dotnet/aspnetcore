@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Session
         /// <summary>
         /// Determines the path used to create the cookie. The default value is "/" for highest browser compatibility.
         /// </summary>
-        public string CookiePath { get; set; } = "/";
+        public string CookiePath { get; set; } = SessionDefaults.CookiePath;
 
         /// <summary>
         /// Determines if the browser should allow the cookie to be accessed by client-side JavaScript. The
