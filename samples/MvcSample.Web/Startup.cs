@@ -51,7 +51,7 @@ namespace MvcSample.Web
                 app.UseServices(services =>
                 {
                     services.AddCaching();
-                    services.AddSessionServices();
+                    services.AddSession();
 
                     services.AddMvc();
                     services.AddSingleton<PassThroughAttribute>();
@@ -92,7 +92,7 @@ namespace MvcSample.Web
                 app.UseServices(services =>
                 {
                     services.AddCaching();
-                    services.AddSessionServices();
+                    services.AddSession();
 
                     services.AddMvc();
                     services.AddSingleton<PassThroughAttribute>();

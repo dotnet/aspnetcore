@@ -15,7 +15,7 @@ namespace TempDataWebSite
             app.UseServices(services =>
             {
                 services.AddCaching();
-                services.AddSessionServices();
+                services.AddSession();
                 services.AddMvc(configuration);
             });
 
