@@ -26,8 +26,8 @@ namespace MusicStore.Models
             builder.Entity<OrderDetail>().Key(o => o.OrderDetailId);
 
             // TODO: Remove this when we start using auto generated values
-            builder.Entity<Artist>().Property(a => a.ArtistId).GenerateValueOnAdd(generateValue: false);
-            builder.Entity<Genre>().Property(g => g.GenreId).GenerateValueOnAdd(generateValue: false);
+            builder.Entity<Artist>().Property(a => a.ArtistId).GenerateValueOnAdd(generateValue: false).ForSqlServer(b => b.UseNoValueGeneration());
+            builder.Entity<Genre>().Property(g => g.GenreId).GenerateValueOnAdd(generateValue: false).ForSqlServer(b => b.UseNoValueGeneration());
 
             //Deleting an album fails with this relation
             builder.Entity<Album>().Ignore(a => a.OrderDetails);
