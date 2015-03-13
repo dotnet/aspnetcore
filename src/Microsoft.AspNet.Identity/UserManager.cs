@@ -1784,6 +1784,12 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("user");
             }
+
+            if (await GetAccessFailedCountAsync(user) == 0)
+            {
+                return IdentityResult.Success;
+            }
+
             await store.ResetAccessFailedCountAsync(user, CancellationToken);
             return await LogResultAsync(await UpdateUserAsync(user), user);
         }

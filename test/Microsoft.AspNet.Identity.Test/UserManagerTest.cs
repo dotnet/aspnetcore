@@ -628,6 +628,20 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
+        public async Task ResetTokenCallNoopForTokenValueZero()
+        {
+            var user = new IdentityUser() { UserName = Guid.NewGuid().ToString()};
+            var store = new Mock<IUserLockoutStore<IdentityUser>>();
+            store.Setup(x => x.ResetAccessFailedCountAsync(user, It.IsAny<CancellationToken>())).Returns(() =>
+               {
+                   throw new Exception();
+               });
+            var manager = MockHelpers.TestUserManager(store.Object);
+
+            IdentityResultAssert.IsSuccess(await manager.ResetAccessFailedCountAsync(user));
+        }
+
+        [Fact]
         public async Task ManagerPublicNullChecks()
         {
             Assert.Throws<ArgumentNullException>("store",
