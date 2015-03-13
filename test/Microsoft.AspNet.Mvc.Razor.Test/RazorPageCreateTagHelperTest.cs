@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -106,6 +108,13 @@ namespace Microsoft.AspNet.Mvc.Razor
                            .Returns(myService);
             serviceProvider.Setup(mock => mock.GetService(typeof(ITagHelperActivator)))
                            .Returns(new DefaultTagHelperActivator());
+            serviceProvider.Setup(mock => mock.GetService(It.Is<Type>(serviceType =>
+                serviceType.IsGenericType && serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))))
+                .Returns<Type>(serviceType =>
+                {
+                    var enumerableType = serviceType.GetGenericArguments().First();
+                    return typeof(Enumerable).GetMethod("Empty").MakeGenericMethod(enumerableType).Invoke(null, null);
+                });
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.RequestServices)
                        .Returns(serviceProvider.Object);

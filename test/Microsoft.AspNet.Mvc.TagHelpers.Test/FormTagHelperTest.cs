@@ -90,22 +90,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         [Theory]
-        [InlineData(null, true, "<input />")]
-        [InlineData(null, false, "")]
-        [InlineData(null, null, "<input />")]
-        [InlineData(true, true, "<input />")]
-        [InlineData(true, false, "")]
-        [InlineData(true, null, "<input />")]
-        [InlineData(false, true, "<input />")]
-        [InlineData(false, false, "")]
-        [InlineData(false, null, "")]
+        [InlineData(null, "<input />")]
+        [InlineData(true, "<input />")]
+        [InlineData(false, "")]
         public async Task ProcessAsync_GeneratesAntiForgeryCorrectly(
-            bool? optionsAntiForgery,
             bool? antiForgery,
             string expectedPostContent)
         {
             // Arrange
-            var options = MakeOptions(new FormTagHelperOptions { GenerateAntiForgeryToken = optionsAntiForgery });
             var viewContext = CreateViewContext();
             var context = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>(),
@@ -139,7 +131,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Action = "Index",
                 AntiForgery = antiForgery,
                 Generator = generator.Object,
-                Options = options,
                 ViewContext = viewContext,
             };
 
@@ -280,11 +271,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task ProcessAsync_RestoresBoundAttributesIfActionIsSpecified(string htmlAction)
         {
             // Arrange
-            var options = MakeOptions<FormTagHelperOptions>();
             var formTagHelper = new FormTagHelper
             {
-                Method = "POST",
-                Options = options
+                Method = "POST"
             };
             var output = new TagHelperOutput("form",
                                              attributes: new Dictionary<string, string>
@@ -323,22 +312,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         [Theory]
-        [InlineData(null, true, "<input />")]
-        [InlineData(null, false, "")]
-        [InlineData(null, null, "")]
-        [InlineData(true, true, "<input />")]
-        [InlineData(true, false, "")]
-        [InlineData(true, null, "<input />")]
-        [InlineData(false, true, "<input />")]
-        [InlineData(false, false, "")]
-        [InlineData(false, null, "")]
+        [InlineData(true, "<input />")]
+        [InlineData(false, "")]
+        [InlineData(null, "")]
         public async Task ProcessAsync_SupportsAntiForgeryIfActionIsSpecified(
-            bool? optionsAntiForgery,
             bool? antiForgery,
             string expectedPostContent)
         {
             // Arrange
-            var options = MakeOptions(new FormTagHelperOptions { GenerateAntiForgeryToken = optionsAntiForgery });
             var viewContext = CreateViewContext();
             var generator = new Mock<IHtmlGenerator>();
 
@@ -348,7 +329,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 AntiForgery = antiForgery,
                 Generator = generator.Object,
-                Options = options,
                 ViewContext = viewContext,
             };
 
@@ -419,15 +399,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 () => formTagHelper.ProcessAsync(context: null, output: tagHelperOutput));
 
             Assert.Equal(expectedErrorMessage, ex.Message);
-        }
-
-        private static IOptions<TOptions> MakeOptions<TOptions>(TOptions options = null)
-            where TOptions : class, new()
-        {
-            var optionsAccessor = new Mock<IOptions<TOptions>>();
-            optionsAccessor.Setup(o => o.Options).Returns(options ?? new TOptions());
-
-            return optionsAccessor.Object;
         }
 
         private static ViewContext CreateViewContext()
