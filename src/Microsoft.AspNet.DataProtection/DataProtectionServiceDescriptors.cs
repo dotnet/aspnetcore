@@ -33,7 +33,7 @@ namespace Microsoft.Framework.DependencyInjection
             {
                 return new ConfigureOptions<DataProtectionOptions>(options =>
                 {
-                    options.ApplicationDiscriminator = services.GetService<IApplicationDiscriminator>()?.Discriminator;
+                    options.ApplicationDiscriminator = services.GetApplicationUniqueIdentifier();
                 });
             });
         }

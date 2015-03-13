@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.DataProtection
         /// <typeparam name="TImplementation">The concrete type of the <see cref="IKeyEscrowSink"/> to register.</typeparam>
         /// <returns>The 'this' instance.</returns>
         /// <remarks>
-        /// Registrations are additive.
+        /// Registrations are additive. The factory is registered as <see cref="ServiceLifetime.Singleton"/>.
         /// </remarks>
         public DataProtectionConfiguration AddKeyEscrowSink<TImplementation>()
             where TImplementation : IKeyEscrowSink
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.DataProtection
         /// <param name="factory">A factory that creates the <see cref="IKeyEscrowSink"/> instance.</param>
         /// <returns>The 'this' instance.</returns>
         /// <remarks>
-        /// Registrations are additive.
+        /// Registrations are additive. The factory is registered as <see cref="ServiceLifetime.Singleton"/>.
         /// </remarks>
         public DataProtectionConfiguration AddKeyEscrowSink([NotNull] Func<IServiceProvider, IKeyEscrowSink> factory)
         {
@@ -127,19 +127,6 @@ namespace Microsoft.AspNet.DataProtection
             {
                 options.AutoGenerateKeys = false;
             });
-            return this;
-        }
-
-        /// <summary>
-        /// Configures the data protection system to persist keys in storage as plaintext.
-        /// </summary>
-        /// <returns>The 'this' instance.</returns>
-        /// <remarks>
-        /// Caution: cryptographic key material will not be protected at rest.
-        /// </remarks>
-        public DataProtectionConfiguration DisableProtectionOfKeysAtRest()
-        {
-            RemoveAllServicesOfType(typeof(IXmlEncryptor));
             return this;
         }
 
@@ -265,6 +252,23 @@ namespace Microsoft.AspNet.DataProtection
         {
             Use(DataProtectionServiceDescriptors.IXmlEncryptor_DpapiNG(protectionDescriptorRule, flags));
             return this;
+        }
+
+        /// <summary>
+        /// Sets the unique name of this application within the data protection system.
+        /// </summary>
+        /// <param name="applicationName">The application name.</param>
+        /// <returns>The 'this' instance.</returns>
+        /// <remarks>
+        /// This API corresponds to setting the <see cref="DataProtectionOptions.ApplicationDiscriminator"/> property
+        /// to the value of <paramref name="applicationName"/>.
+        /// </remarks>
+        public DataProtectionConfiguration SetApplicationName(string applicationName)
+        {
+            return ConfigureGlobalOptions(options =>
+            {
+                options.ApplicationDiscriminator = applicationName;
+            });
         }
 
         /// <summary>

@@ -58,6 +58,22 @@ namespace Microsoft.AspNet.DataProtection.Interfaces
             return GetString("CryptCommon_GenericError");
         }
 
+        /// <summary>
+        /// No service for type '{0}' has been registered.
+        /// </summary>
+        internal static string DataProtectionExtensions_NoService
+        {
+            get { return GetString("DataProtectionExtensions_NoService"); }
+        }
+
+        /// <summary>
+        /// No service for type '{0}' has been registered.
+        /// </summary>
+        internal static string FormatDataProtectionExtensions_NoService(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DataProtectionExtensions_NoService"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

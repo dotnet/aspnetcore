@@ -3,9 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.AspNet.DataProtection.Interfaces;
 using Microsoft.Framework.Internal;
+
+#if DNX451 || DNXCORE50 // [[ISSUE1400]] Replace with DNX_ANY when it becomes available
+using Microsoft.Framework.Runtime;
+#endif
 
 namespace Microsoft.AspNet.DataProtection
 {
@@ -53,7 +58,7 @@ namespace Microsoft.AspNet.DataProtection
         /// Creates an <see cref="IDataProtector"/> given a list of purposes.
         /// </summary>
         /// <param name="provider">The <see cref="IDataProtectionProvider"/> from which to generate the purpose chain.</param>
-        /// <param name="purpose">The primary purpose used to create the <see cref="IDataProtectionProvider"/>.</param>
+        /// <param name="purpose">The primary purpose used to create the <see cref="IDataProtector"/>.</param>
         /// <param name="subPurposes">An optional list of secondary purposes which contribute to the purpose chain.
         /// If this list is provided it cannot contain null elements.</param>
         /// <returns>An <see cref="IDataProtector"/> tied to the provided purpose chain.</returns>
@@ -75,7 +80,93 @@ namespace Microsoft.AspNet.DataProtection
             }
             return protector ?? CryptoUtil.Fail<IDataProtector>("CreateProtector returned null.");
         }
-        
+
+        /// <summary>
+        /// Returns a unique identifier for this application.
+        /// </summary>
+        /// <param name="services">The application-level <see cref="IServiceProvider"/>.</param>
+        /// <returns>A unique application identifier, or null if <paramref name="services"/> is null
+        /// or cannot provide a unique application identifier.</returns>
+        /// <remarks>
+        /// The returned identifier should be stable for repeated runs of this same application on
+        /// this machine. Additionally, the identifier is only unique within the scope of a single
+        /// machine, e.g., two different applications on two different machines may return the same
+        /// value.
+        /// </remarks>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static string GetApplicationUniqueIdentifier(this IServiceProvider services)
+        {
+            string discriminator = (services?.GetService(typeof(IApplicationDiscriminator)) as IApplicationDiscriminator)?.Discriminator;
+#if DNX451 || DNXCORE50 // [[ISSUE1400]] Replace with DNX_ANY when it becomes available
+            if (discriminator == null)
+            {
+                discriminator = (services?.GetService(typeof(IApplicationEnvironment)) as IApplicationEnvironment)?.ApplicationBasePath;
+            }
+#elif NET451 // do nothing
+#else
+#error A new target framework was added to project.json, but it's not accounted for in this #ifdef. Please change the #ifdef accordingly.
+#endif
+
+            // Remove whitespace and homogenize empty -> null
+            discriminator = discriminator?.Trim();
+            return (String.IsNullOrEmpty(discriminator)) ? null : discriminator;
+        }
+
+        /// <summary>
+        /// Retrieves an <see cref="IDataProtectionProvider"/> from an <see cref="IServiceProvider"/>.
+        /// </summary>
+        /// <param name="services">The service provider from which to retrieve the <see cref="IDataProtectionProvider"/>.</param>
+        /// <returns>An <see cref="IDataProtectionProvider"/>. This method is guaranteed never to return null.</returns>
+        /// <exception cref="InvalidOperationException">If no <see cref="IDataProtectionProvider"/> service exists in <paramref name="services"/>.</exception>
+        public static IDataProtectionProvider GetDataProtectionProvider([NotNull] this IServiceProvider services)
+        {
+            // We have our own implementation of GetRequiredService<T> since we don't want to
+            // take a dependency on DependencyInjection.Interfaces.
+            IDataProtectionProvider provider = (IDataProtectionProvider)services.GetService(typeof(IDataProtectionProvider));
+            if (provider == null)
+            {
+                throw new InvalidOperationException(Resources.FormatDataProtectionExtensions_NoService(typeof(IDataProtectionProvider).FullName));
+            }
+            return provider;
+        }
+
+        /// <summary>
+        /// Retrieves an <see cref="IDataProtector"/> from an <see cref="IServiceProvider"/> given a list of purposes.
+        /// </summary>
+        /// <param name="services">An <see cref="IServiceProvider"/> which contains the <see cref="IDataProtectionProvider"/>
+        /// from which to generate the purpose chain.</param>
+        /// <param name="purposes">The list of purposes which contribute to the purpose chain. This list must
+        /// contain at least one element, and it may not contain null elements.</param>
+        /// <returns>An <see cref="IDataProtector"/> tied to the provided purpose chain.</returns>
+        /// <remarks>
+        /// This is a convenience method which calls <see cref="GetDataProtectionProvider(IServiceProvider)"/>
+        /// then <see cref="CreateProtector(IDataProtectionProvider, IEnumerable{string})"/>. See those methods'
+        /// documentation for more information.
+        /// </remarks>
+        public static IDataProtector GetDataProtector([NotNull] this IServiceProvider services, [NotNull] IEnumerable<string> purposes)
+        {
+            return services.GetDataProtectionProvider().CreateProtector(purposes);
+        }
+
+        /// <summary>
+        /// Retrieves an <see cref="IDataProtector"/> from an <see cref="IServiceProvider"/> given a list of purposes.
+        /// </summary>
+        /// <param name="services">An <see cref="IServiceProvider"/> which contains the <see cref="IDataProtectionProvider"/>
+        /// from which to generate the purpose chain.</param>
+        /// <param name="purpose">The primary purpose used to create the <see cref="IDataProtector"/>.</param>
+        /// <param name="subPurposes">An optional list of secondary purposes which contribute to the purpose chain.
+        /// If this list is provided it cannot contain null elements.</param>
+        /// <returns>An <see cref="IDataProtector"/> tied to the provided purpose chain.</returns>
+        /// <remarks>
+        /// This is a convenience method which calls <see cref="GetDataProtectionProvider(IServiceProvider)"/>
+        /// then <see cref="CreateProtector(IDataProtectionProvider, string, string[])"/>. See those methods'
+        /// documentation for more information.
+        /// </remarks>
+        public static IDataProtector GetDataProtector([NotNull] this IServiceProvider services, [NotNull] string purpose, params string[] subPurposes)
+        {
+            return services.GetDataProtectionProvider().CreateProtector(purpose, subPurposes);
+        }
+
         /// <summary>
         /// Cryptographically protects a piece of plaintext data.
         /// </summary>

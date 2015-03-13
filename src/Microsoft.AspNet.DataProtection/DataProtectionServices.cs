@@ -9,6 +9,7 @@ using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
 using Microsoft.AspNet.DataProtection.Cng;
 using Microsoft.AspNet.DataProtection.KeyManagement;
 using Microsoft.AspNet.DataProtection.Repositories;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -31,6 +32,8 @@ namespace Microsoft.Framework.DependencyInjection
             // we'll not use the fallback at all.
             yield return ServiceDescriptor.Singleton<IDefaultKeyServices>(services =>
             {
+                ILogger log = services.GetLogger(typeof(DataProtectionServices));
+
                 ServiceDescriptor keyEncryptorDescriptor = null;
                 ServiceDescriptor keyRepositoryDescriptor = null;
 
@@ -38,6 +41,11 @@ namespace Microsoft.Framework.DependencyInjection
                 var azureWebSitesKeysFolder = FileSystemXmlRepository.GetKeyStorageDirectoryForAzureWebSites();
                 if (azureWebSitesKeysFolder != null)
                 {
+                    if (log.IsInformationLevelEnabled())
+                    {
+                        log.LogInformation("Azure Web Sites environment detected. Using '{0}' as key repository; keys will not be encrypted at rest.", azureWebSitesKeysFolder.FullName);
+                    }
+
                     // Cloud DPAPI isn't yet available, so we don't encrypt keys at rest.
                     // This isn't all that different than what Azure Web Sites does today, and we can always add this later.
                     keyRepositoryDescriptor = DataProtectionServiceDescriptors.IXmlRepository_FileSystem(azureWebSitesKeysFolder);
@@ -55,6 +63,18 @@ namespace Microsoft.Framework.DependencyInjection
                             keyEncryptorDescriptor = DataProtectionServiceDescriptors.IXmlEncryptor_Dpapi(protectToMachine: !DpapiSecretSerializerHelper.CanProtectToCurrentUserAccount());
                         }
                         keyRepositoryDescriptor = DataProtectionServiceDescriptors.IXmlRepository_FileSystem(localAppDataKeysFolder);
+
+                        if (log.IsInformationLevelEnabled())
+                        {
+                            if (keyEncryptorDescriptor != null)
+                            {
+                                log.LogInformation("User profile is available. Using '{0}' as key repository and Windows DPAPI to encrypt keys at rest.", localAppDataKeysFolder.FullName);
+                            }
+                            else
+                            {
+                                log.LogInformation("User profile is available. Using '{0}' as key repository; keys will not be encrypted at rest.", localAppDataKeysFolder.FullName);
+                            }
+                        }
                     }
                     else
                     {
@@ -68,12 +88,29 @@ namespace Microsoft.Framework.DependencyInjection
                                 keyEncryptorDescriptor = DataProtectionServiceDescriptors.IXmlEncryptor_Dpapi(protectToMachine: true);
                             }
                             keyRepositoryDescriptor = DataProtectionServiceDescriptors.IXmlRepository_Registry(regKeyStorageKey);
+
+                            if (log.IsInformationLevelEnabled())
+                            {
+                                if (keyEncryptorDescriptor != null)
+                                {
+                                    log.LogInformation("User profile not available. Using '{0}' as key repository and Windows DPAPI to encrypt keys at rest.", regKeyStorageKey.Name);
+                                }
+                                else
+                                {
+                                    log.LogInformation("User profile not available. Using '{0}' as key repository; keys will not be encrypted at rest.", regKeyStorageKey.Name);
+                                }
+                            }
                         }
                         else
                         {
                             // Final fallback - use an ephemeral repository since we don't know where else to go.
                             // This can only be used for development scenarios.
                             keyRepositoryDescriptor = DataProtectionServiceDescriptors.IXmlRepository_InMemory();
+
+                            if (log.IsWarningLevelEnabled())
+                            {
+                                log.LogWarning("Neither user profile nor HKLM registry available. Using an ephemeral key repository. Protected data will be unavailable when application exits.");
+                            }
                         }
                     }
                 }

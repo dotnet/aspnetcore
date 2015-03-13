@@ -18,7 +18,11 @@ namespace Microsoft.AspNet.DataProtection.SystemWeb
     {
         private static readonly Lazy<IDataProtectionProvider> _lazyProtectionProvider = new Lazy<IDataProtectionProvider>(CreateProtectionProvider);
 
+        [ThreadStatic]
+        private static bool _suppressPrimaryPurpose;
+
         private readonly Lazy<IDataProtector> _lazyProtector;
+        private readonly Lazy<IDataProtector> _lazyProtectorSuppressedPrimaryPurpose;
 
         public CompatibilityDataProtector(string applicationName, string primaryPurpose, string[] specificPurposes)
             : base("application-name", "primary-purpose", null) // we feed dummy values to the base ctor
@@ -28,10 +32,26 @@ namespace Microsoft.AspNet.DataProtection.SystemWeb
             // up a good error message to the developer.
 
             _lazyProtector = new Lazy<IDataProtector>(() => _lazyProtectionProvider.Value.CreateProtector(primaryPurpose, specificPurposes));
+
+            // System.Web always provides "User.MachineKey.Protect" as the primary purpose for calls
+            // to MachineKey.Protect. Only in this case should we allow suppressing the primary
+            // purpose, as then we can easily map calls to MachineKey.Protect(userData, purposes)
+            // into calls to provider.GetProtector(purposes).Protect(userData).
+            if (primaryPurpose == "User.MachineKey.Protect")
+            {
+                _lazyProtectorSuppressedPrimaryPurpose = new Lazy<IDataProtector>(() => _lazyProtectionProvider.Value.CreateProtector(specificPurposes));
+            }
+            else
+            {
+                _lazyProtectorSuppressedPrimaryPurpose = _lazyProtector;
+            }
         }
 
         // We take care of flowing purposes ourselves.
         protected override bool PrependHashedPurposeToPlaintext { get; } = false;
+
+        // Retrieves the appropriate protector (potentially with a suppressed primary purpose) for this operation.
+        private IDataProtector Protector => ((_suppressPrimaryPurpose) ? _lazyProtectorSuppressedPrimaryPurpose : _lazyProtector).Value;
 
         private static IDataProtectionProvider CreateProtectionProvider()
         {
@@ -60,7 +80,7 @@ namespace Microsoft.AspNet.DataProtection.SystemWeb
         {
             try
             {
-                return _lazyProtector.Value.Protect(userData);
+                return Protector.Protect(userData);
             }
             catch (Exception ex)
             {
@@ -76,7 +96,38 @@ namespace Microsoft.AspNet.DataProtection.SystemWeb
 
         protected override byte[] ProviderUnprotect(byte[] encryptedData)
         {
-            return _lazyProtector.Value.Unprotect(encryptedData);
+            return Protector.Unprotect(encryptedData);
+        }
+
+        /// <summary>
+        /// Invokes a delegate where calls to <see cref="ProviderProtect(byte[])"/>
+        /// and <see cref="ProviderUnprotect(byte[])"/> will ignore the primary
+        /// purpose and instead use only the sub-purposes.
+        /// </summary>
+        public static byte[] RunWithSuppressedPrimaryPurpose(Func<object, byte[], byte[]> callback, object state, byte[] input)
+        {
+            if (_suppressPrimaryPurpose)
+            {
+                return callback(state, input); // already suppressed - just forward call
+            }
+
+            try
+            {
+                try
+                {
+                    _suppressPrimaryPurpose = true;
+                    return callback(state, input);
+                }
+                finally
+                {
+                    _suppressPrimaryPurpose = false;
+                }
+            }
+            catch
+            {
+                // defeat exception filters
+                throw;
+            }
         }
     }
 }

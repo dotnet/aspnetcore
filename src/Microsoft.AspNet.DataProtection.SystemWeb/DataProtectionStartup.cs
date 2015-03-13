@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.DataProtection.SystemWeb
         /// </remarks>
         public virtual IDataProtectionProvider CreateDataProtectionProvider(IServiceProvider services)
         {
-            return services.GetRequiredService<IDataProtectionProvider>();
+            return services.GetDataProtectionProvider();
         }
 
         /// <summary>
@@ -56,30 +56,12 @@ namespace Microsoft.AspNet.DataProtection.SystemWeb
         /// </summary>
         internal IDataProtectionProvider InternalConfigureServicesAndCreateProtectionProvider()
         {
+            // Configure the default implementation, passing in our custom discriminator
             var services = new ServiceCollection();
             services.AddDataProtection();
-            services.Configure<DataProtectionOptions>(options =>
-            {
-                // Try reading the discriminator from <machineKey applicationName="..." /> defined
-                // at the web app root. If the value was set explicitly (even if the value is empty),
-                // honor it as the discriminator. Otherwise, fall back to the metabase config path.
-                var machineKeySection = (MachineKeySection)WebConfigurationManager.GetWebApplicationSection("system.web/machineKey");
-                if (machineKeySection.ElementInformation.Properties["applicationName"].ValueOrigin != PropertyValueOrigin.Default)
-                {
-                    options.ApplicationDiscriminator = machineKeySection.ApplicationName;
-                }
-                else
-                {
-                    options.ApplicationDiscriminator = HttpRuntime.AppDomainAppId;
-                }
+            services.AddInstance<IApplicationDiscriminator>(new SystemWebApplicationDiscriminator());
 
-                if (String.IsNullOrEmpty(options.ApplicationDiscriminator))
-                {
-                    options.ApplicationDiscriminator = null; // homogenize to null
-                }
-            });
-
-            // Run configuration and get an instance of the provider.
+            // Run user-specified configuration and get an instance of the provider
             ConfigureServices(services);
             var provider = CreateDataProtectionProvider(services.BuildServiceProvider());
             if (provider == null)
@@ -89,6 +71,31 @@ namespace Microsoft.AspNet.DataProtection.SystemWeb
 
             // And we're done!
             return provider;
+        }
+
+        private sealed class SystemWebApplicationDiscriminator : IApplicationDiscriminator
+        {
+            private readonly Lazy<string> _lazyDiscriminator = new Lazy<string>(GetAppDiscriminatorCore);
+
+            public string Discriminator => _lazyDiscriminator.Value;
+
+            private static string GetAppDiscriminatorCore()
+            {
+                // Try reading the discriminator from <machineKey applicationName="..." /> defined
+                // at the web app root. If the value was set explicitly (even if the value is empty),
+                // honor it as the discriminator.
+                var machineKeySection = (MachineKeySection)WebConfigurationManager.GetWebApplicationSection("system.web/machineKey");
+                if (machineKeySection.ElementInformation.Properties["applicationName"].ValueOrigin != PropertyValueOrigin.Default)
+                {
+                    return machineKeySection.ApplicationName;
+                }
+                else
+                {
+                    // Otherwise, fall back to the IIS metabase config path.
+                    // This is unique per machine.
+                    return HttpRuntime.AppDomainAppId;
+                }
+            }
         }
     }
 }

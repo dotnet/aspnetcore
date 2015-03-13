@@ -126,4 +126,7 @@
   <data name="CryptCommon_GenericError" xml:space="preserve">
     <value>An error occurred during a cryptographic operation.</value>
   </data>
+  <data name="DataProtectionExtensions_NoService" xml:space="preserve">
+    <value>No service for type '{0}' has been registered.</value>
+  </data>
 </root>
