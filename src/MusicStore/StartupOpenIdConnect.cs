@@ -79,7 +79,7 @@ namespace MusicStore
 
             // Add session related services.
             services.AddCaching();
-            services.AddSessionServices();
+            services.AddSession();
 
             // Configure Auth
             services.Configure<AuthorizationOptions>(options =>
