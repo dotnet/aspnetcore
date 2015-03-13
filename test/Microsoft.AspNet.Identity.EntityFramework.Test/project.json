@@ -11,7 +11,7 @@
     "EntityFramework.SqlServer": "7.0.0-*",
     "Microsoft.Framework.OptionsModel" : "1.0.0-*",
     "System.Security.Claims": "1.0.0-*",
-    "xunit.runner.kre": "1.0.0-*"
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "code": "**\\*.cs;..\\Shared\\*.cs",
   "frameworks": {
@@ -22,6 +22,6 @@
     }
   },
   "commands": {
-    "test": "xunit.runner.kre"
+    "test": "xunit.runner.aspnet"
   }
 }
