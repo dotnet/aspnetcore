@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
@@ -276,8 +277,9 @@ namespace System.Web.Http
             foreach (var action in actions)
             {
                 var parameter = Assert.Single(action.Parameters);
-                var metadata = Assert.IsType<FromUriAttribute>(parameter.BinderMetadata);
-                Assert.False(metadata.IsOptional);
+                Assert.Equal((new FromUriAttribute()).BindingSource, parameter.BindingInfo.BindingSource);
+                var optionalParameters = (HashSet<string>)action.Properties["OptionalParameters"];
+                Assert.False(optionalParameters.Contains(parameter.Name));
             }
         }
 
@@ -304,12 +306,12 @@ namespace System.Web.Http
             foreach (var action in actions)
             {
                 var parameter = Assert.Single(action.Parameters);
-                Assert.IsType<FromBodyAttribute>(parameter.BinderMetadata);
+                Assert.Equal(BindingSource.Body, parameter.BindingInfo.BindingSource);
             }
         }
 
         [Fact]
-        public void GetActions_Parameters_BinderMetadata()
+        public void GetActions_Parameters_WithBindingSource()
         {
             // Arrange
             var provider = CreateProvider();
@@ -331,7 +333,7 @@ namespace System.Web.Http
             foreach (var action in actions)
             {
                 var parameter = Assert.Single(action.Parameters);
-                Assert.IsType<ModelBinderAttribute>(parameter.BinderMetadata);
+                Assert.Null(parameter.BindingInfo.BindingSource);
             }
         }
 
@@ -360,8 +362,9 @@ namespace System.Web.Http
             foreach (var action in actions)
             {
                 var parameter = Assert.Single(action.Parameters);
-                var metadata = Assert.IsType<FromUriAttribute>(parameter.BinderMetadata);
-                Assert.True(metadata.IsOptional);
+                Assert.Equal((new FromUriAttribute()).BindingSource, parameter.BindingInfo.BindingSource);
+                var optionalParameters = (HashSet<string>)action.Properties["OptionalParameters"];
+                Assert.True(optionalParameters.Contains(parameter.Name));
             }
         }
 

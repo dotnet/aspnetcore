@@ -4,55 +4,83 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
+namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// A default implementation of <see cref="IBindingMetadataProvider"/>.
+    /// Binding info which represents metadata associated to an action parameter.
     /// </summary>
-    public class DefaultBindingMetadataProvider : IBindingMetadataProvider
+    public class BindingInfo
     {
-        /// <inheritdoc />
-        public void GetBindingMetadata([NotNull] BindingMetadataProviderContext context)
+        /// <summary>
+        /// Gets or sets the <see cref="ModelBinding.BindingSource"/>.
+        /// </summary>
+        public BindingSource BindingSource { get; set; }
+
+        /// <summary>
+        /// Gets or sets the binder model name.
+        /// </summary>
+        public string BinderModelName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Type"/> of the model binder used to bind the model.
+        /// </summary>
+        public Type BinderType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ModelBinding.IPropertyBindingPredicateProvider"/>.
+        /// </summary>
+        public IPropertyBindingPredicateProvider PropertyBindingPredicateProvider { get; set; }
+
+        /// <summary>
+        /// Constructs a new instance of <see cref="BindingInfo"/> from the given <paramref name="attributes"/>.
+        /// </summary>
+        /// <param name="attributes">A collection of attributes which are used to construct <see cref="BindingInfo"/>
+        /// </param>
+        /// <returns>A new instance of <see cref="BindingInfo"/>.</returns>
+        public static BindingInfo GetBindingInfo(IEnumerable<object> attributes)
         {
+            var bindingInfo = new BindingInfo();
+
             // BinderModelName
-            foreach (var binderModelNameAttribute in context.Attributes.OfType<IModelNameProvider>())
+            foreach (var binderModelNameAttribute in attributes.OfType<IModelNameProvider>())
             {
                 if (binderModelNameAttribute?.Name != null)
                 {
-                    context.BindingMetadata.BinderModelName = binderModelNameAttribute.Name;
+                    bindingInfo.BinderModelName = binderModelNameAttribute.Name;
                     break;
                 }
             }
 
             // BinderType
-            foreach (var binderTypeAttribute in context.Attributes.OfType<IBinderTypeProviderMetadata>())
+            foreach (var binderTypeAttribute in attributes.OfType<IBinderTypeProviderMetadata>())
             {
                 if (binderTypeAttribute.BinderType != null)
                 {
-                    context.BindingMetadata.BinderType = binderTypeAttribute.BinderType;
+                    bindingInfo.BinderType = binderTypeAttribute.BinderType;
                     break;
                 }
             }
 
             // BindingSource
-            foreach (var bindingSourceAttribute in context.Attributes.OfType<IBindingSourceMetadata>())
+            foreach (var bindingSourceAttribute in attributes.OfType<IBindingSourceMetadata>())
             {
                 if (bindingSourceAttribute.BindingSource != null)
                 {
-                    context.BindingMetadata.BindingSource = bindingSourceAttribute.BindingSource;
+                    bindingInfo.BindingSource = bindingSourceAttribute.BindingSource;
                     break;
                 }
             }
 
             // PropertyBindingPredicateProvider
-            var predicateProviders = context.Attributes.OfType<IPropertyBindingPredicateProvider>().ToArray();
+            var predicateProviders = attributes.OfType<IPropertyBindingPredicateProvider>().ToArray();
             if (predicateProviders.Length > 0)
             {
-                context.BindingMetadata.PropertyBindingPredicateProvider = new CompositePredicateProvider(
+                bindingInfo.PropertyBindingPredicateProvider = new CompositePredicateProvider(
                     predicateProviders);
             }
+
+            return bindingInfo;
         }
 
         private class CompositePredicateProvider : IPropertyBindingPredicateProvider

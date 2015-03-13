@@ -15,7 +15,8 @@ namespace FormatterWebSite
             {
                 var bodyParameter = context.ActionDescriptor
                                           .Parameters
-                                          .FirstOrDefault(parameter => IsBodyBindingSource(parameter.BinderMetadata));
+                                          .FirstOrDefault(parameter => IsBodyBindingSource(
+                                              parameter.BindingInfo.BindingSource));
                 if (bodyParameter != null)
                 {
                     var parameterBindingErrors = context.ModelState[bodyParameter.Name].Errors;
@@ -37,9 +38,8 @@ namespace FormatterWebSite
             base.OnActionExecuting(context);
         }
 
-        private bool IsBodyBindingSource(IBinderMetadata binderMetadata)
+        private bool IsBodyBindingSource(BindingSource bindingSource)
         {
-            var bindingSource = (binderMetadata as IBindingSourceMetadata)?.BindingSource;
             return bindingSource?.CanAcceptDataFrom(BindingSource.Body) ?? false;
         }
     }

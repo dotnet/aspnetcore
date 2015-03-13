@@ -19,7 +19,6 @@ namespace Microsoft.AspNet.Mvc.Logging
         {
             ParameterName = inner.ParameterName;
             ParameterType = inner.ParameterInfo.ParameterType;
-            BinderMetadata = inner.BinderMetadata?.GetType();
         }
 
         /// <summary>
@@ -31,11 +30,6 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// The <see cref="Type"/> of the parameter.
         /// </summary>
         public Type ParameterType { get; }
-
-        /// <summary>
-        /// The <see cref="Type"/> of the <see cref="ParameterModel.BinderMetadata"/>.
-        /// </summary>
-        public Type BinderMetadata { get; }
 
         public override string Format()
         {

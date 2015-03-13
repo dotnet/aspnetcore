@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
@@ -18,7 +19,11 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                                                new List<object>() { new FromBodyAttribute() });
 
             parameter.Action = new ActionModel(typeof(TestController).GetMethod("Edit"), new List<object>());
-            parameter.BinderMetadata = (IBinderMetadata)parameter.Attributes[0];
+            parameter.BindingInfo = new BindingInfo()
+            {
+                BindingSource = BindingSource.Body
+            };
+
             parameter.ParameterName = "id";
 
             // Act

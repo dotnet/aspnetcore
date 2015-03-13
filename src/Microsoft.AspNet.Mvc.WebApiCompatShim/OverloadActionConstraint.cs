@@ -87,12 +87,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             }
 
             var parameters = new List<OverloadedParameter>();
-
+            object optionalParametersObject;
+            candidate.Action.Properties.TryGetValue("OptionalParameters", out optionalParametersObject);
+            var optionalParameters = (HashSet<string>)optionalParametersObject;
             foreach (var parameter in candidate.Action.Parameters)
             {
                 // We only consider parameters that are marked as bound from the URL.
-                var bindingSourceMetadata = parameter?.BinderMetadata as IBindingSourceMetadata;
-                var source = bindingSourceMetadata?.BindingSource;
+                var source = parameter.BindingInfo.BindingSource;
                 if (source == null)
                 {
                     continue;
@@ -102,17 +103,19 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                     source.CanAcceptDataFrom(BindingSource.Query)) &&
                     ValueProviderResult.CanConvertFromString(parameter.ParameterType))
                 {
-                    var optionalMetadata = parameter.BinderMetadata as IOptionalBinderMetadata;
-                    if (optionalMetadata == null || optionalMetadata.IsOptional)
+                    if (optionalParameters != null)
                     {
-                        // Optional parameters are ignored in overloading. If a parameter doesn't specify that it's
-                        // required then treat it as optional (MVC default). WebAPI parameters will all by-default
-                        // specify themselves as required unless they have a default value.
-                        continue;
+                        var isOptional = optionalParameters.Contains(parameter.Name);
+                        if (isOptional)
+                        {
+                            // Optional parameters are ignored in overloading. If a parameter doesn't specify that it's
+                            // required then treat it as optional (MVC default). WebAPI parameters will all by-default
+                            // specify themselves as required unless they have a default value.
+                            continue;
+                        }
                     }
 
-                    var nameProvider = parameter.BinderMetadata as IModelNameProvider;
-                    var prefix = nameProvider?.Name ?? parameter.Name;
+                    var prefix = parameter.BindingInfo.BinderModelName ?? parameter.Name;
 
                     parameters.Add(new OverloadedParameter()
                     {

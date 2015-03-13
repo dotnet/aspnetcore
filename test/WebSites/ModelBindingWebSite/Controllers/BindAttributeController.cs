@@ -65,8 +65,7 @@ namespace ModelBindingWebSite.Controllers
             return param.Value;
         }
 
-        // This will use param to try to bind and not the value specified at TypePrefix.
-        public string TypePrefixIsNeverUsed([Bind] TypePrefix param)
+        public string TypePrefixIsUsed([Bind] TypePrefix param)
         {
             return param.Value;
         }

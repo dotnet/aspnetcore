@@ -76,17 +76,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             var metadataProvider = new TestModelMetadataProvider();
             metadataProvider.ForType(modelType).BindingDetails(d => d.BindingSource = BindingSource.Header);
-
+            var modelMetadata = metadataProvider.GetMetadataForType(modelType);
             var bindingContext = new ModelBindingContext
             {
-                ModelMetadata = metadataProvider.GetMetadataForType(modelType),
+                ModelMetadata = modelMetadata,
                 ModelName = "modelName",
                 OperationBindingContext = new OperationBindingContext
                 {
                     ModelBinder = new HeaderModelBinder(),
                     MetadataProvider = metadataProvider,
                     HttpContext = new DefaultHttpContext()
-                }
+                },
+                BinderModelName = modelMetadata.BinderModelName,
+                BindingSource = modelMetadata.BindingSource,
             };
 
             return bindingContext;

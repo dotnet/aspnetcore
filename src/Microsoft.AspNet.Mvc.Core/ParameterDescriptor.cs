@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -12,6 +13,6 @@ namespace Microsoft.AspNet.Mvc
 
         public Type ParameterType { get; set; }
 
-        public IBinderMetadata BinderMetadata { get; set; }
+        public BindingInfo BindingInfo { get; set; }
     }
 }

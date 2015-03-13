@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
+using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -53,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             var bindingContext = context.ModelBindingContext;
             var isTopLevelObject = bindingContext.ModelMetadata.ContainerType == null;
-            var hasExplicitAlias = bindingContext.ModelMetadata.BinderModelName != null;
+            var hasExplicitAlias = bindingContext.BinderModelName != null;
 
             // If we get here the model is a complex object which was not directly bound by any previous model binder,
             // so we want to decide if we want to continue binding. This is important to get right to avoid infinite
@@ -67,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             //
             // We skip this check if it is a top level object because we want to always evaluate
             // the creation of top level object (this is also required for ModelBinderAttribute to work.)
-            var bindingSource = bindingContext.ModelMetadata.BindingSource;
+            var bindingSource = bindingContext.BindingSource;
             if (!isTopLevelObject &&
                 bindingSource != null &&
                 bindingSource.IsGreedy)
@@ -144,8 +145,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     isAnyPropertyEnabledForValueProviderBasedBinding = true;
 
+                    var propertyModelName = ModelBindingHelper.CreatePropertyModelName(
+                        context.ModelBindingContext.ModelName,
+                        propertyMetadata.BinderModelName ?? propertyMetadata.PropertyName);
+
+                    var propertyModelBindingContext = ModelBindingContext.GetChildModelBindingContext(
+                        context.ModelBindingContext,
+                        propertyModelName,
+                        propertyMetadata);
+
                     // If any property can return a true value.
-                    if (await CanBindValue(context.ModelBindingContext, propertyMetadata))
+                    if (await CanBindValue(propertyModelBindingContext))
                     {
                         return true;
                     }
@@ -164,11 +174,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return false;
         }
 
-        private async Task<bool> CanBindValue(ModelBindingContext bindingContext, ModelMetadata metadata)
+        private async Task<bool> CanBindValue(ModelBindingContext bindingContext)
         {
             var valueProvider = bindingContext.ValueProvider;
 
-            var bindingSource = metadata.BindingSource;
+            var bindingSource = bindingContext.BindingSource;
             if (bindingSource != null && !bindingSource.IsGreedy)
             {
                 var rootValueProvider = bindingContext.OperationBindingContext.ValueProvider as IBindingSourceValueProvider;
@@ -178,11 +188,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
 
-            var propertyModelName = ModelBindingHelper.CreatePropertyModelName(
-                bindingContext.ModelName,
-                metadata.BinderModelName ?? metadata.PropertyName);
-
-            if (await valueProvider.ContainsPrefixAsync(propertyModelName))
+            if (await valueProvider.ContainsPrefixAsync(bindingContext.ModelName))
             {
                 return true;
             }
@@ -248,13 +254,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
             var dtoMetadata = metadataProvider.GetMetadataForType(typeof(ComplexModelDto));
 
-            var childContext = new ModelBindingContext(
+            var childContext = ModelBindingContext.GetChildModelBindingContext(
                 bindingContext,
                 bindingContext.ModelName,
-                dtoMetadata)
-            {
-                Model = dto,
-            };
+                dtoMetadata);
+
+            childContext.Model = dto;
 
             return await bindingContext.OperationBindingContext.ModelBinder.BindModelAsync(childContext);
         }

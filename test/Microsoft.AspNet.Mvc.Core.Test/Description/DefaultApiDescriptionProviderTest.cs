@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Constraints;
@@ -964,9 +965,9 @@ namespace Microsoft.AspNet.Mvc.Description
             {
                 action.Parameters.Add(new ParameterDescriptor()
                 {
-                    BinderMetadata = parameter.GetCustomAttributes().OfType<IBinderMetadata>().FirstOrDefault(),
                     Name = parameter.Name,
                     ParameterType = parameter.ParameterType,
+                    BindingInfo = BindingInfo.GetBindingInfo(parameter.GetCustomAttributes().OfType<object>())
                 });
             }
 

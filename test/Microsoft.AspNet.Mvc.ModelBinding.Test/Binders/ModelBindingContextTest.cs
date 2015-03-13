@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
@@ -8,24 +10,38 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     public class ModelBindingContextTest
     {
         [Fact]
-        public void CopyConstructor()
+        public void GetChildModelBindingContext()
         {
             // Arrange
             var originalBindingContext = new ModelBindingContext
             {
-                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(object)),
+                ModelMetadata = new TestModelMetadataProvider().GetMetadataForType(typeof(object)),
                 ModelName = "theName",
                 ModelState = new ModelStateDictionary(),
                 ValueProvider = new SimpleHttpValueProvider()
             };
 
-            var newModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(object));
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider.ForType<object>().BindingDetails(d =>
+                {
+                    d.BindingSource = BindingSource.Custom;
+                    d.BinderType = typeof(TestModelBinder);
+                    d.BinderModelName = "custom";
+                });
 
+            var newModelMetadata = metadataProvider.GetMetadataForType(typeof(object));
+            
             // Act
-            var newBindingContext = new ModelBindingContext(originalBindingContext, string.Empty, newModelMetadata);
+            var newBindingContext = ModelBindingContext.GetChildModelBindingContext(
+                originalBindingContext,
+                string.Empty,
+                newModelMetadata);
 
             // Assert
             Assert.Same(newModelMetadata, newBindingContext.ModelMetadata);
+            Assert.Same(newModelMetadata.BindingSource, newBindingContext.BindingSource);
+            Assert.Same(newModelMetadata.BinderModelName, newBindingContext.BinderModelName);
+            Assert.Same(newModelMetadata.BinderType, newBindingContext.BinderType);
             Assert.Equal("", newBindingContext.ModelName);
             Assert.Equal(originalBindingContext.ModelState, newBindingContext.ModelState);
             Assert.Equal(originalBindingContext.ValueProvider, newBindingContext.ValueProvider);
@@ -42,6 +58,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             // Assert
             Assert.Equal(typeof(int), bindingContext.ModelType);
+        }
+
+        private class TestModelBinder : IModelBinder
+        {
+            public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

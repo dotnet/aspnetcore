@@ -26,6 +26,38 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             return string.Format(CultureInfo.CurrentCulture, GetString("CompareAttributeTestResource"), p0, p1);
         }
 
+        /// <summary>
+        /// description from resources
+        /// </summary>
+        internal static string DisplayAttribute_Description
+        {
+            get { return GetString("DisplayAttribute_Description"); }
+        }
+
+        /// <summary>
+        /// description from resources
+        /// </summary>
+        internal static string FormatDisplayAttribute_Description()
+        {
+            return GetString("DisplayAttribute_Description");
+        }
+
+        /// <summary>
+        /// name from resources
+        /// </summary>
+        internal static string DisplayAttribute_Name
+        {
+            get { return GetString("DisplayAttribute_Name"); }
+        }
+
+        /// <summary>
+        /// name from resources
+        /// </summary>
+        internal static string FormatDisplayAttribute_Name()
+        {
+            return GetString("DisplayAttribute_Name");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

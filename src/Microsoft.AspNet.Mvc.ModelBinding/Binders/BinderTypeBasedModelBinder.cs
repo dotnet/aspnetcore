@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public async Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {
-            if (bindingContext.ModelMetadata.BinderType == null)
+            if (bindingContext.BinderType == null)
             {
                 // Return null so that we are able to continue with the default set of model binders,
                 // if there is no specific model binder provided.
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             var requestServices = bindingContext.OperationBindingContext.HttpContext.RequestServices;
-            var createFactory = _typeActivatorCache.GetOrAdd(bindingContext.ModelMetadata.BinderType, _createFactory);
+            var createFactory = _typeActivatorCache.GetOrAdd(bindingContext.BinderType, _createFactory);
             var instance = createFactory(requestServices, arguments: null);
             
             var modelBinder = instance as IModelBinder;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     throw new InvalidOperationException(
                         Resources.FormatBinderType_MustBeIModelBinderOrIModelBinderProvider(
-                            bindingContext.ModelMetadata.BinderType.FullName,
+                            bindingContext.BinderType.FullName,
                             typeof(IModelBinder).FullName,
                             typeof(IModelBinderProvider).FullName));
                 }

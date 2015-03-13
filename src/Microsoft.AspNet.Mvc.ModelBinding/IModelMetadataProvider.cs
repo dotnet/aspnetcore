@@ -13,7 +13,5 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         ModelMetadata GetMetadataForType([NotNull] Type modelType);
 
         IEnumerable<ModelMetadata> GetMetadataForProperties([NotNull] Type modelType);
-
-        ModelMetadata GetMetadataForParameter([NotNull] ParameterInfo parameter, IEnumerable<object> attributes);
     }
 }

@@ -133,6 +133,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ValueProvider = Mock.Of<IValueProvider>(),
                 ModelState = new ModelStateDictionary(),
                 OperationBindingContext = operationBindingContext,
+                BinderType = binderType
             };
 
             return bindingContext;

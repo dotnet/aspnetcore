@@ -74,9 +74,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var provider = new TestModelMetadataProvider();
             provider.ForType<string>().BindingDetails(d => d.BindingSource = BindingSource.Body);
-
-            var context = new ModelBindingContext();
-            context.ModelMetadata = provider.GetMetadataForType(typeof(string));
+            var modelMetadata = provider.GetMetadataForType(typeof(string));
+            var context = new ModelBindingContext()
+            {
+                ModelMetadata = modelMetadata,
+                BindingSource = modelMetadata.BindingSource,
+                BinderModelName = modelMetadata.BinderModelName
+            };
 
             var binder = new TestableBindingSourceModelBinder(BindingSource.Body);
 

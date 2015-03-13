@@ -89,11 +89,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         {
             get
             {
-                if (ParameterInfo != null)
-                {
-                    return ModelMetadataKind.Parameter;
-                }
-                else if (ContainerType != null && Name != null)
+                if (ContainerType != null && Name != null)
                 {
                     return ModelMetadataKind.Property;
                 }

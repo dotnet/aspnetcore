@@ -50,16 +50,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var rawValueArray = RawValueToObjectArray(rawValue);
             foreach (var rawValueElement in rawValueArray)
             {
-                var innerBindingContext = new ModelBindingContext(bindingContext,
-                                                                  bindingContext.ModelName,
-                                                                  elementMetadata)
+                var innerBindingContext = ModelBindingContext.GetChildModelBindingContext(
+                    bindingContext,
+                    bindingContext.ModelName,
+                    elementMetadata);
+                innerBindingContext.ValueProvider = new CompositeValueProvider
                 {
-                    ValueProvider = new CompositeValueProvider
-                    {
-                        // our temporary provider goes at the front of the list
-                        new ElementalValueProvider(bindingContext.ModelName, rawValueElement, culture),
-                        bindingContext.ValueProvider
-                    }
+                    // our temporary provider goes at the front of the list
+                    new ElementalValueProvider(bindingContext.ModelName, rawValueElement, culture),
+                    bindingContext.ValueProvider
                 };
 
                 object boundValue = null;
@@ -105,7 +104,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             foreach (var indexName in indexNames)
             {
                 var fullChildName = ModelBindingHelper.CreateIndexModelName(bindingContext.ModelName, indexName);
-                var childBindingContext = new ModelBindingContext(bindingContext, fullChildName, elementMetadata);
+                var childBindingContext = ModelBindingContext.GetChildModelBindingContext(
+                    bindingContext,
+                    fullChildName,
+                    elementMetadata);
 
                 var didBind = false;
                 object boundValue = null;

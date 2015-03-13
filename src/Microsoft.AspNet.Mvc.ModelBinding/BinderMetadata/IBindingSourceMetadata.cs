@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// <summary>
     /// Metadata which specificies the data source for model binding.
     /// </summary>
-    public interface IBindingSourceMetadata : IBinderMetadata
+    public interface IBindingSourceMetadata
     {
         /// <summary>
         /// Gets the <see cref="BindingSource"/>. 

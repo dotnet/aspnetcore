@@ -110,66 +110,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             Assert.Equal("OnPropertyType", Assert.IsType<ModelAttribute>(attributes[1]).Value);
         }
 
-        [Fact]
-        public void GetMetadataForParameter_IncludesMergedAttributes()
-        {
-            // Arrange
-            var provider = CreateProvider();
-
-            var methodInfo = GetType().GetMethod(
-                "GetMetadataForParameterTestMethod", 
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            var parameterInfo = methodInfo.GetParameters().Where(p => p.Name == "parameter").Single();
-
-            var additionalAttributes = new object[]
-            {
-                new ModelAttribute("Extra"),
-            };
-
-            // Act
-            var metadata = provider.GetMetadataForParameter(parameterInfo, additionalAttributes);
-
-            // Assert
-            var defaultMetadata = Assert.IsType<DefaultModelMetadata>(metadata);
-
-            var attributes = defaultMetadata.Attributes.ToArray();
-            Assert.Equal("Extra", Assert.IsType<ModelAttribute>(attributes[0]).Value);
-            Assert.Equal("OnParameter", Assert.IsType<ModelAttribute>(attributes[1]).Value);
-            Assert.Equal("OnType", Assert.IsType<ModelAttribute>(attributes[2]).Value);
-        }
-
-        // The 'attributes' are assumed to be the same every time. We can safely omit them after
-        // the first call.
-        [Fact]
-        public void GetMetadataForParameter_Cached()
-        {
-            // Arrange
-            var provider = CreateProvider();
-
-            var methodInfo = GetType().GetMethod(
-                "GetMetadataForParameterTestMethod",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-
-            var additionalAttributes = new object[]
-            {
-                new ModelAttribute("Extra"),
-            };
-
-            // Act
-            var metadata1 = Assert.IsType<DefaultModelMetadata>(provider.GetMetadataForParameter(
-                methodInfo.GetParameters().Where(p => p.Name == "parameter").Single(),
-                additionalAttributes));
-            var metadata2 = Assert.IsType<DefaultModelMetadata>(provider.GetMetadataForParameter(
-                methodInfo.GetParameters().Where(p => p.Name == "parameter").Single(),
-                attributes: null));
-
-            // Assert
-            Assert.Same(metadata1.Attributes, metadata2.Attributes);
-            Assert.Same(metadata1.BindingMetadata, metadata2.BindingMetadata);
-            Assert.Same(metadata1.DisplayMetadata, metadata2.DisplayMetadata);
-            Assert.Same(metadata1.ValidationMetadata, metadata2.ValidationMetadata);
-        }
-
         private static DefaultModelMetadataProvider CreateProvider()
         {
             return new DefaultModelMetadataProvider(new EmptyCompositeMetadataDetailsProvider());

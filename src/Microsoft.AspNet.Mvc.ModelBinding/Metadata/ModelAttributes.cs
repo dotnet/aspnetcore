@@ -16,22 +16,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public static class ModelAttributes
     {
         /// <summary>
-        /// Gets the attributes for the given <paramref name="parameter"/>.
-        /// </summary>
-        /// <param name="parameter">A <see cref="ParameterInfo"/> for which attributes need to be resolved.
-        /// </param>
-        /// <returns>An <see cref="IEnumerable{object}"/> containing the attributes on the
-        /// <paramref name="parameter"/> before the attributes on the <paramref name="parameter"/> type.</returns>
-        public static IEnumerable<object> GetAttributesForParameter(ParameterInfo parameter)
-        {
-            // Return the parameter attributes first.
-            var parameterAttributes = parameter.GetCustomAttributes();
-            var typeAttributes = parameter.ParameterType.GetTypeInfo().GetCustomAttributes();
-
-            return parameterAttributes.Concat(typeAttributes);
-        }
-
-        /// <summary>
         /// Gets the attributes for the given <paramref name="property"/>.
         /// </summary>
         /// <param name="type">The <see cref="Type"/> in which caller found <paramref name="property"/>.

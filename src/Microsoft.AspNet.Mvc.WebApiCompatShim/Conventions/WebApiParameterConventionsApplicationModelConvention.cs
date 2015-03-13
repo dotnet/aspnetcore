@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 using Microsoft.AspNet.Mvc.ApplicationModels;
@@ -15,30 +16,42 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
         {
             if (IsConventionApplicable(action.Controller))
             {
+                var optionalParameters = new HashSet<string>();
+                var uriBindingSource = (new FromUriAttribute()).BindingSource;
                 foreach (var parameter in action.Parameters)
                 {
-                    if (parameter.BinderMetadata is IBinderMetadata)
+                    // Some IBindingSourceMetadata attributes like ModelBinder attribute return null 
+                    // as their binding source. Special case to ensure we do not ignore them.
+                    if (parameter.BindingInfo.BindingSource != null ||
+                        parameter.Attributes.OfType<IBindingSourceMetadata>().Any())
                     {
                         // This has a binding behavior configured, just leave it alone.
                     }
                     else if (ValueProviderResult.CanConvertFromString(parameter.ParameterInfo.ParameterType))
                     {
                         // Simple types are by-default from the URI.
-                        parameter.BinderMetadata = new FromUriAttribute();
+                        
+                        parameter.BindingInfo.BindingSource = uriBindingSource;
                     }
                     else
                     {
                         // Complex types are by-default from the body.
-                        parameter.BinderMetadata = new FromBodyAttribute();
+                        parameter.BindingInfo.BindingSource = BindingSource.Body;
                     }
 
-                    // If the parameter has a default value, we want to consider it as optional parameter by default.
-                    var optionalMetadata = parameter.BinderMetadata as FromUriAttribute;
-                    if (parameter.ParameterInfo.HasDefaultValue && optionalMetadata != null)
+                    // For all non IOptionalBinderMetadata, which are not URL source (like FromQuery etc.) do not
+                    // participate in overload selection and hence are added to the hashset so that they can be
+                    // ignored in OverloadActionConstraint.
+                    var optionalMetadata = parameter.Attributes.OfType<IOptionalBinderMetadata>().SingleOrDefault();
+                    if (parameter.ParameterInfo.HasDefaultValue && parameter.BindingInfo.BindingSource == uriBindingSource ||
+                        optionalMetadata != null && optionalMetadata.IsOptional ||
+                        optionalMetadata == null && parameter.BindingInfo.BindingSource != uriBindingSource)
                     {
-                        optionalMetadata.IsOptional = true;
+                        optionalParameters.Add(parameter.ParameterName);
                     }
                 }
+
+                action.Properties.Add("OptionalParameters", optionalParameters);
             }
         }
 

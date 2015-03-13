@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <inheritdoc />
         public async Task<ModelBindingResult> BindModelAsync(ModelBindingContext context)
         {
-            var allowedBindingSource = context.ModelMetadata.BindingSource;
+            var allowedBindingSource = context.BindingSource;
             if (allowedBindingSource == null || !allowedBindingSource.CanAcceptDataFrom(BindingSource))
             {
                 // Binding Sources are opt-in. This model either didn't specify one or specified something

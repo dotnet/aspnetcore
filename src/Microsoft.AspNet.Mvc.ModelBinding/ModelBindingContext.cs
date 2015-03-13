@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -28,26 +29,57 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ModelBindingContext"/> class using the
+        /// Constructs a new instance of the <see cref="ModelBindingContext"/> class using the
         /// <paramref name="bindingContext" />.
         /// </summary>
         /// <param name="bindingContext">Existing <see cref="ModelBindingContext"/>.</param>
         /// <param name="modelName">Model name of associated with the new <see cref="ModelBindingContext"/>.</param>
         /// <param name="modelMetadata">Model metadata of associated with the new <see cref="ModelBindingContext"/>.
         /// </param>
-        /// <remarks>
-        /// This constructor copies certain values that won't change between parent and child objects,
-        /// e.g. ValueProvider, ModelState
-        /// </remarks>
-        public ModelBindingContext([NotNull] ModelBindingContext bindingContext,
-                                   [NotNull] string modelName,
-                                   [NotNull] ModelMetadata modelMetadata)
+        public static ModelBindingContext GetChildModelBindingContext(
+            [NotNull] ModelBindingContext bindingContext,
+            [NotNull] string modelName,
+            [NotNull] ModelMetadata modelMetadata)
         {
-            ModelName = modelName;
-            ModelMetadata = modelMetadata;
-            ModelState = bindingContext.ModelState;
-            ValueProvider = bindingContext.ValueProvider;
-            OperationBindingContext = bindingContext.OperationBindingContext;
+            var modelBindingContext = new ModelBindingContext();
+            modelBindingContext.ModelName = modelName;
+            modelBindingContext.ModelMetadata = modelMetadata;
+            modelBindingContext.ModelState = bindingContext.ModelState;
+            modelBindingContext.ValueProvider = bindingContext.ValueProvider;
+            modelBindingContext.OperationBindingContext = bindingContext.OperationBindingContext;
+
+            modelBindingContext.BindingSource = modelMetadata.BindingSource;
+            modelBindingContext.BinderModelName = modelMetadata.BinderModelName;
+            modelBindingContext.BinderType = modelMetadata.BinderType;
+            return modelBindingContext;
+        }
+
+        /// <summary>
+        /// Constructs a new instance of <see cref="ModelBindingContext"/> from given <paramref name="metadata"/>
+        /// and <paramref name="bindingInfo"/>.
+        /// </summary>
+        /// <param name="metadata"><see cref="ModelMetadata"/> associated with the model.</param>
+        /// <param name="bindingInfo"><see cref="BindingInfo"/> associated with the model.</param>
+        /// <param name="modelName">An optional name of the model to be used.</param>
+        /// <returns>A new instance of <see cref="ModelBindingContext"/>.</returns>
+        public static ModelBindingContext GetModelBindingContext(
+            [NotNull] ModelMetadata metadata,
+            [NotNull] BindingInfo bindingInfo,
+            string modelName)
+        {
+            var binderModelName = bindingInfo.BinderModelName ?? metadata.BinderModelName;
+            var propertyPredicateProvider = 
+                bindingInfo.PropertyBindingPredicateProvider ?? metadata.PropertyBindingPredicateProvider;
+            return new ModelBindingContext()
+            {
+                ModelMetadata = metadata,
+                BindingSource = bindingInfo.BindingSource ?? metadata.BindingSource,
+                PropertyFilter = propertyPredicateProvider?.PropertyFilter,
+                BinderType = bindingInfo.BinderType ?? metadata.BinderType,
+                BinderModelName = binderModelName,
+                ModelName = binderModelName ?? metadata.PropertyName ?? modelName,
+                FallbackToEmptyPrefix = binderModelName == null,
+            };
         }
 
         /// <summary>
@@ -117,6 +149,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return ModelMetadata.ModelType;
             }
         }
+
+        /// <summary>
+        /// Gets or sets a model name which is explicitly set using an <see cref="IModelNameProvider"/>. 
+        /// <see cref="Model"/>.
+        /// </summary>
+        public string BinderModelName { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value which represents the <see cref="BindingSource"/> associated with the 
+        /// <see cref="Model"/>.
+        /// </summary>
+        public BindingSource BindingSource { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="Type"/> of an <see cref="IModelBinder"/> associated with the 
+        /// <see cref="Model"/>.
+        /// </summary>
+        public Type BinderType { get; set; }
 
         /// <summary>
         /// Gets or sets a value that indicates whether the binder should use an empty prefix to look up

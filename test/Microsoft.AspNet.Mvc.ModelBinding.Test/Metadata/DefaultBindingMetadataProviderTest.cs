@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         }
 
         [Fact]
-        public void GetBindingDetails_FindsModelName_IfEmpty()
+        public void GetBindingDetails_FindsModelName_IfNullFallsBack()
         {
             // Arrange
             var attributes = new object[]
@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             provider.GetBindingMetadata(context);
 
             // Assert
-            Assert.Null(context.BindingMetadata.BinderModelName);
+            Assert.Equal("Product", context.BindingMetadata.BinderModelName);
         }
 
         [Fact]

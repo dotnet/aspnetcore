@@ -6,7 +6,14 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace ModelBindingWebSite
 {
-    public class FromNonExistantBinderAttribute : Attribute, IBinderMetadata
+    public class FromNonExistantBinderAttribute : Attribute, IBindingSourceMetadata
     {
+        public BindingSource BindingSource
+        {
+            get
+            {
+                return BindingSource.Custom;
+            }
+        }
     }
 }

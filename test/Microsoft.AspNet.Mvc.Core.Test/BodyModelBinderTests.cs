@@ -95,6 +95,7 @@ namespace Microsoft.AspNet.Mvc
             provider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Header);
 
             var bindingContext = GetBindingContext(typeof(Person), metadataProvider: provider);
+            bindingContext.BindingSource = BindingSource.Header;
 
             var binder = bindingContext.OperationBindingContext.ModelBinder;
 
@@ -113,6 +114,7 @@ namespace Microsoft.AspNet.Mvc
             provider.ForType<Person>().BindingDetails(d => d.BindingSource = null);
 
             var bindingContext = GetBindingContext(typeof(Person), metadataProvider: provider);
+            bindingContext.BindingSource = null;
 
             var binder = bindingContext.OperationBindingContext.ModelBinder;
 
@@ -186,6 +188,7 @@ namespace Microsoft.AspNet.Mvc
                 ValueProvider = Mock.Of<IValueProvider>(),
                 ModelState = new ModelStateDictionary(),
                 OperationBindingContext = operationBindingContext,
+                BindingSource = BindingSource.Body,
             };
 
             return bindingContext;

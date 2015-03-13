@@ -44,103 +44,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         }
 
         [Fact]
-        public void ModelMetadataProvider_UsesPredicateOnParameter()
-        {
-            // Arrange
-            var type = GetType();
-            var methodInfo = type.GetMethod(
-                "ActionWithoutBindAttribute",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            var parameterInfo = methodInfo.GetParameters().Where(p => p.Name == "param").Single();
-
-            var provider = CreateProvider();
-            var context = new ModelBindingContext();
-
-            // Note it does an intersection for included -- only properties that
-            // pass both predicates will be bound.
-            var expected = new[] { "IsAdmin", "UserName" };
-
-            // Act
-            var metadata = provider.GetMetadataForParameter(
-                parameterInfo,
-                attributes: null);
-
-            // Assert
-            var predicate = metadata.PropertyBindingPredicateProvider.PropertyFilter;
-            Assert.NotNull(predicate);
-
-            var matched = new HashSet<string>();
-            foreach (var property in metadata.Properties)
-            {
-                if (predicate(context, property.PropertyName))
-                {
-                    matched.Add(property.PropertyName);
-                }
-            }
-
-            Assert.Equal<string>(expected, matched);
-        }
-
-        [Fact]
-        public void ModelMetadataProvider_UsesPredicateOnParameter_Merge()
-        {
-            // Arrange
-            var type = GetType();
-            var methodInfo = type.GetMethod(
-                "ActionWithBindAttribute",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            var parameterInfo = methodInfo.GetParameters().Where(p => p.Name == "param").Single();
-
-            var provider = CreateProvider();
-            var context = new ModelBindingContext();
-
-            // Note it does an intersection for included -- only properties that
-            // pass both predicates will be bound.
-            var expected = new[] { "IsAdmin" };
-
-            // Act
-            var metadata = provider.GetMetadataForParameter(
-                parameterInfo,
-                attributes: null);
-
-            // Assert
-            var predicate = metadata.PropertyBindingPredicateProvider.PropertyFilter;
-            Assert.NotNull(predicate);
-
-            var matched = new HashSet<string>();
-            foreach (var property in metadata.Properties)
-            {
-                if (predicate(context, property.PropertyName))
-                {
-                    matched.Add(property.PropertyName);
-                }
-            }
-
-            Assert.Equal<string>(expected, matched);
-        }
-
-        [Fact]
-        public void ModelMetadataProvider_ReadsModelNameProperty_ForParameters()
-        {
-            // Arrange
-            var type = GetType();
-            var methodInfo = type.GetMethod(
-                "ActionWithBindAttribute",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            var parameterInfo = methodInfo.GetParameters().Where(p => p.Name == "param").Single();
-
-            var provider = CreateProvider();
-
-            // Act
-            var metadata = provider.GetMetadataForParameter(
-                parameterInfo,
-                attributes: null);
-
-            // Assert
-            Assert.Equal("ParameterPrefix", metadata.BinderModelName);
-        }
-
-        [Fact]
         public void ModelMetadataProvider_ReadsModelNameProperty_ForTypes()
         {
             // Arrange
@@ -265,60 +168,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             // Assert
             Assert.Equal("GrandParentProperty", propertyMetadata.BinderModelName);
-        }
-
-        [Fact]
-        public void GetMetadataForParameter_WithNoBinderMetadata_GetsItFromType()
-        {
-            // Arrange
-            var provider = CreateProvider();
-
-            var methodInfo = typeof(Person).GetMethod("Update");
-            var parameterInfo = methodInfo.GetParameters().Where(p => p.Name == "person").Single();
-
-            // Act
-            var parameterMetadata = provider.GetMetadataForParameter(
-                parameterInfo,
-                attributes: null);
-
-            // Assert
-            Assert.Equal("PersonType", parameterMetadata.BinderModelName);
-        }
-
-        [Fact]
-        public void GetMetadataForParameter_WithBinderDataOnParameterAndType_GetsMetadataFromParameter()
-        {
-            // Arrange
-            var provider = CreateProvider();
-
-            var methodInfo = typeof(Person).GetMethod("Save");
-            var parameterInfo = methodInfo.GetParameters().Where(p => p.Name == "person").Single();
-
-            // Act
-            var parameterMetadata = provider.GetMetadataForParameter(
-                parameterInfo,
-                attributes: null);
-
-            // Assert
-            Assert.Equal("PersonParameter", parameterMetadata.BinderModelName);
-        }
-
-        [Fact]
-        public void GetMetadataForParameter_BinderModelNameOverride()
-        {
-            // Arrange
-            var provider = CreateProvider();
-
-            var methodInfo = typeof(Person).GetMethod("Save");
-            var parameterInfo = methodInfo.GetParameters().Where(p => p.Name == "person").Single();
-
-            // Act
-            var parameterMetadata = provider.GetMetadataForParameter(
-                parameterInfo,
-                attributes: new object[] { new ModelBinderAttribute() { Name = "Override" } });
-
-            // Assert
-            Assert.Equal("Override", parameterMetadata.BinderModelName);
         }
 
         public static TheoryData<object, Func<ModelMetadata, string>> ExpectedAttributeDataStrings
@@ -780,12 +629,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         {
         }
 
-        public class TypeBasedBinderAttribute : Attribute, IBinderMetadata, IModelNameProvider
+        public class TypeBasedBinderAttribute : Attribute, IModelNameProvider
         {
             public string Name { get; set; }
         }
 
-        public class NonTypeBasedBinderAttribute : Attribute, IBinderMetadata, IModelNameProvider
+        public class NonTypeBasedBinderAttribute : Attribute, IModelNameProvider
         {
             public string Name { get; set; }
         }

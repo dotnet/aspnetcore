@@ -8,6 +8,7 @@ using System.Reflection;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Description;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.Framework.Internal;
 using Moq;
@@ -110,7 +111,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var id = Assert.Single(main.Parameters);
 
             Assert.Equal("id", id.Name);
-            Assert.Null(id.BinderMetadata);
+            Assert.Null(id.BindingInfo.BindingSource);
             Assert.Equal(typeof(int), id.ParameterType);
         }
 
@@ -129,13 +130,13 @@ namespace Microsoft.AspNet.Mvc.Test
             var id = Assert.Single(main.Parameters, p => p.Name == "id");
 
             Assert.Equal("id", id.Name);
-            Assert.Null(id.BinderMetadata);
+            Assert.Null(id.BindingInfo.BindingSource);
             Assert.Equal(typeof(int), id.ParameterType);
 
             var entity = Assert.Single(main.Parameters, p => p.Name == "entity");
 
             Assert.Equal("entity", entity.Name);
-            Assert.IsType<FromBodyAttribute>(entity.BinderMetadata);
+            Assert.Equal(entity.BindingInfo.BindingSource, BindingSource.Body);
             Assert.Equal(typeof(TestActionParameter), entity.ParameterType);
         }
 
@@ -154,19 +155,19 @@ namespace Microsoft.AspNet.Mvc.Test
             var id = Assert.Single(main.Parameters, p => p.Name == "id");
 
             Assert.Equal("id", id.Name);
-            Assert.Null(id.BinderMetadata);
+            Assert.Null(id.BindingInfo.BindingSource);
             Assert.Equal(typeof(int), id.ParameterType);
 
             var upperCaseId = Assert.Single(main.Parameters, p => p.Name == "ID");
 
             Assert.Equal("ID", upperCaseId.Name);
-            Assert.Null(upperCaseId.BinderMetadata);
+            Assert.Null(upperCaseId.BindingInfo.BindingSource);
             Assert.Equal(typeof(int), upperCaseId.ParameterType);
 
             var pascalCaseId = Assert.Single(main.Parameters, p => p.Name == "Id");
 
             Assert.Equal("Id", pascalCaseId.Name);
-            Assert.Null(id.BinderMetadata);
+            Assert.Null(id.BindingInfo.BindingSource);
             Assert.Equal(typeof(int), pascalCaseId.ParameterType);
         }
 
@@ -187,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var entity = Assert.Single(fromBody.Parameters);
 
             Assert.Equal("entity", entity.Name);
-            Assert.IsType<FromBodyAttribute>(entity.BinderMetadata);
+            Assert.Equal(entity.BindingInfo.BindingSource, BindingSource.Body);
             Assert.Equal(typeof(TestActionParameter), entity.ParameterType);
         }
 
@@ -208,7 +209,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var entity = Assert.Single(notFromBody.Parameters);
 
             Assert.Equal("entity", entity.Name);
-            Assert.Null(entity.BinderMetadata);
+            Assert.Null(entity.BindingInfo.BindingSource);
             Assert.Equal(typeof(TestActionParameter), entity.ParameterType);
         }
 

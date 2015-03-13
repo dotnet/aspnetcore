@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
@@ -44,29 +46,20 @@ namespace Microsoft.AspNet.Mvc
                         nameof(actionContext));
             }
 
-
-            var methodParameters = actionDescriptor.MethodInfo.GetParameters();
-            var parameterMetadata = new List<ModelMetadata>();
-            foreach (var parameter in actionDescriptor.Parameters)
-            {
-                var parameterInfo = methodParameters.Where(p => p.Name == parameter.Name).Single();
-                var metadata = _modelMetadataProvider.GetMetadataForParameter(
-                    parameterInfo,
-                    attributes: new object[] { parameter.BinderMetadata });
-
-                parameterMetadata.Add(metadata);
-            }
-
             var actionArguments = new Dictionary<string, object>(StringComparer.Ordinal);
-            await PopulateArgumentAsync(actionContext, actionBindingContext, actionArguments, parameterMetadata);
+            await PopulateArgumentsAsync(
+                actionContext,
+                actionBindingContext,
+                actionArguments,
+                actionDescriptor.Parameters);
             return actionArguments;
-        }
+        }   
 
-        private async Task PopulateArgumentAsync(
+        private async Task PopulateArgumentsAsync(
             ActionContext actionContext,
             ActionBindingContext bindingContext,
             IDictionary<string, object> arguments,
-            IEnumerable<ModelMetadata> parameterMetadata)
+            IEnumerable<ParameterDescriptor> parameterMetadata)
         {
             var operationBindingContext = new OperationBindingContext
             {
@@ -81,15 +74,24 @@ namespace Microsoft.AspNet.Mvc
             modelState.MaxAllowedErrors = _options.MaxModelValidationErrors;
             foreach (var parameter in parameterMetadata)
             {
-                var parameterType = parameter.ModelType;
+                var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterType);
+                var parameterType = parameter.ParameterType;
+                var modelBindingContext = GetModelBindingContext(
+                    parameter.Name,
+                    metadata,
+                    parameter.BindingInfo,
+                    modelState,
+                    operationBindingContext);
 
-                var modelBindingContext = GetModelBindingContext(parameter, modelState, operationBindingContext);
                 var modelBindingResult = await bindingContext.ModelBinder.BindModelAsync(modelBindingContext);
                 if (modelBindingResult != null && modelBindingResult.IsModelSet)
                 {
-                    var modelExplorer = new ModelExplorer(_modelMetadataProvider, parameter, modelBindingResult.Model);
+                    var modelExplorer = new ModelExplorer(
+                        _modelMetadataProvider,
+                        metadata,
+                        modelBindingResult.Model);
 
-                    arguments[parameter.PropertyName] = modelBindingResult.Model;
+                    arguments[parameter.Name] = modelBindingResult.Model;
                     var validationContext = new ModelValidationContext(
                         modelBindingResult.Key,
                         bindingContext.ValidatorProvider,
@@ -100,23 +102,21 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        // Internal for tests
-        internal static ModelBindingContext GetModelBindingContext(
-            ModelMetadata modelMetadata,
+        private static ModelBindingContext GetModelBindingContext(
+            string parameterName,
+            ModelMetadata metadata,
+            BindingInfo bindingInfo,
             ModelStateDictionary modelState,
             OperationBindingContext operationBindingContext)
         {
-            var modelBindingContext = new ModelBindingContext
-            {
-                ModelName = modelMetadata.BinderModelName ?? modelMetadata.PropertyName,
-                ModelMetadata = modelMetadata,
-                ModelState = modelState,
+            var modelBindingContext = ModelBindingContext.GetModelBindingContext(
+                metadata,
+                bindingInfo,
+                parameterName);
 
-                // Fallback only if there is no explicit model name set.
-                FallbackToEmptyPrefix = modelMetadata.BinderModelName == null,
-                ValueProvider = operationBindingContext.ValueProvider,
-                OperationBindingContext = operationBindingContext,
-            };
+            modelBindingContext.ModelState = modelState;
+            modelBindingContext.ValueProvider = operationBindingContext.ValueProvider;
+            modelBindingContext.OperationBindingContext = operationBindingContext;
 
             return modelBindingContext;
         }
