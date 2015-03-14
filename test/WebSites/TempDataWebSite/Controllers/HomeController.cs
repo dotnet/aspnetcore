@@ -17,5 +17,29 @@ namespace TempDataWebSite.Controllers
             TempData["key"] = value;
             return View();
         }
+
+        public IActionResult SetTempData(string value)
+        {
+            TempData["key"] = value;
+            return Content(value);
+        }
+
+        public IActionResult GetTempDataAndRedirect()
+        {
+            var value = TempData["key"];
+            return RedirectToAction("GetTempData");
+        }
+
+        public string GetTempData()
+        {
+            var value = TempData["key"];
+            return value?.ToString();
+        }
+
+        public IActionResult PeekTempData()
+        {
+            var peekValue = TempData.Peek("key");
+            return Content(peekValue.ToString());
+        }
     }
 }

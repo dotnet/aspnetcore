@@ -90,6 +90,7 @@ namespace Microsoft.AspNet.Mvc
             if (sessionEnabled)
             {
                 httpContext.Setup(h => h.GetFeature<ISessionFeature>()).Returns(Mock.Of<ISessionFeature>());
+                httpContext.Setup(h => h.Session[It.IsAny<string>()]);
             }
             return httpContext.Object;
         }

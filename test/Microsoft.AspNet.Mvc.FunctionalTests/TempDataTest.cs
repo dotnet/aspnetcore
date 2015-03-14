@@ -19,6 +19,39 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly Action<IServiceCollection> _configureServices = new TempDataWebSite.Startup().ConfigureServices;
 
         [Fact]
+        public async Task TempData_PersistsJustForNextRequest()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+            var nameValueCollection = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("value", "Foo"),
+            };
+            var content = new FormUrlEncodedContent(nameValueCollection);
+
+            // Act 1
+            var response = await client.PostAsync("/Home/SetTempData", content);
+
+            // Assert 1
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            // Act 2
+            response = await client.SendAsync(GetRequest("Home/GetTempData", response));
+
+            // Assert 2
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Foo", body);
+
+            // Act 3
+            response = await client.SendAsync(GetRequest("Home/GetTempData", response));
+
+            // Assert 3
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        }
+
+        [Fact]
         public async Task ViewRendersTempData()
         {
             // Arrange
@@ -37,6 +70,86 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             Assert.Equal("Foo", body);
+        }
+
+        [Fact]
+        public async Task Redirect_RetainsTempData_EvenIfAccessed()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+            var nameValueCollection = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("value", "Foo"),
+            };
+            var content = new FormUrlEncodedContent(nameValueCollection);
+
+            // Act 1
+            var response = await client.PostAsync("/Home/SetTempData", content);
+
+            // Assert 1
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            // Act 2
+            var redirectResponse = await client.SendAsync(GetRequest("/Home/GetTempDataAndRedirect", response));
+
+            // Assert 2
+            Assert.Equal(HttpStatusCode.Redirect, redirectResponse.StatusCode);
+
+            // Act 3
+            response = await client.SendAsync(GetRequest(redirectResponse.Headers.Location.ToString(), response));
+
+            // Assert 3
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Foo", body);
+        }
+
+        [Fact]
+        public async Task Peek_RetainsTempData()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+            var nameValueCollection = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("value", "Foo"),
+            };
+            var content = new FormUrlEncodedContent(nameValueCollection);
+
+            // Act 1
+            var response = await client.PostAsync("/Home/SetTempData", content);
+
+            // Assert 1
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            // Act 2
+            var peekResponse = await client.SendAsync(GetRequest("/Home/PeekTempData", response));
+
+            // Assert 2
+            Assert.Equal(HttpStatusCode.OK, peekResponse.StatusCode);
+            var body = await peekResponse.Content.ReadAsStringAsync();
+            Assert.Equal("Foo", body);
+
+            // Act 3
+            var getResponse = await client.SendAsync(GetRequest("/Home/GetTempData", response));
+
+            // Assert 3
+            Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
+            body = await getResponse.Content.ReadAsStringAsync();
+            Assert.Equal("Foo", body);
+        }
+
+        private HttpRequestMessage GetRequest(string path, HttpResponseMessage response)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, path);
+            IEnumerable<string> values;
+            if (response.Headers.TryGetValues("Set-Cookie", out values))
+            {
+                request.Headers.Add("Cookie", values);
+            }
+
+            return request;
         }
     }
 }

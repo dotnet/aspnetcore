@@ -43,6 +43,12 @@ namespace Microsoft.AspNet.Mvc
                 // If we got it from Session, remove it so that no other request gets it
                 session.Remove(TempDataSessionStateKey);
             }
+            else
+            {
+                // Since we call Save() after the response has been sent, we need to initialize an empty session
+                // so that it is established before the headers are sent.
+                session[TempDataSessionStateKey] = new byte[] { };
+            }
 
             return tempDataDictionary;
         }
