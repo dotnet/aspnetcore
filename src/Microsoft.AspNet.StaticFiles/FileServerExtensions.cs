@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.StaticFiles;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Builder
 {

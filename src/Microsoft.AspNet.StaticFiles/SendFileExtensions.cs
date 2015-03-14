@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.StaticFiles
 {
