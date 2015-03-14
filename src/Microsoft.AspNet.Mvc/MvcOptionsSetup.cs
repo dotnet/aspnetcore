@@ -29,8 +29,8 @@ namespace Microsoft.AspNet.Mvc
             options.ViewEngines.Add(typeof(RazorViewEngine));
 
             // Set up ModelBinding
-            options.ModelBinders.Add(typeof(BinderTypeBasedModelBinder));
-            options.ModelBinders.Add(typeof(ServicesModelBinder));
+            options.ModelBinders.Add(new BinderTypeBasedModelBinder());
+            options.ModelBinders.Add(new ServicesModelBinder());
             options.ModelBinders.Add(typeof(BodyModelBinder));
             options.ModelBinders.Add(new HeaderModelBinder());
             options.ModelBinders.Add(new TypeConverterModelBinder());
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc
             options.ModelBinders.Add(new ByteArrayModelBinder());
             options.ModelBinders.Add(new FormFileModelBinder());
             options.ModelBinders.Add(new FormCollectionModelBinder());
-            options.ModelBinders.Add(typeof(GenericModelBinder));
+            options.ModelBinders.Add(new GenericModelBinder());
             options.ModelBinders.Add(new MutableObjectModelBinder());
             options.ModelBinders.Add(new ComplexModelDtoModelBinder());
 
