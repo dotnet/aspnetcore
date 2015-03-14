@@ -3,44 +3,41 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ViewComponents
 {
+    /// <summary>
+    /// Default implementation of <see cref="IViewComponentSelector"/>.
+    /// </summary>
     public class DefaultViewComponentSelector : IViewComponentSelector
     {
-        private readonly IAssemblyProvider _assemblyProvider;
+        private readonly IViewComponentDescriptorCollectionProvider _descriptorProvider;
 
-        private ViewComponentCandidateCache _cache;
+        private ViewComponentDescriptorCache _cache;
 
-        public DefaultViewComponentSelector(IAssemblyProvider assemblyProvider)
+        /// <summary>
+        /// Creates a new <see cref="DefaultViewComponentSelector"/>.
+        /// </summary>
+        /// <param name="descriptorProvider">The <see cref="IViewComponentDescriptorCollectionProvider"/>.</param>
+        public DefaultViewComponentSelector(IViewComponentDescriptorCollectionProvider descriptorProvider)
         {
-            _assemblyProvider = assemblyProvider;
+            _descriptorProvider = descriptorProvider;
         }
 
-        public Type SelectComponent([NotNull] string componentName)
+        /// <inheritdoc />
+        public ViewComponentDescriptor SelectComponent([NotNull] string componentName)
         {
-            if (_cache == null)
+            var collection = _descriptorProvider.ViewComponents;
+            if (_cache == null || _cache.Version != collection.Version)
             {
-                var assemblies = _assemblyProvider.CandidateAssemblies;
-                var types = assemblies.SelectMany(a => a.DefinedTypes);
-
-                var candidates =
-                    types
-                    .Where(IsViewComponentType)
-                    .Select(CreateCandidate)
-                    .ToArray();
-
-                _cache = new ViewComponentCandidateCache(candidates);
+                _cache = new ViewComponentDescriptorCache(collection);
             }
 
             // ViewComponent names can either be fully-qualified, or refer to the 'short-name'. If the provided
             // name contains a '.' - then it's a fully-qualified name.
-            var matching = new List<ViewComponentCandidate>();
             if (componentName.Contains("."))
             {
                 return _cache.SelectByFullName(componentName);
@@ -51,65 +48,34 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        protected virtual bool IsViewComponentType([NotNull] TypeInfo typeInfo)
+        private class ViewComponentDescriptorCache
         {
-            return ViewComponentConventions.IsComponent(typeInfo);
-        }
+            private readonly ILookup<string, ViewComponentDescriptor> _lookupByShortName;
+            private readonly ILookup<string, ViewComponentDescriptor> _lookupByFullName;
 
-        private static ViewComponentCandidate CreateCandidate(TypeInfo typeInfo)
-        {
-            var candidate = new ViewComponentCandidate()
+            public ViewComponentDescriptorCache(ViewComponentDescriptorCollection collection)
             {
-                FullName = ViewComponentConventions.GetComponentFullName(typeInfo),
-                ShortName = ViewComponentConventions.GetComponentName(typeInfo),
-                Type = typeInfo.AsType(),
-            };
+                Version = collection.Version;
 
-            Debug.Assert(!string.IsNullOrEmpty(candidate.FullName));
-            var separatorIndex = candidate.FullName.LastIndexOf('.');
-            if (separatorIndex >= 0)
-            {
-                candidate.ShortName = candidate.FullName.Substring(separatorIndex + 1);
-            }
-            else
-            {
-                candidate.ShortName = candidate.FullName;
+                _lookupByShortName = collection.Items.ToLookup(c => c.ShortName, c => c);
+                _lookupByFullName = collection.Items.ToLookup(c => c.FullName, c => c);
             }
 
-            return candidate;
-        }
+            public int Version { get; }
 
-        private class ViewComponentCandidate
-        {
-            public string FullName { get; set; }
-
-            public string ShortName { get; set; }
-
-            public Type Type { get; set; }
-        }
-
-        private class ViewComponentCandidateCache
-        {
-            private readonly ILookup<string, ViewComponentCandidate> _lookupByShortName;
-            private readonly ILookup<string, ViewComponentCandidate> _lookupByFullName;
-
-            public ViewComponentCandidateCache(ViewComponentCandidate[] candidates)
-            {
-                _lookupByShortName = candidates.ToLookup(c => c.ShortName, c => c);
-                _lookupByFullName = candidates.ToLookup(c => c.FullName, c => c);
-            }
-
-            public Type SelectByShortName(string name)
+            public ViewComponentDescriptor SelectByShortName(string name)
             {
                 return Select(_lookupByShortName, name);
             }
 
-            public Type SelectByFullName(string name)
+            public ViewComponentDescriptor SelectByFullName(string name)
             {
                 return Select(_lookupByFullName, name);
             }
 
-            private static Type Select(ILookup<string, ViewComponentCandidate> candidates, string name)
+            private static ViewComponentDescriptor Select(
+                ILookup<string, ViewComponentDescriptor> candidates,
+                string name)
             {
                 var matches = candidates[name];
 
@@ -120,7 +86,7 @@ namespace Microsoft.AspNet.Mvc
                 }
                 else if (count == 1)
                 {
-                    return matches.Single().Type;
+                    return matches.Single();
                 }
                 else
                 {

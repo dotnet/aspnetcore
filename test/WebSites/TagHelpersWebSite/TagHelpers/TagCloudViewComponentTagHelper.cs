@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace MvcSample.Web.Components
@@ -34,11 +35,19 @@ namespace MvcSample.Web.Components
         {
             var result = await InvokeAsync(Count);
             var writer = new StringWriter();
+            
+            var viewComponentDescriptor = new ViewComponentDescriptor()
+            {
+                Type = typeof(TagCloudViewComponentTagHelper),
+                ShortName = "TagCloudViewComponentTagHelper",
+                FullName = "TagCloudViewComponentTagHelper",
+            };
 
-            await result.ExecuteAsync(
-                new ViewComponentContext(typeof(TagCloudViewComponentTagHelper).GetTypeInfo(),
-                                         ViewContext,
-                                         writer));
+            await result.ExecuteAsync(new ViewComponentContext(
+                viewComponentDescriptor,
+                new object[0],
+                ViewContext,
+                writer));
 
             output.TagName = null;
             output.Content.SetContent(writer.ToString());

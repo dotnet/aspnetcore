@@ -5,7 +5,7 @@ using System;
 using System.Reflection;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     public static class ViewComponentConventions
     {

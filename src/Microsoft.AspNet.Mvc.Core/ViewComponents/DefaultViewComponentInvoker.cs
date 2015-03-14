@@ -7,43 +7,38 @@ using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     public class DefaultViewComponentInvoker : IViewComponentInvoker
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ITypeActivatorCache _typeActivatorCache;
-        private readonly TypeInfo _componentType;
         private readonly IViewComponentActivator _viewComponentActivator;
-        private readonly object[] _args;
 
         public DefaultViewComponentInvoker(
             [NotNull] IServiceProvider serviceProvider,
             [NotNull] ITypeActivatorCache typeActivatorCache,
-            [NotNull] IViewComponentActivator viewComponentActivator,
-            [NotNull] TypeInfo componentType,
-            object[] args)
+            [NotNull] IViewComponentActivator viewComponentActivator)
         {
             _serviceProvider = serviceProvider;
             _typeActivatorCache = typeActivatorCache;
-            _componentType = componentType;
             _viewComponentActivator = viewComponentActivator;
-            _args = args ?? new object[0];
         }
 
         public void Invoke([NotNull] ViewComponentContext context)
         {
-            var method = ViewComponentMethodSelector.FindSyncMethod(_componentType, _args);
+            var method = ViewComponentMethodSelector.FindSyncMethod(
+                context.ViewComponentDescriptor.Type.GetTypeInfo(),
+                context.Arguments);
             if (method == null)
             {
                 throw new InvalidOperationException(
                     Resources.FormatViewComponent_CannotFindMethod(ViewComponentMethodSelector.SyncMethodName));
             }
 
-            var result = InvokeSyncCore(method, context.ViewContext);
+            var result = InvokeSyncCore(method, context);
             result.Execute(context);
         }
 
@@ -51,12 +46,16 @@ namespace Microsoft.AspNet.Mvc
         {
             IViewComponentResult result;
 
-            var asyncMethod = ViewComponentMethodSelector.FindAsyncMethod(_componentType, _args);
+            var asyncMethod = ViewComponentMethodSelector.FindAsyncMethod(
+                context.ViewComponentDescriptor.Type.GetTypeInfo(),
+                context.Arguments);
             if (asyncMethod == null)
             {
                 // We support falling back to synchronous if there is no InvokeAsync method, in this case we'll still
                 // execute the IViewResult asynchronously.
-                var syncMethod = ViewComponentMethodSelector.FindSyncMethod(_componentType, _args);
+                var syncMethod = ViewComponentMethodSelector.FindSyncMethod(
+                    context.ViewComponentDescriptor.Type.GetTypeInfo(),
+                    context.Arguments);
                 if (syncMethod == null)
                 {
                     throw new InvalidOperationException(
@@ -65,36 +64,38 @@ namespace Microsoft.AspNet.Mvc
                 }
                 else
                 {
-                    result = InvokeSyncCore(syncMethod, context.ViewContext);
+                    result = InvokeSyncCore(syncMethod, context);
                 }
             }
             else
             {
-                result = await InvokeAsyncCore(asyncMethod, context.ViewContext);
+                result = await InvokeAsyncCore(asyncMethod, context);
             }
 
             await result.ExecuteAsync(context);
         }
 
-        private object CreateComponent([NotNull] ViewContext context)
+        private object CreateComponent([NotNull] ViewComponentContext context)
         {
-            var component = _typeActivatorCache.CreateInstance<object>(_serviceProvider, _componentType.AsType());
-            _viewComponentActivator.Activate(component, context);
+            var component = _typeActivatorCache.CreateInstance<object>(
+                _serviceProvider, 
+                context.ViewComponentDescriptor.Type);
+            _viewComponentActivator.Activate(component, context.ViewContext);
             return component;
         }
 
         private async Task<IViewComponentResult> InvokeAsyncCore(
             [NotNull] MethodInfo method,
-            [NotNull] ViewContext context)
+            [NotNull] ViewComponentContext context)
         {
             var component = CreateComponent(context);
 
-            var result = await ControllerActionExecutor.ExecuteAsync(method, component, _args);
+            var result = await ControllerActionExecutor.ExecuteAsync(method, component, context.Arguments);
 
             return CoerceToViewComponentResult(result);
         }
 
-        public IViewComponentResult InvokeSyncCore([NotNull] MethodInfo method, [NotNull] ViewContext context)
+        public IViewComponentResult InvokeSyncCore([NotNull] MethodInfo method, [NotNull] ViewComponentContext context)
         {
             var component = CreateComponent(context);
 
@@ -102,7 +103,7 @@ namespace Microsoft.AspNet.Mvc
 
             try
             {
-                result = method.Invoke(component, _args);
+                result = method.Invoke(component, context.Arguments);
             }
             catch (TargetInvocationException ex)
             {

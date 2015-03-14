@@ -155,9 +155,11 @@ namespace Microsoft.AspNet.Mvc
             // These do caching so they should stay singleton
             services.AddSingleton<IViewComponentSelector, DefaultViewComponentSelector>();
             services.AddSingleton<IViewComponentActivator, DefaultViewComponentActivator>();
+            services.AddSingleton<IViewComponentDescriptorCollectionProvider, 
+                DefaultViewComponentDescriptorCollectionProvider>();
 
+            services.AddTransient<IViewComponentDescriptorProvider, DefaultViewComponentDescriptorProvider>();
             services.AddTransient<IViewComponentInvokerFactory, DefaultViewComponentInvokerFactory>();
-            services.AddTransient<IViewComponentInvokerProvider, DefaultViewComponentInvokerProvider>();
             services.AddTransient<IViewComponentHelper, DefaultViewComponentHelper>();
 
             // Security and Authorization

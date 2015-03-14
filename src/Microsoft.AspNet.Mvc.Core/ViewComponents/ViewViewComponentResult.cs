@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
@@ -85,7 +86,7 @@ namespace Microsoft.AspNet.Mvc
                 qualifiedViewName = string.Format(
                     CultureInfo.InvariantCulture,
                     ViewPathFormat,
-                    ViewComponentConventions.GetComponentName(context.ComponentType),
+                    context.ViewComponentDescriptor.ShortName,
                     ViewName ?? "Default");
             }
 

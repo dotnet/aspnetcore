@@ -3,10 +3,10 @@
 
 using System;
 using System.IO;
-using System.Reflection;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Moq;
@@ -94,7 +94,13 @@ namespace Microsoft.AspNet.Mvc
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
             var viewContext = new ViewContext(actionContext, view, viewData, null, TextWriter.Null);
             var writer = new StreamWriter(stream) { AutoFlush = true };
-            var viewComponentContext = new ViewComponentContext(typeof(object).GetTypeInfo(), viewContext, writer);
+
+            var viewComponentDescriptor = new ViewComponentDescriptor()
+            {
+                Type = typeof(object),
+            };
+
+            var viewComponentContext = new ViewComponentContext(viewComponentDescriptor, new object[0], viewContext, writer);
             return viewComponentContext;
         }
     }

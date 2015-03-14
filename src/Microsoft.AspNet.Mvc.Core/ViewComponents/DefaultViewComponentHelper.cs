@@ -13,14 +13,17 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     public class DefaultViewComponentHelper : IViewComponentHelper, ICanHasViewContext
     {
+        private readonly IViewComponentDescriptorCollectionProvider _descriptorProvider;
         private readonly IViewComponentInvokerFactory _invokerFactory;
         private readonly IViewComponentSelector _selector;
         private ViewContext _viewContext;
 
         public DefaultViewComponentHelper(
+            [NotNull] IViewComponentDescriptorCollectionProvider descriptorProvider,
             [NotNull] IViewComponentSelector selector,
             [NotNull] IViewComponentInvokerFactory invokerFactory)
         {
+            _descriptorProvider = descriptorProvider;
             _selector = selector;
             _invokerFactory = invokerFactory;
         }
@@ -30,92 +33,129 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             _viewContext = viewContext;
         }
 
-        public HtmlString Invoke([NotNull] string name, params object[] args)
+        public HtmlString Invoke([NotNull] string name, params object[] arguments)
         {
-            var componentType = SelectComponent(name);
-            return Invoke(componentType, args);
-        }
+            var descriptor = SelectComponent(name);
 
-        public HtmlString Invoke([NotNull] Type componentType, params object[] args)
-        {
             using (var writer = new StringWriter())
             {
-                InvokeCore(writer, componentType, args);
+                InvokeCore(writer, descriptor, arguments);
                 return new HtmlString(writer.ToString());
             }
         }
 
-        public void RenderInvoke([NotNull] string name, params object[] args)
+        public HtmlString Invoke([NotNull] Type componentType, params object[] arguments)
         {
-            var componentType = SelectComponent(name);
-            InvokeCore(_viewContext.Writer, componentType, args);
-        }
+            var descriptor = SelectComponent(componentType);
 
-        public void RenderInvoke([NotNull] Type componentType, params object[] args)
-        {
-            InvokeCore(_viewContext.Writer, componentType, args);
-        }
-
-        public async Task<HtmlString> InvokeAsync([NotNull] string name, params object[] args)
-        {
-            var componentType = SelectComponent(name);
-            return await InvokeAsync(componentType, args);
-        }
-
-        public async Task<HtmlString> InvokeAsync([NotNull] Type componentType, params object[] args)
-        {
             using (var writer = new StringWriter())
             {
-                await InvokeCoreAsync(writer, componentType, args);
+                InvokeCore(writer, descriptor, arguments);
                 return new HtmlString(writer.ToString());
             }
         }
 
-        public async Task RenderInvokeAsync([NotNull] string name, params object[] args)
+        public void RenderInvoke([NotNull] string name, params object[] arguments)
         {
-            var componentType = SelectComponent(name);
-            await InvokeCoreAsync(_viewContext.Writer, componentType, args);
+            var descriptor = SelectComponent(name);
+            InvokeCore(_viewContext.Writer, descriptor, arguments);
         }
 
-        public async Task RenderInvokeAsync([NotNull] Type componentType, params object[] args)
+        public void RenderInvoke([NotNull] Type componentType, params object[] arguments)
         {
-            await InvokeCoreAsync(_viewContext.Writer, componentType, args);
+            var descriptor = SelectComponent(componentType);
+            InvokeCore(_viewContext.Writer, descriptor, arguments);
         }
 
-        private Type SelectComponent([NotNull] string name)
+        public async Task<HtmlString> InvokeAsync([NotNull] string name, params object[] arguments)
         {
-            var componentType = _selector.SelectComponent(name);
-            if (componentType == null)
+            var descriptor = SelectComponent(name);
+
+            using (var writer = new StringWriter())
+            {
+                await InvokeCoreAsync(writer, descriptor, arguments);
+                return new HtmlString(writer.ToString());
+            }
+        }
+
+        public async Task<HtmlString> InvokeAsync([NotNull] Type componentType, params object[] arguments)
+        {
+            var descriptor = SelectComponent(componentType);
+
+            using (var writer = new StringWriter())
+            {
+                await InvokeCoreAsync(writer, descriptor, arguments);
+                return new HtmlString(writer.ToString());
+            }
+        }
+
+        public async Task RenderInvokeAsync([NotNull] string name, params object[] arguments)
+        {
+            var descriptor = SelectComponent(name);
+            await InvokeCoreAsync(_viewContext.Writer, descriptor, arguments);
+        }
+
+        public async Task RenderInvokeAsync([NotNull] Type componentType, params object[] arguments)
+        {
+            var descriptor = SelectComponent(componentType);
+            await InvokeCoreAsync(_viewContext.Writer, descriptor, arguments);
+        }
+
+        private ViewComponentDescriptor SelectComponent(string name)
+        {
+            var descriptor = _selector.SelectComponent(name);
+            if (descriptor == null)
             {
                 throw new InvalidOperationException(Resources.FormatViewComponent_CannotFindComponent(name));
             }
 
-            return componentType;
+            return descriptor;
         }
 
-        private async Task InvokeCoreAsync([NotNull] TextWriter writer, [NotNull] Type componentType, object[] args)
+        private ViewComponentDescriptor SelectComponent(Type componentType)
         {
-            var invoker = _invokerFactory.CreateInstance(componentType.GetTypeInfo(), args);
+            var descriptors = _descriptorProvider.ViewComponents;
+            foreach (var descriptor in descriptors.Items)
+            {
+                if (descriptor.Type == componentType)
+                {
+                    return descriptor;
+                }
+            }
+
+            throw new InvalidOperationException(Resources.FormatViewComponent_CannotFindComponent(
+                componentType.FullName));
+        }
+
+        private async Task InvokeCoreAsync(
+            [NotNull] TextWriter writer,
+            [NotNull] ViewComponentDescriptor descriptor,
+            object[] arguments)
+        {
+            var invoker = _invokerFactory.CreateInstance(descriptor, arguments);
             if (invoker == null)
             {
                 throw new InvalidOperationException(
-                    Resources.FormatViewComponent_IViewComponentFactory_ReturnedNull(componentType));
+                    Resources.FormatViewComponent_IViewComponentFactory_ReturnedNull(descriptor.Type.FullName));
             }
 
-            var context = new ViewComponentContext(componentType.GetTypeInfo(), _viewContext, writer);
+            var context = new ViewComponentContext(descriptor, arguments, _viewContext, writer);
             await invoker.InvokeAsync(context);
         }
 
-        private void InvokeCore([NotNull] TextWriter writer, [NotNull] Type componentType, object[] arguments)
+        private void InvokeCore(
+            [NotNull] TextWriter writer,
+            [NotNull] ViewComponentDescriptor descriptor,
+            object[] arguments)
         {
-            var invoker = _invokerFactory.CreateInstance(componentType.GetTypeInfo(), arguments);
+            var invoker = _invokerFactory.CreateInstance(descriptor, arguments);
             if (invoker == null)
             {
                 throw new InvalidOperationException(
-                    Resources.FormatViewComponent_IViewComponentFactory_ReturnedNull(componentType));
+                    Resources.FormatViewComponent_IViewComponentFactory_ReturnedNull(descriptor.Type.FullName));
             }
 
-            var context = new ViewComponentContext(componentType.GetTypeInfo(), _viewContext, writer);
+            var context = new ViewComponentContext(descriptor, arguments, _viewContext, writer);
             invoker.Invoke(context);
         }
     }

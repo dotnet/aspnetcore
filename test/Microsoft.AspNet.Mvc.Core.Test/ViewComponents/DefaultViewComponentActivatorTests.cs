@@ -12,7 +12,7 @@ using Microsoft.AspNet.Routing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     public class DefaultViewComponentActivatorTests
     {

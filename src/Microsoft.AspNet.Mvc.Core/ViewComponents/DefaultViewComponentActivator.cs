@@ -9,7 +9,7 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     /// <summary>
     /// Represents the <see cref="IViewComponentActivator"/> that is registered by default.

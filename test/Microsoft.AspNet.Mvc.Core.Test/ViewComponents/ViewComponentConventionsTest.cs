@@ -6,7 +6,7 @@ using System.Reflection;
 using Microsoft.AspNet.Mvc.ViewComponentConventionsTestClasses;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     public class ViewComponentConventionsTest
     {

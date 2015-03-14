@@ -4,7 +4,7 @@
 using System.Threading.Tasks;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     public interface IViewComponentInvoker
     {
