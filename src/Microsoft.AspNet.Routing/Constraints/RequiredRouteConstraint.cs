@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing.Constraints
 {

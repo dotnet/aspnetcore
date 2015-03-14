@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {

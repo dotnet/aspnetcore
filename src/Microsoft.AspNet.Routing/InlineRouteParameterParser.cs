@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.AspNet.Routing.Template;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing
 {

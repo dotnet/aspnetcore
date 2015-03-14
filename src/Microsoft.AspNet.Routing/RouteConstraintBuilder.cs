@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing
 {

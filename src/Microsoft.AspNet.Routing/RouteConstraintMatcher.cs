@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Logging;
 using Microsoft.AspNet.Routing.Logging.Internal;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Routing

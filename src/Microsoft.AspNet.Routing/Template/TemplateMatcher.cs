@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing.Template
 {
