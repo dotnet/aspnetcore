@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.RequestContainer;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Authentication

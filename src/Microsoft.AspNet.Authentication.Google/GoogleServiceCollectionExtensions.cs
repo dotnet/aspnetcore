@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Authentication.Google;
 using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {

@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Authentication.OAuth;
+using Microsoft.AspNet.Http;
+using Microsoft.Framework.Internal;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Authentication.MicrosoftAccount

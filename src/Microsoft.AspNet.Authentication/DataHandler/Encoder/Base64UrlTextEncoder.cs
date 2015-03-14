@@ -3,6 +3,7 @@
 
 
 using System;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authentication.DataHandler.Encoder
 {

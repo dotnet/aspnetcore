@@ -10,6 +10,7 @@ using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Framework.Internal;
 using Microsoft.Win32;
 
 namespace Microsoft.AspNet.Authentication

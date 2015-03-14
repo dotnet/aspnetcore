@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Authentication.Notifications;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authentication
 {

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Microsoft.AspNet.Http.Authentication;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authentication.DataHandler.Serializer
 {

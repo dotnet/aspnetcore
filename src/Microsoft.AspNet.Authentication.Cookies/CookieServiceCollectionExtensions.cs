@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.Framework.ConfigurationModel;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {

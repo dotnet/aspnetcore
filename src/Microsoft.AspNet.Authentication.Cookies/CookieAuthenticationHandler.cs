@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Authentication.Cookies

@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Authentication.Google;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Builder

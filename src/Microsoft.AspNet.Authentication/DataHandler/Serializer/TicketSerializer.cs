@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authentication.DataHandler.Serializer
 {
