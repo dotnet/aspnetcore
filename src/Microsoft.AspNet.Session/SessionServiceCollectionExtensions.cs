@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Session;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {

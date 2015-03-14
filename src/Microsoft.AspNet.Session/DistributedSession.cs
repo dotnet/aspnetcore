@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Caching.Distributed;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Session
