@@ -2,9 +2,10 @@
 #if DNX451
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
-#endif
+#else
 using System.Threading;
-using Jetbrains.Annotations;
+#endif
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Diagnostics.Elm
 {

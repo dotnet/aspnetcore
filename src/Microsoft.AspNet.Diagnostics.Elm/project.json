@@ -2,7 +2,8 @@
     "version": "1.0.0-*",
     "dependencies": {
         "Microsoft.AspNet.Diagnostics": "1.0.0-*",
-        "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
+        "Microsoft.Framework.Logging.Interfaces": "1.0.0-*",
+        "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" }
     },
 
     "frameworks": {

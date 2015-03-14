@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Builder
 {

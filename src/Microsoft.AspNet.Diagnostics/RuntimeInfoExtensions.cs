@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Builder

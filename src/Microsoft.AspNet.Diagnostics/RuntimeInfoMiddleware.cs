@@ -9,6 +9,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.Framework.Runtime;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Diagnostics
 {

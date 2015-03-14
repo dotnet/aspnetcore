@@ -5,6 +5,7 @@
         "Microsoft.AspNet.Diagnostics.Interfaces": "1.0.0-*",
         "Microsoft.AspNet.RequestContainer": "1.0.0-*",
         "Microsoft.AspNet.WebUtilities": "1.0.0-*",
+        "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Framework.WebEncoders.Core": "1.0.0-*"
     },
     "frameworks": {
