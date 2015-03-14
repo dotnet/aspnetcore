@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Http

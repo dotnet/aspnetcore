@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using Microsoft.AspNet.Http.Authentication;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Core.Authentication
 {

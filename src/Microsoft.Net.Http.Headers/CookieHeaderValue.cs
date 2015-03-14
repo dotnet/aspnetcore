@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Net.Http.Headers
 {

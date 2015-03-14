@@ -6,8 +6,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Infrastructure;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Core.Infrastructure
 {

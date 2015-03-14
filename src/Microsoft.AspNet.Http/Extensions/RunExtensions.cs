@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Http;
 using System.Threading.Tasks;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Builder
 {

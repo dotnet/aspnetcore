@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using Microsoft.AspNet.WebUtilities;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Core
 {

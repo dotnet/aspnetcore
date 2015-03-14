@@ -8,6 +8,7 @@ using Microsoft.AspNet.Builder.Extensions;
 
 namespace Microsoft.AspNet.Builder
 {
+    using Microsoft.Framework.Internal;
     using Predicate = Func<HttpContext, bool>;
     using PredicateAsync = Func<HttpContext, Task<bool>>;
 

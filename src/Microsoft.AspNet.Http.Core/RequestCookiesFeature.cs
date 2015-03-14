@@ -7,6 +7,7 @@ using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Http.Core.Infrastructure;
 using Microsoft.AspNet.Http.Infrastructure;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Core
 {

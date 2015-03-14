@@ -20,6 +20,7 @@ using Microsoft.AspNet.Http.Authentication;
 
 namespace Microsoft.AspNet.Owin
 {
+    using Microsoft.Framework.Internal;
     using SendFileFunc = Func<string, long, long?, CancellationToken, Task>;
 
     public class OwinFeatureCollection :

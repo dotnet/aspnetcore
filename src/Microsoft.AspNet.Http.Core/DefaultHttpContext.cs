@@ -9,12 +9,12 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.Http.Core.Authentication;
 using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Http.Core.Infrastructure;
-using Microsoft.AspNet.Http.Core.Authentication;
 using Microsoft.AspNet.Http.Infrastructure;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Authentication;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Core
 {
