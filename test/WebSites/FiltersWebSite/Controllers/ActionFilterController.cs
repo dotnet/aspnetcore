@@ -37,6 +37,7 @@ namespace FiltersWebSite
             {
                 filters = (List<ContentResult>)obj;
             }
+            else
             {
                 filters = new List<ContentResult>();
                 context.ActionArguments.Add("fromGlobalActionFilter", filters);
