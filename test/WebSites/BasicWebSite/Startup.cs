@@ -22,7 +22,7 @@ namespace BasicWebSite
 
                 services.AddSingleton<IActionDescriptorProvider, ActionDescriptorCreationCounter>();
 
-                services.ConfigureMvcOptions(options =>
+                services.ConfigureMvc(options =>
                 {
                     options.Conventions.Add(new ApplicationDescription("This is a basic website."));
                 });

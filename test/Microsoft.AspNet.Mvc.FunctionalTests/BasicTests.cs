@@ -260,7 +260,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ConfigureMvcOptionsAddsOptionsProperly()
+        public async Task ConfigureMvc_AddsOptionsProperly()
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName);

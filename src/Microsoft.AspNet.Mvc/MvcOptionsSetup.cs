@@ -17,13 +17,13 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class MvcOptionsSetup : ConfigureOptions<MvcOptions>
     {
-        public MvcOptionsSetup() : base(ConfigureMvcOptions)
+        public MvcOptionsSetup() : base(ConfigureMvc)
         {
             Order = DefaultOrder.DefaultFrameworkSortOrder;
         }
 
         /// <inheritdoc />
-        public static void ConfigureMvcOptions(MvcOptions options)
+        public static void ConfigureMvc(MvcOptions options)
         {
             // Set up ViewEngines
             options.ViewEngines.Add(typeof(RazorViewEngine));

@@ -58,13 +58,13 @@ namespace MvcSample.Web
                     services.AddSingleton<UserNameService>();
                     services.AddTransient<ITestService, TestService>();
 
-                    services.ConfigureMvcOptions(options =>
+                    services.ConfigureMvc(options =>
                     {
                         options.Filters.Add(typeof(PassThroughAttribute), order: 17);
                         options.AddXmlDataContractSerializerFormatter();
                         options.Filters.Add(new FormatFilterAttribute());
                     });
-                    services.ConfigureRazorViewEngineOptions(options =>
+                    services.ConfigureRazorViewEngine(options =>
                     {
                         var expander = new LanguageViewLocationExpander(
                             context => context.HttpContext.Request.Query["language"]);
@@ -99,7 +99,7 @@ namespace MvcSample.Web
                     services.AddSingleton<UserNameService>();
                     services.AddTransient<ITestService, TestService>();
 
-                    services.ConfigureMvcOptions(options =>
+                    services.ConfigureMvc(options =>
                     {
                         options.Filters.Add(typeof(PassThroughAttribute), order: 17);
                         options.AddXmlDataContractSerializerFormatter();

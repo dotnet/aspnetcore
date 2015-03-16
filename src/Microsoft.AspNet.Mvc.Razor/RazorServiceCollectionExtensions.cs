@@ -19,7 +19,7 @@ namespace Microsoft.Framework.DependencyInjection
         /// </summary>
         /// <param name="services">The services available in the application.</param>
         /// <param name="setupAction">An action to configure the <see cref="RazorViewEngineOptions"/>.</param>
-        public static void ConfigureRazorViewEngineOptions(
+        public static void ConfigureRazorViewEngine(
             [NotNull] this IServiceCollection services,
             [NotNull] Action<RazorViewEngineOptions> setupAction)
         {

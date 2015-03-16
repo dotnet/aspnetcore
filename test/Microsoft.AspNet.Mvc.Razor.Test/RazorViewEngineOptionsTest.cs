@@ -22,14 +22,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public void ConfigureRazorViewEngineOptions_ConfiguresOptionsProperly()
+        public void ConfigureRazorViewEngine_ConfiguresOptionsProperly()
         {
             // Arrange
             var services = new ServiceCollection().AddOptions();
             var fileProvider = new TestFileProvider();
 
             // Act
-            services.ConfigureRazorViewEngineOptions(options =>
+            services.ConfigureRazorViewEngine(options =>
             {
                 options.FileProvider = fileProvider;
             });
