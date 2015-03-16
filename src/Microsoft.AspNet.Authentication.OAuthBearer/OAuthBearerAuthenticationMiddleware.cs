@@ -29,10 +29,10 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
         /// extension method.
         /// </summary>
         public OAuthBearerAuthenticationMiddleware(
-            RequestDelegate next,
-            IServiceProvider services,
-            ILoggerFactory loggerFactory,
-            IOptions<OAuthBearerAuthenticationOptions> options,
+            [NotNull] RequestDelegate next,
+            [NotNull] IServiceProvider services,
+            [NotNull] ILoggerFactory loggerFactory,
+            [NotNull] IOptions<OAuthBearerAuthenticationOptions> options,
             ConfigureOptions<OAuthBearerAuthenticationOptions> configureOptions)
             : base(next, services, options, configureOptions)
         {

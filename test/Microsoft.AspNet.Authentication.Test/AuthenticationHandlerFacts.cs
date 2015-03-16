@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Http.Core;
 using Xunit;
 
@@ -79,9 +78,15 @@ namespace Microsoft.AspNet.Authentication
 
         private class TestOptions : AuthenticationOptions { }
 
-        private class TestAutoOptions : AutomaticAuthenticationOptions { }
+        private class TestAutoOptions : AuthenticationOptions
+        {
+            public TestAutoOptions()
+            {
+                AutomaticAuthentication = true;
+            }
+        }
 
-        private class TestAutoHandler : AutomaticAuthenticationHandler<AutomaticAuthenticationOptions>
+        private class TestAutoHandler : AuthenticationHandler<TestAutoOptions>
         {
             public TestAutoHandler(string scheme, bool auto)
             {

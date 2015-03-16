@@ -34,37 +34,47 @@ namespace Microsoft.AspNet.Authentication.Cookies
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
         }
 
-        [Fact]
-        public async Task ProtectedRequestShouldRedirectToLogin()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ProtectedRequestShouldRedirectToLoginOnlyWhenAutomatic(bool auto)
         {
             TestServer server = CreateServer(options =>
             {
                 options.LoginPath = new PathString("/login");
+                options.AutomaticAuthentication = auto;
             });
 
             Transaction transaction = await SendAsync(server, "http://example.com/protected");
 
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-
-            Uri location = transaction.Response.Headers.Location;
-            location.LocalPath.ShouldBe("/login");
-            location.Query.ShouldBe("?ReturnUrl=%2Fprotected");
+            transaction.Response.StatusCode.ShouldBe(auto ? HttpStatusCode.Redirect : HttpStatusCode.Unauthorized);
+            if (auto)
+            {
+                Uri location = transaction.Response.Headers.Location;
+                location.LocalPath.ShouldBe("/login");
+                location.Query.ShouldBe("?ReturnUrl=%2Fprotected");
+            }
         }
 
-        [Fact]
-        public async Task ProtectedCustomRequestShouldRedirectToCustomLogin()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ProtectedCustomRequestShouldRedirectToCustomLogin(bool auto)
         {
             TestServer server = CreateServer(options =>
             {
                 options.LoginPath = new PathString("/login");
+                options.AutomaticAuthentication = auto;
             });
 
             Transaction transaction = await SendAsync(server, "http://example.com/protected/CustomRedirect");
 
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-
-            Uri location = transaction.Response.Headers.Location;
-            location.ToString().ShouldBe("/CustomRedirect");
+            transaction.Response.StatusCode.ShouldBe(auto ? HttpStatusCode.Redirect : HttpStatusCode.Unauthorized);
+            if (auto)
+            {
+                Uri location = transaction.Response.Headers.Location;
+                location.ToString().ShouldBe("/CustomRedirect");
+            }
         }
 
         private Task SignInAsAlice(HttpContext context)
@@ -222,6 +232,37 @@ namespace Microsoft.AspNet.Authentication.Cookies
         }
 
         [Fact]
+        public async Task CookieAppliesClaimsTransform()
+        {
+            var clock = new TestClock();
+            TestServer server = CreateServer(options =>
+            {
+                options.SystemClock = clock;
+            }, 
+            SignInAsAlice, 
+            baseAddress: null, 
+            claimsTransform: o => o.Transformation = (p =>
+            {
+                if (!p.Identities.Any(i => i.AuthenticationType == "xform"))
+                {
+                    // REVIEW: Xform runs twice, once on Authenticate, and then once from the middleware
+                    var id = new ClaimsIdentity("xform");
+                    id.AddClaim(new Claim("xform", "yup"));
+                    p.AddIdentity(id);
+                }
+                return p;
+            }));
+
+            Transaction transaction1 = await SendAsync(server, "http://example.com/testpath");
+
+            Transaction transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+
+            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe("Alice");
+            FindClaimValue(transaction2, "xform").ShouldBe("yup");
+
+        }
+
+        [Fact]
         public async Task CookieStopsWorkingAfterExpiration()
         {
             var clock = new TestClock();
@@ -372,6 +413,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             TestServer server = CreateServer(options =>
             {
                 options.LoginPath = new PathString("/login");
+                options.AutomaticAuthentication = true;
             });
 
             Transaction transaction = await SendAsync(server, "http://example.com/protected", ajaxRequest: true);
@@ -478,12 +520,26 @@ namespace Microsoft.AspNet.Authentication.Cookies
             return me;
         }
 
-        private static TestServer CreateServer(Action<CookieAuthenticationOptions> configureOptions, Func<HttpContext, Task> testpath = null, Uri baseAddress = null)
+        private static TestServer CreateServer(Action<CookieAuthenticationOptions> configureOptions, Func<HttpContext, Task> testpath = null, Uri baseAddress = null, Action<ClaimsTransformationOptions> claimsTransform = null)
         {
             var server = TestServer.Create(app =>
             {
-                app.UseServices(services => services.AddDataProtection());
+                if (claimsTransform != null)
+                {
+                    app.UseServices(services => {
+                        services.AddDataProtection();
+                        services.ConfigureClaimsTransformation(claimsTransform);
+                    });
+                }
+                else
+                {
+                    app.UseServices(services => services.AddDataProtection());
+                }
                 app.UseCookieAuthentication(configureOptions);
+                if (claimsTransform != null)
+                {
+                    app.UseClaimsTransformation();
+                }
                 app.Use(async (context, next) =>
                 {
                     var req = context.Request;

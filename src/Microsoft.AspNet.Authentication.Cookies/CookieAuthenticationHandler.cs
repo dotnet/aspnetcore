@@ -13,7 +13,7 @@ using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Authentication.Cookies
 {
-    internal class CookieAuthenticationHandler : AutomaticAuthenticationHandler<CookieAuthenticationOptions>
+    internal class CookieAuthenticationHandler : AuthenticationHandler<CookieAuthenticationOptions>
     {
         private const string HeaderNameCacheControl = "Cache-Control";
         private const string HeaderNamePragma = "Pragma";

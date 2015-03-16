@@ -117,13 +117,19 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <returns></returns>
         protected override async Task ApplyResponseChallengeAsync()
         {
+            if (ShouldConvertChallengeToForbidden())
+            {
+                Response.StatusCode = 403;
+                return;
+            }
+
             if (Response.StatusCode != 401)
             {
                 return;
             }
 
-            // Only redirect on challenges
-            if (ChallengeContext == null)
+            // When Automatic should redirect on 401 even if there wasn't an explicit challenge.
+            if (ChallengeContext == null && !Options.AutomaticAuthentication)
             {
                 return;
             }

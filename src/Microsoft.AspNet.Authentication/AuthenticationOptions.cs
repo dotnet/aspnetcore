@@ -27,6 +27,13 @@ namespace Microsoft.AspNet.Authentication
         }
 
         /// <summary>
+        /// If true the authentication middleware alter the request user coming in and
+        /// alter 401 Unauthorized responses going out. If false the authentication middleware will only provide
+        /// identity and alter responses when explicitly indicated by the AuthenticationScheme.
+        /// </summary>
+        public bool AutomaticAuthentication { get; set; }
+
+        /// <summary>
         /// Additional information about the authentication type which is made available to the application.
         /// </summary>
         public AuthenticationDescription Description { get; set; } = new AuthenticationDescription();

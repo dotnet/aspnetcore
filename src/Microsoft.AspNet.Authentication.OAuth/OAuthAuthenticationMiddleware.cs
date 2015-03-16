@@ -31,12 +31,12 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// <param name="loggerFactory"></param>
         /// <param name="options">Configuration options for the middleware.</param>
         public OAuthAuthenticationMiddleware(
-            RequestDelegate next,
-            IServiceProvider services,
-            IDataProtectionProvider dataProtectionProvider,
-            ILoggerFactory loggerFactory,
-            IOptions<ExternalAuthenticationOptions> externalOptions,
-            IOptions<TOptions> options,
+            [NotNull] RequestDelegate next,
+            [NotNull] IServiceProvider services,
+            [NotNull] IDataProtectionProvider dataProtectionProvider,
+            [NotNull] ILoggerFactory loggerFactory,
+            [NotNull] IOptions<ExternalAuthenticationOptions> externalOptions,
+            [NotNull] IOptions<TOptions> options,
             ConfigureOptions<TOptions> configureOptions = null)
             : base(next, services, options, configureOptions)
         {

@@ -72,6 +72,15 @@ namespace Microsoft.AspNet.Authentication
             Response.OnSendingHeaders(OnSendingHeaderCallback, this);
 
             await InitializeCoreAsync();
+
+            if (BaseOptions.AutomaticAuthentication)
+            {
+                var ticket = await AuthenticateAsync();
+                if (ticket?.Principal != null)
+                {
+                    SecurityHelper.AddUserPrincipal(Context, ticket.Principal);
+                }
+            }
         }
 
         private static void OnSendingHeaderCallback(object state)
@@ -128,7 +137,7 @@ namespace Microsoft.AspNet.Authentication
         /// pipeline.</returns>
         public virtual Task<bool> InvokeAsync()
         {
-            return Task.FromResult<bool>(false);
+            return Task.FromResult(false);
         }
 
         public virtual void GetDescriptions(IDescribeSchemesContext describeContext)
@@ -143,17 +152,17 @@ namespace Microsoft.AspNet.Authentication
 
         public virtual void Authenticate(IAuthenticateContext context)
         {
-            if (context.AuthenticationSchemes.Contains(BaseOptions.AuthenticationScheme, StringComparer.Ordinal))
+            if (ShouldHandleScheme(context.AuthenticationScheme))
             {
-                AuthenticationTicket ticket = Authenticate();
-                if (ticket != null && ticket.Principal != null)
+                var ticket = Authenticate();
+                if (ticket?.Principal != null)
                 {
                     AuthenticateCalled = true;
                     context.Authenticated(ticket.Principal, ticket.Properties.Dictionary, BaseOptions.Description.Dictionary);
                 }
                 else
                 {
-                    context.NotAuthenticated(BaseOptions.AuthenticationScheme, properties: null, description: BaseOptions.Description.Dictionary);
+                    context.NotAuthenticated();
                 }
             }
 
@@ -165,17 +174,17 @@ namespace Microsoft.AspNet.Authentication
 
         public virtual async Task AuthenticateAsync(IAuthenticateContext context)
         {
-            if (context.AuthenticationSchemes.Contains(BaseOptions.AuthenticationScheme, StringComparer.Ordinal))
+            if (ShouldHandleScheme(context.AuthenticationScheme))
             {
-                AuthenticationTicket ticket = await AuthenticateAsync();
-                if (ticket != null && ticket.Principal != null)
+                var ticket = await AuthenticateAsync();
+                if (ticket?.Principal != null)
                 {
                     AuthenticateCalled = true;
                     context.Authenticated(ticket.Principal, ticket.Properties.Dictionary, BaseOptions.Description.Dictionary);
                 }
                 else
                 {
-                    context.NotAuthenticated(BaseOptions.AuthenticationScheme, properties: null, description: BaseOptions.Description.Dictionary);
+                    context.NotAuthenticated();
                 }
             }
 
@@ -360,14 +369,26 @@ namespace Microsoft.AspNet.Authentication
 
         public virtual bool ShouldHandleScheme(IEnumerable<string> authenticationSchemes)
         {
-            return authenticationSchemes != null &&
-                authenticationSchemes.Any() &&
-                authenticationSchemes.Contains(BaseOptions.AuthenticationScheme, StringComparer.Ordinal);
+            // If there are any schemes asked for, need to match, otherwise automatic authentication matches
+            return authenticationSchemes != null && authenticationSchemes.Any()
+                ? authenticationSchemes.Contains(BaseOptions.AuthenticationScheme, StringComparer.Ordinal)
+                : BaseOptions.AutomaticAuthentication;
         }
 
         public virtual bool ShouldHandleScheme(string authenticationScheme)
         {
-            return string.Equals(BaseOptions.AuthenticationScheme, authenticationScheme, StringComparison.Ordinal);
+            return string.Equals(BaseOptions.AuthenticationScheme, authenticationScheme, StringComparison.Ordinal) ||
+                (BaseOptions.AutomaticAuthentication && string.IsNullOrWhiteSpace(authenticationScheme));
+        }
+
+        public virtual bool ShouldConvertChallengeToForbidden()
+        {
+            // Return 403 iff 401 and this handler's authenticate was called
+            // and the challenge is for the authentication type
+            return Response.StatusCode == 401 &&
+                AuthenticateCalled &&
+                ChallengeContext != null &&
+                ShouldHandleScheme(ChallengeContext.AuthenticationSchemes);
         }
 
         /// <summary>
@@ -384,11 +405,11 @@ namespace Microsoft.AspNet.Authentication
 
         protected void GenerateCorrelationId([NotNull] AuthenticationProperties properties)
         {
-            string correlationKey = Constants.CorrelationPrefix + BaseOptions.AuthenticationScheme;
+            var correlationKey = Constants.CorrelationPrefix + BaseOptions.AuthenticationScheme;
 
             var nonceBytes = new byte[32];
             CryptoRandom.GetBytes(nonceBytes);
-            string correlationId = TextEncodings.Base64Url.Encode(nonceBytes);
+            var correlationId = TextEncodings.Base64Url.Encode(nonceBytes);
 
             var cookieOptions = new CookieOptions
             {
@@ -403,9 +424,8 @@ namespace Microsoft.AspNet.Authentication
 
         protected bool ValidateCorrelationId([NotNull] AuthenticationProperties properties, [NotNull] ILogger logger)
         {
-            string correlationKey = Constants.CorrelationPrefix + BaseOptions.AuthenticationScheme;
-
-            string correlationCookie = Request.Cookies[correlationKey];
+            var correlationKey = Constants.CorrelationPrefix + BaseOptions.AuthenticationScheme;
+            var correlationCookie = Request.Cookies[correlationKey];
             if (string.IsNullOrWhiteSpace(correlationCookie))
             {
                 logger.LogWarning("{0} cookie not found.", correlationKey);
@@ -453,3 +473,4 @@ namespace Microsoft.AspNet.Authentication
         }
     }
 }
+

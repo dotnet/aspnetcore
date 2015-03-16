@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
     /// <summary>
     /// Contains the options used by the CookiesAuthenticationMiddleware
     /// </summary>
-    public class CookieAuthenticationOptions : AutomaticAuthenticationOptions
+    public class CookieAuthenticationOptions : AuthenticationOptions
     {
         private string _cookieName;
 
@@ -20,7 +20,6 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// </summary>
         public CookieAuthenticationOptions()
         {
-            AutomaticAuthentication = true;
             AuthenticationScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
             ExpireTimeSpan = TimeSpan.FromDays(14);

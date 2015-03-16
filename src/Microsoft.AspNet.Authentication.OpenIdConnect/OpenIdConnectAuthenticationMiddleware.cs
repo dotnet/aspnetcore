@@ -35,12 +35,12 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <param name="options">Configuration options for the middleware</param>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]
         public OpenIdConnectAuthenticationMiddleware(
-            RequestDelegate next,
-            IServiceProvider services,
-            IDataProtectionProvider dataProtectionProvider,
-            ILoggerFactory loggerFactory,
-            IOptions<ExternalAuthenticationOptions> externalOptions,
-            IOptions<OpenIdConnectAuthenticationOptions> options,
+            [NotNull] RequestDelegate next,
+            [NotNull] IServiceProvider services,
+            [NotNull] IDataProtectionProvider dataProtectionProvider,
+            [NotNull] ILoggerFactory loggerFactory,
+            [NotNull] IOptions<ExternalAuthenticationOptions> externalOptions,
+            [NotNull] IOptions<OpenIdConnectAuthenticationOptions> options,
             ConfigureOptions<OpenIdConnectAuthenticationOptions> configureOptions)
             : base(next, services, options, configureOptions)
         {

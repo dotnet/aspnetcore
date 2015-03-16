@@ -1,6 +1,7 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
@@ -27,6 +28,13 @@ namespace CookieSample
                 services.Configure<ExternalAuthenticationOptions>(options =>
                 {
                     options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                });
+                services.ConfigureClaimsTransformation(p =>
+                {
+                    var id = new ClaimsIdentity("xform");
+                    id.AddClaim(new Claim("ClaimsTransformation", "TransformAddedClaim"));
+                    p.AddIdentity(id);
+                    return p;
                 });
             });
 

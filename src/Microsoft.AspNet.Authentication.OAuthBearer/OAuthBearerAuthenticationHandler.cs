@@ -15,7 +15,7 @@ using Microsoft.IdentityModel.Protocols;
 
 namespace Microsoft.AspNet.Authentication.OAuthBearer
 {
-    public class OAuthBearerAuthenticationHandler : AutomaticAuthenticationHandler<OAuthBearerAuthenticationOptions>
+    public class OAuthBearerAuthenticationHandler : AuthenticationHandler<OAuthBearerAuthenticationOptions>
     {
         private readonly ILogger _logger;
         private OpenIdConnectConfiguration _configuration;
@@ -197,7 +197,7 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
                 return;
             }
 
-            if ((Response.StatusCode != 401) || (ChallengeContext == null))
+            if ((Response.StatusCode != 401) || (ChallengeContext == null && !Options.AutomaticAuthentication))
             {
                 return;
             }

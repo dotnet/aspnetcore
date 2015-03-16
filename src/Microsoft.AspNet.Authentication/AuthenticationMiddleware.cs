@@ -16,7 +16,11 @@ namespace Microsoft.AspNet.Authentication
         private readonly RequestDelegate _next;
         private readonly IServiceProvider _services;
 
-        protected AuthenticationMiddleware([NotNull] RequestDelegate next, [NotNull] IServiceProvider services, [NotNull] IOptions<TOptions> options, ConfigureOptions<TOptions> configureOptions)
+        protected AuthenticationMiddleware(
+            [NotNull] RequestDelegate next, 
+            [NotNull] IServiceProvider services, 
+            [NotNull] IOptions<TOptions> options, 
+            ConfigureOptions<TOptions> configureOptions)
         {
             if (configureOptions != null)
             {
