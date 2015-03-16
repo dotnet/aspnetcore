@@ -8,6 +8,7 @@ namespace Microsoft.AspNet.Http.Authentication
     public interface IHttpAuthenticationFeature
     {
         ClaimsPrincipal User { get; set; }
+
         IAuthenticationHandler Handler { get; set; }
     }
 }

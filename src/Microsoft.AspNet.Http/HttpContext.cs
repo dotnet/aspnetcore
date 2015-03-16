@@ -54,19 +54,9 @@ namespace Microsoft.AspNet.Http
 
         public abstract IEnumerable<AuthenticationDescription> GetAuthenticationSchemes();
 
-        public virtual AuthenticationResult Authenticate(string authenticationScheme)
-        {
-            return Authenticate(new[] { authenticationScheme }).SingleOrDefault();
-        }
+        public abstract AuthenticationResult Authenticate(string authenticationScheme);
 
-        public abstract IEnumerable<AuthenticationResult> Authenticate(IEnumerable<string> authenticationSchemes);
-
-        public virtual async Task<AuthenticationResult> AuthenticateAsync(string authenticationScheme)
-        {
-            return (await AuthenticateAsync(new[] { authenticationScheme })).SingleOrDefault();
-        }
-
-        public abstract Task<IEnumerable<AuthenticationResult>> AuthenticateAsync(IEnumerable<string> authenticationSchemes);
+        public abstract Task<AuthenticationResult> AuthenticateAsync(string authenticationScheme);
 
         public virtual Task<WebSocket> AcceptWebSocketAsync()
         {

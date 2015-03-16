@@ -212,44 +212,41 @@ namespace Microsoft.AspNet.Http.Core
             return describeContext.Results;
         }
 
-        public override IEnumerable<AuthenticationResult> Authenticate([NotNull] IEnumerable<string> authenticationSchemes)
+        public override AuthenticationResult Authenticate([NotNull] string authenticationScheme)
         {
             var handler = HttpAuthenticationFeature.Handler;
 
-            var authenticateContext = new AuthenticateContext(authenticationSchemes);
+            var authenticateContext = new AuthenticateContext(authenticationScheme);
             if (handler != null)
             {
                 handler.Authenticate(authenticateContext);
             }
 
-            // Verify all types ack'd
-            IEnumerable<string> leftovers = authenticationSchemes.Except(authenticateContext.Accepted);
-            if (leftovers.Any())
+            if (!authenticateContext.Accepted)
             {
-                throw new InvalidOperationException("The following authentication schemes were not accepted: " + string.Join(", ", leftovers));
+                throw new InvalidOperationException("The following authentication scheme was not accepted: " + authenticationScheme);
             }
 
-            return authenticateContext.Results;
+            return authenticateContext.Result;
         }
 
-        public override async Task<IEnumerable<AuthenticationResult>> AuthenticateAsync([NotNull] IEnumerable<string> authenticationSchemes)
+        public override async Task<AuthenticationResult> AuthenticateAsync([NotNull] string authenticationScheme)
         {
             var handler = HttpAuthenticationFeature.Handler;
 
-            var authenticateContext = new AuthenticateContext(authenticationSchemes);
+            var authenticateContext = new AuthenticateContext(authenticationScheme);
             if (handler != null)
             {
                 await handler.AuthenticateAsync(authenticateContext);
             }
 
             // Verify all types ack'd
-            IEnumerable<string> leftovers = authenticationSchemes.Except(authenticateContext.Accepted);
-            if (leftovers.Any())
+            if (!authenticateContext.Accepted)
             {
-                throw new InvalidOperationException("The following authentication schemes were not accepted: " + string.Join(", ", leftovers));
+                throw new InvalidOperationException("The following authentication scheme was not accepted: " + authenticationScheme);
             }
 
-            return authenticateContext.Results;
+            return authenticateContext.Result;
         }
 
         public override Task<WebSocket> AcceptWebSocketAsync(string subProtocol)

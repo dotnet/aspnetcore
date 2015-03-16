@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using Microsoft.AspNet.Http.Authentication;
@@ -10,24 +11,19 @@ namespace Microsoft.AspNet.Http.Core.Authentication
 {
     public class AuthenticateContext : IAuthenticateContext
     {
-        private List<AuthenticationResult> _results;
-        private List<string> _accepted;
+        private AuthenticationResult _result;
+        private bool _accepted;
 
-        public AuthenticateContext([NotNull] IEnumerable<string> authenticationSchemes)
+        public AuthenticateContext([NotNull] string authenticationScheme)
         {
-            AuthenticationSchemes = authenticationSchemes;
-            _results = new List<AuthenticationResult>();
-            _accepted = new List<string>();
+            AuthenticationScheme = authenticationScheme;
         }
 
-        public IEnumerable<string> AuthenticationSchemes { get; private set; }
+        public string AuthenticationScheme { get; private set; }
 
-        public IEnumerable<AuthenticationResult> Results
-        {
-            get { return _results; }
-        }
+        public AuthenticationResult Result { get; set; }
 
-        public IEnumerable<string> Accepted
+        public bool Accepted
         {
             get { return _accepted; }
         }
@@ -35,13 +31,13 @@ namespace Microsoft.AspNet.Http.Core.Authentication
         public void Authenticated(ClaimsPrincipal principal, IDictionary<string, string> properties, IDictionary<string, object> description)
         {
             var descrip = new AuthenticationDescription(description);
-            _accepted.Add(descrip.AuthenticationScheme); // may not match identity.AuthType
-            _results.Add(new AuthenticationResult(principal, new AuthenticationProperties(properties), descrip));
+            _accepted = true;
+            Result = new AuthenticationResult(principal, new AuthenticationProperties(properties), descrip);
         }
 
-        public void NotAuthenticated(string authenticationScheme, IDictionary<string, string> properties, IDictionary<string, object> description)
+        public void NotAuthenticated()
         {
-            _accepted.Add(authenticationScheme);
+            _accepted = true;
         }
     }
 }
