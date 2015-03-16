@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Server.WebListener
             foreach (var authType in ListEnabledAuthSchemes())
             {
                 string authScheme = authType.ToString();
-                if (context.AuthenticationSchemes.Contains(authScheme, StringComparer.Ordinal))
+                if (string.Equals(authScheme, context.AuthenticationScheme, StringComparison.Ordinal))
                 {
                     if (identity != null && identity.IsAuthenticated
                         && string.Equals(authScheme, identity.AuthenticationType, StringComparison.Ordinal))
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     }
                     else
                     {
-                        context.NotAuthenticated(authScheme, properties: null, description: GetDescription(authScheme));
+                        context.NotAuthenticated();
                     }
                 }
             }

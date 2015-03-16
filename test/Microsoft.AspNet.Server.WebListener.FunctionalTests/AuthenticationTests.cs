@@ -262,8 +262,11 @@ namespace Microsoft.AspNet.Server.WebListener
                 var context = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.NotNull(context.User);
                 Assert.False(context.User.Identity.IsAuthenticated);
-                var authResults = context.Authenticate(authTypeList);
-                Assert.False(authResults.Any());
+                foreach (var scheme in authTypeList)
+                {
+                    var authResults = context.Authenticate(scheme);
+                    Assert.Null(authResults.Principal);
+                }
                 return Task.FromResult(0);
             }))
             {
@@ -289,8 +292,16 @@ namespace Microsoft.AspNet.Server.WebListener
                 var context = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.NotNull(context.User);
                 Assert.True(context.User.Identity.IsAuthenticated);
-                var authResults = context.Authenticate(authTypeList);
-                Assert.Equal(1, authResults.Count());
+                var count = 0;
+                foreach (var scheme in authTypeList)
+                {
+                    var authResults = context.Authenticate(scheme);
+                    if (authResults.Principal != null)
+                    {
+                        count++;
+                    }
+                }
+                Assert.Equal(1, count);
                 return Task.FromResult(0);
             }))
             {
