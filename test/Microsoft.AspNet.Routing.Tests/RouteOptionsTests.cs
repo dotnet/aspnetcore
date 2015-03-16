@@ -25,13 +25,13 @@ namespace Microsoft.AspNet.Routing.Tests
         }
 
         [Fact]
-        public void ConfigureRouteOptions_ConfiguresOptionsProperly()
+        public void ConfigureRouting_ConfiguresOptionsProperly()
         {
             // Arrange
             var services = new ServiceCollection().AddOptions();
 
             // Act
-            services.ConfigureRouteOptions(options => options.ConstraintMap.Add("foo", typeof(TestRouteConstraint)));
+            services.ConfigureRouting(options => options.ConstraintMap.Add("foo", typeof(TestRouteConstraint)));
             var serviceProvider = services.BuildServiceProvider();
 
             // Assert

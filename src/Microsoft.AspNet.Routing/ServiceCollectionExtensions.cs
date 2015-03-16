@@ -17,7 +17,7 @@ namespace Microsoft.Framework.DependencyInjection
         /// </summary>
         /// <param name="services">The services available in the application.</param>
         /// <param name="setupAction">An action to configure the <see cref="RouteOptions"/>.</param>
-        public static void ConfigureRouteOptions(
+        public static void ConfigureRouting(
             this IServiceCollection services,
             [NotNull] Action<RouteOptions> setupAction)
         {
