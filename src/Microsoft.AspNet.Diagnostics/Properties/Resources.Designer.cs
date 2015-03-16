@@ -459,7 +459,7 @@ namespace Microsoft.AspNet.Diagnostics
         }
 
         /// <summary>
-        /// Learn more about the Microsoft ASP.NET vNext components
+        /// Learn more about the Microsoft ASP.NET 5 components
         /// </summary>
         internal static string WelcomeLearnMicrosoftAspNet
         {
@@ -467,7 +467,7 @@ namespace Microsoft.AspNet.Diagnostics
         }
 
         /// <summary>
-        /// Learn more about the Microsoft ASP.NET vNext components
+        /// Learn more about the Microsoft ASP.NET 5 components
         /// </summary>
         internal static string FormatWelcomeLearnMicrosoftAspNet()
         {
@@ -539,7 +539,7 @@ namespace Microsoft.AspNet.Diagnostics
         }
 
         /// <summary>
-        /// Your ASP.NET vNext application has been successfully started
+        /// Your ASP.NET 5 application has been successfully started
         /// </summary>
         internal static string WelcomeStarted
         {
@@ -547,7 +547,7 @@ namespace Microsoft.AspNet.Diagnostics
         }
 
         /// <summary>
-        /// Your ASP.NET vNext application has been successfully started
+        /// Your ASP.NET 5 application has been successfully started
         /// </summary>
         internal static string FormatWelcomeStarted()
         {
@@ -555,7 +555,7 @@ namespace Microsoft.AspNet.Diagnostics
         }
 
         /// <summary>
-        /// Your ASP.NET vNext application has been successfully started.
+        /// Your ASP.NET 5 application has been successfully started.
         /// </summary>
         internal static string WelcomeTitle
         {
@@ -563,7 +563,7 @@ namespace Microsoft.AspNet.Diagnostics
         }
 
         /// <summary>
-        /// Your ASP.NET vNext application has been successfully started.
+        /// Your ASP.NET 5 application has been successfully started.
         /// </summary>
         internal static string FormatWelcomeTitle()
         {

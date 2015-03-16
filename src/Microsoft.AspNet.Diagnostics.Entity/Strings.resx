@@ -199,7 +199,7 @@
     <value>A database operation failed while processing the request.</value>
   </data>
   <data name="DatabaseErrorPage_EnableMigrationsCommandsInfo" xml:space="preserve">
-    <value>To use migrations from a command prompt you will need to &lt;a href='http://go.microsoft.com/fwlink/?LinkId=518242'&gt;install K Version Manager (KVM)&lt;/a&gt;. Once installed, you can run migration commands from a standard command prompt in the project directory.</value>
+    <value>To use migrations from a command prompt you will need to &lt;a href='http://go.microsoft.com/fwlink/?LinkId=518242'&gt;install .NET Version Manager (dnvm)&lt;/a&gt;. Once installed, you can run migration commands from a standard command prompt in the project directory.</value>
   </data>
   <data name="DatabaseErrorPage_AttemptingToMatchException" xml:space="preserve">
     <value>{0} occurred, checking if Entity Framework recorded this exception as resulting from a failed database operation.</value>

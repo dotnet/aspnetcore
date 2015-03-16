@@ -210,7 +210,7 @@
     <value>Welcome</value>
   </data>
   <data name="WelcomeLearnMicrosoftAspNet" xml:space="preserve">
-    <value>Learn more about the Microsoft ASP.NET vNext components</value>
+    <value>Learn more about the Microsoft ASP.NET 5 components</value>
   </data>
   <data name="WelcomePageImageText_Browser" xml:space="preserve">
     <value>Browser</value>
@@ -225,10 +225,10 @@
     <value>Skyline</value>
   </data>
   <data name="WelcomeStarted" xml:space="preserve">
-    <value>Your ASP.NET vNext application has been successfully started</value>
+    <value>Your ASP.NET 5 application has been successfully started</value>
   </data>
   <data name="WelcomeTitle" xml:space="preserve">
-    <value>Your ASP.NET vNext application has been successfully started.</value>
+    <value>Your ASP.NET 5 application has been successfully started.</value>
   </data>
   <data name="ErrorPageHtml_CompilationException" xml:space="preserve">
     <value>An error occurred during the compilation of a resource required to process this request. Please review the following specific error details and modify your source code appropriately.</value>
