@@ -10,13 +10,13 @@ using System.Text;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Authentication.DataHandler;
 using Microsoft.AspNet.Authentication.DataHandler.Encoder;
 using Microsoft.AspNet.Authentication.DataHandler.Serializer;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.IdentityModel.Protocols;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authentication.OpenIdConnect
 {

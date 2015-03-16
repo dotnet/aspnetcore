@@ -6,6 +6,7 @@ using Microsoft.AspNet.Authentication.Cookies.Infrastructure;
 using Microsoft.AspNet.Authentication.DataHandler;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 

@@ -10,6 +10,7 @@ using Microsoft.AspNet.Authentication.DataHandler.Encoder;
 using Microsoft.AspNet.Authentication.Twitter.Messages;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 

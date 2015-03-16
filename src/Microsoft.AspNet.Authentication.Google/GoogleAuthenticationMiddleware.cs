@@ -3,13 +3,10 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Net.Http;
-using Microsoft.AspNet.Authentication;
-using Microsoft.AspNet.Authentication.DataHandler;
+using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
-using Microsoft.AspNet.Authentication.OAuth;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 

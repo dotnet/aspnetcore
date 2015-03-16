@@ -8,6 +8,7 @@ using System.IdentityModel.Tokens;
 using System.Net.Http;
 using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.IdentityModel.Protocols;
