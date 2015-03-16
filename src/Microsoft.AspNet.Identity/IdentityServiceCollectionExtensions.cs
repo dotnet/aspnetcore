@@ -80,6 +80,7 @@ namespace Microsoft.Framework.DependencyInjection
             services.ConfigureIdentityApplicationCookie(options =>
             {
                 options.AuthenticationScheme = IdentityOptions.ApplicationCookieAuthenticationScheme;
+                options.AutomaticAuthentication = true;
                 options.LoginPath = new PathString("/Account/Login");
                 options.Notifications = new CookieAuthenticationNotifications
                 {
