@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Principal;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        public virtual IPrincipal User
+        public virtual ClaimsPrincipal User
         {
             get
             {
