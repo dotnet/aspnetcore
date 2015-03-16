@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
 using Moq;
 using Xunit;
 
@@ -105,12 +106,28 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         }
 
         [Fact]
-        public void ResolveDefaultKeyPolicy_MostRecentKeyIsInvalid_ReturnsNull()
+        public void ResolveDefaultKeyPolicy_MostRecentKeyIsInvalid_BecauseOfRevocation_ReturnsNull()
         {
             // Arrange
             var resolver = CreateDefaultKeyResolver();
             var key1 = CreateKey("2015-03-01 00:00:00Z", "2016-03-01 00:00:00Z");
             var key2 = CreateKey("2015-03-02 00:00:00Z", "2016-03-01 00:00:00Z", isRevoked: true);
+
+            // Act
+            var resolution = resolver.ResolveDefaultKeyPolicy("2015-04-01 00:00:00Z", key1, key2);
+
+            // Assert
+            Assert.Null(resolution.DefaultKey);
+            Assert.True(resolution.ShouldGenerateNewKey);
+        }
+
+        [Fact]
+        public void ResolveDefaultKeyPolicy_MostRecentKeyIsInvalid_BecauseOfFailureToDecipher_ReturnsNull()
+        {
+            // Arrange
+            var resolver = CreateDefaultKeyResolver();
+            var key1 = CreateKey("2015-03-01 00:00:00Z", "2016-03-01 00:00:00Z");
+            var key2 = CreateKey("2015-03-02 00:00:00Z", "2016-03-01 00:00:00Z", createEncryptorInstanceThrows: true);
 
             // Act
             var resolution = resolver.ResolveDefaultKeyPolicy("2015-04-01 00:00:00Z", key1, key2);
@@ -168,13 +185,31 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         }
 
         [Fact]
-        public void ResolveDefaultKeyPolicy_FallbackKey_SelectsLatestBeforePriorPropagationWindow()
+        public void ResolveDefaultKeyPolicy_FallbackKey_SelectsLatestBeforePriorPropagationWindow_IgnoresRevokedKeys()
         {
             // Arrange
             var resolver = CreateDefaultKeyResolver();
             var key1 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-01 00:00:00Z");
             var key2 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-02 00:00:00Z");
             var key3 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-03 00:00:00Z", isRevoked: true);
+            var key4 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-04 00:00:00Z");
+
+            // Act
+            var resolution = resolver.ResolveDefaultKeyPolicy("2000-01-05 00:00:00Z", key1, key2, key3, key4);
+
+            // Assert
+            Assert.Same(key2, resolution.FallbackKey);
+            Assert.True(resolution.ShouldGenerateNewKey);
+        }
+
+        [Fact]
+        public void ResolveDefaultKeyPolicy_FallbackKey_SelectsLatestBeforePriorPropagationWindow_IgnoresFailures()
+        {
+            // Arrange
+            var resolver = CreateDefaultKeyResolver();
+            var key1 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-01 00:00:00Z");
+            var key2 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-02 00:00:00Z");
+            var key3 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-03 00:00:00Z", createEncryptorInstanceThrows: true);
             var key4 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-04 00:00:00Z");
 
             // Act
@@ -210,7 +245,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 services: null);
         }
 
-        private static IKey CreateKey(string activationDate, string expirationDate, string creationDate = null, bool isRevoked = false)
+        private static IKey CreateKey(string activationDate, string expirationDate, string creationDate = null, bool isRevoked = false, bool createEncryptorInstanceThrows = false)
         {
             var mockKey = new Mock<IKey>();
             mockKey.Setup(o => o.KeyId).Returns(Guid.NewGuid());
@@ -218,6 +253,14 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             mockKey.Setup(o => o.ActivationDate).Returns(DateTimeOffset.ParseExact(activationDate, "u", CultureInfo.InvariantCulture));
             mockKey.Setup(o => o.ExpirationDate).Returns(DateTimeOffset.ParseExact(expirationDate, "u", CultureInfo.InvariantCulture));
             mockKey.Setup(o => o.IsRevoked).Returns(isRevoked);
+            if (createEncryptorInstanceThrows)
+            {
+                mockKey.Setup(o => o.CreateEncryptorInstance()).Throws(new Exception("This method fails."));
+            }
+            else
+            {
+                mockKey.Setup(o => o.CreateEncryptorInstance()).Returns(new Mock<IAuthenticatedEncryptor>().Object);
+            }
             return mockKey.Object;
         }
     }

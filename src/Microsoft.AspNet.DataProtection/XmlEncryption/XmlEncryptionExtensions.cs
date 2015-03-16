@@ -123,8 +123,8 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         }
 
         /// <summary>
-        /// Converts an <see cref="XElement"/> to a <see cref="Secret"/> so that it can be run through
-        /// the DPAPI routines.
+        /// Converts an <see cref="XElement"/> to a <see cref="Secret"/> so that it can be kept in memory
+        /// securely or run through the DPAPI routines.
         /// </summary>
         public static Secret ToSecret(this XElement element)
         {
@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         }
 
         /// <summary>
-        /// Converts a <see cref="Secret"/> provided by the DPAPI routines back into an <see cref="XElement"/>.
+        /// Converts a <see cref="Secret"/> back into an <see cref="XElement"/>.
         /// </summary>
         public static XElement ToXElement(this Secret secret)
         {

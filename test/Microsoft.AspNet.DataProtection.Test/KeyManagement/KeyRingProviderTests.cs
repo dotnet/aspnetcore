@@ -6,9 +6,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
 using Microsoft.Framework.DependencyInjection;
 using Moq;
 using Xunit;
+
+using static System.FormattableString;
 
 namespace Microsoft.AspNet.DataProtection.KeyManagement
 {
@@ -110,7 +113,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 getCacheExpirationTokenReturnValues: new[] { expirationCts1.Token, expirationCts2.Token },
                 getAllKeysReturnValues: new[] { allKeys1, allKeys2 },
                 createNewKeyCallbacks: new[] {
-                    Tuple.Create((DateTimeOffset)now, (DateTimeOffset)now + TimeSpan.FromDays(90))
+                    Tuple.Create((DateTimeOffset)now, (DateTimeOffset)now + TimeSpan.FromDays(90), CreateKey())
                 },
                 resolveDefaultKeyPolicyReturnValues: new[]
                 {
@@ -141,6 +144,54 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         }
 
         [Fact]
+        public void CreateCacheableKeyRing_GenerationRequired_NoDefaultKey_CreatesNewKeyWithImmediateActivation_StillNoDefaultKey_ReturnsNewlyCreatedKey()
+        {
+            // Arrange
+            var callSequence = new List<string>();
+            var expirationCts1 = new CancellationTokenSource();
+            var expirationCts2 = new CancellationTokenSource();
+
+            var now = StringToDateTime("2015-03-01 00:00:00Z");
+            var allKeys = new IKey[0];
+
+            var newlyCreatedKey = CreateKey("2015-03-01 00:00:00Z", "2016-03-01 00:00:00Z");
+
+            var keyRingProvider = SetupCreateCacheableKeyRingTestAndCreateKeyManager(
+                callSequence: callSequence,
+                getCacheExpirationTokenReturnValues: new[] { expirationCts1.Token, expirationCts2.Token },
+                getAllKeysReturnValues: new[] { allKeys, allKeys },
+                createNewKeyCallbacks: new[] {
+                    Tuple.Create((DateTimeOffset)now, (DateTimeOffset)now + TimeSpan.FromDays(90), newlyCreatedKey)
+                },
+                resolveDefaultKeyPolicyReturnValues: new[]
+                {
+                        Tuple.Create((DateTimeOffset)now, (IEnumerable<IKey>)allKeys, new DefaultKeyResolution()
+                        {
+                            DefaultKey = null,
+                            ShouldGenerateNewKey = true
+                        }),
+                        Tuple.Create((DateTimeOffset)now, (IEnumerable<IKey>)allKeys, new DefaultKeyResolution()
+                        {
+                            DefaultKey = null,
+                            ShouldGenerateNewKey = true
+                        })
+                });
+
+            // Act
+            var cacheableKeyRing = keyRingProvider.GetCacheableKeyRing(now);
+
+            // Assert
+            Assert.Equal(newlyCreatedKey.KeyId, cacheableKeyRing.KeyRing.DefaultKeyId);
+            AssertWithinJitterRange(cacheableKeyRing.ExpirationTimeUtc, now);
+            Assert.True(CacheableKeyRing.IsValid(cacheableKeyRing, now));
+            expirationCts1.Cancel();
+            Assert.True(CacheableKeyRing.IsValid(cacheableKeyRing, now));
+            expirationCts2.Cancel();
+            Assert.False(CacheableKeyRing.IsValid(cacheableKeyRing, now));
+            Assert.Equal(new[] { "GetCacheExpirationToken", "GetAllKeys", "ResolveDefaultKeyPolicy", "CreateNewKey", "GetCacheExpirationToken", "GetAllKeys", "ResolveDefaultKeyPolicy" }, callSequence);
+        }
+
+        [Fact]
         public void CreateCacheableKeyRing_GenerationRequired_NoDefaultKey_KeyGenerationDisabled_Fails()
         {
             // Arrange
@@ -154,7 +205,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 getCacheExpirationTokenReturnValues: new[] { CancellationToken.None },
                 getAllKeysReturnValues: new[] { allKeys },
                 createNewKeyCallbacks: new[] {
-                    Tuple.Create((DateTimeOffset)now, (DateTimeOffset)now + TimeSpan.FromDays(90))
+                    Tuple.Create((DateTimeOffset)now, (DateTimeOffset)now + TimeSpan.FromDays(90), CreateKey())
                 },
                 resolveDefaultKeyPolicyReturnValues: new[]
                 {
@@ -194,7 +245,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 getCacheExpirationTokenReturnValues: new[] { expirationCts1.Token, expirationCts2.Token },
                 getAllKeysReturnValues: new[] { allKeys1, allKeys2 },
                 createNewKeyCallbacks: new[] {
-                    Tuple.Create(key1.ExpirationDate, (DateTimeOffset)now + TimeSpan.FromDays(90))
+                    Tuple.Create(key1.ExpirationDate, (DateTimeOffset)now + TimeSpan.FromDays(90), CreateKey())
                 },
                 resolveDefaultKeyPolicyReturnValues: new[]
                 {
@@ -304,7 +355,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             IList<string> callSequence,
             IEnumerable<CancellationToken> getCacheExpirationTokenReturnValues,
             IEnumerable<IReadOnlyCollection<IKey>> getAllKeysReturnValues,
-            IEnumerable<Tuple<DateTimeOffset,DateTimeOffset>> createNewKeyCallbacks,
+            IEnumerable<Tuple<DateTimeOffset, DateTimeOffset, IKey>> createNewKeyCallbacks,
             IEnumerable<Tuple<DateTimeOffset, IEnumerable<IKey>, DefaultKeyResolution>> resolveDefaultKeyPolicyReturnValues,
             KeyManagementOptions keyManagementOptions = null)
         {
@@ -337,21 +388,21 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                         createNewKeyCallbacksEnumerator.MoveNext();
                         Assert.Equal(createNewKeyCallbacksEnumerator.Current.Item1, activationDate);
                         Assert.Equal(createNewKeyCallbacksEnumerator.Current.Item2, expirationDate);
-                        return null; // nobody uses this return value
-                });
+                        return createNewKeyCallbacksEnumerator.Current.Item3;
+                    });
             }
 
             var resolveDefaultKeyPolicyReturnValuesEnumerator = resolveDefaultKeyPolicyReturnValues.GetEnumerator();
             var mockDefaultKeyResolver = new Mock<IDefaultKeyResolver>(MockBehavior.Strict);
             mockDefaultKeyResolver.Setup(o => o.ResolveDefaultKeyPolicy(It.IsAny<DateTimeOffset>(), It.IsAny<IEnumerable<IKey>>()))
-                .Returns<DateTimeOffset,IEnumerable<IKey>>((now, allKeys) =>
-                {
-                    callSequence.Add("ResolveDefaultKeyPolicy");
-                    resolveDefaultKeyPolicyReturnValuesEnumerator.MoveNext();
-                    Assert.Equal(resolveDefaultKeyPolicyReturnValuesEnumerator.Current.Item1, now);
-                    Assert.Equal(resolveDefaultKeyPolicyReturnValuesEnumerator.Current.Item2, allKeys);
-                    return resolveDefaultKeyPolicyReturnValuesEnumerator.Current.Item3;
-                });
+                .Returns<DateTimeOffset, IEnumerable<IKey>>((now, allKeys) =>
+                 {
+                     callSequence.Add("ResolveDefaultKeyPolicy");
+                     resolveDefaultKeyPolicyReturnValuesEnumerator.MoveNext();
+                     Assert.Equal(resolveDefaultKeyPolicyReturnValuesEnumerator.Current.Item1, now);
+                     Assert.Equal(resolveDefaultKeyPolicyReturnValuesEnumerator.Current.Item2, allKeys);
+                     return resolveDefaultKeyPolicyReturnValuesEnumerator.Current.Item3;
+                 });
 
             return CreateKeyRingProvider(mockKeyManager.Object, mockDefaultKeyResolver.Object, keyManagementOptions);
         }
@@ -495,6 +546,12 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             return DateTimeOffset.ParseExact(input, "u", CultureInfo.InvariantCulture).UtcDateTime;
         }
 
+        private static IKey CreateKey()
+        {
+            var now = DateTimeOffset.Now;
+            return CreateKey(Invariant($"{now:u}"), Invariant($"{now.AddDays(90):u}"));
+        }
+
         private static IKey CreateKey(string activationDate, string expirationDate, bool isRevoked = false)
         {
             var mockKey = new Mock<IKey>();
@@ -502,6 +559,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             mockKey.Setup(o => o.ActivationDate).Returns(DateTimeOffset.ParseExact(activationDate, "u", CultureInfo.InvariantCulture));
             mockKey.Setup(o => o.ExpirationDate).Returns(DateTimeOffset.ParseExact(expirationDate, "u", CultureInfo.InvariantCulture));
             mockKey.Setup(o => o.IsRevoked).Returns(isRevoked);
+            mockKey.Setup(o => o.CreateEncryptorInstance()).Returns(new Mock<IAuthenticatedEncryptor>().Object);
             return mockKey.Object;
         }
     }

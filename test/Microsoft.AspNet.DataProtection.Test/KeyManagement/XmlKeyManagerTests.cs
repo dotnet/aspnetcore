@@ -473,7 +473,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                   <key id='78cd498e-9375-4e55-ac0d-d79527ecd09d' version='1'>
                     <creationDate>2015-01-01T00:00:00Z</creationDate>
                     <activationDate>2015-02-01T00:00:00Z</activationDate>
-                    <expirationDate>2015-03-01T00:00:00Z</expirationDate>
+                    <expirationDate>NOT A VALID DATE</expirationDate>
                     <descriptor deserializerType='badDeserializer'>
                       <node />
                     </descriptor>
@@ -492,7 +492,6 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             var expectedEncryptor = new Mock<IAuthenticatedEncryptor>().Object;
             var mockActivator = new Mock<IActivator>();
             mockActivator.ReturnAuthenticatedEncryptorGivenDeserializerTypeNameAndInput("goodDeserializer", "<node xmlns='private' />", expectedEncryptor);
-            mockActivator.Setup(o => o.CreateInstance(It.IsAny<Type>(), "badDeserializer")).Throws(new Exception("How exceptional!"));
 
             // Act
             var keys = RunGetAllKeysCore(xml, mockActivator.Object).ToArray();
@@ -513,26 +512,18 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                   <key id='78cd498e-9375-4e55-ac0d-d79527ecd09d' version='1'>
                     <creationDate>2015-01-01T00:00:00Z</creationDate>
                     <activationDate>2015-02-01T00:00:00Z</activationDate>
-                    <expirationDate>2015-03-01T00:00:00Z</expirationDate>
-                    <descriptor deserializerType='badDeserializer'>             
-                      <node>
-                        <!-- Secret information: 1A2B3C4D -->
-                      </node>
-                    </descriptor>
+                    <expirationDate>NOT A VALID DATE</expirationDate>
+                    <!-- Secret information: 1A2B3C4D -->
                   </key>
                 </root>";
-
-            var mockActivator = new Mock<IActivator>();
-            mockActivator.Setup(o => o.CreateInstance(It.IsAny<Type>(), "badDeserializer")).Throws(new Exception("Secret information: 9Z8Y7X6W"));
 
             var loggerFactory = new StringLoggerFactory(LogLevel.Verbose);
 
             // Act
-            RunGetAllKeysCore(xml, mockActivator.Object, loggerFactory).ToArray();
+            RunGetAllKeysCore(xml, new Mock<IActivator>().Object, loggerFactory).ToArray();
 
             // Assert
             Assert.False(loggerFactory.ToString().Contains("1A2B3C4D"), "The secret '1A2B3C4D' should not have been logged.");
-            Assert.False(loggerFactory.ToString().Contains("9Z8Y7X6W"), "The secret '1A2B3C4D' should not have been logged.");
         }
 
         [Fact]
@@ -545,26 +536,18 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                   <key id='78cd498e-9375-4e55-ac0d-d79527ecd09d' version='1'>
                     <creationDate>2015-01-01T00:00:00Z</creationDate>
                     <activationDate>2015-02-01T00:00:00Z</activationDate>
-                    <expirationDate>2015-03-01T00:00:00Z</expirationDate>
-                    <descriptor deserializerType='badDeserializer'>             
-                      <node>
-                        <!-- Secret information: 1A2B3C4D -->
-                      </node>
-                    </descriptor>
+                    <expirationDate>NOT A VALID DATE</expirationDate>
+                    <!-- Secret information: 1A2B3C4D -->
                   </key>
                 </root>";
-
-            var mockActivator = new Mock<IActivator>();
-            mockActivator.Setup(o => o.CreateInstance(It.IsAny<Type>(), "badDeserializer")).Throws(new Exception("Secret information: 9Z8Y7X6W"));
 
             var loggerFactory = new StringLoggerFactory(LogLevel.Debug);
 
             // Act
-            RunGetAllKeysCore(xml, mockActivator.Object, loggerFactory).ToArray();
+            RunGetAllKeysCore(xml, new Mock<IActivator>().Object, loggerFactory).ToArray();
 
             // Assert
             Assert.True(loggerFactory.ToString().Contains("1A2B3C4D"), "The secret '1A2B3C4D' should have been logged.");
-            Assert.True(loggerFactory.ToString().Contains("9Z8Y7X6W"), "The secret '9Z8Y7X6W' should have been logged.");
         }
 
         [Fact]

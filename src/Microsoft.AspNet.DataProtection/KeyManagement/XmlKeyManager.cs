@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             var allElements = KeyRepository.GetAllElements();
 
             // We aggregate all the information we read into three buckets
-            Dictionary<Guid, Key> keyIdToKeyMap = new Dictionary<Guid, Key>();
+            Dictionary<Guid, KeyBase> keyIdToKeyMap = new Dictionary<Guid, KeyBase>();
             HashSet<Guid> revokedKeyIds = null;
             DateTimeOffset? mostRecentMassRevocationDate = null;
 
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 {
                     // ProcessKeyElement can return null in the case of failure, and if this happens we'll move on.
                     // Still need to throw if we see duplicate keys with the same id.
-                    Key key = ProcessKeyElement(element);
+                    KeyBase key = ProcessKeyElement(element);
                     if (key != null)
                     {
                         if (keyIdToKeyMap.ContainsKey(key.KeyId))
@@ -179,7 +179,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             {
                 foreach (Guid revokedKeyId in revokedKeyIds)
                 {
-                    Key key;
+                    KeyBase key;
                     keyIdToKeyMap.TryGetValue(revokedKeyId, out key);
                     if (key != null)
                     {
@@ -224,60 +224,36 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             return Interlocked.CompareExchange(ref _cacheExpirationTokenSource, null, null).Token;
         }
 
-        private Key ProcessKeyElement(XElement keyElement)
+        private KeyBase ProcessKeyElement(XElement keyElement)
         {
             Debug.Assert(keyElement.Name == KeyElementName);
 
             try
             {
-                // Read metadata
+                // Read metadata and prepare the key for deferred instantiation
                 Guid keyId = (Guid)keyElement.Attribute(IdAttributeName);
                 DateTimeOffset creationDate = (DateTimeOffset)keyElement.Element(CreationDateElementName);
                 DateTimeOffset activationDate = (DateTimeOffset)keyElement.Element(ActivationDateElementName);
                 DateTimeOffset expirationDate = (DateTimeOffset)keyElement.Element(ExpirationDateElementName);
 
-                // Figure out who will be deserializing this
-                XElement descriptorElement = keyElement.Element(DescriptorElementName);
-                string descriptorDeserializerTypeName = (string)descriptorElement.Attribute(DeserializerTypeAttributeName);
-
-                // Decrypt the descriptor element and pass it to the descriptor for consumption
-                XElement unencryptedInputToDeserializer = descriptorElement.Elements().Single().DecryptElement(_activator);
-                var deserializerInstance = _activator.CreateInstance<IAuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
-                var descriptorInstance = deserializerInstance.ImportFromXml(unencryptedInputToDeserializer);
-
-                // Finally, create the Key instance
                 if (_logger.IsVerboseLevelEnabled())
                 {
                     _logger.LogVerboseF($"Found key {keyId:B}.");
                 }
-                return new Key(
+
+                return new DeferredKey(
                     keyId: keyId,
                     creationDate: creationDate,
                     activationDate: activationDate,
                     expirationDate: expirationDate,
-                    descriptor: descriptorInstance);
+                    keyManager: _internalKeyManager,
+                    keyElement: keyElement);
             }
             catch (Exception ex)
             {
-                // We only write the exception out to the 'debug' log since it could contain sensitive
-                // information and we don't want to leak it.
-                if (_logger.IsDebugLevelEnabled())
-                {
-                    if (_logger.IsWarningLevelEnabled())
-                    {
-                        _logger.LogWarningF($"An exception of type '{ex.GetType().FullName}' occurred while processing the key element '{keyElement.WithoutChildNodes()}', so the key will not be included in the keyring. Full details of the exception will be written to the 'Debug' log.");
-                    }
-                    _logger.LogDebugF(ex, $"An exception occurred while processing the key element '{keyElement}'.");
-                }
-                else
-                {
-                    if (_logger.IsWarningLevelEnabled())
-                    {
-                        _logger.LogWarningF($"An exception of type '{ex.GetType().FullName}' occurred while processing the key element '{keyElement.WithoutChildNodes()}', so the key will not be included in the keyring. To prevent accidental disclosure of sensitive information the full exception details are not being logged. To enable logging full exception details, enable 'Debug' level logging for this provider.");
-                    }
-                }
+                WriteKeyDeserializationErrorToLog(ex, keyElement);
 
-                // If an error occurs, we just skip this key.
+                // Don't include this key in the key ring
                 return null;
             }
         }
@@ -369,6 +345,26 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             Interlocked.Exchange(ref _cacheExpirationTokenSource, new CancellationTokenSource())?.Cancel();
         }
 
+        private void WriteKeyDeserializationErrorToLog(Exception error, XElement keyElement)
+        {
+            // Ideally we'd suppress the error since it might contain sensitive information, but it would be too difficult for
+            // an administrator to diagnose the issue if we hide this information. Instead we'll log the error to the error
+            // log and the raw <key> element to the debug log. This works for our out-of-box XML decryptors since they don't
+            // include sensitive information in the exception message.
+
+            if (_logger.IsErrorLevelEnabled())
+            {
+                // write sanitized <key> element
+                _logger.LogErrorF(error, $"An exception occurred while processing the key element '{keyElement.WithoutChildNodes()}'.");
+            }
+
+            if (_logger.IsDebugLevelEnabled())
+            {
+                // write full <key> element
+                _logger.LogDebugF(error, $"An exception occurred while processing the key element '{keyElement}'.");
+            }
+        }
+
         IKey IInternalXmlKeyManager.CreateNewKey(Guid keyId, DateTimeOffset creationDate, DateTimeOffset activationDate, DateTimeOffset expirationDate)
         {
             // <key id="{guid}" version="1">
@@ -438,6 +434,28 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 activationDate: activationDate,
                 expirationDate: expirationDate,
                 descriptor: newDescriptor);
+        }
+
+        IAuthenticatedEncryptorDescriptor IInternalXmlKeyManager.DeserializeDescriptorFromKeyElement(XElement keyElement)
+        {
+            try
+            {
+                // Figure out who will be deserializing this
+                XElement descriptorElement = keyElement.Element(DescriptorElementName);
+                string descriptorDeserializerTypeName = (string)descriptorElement.Attribute(DeserializerTypeAttributeName);
+
+                // Decrypt the descriptor element and pass it to the descriptor for consumption
+                XElement unencryptedInputToDeserializer = descriptorElement.Elements().Single().DecryptElement(_activator);
+                var deserializerInstance = _activator.CreateInstance<IAuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
+                var descriptorInstance = deserializerInstance.ImportFromXml(unencryptedInputToDeserializer);
+
+                return descriptorInstance ?? CryptoUtil.Fail<IAuthenticatedEncryptorDescriptor>("ImportFromXml returned null.");
+            }
+            catch (Exception ex)
+            {
+                WriteKeyDeserializationErrorToLog(ex, keyElement);
+                throw;
+            }
         }
 
         void IInternalXmlKeyManager.RevokeSingleKey(Guid keyId, DateTimeOffset revocationDate, string reason)

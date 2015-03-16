@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 ?? new DefaultKeyResolver(_keyManagementOptions.KeyPropagationWindow, _keyManagementOptions.MaxServerClockSkew, services);
         }
 
-        private CacheableKeyRing CreateCacheableKeyRingCore(DateTimeOffset now, bool allowRecursiveCalls = false)
+        private CacheableKeyRing CreateCacheableKeyRingCore(DateTimeOffset now, IKey keyJustAdded)
         {
             // Refresh the list of all keys
             var cacheExpirationToken = _keyManager.GetCacheExpirationToken();
@@ -50,20 +50,17 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 _logger.LogVerbose("Policy resolution states that a new key should be added to the key ring.");
             }
 
-            // At this point, we know we need to generate a new key.
-
-            // This should only occur if a call to CreateNewKey immediately followed by a call to
-            // GetAllKeys returned 'you need to add a key to the key ring'. This should never happen
-            // in practice unless there's corruption in the backing store. Regardless, we can't recurse
-            // forever, so we have to bail now.
-            if (!allowRecursiveCalls)
+            // We shouldn't call CreateKey more than once, else we risk stack diving. This code path shouldn't
+            // get hit unless there was an ineligible key with an activation date slightly later than the one we
+            // just added. If this does happen, then we'll just use whatever key we can instead of creating
+            // new keys endlessly, eventually falling back to the one we just added if all else fails.
+            if (keyJustAdded != null)
             {
-                if (_logger.IsErrorLevelEnabled())
-                {
-                    _logger.LogError("Policy resolution states that a new key should be added to the key ring, even after a call to CreateNewKey.");
-                }
-                throw CryptoUtil.Fail("Policy resolution states that a new key should be added to the key ring, even after a call to CreateNewKey.");
+                var keyToUse = defaultKeyPolicy.DefaultKey ?? defaultKeyPolicy.FallbackKey ?? keyJustAdded;
+                return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, keyToUse, allKeys);
             }
+
+            // At this point, we know we need to generate a new key.
 
             // We have been asked to generate a new key, but auto-generation of keys has been disabled.
             // We need to use the fallback key or fail.
@@ -92,22 +89,25 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             {
                 // The case where there's no default key is the easiest scenario, since it
                 // means that we need to create a new key with immediate activation.
-                _keyManager.CreateNewKey(activationDate: now, expirationDate: now + _keyManagementOptions.NewKeyLifetime);
-                return CreateCacheableKeyRingCore(now); // recursively call
+                var newKey = _keyManager.CreateNewKey(activationDate: now, expirationDate: now + _keyManagementOptions.NewKeyLifetime);
+                return CreateCacheableKeyRingCore(now, keyJustAdded: newKey); // recursively call
             }
             else
             {
                 // If there is a default key, then the new key we generate should become active upon
                 // expiration of the default key. The new key lifetime is measured from the creation
                 // date (now), not the activation date.
-                _keyManager.CreateNewKey(activationDate: defaultKeyPolicy.DefaultKey.ExpirationDate, expirationDate: now + _keyManagementOptions.NewKeyLifetime);
-                return CreateCacheableKeyRingCore(now); // recursively call
+                var newKey = _keyManager.CreateNewKey(activationDate: defaultKeyPolicy.DefaultKey.ExpirationDate, expirationDate: now + _keyManagementOptions.NewKeyLifetime);
+                return CreateCacheableKeyRingCore(now, keyJustAdded: newKey); // recursively call
             }
         }
 
         private CacheableKeyRing CreateCacheableKeyRingCoreStep2(DateTimeOffset now, CancellationToken cacheExpirationToken, IKey defaultKey, IEnumerable<IKey> allKeys)
         {
             Debug.Assert(defaultKey != null);
+
+            // Invariant: our caller ensures that CreateEncryptorInstance succeeded at least once
+            Debug.Assert(defaultKey.CreateEncryptorInstance() != null);
 
             if (_logger.IsVerboseLevelEnabled())
             {
@@ -186,7 +186,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         CacheableKeyRing ICacheableKeyRingProvider.GetCacheableKeyRing(DateTimeOffset now)
         {
             // the entry point allows one recursive call
-            return CreateCacheableKeyRingCore(now, allowRecursiveCalls: true);
+            return CreateCacheableKeyRingCore(now, keyJustAdded: null);
         }
     }
 }

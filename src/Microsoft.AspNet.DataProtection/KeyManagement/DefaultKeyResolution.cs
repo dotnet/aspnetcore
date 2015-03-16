@@ -10,6 +10,10 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         /// <summary>
         /// The default key, may be null if no key is a good default candidate.
         /// </summary>
+        /// <remarks>
+        /// If this property is non-null, its <see cref="IKey.CreateEncryptorInstance"/> method will succeed
+        /// so is appropriate for use with deferred keys.
+        /// </remarks>
         public IKey DefaultKey;
 
         /// <summary>
@@ -17,6 +21,10 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         /// honor the <see cref="ShouldGenerateNewKey"/> property. This property may
         /// be null if there is no viable fallback key.
         /// </summary>
+        /// <remarks>
+        /// If this property is non-null, its <see cref="IKey.CreateEncryptorInstance"/> method will succeed
+        /// so is appropriate for use with deferred keys.
+        /// </remarks>
         public IKey FallbackKey;
 
         /// <summary>

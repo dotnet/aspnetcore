@@ -16,16 +16,24 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         private readonly KeyHolder _defaultKeyHolder;
         private readonly Dictionary<Guid, KeyHolder> _keyIdToKeyHolderMap;
 
-        public KeyRing(Guid defaultKeyId, IEnumerable<IKey> keys)
+        public KeyRing(IKey defaultKey, IEnumerable<IKey> allKeys)
         {
             _keyIdToKeyHolderMap = new Dictionary<Guid, KeyHolder>();
-            foreach (IKey key in keys)
+            foreach (IKey key in allKeys)
             {
                 _keyIdToKeyHolderMap.Add(key.KeyId, new KeyHolder(key));
             }
 
-            DefaultKeyId = defaultKeyId;
-            _defaultKeyHolder = _keyIdToKeyHolderMap[defaultKeyId];
+            // It's possible under some circumstances that the default key won't be part of 'allKeys',
+            // such as if the key manager is forced to use the key it just generated even if such key
+            // wasn't in the underlying repository. In this case, we just add it now.
+            if (!_keyIdToKeyHolderMap.ContainsKey(defaultKey.KeyId))
+            {
+                _keyIdToKeyHolderMap.Add(defaultKey.KeyId, new KeyHolder(defaultKey));
+            }
+
+            DefaultKeyId = defaultKey.KeyId;
+            _defaultKeyHolder = _keyIdToKeyHolderMap[DefaultKeyId];
         }
         
         public IAuthenticatedEncryptor DefaultAuthenticatedEncryptor

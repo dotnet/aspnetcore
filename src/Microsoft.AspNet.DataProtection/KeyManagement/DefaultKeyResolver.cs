@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Cryptography;
+using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.DataProtection.KeyManagement
@@ -43,11 +45,21 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             _logger = services.GetLogger<DefaultKeyResolver>();
         }
 
-        public DefaultKeyResolution ResolveDefaultKeyPolicy(DateTimeOffset now, IEnumerable<IKey> allKeys)
+        private bool CanCreateAuthenticatedEncryptor(IKey key)
         {
-            DefaultKeyResolution retVal = default(DefaultKeyResolution);
-            retVal.DefaultKey = FindDefaultKey(now, allKeys, out retVal.FallbackKey, out retVal.ShouldGenerateNewKey);
-            return retVal;
+            try
+            {
+                var encryptorInstance = key.CreateEncryptorInstance() ?? CryptoUtil.Fail<IAuthenticatedEncryptor>("CreateEncryptorInstance returned null.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (_logger.IsWarningLevelEnabled())
+                {
+                    _logger.LogWarningF(ex, $"Key {key.KeyId:B} is ineligible to be the default key because its {nameof(IKey.CreateEncryptorInstance)} method failed.");
+                }
+                return false;
+            }
         }
 
         private IKey FindDefaultKey(DateTimeOffset now, IEnumerable<IKey> allKeys, out IKey fallbackKey, out bool callerShouldGenerateNewKey)
@@ -66,11 +78,11 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 }
 
                 // if the key has been revoked or is expired, it is no longer a candidate
-                if (preferredDefaultKey.IsExpired(now) || preferredDefaultKey.IsRevoked)
+                if (preferredDefaultKey.IsRevoked || preferredDefaultKey.IsExpired(now) || !CanCreateAuthenticatedEncryptor(preferredDefaultKey))
                 {
                     if (_logger.IsVerboseLevelEnabled())
                     {
-                        _logger.LogVerboseF($"Key {preferredDefaultKey.KeyId:B} is no longer under consideration as default key because it is expired or revoked.");
+                        _logger.LogVerboseF($"Key {preferredDefaultKey.KeyId:B} is no longer under consideration as default key because it is expired, revoked, or cannot be deciphered.");
                     }
                     preferredDefaultKey = null;
                 }
@@ -112,7 +124,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                                         select key).Concat(from key in allKeys
                                                            orderby key.CreationDate ascending
                                                            select key)
-                           where !key.IsRevoked
+                           where !key.IsRevoked && CanCreateAuthenticatedEncryptor(key)
                            select key).FirstOrDefault();
 
             if (_logger.IsVerboseLevelEnabled())
@@ -122,6 +134,13 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
             callerShouldGenerateNewKey = true;
             return null;
+        }
+
+        public DefaultKeyResolution ResolveDefaultKeyPolicy(DateTimeOffset now, IEnumerable<IKey> allKeys)
+        {
+            DefaultKeyResolution retVal = default(DefaultKeyResolution);
+            retVal.DefaultKey = FindDefaultKey(now, allKeys, out retVal.FallbackKey, out retVal.ShouldGenerateNewKey);
+            return retVal;
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             var key2 = new MyKey();
 
             // Act
-            var keyRing = new KeyRing(key1.KeyId, new[] { key1, key2 });
+            var keyRing = new KeyRing(key1, new[] { key1, key2 });
 
             // Assert
             Assert.Equal(0, key1.NumTimesCreateEncryptorInstanceCalled);
@@ -38,10 +38,27 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             var key2 = new MyKey();
 
             // Act
-            var keyRing = new KeyRing(key2.KeyId, new[] { key1, key2 });
+            var keyRing = new KeyRing(key2, new[] { key1, key2 });
 
             // Assert
             Assert.Equal(key2.KeyId, keyRing.DefaultKeyId);
+        }
+
+        [Fact]
+        public void DefaultKeyIdAndEncryptor_IfDefaultKeyNotPresentInAllKeys()
+        {
+            // Arrange
+            var key1 = new MyKey();
+            var key2 = new MyKey();
+            var key3 = new MyKey(expectedEncryptorInstance: new Mock<IAuthenticatedEncryptor>().Object);
+
+            // Act
+            var keyRing = new KeyRing(key3, new[] { key1, key2 });
+
+            // Assert
+            bool unused;
+            Assert.Equal(key3.KeyId, keyRing.DefaultKeyId);
+            Assert.Equal(key3.CreateEncryptorInstance(), keyRing.GetAuthenticatedEncryptorByKeyId(key3.KeyId, out unused));
         }
 
         [Fact]
@@ -55,7 +72,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             var key2 = new MyKey(expectedEncryptorInstance: expectedEncryptorInstance2);
 
             // Act
-            var keyRing = new KeyRing(key2.KeyId, new[] { key1, key2 });
+            var keyRing = new KeyRing(key2, new[] { key1, key2 });
 
             // Assert
             bool isRevoked;
