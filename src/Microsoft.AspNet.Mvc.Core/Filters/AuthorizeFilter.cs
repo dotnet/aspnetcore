@@ -35,16 +35,16 @@ namespace Microsoft.AspNet.Mvc
             // Build a ClaimsPrincipal with the Policy's required authentication types
             if (Policy.ActiveAuthenticationSchemes != null && Policy.ActiveAuthenticationSchemes.Any())
             {
-                var results = await context.HttpContext.AuthenticateAsync(Policy.ActiveAuthenticationSchemes);
-                if (results != null)
+                var newPrincipal = new ClaimsPrincipal();
+                foreach (var scheme in Policy.ActiveAuthenticationSchemes)
                 {
-                    var newPrincipal = new ClaimsPrincipal();
-                    foreach (var principal in results.Where(r => r.Principal != null).Select(r => r.Principal))
+                    var result = (await context.HttpContext.AuthenticateAsync(scheme))?.Principal;
+                    if (result != null)
                     {
-                        newPrincipal.AddIdentities(principal.Identities);
+                        newPrincipal.AddIdentities(result.Identities);
                     }
-                    context.HttpContext.User = newPrincipal;
                 }
+                context.HttpContext.User = newPrincipal;
             }
 
             // Allow Anonymous skips all authorization
