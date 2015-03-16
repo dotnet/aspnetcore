@@ -25,9 +25,9 @@ namespace MusicStore.Models
             builder.Entity<CartItem>().Key(c => c.CartItemId);
             builder.Entity<OrderDetail>().Key(o => o.OrderDetailId);
 
-            // TODO: Remove this when we start using auto generated values
-            builder.Entity<Artist>().Property(a => a.ArtistId).GenerateValueOnAdd(generateValue: false).ForSqlServer(b => b.UseNoValueGeneration());
-            builder.Entity<Genre>().Property(g => g.GenreId).GenerateValueOnAdd(generateValue: false).ForSqlServer(b => b.UseNoValueGeneration());
+            // TODO: Remove UseSequence when explicit values insertion removed. Auto generated values enabled. Default is Identity, using sequence at present to allow explicit value insertion.
+            builder.Entity<Artist>().Property(a => a.ArtistId).ForSqlServer(b => b.UseSequence());
+            builder.Entity<Genre>().Property(g => g.GenreId).ForSqlServer(b => b.UseSequence());
 
             //Deleting an album fails with this relation
             builder.Entity<Album>().Ignore(a => a.OrderDetails);
