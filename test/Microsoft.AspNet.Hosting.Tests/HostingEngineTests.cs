@@ -63,6 +63,32 @@ namespace Microsoft.AspNet.Hosting
             Assert.True(env.WebRootFileProvider.GetFileInfo("TextFile.txt").Exists);
         }
 
+        [Fact]
+        public void Validate_Environment_Name()
+        {
+            var services = HostingServices.Create().BuildServiceProvider();
+            var env = services.GetRequiredService<IHostingEnvironment>();
+            Assert.Equal("Development", env.EnvironmentName);
+
+            var config = new Configuration()
+                .AddCommandLine(new string[] { "--ASPNET_ENV", "Overridden_Environment" });
+
+            services = HostingServices.Create(fallbackServices: null, configuration: config)
+                .BuildServiceProvider();
+
+            env = services.GetRequiredService<IHostingEnvironment>();
+            Assert.Equal("Overridden_Environment", env.EnvironmentName);
+        }
+
+        [Fact]
+        public void IsEnvironment_Extension_Is_Case_Insensitive()
+        {
+            var services = HostingServices.Create().BuildServiceProvider();
+            var env = services.GetRequiredService<IHostingEnvironment>();
+            Assert.True(env.IsEnvironment("Development"));
+            Assert.True(env.IsEnvironment("developMent"));
+        }
+
         public void Initialize(IApplicationBuilder builder)
         {
 
