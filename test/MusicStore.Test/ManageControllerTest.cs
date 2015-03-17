@@ -83,11 +83,11 @@ namespace MusicStore.Controllers
 
         private class TestHttpContext : DefaultHttpContext
         {
-            public override Task<IEnumerable<AuthenticationResult>>
-                AuthenticateAsync(IEnumerable<string> authenticationTypes)
+            public override Task<AuthenticationResult>
+                AuthenticateAsync(string authenticationScheme)
             {
                 return
-                    Task.FromResult(new AuthenticateContext(authenticationTypes).Results);
+                    Task.FromResult(new AuthenticateContext(authenticationScheme).Result);
             }
         }
     }
