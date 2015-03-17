@@ -337,7 +337,14 @@ namespace E2ETests
         {
             startParameters.BundledApplicationRootPath = Path.Combine(bundleRoot ?? Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            var parameters = string.Format("bundle {0} -o {1} --runtime {2}", startParameters.ApplicationPath, startParameters.BundledApplicationRootPath, startParameters.Runtime);
+            var parameters =
+                string.Format(
+                    "bundle {0} -o {1} --runtime {2} {3}",
+                    startParameters.ApplicationPath,
+                    startParameters.BundledApplicationRootPath,
+                    startParameters.Runtime,
+                    startParameters.BundleWithNoSource ? "--no-source" : string.Empty);
+
             logger.LogInformation("Executing command kpm {args}", parameters);
 
             var startInfo = new ProcessStartInfo

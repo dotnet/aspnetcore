@@ -7,13 +7,13 @@
     "compilationOptions": { "warningsAsErrors": true, "define": [ "DEMO", "TESTING" ] },
     "code": [
         "**/*.cs",
-        "../../test/E2ETests/compiler/shared/**/*.cs" // This code is for testing only.
+        "../../test/E2ETests/compiler/shared/**/*.cs"                   // This code is for testing only.
     ],
     "bundleExclude": "*.cmd",
     "webroot": "wwwroot",
     "dependencies": {
         "EntityFramework.SqlServer": "7.0.0-*",
-        "EntityFramework.InMemory": "7.0.0-*", // For Mono.
+        "EntityFramework.InMemory": "7.0.0-*",                          // For Mono.
         "Kestrel": "1.0.0-*",
         "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
         "Microsoft.AspNet.Authentication.Facebook": "1.0.0-*",
@@ -30,7 +30,7 @@
         "Microsoft.AspNet.Session": "1.0.0-*",
         "Microsoft.AspNet.SignalR.Server": "3.0.0-*",
         "Microsoft.AspNet.StaticFiles": "1.0.0-*",
-        "Microsoft.Framework.Caching.Distributed": "1.0.0-*", // For Session.
+        "Microsoft.Framework.Caching.Distributed": "1.0.0-*",           // For Session.
         "Microsoft.Framework.CodeGenerators.Mvc": "1.0.0-*",
         "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
         "Microsoft.Framework.Logging.Console": "1.0.0-*"

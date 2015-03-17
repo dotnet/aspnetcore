@@ -25,6 +25,8 @@
 
         public string BundledApplicationRootPath { get; set; }
 
+        public bool BundleWithNoSource { get; set; }
+
         public string Runtime { get; set; }
 
 #if DNX451

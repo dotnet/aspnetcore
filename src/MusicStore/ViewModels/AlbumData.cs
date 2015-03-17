@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MusicStore.ViewModels
+﻿namespace MusicStore.ViewModels
 {
     public class AlbumData
     {

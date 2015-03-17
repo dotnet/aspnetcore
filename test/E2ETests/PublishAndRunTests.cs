@@ -12,31 +12,33 @@ namespace E2ETests
     {
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5001/")]
-        public void Publish_And_Run_Tests_On_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5001/", false)]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5001/", true)]
+        public void Publish_And_Run_Tests_On_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, bool noSource)
         {
-            Publish_And_Run_Tests(serverType, runtimeFlavor, architecture, applicationBaseUrl);
+            Publish_And_Run_Tests(serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
         }
 
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.DotNet)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5004/")]
-        public void Publish_And_Run_Tests_On_Mono(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5004/", false)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5004/", true)]
+        public void Publish_And_Run_Tests_On_Mono(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, bool noSource)
         {
-            Publish_And_Run_Tests(serverType, runtimeFlavor, architecture, applicationBaseUrl);
+            Publish_And_Run_Tests(serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
         }
 
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.DesktopClr, RuntimeArchitecture.amd64, "http://localhost:5002/")]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.DesktopClr, RuntimeArchitecture.amd64, "http://localhost:5002/", false)]
         //https://github.com/aspnet/KRuntime/issues/642
         //[InlineData(ServerType.Helios, RuntimeFlavor.CoreClr, RuntimeArchitecture.amd64, "http://localhost:5001/")]
-        public void Publish_And_Run_Tests_On_AMD64(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        public void Publish_And_Run_Tests_On_AMD64(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, bool noSource)
         {
-            Publish_And_Run_Tests(serverType, runtimeFlavor, architecture, applicationBaseUrl);
+            Publish_And_Run_Tests(serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
         }
 
-        private void Publish_And_Run_Tests(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        private void Publish_And_Run_Tests(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, bool noSource)
         {
             using (_logger.BeginScope("Publish_And_Run_Tests"))
             {
@@ -48,7 +50,8 @@ namespace E2ETests
                     ServerType = serverType,
                     RuntimeFlavor = runtimeFlavor,
                     RuntimeArchitecture = architecture,
-                    BundleApplicationBeforeStart = true
+                    BundleApplicationBeforeStart = true,
+                    BundleWithNoSource = noSource
                 };
 
                 var stopwatch = Stopwatch.StartNew();
