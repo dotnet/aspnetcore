@@ -31,7 +31,7 @@
             <ul>
                 @foreach (var property in metadata.Properties)
                 {
-                    @PropertyListItem(property)
+                    <li>Property @property.PropertyName is type @property.ModelType.Name and '@(property.Description ?? "no description")'</li>
                 }
             </ul>
         }
@@ -115,11 +115,3 @@
         }
     </div>
 </div>
-
-@helper PropertyListItem(ModelMetadata property)
-{
-    var propertyName = property.PropertyName;
-    var propertyTypeName = property.ModelType.Name;
-
-    <li>Property @propertyName is type @propertyTypeName and '@(property.Description ?? "no description")'</li>
-}
