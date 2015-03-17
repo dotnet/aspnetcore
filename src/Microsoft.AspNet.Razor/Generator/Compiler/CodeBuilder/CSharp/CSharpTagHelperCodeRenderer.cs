@@ -361,6 +361,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         private void RenderWriteTagHelperMethodCall()
         {
+            _writer.Write("await ");
+
             if (!string.IsNullOrEmpty(_context.TargetWriterName))
             {
                 _writer
@@ -375,8 +377,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
             _writer
                 .Write(ExecutionContextVariableName)
-                .WriteEndMethodInvocation(endLine: false)
-                .WriteLine(".Wait();");
+                .WriteEndMethodInvocation();
         }
 
         private void RenderRunTagHelpers()
@@ -384,12 +385,12 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             _writer.Write(ExecutionContextVariableName)
                    .Write(".")
                    .WriteStartAssignment(_tagHelperContext.ExecutionContextOutputPropertyName)
+                   .Write("await ")
                    .WriteStartInstanceMethodInvocation(RunnerVariableName,
                                                        _tagHelperContext.RunnerRunAsyncMethodName);
 
             _writer.Write(ExecutionContextVariableName)
-                   .WriteEndMethodInvocation(endLine: false)
-                   .WriteLine(".Result;");
+                   .WriteEndMethodInvocation();
         }
 
         private void RenderBufferedAttributeValue(TagHelperAttributeDescriptor attributeDescriptor)

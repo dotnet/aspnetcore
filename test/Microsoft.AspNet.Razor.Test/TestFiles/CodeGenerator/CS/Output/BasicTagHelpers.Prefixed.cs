@@ -47,8 +47,8 @@ namespace TestOutput
 #line default
 #line hidden
                 __tagHelperExecutionContext.AddTagHelperAttribute("checked", __InputTagHelper2.Checked);
-                __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
-                WriteTagHelperAsync(__tagHelperExecutionContext).Wait();
+                __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                await WriteTagHelperAsync(__tagHelperExecutionContext);
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
                 WriteLiteral("\r\n    ");
             }
@@ -56,8 +56,8 @@ namespace TestOutput
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
             __tagHelperExecutionContext.AddHtmlAttribute("class", "Hello World");
-            __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
-            WriteTagHelperAsync(__tagHelperExecutionContext).Wait();
+            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await WriteTagHelperAsync(__tagHelperExecutionContext);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             Instrumentation.BeginContext(249, 11, true);
             WriteLiteral("\r\n</THSdiv>");

@@ -61,8 +61,8 @@ Write(DateTime.Now);
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("checked", __InputTagHelper2.Checked);
-            __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
-            WriteTagHelperAsync(__tagHelperExecutionContext).Wait();
+            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await WriteTagHelperAsync(__tagHelperExecutionContext);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             Instrumentation.BeginContext(231, 18, true);
             WriteLiteral("\r\n    </p>\r\n</div>");
