@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Threading.Tasks;
+using System.Linq;
 
 namespace Microsoft.AspNet.Authorization
 {
@@ -11,9 +11,8 @@ namespace Microsoft.AspNet.Authorization
         {
             var user = context.User;
             var userIsAnonymous =
-                user == null ||
-                user.Identity == null ||
-                !user.Identity.IsAuthenticated;
+                user?.Identity == null ||
+                !user.Identities.Any(i => i.IsAuthenticated);
             if (!userIsAnonymous)
             {
                 context.Succeed(requirement);

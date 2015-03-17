@@ -549,13 +549,12 @@ namespace Microsoft.AspNet.Authorization.Test
                     options.AddPolicy("Any", policy => policy.RequireAuthenticatedUser());
                 });
             });
-            var user = new ClaimsPrincipal(
-                new ClaimsIdentity(
-                    new Claim[] {
-                        new Claim(ClaimTypes.Name, "Name"),
-                    },
-                    "AuthType")
-                );
+            var user = new ClaimsPrincipal(new ClaimsIdentity());
+            user.AddIdentity(new ClaimsIdentity(
+                new Claim[] {
+                    new Claim(ClaimTypes.Name, "Name"),
+                },
+                "AuthType"));
 
             // Act
             var allowed = await authorizationService.AuthorizeAsync(user, null, "Any");

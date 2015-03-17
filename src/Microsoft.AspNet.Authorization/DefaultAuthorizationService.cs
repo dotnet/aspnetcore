@@ -23,11 +23,9 @@ namespace Microsoft.AspNet.Authorization
         public bool Authorize(ClaimsPrincipal user, object resource, string policyName)
         {
             var policy = _options.GetPolicy(policyName);
-            if (policy == null)
-            {
-                return false;
-            }
-            return this.Authorize(user, resource, policy);
+            return (policy == null) 
+                ? false 
+                : this.Authorize(user, resource, policy);
         }
 
         public bool Authorize(ClaimsPrincipal user, object resource, params IAuthorizationRequirement[] requirements)
@@ -53,11 +51,9 @@ namespace Microsoft.AspNet.Authorization
         public Task<bool> AuthorizeAsync(ClaimsPrincipal user, object resource, string policyName)
         {
             var policy = _options.GetPolicy(policyName);
-            if (policy == null)
-            {
-                return Task.FromResult(false);
-            }
-            return this.AuthorizeAsync(user, resource, policy);
+            return (policy == null)
+                ? Task.FromResult(false)
+                : this.AuthorizeAsync(user, resource, policy);
         }
     }
 }
