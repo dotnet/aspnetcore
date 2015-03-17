@@ -16,6 +16,7 @@
 // permissions and limitations under the License.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -265,7 +266,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 foreach (var scheme in authTypeList)
                 {
                     var authResults = context.Authenticate(scheme);
-                    Assert.Null(authResults.Principal);
+                    Assert.Null(authResults);
                 }
                 return Task.FromResult(0);
             }))
@@ -296,7 +297,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 foreach (var scheme in authTypeList)
                 {
                     var authResults = context.Authenticate(scheme);
-                    if (authResults.Principal != null)
+                    if (authResults != null)
                     {
                         count++;
                     }
