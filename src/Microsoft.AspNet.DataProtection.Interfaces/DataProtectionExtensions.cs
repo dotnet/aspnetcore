@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Security.Cryptography;
 using Microsoft.AspNet.DataProtection.Interfaces;
 using Microsoft.Framework.Internal;
 
@@ -201,9 +202,9 @@ namespace Microsoft.AspNet.DataProtection
         /// <param name="protector">The data protector to use for this operation.</param>
         /// <param name="protectedData">The protected data to unprotect.</param>
         /// <returns>The plaintext form of the protected data.</returns>
-        /// <remarks>
-        /// This method will throw CryptographicException if the input is invalid or malformed.
-        /// </remarks>
+        /// <exception cref="CryptographicException">
+        /// Thrown if <paramref name="protectedData"/> is invalid or malformed.
+        /// </exception>
         public static string Unprotect([NotNull] this IDataProtector protector, [NotNull] string protectedData)
         {
             try

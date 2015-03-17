@@ -1,0 +1,18 @@
+{
+    "version": "1.0.0-*",
+    "description": "Additional APIs for ASP.NET 5 data protection.",
+    "dependencies": {
+        "Microsoft.AspNet.DataProtection": "1.0.0-*",
+        "Microsoft.AspNet.DataProtection.Shared": { "type": "build", "version": "" },
+        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+        "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" }
+    },
+    "frameworks": {
+        "net451": { },
+        "dnx451": { },
+        "dnxcore50": { }
+    },
+    "compilationOptions": {
+        "warningsAsErrors": true
+    }
+}

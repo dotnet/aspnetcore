@@ -171,22 +171,6 @@ namespace Microsoft.AspNet.DataProtection
         }
 
         /// <summary>
-        /// The payload expired at {0}.
-        /// </summary>
-        internal static string TimeLimitedDataProtector_PayloadExpired
-        {
-            get { return GetString("TimeLimitedDataProtector_PayloadExpired"); }
-        }
-
-        /// <summary>
-        /// The payload expired at {0}.
-        /// </summary>
-        internal static string FormatTimeLimitedDataProtector_PayloadExpired(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TimeLimitedDataProtector_PayloadExpired"), p0);
-        }
-
-        /// <summary>
         /// Value must be non-negative.
         /// </summary>
         internal static string Common_ValueMustBeNonNegative

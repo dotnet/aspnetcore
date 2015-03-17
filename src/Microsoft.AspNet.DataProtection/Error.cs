@@ -85,14 +85,7 @@ namespace Microsoft.AspNet.DataProtection
         {
             return new CryptographicException(Resources.ProtectionProvider_BadVersion);
         }
-
-        public static CryptographicException TimeLimitedDataProtector_PayloadExpired(ulong utcTicksExpiration)
-        {
-            DateTimeOffset expiration = new DateTimeOffset((long)utcTicksExpiration, TimeSpan.Zero).ToLocalTime();
-            string message = String.Format(CultureInfo.CurrentCulture, Resources.TimeLimitedDataProtector_PayloadExpired, expiration);
-            return new CryptographicException(message);
-        }
-
+        
         public static InvalidOperationException XmlKeyManager_DuplicateKey(Guid keyId)
         {
             string message = String.Format(CultureInfo.CurrentCulture, Resources.XmlKeyManager_DuplicateKey, keyId);
