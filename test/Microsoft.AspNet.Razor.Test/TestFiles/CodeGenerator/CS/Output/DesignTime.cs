@@ -6,36 +6,6 @@ namespace TestOutput
     public class DesignTime
     {
         private static object @__o;
-public static Template 
-#line 17 "DesignTime.cshtml"
-Foo() {
-
-#line default
-#line hidden
-        return new Template((__razor_helper_writer) => {
-#line 17 "DesignTime.cshtml"
-               
-    if(true) {
-        
-
-#line default
-#line hidden
-
-#line 19 "DesignTime.cshtml"
-                  
-    }
-
-#line default
-#line hidden
-
-        }
-        );
-#line 21 "DesignTime.cshtml"
-}
-
-#line default
-#line hidden
-
         private void @__RazorDesignTimeHelpers__()
         {
             #pragma warning disable 219

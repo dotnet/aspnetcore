@@ -24,7 +24,6 @@ namespace Microsoft.AspNet.Razor.Parser
             public static readonly string InheritsKeyword = "inherits";
             public static readonly string FunctionsKeyword = "functions";
             public static readonly string SectionKeyword = "section";
-            public static readonly string HelperKeyword = "helper";
             public static readonly string ElseIfKeyword = "else if";
             public static readonly string NamespaceKeyword = "namespace";
             public static readonly string ClassKeyword = "class";

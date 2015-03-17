@@ -34,27 +34,6 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         }
 
         [Fact]
-        public void HelperDirectiveAutoCompleteAtEOF()
-        {
-            ParseBlockTest("@helper Strong(string value) {",
-                           new HelperBlock(new HelperCodeGenerator(new LocationTagged<string>("Strong(string value) {", 8, 0, 8), headerComplete: true),
-                                           Factory.CodeTransition(),
-                                           Factory.MetaCode("helper ")
-                                               .Accepts(AcceptedCharacters.None),
-                                           Factory.Code("Strong(string value) {")
-                                               .Hidden()
-                                               .Accepts(AcceptedCharacters.None),
-                                           new StatementBlock(
-                                               Factory.EmptyCSharp()
-                                                   .AsStatement()
-                                                   .With(new AutoCompleteEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString) { AutoCompleteString = "}" })
-                                               )
-                               ),
-                           new RazorError(RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("helper", "}", "{"),
-                                          1, 0, 1));
-        }
-
-        [Fact]
         public void SectionDirectiveAutoCompleteAtEOF()
         {
             ParseBlockTest("@section Header {",
@@ -101,35 +80,6 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                        AutoCompleteString = "}"
                                    })),
                            new RazorError(RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", "}", "{"),
-                                          1, 0, 1));
-        }
-
-        [Fact]
-        public void HelperDirectiveAutoCompleteAtStartOfFile()
-        {
-            ParseBlockTest("@helper Strong(string value) {" + Environment.NewLine
-                         + "<p></p>",
-                           new HelperBlock(new HelperCodeGenerator(new LocationTagged<string>("Strong(string value) {", 8, 0, 8), headerComplete: true),
-                                           Factory.CodeTransition(),
-                                           Factory.MetaCode("helper ")
-                                               .Accepts(AcceptedCharacters.None),
-                                           Factory.Code("Strong(string value) {")
-                                               .Hidden()
-                                               .Accepts(AcceptedCharacters.None),
-                                           new StatementBlock(
-                                               Factory.Code("\r\n")
-                                                   .AsStatement()
-                                                   .With(new AutoCompleteEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString) { AutoCompleteString = "}" }),
-                                               new MarkupBlock(
-                                                   new MarkupTagBlock(
-                                                        Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
-                                                   new MarkupTagBlock(
-                                                        Factory.Markup("</p>").Accepts(AcceptedCharacters.None))),
-                                               Factory.Span(SpanKind.Code, new CSharpSymbol(Factory.LocationTracker.CurrentLocation, String.Empty, CSharpSymbolType.Unknown))
-                                                   .With(new StatementCodeGenerator())
-                                               )
-                               ),
-                           new RazorError(RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("helper", "}", "{"),
                                           1, 0, 1));
         }
 

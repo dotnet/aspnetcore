@@ -567,70 +567,6 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// Expected a "{0}" after the helper parameters.
-        /// </summary>
-        internal static string ParseError_MissingCharAfterHelperParameters
-        {
-            get { return GetString("ParseError_MissingCharAfterHelperParameters"); }
-        }
-
-        /// <summary>
-        /// Expected a "{0}" after the helper parameters.
-        /// </summary>
-        internal static string FormatParseError_MissingCharAfterHelperParameters(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_MissingCharAfterHelperParameters"), p0);
-        }
-
-        /// <summary>
-        /// Expected a "{0}" after the helper name.
-        /// </summary>
-        internal static string ParseError_MissingCharAfterHelperName
-        {
-            get { return GetString("ParseError_MissingCharAfterHelperName"); }
-        }
-
-        /// <summary>
-        /// Expected a "{0}" after the helper name.
-        /// </summary>
-        internal static string FormatParseError_MissingCharAfterHelperName(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_MissingCharAfterHelperName"), p0);
-        }
-
-        /// <summary>
-        /// Helper parameter list is missing a closing ")".
-        /// </summary>
-        internal static string ParseError_UnterminatedHelperParameterList
-        {
-            get { return GetString("ParseError_UnterminatedHelperParameterList"); }
-        }
-
-        /// <summary>
-        /// Helper parameter list is missing a closing ")".
-        /// </summary>
-        internal static string FormatParseError_UnterminatedHelperParameterList()
-        {
-            return GetString("ParseError_UnterminatedHelperParameterList");
-        }
-
-        /// <summary>
-        /// Helper blocks cannot be nested within each other.
-        /// </summary>
-        internal static string ParseError_Helpers_Cannot_Be_Nested
-        {
-            get { return GetString("ParseError_Helpers_Cannot_Be_Nested"); }
-        }
-
-        /// <summary>
-        /// Helper blocks cannot be nested within each other.
-        /// </summary>
-        internal static string FormatParseError_Helpers_Cannot_Be_Nested()
-        {
-            return GetString("ParseError_Helpers_Cannot_Be_Nested");
-        }
-
-        /// <summary>
         /// Parser was started with a null Context property.  The Context property must be set BEFORE calling any methods on the parser.
         /// </summary>
         internal static string Parser_Context_Not_Set
@@ -660,22 +596,6 @@ namespace Microsoft.AspNet.Razor
         internal static string FormatParseError_ReservedWord(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_ReservedWord"), p0);
-        }
-
-        /// <summary>
-        /// Unexpected {0} after helper keyword.  All helpers must have a name which starts with an "_" or alphabetic character. The remaining characters must be either "_" or alphanumeric.
-        /// </summary>
-        internal static string ParseError_Unexpected_Character_At_Helper_Name_Start
-        {
-            get { return GetString("ParseError_Unexpected_Character_At_Helper_Name_Start"); }
-        }
-
-        /// <summary>
-        /// Unexpected {0} after helper keyword.  All helpers must have a name which starts with an "_" or alphabetic character. The remaining characters must be either "_" or alphanumeric.
-        /// </summary>
-        internal static string FormatParseError_Unexpected_Character_At_Helper_Name_Start(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_Unexpected_Character_At_Helper_Name_Start"), p0);
         }
 
         /// <summary>

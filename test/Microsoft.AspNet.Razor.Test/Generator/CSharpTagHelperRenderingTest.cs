@@ -386,10 +386,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                              });
         }
 
-        [Theory]
-        [InlineData("TagHelpersInSection")]
-        [InlineData("TagHelpersInHelper")]
-        public void TagHelpers_WithinHelpersAndSections_GeneratesExpectedOutput(string testType)
+        [Fact]
+        public void TagHelpers_WithinHelpersAndSections_GeneratesExpectedOutput()
         {
             // Arrange
             var propertyInfo = typeof(TestType).GetProperty("BoundProperty");
@@ -406,7 +404,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             };
 
             // Act & Assert
-            RunTagHelperTest(testType, tagHelperDescriptors: tagHelperDescriptors);
+            RunTagHelperTest("TagHelpersInSection", tagHelperDescriptors: tagHelperDescriptors);
         }
 
         private static IEnumerable<TagHelperDescriptor> BuildPAndInputTagHelperDescriptors(string prefix)

@@ -110,31 +110,6 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         }
     }
 
-    public class HelperBlock : Block
-    {
-        private const BlockType ThisBlockType = BlockType.Helper;
-
-        public HelperBlock(IBlockCodeGenerator codeGenerator, IEnumerable<SyntaxTreeNode> children)
-            : base(ThisBlockType, children, codeGenerator)
-        {
-        }
-
-        public HelperBlock(IBlockCodeGenerator codeGenerator, params SyntaxTreeNode[] children)
-            : this(codeGenerator, (IEnumerable<SyntaxTreeNode>)children)
-        {
-        }
-
-        public HelperBlock(params SyntaxTreeNode[] children)
-            : this(BlockCodeGenerator.Null, children)
-        {
-        }
-
-        public HelperBlock(IEnumerable<SyntaxTreeNode> children)
-            : this(BlockCodeGenerator.Null, children)
-        {
-        }
-    }
-
     public class MarkupTagBlock : Block
     {
         private const BlockType ThisBlockType = BlockType.Tag;

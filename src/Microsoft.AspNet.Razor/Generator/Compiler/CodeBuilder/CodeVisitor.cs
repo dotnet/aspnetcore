@@ -48,9 +48,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         protected override void Visit(CodeAttributeChunk chunk)
         {
         }
-        protected override void Visit(HelperChunk chunk)
-        {
-        }
         protected override void Visit(SectionChunk chunk)
         {
         }

@@ -389,25 +389,5 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.MetaCode("}")
                            .Accepts(AcceptedCharacters.None)));
         }
-
-        [Fact]
-        public void HelperDirective()
-        {
-            ParseBlockTest("@helper Strong(string value) { foo(); }",
-                new HelperBlock(new HelperCodeGenerator(new LocationTagged<string>("Strong(string value) {", new SourceLocation(8, 0, 8)), headerComplete: true),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("helper ")
-                           .Accepts(AcceptedCharacters.None),
-                    Factory.Code("Strong(string value) {")
-                           .Hidden()
-                           .Accepts(AcceptedCharacters.None),
-                    new StatementBlock(
-                        Factory.Code(" foo(); ")
-                               .AsStatement()
-                               .With(new StatementCodeGenerator())),
-                    Factory.Code("}")
-                           .Hidden()
-                           .Accepts(AcceptedCharacters.None)));
-        }
     }
 }

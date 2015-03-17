@@ -85,10 +85,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             {
                 Visit((UsingChunk)chunk);
             }
-            else if (chunk is HelperChunk)
-            {
-                Visit((HelperChunk)chunk);
-            }
             else if (chunk is SetBaseTypeChunk)
             {
                 Visit((SetBaseTypeChunk)chunk);
@@ -131,7 +127,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         protected abstract void Visit(DynamicCodeAttributeChunk chunk);
         protected abstract void Visit(LiteralCodeAttributeChunk chunk);
         protected abstract void Visit(CodeAttributeChunk chunk);
-        protected abstract void Visit(HelperChunk chunk);
         protected abstract void Visit(SectionChunk chunk);
         protected abstract void Visit(TypeMemberChunk chunk);
         protected abstract void Visit(ResolveUrlChunk chunk);

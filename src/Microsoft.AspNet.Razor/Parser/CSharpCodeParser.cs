@@ -33,7 +33,6 @@ namespace Microsoft.AspNet.Razor.Parser
             "using",
             "section",
             "inherits",
-            "helper",
             "functions",
             "namespace",
             "class",

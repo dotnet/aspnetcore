@@ -625,12 +625,6 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         }
 
         [Fact]
-        public void ImplicitExpressionCorrectlyTriggersReparseIfHelperKeywordTyped()
-        {
-            RunTypeKeywordTest("helper");
-        }
-
-        [Fact]
         public void ImplicitExpressionCorrectlyTriggersReparseIfFunctionsKeywordTyped()
         {
             RunTypeKeywordTest("functions");

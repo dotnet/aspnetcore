@@ -240,26 +240,11 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="Structure_Member_CannotBeNull" xml:space="preserve">
     <value>The {0} property of the {1} structure cannot be null.</value>
   </data>
-  <data name="ParseError_MissingCharAfterHelperParameters" xml:space="preserve">
-    <value>Expected a "{0}" after the helper parameters.</value>
-  </data>
-  <data name="ParseError_MissingCharAfterHelperName" xml:space="preserve">
-    <value>Expected a "{0}" after the helper name.</value>
-  </data>
-  <data name="ParseError_UnterminatedHelperParameterList" xml:space="preserve">
-    <value>Helper parameter list is missing a closing ")".</value>
-  </data>
-  <data name="ParseError_Helpers_Cannot_Be_Nested" xml:space="preserve">
-    <value>Helper blocks cannot be nested within each other.</value>
-  </data>
   <data name="Parser_Context_Not_Set" xml:space="preserve">
     <value>Parser was started with a null Context property.  The Context property must be set BEFORE calling any methods on the parser.</value>
   </data>
   <data name="ParseError_ReservedWord" xml:space="preserve">
     <value>"{0}" is a reserved word and cannot be used in implicit expressions.  An explicit expression ("@()") must be used.</value>
-  </data>
-  <data name="ParseError_Unexpected_Character_At_Helper_Name_Start" xml:space="preserve">
-    <value>Unexpected {0} after helper keyword.  All helpers must have a name which starts with an "_" or alphabetic character. The remaining characters must be either "_" or alphanumeric.</value>
   </data>
   <data name="Tokenizer_CannotResumeSymbolUnlessIsPrevious" xml:space="preserve">
     <value>Cannot resume this symbol. Only the symbol immediately preceding the current one can be resumed.</value>

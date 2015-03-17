@@ -1,4 +1,4 @@
-#pragma checksum "Instrumented.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "24ae301f33f984680e86aa6c7ae226809531ffe9"
+#pragma checksum "Instrumented.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "3d0d9c94b62eeccf0a2a106b257a1ea1e22412a9"
 namespace TestOutput
 {
     using System;
@@ -6,45 +6,6 @@ namespace TestOutput
 
     public class Instrumented
     {
-public static Template 
-#line 1 "Instrumented.cshtml"
-Strong(string s) {
-
-#line default
-#line hidden
-        return new Template((__razor_helper_writer) => {
-#line 1 "Instrumented.cshtml"
-                          
-
-#line default
-#line hidden
-
-            Instrumentation.BeginContext(28, 12, true);
-            WriteLiteralTo(__razor_helper_writer, "    <strong>");
-            Instrumentation.EndContext();
-            Instrumentation.BeginContext(41, 1, false);
-#line 2 "Instrumented.cshtml"
-WriteTo(__razor_helper_writer, s);
-
-#line default
-#line hidden
-            Instrumentation.EndContext();
-            Instrumentation.BeginContext(42, 11, true);
-            WriteLiteralTo(__razor_helper_writer, "</strong>\r\n");
-            Instrumentation.EndContext();
-#line 3 "Instrumented.cshtml"
-
-#line default
-#line hidden
-
-        }
-        );
-#line 3 "Instrumented.cshtml"
-}
-
-#line default
-#line hidden
-
         #line hidden
         public Instrumented()
         {
@@ -53,10 +14,7 @@ WriteTo(__razor_helper_writer, s);
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            Instrumentation.BeginContext(56, 2, true);
-            WriteLiteral("\r\n");
-            Instrumentation.EndContext();
-#line 5 "Instrumented.cshtml"
+#line 1 "Instrumented.cshtml"
   
     int i = 1;
     var foo = 
@@ -65,180 +23,180 @@ WriteTo(__razor_helper_writer, s);
 #line hidden
 
             item => new Template((__razor_template_writer) => {
-                Instrumentation.BeginContext(93, 10, true);
+                Instrumentation.BeginContext(35, 10, true);
                 WriteLiteralTo(__razor_template_writer, "<p>Bar</p>");
                 Instrumentation.EndContext();
             }
             )
-#line 7 "Instrumented.cshtml"
+#line 3 "Instrumented.cshtml"
                          ;
 
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(106, 43, true);
+            Instrumentation.BeginContext(48, 43, true);
             WriteLiteral("    Hello, World\r\n    <p>Hello, World</p>\r\n");
             Instrumentation.EndContext();
-#line 10 "Instrumented.cshtml"
+#line 6 "Instrumented.cshtml"
 
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(152, 4, true);
+            Instrumentation.BeginContext(94, 4, true);
             WriteLiteral("\r\n\r\n");
             Instrumentation.EndContext();
-#line 12 "Instrumented.cshtml"
+#line 8 "Instrumented.cshtml"
  while(i <= 10) {
 
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(175, 23, true);
+            Instrumentation.BeginContext(117, 23, true);
             WriteLiteral("    <p>Hello from C#, #");
             Instrumentation.EndContext();
-            Instrumentation.BeginContext(200, 1, false);
-#line 13 "Instrumented.cshtml"
+            Instrumentation.BeginContext(142, 1, false);
+#line 9 "Instrumented.cshtml"
                    Write(i);
 
 #line default
 #line hidden
             Instrumentation.EndContext();
-            Instrumentation.BeginContext(202, 6, true);
+            Instrumentation.BeginContext(144, 6, true);
             WriteLiteral("</p>\r\n");
             Instrumentation.EndContext();
-#line 14 "Instrumented.cshtml"
+#line 10 "Instrumented.cshtml"
     i += 1;
 }
 
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(224, 2, true);
+            Instrumentation.BeginContext(166, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
-#line 17 "Instrumented.cshtml"
+#line 13 "Instrumented.cshtml"
  if(i == 11) {
 
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(242, 31, true);
+            Instrumentation.BeginContext(184, 31, true);
             WriteLiteral("    <p>We wrote 10 lines!</p>\r\n");
             Instrumentation.EndContext();
-#line 19 "Instrumented.cshtml"
+#line 15 "Instrumented.cshtml"
 }
 
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(276, 2, true);
+            Instrumentation.BeginContext(218, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
-#line 21 "Instrumented.cshtml"
+#line 17 "Instrumented.cshtml"
  switch(i) {
     case 11:
 
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(306, 46, true);
+            Instrumentation.BeginContext(248, 46, true);
             WriteLiteral("        <p>No really, we wrote 10 lines!</p>\r\n");
             Instrumentation.EndContext();
-#line 24 "Instrumented.cshtml"
+#line 20 "Instrumented.cshtml"
         break;
     default:
 
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(382, 39, true);
+            Instrumentation.BeginContext(324, 39, true);
             WriteLiteral("        <p>Actually, we didn\'t...</p>\r\n");
             Instrumentation.EndContext();
-#line 27 "Instrumented.cshtml"
+#line 23 "Instrumented.cshtml"
         break;
 }
 
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(440, 2, true);
+            Instrumentation.BeginContext(382, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
-#line 30 "Instrumented.cshtml"
+#line 26 "Instrumented.cshtml"
  for(int j = 1; j <= 10; j += 2) {
 
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(478, 29, true);
+            Instrumentation.BeginContext(420, 29, true);
             WriteLiteral("    <p>Hello again from C#, #");
             Instrumentation.EndContext();
-            Instrumentation.BeginContext(509, 1, false);
-#line 31 "Instrumented.cshtml"
+            Instrumentation.BeginContext(451, 1, false);
+#line 27 "Instrumented.cshtml"
                          Write(j);
 
 #line default
 #line hidden
             Instrumentation.EndContext();
-            Instrumentation.BeginContext(511, 6, true);
+            Instrumentation.BeginContext(453, 6, true);
             WriteLiteral("</p>\r\n");
             Instrumentation.EndContext();
-#line 32 "Instrumented.cshtml"
+#line 28 "Instrumented.cshtml"
 }
 
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(520, 2, true);
+            Instrumentation.BeginContext(462, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
-#line 34 "Instrumented.cshtml"
+#line 30 "Instrumented.cshtml"
  try {
 
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(530, 41, true);
+            Instrumentation.BeginContext(472, 41, true);
             WriteLiteral("    <p>That time, we wrote 5 lines!</p>\r\n");
             Instrumentation.EndContext();
-#line 36 "Instrumented.cshtml"
+#line 32 "Instrumented.cshtml"
 } catch(Exception ex) {
 
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(596, 33, true);
+            Instrumentation.BeginContext(538, 33, true);
             WriteLiteral("    <p>Oh no! An error occurred: ");
             Instrumentation.EndContext();
-            Instrumentation.BeginContext(631, 10, false);
-#line 37 "Instrumented.cshtml"
+            Instrumentation.BeginContext(573, 10, false);
+#line 33 "Instrumented.cshtml"
                              Write(ex.Message);
 
 #line default
 #line hidden
             Instrumentation.EndContext();
-            Instrumentation.BeginContext(642, 6, true);
+            Instrumentation.BeginContext(584, 6, true);
             WriteLiteral("</p>\r\n");
             Instrumentation.EndContext();
-#line 38 "Instrumented.cshtml"
+#line 34 "Instrumented.cshtml"
 }
 
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(651, 2, true);
+            Instrumentation.BeginContext(593, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
-#line 40 "Instrumented.cshtml"
+#line 36 "Instrumented.cshtml"
  lock(new object()) {
 
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(676, 53, true);
+            Instrumentation.BeginContext(618, 53, true);
             WriteLiteral("    <p>This block is locked, for your security!</p>\r\n");
             Instrumentation.EndContext();
-#line 42 "Instrumented.cshtml"
+#line 38 "Instrumented.cshtml"
 }
 
 #line default

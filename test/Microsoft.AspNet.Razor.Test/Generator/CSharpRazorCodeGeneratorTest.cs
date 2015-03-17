@@ -75,11 +75,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         [InlineData("Templates")]
         [InlineData("Sections")]
         [InlineData("RazorComments")]
-        [InlineData("Helpers")]
-        [InlineData("HelpersMissingCloseParen")]
-        [InlineData("HelpersMissingOpenBrace")]
-        [InlineData("HelpersMissingOpenParen")]
-        [InlineData("NestedHelpers")]
         [InlineData("InlineBlocks")]
         [InlineData("LayoutDirective")]
         [InlineData("ConditionalAttributes")]
@@ -284,17 +279,13 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 tabTest: TabTest.NoTabs,
                 expectedDesignTimePragmas: new List<LineMapping>()
             {
-                BuildLineMapping(222, 16, 8, 209, 10, 0, 7),
-                BuildLineMapping(229, 16, 352, 16, 15, 26),
-                BuildLineMapping(265, 18, 461, 24, 18, 9),
-                BuildLineMapping(274, 20, 556, 33, 0, 1),
-                BuildLineMapping(20, 1, 13, 964, 52, 12, 36),
-                BuildLineMapping(74, 2, 1086, 59, 22, 1),
-                BuildLineMapping(79, 2, 1177, 64, 27, 15),
-                BuildLineMapping(113, 7, 2, 1262, 71, 6, 12),
-                BuildLineMapping(129, 8, 1, 1343, 76, 6, 4),
-                BuildLineMapping(142, 8, 1443, 78, 14, 3),
-                BuildLineMapping(204, 13, 5, 1630, 90, 6, 3)
+                BuildLineMapping(20, 1, 13, 526, 22, 12, 36),
+                BuildLineMapping(74, 2, 22, 648, 29, 22, 1),
+                BuildLineMapping(79, 2, 27, 739, 34, 27, 15),
+                BuildLineMapping(113, 7, 2, 824, 41, 6, 12),
+                BuildLineMapping(129, 8, 1, 905, 46, 6, 4),
+                BuildLineMapping(142, 8, 1005, 48, 14, 3),
+                BuildLineMapping(204, 13, 5, 1192, 60, 6, 3)
             });
         }
 
@@ -382,19 +373,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         public void CSharpCodeGeneratorDoesNotRenderLinePragmasIfGenerateLinePragmasIsSetToFalse()
         {
             RunTest("NoLinePragmas", generatePragmas: false);
-        }
-
-        [Fact]
-        public void CSharpCodeGeneratorRendersHelpersBlockCorrectlyWhenInstanceHelperRequested()
-        {
-            RunTest("Helpers",
-                    baselineName: "Helpers.Instance",
-                    hostConfig: host =>
-                    {
-                        host.StaticHelpers = false;
-
-                        return host;
-                    });
         }
 
         [Fact]
