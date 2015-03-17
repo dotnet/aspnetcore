@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
                 }
                 else
                 {
-                    _logger.LogVerbose("Encrypting to Windows DPAPI for current user account ({0}).", WindowsIdentity.GetCurrent().Name);
+                    _logger.LogVerboseF($"Encrypting to Windows DPAPI for current user account ({WindowsIdentity.GetCurrent().Name}).");
                 }
             }
 

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.Security.Principal;
 using System.Xml.Linq;
 using Microsoft.AspNet.Cryptography;
@@ -10,6 +9,8 @@ using Microsoft.AspNet.Cryptography.SafeHandles;
 using Microsoft.AspNet.DataProtection.Cng;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
+
+using static System.FormattableString;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
 {
@@ -65,7 +66,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
             string protectionDescriptorRuleString = _protectionDescriptorHandle.GetProtectionDescriptorRuleString();
             if (_logger.IsVerboseLevelEnabled())
             {
-                _logger.LogVerbose("Encrypting to Windows DPAPI-NG using protection descriptor '{0}'.", protectionDescriptorRuleString);
+                _logger.LogVerboseF($"Encrypting to Windows DPAPI-NG using protection descriptor rule '{protectionDescriptorRuleString}'.");
             }
 
             // Convert the XML element to a binary secret so that it can be run through DPAPI
@@ -114,7 +115,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
             using (WindowsIdentity currentIdentity = WindowsIdentity.GetCurrent())
             {
                 // use the SID to create an SDDL string
-                return String.Format(CultureInfo.InvariantCulture, "SID={0}", currentIdentity.User.Value);
+                return Invariant($"SID={currentIdentity.User.Value}");
             }
         }
     }

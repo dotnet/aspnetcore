@@ -8,7 +8,8 @@ using Microsoft.Framework.Logging.Internal;
 namespace Microsoft.Framework.Logging
 {
     /// <summary>
-    /// Helpful extension methods on ILogger.
+    /// Helpful extension methods on <see cref="ILogger"/>.
+    /// Methods ending in *F take <see cref="FormattableString"/> as a parameter.
     /// </summary>
     internal static class LoggingExtensions
     {
@@ -68,19 +69,44 @@ namespace Microsoft.Framework.Logging
             return (logger != null && logger.IsEnabled(level));
         }
 
-        public static void LogDebug(this ILogger logger, Exception error, string message, params object[] args)
+        public static void LogDebugF(this ILogger logger, FormattableString message)
         {
-            logger.LogDebug(new FormattedLogValues(message, args), error);
+            logger.LogDebug(message.Format, message.GetArguments());
         }
 
-        public static void LogError(this ILogger logger, Exception error, string message, params object[] args)
+        public static void LogDebugF(this ILogger logger, Exception error, FormattableString message)
         {
-            logger.LogError(new FormattedLogValues(message, args), error);
+            logger.LogDebug(new FormattedLogValues(message.Format, message.GetArguments()), error);
         }
 
-        public static void LogWarning(this ILogger logger, Exception error, string message, params object[] args)
+        public static void LogError(this ILogger logger, Exception error, string message)
         {
-            logger.LogWarning(new FormattedLogValues(message, args), error);
+            logger.LogError(message, error);
+        }
+
+        public static void LogErrorF(this ILogger logger, Exception error, FormattableString message)
+        {
+            logger.LogError(new FormattedLogValues(message.Format, message.GetArguments()), error);
+        }
+
+        public static void LogInformationF(this ILogger logger, FormattableString message)
+        {
+            logger.LogInformation(message.Format, message.GetArguments());
+        }
+
+        public static void LogVerboseF(this ILogger logger, FormattableString message)
+        {
+            logger.LogVerbose(message.Format, message.GetArguments());
+        }
+
+        public static void LogWarningF(this ILogger logger, FormattableString message)
+        {
+            logger.LogWarning(message.Format, message.GetArguments());
+        }
+
+        public static void LogWarningF(this ILogger logger, Exception error, FormattableString message)
+        {
+            logger.LogWarning(new FormattedLogValues(message.Format, message.GetArguments()), error);
         }
     }
 }

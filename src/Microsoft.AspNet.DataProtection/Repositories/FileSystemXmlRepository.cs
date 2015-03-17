@@ -153,7 +153,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
         {
             if (_logger.IsVerboseLevelEnabled())
             {
-                _logger.LogVerbose("Reading data from file '{0}'.", fullPath);
+                _logger.LogVerboseF($"Reading data from file '{fullPath}'.");
             }
 
             using (var fileStream = File.OpenRead(fullPath))
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
                 string newFriendlyName = Guid.NewGuid().ToString();
                 if (_logger.IsVerboseLevelEnabled())
                 {
-                    _logger.LogVerbose("The name '{0}' is not a safe file name, using '{1}' instead.", friendlyName, newFriendlyName);
+                    _logger.LogVerboseF($"The name '{friendlyName}' is not a safe file name, using '{newFriendlyName}' instead.");
                 }
                 friendlyName = newFriendlyName;
             }
@@ -198,7 +198,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
                 // Renames are atomic operations on the file systems we support.
                 if (_logger.IsInformationLevelEnabled())
                 {
-                    _logger.LogInformation("Writing data to file '{0}.", finalFilename);
+                    _logger.LogInformationF($"Writing data to file '{finalFilename}'.");
                 }
                 File.Move(tempFilename, finalFilename);
             }

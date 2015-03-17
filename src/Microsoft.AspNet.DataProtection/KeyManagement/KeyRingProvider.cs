@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 {
                     if (_logger.IsWarningLevelEnabled())
                     {
-                        _logger.LogWarning("Policy resolution states that a new key should be added to the key ring, but automatic generation of keys is disabled. Using fallback key '{0:D}' with expiration {1:u} as default key.", keyToUse.KeyId, keyToUse.ExpirationDate);
+                        _logger.LogWarningF($"Policy resolution states that a new key should be added to the key ring, but automatic generation of keys is disabled. Using fallback key {keyToUse.KeyId:B} with expiration {keyToUse.ExpirationDate:u} as default key.");
                     }
                     return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, keyToUse, allKeys);
                 }
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
             if (_logger.IsVerboseLevelEnabled())
             {
-                _logger.LogVerbose("Using key '{0:D}' as the default key.", defaultKey.KeyId);
+                _logger.LogVerboseF($"Using key {defaultKey.KeyId:B} as the default key.");
             }
 
             DateTimeOffset nextAutoRefreshTime = now + GetRefreshPeriodWithJitter(_keyManagementOptions.KeyRingRefreshPeriod);

@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             {
                 if (_logger.IsVerboseLevelEnabled())
                 {
-                    _logger.LogVerbose("Considering key '{0:D}' with expiration date {1:u} as default key.", preferredDefaultKey.KeyId, preferredDefaultKey.ExpirationDate);
+                    _logger.LogVerboseF($"Considering key {preferredDefaultKey.KeyId:B} with expiration date {preferredDefaultKey.ExpirationDate:u} as default key.");
                 }
 
                 // if the key has been revoked or is expired, it is no longer a candidate
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 {
                     if (_logger.IsVerboseLevelEnabled())
                     {
-                        _logger.LogVerbose("Key '{0:D}' is no longer under consideration as default key because it is expired or revoked.", preferredDefaultKey.KeyId);
+                        _logger.LogVerboseF($"Key {preferredDefaultKey.KeyId:B} is no longer under consideration as default key because it is expired or revoked.");
                     }
                     preferredDefaultKey = null;
                 }

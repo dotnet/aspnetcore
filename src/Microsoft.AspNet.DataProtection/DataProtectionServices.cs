@@ -43,7 +43,7 @@ namespace Microsoft.Framework.DependencyInjection
                 {
                     if (log.IsInformationLevelEnabled())
                     {
-                        log.LogInformation("Azure Web Sites environment detected. Using '{0}' as key repository; keys will not be encrypted at rest.", azureWebSitesKeysFolder.FullName);
+                        log.LogInformationF($"Azure Web Sites environment detected. Using '{azureWebSitesKeysFolder.FullName}' as key repository; keys will not be encrypted at rest.");
                     }
 
                     // Cloud DPAPI isn't yet available, so we don't encrypt keys at rest.
@@ -68,11 +68,11 @@ namespace Microsoft.Framework.DependencyInjection
                         {
                             if (keyEncryptorDescriptor != null)
                             {
-                                log.LogInformation("User profile is available. Using '{0}' as key repository and Windows DPAPI to encrypt keys at rest.", localAppDataKeysFolder.FullName);
+                                log.LogInformationF($"User profile is available. Using '{localAppDataKeysFolder.FullName}' as key repository and Windows DPAPI to encrypt keys at rest.");
                             }
                             else
                             {
-                                log.LogInformation("User profile is available. Using '{0}' as key repository; keys will not be encrypted at rest.", localAppDataKeysFolder.FullName);
+                                log.LogInformationF($"User profile is available. Using '{localAppDataKeysFolder.FullName}' as key repository; keys will not be encrypted at rest.");
                             }
                         }
                     }
@@ -93,11 +93,11 @@ namespace Microsoft.Framework.DependencyInjection
                             {
                                 if (keyEncryptorDescriptor != null)
                                 {
-                                    log.LogInformation("User profile not available. Using '{0}' as key repository and Windows DPAPI to encrypt keys at rest.", regKeyStorageKey.Name);
+                                    log.LogInformationF($"User profile not available. Using '{regKeyStorageKey.Name}' as key repository and Windows DPAPI to encrypt keys at rest.");
                                 }
                                 else
                                 {
-                                    log.LogInformation("User profile not available. Using '{0}' as key repository; keys will not be encrypted at rest.", regKeyStorageKey.Name);
+                                    log.LogInformationF($"User profile not available. Using '{regKeyStorageKey.Name}' as key repository; keys will not be encrypted at rest.");
                                 }
                             }
                         }

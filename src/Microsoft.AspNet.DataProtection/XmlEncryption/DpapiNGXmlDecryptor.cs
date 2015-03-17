@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
                         // swallow all errors - it's just a log
                         protectionDescriptorRule = null;
                     }
-                    _logger.LogVerbose("Decrypting secret element using Windows DPAPI-NG with protection descriptor '{0}'.", protectionDescriptorRule);
+                    _logger.LogVerboseF($"Decrypting secret element using Windows DPAPI-NG with protection descriptor rule '{protectionDescriptorRule}'.");
                 }
 
                 using (Secret secret = DpapiSecretSerializerHelper.UnprotectWithDpapiNG(protectedSecret))

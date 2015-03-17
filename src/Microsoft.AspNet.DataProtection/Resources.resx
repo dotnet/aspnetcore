@@ -136,10 +136,10 @@
     <value>An error occurred while trying to encrypt the provided data. Refer to the inner exception for more information.</value>
   </data>
   <data name="Common_KeyNotFound" xml:space="preserve">
-    <value>The key '{0:D}' was not found in the key ring.</value>
+    <value>The key {0:B} was not found in the key ring.</value>
   </data>
   <data name="Common_KeyRevoked" xml:space="preserve">
-    <value>The key '{0:D}' has been revoked.</value>
+    <value>The key {0:B} has been revoked.</value>
   </data>
   <data name="ProtectionProvider_BadMagicHeader" xml:space="preserve">
     <value>The provided payload cannot be decrypted because it was not protected with this protection provider.</value>
@@ -160,7 +160,7 @@
     <value>The new key lifetime must be at least one week.</value>
   </data>
   <data name="XmlKeyManager_DuplicateKey" xml:space="preserve">
-    <value>The key '{0:D}' already exists in the keyring.</value>
+    <value>The key {0:B} already exists in the keyring.</value>
   </data>
   <data name="Common_ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>Argument cannot be null or empty.</value>

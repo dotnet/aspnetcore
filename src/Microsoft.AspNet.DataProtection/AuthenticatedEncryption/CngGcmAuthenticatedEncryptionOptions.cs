@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
 
             if (logger.IsVerboseLevelEnabled())
             {
-                logger.LogVerbose("Opening CNG algorithm '{0}' from provider '{1}' with chaining mode GCM.", EncryptionAlgorithm, EncryptionAlgorithmProvider);
+                logger.LogVerboseF($"Opening CNG algorithm '{EncryptionAlgorithm}' from provider '{EncryptionAlgorithmProvider}' with chaining mode GCM.");
             }
 
             // Special-case cached providers

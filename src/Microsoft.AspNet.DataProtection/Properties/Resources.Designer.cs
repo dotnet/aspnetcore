@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.DataProtection
         }
 
         /// <summary>
-        /// The key '{0:D}' was not found in the key ring.
+        /// The key {0:B} was not found in the key ring.
         /// </summary>
         internal static string Common_KeyNotFound
         {
@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.DataProtection
         }
 
         /// <summary>
-        /// The key '{0:D}' was not found in the key ring.
+        /// The key {0:B} was not found in the key ring.
         /// </summary>
         internal static string FormatCommon_KeyNotFound()
         {
@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.DataProtection
         }
 
         /// <summary>
-        /// The key '{0:D}' has been revoked.
+        /// The key {0:B} has been revoked.
         /// </summary>
         internal static string Common_KeyRevoked
         {
@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.DataProtection
         }
 
         /// <summary>
-        /// The key '{0:D}' has been revoked.
+        /// The key {0:B} has been revoked.
         /// </summary>
         internal static string FormatCommon_KeyRevoked()
         {
@@ -235,7 +235,7 @@ namespace Microsoft.AspNet.DataProtection
         }
 
         /// <summary>
-        /// The key '{0:D}' already exists in the keyring.
+        /// The key {0:B} already exists in the keyring.
         /// </summary>
         internal static string XmlKeyManager_DuplicateKey
         {
@@ -243,7 +243,7 @@ namespace Microsoft.AspNet.DataProtection
         }
 
         /// <summary>
-        /// The key '{0:D}' already exists in the keyring.
+        /// The key {0:B} already exists in the keyring.
         /// </summary>
         internal static string FormatXmlKeyManager_DuplicateKey()
         {

@@ -3,13 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Security.Principal;
 using System.Xml.Linq;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Win32;
+
+using static System.FormattableString;
 
 namespace Microsoft.AspNet.DataProtection.Repositories
 {
@@ -96,7 +97,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
                     // Even though this is in HKLM, WAS ensures that applications hosted in IIS are properly isolated.
                     // See APP_POOL::EnsureSharedMachineKeyStorage in WAS source for more info.
                     // The version number will need to change if IIS hosts Core CLR directly.
-                    string aspnetAutoGenKeysBaseKeyName = String.Format(CultureInfo.InvariantCulture, @"SOFTWARE\Microsoft\ASP.NET\4.0.30319.0\AutoGenKeys\{0}", WindowsIdentity.GetCurrent().User.Value);
+                    string aspnetAutoGenKeysBaseKeyName = Invariant($@"SOFTWARE\Microsoft\ASP.NET\4.0.30319.0\AutoGenKeys\{WindowsIdentity.GetCurrent().User.Value}");
                     var aspnetBaseKey = hklmBaseKey.OpenSubKey(aspnetAutoGenKeysBaseKeyName, writable: true);
                     if (aspnetBaseKey != null)
                     {
@@ -132,7 +133,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
         {
             if (_logger.IsVerboseLevelEnabled())
             {
-                _logger.LogVerbose("Reading data from registry key '{0}', value '{1}'.", regKey.ToString(), valueName);
+                _logger.LogVerboseF($"Reading data from registry key '{regKey}', value '{valueName}'.");
             }
 
             string data = regKey.GetValue(valueName) as string;
@@ -146,7 +147,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
                 string newFriendlyName = Guid.NewGuid().ToString();
                 if (_logger.IsVerboseLevelEnabled())
                 {
-                    _logger.LogVerbose("The name '{0}' is not a safe registry value name, using '{1}' instead.", friendlyName, newFriendlyName);
+                    _logger.LogVerboseF($"The name '{friendlyName}' is not a safe registry value name, using '{newFriendlyName}' instead.");
                 }
                 friendlyName = newFriendlyName;
             }
