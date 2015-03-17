@@ -296,16 +296,24 @@ namespace Microsoft.AspNet.Mvc.Description
             {
                 foreach (var formatter in formatters)
                 {
-                    var supportedTypes = formatter.GetSupportedContentTypes(declaredType, runtimeType, contentType);
-                    if (supportedTypes != null)
+                    var responseFormatMetadataProvider = formatter as IApiResponseFormatMetadataProvider;
+                    if (responseFormatMetadataProvider != null)
                     {
-                        foreach (var supportedType in supportedTypes)
+                        var supportedTypes = responseFormatMetadataProvider.GetSupportedContentTypes(
+                            declaredType, 
+                            runtimeType, 
+                            contentType);
+
+                        if (supportedTypes != null)
                         {
-                            results.Add(new ApiResponseFormat()
+                            foreach (var supportedType in supportedTypes)
                             {
-                                Formatter = formatter,
-                                MediaType = supportedType,
-                            });
+                                results.Add(new ApiResponseFormat()
+                                {
+                                    Formatter = formatter,
+                                    MediaType = supportedType,
+                                });
+                            }
                         }
                     }
                 }

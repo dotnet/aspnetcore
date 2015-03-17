@@ -170,12 +170,7 @@ namespace Microsoft.AspNet.Mvc
         {
             foreach (var formatter in formatters)
             {
-                var supportedContentTypes = formatter.GetSupportedContentTypes(
-                                                             formatterContext.DeclaredType,
-                                                             formatterContext.Object?.GetType(),
-                                                             contentType: null);
-
-                if (formatter.CanWriteResult(formatterContext, supportedContentTypes?.FirstOrDefault()))
+                if (formatter.CanWriteResult(formatterContext, contentType: null))
                 {
                     return formatter;
                 }

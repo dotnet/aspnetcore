@@ -21,14 +21,6 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <inheritdoc />
-        public IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type declaredType,
-                                                                            Type runtimeType,
-                                                                            MediaTypeHeaderValue contentType)
-        {
-            return null;
-        }
-
-        /// <inheritdoc />
         public Task WriteAsync(OutputFormatterContext context)
         {
             var response = context.ActionContext.HttpContext.Response;

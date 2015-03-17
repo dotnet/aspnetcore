@@ -18,14 +18,6 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             return context.Object is HttpResponseMessage;
         }
 
-        public IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(
-            Type declaredType,
-            Type runtimeType,
-            MediaTypeHeaderValue contentType)
-        {
-            return null;
-        }
-
         public async Task WriteAsync(OutputFormatterContext context)
         {
             var response = context.ActionContext.HttpContext.Response;

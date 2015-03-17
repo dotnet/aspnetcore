@@ -61,13 +61,6 @@ namespace Microsoft.AspNet.Mvc.Core
                 throw new NotImplementedException();
             }
 
-            public IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(Type declaredType,
-                                                                                Type runtimeType,
-                                                                                MediaTypeHeaderValue contentType)
-            {
-                return null;
-            }
-
             public Task WriteAsync(OutputFormatterContext context)
             {
                 throw new NotImplementedException();

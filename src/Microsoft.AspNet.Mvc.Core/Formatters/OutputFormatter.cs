@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Description;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
@@ -16,7 +17,7 @@ namespace Microsoft.AspNet.Mvc
     /// <summary>
     /// Writes an object to the output stream.
     /// </summary>
-    public abstract class OutputFormatter : IOutputFormatter
+    public abstract class OutputFormatter : IOutputFormatter, IApiResponseFormatMetadataProvider
     {
         // using a field so we can return it as both IList and IReadOnlyList
         private readonly List<MediaTypeHeaderValue> _supportedMediaTypes;

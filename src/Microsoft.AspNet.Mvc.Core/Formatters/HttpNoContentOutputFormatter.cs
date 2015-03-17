@@ -33,14 +33,6 @@ namespace Microsoft.AspNet.Mvc
             return TreatNullValueAsNoContent && context.Object == null;
         }
 
-        public IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(
-            Type declaredType,
-            Type runtimeType,
-            MediaTypeHeaderValue contentType)
-        {
-            return null;
-        }
-
         public Task WriteAsync(OutputFormatterContext context)
         {
             var response = context.ActionContext.HttpContext.Response;

@@ -11,36 +11,51 @@ namespace Microsoft.AspNet.Mvc
     public class StreamOutputFormatterTest
     {
         [Theory]
-        [InlineData(typeof(Stream), typeof(FileStream), "text/plain", "text/plain")]
-        [InlineData(typeof(object), typeof(FileStream), "text/plain", "text/plain")]
-        [InlineData(typeof(object), typeof(MemoryStream), "text/plain", "text/plain")]
-        [InlineData(typeof(object), typeof(object), "text/plain", null)]
-        [InlineData(typeof(object), typeof(string), "text/plain", null)]
-        [InlineData(typeof(object), null, "text/plain", null)]
-        [InlineData(typeof(IActionResult), null, "text/plain", null)]
-        [InlineData(typeof(IActionResult), typeof(IActionResult), "text/plain", null)]
-        public void GetSupportedContentTypes_ReturnsAppropriateValues(Type declaredType,
-                                                                      Type runtimeType,
-                                                                      string contentType,
-                                                                      string expected)
+        [InlineData(typeof(Stream), "text/plain")]
+        [InlineData(typeof(Stream), null)]
+        [InlineData(typeof(object), "text/plain")]
+        [InlineData(typeof(object), null)]
+        [InlineData(typeof(IActionResult), "text/plain")]
+        [InlineData(typeof(IActionResult), null)]
+        public void CanWriteResult_ReturnsTrue_ForStreams(Type declaredType, string contentType)
         {
             // Arrange
             var formatter = new StreamOutputFormatter();
             var contentTypeHeader = contentType == null ? null : new MediaTypeHeaderValue(contentType);
+            var formatterContext = new OutputFormatterContext()
+            {
+                DeclaredType = declaredType,
+                Object = new MemoryStream()
+            };
 
             // Act
-            var contentTypes = formatter.GetSupportedContentTypes(declaredType, runtimeType, contentTypeHeader);
+            var canWrite = formatter.CanWriteResult(formatterContext, contentTypeHeader);
 
             // Assert
-            if (expected == null)
+            Assert.True(canWrite);
+        }
+
+        [Theory]
+        [InlineData(typeof(object), "text/plain")]
+        [InlineData(typeof(object), null)]
+        [InlineData(typeof(SimplePOCO), "text/plain")]
+        [InlineData(typeof(SimplePOCO), null)]
+        public void CanWriteResult_OnlyActsOnStreams_IgnoringContentType(Type declaredType, string contentType)
+        {
+            // Arrange
+            var formatter = new StreamOutputFormatter();
+            var contentTypeHeader = contentType == null ? null : new MediaTypeHeaderValue(contentType);
+            var formatterContext = new OutputFormatterContext()
             {
-                Assert.Null(contentTypes);
-            }
-            else
-            {
-                Assert.Equal(1, contentTypes.Count);
-                Assert.Equal(expected, contentTypes[0].ToString());
-            }
+                DeclaredType = declaredType,
+                Object = new SimplePOCO()
+            };
+
+            // Act
+            var canWrite = formatter.CanWriteResult(formatterContext, contentTypeHeader);
+
+            // Assert
+            Assert.False(canWrite);
         }
 
         [Theory]
