@@ -131,11 +131,23 @@ namespace Microsoft.Framework.WebEncoders
                 : base(filter, MaxOutputCharsPerInputChar)
             {
                 // Per RFC 3987, Sec. 2.2, we want encodings that are safe for
-                // 'isegment', 'iquery', and 'ifragment'. The only thing these
-                // all have in common is 'ipchar', which is defined as such:
+                // four particular components: 'isegment', 'ipath-noscheme',
+                // 'iquery', and 'ifragment'. The relevant definitions are below.
+                //
+                //    ipath-noscheme = isegment-nz-nc *( "/" isegment )
+                // 
+                //    isegment       = *ipchar
+                // 
+                //    isegment-nz-nc = 1*( iunreserved / pct-encoded / sub-delims
+                //                         / "@" )
+                //                   ; non-zero-length segment without any colon ":"
                 //
                 //    ipchar         = iunreserved / pct-encoded / sub-delims / ":"
                 //                   / "@"
+                // 
+                //    iquery         = *( ipchar / iprivate / "/" / "?" )
+                // 
+                //    ifragment      = *( ipchar / "/" / "?" )
                 // 
                 //    iunreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~" / ucschar
                 // 
@@ -151,15 +163,19 @@ namespace Microsoft.Framework.WebEncoders
                 //    sub-delims     = "!" / "$" / "&" / "'" / "(" / ")"
                 //                   / "*" / "+" / "," / ";" / "="
                 //
-                // From this list, the base encoder forbids "&", "'", "+",
+                // The only common characters between these four components are the
+                // intersection of 'isegment-nz-nc' and 'ipchar', which is really
+                // just 'isegment-nz-nc' (colons forbidden).
+                // 
+                // From this list, the base encoder already forbids "&", "'", "+",
                 // and we'll additionally forbid "=" since it has special meaning
                 // in x-www-form-urlencoded representations.
                 //
                 // This means that the full list of allowed characters from the
                 // Basic Latin set is:
-                // ALPHA / DIGIT / "-" / "." / "_" / "~" / "!" / "$" / "(" / ")" / "*" / "," / ";" / ":" / "@"
+                // ALPHA / DIGIT / "-" / "." / "_" / "~" / "!" / "$" / "(" / ")" / "*" / "," / ";" / "@"
 
-                const string forbiddenChars = @" #%/=?[\]^`{|}"; // chars from Basic Latin which aren't already disallowed by the base encoder
+                const string forbiddenChars = @" #%/:=?[\]^`{|}"; // chars from Basic Latin which aren't already disallowed by the base encoder
                 foreach (char c in forbiddenChars)
                 {
                     ForbidCharacter(c);

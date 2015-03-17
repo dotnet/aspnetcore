@@ -123,8 +123,7 @@ namespace Microsoft.Framework.WebEncoders
                             case '_':
                             case '~':
 
-                            // ipchar
-                            case ':':
+                            // isegment-nz-nc
                             case '@':
 
                             // sub-delims
