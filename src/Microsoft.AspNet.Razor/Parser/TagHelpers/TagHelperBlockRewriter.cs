@@ -17,11 +17,12 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
     {
         private static readonly string StringTypeName = typeof(string).FullName;
 
-        public static TagHelperBlockBuilder Rewrite(string tagName,
-                                                    bool validStructure,
-                                                    Block tag,
-                                                    IEnumerable<TagHelperDescriptor> descriptors,
-                                                    ParserErrorSink errorSink)
+        public static TagHelperBlockBuilder Rewrite(
+            string tagName,
+            bool validStructure,
+            Block tag,
+            IEnumerable<TagHelperDescriptor> descriptors,
+            ParserErrorSink errorSink)
         {
             // There will always be at least one child for the '<'.
             var start = tag.Children.First().Start;
@@ -74,8 +75,8 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     // Check if it's a bound attribute that is not of type string and happens to be null or whitespace.
                     string attributeValueType;
                     if (attributeValueTypes.TryGetValue(attribute.Key, out attributeValueType) &&
-                       !IsStringAttribute(attributeValueType) &&
-                       IsNullOrWhitespaceAttributeValue(attribute.Value))
+                        !IsStringAttribute(attributeValueType) &&
+                        IsNullOrWhitespaceAttributeValue(attribute.Value))
                     {
                         var errorLocation = GetAttributeNameStartLocation(child);
 

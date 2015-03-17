@@ -121,11 +121,16 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
                 var validTagStructure = ValidTagStructure(tagName, tagBlock, context);
 
-                var builder = TagHelperBlockRewriter.Rewrite(tagName,
-                                                             validTagStructure,
-                                                             tagBlock,
-                                                             descriptors,
-                                                             context.ErrorSink);
+                var builder = TagHelperBlockRewriter.Rewrite(
+                    tagName,
+                    validTagStructure,
+                    tagBlock,
+                    descriptors,
+                    context.ErrorSink);
+
+                // Track the original start tag so the editor knows where each piece of the TagHelperBlock lies 
+                // for formatting.
+                builder.SourceStartTag = tagBlock;
 
                 // Found a new tag helper block
                 TrackTagHelperBlock(builder);
@@ -134,7 +139,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 // within the tag... complete it.
                 if (builder.SelfClosing)
                 {
-                    BuildCurrentlyTrackedTagHelperBlock();
+                    BuildCurrentlyTrackedTagHelperBlock(endTag: null);
                 }
             }
             else
@@ -149,14 +154,14 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 {
                     ValidTagStructure(tagName, tagBlock, context);
 
-                    BuildCurrentlyTrackedTagHelperBlock();
+                    BuildCurrentlyTrackedTagHelperBlock(tagBlock);
                 }
                 else
                 {
                     // Current tag helper scope does not match the end tag. Attempt to recover the tag 
                     // helper by looking up the previous tag helper scopes for a matching tag. If we 
                     // can't recover it means there was no corresponding tag helper begin tag.
-                    if (TryRecoverTagHelper(tagName, context))
+                    if (TryRecoverTagHelper(tagName, tagBlock, context))
                     {
                         ValidTagStructure(tagName, tagBlock, context);
 
@@ -230,9 +235,11 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             }
         }
 
-        private void BuildCurrentlyTrackedTagHelperBlock()
+        private void BuildCurrentlyTrackedTagHelperBlock(Block endTag)
         {
-            _tagStack.Pop();
+            // Track the original end tag so the editor knows where each piece of the TagHelperBlock lies 
+            // for formatting.
+            _tagStack.Pop().SourceEndTag = endTag;
 
             BuildCurrentlyTrackedBlock();
         }
@@ -268,7 +275,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             TrackBlock(builder);
         }
 
-        private bool TryRecoverTagHelper(string tagName, RewritingContext context)
+        private bool TryRecoverTagHelper(string tagName, Block endTag, RewritingContext context)
         {
             var malformedTagHelperCount = 0;
 
@@ -289,7 +296,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 BuildMalformedTagHelpers(malformedTagHelperCount, context);
 
                 // One final build, this is the build that completes our target tag helper block which is not malformed.
-                BuildCurrentlyTrackedTagHelperBlock();
+                BuildCurrentlyTrackedTagHelperBlock(endTag);
 
                 // We were able to recover
                 return true;
@@ -310,7 +317,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     RazorResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper(
                         malformedTagHelper.TagName));
 
-                BuildCurrentlyTrackedTagHelperBlock();
+                BuildCurrentlyTrackedTagHelperBlock(endTag: null);
             }
         }
 

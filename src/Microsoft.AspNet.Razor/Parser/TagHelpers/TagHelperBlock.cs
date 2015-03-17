@@ -32,6 +32,8 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             Attributes = new Dictionary<string, SyntaxTreeNode>(source.Attributes);
             _start = source.Start;
             SelfClosing = source.SelfClosing;
+            SourceStartTag = source.SourceStartTag;
+            SourceEndTag = source.SourceEndTag;
 
             source.Reset();
 
@@ -40,6 +42,18 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
                 attributeChildren.Parent = this;
             }
         }
+
+        /// <summary>
+        /// Gets the unrewritten source start tag.
+        /// </summary>
+        /// <remarks>This is used by design time to properly format <see cref="TagHelperBlock"/>s.</remarks>
+        public Block SourceStartTag { get; }
+
+        /// <summary>
+        /// Gets the unrewritten source end tag.
+        /// </summary>
+        /// <remarks>This is used by design time to properly format <see cref="TagHelperBlock"/>s.</remarks>
+        public Block SourceEndTag { get; }
 
         /// <summary>
         /// Indicates whether or not the tag is self closing.
@@ -70,6 +84,18 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         /// </summary>
         public string TagName { get; private set; }
 
+        public override int Length
+        {
+            get
+            {
+                var startTagLength = SourceStartTag?.Length ?? 0;
+                var childrenLength = base.Length;
+                var endTagLength = SourceEndTag?.Length ?? 0;
+
+                return startTagLength + childrenLength + endTagLength;
+            }
+        }
+
         /// <inheritdoc />
         public override string ToString()
         {
@@ -99,11 +125,12 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
-                                   .Add(TagName)
-                                   .Add(Attributes)
-                                   .Add(base.GetHashCode())
-                                   .CombinedHash;
+            return HashCodeCombiner
+                .Start()
+                .Add(TagName)
+                .Add(Attributes)
+                .Add(base.GetHashCode())
+                .CombinedHash;
         }
     }
 }

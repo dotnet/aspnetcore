@@ -75,6 +75,18 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         }
 
         /// <summary>
+        /// Gets or sets the unrewritten source start tag.
+        /// </summary>
+        /// <remarks>This is used by design time to properly format <see cref="TagHelperBlock"/>s.</remarks>
+        public Block SourceStartTag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unrewritten source end tag.
+        /// </summary>
+        /// <remarks>This is used by design time to properly format <see cref="TagHelperBlock"/>s.</remarks>
+        public Block SourceEndTag { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether or not the tag in the Razor source was self-closing.
         /// </summary>
         public bool SelfClosing { get; }
