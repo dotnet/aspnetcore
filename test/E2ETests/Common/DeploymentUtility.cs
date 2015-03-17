@@ -8,56 +8,11 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.Runtime;
-using Microsoft.Framework.Runtime.Infrastructure;
 
 namespace E2ETests
 {
     internal class DeploymentUtility
     {
-        private static string GetIISExpressPath(RuntimeArchitecture architecture)
-        {
-            // Get path to program files
-            var iisExpressPath = Path.Combine(Environment.GetEnvironmentVariable("ProgramFiles(x86)"), "IIS Express", "iisexpress.exe");
-
-            // Get path to 64 bit of IIS Express
-            if (architecture == RuntimeArchitecture.amd64)
-            {
-                iisExpressPath = Path.Combine(Environment.GetEnvironmentVariable("ProgramFiles"), "IIS Express", "iisexpress.exe");
-
-                // If process is 32 bit, the path points to x86. Replace path to point to x64
-                iisExpressPath = IntPtr.Size == 8 ? iisExpressPath : iisExpressPath.Replace(" (x86)", "");
-            }
-
-            if (!File.Exists(iisExpressPath))
-            {
-                throw new Exception("Unable to find IISExpress on the machine");
-            }
-
-            return iisExpressPath;
-        }
-
-        /// <summary>
-        /// Copy AspNet.Loader.dll to bin folder
-        /// </summary>
-        /// <param name="applicationPath"></param>
-        private static void CopyAspNetLoader(string applicationPath)
-        {
-            var libraryManager = (ILibraryManager)CallContextServiceLocator.Locator.ServiceProvider.GetService(typeof(ILibraryManager));
-            var interopLibrary = libraryManager.GetLibraryInformation("Microsoft.AspNet.Loader.IIS.Interop");
-
-            var aspNetLoaderSrcPath = Path.Combine(interopLibrary.Path, "tools", "AspNet.Loader.dll");
-            var aspNetLoaderDestPath = Path.Combine(applicationPath, "wwwroot", "bin", "AspNet.Loader.dll");
-
-            // Create bin directory if it does not exist.
-            Directory.CreateDirectory(new DirectoryInfo(aspNetLoaderDestPath).Parent.FullName);
-
-            if (!File.Exists(aspNetLoaderDestPath))
-            {
-                File.Copy(aspNetLoaderSrcPath, aspNetLoaderDestPath);
-            }
-        }
-
         private static string APP_RELATIVE_PATH = Path.Combine("..", "..", "src", "MusicStore");
 
         public static Process StartApplication(StartParameters startParameters, ILogger logger)
@@ -225,7 +180,7 @@ namespace E2ETests
                     startParameters.ApplicationHostConfigTemplateContent.Replace("[ApplicationPhysicalPath]", Path.Combine(startParameters.ApplicationPath, "wwwroot"));
             }
 
-            CopyAspNetLoader(startParameters.ApplicationPath);
+            IISExpressHelper.CopyAspNetLoader(startParameters.ApplicationPath);
 
             if (!string.IsNullOrWhiteSpace(startParameters.ApplicationHostConfigTemplateContent))
             {
@@ -247,7 +202,7 @@ namespace E2ETests
                             string.Format("/port:5001 /path:\"{0}\"", webroot) :
                             string.Format("/site:{0} /config:{1}", startParameters.SiteName, startParameters.ApplicationHostConfigLocation);
 
-            var iisExpressPath = GetIISExpressPath(startParameters.RuntimeArchitecture);
+            var iisExpressPath = IISExpressHelper.GetPath(startParameters.RuntimeArchitecture);
 
             logger.LogInformation("Executing command : {iisExpress} {args}", iisExpressPath, parameters);
 
