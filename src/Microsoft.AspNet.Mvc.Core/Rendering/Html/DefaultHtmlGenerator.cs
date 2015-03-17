@@ -10,8 +10,8 @@ using System.Linq;
 using System.Text;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 
@@ -746,9 +746,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 modelExplorer.Metadata,
                 _metadataProvider,
                 viewContext.HttpContext.RequestServices);
+            
+            var validatorProviderContext = new ModelValidatorProviderContext(modelExplorer.Metadata);
+            validatorProvider.GetValidators(validatorProviderContext);
 
-            return validatorProvider
-                .GetValidators(modelExplorer.Metadata)
+            var validators = validatorProviderContext.Validators;
+
+            return 
+                validators
                 .OfType<IClientModelValidator>()
                 .SelectMany(v => v.GetClientValidationRules(validationContext));
         }

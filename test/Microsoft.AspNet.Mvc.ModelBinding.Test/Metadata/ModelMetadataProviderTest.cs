@@ -701,7 +701,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 : base(new DefaultCompositeMetadataDetailsProvider(new IMetadataDetailsProvider[]
                     {
                         new DefaultBindingMetadataProvider(),
-                        new DataAnnotationsMetadataDetailsProvider(),
+                        new DataAnnotationsMetadataProvider(),
                     }))
             {
                 _attributes = attributes;

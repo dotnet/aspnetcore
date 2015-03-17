@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     public class ModelClientValidationRule
     {

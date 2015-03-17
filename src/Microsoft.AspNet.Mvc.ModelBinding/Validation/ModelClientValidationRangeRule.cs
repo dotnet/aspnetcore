@@ -3,7 +3,7 @@
 
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     public class ModelClientValidationRangeRule : ModelClientValidationRule
     {

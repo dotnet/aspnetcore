@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.ModelBinding;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     /// <summary>
     /// Provides an activated collection of <see cref="IExcludeTypeValidationFilter"/> instances.

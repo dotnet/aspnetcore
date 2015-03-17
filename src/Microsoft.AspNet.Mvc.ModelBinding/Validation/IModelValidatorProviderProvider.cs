@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     /// <summary>
     /// Provides an activated collection of <see cref="IModelValidatorProvider"/> instances.

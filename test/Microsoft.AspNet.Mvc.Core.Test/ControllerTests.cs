@@ -12,6 +12,7 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Microsoft.AspNet.WebUtilities;
@@ -1580,8 +1581,8 @@ namespace Microsoft.AspNet.Mvc.Test
                .Returns(validationResult);
 
             var provider = new Mock<IModelValidatorProvider>();
-            provider.Setup(v => v.GetValidators(It.IsAny<ModelMetadata>()))
-                .Returns(new[] { validator1.Object });
+            provider.Setup(v => v.GetValidators(It.IsAny<ModelValidatorProviderContext>()))
+                .Callback<ModelValidatorProviderContext>(c => c.Validators.Add(validator1.Object));
 
             var binder = new Mock<IModelBinder>();
             var controller = GetController(binder.Object, provider: null);
@@ -1613,8 +1614,8 @@ namespace Microsoft.AspNet.Mvc.Test
                .Returns(validationResult);
 
             var provider = new Mock<IModelValidatorProvider>();
-            provider.Setup(v => v.GetValidators(It.IsAny<ModelMetadata>()))
-                .Returns(new[] { validator1.Object });
+            provider.Setup(v => v.GetValidators(It.IsAny<ModelValidatorProviderContext>()))
+                .Callback<ModelValidatorProviderContext>(c => c.Validators.Add(validator1.Object));
 
             var binder = new Mock<IModelBinder>();
             var controller = GetController(binder.Object, provider: null);

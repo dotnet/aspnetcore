@@ -4,6 +4,7 @@
 using System;
 using System.Xml.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Razor;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -118,8 +119,8 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Equal(2, mvcOptions.ModelValidatorProviders.Count);
-            Assert.IsType<DataAnnotationsModelValidatorProvider>(mvcOptions.ModelValidatorProviders[0].Instance);
-            Assert.IsType<DataMemberModelValidatorProvider>(mvcOptions.ModelValidatorProviders[1].Instance);
+            Assert.IsType<DefaultModelValidatorProvider>(mvcOptions.ModelValidatorProviders[0].Instance);
+            Assert.IsType<DataAnnotationsModelValidatorProvider>(mvcOptions.ModelValidatorProviders[1].Instance);
         }
 
         [Fact]

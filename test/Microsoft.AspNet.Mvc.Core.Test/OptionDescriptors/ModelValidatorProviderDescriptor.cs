@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Testing;
 using Xunit;
 
@@ -54,9 +55,8 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
 
         private class TestModelValidatorProvider : IModelValidatorProvider
         {
-            public IEnumerable<IModelValidator> GetValidators(ModelMetadata metadata)
+            public void GetValidators(ModelValidatorProviderContext context)
             {
-                throw new NotImplementedException();
             }
         }
     }

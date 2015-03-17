@@ -5,6 +5,7 @@ using System;
 using System.Xml.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
@@ -62,11 +63,13 @@ namespace Microsoft.AspNet.Mvc
 
             // Set up metadata providers
             options.ModelMetadataDetailsProviders.Add(new DefaultBindingMetadataProvider());
-            options.ModelMetadataDetailsProviders.Add(new DataAnnotationsMetadataDetailsProvider());
+            options.ModelMetadataDetailsProviders.Add(new DefaultValidationMetadataProvider());
+            options.ModelMetadataDetailsProviders.Add(new DataAnnotationsMetadataProvider());
+            options.ModelMetadataDetailsProviders.Add(new DataMemberRequiredValidationMetadataProvider());
 
             // Set up validators
+            options.ModelValidatorProviders.Add(new DefaultModelValidatorProvider());
             options.ModelValidatorProviders.Add(new DataAnnotationsModelValidatorProvider());
-            options.ModelValidatorProviders.Add(new DataMemberModelValidatorProvider());
 
             // Add types to be excluded from Validation
             options.ValidationExcludeFilters.Add(new SimpleTypesExcludeFilter());

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     /// <summary>
     /// An implementation of <see cref="IModelValidatorProvider"/> which providers validators
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// <see cref="IClientModelValidator"/>. The logic to support <see cref="IClientModelValidator"/>
     /// is implemented in <see cref="DataAnnotationsModelValidator"/>.
     /// </summary>
-    public class DataAnnotationsModelValidatorProvider : AssociatedValidatorProvider
+    public class DataAnnotationsModelValidatorProvider : IModelValidatorProvider
     {
         // A factory for validators based on ValidationAttribute.
         internal delegate IModelValidator DataAnnotationsModelValidationFactory(ValidationAttribute attribute);
@@ -30,7 +30,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private static readonly DataAnnotationsValidatableObjectAdapterFactory _defaultValidatableFactory =
             () => new ValidatableObjectAdapter();
 
-        private static bool _addImplicitRequiredAttributeForValueTypes = true;
         private readonly Dictionary<Type, DataAnnotationsModelValidationFactory> _attributeFactories =
             BuildAttributeFactoriesDictionary();
 
@@ -42,35 +41,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             get { return _attributeFactories; }
         }
 
-        private static bool AddImplicitRequiredAttributeForValueTypes
+        public void GetValidators(ModelValidatorProviderContext context)
         {
-            get { return _addImplicitRequiredAttributeForValueTypes; }
-            set { _addImplicitRequiredAttributeForValueTypes = value; }
-        }
-
-        protected override IEnumerable<IModelValidator> GetValidators(ModelMetadata metadata,
-                                                                      IEnumerable<object> attributes)
-        {
-            var results = new List<IModelValidator>();
-
-            // Produce a validator for each validation attribute we find
-            foreach (var attribute in attributes.OfType<ValidationAttribute>())
+            foreach (var attribute in context.ValidatorMetadata.OfType<ValidationAttribute>())
             {
                 DataAnnotationsModelValidationFactory factory;
                 if (!_attributeFactories.TryGetValue(attribute.GetType(), out factory))
                 {
                     factory = _defaultAttributeFactory;
                 }
-                results.Add(factory(attribute));
+
+                context.Validators.Add(factory(attribute));
             }
 
             // Produce a validator if the type supports IValidatableObject
-            if (typeof(IValidatableObject).IsAssignableFrom(metadata.ModelType))
+            if (typeof(IValidatableObject).IsAssignableFrom(context.ModelMetadata.ModelType))
             {
-                results.Add(_defaultValidatableFactory());
+                context.Validators.Add(_defaultValidatableFactory());
             }
-
-            return results;
         }
 
         private static Dictionary<Type, DataAnnotationsModelValidationFactory> BuildAttributeFactoriesDictionary()

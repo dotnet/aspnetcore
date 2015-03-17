@@ -8,8 +8,8 @@ using System.Text;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 using Newtonsoft.Json;
 

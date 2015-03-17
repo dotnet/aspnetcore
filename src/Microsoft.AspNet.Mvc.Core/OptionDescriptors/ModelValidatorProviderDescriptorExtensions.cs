@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Microsoft.Framework.Internal;
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc
         /// Adds an <see cref="IModelValidatorProvider"/> to <paramref name="descriptors"/>.
         /// </summary>
         /// <param name="descriptors">A list of <see cref="ModelValidatorProviderDescriptor"/>.</param>
-        /// <param name="modelValidatorProvider">An <see cref="IModelBinder"/> instance.</param>
+        /// <param name="modelValidatorProvider">An <see cref="IModelValidatorProvider"/> instance.</param>
         /// <returns>A <see cref="ModelValidatorProviderDescriptor"/> representing the added instance.</returns>
         public static ModelValidatorProviderDescriptor Add(
             [NotNull] this IList<ModelValidatorProviderDescriptor> descriptors,
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="descriptors">A list of <see cref="ModelValidatorProviderDescriptor"/>.</param>
         /// <param name="index">The zero-based index at which <paramref name="modelValidatorProvider"/>
         /// should be inserted.</param>
-        /// <param name="modelValidatorProvider">An <see cref="IModelBinder"/> instance.</param>
+        /// <param name="modelValidatorProvider">An <see cref="IModelValidatorProvider"/> instance.</param>
         /// <returns>A <see cref="ModelValidatorProviderDescriptor"/> representing the added instance.</returns>
         public static ModelValidatorProviderDescriptor Insert(
             [NotNull] this IList<ModelValidatorProviderDescriptor> descriptors,

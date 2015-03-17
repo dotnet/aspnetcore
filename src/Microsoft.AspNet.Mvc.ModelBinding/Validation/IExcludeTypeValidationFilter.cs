@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     /// <summary>
     /// Provides an interface which is used to determine if <see cref="Type"/>s are excluded from model validation.

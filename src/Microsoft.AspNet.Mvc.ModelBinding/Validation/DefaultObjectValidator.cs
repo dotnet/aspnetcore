@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     /// <summary>
     /// Recursively validate an object.
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             string modelKey,
             ModelExplorer modelExplorer, 
             ValidationContext validationContext, 
-            IEnumerable<IModelValidator> validators)
+            IList<IModelValidator> validators)
         {
             // Recursion guard to avoid stack overflows
             RuntimeHelpers.EnsureSufficientExecutionStack();
@@ -84,7 +84,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 // the same for all the elements of the array, we do not do GetValidators for each element,
                 // instead we just pass them over. See ValidateElements function.
                 var validatorProvider = validationContext.ModelValidationContext.ValidatorProvider;
-                validators = validatorProvider.GetValidators(modelExplorer.Metadata);
+                var validatorProviderContext = new ModelValidatorProviderContext(modelExplorer.Metadata);
+                validatorProvider.GetValidators(validatorProviderContext);
+
+                validators = validatorProviderContext.Validators;
             }
 
             // We don't need to recursively traverse the graph for null values
@@ -186,7 +189,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var elementType = GetElementType(model.GetType());
             var elementMetadata = _modelMetadataProvider.GetMetadataForType(elementType);
 
-            var validators = validationContext.ModelValidationContext.ValidatorProvider.GetValidators(elementMetadata);
+            var validatorProvider = validationContext.ModelValidationContext.ValidatorProvider;
+            var validatorProviderContext = new ModelValidatorProviderContext(elementMetadata);
+            validatorProvider.GetValidators(validatorProviderContext);
+
+            var validators = validatorProviderContext.Validators;
 
             // If there are no validators or the object is null we bail out quickly
             // when there are large arrays of null, this will save a significant amount of processing
@@ -220,20 +227,28 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             string modelKey,
             ModelExplorer modelExplorer,
             ValidationContext validationContext,
-            IEnumerable<IModelValidator> validators)
+            IList<IModelValidator> validators)
         {
             var isValid = true;
 
+            var modelState = validationContext.ModelValidationContext.ModelState;
+            var fieldValidationState = modelState.GetFieldValidationState(modelKey);
+            if (fieldValidationState == ModelValidationState.Invalid)
+            {
+                // Even if we have no validators it's possible that model binding may have added a
+                // validation error (conversion error, missing data). We want to still run
+                // validators even if that's the case.
+                isValid = false;
+            }
+
             // When the are no validators we bail quickly. This saves a GetEnumerator allocation.
             // In a large array (tens of thousands or more) scenario it's very significant.
-            var validatorsAsCollection = validators as ICollection;
-            if (validatorsAsCollection == null || validatorsAsCollection.Count > 0)
+            if (validators == null || validators.Count > 0)
             {
                 var modelValidationContext =
                         new ModelValidationContext(validationContext.ModelValidationContext, modelExplorer);
-                var modelState = validationContext.ModelValidationContext.ModelState;
+                
                 var modelValidationState = modelState.GetValidationState(modelKey);
-                var fieldValidationState = modelState.GetFieldValidationState(modelKey);
 
                 // If either the model or its properties are unvalidated, validate them now.
                 if (modelValidationState == ModelValidationState.Unvalidated ||
@@ -256,10 +271,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                             isValid = false;
                         }
                     }
-                }
-                else if (fieldValidationState == ModelValidationState.Invalid)
-                {
-                    isValid = false;
                 }
             }
 

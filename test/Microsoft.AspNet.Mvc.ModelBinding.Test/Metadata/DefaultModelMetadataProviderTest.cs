@@ -110,6 +110,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             Assert.Equal("OnPropertyType", Assert.IsType<ModelAttribute>(attributes[1]).Value);
         }
 
+        [Fact]
+        public void GetMetadataForProperties_ExcludesHiddenProperties()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            // Act
+            var metadata = provider.GetMetadataForProperties(typeof(DerivedModelWithHiding));
+
+            // Assert
+            var propertyMetadata = Assert.Single(metadata);
+            Assert.Equal(typeof(string), propertyMetadata.ModelType);
+        }
+
         private static DefaultModelMetadataProvider CreateProvider()
         {
             return new DefaultModelMetadataProvider(new EmptyCompositeMetadataDetailsProvider());
@@ -148,6 +162,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
         private void GetMetadataForParameterTestMethod([Model("OnParameter")] ModelType parameter)
         {
+        }
+
+        private class BaseModelWithHiding
+        {
+            public int Property { get; set; }
+        }
+
+        private class DerivedModelWithHiding : BaseModelWithHiding
+        {
+            public new string Property { get; set; }
         }
     }
 }

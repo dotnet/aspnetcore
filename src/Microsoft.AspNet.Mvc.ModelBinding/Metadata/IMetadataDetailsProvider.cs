@@ -6,7 +6,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
     /// <summary>
     /// Marker interface for a provider of metadata details about model objects. Implementations should
     /// implement one or more of <see cref="IBindingMetadataProvider"/>, <see cref="IDisplayMetadataProvider"/>, 
-    /// and <see cref="IModelValidatorProvider"/>.
+    /// and <see cref="IValidationMetadataProvider"/>.
     /// </summary>
     public interface IMetadataDetailsProvider
     {

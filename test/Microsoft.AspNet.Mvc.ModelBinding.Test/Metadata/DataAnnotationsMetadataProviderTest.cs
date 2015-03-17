@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 {
-    public class DataAnnotationsMetadataDetailsProviderTest
+    public class DataAnnotationsMetadataProviderTest
     {
         // Includes attributes with a 'simple' effect on display details. 
         public static TheoryData<object, Func<DisplayMetadata, object>, object> DisplayDetailsData
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             object expected)
         {
             // Arrange
-            var provider = new DataAnnotationsMetadataDetailsProvider();
+            var provider = new DataAnnotationsMetadataProvider();
 
             var key = ModelMetadataIdentity.ForType(typeof(string));
             var context = new DisplayMetadataProviderContext(key, new object[] { attribute });
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         public void GetDisplayDetails_FindsDisplayFormat_FromDataType()
         {
             // Arrange
-            var provider = new DataAnnotationsMetadataDetailsProvider();
+            var provider = new DataAnnotationsMetadataProvider();
 
             var dataType = new DataTypeAttribute(DataType.Currency);
             var displayFormat = dataType.DisplayFormat; // Non-null for DataType.Currency.
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         public void GetDisplayDetails_FindsDisplayFormat_OverridingDataType()
         {
             // Arrange
-            var provider = new DataAnnotationsMetadataDetailsProvider();
+            var provider = new DataAnnotationsMetadataProvider();
 
             var dataType = new DataTypeAttribute(DataType.Time); // Has a non-null DisplayFormat.
             var displayFormat = new DisplayFormatAttribute() // But these values override the values from DataType
@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         public void GetDisplayDetails_EditableAttribute_SetsReadOnly()
         {
             // Arrange
-            var provider = new DataAnnotationsMetadataDetailsProvider();
+            var provider = new DataAnnotationsMetadataProvider();
 
             var editable = new EditableAttribute(allowEdit: false);
 
@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         public void GetDisplayDetails_RequiredAttribute_SetsRequired()
         {
             // Arrange
-            var provider = new DataAnnotationsMetadataDetailsProvider();
+            var provider = new DataAnnotationsMetadataProvider();
 
             var required = new RequiredAttribute();
 
@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         public void GetDisplayDetails_DisplayAttribute_NameFromResources()
         {
             // Arrange
-            var provider = new DataAnnotationsMetadataDetailsProvider();
+            var provider = new DataAnnotationsMetadataProvider();
 
             var display = new DisplayAttribute()
             {
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         public void GetDisplayDetails_DisplayAttribute_DescriptionFromResources()
         {
             // Arrange
-            var provider = new DataAnnotationsMetadataDetailsProvider();
+            var provider = new DataAnnotationsMetadataProvider();
 
             var display = new DisplayAttribute()
             {

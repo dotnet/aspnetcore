@@ -200,6 +200,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public abstract string TemplateHint { get; }
 
         /// <summary>
+        /// Gets a collection of metadata items for validators.
+        /// </summary>
+        public abstract IReadOnlyList<object> ValidatorMetadata { get;}
+
+        /// <summary>
         /// Gets a value indicating whether <see cref="ModelType"/> is a simple type.
         /// </summary>
         /// <remarks>

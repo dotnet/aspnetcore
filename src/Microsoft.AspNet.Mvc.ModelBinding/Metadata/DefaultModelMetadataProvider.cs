@@ -88,10 +88,39 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         {
             var propertyHelpers = PropertyHelper.GetProperties(key.ModelType);
 
-            var propertyEntries = new DefaultMetadataDetailsCache[propertyHelpers.Length];
+            var propertyEntries = new List<DefaultMetadataDetailsCache>(propertyHelpers.Length);
             for (var i = 0; i < propertyHelpers.Length; i++)
             {
                 var propertyHelper = propertyHelpers[i];
+                if (propertyHelper.Property.DeclaringType != key.ModelType)
+                {
+                    // If this property was declared on a base type then look for the definition closest to the
+                    // the model type to see if we should include it.
+                    var ignoreProperty = false;
+
+                    // Walk up the hierarchy until we find the type that actally declares this
+                    // PropertyInfo.
+                    var currentType = key.ModelType.GetTypeInfo();
+                    while (currentType != propertyHelper.Property.DeclaringType.GetTypeInfo())
+                    {
+                        // We've found a 'more proximal' public definition
+                        var declaredProperty = currentType.GetDeclaredProperty(propertyHelper.Name);
+                        if (declaredProperty != null)
+                        {
+                            ignoreProperty = true;
+                            break;
+                        }
+
+                        currentType = currentType.BaseType.GetTypeInfo();
+                    }
+
+                    if (ignoreProperty)
+                    {
+                        // There's a better definition, ignore this.
+                        continue;
+                    }
+                }
+
                 var propertyKey = ModelMetadataIdentity.ForProperty(
                     propertyHelper.Property.PropertyType,
                     propertyHelper.Name,
@@ -101,19 +130,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                     key.ModelType, 
                     propertyHelper.Property));
 
-                propertyEntries[i] = new DefaultMetadataDetailsCache(propertyKey, attributes);
+                var propertyEntry = new DefaultMetadataDetailsCache(propertyKey, attributes);
                 if (propertyHelper.Property.CanRead && propertyHelper.Property.GetMethod?.IsPrivate == true)
                 {
-                    propertyEntries[i].PropertyAccessor = PropertyHelper.MakeFastPropertyGetter(propertyHelper.Property);
+                    propertyEntry.PropertyAccessor = PropertyHelper.MakeFastPropertyGetter(propertyHelper.Property);
                 }
 
                 if (propertyHelper.Property.CanWrite && propertyHelper.Property.SetMethod?.IsPrivate == true)
                 {
-                    propertyEntries[i].PropertySetter = PropertyHelper.MakeFastPropertySetter(propertyHelper.Property);
+                    propertyEntry.PropertySetter = PropertyHelper.MakeFastPropertySetter(propertyHelper.Property);
                 }
+
+                propertyEntries.Add(propertyEntry);
             }
 
-            return propertyEntries;
+            return propertyEntries.ToArray();
         }
 
         /// <summary>

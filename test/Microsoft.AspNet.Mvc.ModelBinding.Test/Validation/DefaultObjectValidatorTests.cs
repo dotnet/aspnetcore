@@ -5,16 +5,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Xml;
-using System.Xml.Linq;
 using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     public class DefaultObjectValidatorTests
     {
@@ -489,12 +485,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             var modelStateDictionary = new ModelStateDictionary();
 
-            var providers = new IModelValidatorProvider[]
-            {
-                new DataAnnotationsModelValidatorProvider(),
-                new DataMemberModelValidatorProvider()
-            };
-
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
 
             var excludedValidationTypesPredicate = new List<IExcludeTypeValidationFilter>();
@@ -519,7 +509,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 ModelValidationContext = new ModelValidationContext(
                     key,
-                    new CompositeModelValidatorProvider(providers),
+                    TestModelValidatorProvider.CreateDefaultProvider(),
                     modelStateDictionary,
                     modelExplorer),
                 ModelMetadataProvider = modelMetadataProvider,

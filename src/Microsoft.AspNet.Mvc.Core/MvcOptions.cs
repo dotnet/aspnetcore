@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Mvc
 
         /// <summary>
         /// Gets a list of <see cref="ExcludeValidationDescriptor"/> which are used to construct a list
-        /// of exclude filters by <see cref="IValidationExcludeFiltersProvider"/>.
+        /// of exclude filters by <see cref="ModelBinding.Validation.IValidationExcludeFiltersProvider"/>.
         /// </summary>
         public IList<ExcludeValidationDescriptor> ValidationExcludeFilters { get; }
 
@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Mvc
 
         /// <summary>
         /// Gets a list of the <see cref="ModelValidatorProviderDescriptor" />s used by
-        /// <see cref="ModelBinding.CompositeModelValidatorProvider"/>.
+        /// <see cref="ModelBinding.Validation.CompositeModelValidatorProvider"/>.
         /// </summary>
         public IList<ModelValidatorProviderDescriptor> ModelValidatorProviders { get; }
 

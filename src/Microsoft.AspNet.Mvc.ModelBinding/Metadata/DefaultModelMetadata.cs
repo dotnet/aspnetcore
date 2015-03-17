@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         private bool? _isReadOnly;
         private bool? _isRequired;
         private ModelPropertyCollection _properties;
+        private ReadOnlyCollection<object> _validatorMetadata;
 
         /// <summary>
         /// Creates a new <see cref="DefaultModelMetadata"/>.
@@ -354,6 +355,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             get
             {
                 return DisplayMetadata.TemplateHint;
+            }
+        }
+
+        /// <inheritdoc />
+        public override IReadOnlyList<object> ValidatorMetadata
+        {
+            get
+            {
+                if (_validatorMetadata == null)
+                {
+                    _validatorMetadata = new ReadOnlyCollection<object>(ValidationMetadata.ValiatorMetadata);
+                }
+
+                return _validatorMetadata;
             }
         }
     }

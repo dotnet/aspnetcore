@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc

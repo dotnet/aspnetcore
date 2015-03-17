@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Test
+namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     public class SimpleTypeExcluceFilterTest
     {

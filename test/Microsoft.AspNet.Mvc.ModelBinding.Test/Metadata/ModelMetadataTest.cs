@@ -372,6 +372,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     throw new NotImplementedException();
                 }
             }
+
+            public override IReadOnlyList<object> ValidatorMetadata
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
         }
     }
 }

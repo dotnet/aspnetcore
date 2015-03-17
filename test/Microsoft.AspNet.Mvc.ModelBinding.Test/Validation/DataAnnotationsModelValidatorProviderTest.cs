@@ -10,7 +10,7 @@ using Moq;
 #endif
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     public class DataAnnotationsModelValidatorProviderTest
     {
@@ -25,11 +25,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var mockValidatable = Mock.Of<IValidatableObject>();
             var metadata = _metadataProvider.GetMetadataForType(mockValidatable.GetType());
 
+            var providerContext = new ModelValidatorProviderContext(metadata);
+
             // Act
-            var validators = provider.GetValidators(metadata);
+            provider.GetValidators(providerContext);
 
             // Assert
-            var validator = Assert.Single(validators);
+            var validator = Assert.Single(providerContext.Validators);
             Assert.IsType<ValidatableObjectAdapter>(validator);
         }
 #endif
@@ -42,11 +44,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var metadata = _metadataProvider.GetMetadataForProperty(typeof(DummyRequiredAttributeHelperClass),
                                                                     "WithAttribute");
 
+            var providerContext = new ModelValidatorProviderContext(metadata);
+
             // Act
-            var validators = provider.GetValidators(metadata);
+            provider.GetValidators(providerContext);
 
             // Assert
-            var validator = Assert.Single(validators);
+            var validator = Assert.Single(providerContext.Validators);
             var adapter = Assert.IsType<RequiredAttributeAdapter>(validator);
             Assert.Equal("Custom Required Message", adapter.Attribute.ErrorMessage);
         }
@@ -144,11 +148,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var provider = new DataAnnotationsModelValidatorProvider();
             var metadata = _metadataProvider.GetMetadataForType(typeof(DummyClassWithDummyValidationAttribute));
 
+            var providerContext = new ModelValidatorProviderContext(metadata);
+
             // Act
-            IEnumerable<IModelValidator> validators = provider.GetValidators(metadata);
+            provider.GetValidators(providerContext);
 
             // Assert
-            var validator = validators.Single();
+            var validator = providerContext.Validators.Single();
             Assert.IsType<DataAnnotationsModelValidator>(validator);
         }
 
@@ -172,41 +178,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var mockValidatable = new Mock<IValidatableObject>();
             var metadata = _metadataProvider.GetMetadataForType(mockValidatable.Object.GetType());
 
+            var providerContext = new ModelValidatorProviderContext(metadata);
+
             // Act
-            var validators = provider.GetValidators(metadata);
+            provider.GetValidators(providerContext);
 
             // Assert
-            Assert.Single(validators);
+            Assert.Single(providerContext.Validators);
         }
 #endif
-
-        // Integration with metadata system
-
-        [Fact]
-        public void DoesNotReadPropertyValue()
-        {
-            // Arrange
-            var provider = new DataAnnotationsModelValidatorProvider();
-            var model = new ObservableModel();
-
-            var modelExplorer = _metadataProvider
-                .GetModelExplorerForType(typeof(ObservableModel), model)
-                .GetExplorerForProperty("TheProperty");
-
-            var context = new ModelValidationContext(
-                rootPrefix: null, 
-                validatorProvider: null, 
-                modelState: null, 
-                modelExplorer: modelExplorer);
-
-            // Act
-            var validators = provider.GetValidators(modelExplorer.Metadata).ToArray();
-            var results = validators.SelectMany(o => o.Validate(context)).ToArray();
-
-            // Assert
-            Assert.Empty(validators);
-            Assert.False(model.PropertyWasRead());
-        }
 
         private class ObservableModel
         {

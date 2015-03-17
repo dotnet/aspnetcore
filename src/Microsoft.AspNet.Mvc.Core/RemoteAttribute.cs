@@ -8,7 +8,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;

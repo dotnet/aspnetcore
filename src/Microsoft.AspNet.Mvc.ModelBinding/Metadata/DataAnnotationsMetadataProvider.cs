@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.Framework.Internal;
@@ -12,9 +11,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
     /// An implementation of <see cref="IBindingMetadataProvider"/> and <see cref="IDisplayMetadataProvider"/> for
     /// the System.ComponentModel.DataAnnotations attribute classes.
     /// </summary>
-    public class DataAnnotationsMetadataDetailsProvider : 
+    public class DataAnnotationsMetadataProvider : 
         IBindingMetadataProvider,
-        IDisplayMetadataProvider
+        IDisplayMetadataProvider,
+        IValidationMetadataProvider
     {
         /// <inheritdoc />
         public void GetBindingMetadata([NotNull] BindingMetadataProviderContext context)
@@ -165,6 +165,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             else if (hiddenInputAttribute != null)
             {
                 displayMetadata.TemplateHint = "HiddenInput";
+            }
+        }
+
+        /// <inheritdoc />
+        public void GetValidationMetadata([NotNull] ValidationMetadataProviderContext context)
+        {
+            foreach (var attribute in context.Attributes.OfType<ValidationAttribute>())
+            {
+                context.ValidationMetadata.ValiatorMetadata.Add(attribute);
             }
         }
     }

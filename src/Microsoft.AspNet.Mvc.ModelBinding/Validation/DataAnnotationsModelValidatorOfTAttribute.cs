@@ -3,7 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     public class DataAnnotationsModelValidator<TAttribute> : DataAnnotationsModelValidator
         where TAttribute : ValidationAttribute

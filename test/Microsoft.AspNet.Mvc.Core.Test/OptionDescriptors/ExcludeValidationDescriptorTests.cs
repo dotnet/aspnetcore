@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.Internal;
 using Xunit;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
         {
             // Arrange
             var expected = "The type 'System.String' must derive from " +
-                            "'Microsoft.AspNet.Mvc.ModelBinding.IExcludeTypeValidationFilter'.";
+                            "'Microsoft.AspNet.Mvc.ModelBinding.Validation.IExcludeTypeValidationFilter'.";
             var type = typeof(string);
 
             // Act & Assert

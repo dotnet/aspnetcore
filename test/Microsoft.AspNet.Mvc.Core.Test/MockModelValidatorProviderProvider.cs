@@ -3,9 +3,9 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
-    public class MockModelValidatorProviderProvider: IModelValidatorProviderProvider
+    public class MockModelValidatorProviderProvider : IModelValidatorProviderProvider
     {
         public List<IModelValidatorProvider> ModelValidatorProviders { get; } = new List<IModelValidatorProvider>();
 

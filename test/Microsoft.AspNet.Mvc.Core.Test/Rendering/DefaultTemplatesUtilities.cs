@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.WebEncoders;

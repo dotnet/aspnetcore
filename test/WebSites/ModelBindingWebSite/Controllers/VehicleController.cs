@@ -37,7 +37,7 @@ namespace ModelBindingWebSite
         [HttpPut("/api/vehicles/{id}")]
         [Produces("application/json")]
         public object UpdateVehicleApi(
-            [Range(1, 500)] int id,
+            int id,
             [FromBody] VehicleViewModel model,
             [FromServices] IVehicleService service,
             [FromHeader(Name = "X-TrackingId")] string trackingId)

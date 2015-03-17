@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Moq;
 using Xunit;
 
@@ -461,8 +462,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         private static IModelValidatorProvider GetValidatorProvider(params IModelValidator[] validators)
         {
             var provider = new Mock<IModelValidatorProvider>();
-            provider.Setup(v => v.GetValidators(It.IsAny<ModelMetadata>()))
-                    .Returns(validators ?? Enumerable.Empty<IModelValidator>());
+            provider
+                .Setup(v => v.GetValidators(It.IsAny<ModelValidatorProviderContext>()))
+                .Callback<ModelValidatorProviderContext>(c =>
+                {
+                    if (validators == null)
+                    {
+                        return;
+                    }
+
+                    foreach (var validator in validators)
+                    {
+                        c.Validators.Add(validator);
+                    }
+                });
 
             return provider.Object;
         }

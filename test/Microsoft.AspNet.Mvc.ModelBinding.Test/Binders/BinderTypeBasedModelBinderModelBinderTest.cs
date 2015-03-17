@@ -6,9 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Core;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.Framework.DependencyInjection;
 using Moq;
 using Xunit;
-using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {

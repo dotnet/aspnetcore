@@ -6,7 +6,7 @@ using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     public class MinLengthAttributeAdapterTest
     {

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Moq;
 using Xunit;
@@ -52,7 +53,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var provider1 = Mock.Of<IModelValidatorProvider>();
             var provider2 = Mock.Of<IModelValidatorProvider>();
-            var type1 = typeof(DataMemberModelValidatorProvider);
+            var type1 = typeof(DefaultModelValidatorProvider);
             var type2 = typeof(DataAnnotationsModelValidatorProvider);
             var collection = new List<ModelValidatorProviderDescriptor>();
 
@@ -66,7 +67,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(4, collection.Count);
             Assert.Same(provider1, collection[0].Instance);
             Assert.Same(provider2, collection[1].Instance);
-            Assert.IsType<DataMemberModelValidatorProvider>(collection[2].OptionType);
+            Assert.IsType<DefaultModelValidatorProvider>(collection[2].OptionType);
             Assert.IsType<DataAnnotationsModelValidatorProvider>(collection[3].OptionType);
         }
     }
