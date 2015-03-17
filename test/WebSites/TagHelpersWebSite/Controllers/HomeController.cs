@@ -30,7 +30,7 @@ namespace TagHelpersWebSite.Controllers
             return View();
         }
 
-        public ViewResult NestedViewStartTagHelper()
+        public ViewResult NestedGlobalImportTagHelper()
         {
             return View();
         }
@@ -43,6 +43,30 @@ namespace TagHelpersWebSite.Controllers
         public ViewResult ViewWithInheritedRemoveTagHelper()
         {
             return View("/Views/RemoveInheritedTagHelpers/ViewWithInheritedRemoveTagHelper.cshtml");
+        }
+
+        public ViewResult ViewWithInheritedTagHelperPrefix()
+        {
+            return View("/Views/InheritedTagHelperPrefix/InheritedTagHelperPrefix.cshtml");
+        }
+
+        public ViewResult ViewWithOverriddenTagHelperPrefix()
+        {
+            return View("/Views/InheritedTagHelperPrefix/OverriddenTagHelperPrefix.cshtml");
+        }
+
+        public ViewResult ViewWithNestedInheritedTagHelperPrefix()
+        {
+            return View(
+                "/Views/InheritedTagHelperPrefix/NestedInheritedTagHelperPrefix/" +
+                "NestedInheritedTagHelperPrefix.cshtml");
+        }
+
+        public ViewResult ViewWithNestedOverriddenTagHelperPrefix()
+        {
+            return View(
+                "/Views/InheritedTagHelperPrefix/NestedInheritedTagHelperPrefix/" +
+                "NestedOverriddenTagHelperPrefix.cshtml");
         }
     }
 }

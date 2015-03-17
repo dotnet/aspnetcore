@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Razor.Generator.Compiler;
@@ -15,30 +16,132 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public class MvcRazorCodeParserTest
     {
-        [Fact]
-        public void GetTagHelperDescriptors_ReturnsDescriptorsFromViewStart()
+        public static TheoryData GlobalImportData
+        {
+            get
+            {
+                // codeTrees, expectedDirectiveDescriptors
+                return new TheoryData<CodeTree[], TagHelperDirectiveDescriptor[]>
+                {
+                    {
+                        new[] { CreateCodeTree(new TagHelperPrefixDirectiveChunk { Prefix = "THP" }) },
+                        new[] { CreateDirectiveDescriptor("THP", TagHelperDirectiveType.TagHelperPrefix) }
+                    },
+                    {
+                        new[] { CreateCodeTree(new AddTagHelperChunk { LookupText = "ATH" }) },
+                        new[] { CreateDirectiveDescriptor("ATH", TagHelperDirectiveType.AddTagHelper) }
+                    },
+                    {
+                        new[]
+                        {
+                            CreateCodeTree(
+                                new AddTagHelperChunk { LookupText = "ATH1" },
+                                new AddTagHelperChunk { LookupText = "ATH2" })
+                        },
+                        new[]
+                        {
+                            CreateDirectiveDescriptor("ATH1", TagHelperDirectiveType.AddTagHelper),
+                            CreateDirectiveDescriptor("ATH2", TagHelperDirectiveType.AddTagHelper)
+                        }
+                    },
+                    {
+                        new[] { CreateCodeTree(new RemoveTagHelperChunk { LookupText = "RTH" }) },
+                        new[] { CreateDirectiveDescriptor("RTH", TagHelperDirectiveType.RemoveTagHelper) }
+                    },
+                    {
+                        new[]
+                        {
+                            CreateCodeTree(
+                                new RemoveTagHelperChunk { LookupText = "RTH1" },
+                                new RemoveTagHelperChunk { LookupText = "RTH2" })
+                        },
+                        new[]
+                        {
+                            CreateDirectiveDescriptor("RTH1", TagHelperDirectiveType.RemoveTagHelper),
+                            CreateDirectiveDescriptor("RTH2", TagHelperDirectiveType.RemoveTagHelper)
+                        }
+                    },
+                    {
+                        new[]
+                        {
+                            CreateCodeTree(new TagHelperPrefixDirectiveChunk { Prefix = "THP1" }),
+                            CreateCodeTree(new TagHelperPrefixDirectiveChunk { Prefix = "THP2" }),
+                        },
+                        new[] { CreateDirectiveDescriptor("THP1", TagHelperDirectiveType.TagHelperPrefix) }
+                    },
+                    {
+                        new[]
+                        {
+                            CreateCodeTree(
+                                new TagHelperPrefixDirectiveChunk { Prefix = "THP" },
+                                new RemoveTagHelperChunk { LookupText = "RTH" },
+                                new AddTagHelperChunk { LookupText = "ATH" })
+                        },
+                        new[]
+                        {
+                            CreateDirectiveDescriptor("RTH", TagHelperDirectiveType.RemoveTagHelper),
+                            CreateDirectiveDescriptor("ATH", TagHelperDirectiveType.AddTagHelper),
+                            CreateDirectiveDescriptor("THP", TagHelperDirectiveType.TagHelperPrefix),
+                        }
+                    },
+                    {
+                        new[]
+                        {
+                            CreateCodeTree(
+                                new LiteralChunk { Text = "Hello world" },
+                                new AddTagHelperChunk { LookupText = "ATH" }),
+                            CreateCodeTree(new RemoveTagHelperChunk { LookupText = "RTH" })
+                        },
+                        new[]
+                        {
+                            CreateDirectiveDescriptor("RTH", TagHelperDirectiveType.RemoveTagHelper),
+                            CreateDirectiveDescriptor("ATH", TagHelperDirectiveType.AddTagHelper),
+                        }
+                    },
+                    {
+                        new[]
+                        {
+                            CreateCodeTree(new TagHelperPrefixDirectiveChunk { Prefix = "THP" }),
+                            CreateCodeTree(
+                                new LiteralChunk { Text = "Hello world" },
+                                new AddTagHelperChunk { LookupText = "ATH" }),
+                            CreateCodeTree(new RemoveTagHelperChunk { LookupText = "RTH" })
+                        },
+                        new[]
+                        {
+                            CreateDirectiveDescriptor("RTH", TagHelperDirectiveType.RemoveTagHelper),
+                            CreateDirectiveDescriptor("ATH", TagHelperDirectiveType.AddTagHelper),
+                            CreateDirectiveDescriptor("THP", TagHelperDirectiveType.TagHelperPrefix),
+                        }
+                    },
+                    {
+                        new[]
+                        {
+                            CreateCodeTree(new TagHelperPrefixDirectiveChunk { Prefix = "THP1" }),
+                            CreateCodeTree(new AddTagHelperChunk { LookupText = "ATH" }),
+                            CreateCodeTree(new RemoveTagHelperChunk { LookupText = "RTH" }),
+                            CreateCodeTree(new TagHelperPrefixDirectiveChunk { Prefix = "THP2" }),
+                        },
+                        new[]
+                        {
+                            CreateDirectiveDescriptor("RTH", TagHelperDirectiveType.RemoveTagHelper),
+                            CreateDirectiveDescriptor("ATH", TagHelperDirectiveType.AddTagHelper),
+                            CreateDirectiveDescriptor("THP1", TagHelperDirectiveType.TagHelperPrefix),
+                        }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(GlobalImportData))]
+        public void GetTagHelperDescriptors_ReturnsExpectedDirectiveDescriptors(
+            CodeTree[] codeTrees,
+            TagHelperDirectiveDescriptor[] expectedDirectiveDescriptors)
         {
             // Arrange
             var builder = new BlockBuilder { Type = BlockType.Comment };
             var block = new Block(builder);
-            var codeTrees = new[]
-            {
-                new CodeTree
-                {
-                    Chunks =  new Chunk[]
-                    {
-                        new LiteralChunk { Text = "Hello world" },
-                        new AddTagHelperChunk { LookupText = "Add Tag Helper" },
-                    }
-                },
-                new CodeTree
-                {
-                    Chunks = new[]
-                    {
-                        new RemoveTagHelperChunk { LookupText = "Remove Tag Helper" },
-                    }
-                }
-            };
 
             IList<TagHelperDirectiveDescriptor> descriptors = null;
             var resolver = new Mock<ITagHelperDescriptorResolver>();
@@ -50,25 +153,43 @@ namespace Microsoft.AspNet.Mvc.Razor
                     .Returns(Enumerable.Empty<TagHelperDescriptor>())
                     .Verifiable();
 
-            var baseParser = new RazorParser(new CSharpCodeParser(),
-                                             new HtmlMarkupParser(),
-                                             resolver.Object);
-            var parser = new TestableMvcRazorParser(baseParser, codeTrees, new Chunk[0]);
-            var sink = new ParserErrorSink();
+            var baseParser = new RazorParser(
+                new CSharpCodeParser(),
+                new HtmlMarkupParser(),
+                tagHelperDescriptorResolver: resolver.Object);
+            var parser = new TestableMvcRazorParser(baseParser, codeTrees, defaultInheritedChunks: new Chunk[0]);
 
             // Act
-            var result = parser.GetTagHelperDescriptorsPublic(block, sink).ToArray();
+            parser.GetTagHelperDescriptorsPublic(block, errorSink: new ParserErrorSink()).ToArray();
 
             // Assert
             Assert.NotNull(descriptors);
-            Assert.Equal(2, descriptors.Count);
+            Assert.Equal(expectedDirectiveDescriptors.Length, descriptors.Count);
 
-            Assert.Equal("Remove Tag Helper", descriptors[0].DirectiveText);
-            Assert.Equal(SourceLocation.Undefined, descriptors[0].Location);
+            for (var i = 0; i < expectedDirectiveDescriptors.Length; i++)
+            {
+                var expected = expectedDirectiveDescriptors[i];
+                var actual = descriptors[i];
 
-            Assert.Equal("Add Tag Helper", descriptors[1].DirectiveText);
-            Assert.Equal(TagHelperDirectiveType.AddTagHelper, descriptors[1].DirectiveType);
-            Assert.Equal(SourceLocation.Undefined, descriptors[1].Location);
+                Assert.Equal(expected.DirectiveText, actual.DirectiveText, StringComparer.Ordinal);
+                Assert.Equal(expected.Location, actual.Location);
+                Assert.Equal(expected.DirectiveType, actual.DirectiveType);
+            }
+        }
+
+        private static CodeTree CreateCodeTree(params Chunk[] chunks)
+        {
+            return new CodeTree
+            {
+                Chunks = chunks
+            };
+        }
+
+        private static TagHelperDirectiveDescriptor CreateDirectiveDescriptor(
+            string directiveText,
+            TagHelperDirectiveType directiveType)
+        {
+            return new TagHelperDirectiveDescriptor(directiveText, SourceLocation.Undefined, directiveType);
         }
 
         private class TestableMvcRazorParser : MvcRazorParser

@@ -53,38 +53,62 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedContent, responseContent);
         }
 
-        public static IEnumerable<object[]> TagHelpersAreInheritedFromViewStartPagesData
+        public static TheoryData TagHelpersAreInheritedFromGlobalImportPagesData
         {
             get
             {
-                var expected1 =
-@"<root>root-content</root>
-
-
-<nested>nested-content</nested>";
-                yield return new[] { "NestedViewStartTagHelper", expected1 };
-
-                var expected2 =
-@"layout:<root>root-content</root>
-
-
-<nested>nested-content</nested>";
-
-                yield return new[] { "ViewWithLayoutAndNestedTagHelper", expected2 };
-
-                var expected3 =
-@"layout:<root>root-content</root>
-
-
-page:<root/>
-<nested>nested-content</nested>";
-                yield return new[] { "ViewWithInheritedRemoveTagHelper", expected3 };
+                // action, expected
+                return new TheoryData<string, string>
+                {
+                    {
+                        "NestedGlobalImportTagHelper",
+                        string.Format(
+                            "<root>root-content</root>{0}{0}{0}<nested>nested-content</nested>",
+                            Environment.NewLine)
+                    },
+                    {
+                        "ViewWithLayoutAndNestedTagHelper",
+                        string.Format(
+                            "layout:<root>root-content</root>{0}{0}{0}<nested>nested-content</nested>",
+                            Environment.NewLine)
+                    },
+                    {
+                        "ViewWithInheritedRemoveTagHelper",
+                        string.Format(
+                            "layout:<root>root-content</root>{0}{0}{0}page:<root/>{0}<nested>nested-content</nested>",
+                            Environment.NewLine)
+                    },
+                    {
+                        "ViewWithInheritedTagHelperPrefix",
+                        string.Format(
+                            "layout:<root>root-content</root>{0}{0}{0}page:<root>root-content</root>",
+                            Environment.NewLine)
+                    },
+                    {
+                        "ViewWithOverriddenTagHelperPrefix",
+                        string.Format(
+                            "layout:<root>root-content</root>{0}{0}{0}{0}page:<root>root-content</root>",
+                            Environment.NewLine)
+                    },
+                    {
+                        "ViewWithNestedInheritedTagHelperPrefix",
+                        string.Format(
+                            "layout:<root>root-content</root>{0}{0}{0}page:<root>root-content</root>",
+                            Environment.NewLine)
+                    },
+                    {
+                        "ViewWithNestedOverriddenTagHelperPrefix",
+                        string.Format(
+                            "layout:<root>root-content</root>{0}{0}{0}{0}page:<root>root-content</root>",
+                            Environment.NewLine)
+                    },
+                };
             }
         }
 
         [Theory]
-        [MemberData(nameof(TagHelpersAreInheritedFromViewStartPagesData))]
-        public async Task TagHelpersAreInheritedFromViewStartPages(string action, string expected)
+        [MemberData(nameof(TagHelpersAreInheritedFromGlobalImportPagesData))]
+        public async Task TagHelpersAreInheritedFromGlobalImportPages(string action, string expected)
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName);
@@ -158,7 +182,7 @@ page:<root/>
                 { "Age", "1000" },
                 { "EmployeeId", "0" },
                 { "Email", "a@b.com" },
-                { "Salary", "z" }, 
+                { "Salary", "z" },
             };
             var postContent = new FormUrlEncodedContent(validPostValues);
 
