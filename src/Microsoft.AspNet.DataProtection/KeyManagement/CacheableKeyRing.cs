@@ -36,5 +36,16 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 && !keyRing._expirationToken.IsCancellationRequested
                 && keyRing.ExpirationTimeUtc > utcNow;
         }
+
+        /// <summary>
+        /// Returns a new <see cref="CacheableKeyRing"/> which is identical to 'this' but with a
+        /// lifetime extended 2 minutes from <paramref name="now"/>. The inner cancellation token
+        /// is also disconnected.
+        /// </summary>
+        internal CacheableKeyRing WithTemporaryExtendedLifetime(DateTimeOffset now)
+        {
+            TimeSpan extension = TimeSpan.FromMinutes(2);
+            return new CacheableKeyRing(CancellationToken.None, now + extension, KeyRing);
+        }
     }
 }

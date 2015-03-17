@@ -146,26 +146,87 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 return existingCacheableKeyRing.KeyRing;
             }
 
-            // The cached keyring hasn't been created or must be refreshed.
-            lock (_cacheableKeyRingLockObj)
+            // The cached keyring hasn't been created or must be refreshed. We'll allow one thread to
+            // update the keyring, and all other threads will continue to use the existing cached
+            // keyring while the first thread performs the update. There is an exception: if there
+            // is no usable existing cached keyring, all callers must block until the keyring exists.
+            bool acquiredLock = false;
+            try
             {
-                // Did somebody update the keyring while we were waiting for the lock?
-                existingCacheableKeyRing = Volatile.Read(ref _cacheableKeyRing);
-                if (CacheableKeyRing.IsValid(existingCacheableKeyRing, utcNow))
+                Monitor.TryEnter(_cacheableKeyRingLockObj, (existingCacheableKeyRing != null) ? 0 : Timeout.Infinite, ref acquiredLock);
+                if (acquiredLock)
                 {
+                    // This thread acquired the critical section and is responsible for updating the
+                    // cached keyring. But first, let's make sure that somebody didn't sneak in before
+                    // us and update the keyring on our behalf.
+                    existingCacheableKeyRing = Volatile.Read(ref _cacheableKeyRing);
+                    if (CacheableKeyRing.IsValid(existingCacheableKeyRing, utcNow))
+                    {
+                        return existingCacheableKeyRing.KeyRing;
+                    }
+
+                    if (existingCacheableKeyRing != null && _logger.IsVerboseLevelEnabled())
+                    {
+                        _logger.LogVerbose("Existing cached key ring is expired. Refreshing.");
+                    }
+
+                    // It's up to us to refresh the cached keyring.
+                    // This call is performed *under lock*.
+                    CacheableKeyRing newCacheableKeyRing;
+
+                    try
+                    {
+                        newCacheableKeyRing = _cacheableKeyRingProvider.GetCacheableKeyRing(utcNow);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (_logger.IsErrorLevelEnabled())
+                        {
+                            if (existingCacheableKeyRing != null)
+                            {
+                                _logger.LogError(ex, "An error occurred while refreshing the key ring. Will try again in 2 minutes.");
+                            }
+                            else
+                            {
+                                _logger.LogError(ex, "An error occurred while reading the key ring.");
+                            }
+                        }
+
+                        // Failures that occur while refreshing the keyring are most likely transient, perhaps due to a
+                        // temporary network outage. Since we don't want every subsequent call to result in failure, we'll
+                        // create a new keyring object whose expiration is now + some short period of time (currently 2 min),
+                        // and after this period has elapsed the next caller will try refreshing. If we don't have an
+                        // existing keyring (perhaps because this is the first call), then there's nothing to extend, so
+                        // each subsequent caller will keep going down this code path until one succeeds.
+                        if (existingCacheableKeyRing != null)
+                        {
+                            Volatile.Write(ref _cacheableKeyRing, existingCacheableKeyRing.WithTemporaryExtendedLifetime(utcNow));
+                        }
+
+                        // The immediate caller should fail so that he can report the error up his chain. This makes it more likely
+                        // that an administrator can see the error and react to it as appropriate. The caller can retry the operation
+                        // and will probably have success as long as he falls within the temporary extension mentioned above.
+                        throw;
+                    }
+
+                    Volatile.Write(ref _cacheableKeyRing, newCacheableKeyRing);
+                    return newCacheableKeyRing.KeyRing;
+                }
+                else
+                {
+                    // We didn't acquire the critical section. This should only occur if we passed
+                    // zero for the Monitor.TryEnter timeout, which implies that we had an existing
+                    // (but outdated) keyring that we can use as a fallback.
+                    Debug.Assert(existingCacheableKeyRing != null);
                     return existingCacheableKeyRing.KeyRing;
                 }
-
-                if (existingCacheableKeyRing != null && _logger.IsVerboseLevelEnabled())
+            }
+            finally
+            {
+                if (acquiredLock)
                 {
-                    _logger.LogVerbose("Existing cached key ring is expired. Refreshing.");
+                    Monitor.Exit(_cacheableKeyRingLockObj);
                 }
-
-                // It's up to us to refresh the cached keyring.
-                // This call is performed *under lock*.
-                var newCacheableKeyRing = _cacheableKeyRingProvider.GetCacheableKeyRing(utcNow);
-                Volatile.Write(ref _cacheableKeyRing, newCacheableKeyRing);
-                return newCacheableKeyRing.KeyRing;
             }
         }
 
