@@ -1,17 +1,5 @@
 ﻿@model IEnumerable<MusicStore.Models.Album>
 
-@helper Truncate(string input, int length)
-{
-        if (input.Length <= length)
-        {
-                @input
-        }
-        else
-        {
-                @input.Substring(0, length)<text>...</text>
-        }
-}
-
 @{
     ViewBag.Title = "Index";
 }
@@ -45,10 +33,24 @@
                 @Html.DisplayFor(modelItem => item.Genre.Name)
             </td>
             <td>
-                @Truncate(item.Artist.Name, 25)
+                @if (item.Artist.Name.Length <= 25)
+                {
+                    @item.Artist.Name
+                }
+                else
+                {
+                    @item.Artist.Name.Substring(0, 25)<text>...</text>
+                }
             </td>
             <td>
-                @Truncate(item.Title, 25)
+                if (item.Title.Length <= 25)
+                {
+                    @item.Title
+                }
+                else
+                {
+                    @item.Title.Substring(0, 25)<text>...</text>
+                }
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Price)
