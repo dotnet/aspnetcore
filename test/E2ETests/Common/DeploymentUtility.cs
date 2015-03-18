@@ -180,7 +180,10 @@ namespace E2ETests
                     startParameters.ApplicationHostConfigTemplateContent.Replace("[ApplicationPhysicalPath]", Path.Combine(startParameters.ApplicationPath, "wwwroot"));
             }
 
-            IISExpressHelper.CopyAspNetLoader(startParameters.ApplicationPath);
+            if (!startParameters.BundleApplicationBeforeStart)
+            {
+                IISExpressHelper.CopyAspNetLoader(startParameters.ApplicationPath);
+            }
 
             if (!string.IsNullOrWhiteSpace(startParameters.ApplicationHostConfigTemplateContent))
             {
