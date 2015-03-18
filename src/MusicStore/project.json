@@ -5,7 +5,7 @@
     "description": "Music store application on ASP.NET 5",
     "version": "1.0.0-*",
     "compilationOptions": { "warningsAsErrors": true, "define": [ "DEMO", "TESTING" ] },
-    "code": [
+    "compile": [
         "**/*.cs",
         "../../test/E2ETests/compiler/shared/**/*.cs"                   // This code is for testing only.
     ],
