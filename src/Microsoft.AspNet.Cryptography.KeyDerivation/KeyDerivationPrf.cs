@@ -11,18 +11,18 @@ namespace Microsoft.AspNet.Cryptography.KeyDerivation
     public enum KeyDerivationPrf
     {
         /// <summary>
-        /// SHA-1 (FIPS PUB 180-4)
+        /// The HMAC algorithm (RFC 2104) using the SHA-1 hash function (FIPS 180-4).
         /// </summary>
-        Sha1,
+        HMACSHA1,
 
         /// <summary>
-        /// SHA-256 (FIPS PUB 180-4)
+        /// The HMAC algorithm (RFC 2104) using the SHA-256 hash function (FIPS 180-4).
         /// </summary>
-        Sha256,
+        HMACSHA256,
 
         /// <summary>
-        /// SHA-512 (FIPS PUB 180-4)
+        /// The HMAC algorithm (RFC 2104) using the SHA-512 hash function (FIPS 180-4).
         /// </summary>
-        Sha512,
+        HMACSHA512,
     }
 }

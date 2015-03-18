@@ -86,11 +86,11 @@ namespace Microsoft.AspNet.Cryptography.KeyDerivation.PBKDF2
         {
             switch (prf)
             {
-                case KeyDerivationPrf.Sha1:
+                case KeyDerivationPrf.HMACSHA1:
                     return CachedAlgorithmHandles.HMAC_SHA1;
-                case KeyDerivationPrf.Sha256:
+                case KeyDerivationPrf.HMACSHA256:
                     return CachedAlgorithmHandles.HMAC_SHA256;
-                case KeyDerivationPrf.Sha512:
+                case KeyDerivationPrf.HMACSHA512:
                     return CachedAlgorithmHandles.HMAC_SHA512;
                 default:
                     throw CryptoUtil.Fail("Unrecognized PRF.");

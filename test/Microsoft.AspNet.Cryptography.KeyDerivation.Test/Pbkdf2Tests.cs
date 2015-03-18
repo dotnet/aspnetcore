@@ -16,15 +16,15 @@ namespace Microsoft.AspNet.Cryptography.KeyDerivation
         // this value straddles the digest length of the PRF. We only use 5 iterations so
         // that our unit tests are fast.
         [Theory]
-        [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 - 1, "efmxNcKD/U1urTEDGvsThlPnHA==")]
-        [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 + 0, "efmxNcKD/U1urTEDGvsThlPnHDI=")]
-        [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 + 1, "efmxNcKD/U1urTEDGvsThlPnHDLk")]
-        [InlineData("my-password", KeyDerivationPrf.Sha256, 5, 256 / 8 - 1, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRA==")]
-        [InlineData("my-password", KeyDerivationPrf.Sha256, 5, 256 / 8 + 0, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRLo=")]
-        [InlineData("my-password", KeyDerivationPrf.Sha256, 5, 256 / 8 + 1, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRLpk")]
-        [InlineData("my-password", KeyDerivationPrf.Sha512, 5, 512 / 8 - 1, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm9")]
-        [InlineData("my-password", KeyDerivationPrf.Sha512, 5, 512 / 8 + 0, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm90Q==")]
-        [InlineData("my-password", KeyDerivationPrf.Sha512, 5, 512 / 8 + 1, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm90Wk=")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA1, 5, 160 / 8 - 1, "efmxNcKD/U1urTEDGvsThlPnHA==")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA1, 5, 160 / 8 + 0, "efmxNcKD/U1urTEDGvsThlPnHDI=")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA1, 5, 160 / 8 + 1, "efmxNcKD/U1urTEDGvsThlPnHDLk")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA256, 5, 256 / 8 - 1, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRA==")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA256, 5, 256 / 8 + 0, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRLo=")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA256, 5, 256 / 8 + 1, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRLpk")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA512, 5, 512 / 8 - 1, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm9")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA512, 5, 512 / 8 + 0, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm90Q==")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA512, 5, 512 / 8 + 1, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm90Wk=")]
         public void RunTest_Normal_Managed(string password, KeyDerivationPrf prf, int iterationCount, int numBytesRequested, string expectedValueAsBase64)
         {
             // Arrange
@@ -43,15 +43,15 @@ namespace Microsoft.AspNet.Cryptography.KeyDerivation
         // that our unit tests are fast.
         [ConditionalTheory]
         [ConditionalRunTestOnlyOnWindows]
-        [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 - 1, "efmxNcKD/U1urTEDGvsThlPnHA==")]
-        [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 + 0, "efmxNcKD/U1urTEDGvsThlPnHDI=")]
-        [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 + 1, "efmxNcKD/U1urTEDGvsThlPnHDLk")]
-        [InlineData("my-password", KeyDerivationPrf.Sha256, 5, 256 / 8 - 1, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRA==")]
-        [InlineData("my-password", KeyDerivationPrf.Sha256, 5, 256 / 8 + 0, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRLo=")]
-        [InlineData("my-password", KeyDerivationPrf.Sha256, 5, 256 / 8 + 1, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRLpk")]
-        [InlineData("my-password", KeyDerivationPrf.Sha512, 5, 512 / 8 - 1, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm9")]
-        [InlineData("my-password", KeyDerivationPrf.Sha512, 5, 512 / 8 + 0, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm90Q==")]
-        [InlineData("my-password", KeyDerivationPrf.Sha512, 5, 512 / 8 + 1, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm90Wk=")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA1, 5, 160 / 8 - 1, "efmxNcKD/U1urTEDGvsThlPnHA==")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA1, 5, 160 / 8 + 0, "efmxNcKD/U1urTEDGvsThlPnHDI=")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA1, 5, 160 / 8 + 1, "efmxNcKD/U1urTEDGvsThlPnHDLk")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA256, 5, 256 / 8 - 1, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRA==")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA256, 5, 256 / 8 + 0, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRLo=")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA256, 5, 256 / 8 + 1, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRLpk")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA512, 5, 512 / 8 - 1, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm9")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA512, 5, 512 / 8 + 0, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm90Q==")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA512, 5, 512 / 8 + 1, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm90Wk=")]
         public void RunTest_Normal_Win7(string password, KeyDerivationPrf prf, int iterationCount, int numBytesRequested, string expectedValueAsBase64)
         {
             // Arrange
@@ -70,15 +70,15 @@ namespace Microsoft.AspNet.Cryptography.KeyDerivation
         // that our unit tests are fast.
         [ConditionalTheory]
         [ConditionalRunTestOnlyOnWindows8OrLater]
-        [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 - 1, "efmxNcKD/U1urTEDGvsThlPnHA==")]
-        [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 + 0, "efmxNcKD/U1urTEDGvsThlPnHDI=")]
-        [InlineData("my-password", KeyDerivationPrf.Sha1, 5, 160 / 8 + 1, "efmxNcKD/U1urTEDGvsThlPnHDLk")]
-        [InlineData("my-password", KeyDerivationPrf.Sha256, 5, 256 / 8 - 1, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRA==")]
-        [InlineData("my-password", KeyDerivationPrf.Sha256, 5, 256 / 8 + 0, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRLo=")]
-        [InlineData("my-password", KeyDerivationPrf.Sha256, 5, 256 / 8 + 1, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRLpk")]
-        [InlineData("my-password", KeyDerivationPrf.Sha512, 5, 512 / 8 - 1, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm9")]
-        [InlineData("my-password", KeyDerivationPrf.Sha512, 5, 512 / 8 + 0, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm90Q==")]
-        [InlineData("my-password", KeyDerivationPrf.Sha512, 5, 512 / 8 + 1, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm90Wk=")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA1, 5, 160 / 8 - 1, "efmxNcKD/U1urTEDGvsThlPnHA==")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA1, 5, 160 / 8 + 0, "efmxNcKD/U1urTEDGvsThlPnHDI=")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA1, 5, 160 / 8 + 1, "efmxNcKD/U1urTEDGvsThlPnHDLk")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA256, 5, 256 / 8 - 1, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRA==")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA256, 5, 256 / 8 + 0, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRLo=")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA256, 5, 256 / 8 + 1, "JRNz8bPKS02EG1vf7eWjA64IeeI+TI8gBEwb1oVvRLpk")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA512, 5, 512 / 8 - 1, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm9")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA512, 5, 512 / 8 + 0, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm90Q==")]
+        [InlineData("my-password", KeyDerivationPrf.HMACSHA512, 5, 512 / 8 + 1, "ZTallQJrFn0279xIzaiA1XqatVTGei+ZjKngA7bIMtKMDUw6YJeGUQpFG8iGTgN+ri3LNDktNbzwfcSyZmm90Wk=")]
         public void RunTest_Normal_Win8(string password, KeyDerivationPrf prf, int iterationCount, int numBytesRequested, string expectedValueAsBase64)
         {
             // Arrange
@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.Cryptography.KeyDerivation
             string password = new String('x', 50000); // 50,000 char password
             byte[] salt = Encoding.UTF8.GetBytes("salt");
             const string expectedDerivedKeyBase64 = "Sc+V/c3fiZq5Z5qH3iavAiojTsW97FAp2eBNmCQAwCNzA8hfhFFYyQLIMK65qPnBFHOHXQPwAxNQNhaEAH9hzfiaNBSRJpF9V4rpl02d5ZpI6cZbsQFF7TJW7XJzQVpYoPDgJlg0xVmYLhn1E9qMtUVUuXsBjOOdd7K1M+ZI00c=";
-            const KeyDerivationPrf prf = KeyDerivationPrf.Sha256;
+            const KeyDerivationPrf prf = KeyDerivationPrf.HMACSHA256;
             const int iterationCount = 5;
             const int numBytesRequested = 128;
 
