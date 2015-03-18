@@ -403,7 +403,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                   </revocation>
                   <revocation version='1'>
                     <!-- The below will revoke the first two keys. -->
-                    <revocationDate>2016-01-01T00:00:00Z</revocationDate>
+                    <revocationDate>2017-01-01T00:00:00Z</revocationDate>
                     <key id='*' />
                   </revocation>
                   <revocation version='1'>

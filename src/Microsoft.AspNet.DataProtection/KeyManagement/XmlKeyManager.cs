@@ -204,7 +204,12 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             {
                 foreach (var key in keyIdToKeyMap.Values)
                 {
-                    if (key.CreationDate <= mostRecentMassRevocationDate)
+                    // The contract of IKeyManager.RevokeAllKeys is that keys created *strictly before* the
+                    // revocation date are revoked. The system clock isn't very granular, and if this were
+                    // a less-than-or-equal check we could end up with the weird case where a revocation
+                    // immediately followed by a key creation results in a newly-created revoked key (since
+                    // the clock hasn't yet stepped).
+                    if (key.CreationDate < mostRecentMassRevocationDate)
                     {
                         key.SetRevoked();
                         if (_logger.IsVerboseLevelEnabled())
