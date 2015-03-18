@@ -59,7 +59,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta4-10346"
+$BuildVersion="beta4-10347"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -87,6 +87,8 @@ Set-Variable -Option Constant "AliasExtension" ".txt"
 Set-Variable -Option Constant "OldUserHomes" @("%USERPROFILE%\.kre","%USERPROFILE%\.k")
 Set-Variable -Option Constant "DefaultUserHome" "%USERPROFILE%\$DefaultUserDirectoryName"
 Set-Variable -Option Constant "HomeEnvVar" "DNX_HOME"
+
+Set-Variable -Option Constant "RuntimeShortFriendlyName" "DNX"
 
 Set-Variable -Option Constant "AsciiArt" @"
    ___  _  ___   ____  ___
@@ -337,7 +339,12 @@ function Write-Alias {
         [Parameter(Mandatory=$false)][string]$Architecture,
         [Parameter(Mandatory=$false)][string]$Runtime)
 
-    $runtimeFullName = Get-RuntimeName $Version $Architecture $Runtime
+    # If the first character is non-numeric, it's a full runtime name
+    if(![Char]::IsDigit($Version[0])) {
+        $runtimeFullName = $Version
+    } else {
+        $runtimeFullName = Get-RuntimeName $Version $Architecture $Runtime
+    }
     $aliasFilePath = Join-Path $AliasesDir "$Name.txt"
     $action = if (Test-Path $aliasFilePath) { "Updating" } else { "Setting" }
     
@@ -453,15 +460,45 @@ function Download-Package(
     $url = "$Feed/package/" + (Get-RuntimeId $Architecture $Runtime) + "/" + $Version
     
     _WriteOut "Downloading $runtimeFullName from $feed"
-
     $wc = New-Object System.Net.WebClient
-    Apply-Proxy $wc -Proxy:$Proxy
-    _WriteDebug "Downloading $url ..."
     try {
-        $wc.DownloadFile($url, $DestinationFile)
-    } catch {
-        $Script:ExitCode = $ExitCodes.NoSuchPackage
-        throw "Could not find $runtimeFullName.$Version on feed: $Feed"
+      Apply-Proxy $wc -Proxy:$Proxy     
+      _WriteDebug "Downloading $url ..."
+
+      Register-ObjectEvent $wc DownloadProgressChanged -SourceIdentifier WebClient.ProgressChanged -action {
+        $Global:downloadData = $eventArgs
+      } | Out-Null
+
+      Register-ObjectEvent $wc DownloadFileCompleted -SourceIdentifier WebClient.ProgressComplete -action {
+        $Global:downloadData = $eventArgs
+        $Global:downloadCompleted = $true
+      } | Out-Null
+
+      $wc.DownloadFileAsync($url, $DestinationFile)
+
+      while(-not $Global:downloadCompleted){
+        $percent = $Global:downloadData.ProgressPercentage
+        $totalBytes = $Global:downloadData.TotalBytesToReceive
+        $receivedBytes = $Global:downloadData.BytesReceived
+        If ($percent -ne $null) {
+            Write-Progress -Activity ("Downloading $RuntimeShortFriendlyName from $url") `
+                -Status ("Downloaded $($Global:downloadData.BytesReceived) of $($Global:downloadData.TotalBytesToReceive) bytes") `
+                -PercentComplete $percent -Id 2 -ParentId 1
+        }
+      }
+
+      if($Global:downloadData.Error){
+        throw "Unable to download package: {0}" -f $Global:downloadData.Error.Message
+      }
+
+      Write-Progress -Activity ("Downloading $RuntimeShortFriendlyName from $url") -Id 2 -ParentId 1 -Completed
+    }
+    finally {
+        Remove-Variable downloadData -Scope "Global"
+        Remove-Variable downloadCompleted -Scope "Global"
+        Unregister-Event -SourceIdentifier WebClient.ProgressChanged
+        Unregister-Event -SourceIdentifier WebClient.ProgressComplete
+        $wc.Dispose()
     }
 }
 
@@ -597,7 +634,7 @@ function Ngen-Library(
         $ngenCmds += "$ngenExe install $($bin.FullName);"
     }
 
-    $ngenProc = Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList "-ExecutionPolicy unrestricted & $ngenCmds" -Wait -PassThru
+    $ngenProc = Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList "-ExecutionPolicy unrestricted & $ngenCmds" -Wait -PassThru -WindowStyle Hidden
 }
 
 function Is-Elevated() {
@@ -859,7 +896,7 @@ function dnvm-upgrade {
         [Parameter(Mandatory=$false)]
         [switch]$Ngen)
 
-    dnvm-install "latest" -Alias:$Alias -Architecture:$Architecture -Runtime:$Runtime -Force:$Force -Proxy:$Proxy -NoNative:$NoNative -Ngen:$Ngen
+    dnvm-install "latest" -Alias:$Alias -Architecture:$Architecture -Runtime:$Runtime -Force:$Force -Proxy:$Proxy -NoNative:$NoNative -Ngen:$Ngen -Persistent:$true
 }
 
 <#
@@ -883,6 +920,8 @@ function dnvm-upgrade {
     Skip generation of native images
 .PARAMETER Ngen
     For CLR flavor only. Generate native images for runtime libraries on Desktop CLR to improve startup time. This option requires elevated privilege and will be automatically turned on if the script is running in administrative mode. To opt-out in administrative mode, use -NoNative switch.
+.PARAMETER Persistent
+    Make the installed runtime useable across all processes run by the current user
 .DESCRIPTION
     A proxy can also be specified by using the 'http_proxy' environment variable
 
@@ -917,7 +956,10 @@ function dnvm-install {
         [switch]$NoNative,
 
         [Parameter(Mandatory=$false)]
-        [switch]$Ngen)
+        [switch]$Ngen,
+
+        [Parameter(Mandatory=$false)]
+        [switch]$Persistent)
 
     if(!$VersionNuPkgOrAlias) {
         _WriteOut "A version, nupkg path, or the string 'latest' must be provided."
@@ -927,6 +969,7 @@ function dnvm-install {
     }
 
     if ($VersionNuPkgOrAlias -eq "latest") {
+        Write-Progress -Activity "Installing runtime" "Determining latest runtime" -Id 1
         $VersionNuPkgOrAlias = Find-Latest $Runtime $Architecture
     }
 
@@ -936,6 +979,7 @@ function dnvm-install {
         if(!(Test-Path $VersionNuPkgOrAlias)) {
             throw "Unable to locate package file: '$VersionNuPkgOrAlias'"
         }
+        Write-Progress -Activity "Installing runtime" "Parsing package file name" -Id 1
         $runtimeFullName = [System.IO.Path]::GetFileNameWithoutExtension($VersionNuPkgOrAlias)
         $Architecture = Get-PackageArch $runtimeFullName
         $Runtime = Get-PackageRuntime $runtimeFullName
@@ -974,14 +1018,17 @@ function dnvm-install {
         New-Item -Type Directory $UnpackFolder | Out-Null
 
         if($IsNuPkg) {
+            Write-Progress -Activity "Installing runtime" "Copying package" -Id 1
             _WriteDebug "Copying local nupkg $VersionNuPkgOrAlias to $DownloadFile"
             Copy-Item $VersionNuPkgOrAlias $DownloadFile
         } else {
             # Download the package
+            Write-Progress -Activity "Installing runtime" "Downloading runtime" -Id 1
             _WriteDebug "Downloading version $VersionNuPkgOrAlias to $DownloadFile"
             Download-Package $PackageVersion $Architecture $Runtime $DownloadFile -Proxy:$Proxy
         }
 
+        Write-Progress -Activity "Installing runtime" "Unpacking runtime" -Id 1
         Unpack-Package $DownloadFile $UnpackFolder
 
         New-Item -Type Directory $RuntimeFolder -Force | Out-Null
@@ -991,12 +1038,13 @@ function dnvm-install {
         _WriteDebug "Cleaning temporary directory $UnpackFolder"
         Remove-Item $UnpackFolder -Force | Out-Null
 
-        dnvm-use $PackageVersion -Architecture:$Architecture -Runtime:$Runtime
+        dnvm-use $PackageVersion -Architecture:$Architecture -Runtime:$Runtime -Persistent:$Persistent
 
         if ($Runtime -eq "clr") {
             if (-not $NoNative) {
                 if ((Is-Elevated) -or $Ngen) {
                     $runtimeBin = Get-RuntimePath $runtimeFullName
+                    Write-Progress -Activity "Installing runtime" "Generating runtime native images" -Id 1
                     Ngen-Library $runtimeBin $Architecture
                 }
                 else {
@@ -1010,7 +1058,8 @@ function dnvm-install {
             }
             else {
               _WriteOut "Compiling native images for $runtimeFullName to improve startup performance..."
-              Start-Process $CrossGenCommand -Wait
+              Write-Progress -Activity "Installing runtime" "Generating runtime native images" -Id 1
+              Start-Process $CrossGenCommand -Wait -WindowStyle Hidden
               _WriteOut "Finished native image compilation."
             }
         }
@@ -1023,6 +1072,8 @@ function dnvm-install {
         _WriteDebug "Aliasing installed runtime to '$Alias'"
         dnvm-alias $Alias $PackageVersion -Architecture:$Architecture -Runtime:$Runtime
     }
+
+    Write-Progress -Activity "Install complete" -Id 1 -Complete
 }
 
 
