@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;a&gt; elements.
     /// </summary>
-    [HtmlElementName("a")]
+    [TargetElement("a")]
     public class AnchorTagHelper : TagHelper
     {
         private const string ActionAttributeName = "asp-action";

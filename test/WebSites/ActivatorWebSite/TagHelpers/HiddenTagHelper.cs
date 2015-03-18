@@ -8,7 +8,7 @@ using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace ActivatorWebSite.TagHelpers
 {
-    [HtmlElementName("span")]
+    [TargetElement("span")]
     public class HiddenTagHelper : TagHelper
     {
         public string Name { get; set; }

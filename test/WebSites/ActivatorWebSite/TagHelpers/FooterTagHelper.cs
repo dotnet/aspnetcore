@@ -7,7 +7,7 @@ using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace ActivatorWebSite.TagHelpers
 {
-    [HtmlElementName("body")]
+    [TargetElement("body")]
     public class FooterTagHelper : TagHelper
     {
         [Activate]
