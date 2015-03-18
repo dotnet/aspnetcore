@@ -2,8 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNet.Razor.Text;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
@@ -12,6 +16,183 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     {
         private static readonly string AssemblyName =
             typeof(TagHelperDescriptorFactoryTest).GetTypeInfo().Assembly.GetName().Name;
+
+        public static TheoryData AttributeTargetData
+        {
+            get
+            {
+                var attributes = Enumerable.Empty<TagHelperAttributeDescriptor>();
+
+                // tagHelperType, expectedDescriptors
+                return new TheoryData<Type, IEnumerable<TagHelperDescriptor>>
+                {
+                    {
+                        typeof(AttributeTargetingTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                TagHelperDescriptorProvider.CatchAllDescriptorTarget,
+                                typeof(AttributeTargetingTagHelper).FullName,
+                                AssemblyName,
+                                attributes,
+                                requiredAttributes: new[] { "class" })
+                        }
+                    },
+                    {
+                        typeof(MultiAttributeTargetingTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                TagHelperDescriptorProvider.CatchAllDescriptorTarget,
+                                typeof(MultiAttributeTargetingTagHelper).FullName,
+                                AssemblyName,
+                                attributes,
+                                requiredAttributes: new[] { "class", "style" })
+                        }
+                    },
+                    {
+                        typeof(MultiAttributeAttributeTargetingTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                TagHelperDescriptorProvider.CatchAllDescriptorTarget,
+                                typeof(MultiAttributeAttributeTargetingTagHelper).FullName,
+                                AssemblyName,
+                                attributes,
+                                requiredAttributes: new[] { "custom" }),
+                            new TagHelperDescriptor(
+                                TagHelperDescriptorProvider.CatchAllDescriptorTarget,
+                                typeof(MultiAttributeAttributeTargetingTagHelper).FullName,
+                                AssemblyName,
+                                attributes,
+                                requiredAttributes: new[] { "class", "style" })
+                        }
+                    },
+                    {
+                        typeof(InheritedAttributeTargetingTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                TagHelperDescriptorProvider.CatchAllDescriptorTarget,
+                                typeof(InheritedAttributeTargetingTagHelper).FullName,
+                                AssemblyName,
+                                attributes,
+                                requiredAttributes: new[] { "style" })
+                        }
+                    },
+                    {
+                        typeof(RequiredAttributeTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                "input",
+                                typeof(RequiredAttributeTagHelper).FullName,
+                                AssemblyName,
+                                attributes,
+                                requiredAttributes: new[] { "class" })
+                        }
+                    },
+                    {
+                        typeof(InheritedRequiredAttributeTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                "div",
+                                typeof(InheritedRequiredAttributeTagHelper).FullName,
+                                AssemblyName,
+                                attributes,
+                                requiredAttributes: new[] { "class" })
+                        }
+                    },
+                    {
+                        typeof(MultiAttributeRequiredAttributeTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                "div",
+                                typeof(MultiAttributeRequiredAttributeTagHelper).FullName,
+                                AssemblyName,
+                                attributes,
+                                requiredAttributes: new[] { "class" }),
+                            new TagHelperDescriptor(
+                                "input",
+                                typeof(MultiAttributeRequiredAttributeTagHelper).FullName,
+                                AssemblyName,
+                                attributes,
+                                requiredAttributes: new[] { "class" })
+                        }
+                    },
+                    {
+                        typeof(MultiAttributeSameTagRequiredAttributeTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                "input",
+                                typeof(MultiAttributeSameTagRequiredAttributeTagHelper).FullName,
+                                AssemblyName,
+                                attributes,
+                                requiredAttributes: new[] { "style" }),
+                            new TagHelperDescriptor(
+                                "input",
+                                typeof(MultiAttributeSameTagRequiredAttributeTagHelper).FullName,
+                                AssemblyName,
+                                attributes,
+                                requiredAttributes: new[] { "class" })
+                        }
+                    },
+                    {
+                        typeof(MultiRequiredAttributeTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                "input",
+                                typeof(MultiRequiredAttributeTagHelper).FullName,
+                                AssemblyName,
+                                attributes,
+                                requiredAttributes: new[] { "class", "style" })
+                        }
+                    },
+                    {
+                        typeof(MultiTagMultiRequiredAttributeTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                "div",
+                                typeof(MultiTagMultiRequiredAttributeTagHelper).FullName,
+                                AssemblyName,
+                                attributes,
+                                requiredAttributes: new[] { "class", "style" }),
+                            new TagHelperDescriptor(
+                                "input",
+                                typeof(MultiTagMultiRequiredAttributeTagHelper).FullName,
+                                AssemblyName,
+                                attributes,
+                                requiredAttributes: new[] { "class", "style" }),
+                        }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(AttributeTargetData))]
+        public void CreateDescriptors_ReturnsExpectedDescriptors(
+            Type tagHelperType,
+            IEnumerable<TagHelperDescriptor> expectedDescriptors)
+        {
+            // Arrange
+            var errorSink = new ParserErrorSink();
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                tagHelperType,
+                errorSink);
+
+            // Assert
+            Assert.Empty(errorSink.Errors);
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
+        }
 
         public static TheoryData HtmlCaseData
         {
@@ -39,10 +220,17 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             string expectedTagName,
             string expectedAttributeName)
         {
-            // Arrange & Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(AssemblyName, tagHelperType);
+            // Arrange
+            var errorSink = new ParserErrorSink();
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                tagHelperType,
+                errorSink);
 
             // Assert
+            Assert.Empty(errorSink.Errors);
             var descriptor = Assert.Single(descriptors);
             Assert.Equal(expectedTagName, descriptor.TagName, StringComparer.Ordinal);
             var attributeDescriptor = Assert.Single(descriptor.Attributes);
@@ -53,6 +241,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void CreateDescriptor_OverridesAttributeNameFromAttribute()
         {
             // Arrange
+            var errorSink = new ParserErrorSink();
             var validProperty1 = typeof(OverriddenAttributeTagHelper).GetProperty(
                 nameof(OverriddenAttributeTagHelper.ValidAttribute1));
             var validProperty2 = typeof(OverriddenAttributeTagHelper).GetProperty(
@@ -69,17 +258,21 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             };
 
             // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(AssemblyName,
-                typeof(OverriddenAttributeTagHelper));
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                typeof(OverriddenAttributeTagHelper),
+                errorSink);
 
             // Assert
-            Assert.Equal(expectedDescriptors, descriptors, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Empty(errorSink.Errors);
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
         public void CreateDescriptor_DoesNotInheritOverridenAttributeName()
         {
             // Arrange
+            var errorSink = new ParserErrorSink();
             var validProperty1 = typeof(InheritedOverriddenAttributeTagHelper).GetProperty(
                 nameof(InheritedOverriddenAttributeTagHelper.ValidAttribute1));
             var validProperty2 = typeof(InheritedOverriddenAttributeTagHelper).GetProperty(
@@ -97,17 +290,21 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             };
 
             // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(AssemblyName,
-                typeof(InheritedOverriddenAttributeTagHelper));
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                typeof(InheritedOverriddenAttributeTagHelper),
+                errorSink);
 
             // Assert
-            Assert.Equal(expectedDescriptors, descriptors, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Empty(errorSink.Errors);
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
         public void CreateDescriptor_AllowsOverridenAttributeNameOnUnimplementedVirtual()
         {
             // Arrange
+            var errorSink = new ParserErrorSink();
             var validProperty1 = typeof(InheritedNotOverriddenAttributeTagHelper).GetProperty(
                 nameof(InheritedNotOverriddenAttributeTagHelper.ValidAttribute1));
             var validProperty2 = typeof(InheritedNotOverriddenAttributeTagHelper).GetProperty(
@@ -124,33 +321,42 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             };
 
             // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(AssemblyName,
-                typeof(InheritedNotOverriddenAttributeTagHelper));
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                typeof(InheritedNotOverriddenAttributeTagHelper),
+                errorSink);
 
             // Assert
-            Assert.Equal(expectedDescriptors, descriptors, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Empty(errorSink.Errors);
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
         public void CreateDescriptor_BuildsDescriptorsFromSimpleTypes()
         {
             // Arrange
+            var errorSink = new ParserErrorSink();
             var objectAssemblyName = typeof(object).GetTypeInfo().Assembly.GetName().Name;
             var expectedDescriptor =
                 new TagHelperDescriptor("object", "System.Object", objectAssemblyName);
 
             // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(objectAssemblyName, typeof(object));
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                objectAssemblyName,
+                typeof(object),
+                errorSink);
 
             // Assert
+            Assert.Empty(errorSink.Errors);
             var descriptor = Assert.Single(descriptors);
-            Assert.Equal(expectedDescriptor, descriptor, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptor, descriptor, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
         public void CreateDescriptor_BuildsDescriptorsWithInheritedProperties()
         {
             // Arrange
+            var errorSink = new ParserErrorSink();
             var intProperty = typeof(InheritedSingleAttributeTagHelper).GetProperty(
                 nameof(InheritedSingleAttributeTagHelper.IntAttribute));
             var expectedDescriptor = new TagHelperDescriptor(
@@ -162,18 +368,22 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 });
 
             // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(AssemblyName,
-                typeof(InheritedSingleAttributeTagHelper));
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                typeof(InheritedSingleAttributeTagHelper),
+                errorSink);
 
             // Assert
+            Assert.Empty(errorSink.Errors);
             var descriptor = Assert.Single(descriptors);
-            Assert.Equal(expectedDescriptor, descriptor, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptor, descriptor, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
         public void CreateDescriptor_BuildsDescriptorsWithConventionNames()
         {
             // Arrange
+            var errorSink = new ParserErrorSink();
             var intProperty = typeof(SingleAttributeTagHelper).GetProperty(nameof(SingleAttributeTagHelper.IntAttribute));
             var expectedDescriptor = new TagHelperDescriptor(
                 "single-attribute",
@@ -184,18 +394,22 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 });
 
             // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(AssemblyName,
-                typeof(SingleAttributeTagHelper));
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                typeof(SingleAttributeTagHelper),
+                new ParserErrorSink());
 
             // Assert
+            Assert.Empty(errorSink.Errors);
             var descriptor = Assert.Single(descriptors);
-            Assert.Equal(expectedDescriptor, descriptor, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptor, descriptor, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
         public void CreateDescriptor_OnlyAcceptsPropertiesWithGetAndSet()
         {
             // Arrange
+            var errorSink = new ParserErrorSink();
             var validProperty = typeof(MissingAccessorTagHelper).GetProperty(
                 nameof(MissingAccessorTagHelper.ValidAttribute));
             var expectedDescriptor = new TagHelperDescriptor(
@@ -207,18 +421,22 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 });
 
             // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(AssemblyName,
-                typeof(MissingAccessorTagHelper));
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                typeof(MissingAccessorTagHelper),
+                errorSink);
 
             // Assert
+            Assert.Empty(errorSink.Errors);
             var descriptor = Assert.Single(descriptors);
-            Assert.Equal(expectedDescriptor, descriptor, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptor, descriptor, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
         public void CreateDescriptor_OnlyAcceptsPropertiesWithPublicGetAndSet()
         {
             // Arrange
+            var errorSink = new ParserErrorSink();
             var validProperty = typeof(PrivateAccessorTagHelper).GetProperty(
                 nameof(PrivateAccessorTagHelper.ValidAttribute));
             var expectedDescriptor = new TagHelperDescriptor(
@@ -231,29 +449,33 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 });
 
             // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(AssemblyName,
-                typeof(PrivateAccessorTagHelper));
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                typeof(PrivateAccessorTagHelper),
+                errorSink);
 
             // Assert
+            Assert.Empty(errorSink.Errors);
             var descriptor = Assert.Single(descriptors);
-            Assert.Equal(expectedDescriptor, descriptor, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptor, descriptor, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
         public void CreateDescriptor_ResolvesMultipleTagHelperDescriptorsFromSingleType()
         {
             // Arrange
+            var errorSink = new ParserErrorSink();
             var validProp = typeof(MultiTagTagHelper).GetProperty(nameof(MultiTagTagHelper.ValidAttribute));
             var expectedDescriptors = new[] {
                 new TagHelperDescriptor(
-                    "div",
+                    "p",
                     typeof(MultiTagTagHelper).FullName,
                     AssemblyName,
                     new[] {
                         new TagHelperAttributeDescriptor("valid-attribute", validProp)
                     }),
                 new TagHelperDescriptor(
-                    "p",
+                    "div",
                     typeof(MultiTagTagHelper).FullName,
                     AssemblyName,
                     new[] {
@@ -262,16 +484,21 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             };
 
             // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(AssemblyName, typeof(MultiTagTagHelper));
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                typeof(MultiTagTagHelper),
+                errorSink);
 
             // Assert
-            Assert.Equal(expectedDescriptors, descriptors, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Empty(errorSink.Errors);
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
         public void CreateDescriptor_DoesntResolveInheritedTagNames()
         {
             // Arrange
+            var errorSink = new ParserErrorSink();
             var validProp = typeof(InheritedMultiTagTagHelper).GetProperty(nameof(InheritedMultiTagTagHelper.ValidAttribute));
             var expectedDescriptor = new TagHelperDescriptor(
                     "inherited-multi-tag",
@@ -282,18 +509,22 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     });
 
             // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(AssemblyName,
-                typeof(InheritedMultiTagTagHelper));
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                typeof(InheritedMultiTagTagHelper),
+                errorSink);
 
             // Assert
+            Assert.Empty(errorSink.Errors);
             var descriptor = Assert.Single(descriptors);
-            Assert.Equal(expectedDescriptor, descriptor, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptor, descriptor, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
         public void CreateDescriptor_IgnoresDuplicateTagNamesFromAttribute()
         {
             // Arrange
+            var errorSink = new ParserErrorSink();
             var expectedDescriptors = new[] {
                 new TagHelperDescriptor(
                     "p",
@@ -306,17 +537,21 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             };
 
             // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(AssemblyName,
-                typeof(DuplicateTagNameTagHelper));
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                typeof(DuplicateTagNameTagHelper),
+                errorSink);
 
             // Assert
-            Assert.Equal(expectedDescriptors, descriptors, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Empty(errorSink.Errors);
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
         public void CreateDescriptor_OverridesTagNameFromAttribute()
         {
             // Arrange
+            var errorSink = new ParserErrorSink();
             var expectedDescriptors = new[] {
                 new TagHelperDescriptor("data-condition",
                                         typeof(OverrideNameTagHelper).FullName,
@@ -324,41 +559,353 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             };
 
             // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(AssemblyName,
-                typeof(OverrideNameTagHelper));
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                typeof(OverrideNameTagHelper),
+                errorSink);
 
             // Assert
-            Assert.Equal(expectedDescriptors, descriptors, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Empty(errorSink.Errors);
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
+        }
+
+        public static TheoryData InvalidNameData
+        {
+            get
+            {
+                var invalidNameError =
+                    "Tag helpers cannot target {0} name '{1}' because it contains a '{2}' character.";
+                var nullOrWhitespaceNameError =
+                    "{0} name cannot be null or whitespace.";
+                Func<string, string, string> onNameError = (invalidText, invalidCharacter) =>
+                    string.Format(invalidNameError, "tag", invalidText, invalidCharacter);
+
+                // name, expectedErrorMessages
+                return new TheoryData<string, string[]>
+                {
+                    { "!", new[] {  onNameError("!", "!") } },
+                    { "hello!", new[] { onNameError("hello!", "!") } },
+                    { "!hello", new[] { onNameError("!hello", "!") } },
+                    { "he!lo", new[] { onNameError("he!lo", "!") } },
+                    {
+                        "!he!lo!",
+                        new[]
+                        {
+                            onNameError("!he!lo!", "!"),
+                            onNameError("!he!lo!", "!"),
+                            onNameError("!he!lo!", "!")
+                        }
+                    },
+                    { "@", new[] { onNameError("@", "@") } },
+                    { "hello@", new[] { onNameError("hello@", "@") } },
+                    { "@hello", new[] { onNameError("@hello", "@") } },
+                    { "he@lo", new[] { onNameError("he@lo", "@") } },
+                    {
+                        "@he@lo@",
+                        new[]
+                        {
+                            onNameError("@he@lo@", "@"),
+                            onNameError("@he@lo@", "@"),
+                            onNameError("@he@lo@", "@")
+                        }
+                    },
+                    { "/", new[] { onNameError("/", "/") } },
+                    { "hello/", new[] { onNameError("hello/", "/") } },
+                    { "/hello", new[] { onNameError("/hello", "/") } },
+                    { "he/lo", new[] { onNameError("he/lo", "/") } },
+                    {
+                        "/he/lo/",
+                        new[] {
+                            onNameError("/he/lo/", "/"),
+                            onNameError("/he/lo/", "/"),
+                            onNameError("/he/lo/", "/")
+                        }
+                    },
+                    { "<", new[] { onNameError("<", "<") } },
+                    { "hello<", new[] { onNameError("hello<", "<") } },
+                    { "<hello", new[] { onNameError("<hello", "<") } },
+                    { "he<lo", new[] { onNameError("he<lo", "<") } },
+                    {
+                        "<he<lo<",
+                        new[]
+                        {
+                            onNameError("<he<lo<", "<"),
+                            onNameError("<he<lo<", "<"),
+                            onNameError("<he<lo<", "<")
+                        }
+                    },
+                    { "?", new[] { onNameError("?", "?") } },
+                    { "hello?", new[] { onNameError("hello?", "?") } },
+                    { "?hello", new[] { onNameError("?hello", "?") } },
+                    { "he?lo", new[] { onNameError("he?lo", "?") } },
+                    {
+                        "?he?lo?",
+                        new[]
+                        {
+                            onNameError("?he?lo?", "?"),
+                            onNameError("?he?lo?", "?"),
+                            onNameError("?he?lo?", "?")
+                        }
+                    },
+                    { "[", new[] { onNameError("[", "[") } },
+                    { "hello[", new[] { onNameError("hello[", "[") } },
+                    { "[hello", new[] { onNameError("[hello", "[") } },
+                    { "he[lo", new[] { onNameError("he[lo", "[") } },
+                    {
+                        "[he[lo[",
+                        new[]
+                        {
+                            onNameError("[he[lo[", "["),
+                            onNameError("[he[lo[", "["),
+                            onNameError("[he[lo[", "[")
+                        }
+                    },
+                    { ">", new[] { onNameError(">", ">") } },
+                    { "hello>", new[] { onNameError("hello>", ">") } },
+                    { ">hello", new[] { onNameError(">hello", ">") } },
+                    { "he>lo", new[] { onNameError("he>lo", ">") } },
+                    {
+                        ">he>lo>",
+                        new[]
+                        {
+                            onNameError(">he>lo>", ">"),
+                            onNameError(">he>lo>", ">"),
+                            onNameError(">he>lo>", ">")
+                        }
+                    },
+                    { "]", new[] { onNameError("]", "]") } },
+                    { "hello]", new[] { onNameError("hello]", "]") } },
+                    { "]hello", new[] { onNameError("]hello", "]") } },
+                    { "he]lo", new[] { onNameError("he]lo", "]") } },
+                    {
+                        "]he]lo]",
+                        new[]
+                        {
+                            onNameError("]he]lo]", "]"),
+                            onNameError("]he]lo]", "]"),
+                            onNameError("]he]lo]", "]")
+                        }
+                    },
+                    { "=", new[] { onNameError("=", "=") } },
+                    { "hello=", new[] { onNameError("hello=", "=") } },
+                    { "=hello", new[] { onNameError("=hello", "=") } },
+                    { "he=lo", new[] { onNameError("he=lo", "=") } },
+                    {
+                        "=he=lo=",
+                        new[]
+                        {
+                            onNameError("=he=lo=", "="),
+                            onNameError("=he=lo=", "="),
+                            onNameError("=he=lo=", "=")
+                        }
+                    },
+                    { "\"", new[] { onNameError("\"", "\"") } },
+                    { "hello\"", new[] { onNameError("hello\"", "\"") } },
+                    { "\"hello", new[] { onNameError("\"hello", "\"") } },
+                    { "he\"lo", new[] { onNameError("he\"lo", "\"") } },
+                    {
+                        "\"he\"lo\"",
+                        new[]
+                        {
+                            onNameError("\"he\"lo\"", "\""),
+                            onNameError("\"he\"lo\"", "\""),
+                            onNameError("\"he\"lo\"", "\"")
+                        }
+                    },
+                    { "'", new[] { onNameError("'", "'") } },
+                    { "hello'", new[] { onNameError("hello'", "'") } },
+                    { "'hello", new[] { onNameError("'hello", "'") } },
+                    { "he'lo", new[] { onNameError("he'lo", "'") } },
+                    {
+                        "'he'lo'",
+                        new[]
+                        {
+                            onNameError("'he'lo'", "'"),
+                            onNameError("'he'lo'", "'"),
+                            onNameError("'he'lo'", "'")
+                        }
+                    },
+                    { string.Empty, new[] { string.Format(nullOrWhitespaceNameError, "Tag") } },
+                    { Environment.NewLine, new[] { string.Format(nullOrWhitespaceNameError, "Tag") } },
+                    { "\t", new[] { string.Format(nullOrWhitespaceNameError, "Tag") } },
+                    { " \t ", new[] { string.Format(nullOrWhitespaceNameError, "Tag") } },
+                    { " ", new[] { string.Format(nullOrWhitespaceNameError, "Tag") } },
+                    { Environment.NewLine + " ", new[] { string.Format(nullOrWhitespaceNameError, "Tag") } },
+                    {
+                        "! \t\r\n@/<>?[]=\"'",
+                        new[]
+                        {
+                            onNameError("! \t\r\n@/<>?[]=\"'", "!"),
+                            onNameError("! \t\r\n@/<>?[]=\"'", " "),
+                            onNameError("! \t\r\n@/<>?[]=\"'", "\t"),
+                            onNameError("! \t\r\n@/<>?[]=\"'", "\r"),
+                            onNameError("! \t\r\n@/<>?[]=\"'", "\n"),
+                            onNameError("! \t\r\n@/<>?[]=\"'", "@"),
+                            onNameError("! \t\r\n@/<>?[]=\"'", "/"),
+                            onNameError("! \t\r\n@/<>?[]=\"'", "<"),
+                            onNameError("! \t\r\n@/<>?[]=\"'", ">"),
+                            onNameError("! \t\r\n@/<>?[]=\"'", "?"),
+                            onNameError("! \t\r\n@/<>?[]=\"'", "["),
+                            onNameError("! \t\r\n@/<>?[]=\"'", "]"),
+                            onNameError("! \t\r\n@/<>?[]=\"'", "="),
+                            onNameError("! \t\r\n@/<>?[]=\"'", "\""),
+                            onNameError("! \t\r\n@/<>?[]=\"'", "'"),
+                        }
+                    },
+                    {
+                        "! \tv\ra\nl@i/d<>?[]=\"'",
+                        new[]
+                        {
+                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "!"),
+                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", " "),
+                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "\t"),
+                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "\r"),
+                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "\n"),
+                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "@"),
+                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "/"),
+                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "<"),
+                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", ">"),
+                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "?"),
+                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "["),
+                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "]"),
+                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "="),
+                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "\""),
+                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "'"),
+                        }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidNameData))]
+        public void ValidTargetElementAttributeNames_CreatesErrorOnInvalidNames(
+            string name, string[] expectedErrorMessages)
+        {
+            // Arrange
+            var errorSink = new ParserErrorSink();
+            var attribute = new TargetElementAttribute(name);
+
+            // Act
+            TagHelperDescriptorFactory.ValidTargetElementAttributeNames(attribute, errorSink);
+
+            // Assert
+            var errors = errorSink.Errors.ToArray();
+            for (var i = 0; i < errors.Length; i++)
+            {
+                Assert.Equal(expectedErrorMessages[i], errors[i].Message);
+                Assert.Equal(SourceLocation.Zero, errors[i].Location);
+            }
+        }
+
+        public static TheoryData ValidNameData
+        {
+            get
+            {
+                // name, expectedNames
+                return new TheoryData<string, IEnumerable<string>>
+                {
+                    { "p", new[] { "p" } },
+                    { " p", new[] { "p" } },
+                    { "p ", new[] { "p" } },
+                    { " p ", new[] { "p" } },
+                    { "p,div", new[] { "p", "div" } },
+                    { " p,div", new[] { "p", "div" } },
+                    { "p ,div", new[] { "p", "div" } },
+                    { " p ,div", new[] { "p", "div" } },
+                    { "p, div", new[] { "p", "div" } },
+                    { "p,div ", new[] { "p", "div" } },
+                    { "p, div ", new[] { "p", "div" } },
+                    { " p, div ", new[] { "p", "div" } },
+                    { " p , div ", new[] { "p", "div" } },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ValidNameData))]
+        public void GetCommaSeparatedValues_OutputsCommaSeparatedListOfNames(
+            string name,
+            IEnumerable<string> expectedNames)
+        {
+            // Act
+            var result = TagHelperDescriptorFactory.GetCommaSeparatedValues(name);
+
+            // Assert
+            Assert.Equal(expectedNames, result);
         }
 
         [Fact]
-        public void CreateDescriptor_GetsTagNamesFromMultipleAttributes()
+        public void GetCommaSeparatedValues_OutputsEmptyArrayForNullValue()
         {
-            // Arrange
-            var expectedDescriptors = new[] {
-                new TagHelperDescriptor(
-                    "span",
-                    typeof(MultipleAttributeTagHelper).FullName,
-                    AssemblyName),
-                new TagHelperDescriptor(
-                    "p",
-                    typeof(MultipleAttributeTagHelper).FullName,
-                    AssemblyName),
-                new TagHelperDescriptor(
-                    "div",
-                    typeof(MultipleAttributeTagHelper).FullName,
-                    AssemblyName)
-            };
-
             // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(AssemblyName,
-                typeof(MultipleAttributeTagHelper));
+            var result = TagHelperDescriptorFactory.GetCommaSeparatedValues(text: null);
 
             // Assert
-            Assert.Equal(expectedDescriptors, descriptors, CompleteTagHelperDescriptorComparer.Default);
+            Assert.Empty(result);
         }
 
-        [HtmlElementName("p", "div")]
+        [TargetElement(Attributes = "class")]
+        private class AttributeTargetingTagHelper : TagHelper
+        {
+        }
+
+        [TargetElement(Attributes = "class,style")]
+        private class MultiAttributeTargetingTagHelper : TagHelper
+        {
+        }
+
+        [TargetElement(Attributes = "custom")]
+        [TargetElement(Attributes = "class,style")]
+        private class MultiAttributeAttributeTargetingTagHelper : TagHelper
+        {
+        }
+
+        [TargetElement(Attributes = "style")]
+        private class InheritedAttributeTargetingTagHelper : AttributeTargetingTagHelper
+        {
+        }
+
+        [TargetElement("input", Attributes = "class")]
+        private class RequiredAttributeTagHelper : TagHelper
+        {
+        }
+
+        [TargetElement("div", Attributes = "class")]
+        private class InheritedRequiredAttributeTagHelper : RequiredAttributeTagHelper
+        {
+        }
+
+        [TargetElement("div", Attributes = "class")]
+        [TargetElement("input", Attributes = "class")]
+        private class MultiAttributeRequiredAttributeTagHelper : TagHelper
+        {
+        }
+
+        [TargetElement("input", Attributes = "style")]
+        [TargetElement("input", Attributes = "class")]
+        private class MultiAttributeSameTagRequiredAttributeTagHelper : TagHelper
+        {
+        }
+
+        [TargetElement("input", Attributes = "class,style")]
+        private class MultiRequiredAttributeTagHelper : TagHelper
+        {
+        }
+
+        [TargetElement("div", Attributes = "style")]
+        private class InheritedMultiRequiredAttributeTagHelper : MultiRequiredAttributeTagHelper
+        {
+        }
+
+        [TargetElement("div", Attributes = "class,style")]
+        [TargetElement("input", Attributes = "class,style")]
+        private class MultiTagMultiRequiredAttributeTagHelper : TagHelper
+        {
+        }
+
+        [TargetElement("p")]
+        [TargetElement("div")]
         private class MultiTagTagHelper
         {
             public string ValidAttribute { get; set; }
@@ -368,19 +915,16 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
         }
 
-        [HtmlElementName("p", "p", "div", "div")]
+        [TargetElement("p")]
+        [TargetElement("p")]
+        [TargetElement("div")]
+        [TargetElement("div")]
         private class DuplicateTagNameTagHelper
         {
         }
 
-        [HtmlElementName("data-condition")]
+        [TargetElement("data-condition")]
         private class OverrideNameTagHelper
-        {
-        }
-
-        [HtmlElementName("span")]
-        [HtmlElementName("div", "p")]
-        private class MultipleAttributeTagHelper
         {
         }
 

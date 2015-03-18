@@ -19,6 +19,867 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
 {
     public class TagHelperParseTreeRewriterTest : CsHtmlMarkupParserTestBase
     {
+        public static TheoryData RequiredAttributeData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var blockFactory = new BlockFactory(factory);
+                var dateTimeNow = new MarkupBlock(
+                    new MarkupBlock(
+                        new ExpressionBlock(
+                            factory.CodeTransition(),
+                            factory.Code("DateTime.Now")
+                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                .Accepts(AcceptedCharacters.NonWhiteSpace))));
+
+                // documentContent, expectedOutput
+                return new TheoryData<string, MarkupBlock>
+                {
+                    {
+                        "<p />",
+                        new MarkupBlock(blockFactory.MarkupTagBlock("<p />"))
+                    },
+                    {
+                        "<p></p>",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("<p>"),
+                            blockFactory.MarkupTagBlock("</p>"))
+                    },
+                    {
+                        "<div />",
+                        new MarkupBlock(blockFactory.MarkupTagBlock("<div />"))
+                    },
+                    {
+                        "<div></div>",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("<div>"),
+                            blockFactory.MarkupTagBlock("</div>"))
+                    },
+                    {
+                        "<p class=\"btn\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["class"] = factory.Markup("btn")
+                                }))
+                    },
+                    {
+                        "<p class=\"@DateTime.Now\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["class"] = dateTimeNow
+                                }))
+                    },
+                    {
+                        "<p class=\"btn\">words and spaces</p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["class"] = factory.Markup("btn")
+                                },
+                                children: factory.Markup("words and spaces")))
+                    },
+                    {
+                        "<p class=\"@DateTime.Now\">words and spaces</p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["class"] = dateTimeNow
+                                },
+                                children: factory.Markup("words and spaces")))
+                    },
+                    {
+                        "<p class=\"btn\">words<strong>and</strong>spaces</p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["class"] = factory.Markup("btn")
+                                },
+                                children: new SyntaxTreeNode[]
+                                {
+                                    factory.Markup("words"),
+                                    blockFactory.MarkupTagBlock("<strong>"),
+                                    factory.Markup("and"),
+                                    blockFactory.MarkupTagBlock("</strong>"),
+                                    factory.Markup("spaces")
+                                }))
+                    },
+                    {
+                        "<strong catchAll=\"hi\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "strong",
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["catchAll"] = factory.Markup("hi")
+                                }))
+                    },
+                    {
+                        "<strong catchAll=\"@DateTime.Now\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "strong",
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["catchAll"] = dateTimeNow
+                                }))
+                    },
+                    {
+                        "<strong catchAll=\"hi\">words and spaces</strong>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "strong",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["catchAll"] = factory.Markup("hi")
+                                },
+                                children: factory.Markup("words and spaces")))
+                    },
+                    {
+                        "<strong catchAll=\"@DateTime.Now\">words and spaces</strong>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "strong",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["catchAll"] = dateTimeNow
+                                },
+                                children: factory.Markup("words and spaces")))
+                    },
+                    {
+                        "<div class=\"btn\" />",
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                factory.Markup("<div"),
+                                new MarkupBlock(
+                                    new AttributeBlockCodeGenerator(
+                                        name: "class",
+                                        prefix: new LocationTagged<string>(" class=\"", 4, 0, 4),
+                                        suffix: new LocationTagged<string>("\"", 15, 0, 15)),
+                                    factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                    factory.Markup("btn").With(
+                                        new LiteralAttributeCodeGenerator(
+                                            prefix: new LocationTagged<string>(string.Empty, 12, 0, 12),
+                                            value: new LocationTagged<string>("btn", 12, 0, 12))),
+                                    factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                factory.Markup(" />")))
+                    },
+                    {
+                        "<div class=\"btn\"></div>",
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                factory.Markup("<div"),
+                                new MarkupBlock(
+                                    new AttributeBlockCodeGenerator(
+                                        name: "class",
+                                        prefix: new LocationTagged<string>(" class=\"", 4, 0, 4),
+                                        suffix: new LocationTagged<string>("\"", 15, 0, 15)),
+                                    factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                    factory.Markup("btn").With(
+                                        new LiteralAttributeCodeGenerator(
+                                            prefix: new LocationTagged<string>(string.Empty, 12, 0, 12),
+                                            value: new LocationTagged<string>("btn", 12, 0, 12))),
+                                    factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                factory.Markup(">")),
+                            blockFactory.MarkupTagBlock("</div>"))
+                    },
+                    {
+                        "<p notRequired=\"a\" class=\"btn\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["notRequired"] = factory.Markup("a"),
+                                    ["class"] = factory.Markup("btn")
+                                }))
+                    },
+                    {
+                        "<p notRequired=\"@DateTime.Now\" class=\"btn\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["notRequired"] = dateTimeNow,
+                                    ["class"] = factory.Markup("btn")
+                                }))
+                    },
+                    {
+                        "<p notRequired=\"a\" class=\"btn\">words and spaces</p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["notRequired"] = factory.Markup("a"),
+                                    ["class"] = factory.Markup("btn")
+                                },
+                                children: factory.Markup("words and spaces")))
+                    },
+                    {
+                        "<div style=\"\" class=\"btn\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "div",
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["style"] = new MarkupBlock(),
+                                    ["class"] = factory.Markup("btn")
+                                }))
+                    },
+                    {
+                        "<div style=\"@DateTime.Now\" class=\"btn\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "div",
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["style"] = dateTimeNow,
+                                    ["class"] = factory.Markup("btn")
+                                }))
+                    },
+                    {
+                        "<div style=\"\" class=\"btn\">words and spaces</div>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "div",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["style"] = new MarkupBlock(),
+                                    ["class"] = factory.Markup("btn")
+                                },
+                                children: factory.Markup("words and spaces")))
+                    },
+                    {
+                        "<div style=\"@DateTime.Now\" class=\"@DateTime.Now\">words and spaces</div>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "div",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["style"] = dateTimeNow,
+                                    ["class"] = dateTimeNow
+                                },
+                                children: factory.Markup("words and spaces")))
+                    },
+                    {
+                        "<div style=\"\" class=\"btn\">words<strong>and</strong>spaces</div>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "div",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["style"] = new MarkupBlock(),
+                                    ["class"] = factory.Markup("btn")
+                                },
+                                children: new SyntaxTreeNode[]
+                                {
+                                    factory.Markup("words"),
+                                    blockFactory.MarkupTagBlock("<strong>"),
+                                    factory.Markup("and"),
+                                    blockFactory.MarkupTagBlock("</strong>"),
+                                    factory.Markup("spaces")
+                                }))
+                    },
+                    {
+                        "<p class=\"btn\" catchAll=\"hi\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["class"] = factory.Markup("btn"),
+                                    ["catchAll"] = factory.Markup("hi")
+                                }))
+                    },
+                    {
+                        "<p class=\"btn\" catchAll=\"hi\">words and spaces</p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["class"] = factory.Markup("btn"),
+                                    ["catchAll"] = factory.Markup("hi")
+                                },
+                                children: factory.Markup("words and spaces")))
+                    },
+                    {
+                        "<div style=\"\" class=\"btn\" catchAll=\"hi\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "div",
+                                selfClosing: true,
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["style"] = new MarkupBlock(),
+                                    ["class"] = factory.Markup("btn"),
+                                    ["catchAll"] = factory.Markup("hi")
+                                }))
+                    },
+                    {
+                        "<div style=\"\" class=\"btn\" catchAll=\"hi\" >words and spaces</div>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "div",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["style"] = new MarkupBlock(),
+                                    ["class"] = factory.Markup("btn"),
+                                    ["catchAll"] = factory.Markup("hi")
+                                },
+                                children: factory.Markup("words and spaces")))
+                    },
+                    {
+                        "<div style=\"@DateTime.Now\" class=\"@DateTime.Now\" catchAll=\"@DateTime.Now\" >words and " +
+                        "spaces</div>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "div",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["style"] = dateTimeNow,
+                                    ["class"] = dateTimeNow,
+                                    ["catchAll"] = dateTimeNow
+                                },
+                                children: factory.Markup("words and spaces")))
+                    },
+                    {
+                        "<div style=\"\" class=\"btn\" catchAll=\"hi\" >words<strong>and</strong>spaces</div>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "div",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["style"] = new MarkupBlock(),
+                                    ["class"] = factory.Markup("btn"),
+                                    ["catchAll"] = factory.Markup("hi")
+                                },
+                                children: new SyntaxTreeNode[]
+                                {
+                                    factory.Markup("words"),
+                                    blockFactory.MarkupTagBlock("<strong>"),
+                                    factory.Markup("and"),
+                                    blockFactory.MarkupTagBlock("</strong>"),
+                                    factory.Markup("spaces")
+                                }))
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(RequiredAttributeData))]
+        public void Rewrite_RequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly(
+            string documentContent,
+            MarkupBlock expectedOutput)
+        {
+            // Arrange
+            var descriptors = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor(
+                        tagName: "p",
+                        typeName: "pTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: new[] { "class" }),
+                    new TagHelperDescriptor(
+                        tagName: "div",
+                        typeName: "divTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: new[] { "class", "style" }),
+                    new TagHelperDescriptor(
+                        tagName: "*",
+                        typeName: "catchAllTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: new[] { "catchAll" })
+                };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
+        }
+
+        public static TheoryData NestedRequiredAttributeData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var blockFactory = new BlockFactory(factory);
+                var dateTimeNow = new MarkupBlock(
+                    new MarkupBlock(
+                        new ExpressionBlock(
+                            factory.CodeTransition(),
+                            factory.Code("DateTime.Now")
+                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                .Accepts(AcceptedCharacters.NonWhiteSpace))));
+
+                // documentContent, expectedOutput
+                return new TheoryData<string, MarkupBlock>
+                {
+                    {
+                        "<p class=\"btn\"><p></p></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["class"] = factory.Markup("btn")
+                                },
+                                children: new[]
+                                {
+                                    blockFactory.MarkupTagBlock("<p>"),
+                                    blockFactory.MarkupTagBlock("</p>")
+                                }))
+                    },
+                    {
+                        "<strong catchAll=\"hi\"><strong></strong></strong>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "strong",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["catchAll"] = factory.Markup("hi")
+                                },
+                                children: new SyntaxTreeNode[]
+                                {
+                                    blockFactory.MarkupTagBlock("<strong>"),
+                                    blockFactory.MarkupTagBlock("</strong>"),
+                                }))
+                    },
+                    {
+                        "<p class=\"btn\"><strong><p></p></strong></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["class"] = factory.Markup("btn")
+                                },
+                                children: new[]
+                                {
+                                    blockFactory.MarkupTagBlock("<strong>"),
+                                    blockFactory.MarkupTagBlock("<p>"),
+                                    blockFactory.MarkupTagBlock("</p>"),
+                                    blockFactory.MarkupTagBlock("</strong>"),
+                                }))
+                    },
+                    {
+                        "<strong catchAll=\"hi\"><p><strong></strong></p></strong>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "strong",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["catchAll"] = factory.Markup("hi")
+                                },
+                                children: new SyntaxTreeNode[]
+                                {
+                                    blockFactory.MarkupTagBlock("<p>"),
+                                    blockFactory.MarkupTagBlock("<strong>"),
+                                    blockFactory.MarkupTagBlock("</strong>"),
+                                    blockFactory.MarkupTagBlock("</p>"),
+                                }))
+                    },
+                    {
+                        "<p class=\"btn\"><strong catchAll=\"hi\"><p></p></strong></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["class"] = factory.Markup("btn")
+                                },
+                                children: new MarkupTagHelperBlock(
+                                    "strong",
+                                    attributes: new Dictionary<string, SyntaxTreeNode>
+                                    {
+                                        ["catchAll"] = factory.Markup("hi")
+                                    },
+                                    children: new[]
+                                    {
+                                        blockFactory.MarkupTagBlock("<p>"),
+                                        blockFactory.MarkupTagBlock("</p>")
+                                    })))
+                    },
+                    {
+                        "<strong catchAll=\"hi\"><p class=\"btn\"><strong></strong></p></strong>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "strong",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["catchAll"] = factory.Markup("hi")
+                                },
+                                children: new MarkupTagHelperBlock(
+                                    "p",
+                                    attributes: new Dictionary<string, SyntaxTreeNode>
+                                    {
+                                        ["class"] = factory.Markup("btn")
+                                    },
+                                    children: new[]
+                                    {
+                                        blockFactory.MarkupTagBlock("<strong>"),
+                                        blockFactory.MarkupTagBlock("</strong>"),
+                                    })))
+                    },
+                    {
+                        "<p class=\"btn\"><p class=\"btn\"><p></p></p></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["class"] = factory.Markup("btn")
+                                },
+                                children: new MarkupTagHelperBlock(
+                                    "p",
+                                    attributes: new Dictionary<string, SyntaxTreeNode>
+                                    {
+                                        ["class"] = factory.Markup("btn")
+                                    },
+                                    children: new[]
+                                    {
+                                        blockFactory.MarkupTagBlock("<p>"),
+                                        blockFactory.MarkupTagBlock("</p>")
+                                    })))
+                    },
+                    {
+                        "<strong catchAll=\"hi\"><strong catchAll=\"hi\"><strong></strong></strong></strong>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "strong",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["catchAll"] = factory.Markup("hi")
+                                },
+                                children: new MarkupTagHelperBlock(
+                                    "strong",
+                                    attributes: new Dictionary<string, SyntaxTreeNode>
+                                    {
+                                        ["catchAll"] = factory.Markup("hi")
+                                    },
+                                    children: new[]
+                                    {
+                                        blockFactory.MarkupTagBlock("<strong>"),
+                                        blockFactory.MarkupTagBlock("</strong>"),
+                                    })))
+                    },
+                    {
+                        "<p class=\"btn\"><p><p><p class=\"btn\"><p></p></p></p></p></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["class"] = factory.Markup("btn")
+                                },
+                                children: new[]
+                                {
+                                    blockFactory.MarkupTagBlock("<p>"),
+                                    blockFactory.MarkupTagBlock("<p>"),
+                                    new MarkupTagHelperBlock(
+                                        "p",
+                                        attributes: new Dictionary<string, SyntaxTreeNode>
+                                        {
+                                            ["class"] = factory.Markup("btn")
+                                        },
+                                        children: new[]
+                                        {
+                                            blockFactory.MarkupTagBlock("<p>"),
+                                            blockFactory.MarkupTagBlock("</p>")
+                                        }),
+                                    blockFactory.MarkupTagBlock("</p>"),
+                                    blockFactory.MarkupTagBlock("</p>"),
+                                }))
+                    },
+                    {
+                        "<strong catchAll=\"hi\"><strong><strong><strong catchAll=\"hi\"><strong></strong></strong>" +
+                        "</strong></strong></strong>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "strong",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["catchAll"] = factory.Markup("hi")
+                                },
+                                children: new[]
+                                {
+                                    blockFactory.MarkupTagBlock("<strong>"),
+                                    blockFactory.MarkupTagBlock("<strong>"),
+                                    new MarkupTagHelperBlock(
+                                    "strong",
+                                    attributes: new Dictionary<string, SyntaxTreeNode>
+                                    {
+                                        ["catchAll"] = factory.Markup("hi")
+                                    },
+                                    children: new[]
+                                    {
+                                        blockFactory.MarkupTagBlock("<strong>"),
+                                        blockFactory.MarkupTagBlock("</strong>"),
+                                    }),
+                                    blockFactory.MarkupTagBlock("</strong>"),
+                                    blockFactory.MarkupTagBlock("</strong>"),
+                                }))
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NestedRequiredAttributeData))]
+        public void Rewrite_NestedRequiredAttributeDescriptorsCreateTagHelperBlocksCorrectly(
+            string documentContent,
+            MarkupBlock expectedOutput)
+        {
+            // Arrange
+            var descriptors = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor(
+                        tagName: "p",
+                        typeName: "pTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: new[] { "class" }),
+                    new TagHelperDescriptor(
+                        tagName: "*",
+                        typeName: "catchAllTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: new[] { "catchAll" })
+                };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
+        }
+
+        public static TheoryData<string, MarkupBlock, RazorError[]> MalformedRequiredAttributeData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var blockFactory = new BlockFactory(factory);
+                var errorFormatUnclosed = "Found a malformed '{0}' tag helper. Tag helpers must have a start and " +
+                                          "end tag or be self closing.";
+                var errorFormatNoCloseAngle = "Missing close angle for tag helper '{0}'.";
+
+                // documentContent, expectedOutput, expectedErrors
+                return new TheoryData<string, MarkupBlock, RazorError[]>
+                {
+                    {
+                        "<p",
+                        new MarkupBlock(blockFactory.MarkupTagBlock("<p")),
+                        new RazorError[0]
+                    },
+                    {
+                        "<p class=\"btn\"",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["class"] = factory.Markup("btn")
+                                })),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero)
+                        }
+                    },
+                    {
+                        "<p notRequired=\"hi\" class=\"btn\"",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["notRequired"] = factory.Markup("hi"),
+                                    ["class"] = factory.Markup("btn")
+                                })),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero)
+                        }
+                    },
+                    {
+                        "<p></p",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("<p>"),
+                            blockFactory.MarkupTagBlock("</p")),
+                        new RazorError[0]
+                    },
+                    {
+                        "<p class=\"btn\"></p",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["class"] = factory.Markup("btn")
+                                })),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                absoluteIndex: 15, lineIndex: 0, columnIndex: 15)
+                        }
+                    },
+                    {
+                        "<p notRequired=\"hi\" class=\"btn\"></p",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["notRequired"] = factory.Markup("hi"),
+                                    ["class"] = factory.Markup("btn")
+                                })),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                absoluteIndex: 32, lineIndex: 0, columnIndex: 32)
+                        }
+                    },
+                    {
+                        "<p class=\"btn\" <p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["class"] = factory.Markup("btn")
+                                },
+                                children: blockFactory.MarkupTagBlock("<p>"))),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero),
+                        }
+                    },
+                    {
+                        "<p notRequired=\"hi\" class=\"btn\" <p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["notRequired"] = factory.Markup("hi"),
+                                    ["class"] = factory.Markup("btn")
+                                },
+                                children: blockFactory.MarkupTagBlock("<p>"))),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero),
+                        }
+                    },
+                    {
+                        "<p class=\"btn\" </p",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["class"] = factory.Markup("btn")
+                                })),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                absoluteIndex: 15, lineIndex: 0, columnIndex: 15)
+                        }
+                    },
+                    {
+                        "<p notRequired=\"hi\" class=\"btn\" </p",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                {
+                                    ["notRequired"] = factory.Markup("hi"),
+                                    ["class"] = factory.Markup("btn")
+                                })),
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                absoluteIndex: 32, lineIndex: 0, columnIndex: 32)
+                        }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(MalformedRequiredAttributeData))]
+        public void Rewrite_RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly(
+            string documentContent,
+            MarkupBlock expectedOutput,
+            RazorError[] expectedErrors)
+        {
+            // Arrange
+            var descriptors = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor(
+                        tagName: "p",
+                        typeName: "pTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: new[] { "class" })
+                };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors);
+        }
+
         public static TheoryData PrefixedTagHelperBoundData
         {
             get
@@ -32,7 +893,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         tagName: "myth",
                         typeName: "mythTagHelper",
                         assemblyName: "SomeAssembly",
-                        attributes: Enumerable.Empty<TagHelperAttributeDescriptor>()),
+                        attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                        requiredAttributes: Enumerable.Empty<string>()),
                     new TagHelperDescriptor(
                         prefix: "th:",
                         tagName: "myth2",
@@ -44,7 +906,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 name: "bound",
                                 propertyName: "Bound",
                                 typeName: typeof(bool).FullName),
-                        })
+                        },
+                        requiredAttributes: Enumerable.Empty<string>())
                 };
                 var availableDescriptorsText = new TagHelperDescriptor[]
                 {
@@ -53,7 +916,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         tagName: "myth",
                         typeName: "mythTagHelper",
                         assemblyName: "SomeAssembly",
-                        attributes: Enumerable.Empty<TagHelperAttributeDescriptor>()),
+                        attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                        requiredAttributes: Enumerable.Empty<string>()),
                     new TagHelperDescriptor(
                         prefix: "PREFIX",
                         tagName: "myth2",
@@ -65,7 +929,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 name: "bound",
                                 propertyName: "Bound",
                                 typeName: typeof(bool).FullName),
-                        })
+                        },
+                        requiredAttributes: Enumerable.Empty<string>())
                 };
                 var availableDescriptorsCatchAll = new TagHelperDescriptor[]
                 {
@@ -74,7 +939,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         tagName: "*",
                         typeName: "mythTagHelper",
                         assemblyName: "SomeAssembly",
-                        attributes: Enumerable.Empty<TagHelperAttributeDescriptor>()),
+                        attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                        requiredAttributes: Enumerable.Empty<string>()),
                 };
 
                 // documentContent, expectedOutput, availableDescriptors
@@ -280,8 +1146,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
         [Theory]
         [MemberData(nameof(PrefixedTagHelperBoundData))]
         public void Rewrite_AllowsPrefixedTagHelpers(
-            string documentContent, 
-            MarkupBlock expectedOutput, 
+            string documentContent,
+            MarkupBlock expectedOutput,
             IEnumerable<TagHelperDescriptor> availableDescriptors)
         {
             // Arrange
@@ -289,9 +1155,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
 
             // Act & Assert
             EvaluateData(
-                descriptorProvider, 
-                documentContent, 
-                expectedOutput, 
+                descriptorProvider,
+                documentContent,
+                expectedOutput,
                 expectedErrors: Enumerable.Empty<RazorError>());
         }
 
