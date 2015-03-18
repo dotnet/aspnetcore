@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Identity
 
         private static byte[] HashPasswordV2(string password, RandomNumberGenerator rng)
         {
-            const KeyDerivationPrf Pbkdf2Prf = KeyDerivationPrf.Sha1; // default for Rfc2898DeriveBytes
+            const KeyDerivationPrf Pbkdf2Prf = KeyDerivationPrf.HMACSHA1; // default for Rfc2898DeriveBytes
             const int Pbkdf2IterCount = 1000; // default for Rfc2898DeriveBytes
             const int Pbkdf2SubkeyLength = 256 / 8; // 256 bits
             const int SaltSize = 128 / 8; // 128 bits
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Identity
         private byte[] HashPasswordV3(string password, RandomNumberGenerator rng)
         {
             return HashPasswordV3(password, rng,
-                prf: KeyDerivationPrf.Sha256,
+                prf: KeyDerivationPrf.HMACSHA256,
                 iterCount: _iterCount,
                 saltSize: 128 / 8,
                 numBytesRequested: 256 / 8);
@@ -220,7 +220,7 @@ namespace Microsoft.AspNet.Identity
 
         private static bool VerifyHashedPasswordV2(byte[] hashedPassword, string password)
         {
-            const KeyDerivationPrf Pbkdf2Prf = KeyDerivationPrf.Sha1; // default for Rfc2898DeriveBytes
+            const KeyDerivationPrf Pbkdf2Prf = KeyDerivationPrf.HMACSHA1; // default for Rfc2898DeriveBytes
             const int Pbkdf2IterCount = 1000; // default for Rfc2898DeriveBytes
             const int Pbkdf2SubkeyLength = 256 / 8; // 256 bits
             const int SaltSize = 128 / 8; // 128 bits
