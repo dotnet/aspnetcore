@@ -10,6 +10,7 @@ using Microsoft.AspNet.DataProtection.Cng;
 using Microsoft.AspNet.DataProtection.KeyManagement;
 using Microsoft.AspNet.DataProtection.Repositories;
 using Microsoft.Framework.Logging;
+using Microsoft.Win32;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -79,26 +80,19 @@ namespace Microsoft.Framework.DependencyInjection
                     else
                     {
                         // Use profile isn't available - can we use the HKLM registry?
-                        var regKeyStorageKey = RegistryXmlRepository.DefaultRegistryKey;
+                        RegistryKey regKeyStorageKey = null;
+                        if (OSVersionUtil.IsWindows())
+                        {
+                            regKeyStorageKey = RegistryXmlRepository.DefaultRegistryKey;
+                        }
                         if (regKeyStorageKey != null)
                         {
-                            if (OSVersionUtil.IsWindows())
-                            {
-                                // If the user profile isn't available, we can protect using DPAPI (to machine).
-                                keyEncryptorDescriptor = DataProtectionServiceDescriptors.IXmlEncryptor_Dpapi(protectToMachine: true);
-                            }
-                            keyRepositoryDescriptor = DataProtectionServiceDescriptors.IXmlRepository_Registry(regKeyStorageKey);
+                            // If the user profile isn't available, we can protect using DPAPI (to machine).
+                            keyEncryptorDescriptor = DataProtectionServiceDescriptors.IXmlEncryptor_Dpapi(protectToMachine: true);
 
                             if (log.IsInformationLevelEnabled())
                             {
-                                if (keyEncryptorDescriptor != null)
-                                {
-                                    log.LogInformationF($"User profile not available. Using '{regKeyStorageKey.Name}' as key repository and Windows DPAPI to encrypt keys at rest.");
-                                }
-                                else
-                                {
-                                    log.LogInformationF($"User profile not available. Using '{regKeyStorageKey.Name}' as key repository; keys will not be encrypted at rest.");
-                                }
+                                log.LogInformationF($"User profile not available. Using '{regKeyStorageKey.Name}' as key repository and Windows DPAPI to encrypt keys at rest.");
                             }
                         }
                         else
@@ -135,12 +129,15 @@ namespace Microsoft.Framework.DependencyInjection
 
             // Read and apply policy from the registry, overriding any other defaults.
             bool encryptorConfigurationReadFromRegistry = false;
-            foreach (var descriptor in RegistryPolicyResolver.ResolveDefaultPolicy())
+            if (OSVersionUtil.IsWindows())
             {
-                yield return descriptor;
-                if (descriptor.ServiceType == typeof(IAuthenticatedEncryptorConfiguration))
+                foreach (var descriptor in RegistryPolicyResolver.ResolveDefaultPolicy())
                 {
-                    encryptorConfigurationReadFromRegistry = true;
+                    yield return descriptor;
+                    if (descriptor.ServiceType == typeof(IAuthenticatedEncryptorConfiguration))
+                    {
+                        encryptorConfigurationReadFromRegistry = true;
+                    }
                 }
             }
 
