@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Cors.Core
 {
     /// <inheritdoc />
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class EnableCorsAttribute : Attribute, IEnableCorsMetadata
+    public class EnableCorsAttribute : Attribute, IEnableCorsAttribute
     {
         /// <summary>
         /// Creates a new instance of the <see cref="EnableCorsAttribute"/>.

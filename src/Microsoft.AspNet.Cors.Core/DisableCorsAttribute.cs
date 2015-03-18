@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Cors.Core
 {
     /// <inheritdoc />
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    public class DisableCorsAttribute : Attribute, IDisableCorsMetadata
+    public class DisableCorsAttribute : Attribute, IDisableCorsAttribute
     {
     }
 }
