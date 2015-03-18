@@ -40,7 +40,7 @@ projectFile=''
         {
             var testArgs = IsMono ? " -parallel none" : "";
 
-            if (!framework.StartsWith("aspnetcore", StringComparison.OrdinalIgnoreCase))
+            if (!framework.StartsWith("dnxcore", StringComparison.OrdinalIgnoreCase))
             {
                 K(("test" + testArgs), projectFolder, "");
             }
