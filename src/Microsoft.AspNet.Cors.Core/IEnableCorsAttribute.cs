@@ -6,7 +6,7 @@ namespace Microsoft.AspNet.Cors.Core
     /// <summary>
     /// An interface which can be used to identify a type which provides metadata needed for enabling CORS support.
     /// </summary>
-    public interface IEnableCorsMetadata
+    public interface IEnableCorsAttribute
     {
         /// <summary>
         /// The name of the policy which needs to be applied.
