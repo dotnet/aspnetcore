@@ -24,6 +24,7 @@ namespace OpenIdConnectSample
 
             app.UseCookieAuthentication(options =>
             {
+                options.AutomaticAuthentication = true;
             });
 
             app.UseOpenIdConnectAuthentication(options =>
