@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Authentication.Google
             query.ShouldContain("&scope=" + Uri.EscapeDataString("openid profile email"));
         }
 
-        [Fact(Skip = "Failing due to : https://github.com/aspnet/HttpAbstractions/issues/231")]
+        [Fact]
         public async Task Challenge401WillSetDefaultScope()
         {
             var server = CreateServer(options =>
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Authentication.Google
             query.ShouldContain("&scope=" + Uri.EscapeDataString("openid profile email"));
         }
 
-        [Fact(Skip = "Failing due to : https://github.com/aspnet/HttpAbstractions/issues/231")]
+        [Fact]
         public async Task ChallengeWillUseAuthenticationPropertiesAsParameters()
         {
             var server = CreateServer(options =>
