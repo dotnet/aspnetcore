@@ -5,6 +5,7 @@ using System;
 using System.Configuration;
 using System.Web;
 using System.Web.Configuration;
+using Microsoft.AspNet.DataProtection.Infrastructure;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.DataProtection.SystemWeb

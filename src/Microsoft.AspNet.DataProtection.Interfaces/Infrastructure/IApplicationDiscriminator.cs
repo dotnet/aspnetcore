@@ -2,12 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
 
-namespace Microsoft.AspNet.DataProtection
+namespace Microsoft.AspNet.DataProtection.Infrastructure
 {
     /// <summary>
     /// Provides information used to discriminate applications.
     /// </summary>
+    /// <remarks>
+    /// This type supports the data protection system and is not intended to be used
+    /// by consumers.
+    /// </remarks>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public interface IApplicationDiscriminator
     {
         /// <summary>
