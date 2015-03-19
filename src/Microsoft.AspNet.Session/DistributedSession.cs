@@ -60,12 +60,12 @@ namespace Microsoft.AspNet.Session
             var encodedKey = new EncodedKey(key);
             if (encodedKey.KeyBytes.Length > KeyLengthLimit)
             {
-                throw new ArgumentOutOfRangeException("key", key,
+                throw new ArgumentOutOfRangeException(nameof(key),
                     string.Format("The key cannot be longer than '{0}' when encoded with UTF-8.", KeyLengthLimit));
             }
             if (value.Array == null)
             {
-                throw new ArgumentException("The ArraySegment<byte>.Array cannot be null.", "value");
+                throw new ArgumentException("The ArraySegment<byte>.Array cannot be null.", nameof(value));
             }
 
             Load();
@@ -174,7 +174,7 @@ namespace Microsoft.AspNet.Session
         {
             if (num < 0 || ushort.MaxValue < num)
             {
-                throw new ArgumentOutOfRangeException("num", num, "The value cannot be serialized in two bytes.");
+                throw new ArgumentOutOfRangeException(nameof(num), "The value cannot be serialized in two bytes.");
             }
             output.WriteByte((byte)(num >> 8));
             output.WriteByte((byte)(0xFF & num));
@@ -189,7 +189,7 @@ namespace Microsoft.AspNet.Session
         {
             if (num < 0 || 0xFFFFFF < num)
             {
-                throw new ArgumentOutOfRangeException("num", num, "The value cannot be serialized in three bytes.");
+                throw new ArgumentOutOfRangeException(nameof(num), "The value cannot be serialized in three bytes.");
             }
             output.WriteByte((byte)(num >> 16));
             output.WriteByte((byte)(0xFF & (num >> 8)));
@@ -205,7 +205,7 @@ namespace Microsoft.AspNet.Session
         {
             if (num < 0)
             {
-                throw new ArgumentOutOfRangeException("num", num, "The value cannot be negative.");
+                throw new ArgumentOutOfRangeException(nameof(num), "The value cannot be negative.");
             }
             output.WriteByte((byte)(num >> 24));
             output.WriteByte((byte)(0xFF & (num >> 16)));
