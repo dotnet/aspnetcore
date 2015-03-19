@@ -19,7 +19,7 @@ k-standard-goals
                 CreatePartFromFile(
                     package,
                     @"src\Microsoft.AspNet.DataProtection.SystemWeb\web.config.transform",
-                    @"content\web.config.transform");
+                    @"content\net451\web.config.transform");
             }
         }
     }
