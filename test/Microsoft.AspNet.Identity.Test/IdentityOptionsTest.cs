@@ -114,16 +114,14 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public void CanCustomizeIdentityOptions()
         {
-            var builder = new ApplicationBuilder(CallContextServiceLocator.Locator.ServiceProvider);
-            builder.UseServices(services =>
-            {
-                services.AddIdentity();
-                services.ConfigureOptions<PasswordsNegativeLengthSetup>();
-            });
+            var services = new ServiceCollection()
+                .ConfigureOptions<PasswordsNegativeLengthSetup>();
+            services.AddIdentity();
+            var serviceProvider = services.BuildServiceProvider();
 
-            var setup = builder.ApplicationServices.GetRequiredService<IConfigureOptions<IdentityOptions>>();
+            var setup = serviceProvider.GetRequiredService<IConfigureOptions<IdentityOptions>>();
             Assert.IsType(typeof(PasswordsNegativeLengthSetup), setup);
-            var optionsGetter = builder.ApplicationServices.GetRequiredService<IOptions<IdentityOptions>>();
+            var optionsGetter = serviceProvider.GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(optionsGetter);
             var myOptions = optionsGetter.Options;
             Assert.True(myOptions.Password.RequireLowercase);
@@ -136,19 +134,17 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public void CanSetupIdentityOptions()
         {
-            var app = new ApplicationBuilder(CallContextServiceLocator.Locator.ServiceProvider);
-            app.UseServices(services =>
-            {
-                services.AddOptions();
-                services.ConfigureIdentity(options => options.User.RequireUniqueEmail = true);
-            });
+            var services = new ServiceCollection()
+                .AddOptions()
+                .ConfigureIdentity(options => options.User.RequireUniqueEmail = true);
+            services.AddIdentity();
+            var serviceProvider = services.BuildServiceProvider();
 
-            var optionsGetter = app.ApplicationServices.GetRequiredService<IOptions<IdentityOptions>>();
+            var optionsGetter = serviceProvider.GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(optionsGetter);
 
             var myOptions = optionsGetter.Options;
             Assert.True(myOptions.User.RequireUniqueEmail);
         }
-
     }
 }

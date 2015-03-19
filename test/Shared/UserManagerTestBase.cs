@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
@@ -33,7 +34,7 @@ namespace Microsoft.AspNet.Identity.Test
 
         protected virtual void SetupIdentityServices(IServiceCollection services, object context = null)
         {
-            services.AddHosting();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddIdentity<TUser, TRole>().AddDefaultTokenProviders();
             AddUserStore(services, context);
             AddRoleStore(services, context);

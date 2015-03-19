@@ -35,13 +35,12 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
                 It.Is<AuthenticationProperties>(v => v.IsPersistent == isPersistent))).Verifiable();
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
-            app.UseServices(services =>
-            {
-                services.AddInstance(contextAccessor.Object);
-                services.AddIdentity<ApplicationUser, IdentityRole>();
-                services.AddSingleton<IUserStore<ApplicationUser>, InMemoryUserStore<ApplicationUser>>();
-                services.AddSingleton<IRoleStore<IdentityRole>, InMemoryRoleStore<IdentityRole>>();
-            });
+            var services = new ServiceCollection();
+            services.AddInstance(contextAccessor.Object);
+            services.AddIdentity<ApplicationUser, IdentityRole>();
+            services.AddSingleton<IUserStore<ApplicationUser>, InMemoryUserStore<ApplicationUser>>();
+            services.AddSingleton<IRoleStore<IdentityRole>, InMemoryRoleStore<IdentityRole>>();
+            app.ApplicationServices = services.BuildServiceProvider();
 
             // Act
             var user = new ApplicationUser

@@ -7,18 +7,16 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
-using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
-using System.Diagnostics;
+using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.AspNet.Authentication.Cookies;
 using Shouldly;
 using Xunit;
 
@@ -32,35 +30,35 @@ namespace Microsoft.AspNet.Identity.InMemory
         public async Task CanCreateMeLoginAndCookieStopsWorkingAfterExpiration()
         {
             var clock = new TestClock();
-            TestServer server = CreateServer(appCookieOptions =>
+            var server = CreateServer(appCookieOptions =>
             {
                 appCookieOptions.SystemClock = clock;
                 appCookieOptions.ExpireTimeSpan = TimeSpan.FromMinutes(10);
                 appCookieOptions.SlidingExpiration = false;
             });
 
-            Transaction transaction1 = await SendAsync(server, "http://example.com/createMe");
+            var transaction1 = await SendAsync(server, "http://example.com/createMe");
             transaction1.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
             Assert.Null(transaction1.SetCookie);
 
-            Transaction transaction2 = await SendAsync(server, "http://example.com/pwdLogin/false");
+            var transaction2 = await SendAsync(server, "http://example.com/pwdLogin/false");
             transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
             Assert.NotNull(transaction2.SetCookie);
             transaction2.SetCookie.ShouldNotContain("; expires=");
 
-            Transaction transaction3 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
+            var transaction3 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
             FindClaimValue(transaction3, ClaimTypes.Name).ShouldBe("hao");
             Assert.Null(transaction3.SetCookie);
 
             clock.Add(TimeSpan.FromMinutes(7));
 
-            Transaction transaction4 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
+            var transaction4 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
             FindClaimValue(transaction4, ClaimTypes.Name).ShouldBe("hao");
             Assert.Null(transaction4.SetCookie);
 
             clock.Add(TimeSpan.FromMinutes(7));
 
-            Transaction transaction5 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
+            var transaction5 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
             FindClaimValue(transaction5, ClaimTypes.Name).ShouldBe(null);
             Assert.Null(transaction5.SetCookie);
         }
@@ -71,16 +69,16 @@ namespace Microsoft.AspNet.Identity.InMemory
         public async Task CanCreateMeLoginAndSecurityStampExtendsExpiration(bool rememberMe)
         {
             var clock = new TestClock();
-            TestServer server = CreateServer(appCookieOptions =>
+            var server = CreateServer(appCookieOptions =>
             {
                 appCookieOptions.SystemClock = clock;
             });
 
-            Transaction transaction1 = await SendAsync(server, "http://example.com/createMe");
+            var transaction1 = await SendAsync(server, "http://example.com/createMe");
             transaction1.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
             Assert.Null(transaction1.SetCookie);
 
-            Transaction transaction2 = await SendAsync(server, "http://example.com/pwdLogin/" + rememberMe);
+            var transaction2 = await SendAsync(server, "http://example.com/pwdLogin/" + rememberMe);
             transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
             Assert.NotNull(transaction2.SetCookie);
             if (rememberMe)
@@ -92,45 +90,45 @@ namespace Microsoft.AspNet.Identity.InMemory
                 transaction2.SetCookie.ShouldNotContain("; expires=");
             }
 
-            Transaction transaction3 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
+            var transaction3 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
             FindClaimValue(transaction3, ClaimTypes.Name).ShouldBe("hao");
             Assert.Null(transaction3.SetCookie);
 
             // Make sure we don't get a new cookie yet
             clock.Add(TimeSpan.FromMinutes(10));
-            Transaction transaction4 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
+            var transaction4 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
             FindClaimValue(transaction4, ClaimTypes.Name).ShouldBe("hao");
             Assert.Null(transaction4.SetCookie);
 
             // Go past SecurityStampValidation interval and ensure we get a new cookie
             clock.Add(TimeSpan.FromMinutes(21));
 
-            Transaction transaction5 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
+            var transaction5 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
             Assert.NotNull(transaction5.SetCookie);
             FindClaimValue(transaction5, ClaimTypes.Name).ShouldBe("hao");
 
             // Make sure new cookie is valid
-            Transaction transaction6 = await SendAsync(server, "http://example.com/me", transaction5.CookieNameValue);
+            var transaction6 = await SendAsync(server, "http://example.com/me", transaction5.CookieNameValue);
             FindClaimValue(transaction6, ClaimTypes.Name).ShouldBe("hao");
         }
 
         [Fact]
         public async Task TwoFactorRememberCookieVerification()
         {
-            TestServer server = CreateServer(appCookieOptions => { });
+            var server = CreateServer(appCookieOptions => { });
 
-            Transaction transaction1 = await SendAsync(server, "http://example.com/createMe");
+            var transaction1 = await SendAsync(server, "http://example.com/createMe");
             transaction1.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
             Assert.Null(transaction1.SetCookie);
 
-            Transaction transaction2 = await SendAsync(server, "http://example.com/twofactorRememeber");
+            var transaction2 = await SendAsync(server, "http://example.com/twofactorRememeber");
             transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
             string setCookie = transaction2.SetCookie;
             setCookie.ShouldContain(IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme+"=");
             setCookie.ShouldContain("; expires=");
 
-            Transaction transaction3 = await SendAsync(server, "http://example.com/isTwoFactorRememebered", transaction2.CookieNameValue);
+            var transaction3 = await SendAsync(server, "http://example.com/isTwoFactorRememebered", transaction2.CookieNameValue);
             transaction3.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
         }
 
@@ -159,13 +157,6 @@ namespace Microsoft.AspNet.Identity.InMemory
         {
             var server = TestServer.Create(app =>
             {
-                app.UseServices(services =>
-                {
-                    services.AddIdentity<InMemoryUser, IdentityRole>();
-                    services.AddSingleton<IUserStore<InMemoryUser>, InMemoryUserStore<InMemoryUser>>();
-                    services.AddSingleton<IRoleStore<IdentityRole>, InMemoryRoleStore<IdentityRole>>();
-                    services.ConfigureIdentityApplicationCookie(configureAppCookie);
-                });
                 app.UseIdentity();
                 app.Use(async (context, next) =>
                 {
@@ -226,6 +217,13 @@ namespace Microsoft.AspNet.Identity.InMemory
                         await next();
                     }
                 });
+            },
+            services =>
+            {
+                services.AddIdentity<InMemoryUser, IdentityRole>();
+                services.AddSingleton<IUserStore<InMemoryUser>, InMemoryUserStore<InMemoryUser>>();
+                services.AddSingleton<IRoleStore<IdentityRole>, InMemoryRoleStore<IdentityRole>>();
+                services.ConfigureIdentityApplicationCookie(configureAppCookie);
             });
             server.BaseAddress = baseAddress;
             return server;

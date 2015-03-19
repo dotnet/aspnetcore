@@ -1,14 +1,14 @@
 {
   "dependencies": {
+    "EntityFramework.InMemory": "7.0.0-*",
+    "EntityFramework.SqlServer": "7.0.0-*",
     "Microsoft.AspNet.Hosting": "1.0.0-*",
     "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.AspNet.Identity": "3.0.0-*",
     "Microsoft.AspNet.Identity.EntityFramework": "1.0.0-*",
-    "Microsoft.AspNet.RequestContainer": "1.0.0-*",
     "Microsoft.AspNet.DataProtection": "1.0.0-*",
+    "Microsoft.AspNet.TestHost": "1.0.0-*",
     "Microsoft.AspNet.Testing": "1.0.0-*",
-    "EntityFramework.InMemory": "7.0.0-*",
-    "EntityFramework.SqlServer": "7.0.0-*",
     "Microsoft.Framework.OptionsModel" : "1.0.0-*",
     "System.Security.Claims": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"

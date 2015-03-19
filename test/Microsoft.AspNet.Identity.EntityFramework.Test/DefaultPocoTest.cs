@@ -44,11 +44,10 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             var context = CreateContext(true);
             var builder = new ApplicationBuilder(CallContextServiceLocator.Locator.ServiceProvider);
 
-            builder.UseServices(services =>
-            {
-                DbUtil.ConfigureDbServices<IdentityDbContext>(ConnectionString, services);
-                services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<IdentityDbContext>();
-            });
+            var services = new ServiceCollection();
+            DbUtil.ConfigureDbServices<IdentityDbContext>(ConnectionString, services);
+            services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<IdentityDbContext>();
+            builder.ApplicationServices = services.BuildServiceProvider();
 
             var userStore = builder.ApplicationServices.GetRequiredService<IUserStore<IdentityUser>>();
             var userManager = builder.ApplicationServices.GetRequiredService<UserManager<IdentityUser>>();

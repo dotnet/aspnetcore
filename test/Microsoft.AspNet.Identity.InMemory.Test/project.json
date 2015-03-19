@@ -5,7 +5,6 @@
     "Microsoft.AspNet.Hosting": "1.0.0-*",
     "Microsoft.AspNet.Http" : "1.0.0-*",
     "Microsoft.AspNet.Identity" : "3.0.0-*",
-    "Microsoft.AspNet.RequestContainer" : "1.0.0-*",
     "Microsoft.AspNet.TestHost": "1.0.0-*",
     "Microsoft.AspNet.Testing" : "1.0.0-*",
     "Microsoft.Framework.ConfigurationModel": "1.0.0-*",

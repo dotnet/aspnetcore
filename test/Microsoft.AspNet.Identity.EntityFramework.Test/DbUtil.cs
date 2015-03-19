@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Hosting;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
@@ -21,7 +22,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             {
                 services = new ServiceCollection();
             }
-            services.AddHosting();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddEntityFramework().AddSqlServer().AddDbContext<TContext>(options => options.UseSqlServer(connectionString));
             return services;
         }
