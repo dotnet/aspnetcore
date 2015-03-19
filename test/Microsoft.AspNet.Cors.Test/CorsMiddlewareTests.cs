@@ -23,7 +23,6 @@ namespace Microsoft.AspNet.Cors.Test
             // Arrange
             using (var server = TestServer.Create(app =>
             {
-                app.UseServices(services => services.AddCors());
                 app.UseCors(builder => 
                     builder.WithOrigins("http://localhost:5001")
                            .WithMethods("PUT")
@@ -33,7 +32,8 @@ namespace Microsoft.AspNet.Cors.Test
                 {
                     await context.Response.WriteAsync("Cross origin response");
                 });
-            }))
+            },
+            services => services.AddCors()))
             {
                 // Act
                 // Actual request.
@@ -62,18 +62,18 @@ namespace Microsoft.AspNet.Cors.Test
 
             using (var server = TestServer.Create(app =>
             {
-                app.UseServices(services =>
-                {
-                    services.AddCors();
-                    services.ConfigureCors(options =>
-                    {
-                        options.AddPolicy("customPolicy", policy);
-                    });
-                });
                 app.UseCors("customPolicy");
                 app.Run(async context =>
                 {
                     await context.Response.WriteAsync("Cross origin response");
+                });
+            },
+            services =>
+            {
+                services.AddCors();
+                services.ConfigureCors(options =>
+                {
+                    options.AddPolicy("customPolicy", policy);
                 });
             }))
             {
@@ -98,7 +98,6 @@ namespace Microsoft.AspNet.Cors.Test
             // Arrange
             using (var server = TestServer.Create(app =>
             {
-                app.UseServices(services => services.AddCors());
                 app.UseCors(builder =>
                     builder.WithOrigins("http://localhost:5001")
                            .WithMethods("PUT")
@@ -108,7 +107,8 @@ namespace Microsoft.AspNet.Cors.Test
                 {
                     await context.Response.WriteAsync("Cross origin response");
                 });
-            }))
+            },
+            services => services.AddCors()))
             {
                 // Act
                 // Preflight request.
@@ -129,7 +129,6 @@ namespace Microsoft.AspNet.Cors.Test
             // Arrange
             using (var server = TestServer.Create(app =>
             {
-                app.UseServices(services => services.AddCors());
                 app.UseCors(builder => 
                     builder.WithOrigins("http://localhost:5001")
                            .WithMethods("PUT")
@@ -139,7 +138,8 @@ namespace Microsoft.AspNet.Cors.Test
                 {
                     await context.Response.WriteAsync("Cross origin response");
                 });
-            }))
+            },
+            services => services.AddCors()))
             {
                 // Act
                 // Actual request.
