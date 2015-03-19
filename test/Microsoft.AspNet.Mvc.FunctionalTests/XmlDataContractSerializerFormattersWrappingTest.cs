@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Xml;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -16,6 +17,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(XmlFormattersWebSite);
         private readonly Action<IApplicationBuilder> _app = new XmlFormattersWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new XmlFormattersWebSite.Startup().ConfigureServices;
 
         [Theory]
         [InlineData("http://localhost/IEnumerable/ValueTypes")]
@@ -23,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanWrite_ValueTypes(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml-dcs"));
@@ -46,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanWrite_NonWrappedTypes(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml-dcs"));
@@ -69,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanWrite_NonWrappedTypes_Empty(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml-dcs"));
@@ -91,7 +93,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanWrite_NonWrappedTypes_NullInstance(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml-dcs"));
@@ -113,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanWrite_WrappedTypes(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml-dcs"));
@@ -137,7 +139,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanWrite_WrappedTypes_Empty(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml-dcs"));
@@ -159,7 +161,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanWrite_WrappedTypes_NullInstance(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml-dcs"));
@@ -179,7 +181,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanWrite_IEnumerableOf_SerializableErrors()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/IEnumerable/SerializableErrors");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml-dcs"));

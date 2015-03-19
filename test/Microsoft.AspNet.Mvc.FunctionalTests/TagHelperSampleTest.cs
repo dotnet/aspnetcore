@@ -7,6 +7,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Xunit;
 
@@ -38,12 +39,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         private readonly ILoggerFactory _loggerFactory = new TestLoggerFactory();
         private readonly Action<IApplicationBuilder, ILoggerFactory> _app = new TagHelperSample.Web.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new TagHelperSample.Web.Startup().ConfigureServices;
 
         [Fact]
         public async Task Home_Pages_ReturnSuccess()
         {
             // Arrange
-            var server = TestHelper.CreateServer(app => _app(app, _loggerFactory), SiteName, SamplesFolder);
+            var server = TestHelper.CreateServer(app => _app(app, _loggerFactory), SiteName, SamplesFolder, _configureServices);
             var client = server.CreateClient();
 
             for (var index = 0; index < Paths.Count; index++)

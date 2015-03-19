@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using ModelBindingWebSite;
 using ModelBindingWebSite.Models;
 using Newtonsoft.Json;
@@ -25,6 +26,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(ModelBindingWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
         // Uses the expression p => p.Name
         [Fact]
@@ -32,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expected = "test-name";
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -54,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expected = 40;
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -76,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expected = 12;
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -97,7 +99,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RoundTrippedValues_GetsModelBound_ForStringIndexedProperties()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -114,7 +116,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expected = "test-nested-name";
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act

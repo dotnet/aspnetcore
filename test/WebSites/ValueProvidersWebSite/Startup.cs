@@ -9,20 +9,19 @@ namespace ValueProvidersWebSite
 {
     public class Startup
     {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // Add MVC services to the services container
+            services.AddMvc()
+                    .Configure<MvcOptions>(options =>
+                    {
+                        options.ValueProviderFactories.Insert(1, new CustomValueProviderFactory());
+                    });
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            // Set up application services
-            app.UseServices(services =>
-            {
-                // Add MVC services to the services container
-                services.AddMvc()
-                        .Configure<MvcOptions>(options =>
-                        {
-                            options.ValueProviderFactories.Insert(1, new CustomValueProviderFactory());
-                        });
-            });
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>

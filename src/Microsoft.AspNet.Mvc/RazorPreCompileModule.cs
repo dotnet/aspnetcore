@@ -2,15 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.Versioning;
-using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime;
@@ -56,9 +49,6 @@ namespace Microsoft.AspNet.Mvc
             // Create something similar to a HttpContext.RequestServices provider. Necessary because this class is
             // instantiated in a lower-level "HttpContext.ApplicationServices" context. One important added service
             // is an IOptions<RazorViewEngineOptions> but use AddMvc() for simplicity and flexibility.
-            var serviceCollection = HostingServices.Create(_appServices);
-            serviceCollection.AddMvc();
-
             // We also need an IApplicationEnvironment with a base path that matches the containing web site, to
             // find the razor files. We don't have a guarantee that the base path of the current application is
             // this site. For example similar functional test changes to the IApplicationEnvironment happen later,
@@ -68,10 +58,13 @@ namespace Microsoft.AspNet.Mvc
             var precompilationApplicationEnvironment = new PrecompilationApplicationEnvironment(
                 applicationEnvironment,
                 context.ProjectContext.ProjectDirectory);
-            serviceCollection.AddInstance<IApplicationEnvironment>(precompilationApplicationEnvironment);
 
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-            var viewCompiler = new RazorPreCompiler(serviceProvider, context, _memoryCache, compilationSettings)
+            var replacedServices = new ServiceCollection();
+            replacedServices.AddMvc();
+            replacedServices.AddInstance<IApplicationEnvironment>(precompilationApplicationEnvironment);
+            var wrappedServices = new WrappingServiceProvider(_appServices, replacedServices);
+
+            var viewCompiler = new RazorPreCompiler(wrappedServices, context, _memoryCache, compilationSettings)
             {
                 GenerateSymbols = GenerateSymbols
             };
@@ -82,6 +75,25 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         public void AfterCompile(IAfterCompileContext context)
         {
+        }
+
+        // REVIEW: Welcome back to life delegating SP!!!
+        private class WrappingServiceProvider : IServiceProvider
+        {
+            private readonly IServiceProvider _fallback;
+            private readonly IServiceProvider _override;
+
+            // Need full wrap for generics like IOptions
+            public WrappingServiceProvider(IServiceProvider fallback, IServiceCollection replacedServices)
+            {
+                _fallback = fallback;
+                _override = replacedServices.BuildServiceProvider();
+            }
+
+            public object GetService(Type serviceType)
+            {
+                return _override.GetService(serviceType) ?? _fallback.GetService(serviceType);
+            }
         }
 
         private class PrecompilationApplicationEnvironment : IApplicationEnvironment

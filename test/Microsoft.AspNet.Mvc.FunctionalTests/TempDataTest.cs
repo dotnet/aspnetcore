@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -15,12 +16,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(TempDataWebSite);
         private readonly Action<IApplicationBuilder> _app = new TempDataWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new TempDataWebSite.Startup().ConfigureServices;
 
         [Fact]
         public async Task ViewRendersTempData()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var nameValueCollection = new List<KeyValuePair<string, string>>
             {

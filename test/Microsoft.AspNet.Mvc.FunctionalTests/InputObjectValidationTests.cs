@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.WebUtilities;
+using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -19,6 +20,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(FormatterWebSite);
         private readonly Action<IApplicationBuilder> _app = new FormatterWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new FormatterWebSite.Startup().ConfigureServices;
 
         // Parameters: Request Content, Expected status code, Expected model state error message
         public static IEnumerable<object[]> SimpleTypePropertiesModelRequestData
@@ -46,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CheckIfObjectIsDeserializedWithoutErrors()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var sampleId = 2;
             var sampleName = "SampleUser";
@@ -73,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CheckIfObjectIsDeserialized_WithErrors()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var sampleId = 0;
             var sampleName = "user";
@@ -100,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CheckIfExcludedFieldsAreNotValidated()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var content = new StringContent("{\"Alias\":\"xyz\"}", Encoding.UTF8, "application/json");
 
@@ -117,7 +119,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ShallowValidation_HappensOnExcluded_ComplexTypeProperties()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var requestData = "{\"Name\":\"Library Manager\", \"Suppliers\": [{\"Name\":\"Contoso Corp\"}]}";
             var content = new StringContent(requestData, Encoding.UTF8, "application/json");
@@ -150,7 +152,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                                                             string expectedModelStateErrorMessage)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var content = new StringContent(requestContent, Encoding.UTF8, "application/json");
 
@@ -172,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CheckIfExcludedField_IsValidatedForNonBodyBoundModels()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var kvps = new List<KeyValuePair<string, string>>();
             kvps.Add(new KeyValuePair<string, string>("Alias", "xyz"));

@@ -10,26 +10,26 @@ namespace RazorWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // Add MVC services to the services container
+            services.AddMvc();
+            services.AddTransient<InjectedHelper>();
+            services.AddTransient<TaskReturningService>();
+            services.AddTransient<FrameworkSpecificHelper>();
+            services.Configure<RazorViewEngineOptions>(options =>
+            {
+                var expander = new LanguageViewLocationExpander(
+                        context => context.HttpContext.Request.Query["language-expander-value"]);
+                options.ViewLocationExpanders.Add(expander);
+                options.ViewLocationExpanders.Add(new CustomPartialDirectoryViewLocationExpander());
+            });
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            // Set up application services
-            app.UseServices(services =>
-            {
-                // Add MVC services to the services container
-                services.AddMvc();
-                services.AddTransient<InjectedHelper>();
-                services.AddTransient<TaskReturningService>();
-                services.AddTransient<FrameworkSpecificHelper>();
-                services.Configure<RazorViewEngineOptions>(options =>
-                {
-                    var expander = new LanguageViewLocationExpander(
-                            context => context.HttpContext.Request.Query["language-expander-value"]);
-                    options.ViewLocationExpanders.Add(expander);
-                    options.ViewLocationExpanders.Add(new CustomPartialDirectoryViewLocationExpander());
-                });
-            });
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>

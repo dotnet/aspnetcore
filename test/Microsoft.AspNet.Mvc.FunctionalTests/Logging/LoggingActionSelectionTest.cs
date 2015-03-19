@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using LoggingWebSite;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Logging;
+using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -20,12 +21,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(LoggingWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
         [Fact]
         public async Task Successful_ActionSelection_Logged()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var requestTraceId = Guid.NewGuid().ToString();
 
@@ -60,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task Failed_ActionSelection_Logged()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var requestTraceId = Guid.NewGuid().ToString();
 

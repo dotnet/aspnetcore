@@ -11,27 +11,29 @@ namespace FormatFilterWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // Add MVC services to the services container
+            services.AddMvc();
+            services.Configure<MvcOptions>(options =>
+            {
+                var formatFilter = new FormatFilterAttribute();
+                options.Filters.Add(formatFilter);
+
+                var customFormatter = new CustomFormatter("application/custom");
+                options.OutputFormatters.Add(customFormatter);
+
+                options.FormatterMappings.SetMediaTypeMappingForFormat(
+                    "custom",
+                    MediaTypeHeaderValue.Parse("application/custom"));
+            });
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
 
-            app.UseServices(services =>
-            {
-                services.AddMvc();
-                services.Configure<MvcOptions>(options =>
-                {
-                    var formatFilter = new FormatFilterAttribute();
-                    options.Filters.Add(formatFilter);
-
-                    var customFormatter = new CustomFormatter("application/custom");
-                    options.OutputFormatters.Add(customFormatter);
-
-                    options.FormatterMappings.SetMediaTypeMappingForFormat(
-                        "custom", 
-                        MediaTypeHeaderValue.Parse("application/custom"));
-                });
-            });
-            
             app.UseMvc(routes =>
             {
                 routes.MapRoute("formatroute",

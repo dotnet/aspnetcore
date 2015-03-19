@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -13,12 +14,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(FormatFilterWebSite);
         private readonly Action<IApplicationBuilder> _app = new FormatFilterWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new FormatFilterWebSite.Startup().ConfigureServices;
 
         [Fact]
         public async Task FormatFilter_NoExtensionInRequest()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -33,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormatFilter_ExtensionInRequest_Default()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -48,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormatFilter_ExtensionInRequest_Optional()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -63,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormatFilter_ExtensionInRequest_Custom()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -78,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormatFilter_ExtensionInRequest_CaseInsensitivity()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -93,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormatFilter_ExtensionInRequest_NonExistant()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             
             // Act
@@ -107,7 +109,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormatFilter_And_ProducesFilter_Match()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -122,7 +124,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormatFilter_And_ProducesFilter_Conflict()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -136,7 +138,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormatFilter_And_OverrideProducesFilter()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act

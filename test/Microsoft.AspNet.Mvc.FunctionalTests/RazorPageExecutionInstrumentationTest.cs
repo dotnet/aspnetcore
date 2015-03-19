@@ -15,6 +15,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(RazorPageExecutionInstrumentationWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
         public static IEnumerable<object[]> InstrumentationData
         {
@@ -100,7 +101,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var context = new TestPageExecutionContext();
-            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(context));
+            var server = TestHelper.CreateServer(_app, SiteName, services =>
+            {
+                services.AddInstance(context);
+                _configureServices(services);
+            });
             var client = server.CreateClient();
 
             // Act
@@ -120,7 +125,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var context = new TestPageExecutionContext();
-            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(context));
+            var server = TestHelper.CreateServer(_app, SiteName, services =>
+            {
+                services.AddInstance(context);
+                _configureServices(services);
+            });
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Add("ENABLE-RAZOR-INSTRUMENTATION", "true");
 
@@ -141,7 +150,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange - 1
             var context = new TestPageExecutionContext();
-            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(context));
+            var server = TestHelper.CreateServer(_app, SiteName, services =>
+            {
+                services.AddInstance(context);
+                _configureServices(services);
+            });
             var client = server.CreateClient();
 
             // Act - 1
@@ -183,7 +196,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 Tuple.Create(35, 8, true),
             };
             var context = new TestPageExecutionContext();
-            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(context));
+            var server = TestHelper.CreateServer(_app, SiteName, services =>
+            {
+                services.AddInstance(context);
+                _configureServices(services);
+            });
             var client = server.CreateClient();
 
             // Act - 1

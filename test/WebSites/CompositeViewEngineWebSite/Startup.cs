@@ -9,20 +9,20 @@ namespace CompositeViewEngineWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // Add a view engine as the first one in the list.
+            services.AddMvc()
+                .ConfigureMvc(options =>
+                {
+                    options.ViewEngines.Insert(0, typeof(TestViewEngine));
+                });
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            // Set up application services
-            app.UseServices(services =>
-            {
-                // Add a view engine as the first one in the list.
-                services.AddMvc()
-                    .Configure<MvcOptions>(options =>
-                    {
-                        options.ViewEngines.Insert(0, typeof(TestViewEngine));
-                    });
-            });
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>

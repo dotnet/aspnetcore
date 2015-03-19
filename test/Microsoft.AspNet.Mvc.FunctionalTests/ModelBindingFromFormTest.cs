@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using ModelBindingWebSite;
 using ModelBindingWebSite.Controllers;
 using ModelBindingWebSite.Models;
@@ -18,12 +19,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(ModelBindingWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
         [Fact]
         public async Task FromForm_CustomModelPrefix_ForParameter()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/FromFormAttribute_Company/CreateCompany";
@@ -51,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromForm_CustomModelPrefix_ForCollectionParameter()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/FromFormAttribute_Company/CreateCompanyFromEmployees";
@@ -77,7 +79,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromForm_CustomModelPrefix_ForProperty()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/FromFormAttribute_Company/CreateCompany";
@@ -103,7 +105,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromForm_CustomModelPrefix_ForCollectionProperty()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/FromFormAttribute_Company/CreateDepartment";
@@ -130,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromForm_NonExistingValueAddsValidationErrors_OnProperty_UsingCustomModelPrefix()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/FromFormAttribute_Company/ValidateDepartment";

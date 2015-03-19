@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -17,6 +18,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(FormatterWebSite);
         private readonly Action<IApplicationBuilder> _app = new FormatterWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new FormatterWebSite.Startup().ConfigureServices;
+
 
         [Fact]
         public async Task JsonOutputFormatter_ReturnsIndentedJson()
@@ -35,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             serializerSettings.Formatting = Formatting.Indented;
             var expectedBody = JsonConvert.SerializeObject(user, serializerSettings);
 
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -50,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task SerializableErrorIsReturnedInExpectedFormat()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +

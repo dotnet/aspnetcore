@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.Internal
             {
                 throw new InvalidOperationException(Resources.FormatUnableToFindServices(
                     "IServiceCollection.AddMvc()",
-                    "IApplicationBuilder.UseServices(...)",
+                    "IApplicationBuilder.ConfigureServices(...)",
                     "IApplicationBuilder.UseMvc(...)"));
             }
         }

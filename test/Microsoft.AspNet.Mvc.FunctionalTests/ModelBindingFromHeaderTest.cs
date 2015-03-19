@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -15,7 +16,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(ModelBindingWebSite);
         private readonly Action<IApplicationBuilder> _app = new ModelBindingWebSite.Startup().Configure;
-
+        private readonly Action<IServiceCollection> _configureServices = new ModelBindingWebSite.Startup().ConfigureServices;
+        
         // The action that this test hits will echo back the model-bound value
         [Theory]
         [InlineData("transactionId", "1e331f25-0869-4c87-8a94-64e6e40cb5a0")]
@@ -26,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var expected = headerValue;
 
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Blog/BindToStringParameter");
@@ -50,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var title = "How to make really really good soup.";
             var tags = new string[] { "Cooking", "Recipes", "Awesome" };
 
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Blog/BindToProperty/CustomName");
@@ -76,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var tags = new string[] { "Cooking", "Recipes", "Awesome" };
 
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Blog/BindToProperty/CustomName");
@@ -99,7 +101,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromHeader_NonExistingHeaderAddsValidationErrors_OnCollectionProperty_CustomName()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Blog/BindToProperty/CustomName");
@@ -125,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var expected = "1e331f25-0869-4c87-8a94-64e6e40cb5a0";
 
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Blog/BindToStringParameter/CustomName");
@@ -153,7 +155,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var expected = headerValue;
 
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Blog/BindToStringParameter");
@@ -181,7 +183,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             string headerValue)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -212,7 +214,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var expected = headerValue.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Blog/BindToStringArrayParameter");
@@ -240,7 +242,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var title = "How to make really really good soup.";
             var tags = new string[] { "Cooking", "Recipes", "Awesome" };
 
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Blog/BindToModel?author=Marvin");
@@ -268,7 +270,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromHeader_BindHeader_ToModel_NoValues_ValidationError()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Blog/BindToModel?author=Marvin");
@@ -298,7 +300,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromHeader_BindHeader_ToModel_NoValues_InitializedValue_ValidationError()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -330,7 +332,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromHeader_BindHeader_ToModel_NoValues_DefaultValue_NoValidationError()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(

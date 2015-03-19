@@ -10,28 +10,30 @@ namespace ApiExplorerWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc();
+            services.AddSingleton<ApiExplorerDataFilter>();
+
+            services.ConfigureMvc(options =>
+            {
+                options.Filters.AddService(typeof(ApiExplorerDataFilter));
+
+                options.Conventions.Add(new ApiExplorerVisibilityEnabledConvention());
+                options.Conventions.Add(new ApiExplorerVisibilityDisabledConvention(
+                    typeof(ApiExplorerVisbilityDisabledByConventionController)));
+
+                options.OutputFormatters.Clear();
+                options.OutputFormatters.Add(new JsonOutputFormatter());
+                options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
+            });
+        }
+
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            app.UseServices(services =>
-            {
-                services.AddMvc();
-                services.AddSingleton<ApiExplorerDataFilter>();
-
-                services.Configure<MvcOptions>(options =>
-                {
-                    options.Filters.AddService(typeof(ApiExplorerDataFilter));
-
-                    options.Conventions.Add(new ApiExplorerVisibilityEnabledConvention());
-                    options.Conventions.Add(new ApiExplorerVisibilityDisabledConvention(
-                        typeof(ApiExplorerVisbilityDisabledByConventionController)));
-
-                    options.OutputFormatters.Clear();
-                    options.OutputFormatters.Add(new JsonOutputFormatter());
-                    options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
-                });
-            });
 
             app.UseMvc(routes =>
             {

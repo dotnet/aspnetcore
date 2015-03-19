@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ControllersFromServicesWebSite;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -15,13 +16,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(ControllersFromServicesWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
+        private readonly Func<IServiceCollection, IServiceProvider> _configureServices = new Startup().ConfigureServices;
 
         [Fact]
         public async Task ControllersWithConstructorInjectionAreCreatedAndActivated()
         {
             // Arrange
             var expected = "/constructorinjection 14 test-header-value";
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             client.DefaultRequestHeaders.TryAddWithoutValidation("Test-Header", "test-header-value");
 
@@ -37,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expected = "No schedules available for 23";
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -52,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expected = "4";
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -67,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expected = "Updated record employee303";
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -84,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expected = "Saved record employee #211";
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -104,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AddControllersFromServices_UsesControllerDiscoveryContentions(string action)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act

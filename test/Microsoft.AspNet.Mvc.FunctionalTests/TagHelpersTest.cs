@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using BasicWebSite;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -18,6 +19,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(TagHelpersWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
         // Some tests require comparing the actual response body against an expected response baseline
         // so they require a reference to the assembly on which the resources are located, in order to
@@ -32,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanRenderViewsWithTagHelpers(string action)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
 
@@ -111,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task TagHelpersAreInheritedFromGlobalImportPages(string action, string expected)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -125,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ViewsWithModelMetadataAttributes_CanRenderForm()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
                 "compiler/resources/TagHelpersWebSite.Employee.Create.html");
@@ -143,7 +145,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ViewsWithModelMetadataAttributes_CanRenderPostedValue()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
                 "compiler/resources/TagHelpersWebSite.Employee.Details.AfterCreate.html");
@@ -171,7 +173,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ViewsWithModelMetadataAttributes_CanHandleInvalidData()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
                 "compiler/resources/TagHelpersWebSite.Employee.Create.Invalid.html");

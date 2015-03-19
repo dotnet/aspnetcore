@@ -21,13 +21,18 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private const string SiteName = nameof(PrecompilationWebSite);
         private static readonly TimeSpan _cacheDelayInterval = TimeSpan.FromSeconds(1);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
         [Fact]
         public async Task PrecompiledView_RendersCorrectly()
         {
             // Arrange
             IServiceCollection serviceCollection = null;
-            var server = TestHelper.CreateServer(_app, SiteName, services => serviceCollection = services);
+            var server = TestHelper.CreateServer(_app, SiteName, services =>
+            {
+                _configureServices(services);
+                serviceCollection = services;
+            });
             var client = server.CreateClient();
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
@@ -170,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 @"Value set inside DNXCORE50 " + assemblyNamePrefix;
 #endif
 
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -187,7 +192,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var expected = GetAssemblyNamePrefix();
             IServiceCollection serviceCollection = null;
-            var server = TestHelper.CreateServer(_app, SiteName, services => serviceCollection = services);
+            var server = TestHelper.CreateServer(_app, SiteName, services =>
+            {
+                _configureServices(services);
+                serviceCollection = services;
+            });
             var client = server.CreateClient();
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
@@ -229,7 +238,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var expected = @"<root data-root=""true""><input class=""form-control"" type=""number"" data-val=""true""" +
                 @" data-val-range=""The field Age must be between 10 and 100."" data-val-range-max=""100"" "+
                 @"data-val-range-min=""10"" id=""Age"" name=""Age"" value="""" /><a href="""">Back to List</a></root>";
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -247,7 +256,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var assemblyNamePrefix = GetAssemblyNamePrefix();
             var expected = @"<root>root-content</root>";
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act

@@ -8,18 +8,18 @@ namespace ActivatorWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // Add MVC services to the services container
+            services.AddMvc();
+            services.AddInstance(new MyService());
+            services.AddScoped<ViewService, ViewService>();
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            // Set up application services
-            app.UseServices(services =>
-            {
-                // Add MVC services to the services container
-                services.AddMvc();
-                services.AddInstance(new MyService());
-                services.AddScoped<ViewService, ViewService>();
-            });
 
             // Used to report exceptions that MVC doesn't handle
             app.UseErrorReporter();

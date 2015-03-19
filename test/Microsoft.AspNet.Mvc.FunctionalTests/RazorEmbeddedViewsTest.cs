@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using RazorEmbeddedViewsWebSite;
 using Xunit;
 
@@ -13,13 +14,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(RazorEmbeddedViewsWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
         [Fact]
         public async Task RazorViewEngine_UsesFileProviderOnViewEngineOptionsToLocateViews()
         {
             // Arrange
             var expectedMessage = "Hello test-user, this is /RazorEmbeddedViews_Home";
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -34,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expectedMessage = "Hello admin-user, this is /Restricted/RazorEmbeddedViews_Admin/Login";
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var target = "http://localhost/Restricted/RazorEmbeddedViews_Admin/Login?AdminUser=admin-user";
 

@@ -9,21 +9,22 @@ namespace ApplicationModelWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc();
+
+            services.ConfigureMvc(options =>
+            {
+                options.Conventions.Add(new ApplicationDescription("Common Application Description"));
+                options.Conventions.Add(new ControllerLicenseConvention());
+                options.Conventions.Add(new FromHeaderConvention());
+            });
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            app.UseServices(services =>
-            {
-                services.AddMvc();
-
-                services.Configure<MvcOptions>(options =>
-                {
-                    options.Conventions.Add(new ApplicationDescription("Common Application Description"));
-                    options.Conventions.Add(new ControllerLicenseConvention());
-                    options.Conventions.Add(new FromHeaderConvention());
-                });
-            });
 
             app.UseMvc(routes =>
             {

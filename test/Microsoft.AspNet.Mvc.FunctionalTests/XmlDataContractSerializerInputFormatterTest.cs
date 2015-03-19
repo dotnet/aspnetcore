@@ -12,6 +12,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using XmlFormattersWebSite;
 using Xunit;
 
@@ -21,6 +22,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(XmlFormattersWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
         private readonly string errorMessageFormat = string.Format(
             "{{1}}:{0} does not recognize '{1}', so instead use '{2}' with '{3}' set to '{4}' for value " +
             "type property '{{0}}' on type '{{1}}'.",
@@ -34,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ThrowsOnInvalidInput_AndAddsToModelState()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var input = "Not a valid xml document";
             var content = new StringContent(input, Encoding.UTF8, "application/xml-dcs");
@@ -58,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RequiredDataIsProvided_AndModelIsBound_AndHasRequiredAttributeValidationErrors()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml-dcs"));
             var input = "<Store xmlns=\"http://schemas.datacontract.org/2004/07/XmlFormattersWebSite\" " +
@@ -102,7 +104,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task DataMissingForReferneceTypeProperties_AndModelIsBound_AndHasMixedValidationErrors()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml-dcs"));
             var input = "<Store xmlns=\"http://schemas.datacontract.org/2004/07/XmlFormattersWebSite\"" +

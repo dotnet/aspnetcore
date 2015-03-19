@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -17,12 +18,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(ValidationWebSite);
         private readonly Action<IApplicationBuilder> _app = new ValidationWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new ValidationWebSite.Startup().ConfigureServices;
 
         [Fact]
         public async Task TryValidateModel_ClearParameterValidationError_ReturnsErrorsForInvalidProperties()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var input = "{ \"Price\": 2, \"Contact\": \"acvrdzersaererererfdsfdsfdsfsdf\", "+
                 "\"ProductDetails\": {\"Detail1\": \"d1\", \"Detail2\": \"d2\", \"Detail3\": \"d3\"}}";
@@ -54,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task TryValidateModel_InvalidTypeOnDerivedModel_ReturnsErrors()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var url =
                 "http://localhost/ModelMetadataTypeValidation/TryValidateModelSoftwareViewModelWithPrefix";
@@ -73,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task TryValidateModel_ValidDerivedModel_ReturnsEmptyResponseBody()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var url =
                 "http://localhost/ModelMetadataTypeValidation/TryValidateModelValidModelNoPrefix";
@@ -91,7 +93,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task TryValidateModel_CollectionsModel_ReturnsErrorsForInvalidProperties()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var input = "[ { \"Price\": 2, \"Contact\": \"acvrdzersaererererfdsfdsfdsfsdf\", " +
                 "\"ProductDetails\": {\"Detail1\": \"d1\", \"Detail2\": \"d2\", \"Detail3\": \"d3\"} }," +

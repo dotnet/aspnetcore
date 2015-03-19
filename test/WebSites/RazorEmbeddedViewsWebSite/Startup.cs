@@ -11,19 +11,21 @@ namespace RazorEmbeddedViewsWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // Add MVC services to the services container
+            services.AddMvc();
+
+            services.Configure<RazorViewEngineOptions>(options =>
+            {
+                options.FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "EmbeddedResources");
+            });
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            app.UseServices(services =>
-            {
-                services.AddMvc();
-
-                services.Configure<RazorViewEngineOptions>(options =>
-                {
-                    options.FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "EmbeddedResources");
-                });
-            });
 
             app.UseMvc(routes =>
             {

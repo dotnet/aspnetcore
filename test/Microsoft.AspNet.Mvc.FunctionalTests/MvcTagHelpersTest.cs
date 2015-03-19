@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(MvcTagHelpersWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
         private static readonly Assembly _resourcesAssembly = typeof(MvcTagHelpersTest).GetTypeInfo().Assembly;
 
         [Theory]
@@ -48,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task MvcTagHelpers_GeneratesExpectedResults(string action, string antiForgeryPath)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
 
@@ -79,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ValidationTagHelpers_GeneratesExpectedSpansAndDivs()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
                 "compiler/resources/MvcTagHelpersWebSite.MvcTagHelper_Customer.Index.html");
@@ -113,7 +114,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var assertFile =
                 "compiler/resources/CacheTagHelper_CanCachePortionsOfViewsPartialViewsAndViewComponents.Assert";
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost");
             client.DefaultRequestHeaders.Add("Locale", "North");
@@ -162,7 +163,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CacheTagHelper_ExpiresContent_BasedOnExpiresParameter()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost");
 
@@ -186,7 +187,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CacheTagHelper_UsesVaryByCookie_ToVaryContent()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost");
 
@@ -218,7 +219,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CacheTagHelper_VariesByRoute()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost");
 
@@ -274,7 +275,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CacheTagHelper_VariesByUserId()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost");
 
@@ -301,7 +302,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CacheTagHelper_BubblesExpirationOfNestedTagHelpers()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost");
 
@@ -346,7 +347,12 @@ Products: Laptops (3)";
             // Arrange
             var newServices = new ServiceCollection();
             newServices.InitializeTagHelper<FormTagHelper>((helper, _) => helper.AntiForgery = optionsAntiForgery);
-            var server = TestHelper.CreateServer(_app, SiteName, services => services.Add(newServices));
+            var server = TestHelper.CreateServer(_app, SiteName, 
+                services =>
+                {
+                    services.Add(newServices);
+                    _configureServices(services);
+                });
             var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
 

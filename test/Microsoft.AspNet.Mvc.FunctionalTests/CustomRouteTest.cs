@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -14,6 +15,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(CustomRouteWebSite);
         private readonly Action<IApplicationBuilder> _app = new CustomRouteWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new CustomRouteWebSite.Startup().ConfigureServices;
+
 
         [Theory]
         [InlineData("Javier", "Hola from Spain.")]
@@ -22,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RouteToLocale_ConventionalRoute_BasedOnUser(string user, string expected)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/CustomRoute_Products/Index");
@@ -44,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RouteWithAttributeRoute_IncludesLocale_BasedOnUser(string user, string expected)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/CustomRoute_Orders/5");

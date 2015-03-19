@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using ValueProvidersWebSite;
 using Xunit;
 
@@ -13,12 +14,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(ValueProvidersWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
         [Fact]
         public async Task ValueProviderFactories_AreVisitedInSequentialOrder_ForValueProviders()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -32,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ValueProviderFactories_ReturnsValuesFromQueryValueProvider()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -46,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ValueProviderFactories_ReturnsValuesFromRouteValueProvider()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -66,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ValueProvider_DeserializesEnumsWithFlags(string url, string expected)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act

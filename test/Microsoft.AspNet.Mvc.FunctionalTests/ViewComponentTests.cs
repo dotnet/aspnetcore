@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using ViewComponentWebSite;
 using Xunit;
 
@@ -14,6 +15,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(ViewComponentWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
         public static IEnumerable<object[]> ViewViewComponents_AreRenderedCorrectlyData
         {
@@ -41,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [MemberData(nameof(ViewViewComponents_AreRenderedCorrectlyData))]
         public async Task ViewViewComponents_AreRenderedCorrectly(string actionName, string expected)
         {
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -54,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ViewComponents_SupportsValueType()
         {
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -73,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("http://localhost/Home/ViewComponentWithEnumerableModelUsingUnion", "Union")]
         public async Task ViewComponents_SupportsEnumerableModel(string url, string linqQueryType)
         {
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -92,7 +94,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("ViewComponentWebSite.Namespace2.SameName")]
         public async Task ViewComponents_FullName(string name)
         {
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -105,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ViewComponents_ShortNameUsedForViewLookup()
         {
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var name = "ViewComponentWebSite.Integer";

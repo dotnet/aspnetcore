@@ -11,6 +11,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -20,12 +21,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(WebApiCompatShimWebSite);
         private readonly Action<IApplicationBuilder> _app = new WebApiCompatShimWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new WebApiCompatShimWebSite.Startup().ConfigureServices;
 
         [Fact]
         public async Task ApiController_Activates_HttpContextAndUser()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -43,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_Activates_UrlHelper()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -63,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task Options_SetsDefaultFormatters()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var expected = new string[]
@@ -90,7 +92,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ActionThrowsHttpResponseException_WithStatusCode()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -107,7 +109,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ActionThrowsHttpResponseException_WithResponse()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -125,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ActionThrowsHttpResponseException_EnsureGlobalHttpresponseExceptionActionFilter_IsInvoked()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -143,7 +145,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ActionThrowsHttpResponseException_EnsureGlobalFilterConvention_IsApplied()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -162,7 +164,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_CanValidateCustomObjectWithPrefix_Fails()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -179,7 +181,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_CanValidateCustomObject_IsSuccessFul()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -193,7 +195,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_CanValidateCustomObject_Fails()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -209,7 +211,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_RequestProperty()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var expected =
@@ -231,7 +233,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_RequestParameter()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var expected =
@@ -253,7 +255,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_ResponseReturned()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var expected =
@@ -279,7 +281,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_ExplicitChunkedEncoding_IsIgnored()
         {
             // Arrange		
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var expected =
@@ -324,7 +326,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_CreateResponse_Conneg(string accept, string mediaType)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -349,7 +351,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_CreateResponse_HardcodedMediaType(string mediaType)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -374,7 +376,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_CreateResponse_Conneg_Error(string accept, string mediaType)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -397,7 +399,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_CreateResponse_HardcodedFormatter()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -423,7 +425,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebApiRouting_AccessMvcController(string url, HttpStatusCode expected)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -441,7 +443,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebApiRouting_AccessWebApiController(string url, HttpStatusCode expected)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -457,7 +459,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_Returns_ByteArrayContent()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var expectedBody = "Hello from ByteArrayContent!!";
 
@@ -477,7 +479,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_Returns_StreamContent()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var expectedBody = "This content is from a file";
 
@@ -501,7 +503,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_Returns_PushStreamContent(string action, string expectedBody)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -520,7 +522,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_Returns_PushStreamContentWithCustomHeaders()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var expectedBody = "Hello from PushStreamContent with custom headers!!";
             var multipleValues = new[] { "value1", "value2" };

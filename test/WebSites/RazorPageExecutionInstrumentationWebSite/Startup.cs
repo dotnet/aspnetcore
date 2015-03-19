@@ -12,16 +12,16 @@ namespace RazorPageExecutionInstrumentationWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // Add MVC services to the services container
+            services.AddMvc();
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            // Set up application services
-            app.UseServices(services =>
-            {
-                // Add MVC services to the services container
-                services.AddMvc();
-            });
 
             app.Use(async (HttpContext context, Func<Task> next) =>
             {

@@ -8,16 +8,17 @@ namespace TempDataWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddCaching();
+            services.AddSession();
+            services.AddMvc();
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            app.UseServices(services =>
-            {
-                services.AddCaching();
-                services.AddSession();
-                services.AddMvc();
-            });
 
             app.UseInMemorySession();
             app.UseMvc(routes =>

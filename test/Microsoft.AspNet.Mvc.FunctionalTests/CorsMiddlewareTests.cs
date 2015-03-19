@@ -7,7 +7,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Cors.Core;
-using Microsoft.AspNet.Http;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(CorsMiddlewareWebSite);
         private readonly Action<IApplicationBuilder> _app = new CorsMiddlewareWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new CorsMiddlewareWebSite.Startup().ConfigureServices;
 
         [Theory]
         [InlineData("GET")]
@@ -24,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ResourceWithSimpleRequestPolicy_Allows_SimpleRequests(string method)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var origin = "http://example.com";
 
@@ -53,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task PolicyFailed_Disallows_PreFlightRequest(string method)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Adding a custom header makes it a non simple request.
@@ -80,7 +81,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task PolicyFailed_Allows_ActualRequest_WithMissingResponseHeaders()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Adding a custom header makes it a non simple request.

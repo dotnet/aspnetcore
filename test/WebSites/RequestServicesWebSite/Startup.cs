@@ -8,16 +8,17 @@ namespace RequestServicesWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc();
+
+            services.AddScoped<RequestIdService>();
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            app.UseServices(services =>
-            {
-                services.AddMvc();
-
-                services.AddScoped<RequestIdService>();
-            });
 
             // Initializes the RequestId service for each request
             app.UseMiddleware<RequestIdMiddleware>();

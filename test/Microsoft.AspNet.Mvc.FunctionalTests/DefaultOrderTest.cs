@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Description;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.ViewComponents;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Xunit;
 
@@ -20,6 +21,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(BasicWebSite);
         private readonly Action<IApplicationBuilder> _app = new BasicWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new BasicWebSite.Startup().ConfigureServices;
 
         [Theory]
         [InlineData(typeof(IActionDescriptorProvider), typeof(ControllerActionDescriptorProvider), -1000)]
@@ -33,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ServiceOrder_GetOrder(Type serviceType, Type actualType, int order)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/Order/GetServiceOrder?serviceType=" + serviceType.AssemblyQualifiedName;

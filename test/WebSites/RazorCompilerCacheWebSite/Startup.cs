@@ -9,16 +9,18 @@ namespace RazorCompilerCacheWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // Add MVC services to the services container
+            services.AddMvc();
+            services.AddSingleton<ICompilerCache, CustomCompilerCache>();
+            services.AddSingleton<CompilerCacheInitialiedService>();
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            app.UseServices(services =>
-            {
-                services.AddMvc();
-                services.AddSingleton<ICompilerCache, CustomCompilerCache>();
-                services.AddSingleton<CompilerCacheInitialiedService>();
-            });
 
             app.UseMvc();
         }

@@ -9,18 +9,20 @@ namespace BestEffortLinkGenerationWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc();
+
+            services.Configure<RouteOptions>((options) =>
+            {
+                options.UseBestEffortLinkGeneration = true;
+            });
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            app.UseServices(services =>
-            {
-                services.AddMvc();
-                services.Configure<RouteOptions>((options) =>
-                {
-                    options.UseBestEffortLinkGeneration = true;
-                });
-            });
 
             app.UseMvc(routes =>
             {

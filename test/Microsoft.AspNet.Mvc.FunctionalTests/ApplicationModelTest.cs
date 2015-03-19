@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -14,12 +15,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(ApplicationModelWebSite);
         private readonly Action<IApplicationBuilder> _app = new ApplicationModelWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new ApplicationModelWebSite.Startup().ConfigureServices;
 
         [Fact]
         public async Task ControllerModel_CustomizedWithAttribute()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -36,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ActionModel_CustomizedWithAttribute()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -53,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ParameterModel_CustomizedWithAttribute()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -70,7 +72,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApplicationModel_AddPropertyToActionDescriptor_FromApplicationModel()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -87,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApplicationModel_AddPropertyToActionDescriptor_ControllerModelOverwritesCommonApplicationProperty()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -104,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApplicationModel_ProvidesMetadataToActionDescriptor_ActionModelOverwritesControllerModelProperty()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -121,7 +123,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApplicationModelExtensions_AddsConventionToAllControllers()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -140,7 +142,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApplicationModelExtensions_AddsConventionToAllActions()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Home/GetHelloWorld");

@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -16,6 +17,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(RequestServicesWebSite);
         private readonly Action<IApplicationBuilder> _app = new RequestServicesWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new RequestServicesWebSite.Startup().ConfigureServices;
 
         [Theory]
         [InlineData("http://localhost/RequestScoped/FromController")]
@@ -27,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RequestServices(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act & Assert
@@ -48,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RequestServices_TagHelper()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/Other/FromTagHelper";
@@ -73,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RequestServices_ActionConstraint()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/Other/FromActionConstraint";

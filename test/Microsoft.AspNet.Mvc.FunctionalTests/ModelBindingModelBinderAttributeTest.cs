@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using ModelBindingWebSite.Models;
 using Newtonsoft.Json;
 using Xunit;
@@ -14,12 +15,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(ModelBindingWebSite);
         private readonly Action<IApplicationBuilder> _app = new ModelBindingWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new ModelBindingWebSite.Startup().ConfigureServices;
+
 
         [Fact]
         public async Task ModelBinderAttribute_CustomModelPrefix()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // [ModelBinder(Name = "customPrefix")] is used to apply a prefix
@@ -41,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ModelBinderAttribute_CustomModelPrefix_OnProperty()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var url =
@@ -64,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ModelBinderAttribute_WithPrefixOnParameter(string action)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // [ModelBinder(Name = "customPrefix")] is used to apply a prefix
@@ -89,7 +92,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ModelBinderAttribute_WithBinderOnParameter(string action)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var url =
@@ -111,7 +114,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ModelBinderAttribute_WithBinderOnEnum()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var url =

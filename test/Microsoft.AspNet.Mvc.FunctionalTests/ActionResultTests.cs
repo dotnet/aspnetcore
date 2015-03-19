@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ActionResultsWebSite;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -18,12 +19,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(ActionResultsWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
         [Fact]
         public async Task BadRequestResult_CanBeReturned()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var input = "{\"SampleInt\":10}";
 
@@ -45,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CreatedResult_SetsRelativePathInLocationHeader()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -65,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CreatedResult_SetsAbsolutePathInLocationHeader()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -85,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CreatedResult_SetsQualifiedPathInLocationHeader()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -107,7 +109,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CreatedResult_SetsUriInLocationHeader()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -127,7 +129,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CreatedAtActionResult_GeneratesUri_WithActionAndController()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -147,7 +149,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CreatedAtRouteResult_GeneratesUri_WithRouteValues()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -167,7 +169,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CreatedAtRouteResult_GeneratesUri_WithRouteName()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -187,7 +189,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task SerializableError_CanSerializeNormalObjects()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -210,7 +212,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ContentResult_WritesContent_SetsDefaultContentTypeAndEncoding()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(
                             HttpMethod.Post,
@@ -230,7 +232,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ContentResult_WritesContent_SetsContentTypeWithDefaultEncoding()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(
                             HttpMethod.Post,
@@ -250,7 +252,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ContentResult_WritesContent_SetsContentTypeAndEncoding()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(
                             HttpMethod.Post,
@@ -270,7 +272,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ObjectResult_WithStatusCodeAndNoContent_SetsSameStatusCode()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(
                             HttpMethod.Get,
@@ -287,7 +289,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task HttpNotFoundObjectResult_NoResponseContent()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -306,7 +308,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task HttpNotFoundObjectResult_WithResponseContent()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -325,7 +327,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task HttpNotFoundObjectResult_WithDisposableObject()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var nameValueCollection = new List<KeyValuePair<string, string>>
             {

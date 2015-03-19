@@ -8,20 +8,21 @@ namespace LoggingWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddElm(options =>
+            {
+                // We want to log for all log levels and loggers
+                options.Filter = (loggerName, logLevel) => true;
+            });
+
+            services.AddMvc();
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            app.UseServices(services =>
-            {
-                services.AddElm(options =>
-                {
-                    // We want to log for all log levels and loggers
-                    options.Filter = (loggerName, logLevel) => true;
-                });
-
-                services.AddMvc();
-            });
 
             app.Map("/logs", (appBuilder) =>
             {

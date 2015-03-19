@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc
             = new ResourceManager("Microsoft.AspNet.Mvc.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// Unable to find the required services. Please add all the required services by calling AddMvc() before calling UseMvc()/UseServices() in the Application Startup.
+        /// Unable to find the required services. Please add all the required services by calling AddMvc() before calling UseMvc() in the Application Startup.
         /// </summary>
         internal static string UnableToFindServices
         {
@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Unable to find the required services. Please add all the required services by calling AddMvc() before calling UseMvc()/UseServices() in the Application Startup.
+        /// Unable to find the required services. Please add all the required services by calling AddMvc() before calling UseMvc() in the Application Startup.
         /// </summary>
         internal static string FormatUnableToFindServices()
         {

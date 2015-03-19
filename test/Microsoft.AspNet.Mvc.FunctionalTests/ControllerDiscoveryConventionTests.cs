@@ -18,12 +18,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(ControllerDiscoveryConventionsWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
         [Fact]
         public async Task AbstractControllers_AreSkipped()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost/");
 
@@ -38,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task TypesDerivingFromControllerBaseTypesThatDoNotReferenceMvc_AreSkipped()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost/");
 
@@ -53,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task TypesMarkedWithNonController_AreSkipped()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost/");
 
@@ -68,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task PocoTypesWithControllerSuffix_AreDiscovered()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost/");
 
@@ -84,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task TypesDerivingFromTypesWithControllerSuffix_AreDiscovered()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost/");
 
@@ -106,7 +107,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestHelper.CreateServer(
                 _app,
                 SiteName,
-                services => services.AddTransient<IAssemblyProvider, FilteredDefaultAssemblyProvider>());
+                services =>
+                {
+                    _configureServices(services);
+                    services.AddTransient<IAssemblyProvider, FilteredDefaultAssemblyProvider>();
+                });
 
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost/");

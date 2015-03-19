@@ -9,38 +9,39 @@ namespace ResponseCacheWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc();
+            services.Configure<MvcOptions>(options =>
+            {
+                options.CacheProfiles.Add(
+                    "PublicCache30Sec", new CacheProfile
+                    {
+                        Duration = 30,
+                        Location = ResponseCacheLocation.Any
+                    });
+
+                options.CacheProfiles.Add(
+                    "PrivateCache30Sec", new CacheProfile
+                    {
+                        Duration = 30,
+                        Location = ResponseCacheLocation.Client
+                    });
+
+                options.CacheProfiles.Add(
+                    "NoCache", new CacheProfile
+                    {
+                        NoStore = true,
+                        Duration = 0,
+                        Location = ResponseCacheLocation.None
+                    });
+            });
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-            app.UseServices(services =>
-            {
-                services.AddMvc();
-                services.Configure<MvcOptions>(options =>
-                {
-                    options.CacheProfiles.Add(
-                        "PublicCache30Sec", new CacheProfile
-                        {
-                            Duration = 30,
-                            Location = ResponseCacheLocation.Any
-                        });
-
-                    options.CacheProfiles.Add(
-                        "PrivateCache30Sec", new CacheProfile
-                        {
-                            Duration = 30,
-                            Location = ResponseCacheLocation.Client
-                        });
-
-                    options.CacheProfiles.Add(
-                        "NoCache", new CacheProfile
-                        {
-                            NoStore = true,
-                            Duration = 0,
-                            Location = ResponseCacheLocation.None
-                        });
-                });
-            });
-
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

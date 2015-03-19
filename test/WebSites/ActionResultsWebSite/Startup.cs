@@ -9,20 +9,21 @@ namespace ActionResultsWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc();
+            services.AddInstance(new GuidLookupService());
+
+            services.ConfigureMvc(options =>
+            {
+                options.AddXmlDataContractSerializerFormatter();
+            });
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            app.UseServices(services =>
-            {
-                services.AddMvc();
-                services.AddInstance(new GuidLookupService());
-
-                services.Configure<MvcOptions>(options =>
-                {
-                    options.AddXmlDataContractSerializerFormatter();
-                });
-            });
 
             app.UseMvc(routes =>
             {

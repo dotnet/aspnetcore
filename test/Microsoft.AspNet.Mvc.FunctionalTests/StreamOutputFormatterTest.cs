@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using FormatterWebSite;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -13,6 +14,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(FormatterWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
         [Theory]
         [InlineData("SimpleMemoryStream", null)]
@@ -23,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task StreamOutputFormatter_ReturnsAppropriateContentAndContentType(string actionName, string contentType)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act

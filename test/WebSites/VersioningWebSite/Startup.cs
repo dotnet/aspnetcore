@@ -8,16 +8,17 @@ namespace VersioningWebSite
 {
     public class Startup
     {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // Add MVC services to the services container
+            services.AddMvc();
+
+            services.AddScoped<TestResponseGenerator>();
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            app.UseServices(services =>
-            {
-                services.AddMvc();
-
-                services.AddScoped<TestResponseGenerator>();
-            });
 
             app.UseMvc(routes =>
             {

@@ -8,13 +8,15 @@ namespace AntiForgeryWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc();
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-            app.UseServices(services =>
-            {
-                services.AddMvc();
-            });
 
             app.UseErrorReporter();
 

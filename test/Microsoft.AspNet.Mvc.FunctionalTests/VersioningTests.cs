@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -16,6 +17,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(VersioningWebSite);
         readonly Action<IApplicationBuilder> _app = new VersioningWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new VersioningWebSite.Startup().ConfigureServices;
 
         [Theory]
         [InlineData("1")]
@@ -23,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_WithVersionedRoutes_IsNotAmbiguous(string version)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -48,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_WithAmbiguousVersionedRoutes_CanBeDisambiguatedUsingOrder(string version)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var query = "?version=" + version;
             var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/api/Addresses/All" + query);
@@ -73,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachV1Operations_OnTheSameController_WithNoVersionSpecified()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -96,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachV1Operations_OnTheSameController_WithVersionSpecified()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -117,7 +119,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachV1OperationsWithParameters_OnTheSameController()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -138,7 +140,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachV1OperationsWithParameters_OnTheSameController_WithVersionSpecified()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -167,7 +169,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachOtherVersionOperations_OnTheSameController(string version)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -193,7 +195,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanNotReachOtherVersionOperations_OnTheSameController_WithNoVersionSpecified()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -220,7 +222,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             string version)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -248,7 +250,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanNotReachOtherVersionOperationsWithParameters_OnTheSameController_WithNoVersionSpecified(string method)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -269,7 +271,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanUseOrderToDisambiguate_OverlappingVersionRanges(string version)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -293,7 +295,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_OverlappingVersionRanges_FallsBackToLowerOrderAction(string version)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -317,7 +319,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachV1Operations_OnTheOriginalController_WithNoVersionSpecified(string method, string action)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -340,7 +342,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachV1Operations_OnTheOriginalController_WithVersionSpecified(string method, string action)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -364,7 +366,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachV1OperationsWithParameters_OnTheOriginalController(string method, string action)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -387,7 +389,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachV1OperationsWithParameters_OnTheOriginalController_WithVersionSpecified(string method, string action)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -408,7 +410,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachOtherVersionOperationsWithParameters_OnTheV2Controller()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -432,7 +434,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanHaveTwoRoutesWithVersionOnTheUrl_OnTheSameAction(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -455,7 +457,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanHaveTwoRoutesWithVersionOnTheUrl_OnDifferentActions(string url, string version)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -478,7 +480,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanHaveTwoRoutesWithVersionOnTheUrl_OnDifferentActions_WithInlineConstraint(string url, string version)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -504,7 +506,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanProvideVersioningInformation_UsingPlainActionConstraint(string url, string query, string actionName)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -525,7 +527,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_ConstraintOrder_IsRespected()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -546,7 +548,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanUseConstraintOrder_ToChangeSelectedAction()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -569,7 +571,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_MultipleVersionsUsingAttributeRouting_OnTheSameMethod(string version)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var path = "/" + version + "/Vouchers?version=" + version;
 

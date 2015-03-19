@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using AutofacWebSite;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -14,6 +15,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(AutofacWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
+        private readonly Func<IServiceCollection, IServiceProvider> _configureServices = new Startup().ConfigureServices;
 
         [Theory]
         [InlineData("http://localhost/di", "<p>Builder Output: Hello from builder.</p>")]
@@ -22,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange & Act & Assert (does not throw)
             // This essentially calls into the Startup.Configuration method
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
 
             // Make a request to start resolving DI pieces
             var response = await server.CreateClient().GetAsync(url);

@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -15,12 +16,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(XmlFormattersWebSite);
         private readonly Action<IApplicationBuilder> _app = new XmlFormattersWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new XmlFormattersWebSite.Startup().ConfigureServices;
 
         [Fact]
         public async Task CheckIfXmlSerializerInputFormatterIsCalled()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var sampleInputInt = 10;
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -40,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ThrowsOnInvalidInput_AndAddsToModelState()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var input = "Not a valid xml document";
             var content = new StringContent(input, Encoding.UTF8, "application/xml-xmlser");

@@ -8,16 +8,17 @@ namespace RoutingWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc();
+
+            services.AddScoped<TestResponseGenerator>();
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            app.UseServices(services =>
-            {
-                services.AddMvc();
-
-                services.AddScoped<TestResponseGenerator>();
-            });
 
             app.UseErrorReporter();
 

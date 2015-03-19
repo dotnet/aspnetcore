@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -15,6 +16,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         // This website sets the generation of lowercase URLs to true
         private readonly Action<IApplicationBuilder> _app = new LowercaseUrlsWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new LowercaseUrlsWebSite.Startup().ConfigureServices;
 
         [Theory]
         // Generating lower case URL doesnt lowercase the query parameters
@@ -34,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GenerateLowerCaseUrlsTests(string path, string expectedUrl)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act

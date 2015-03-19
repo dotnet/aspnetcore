@@ -3,7 +3,6 @@
 
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
 using ModelBindingWebSite.Models;
 using ModelBindingWebSite.Services;
@@ -12,33 +11,33 @@ namespace ModelBindingWebSite
 {
     public class Startup
     {
-        public void Configure(IApplicationBuilder app)
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
         {
-            var configuration = app.GetTestConfiguration();
+            // Add MVC services to the services container
+            services.AddMvc()
+                    .Configure<MvcOptions>(m =>
+                    {
+                        m.MaxModelValidationErrors = 8;
+                        m.ModelBinders.Insert(0, typeof(TestBindingSourceModelBinder));
 
-            // Set up application services
-            app.UseServices(services =>
-            {
-                // Add MVC services to the services container
-                services.AddMvc()
-                        .Configure<MvcOptions>(m =>
-                        {
-                            m.MaxModelValidationErrors = 8;
-                            m.ModelBinders.Insert(0, typeof(TestBindingSourceModelBinder));
-
-                            m.AddXmlDataContractSerializerFormatter();
-                            m.ValidationExcludeFilters.Add(typeof(Address));
+                        m.AddXmlDataContractSerializerFormatter();
+                        m.ValidationExcludeFilters.Add(typeof(Address));
 
                             // ModelMetadataController relies on additional values AdditionalValuesMetadataProvider provides.
                             m.ModelMetadataDetailsProviders.Add(new AdditionalValuesMetadataProvider());
-                        });
+                    });
 
-                services.AddSingleton<ICalculator, DefaultCalculator>();
-                services.AddSingleton<ITestService, TestService>();
+            services.AddSingleton<ICalculator, DefaultCalculator>();
+            services.AddSingleton<ITestService, TestService>();
 
-                services.AddTransient<IVehicleService, VehicleService>();
-                services.AddTransient<ILocationService, LocationService>();
-            });
+            services.AddTransient<IVehicleService, VehicleService>();
+            services.AddTransient<ILocationService, LocationService>();
+        }
+
+        public void Configure(IApplicationBuilder app)
+        {
+            var configuration = app.GetTestConfiguration();
 
             app.UseErrorReporter();
 

@@ -11,15 +11,16 @@ namespace TagHelperSample.Web
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc();
+
+            services.AddSingleton<MoviesService>();
+        }
+
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
-            app.UseServices(services =>
-            {
-                services.AddMvc();
-
-                services.AddSingleton<MoviesService>();
-            });
-
             loggerFactory.AddConsole((name, logLevel) =>
                 name.StartsWith("Microsoft.AspNet.Mvc.TagHelpers", StringComparison.OrdinalIgnoreCase)
                 || (name.StartsWith("Microsoft.Net.Http.Server.WebListener", StringComparison.OrdinalIgnoreCase)

@@ -8,13 +8,15 @@ namespace ViewComponentWebSite
 {
     public class Startup
     {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // Add MVC services to the services container
+            services.AddMvc();
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-            app.UseServices(services =>
-            {
-                services.AddMvc();
-            });
 
             app.UseMvc(routes =>
             {

@@ -8,20 +8,18 @@ namespace LowercaseUrlsWebSite
 {
     public class Startup
     {
+        // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
+            // Add MVC services to the services container
+            services.AddMvc();
+
+            services.Configure<RouteOptions>(routeOptions => routeOptions.LowercaseUrls = true);
         }
 
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            app.UseServices(services =>
-            {
-                services.AddMvc();
-
-                services.Configure<RouteOptions>(routeOptions => routeOptions.LowercaseUrls = true);
-            });
 
             app.UseMvc(routes =>
             {

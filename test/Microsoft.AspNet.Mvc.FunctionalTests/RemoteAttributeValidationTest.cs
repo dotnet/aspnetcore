@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -18,6 +19,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private static readonly Assembly _resourcesAssembly =
             typeof(RemoteAttributeValidationTest).GetTypeInfo().Assembly;
         private readonly Action<IApplicationBuilder> _app = new ValidationWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new ValidationWebSite.Startup().ConfigureServices;
 
         [Theory]
         [InlineData("Aria", "/Aria")]
@@ -25,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RemoteAttribute_LeadsToExpectedValidationAttributes(string areaName, string pathSegment)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
                 "compiler/resources/ValidationWebSite." + areaName + ".RemoteAttribute_Home.Create.html");
@@ -52,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             string expectedContent)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var url = "http://localhost" + pathSegment +
                 "/RemoteAttribute_Verify/IsIdAvailable?UserId1=Joe1&UserId2=Joe2&UserId3=Joe3&UserId4=Joe4";
@@ -76,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             string expectedContent)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var url = "http://localhost" + pathSegment + "/RemoteAttribute_Verify/IsIdAvailable";
             var contentDictionary = new Dictionary<string, string>

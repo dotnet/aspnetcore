@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Xml;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -22,6 +23,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly static string SamplesFolder = Path.Combine("..", "..", "samples");
 
         private readonly Action<IApplicationBuilder> _app = new MvcSample.Web.Startup().Configure;
+        private readonly Func<IServiceCollection, IServiceProvider> _configureServices = new MvcSample.Web.Startup().ConfigureServices;
 
         [Theory]
         [InlineData("")]                        // Shared/MyView.cshtml
@@ -39,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task Home_Pages_ReturnSuccess(string path)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder);
+            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -66,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormUrlEncoded_ReturnsAppropriateResults(string input, string expectedOutput)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder);
+            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder, _configureServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/FormUrlEncoded/IsValidPerson");
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -83,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormUrlEncoded_Index_ReturnSuccess()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder);
+            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -98,7 +100,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task Home_NotFoundAction_Returns404()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder);
+            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -113,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task Home_CreateUser_ReturnsXmlBasedOnAcceptHeader()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder);
+            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder, _configureServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Home/ReturnUser");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
@@ -141,7 +143,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FiltersController_Tests(string url, HttpStatusCode statusCode)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder);
+            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -156,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FiltersController_Crash_ThrowsException()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder);
+            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder, _configureServices);
             var client = server.CreateClient();
 
             // Act

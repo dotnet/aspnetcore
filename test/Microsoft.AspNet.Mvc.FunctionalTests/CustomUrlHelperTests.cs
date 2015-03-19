@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -20,13 +21,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(UrlHelperWebSite);
         private readonly Action<IApplicationBuilder> _app = new UrlHelperWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new UrlHelperWebSite.Startup().ConfigureServices;
+
         private const string _cdnServerBaseUrl = "http://cdn.contoso.com";
 
         [Fact]
         public async Task CustomUrlHelper_GeneratesUrlFromController()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -42,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CustomUrlHelper_GeneratesUrlFromView()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -60,7 +63,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task LowercaseUrls_LinkGeneration(string url, string expectedLink)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act

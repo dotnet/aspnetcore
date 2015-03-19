@@ -9,25 +9,26 @@ namespace UrlHelperWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.Configure<AppOptions>(optionsSetup =>
+            {
+                optionsSetup.ServeCDNContent = true;
+                optionsSetup.CDNServerBaseUrl = "http://cdn.contoso.com";
+                optionsSetup.GenerateLowercaseUrls = true;
+            });
+
+            // Add MVC services to the services container
+            services.AddMvc();
+
+            services.AddScoped<IUrlHelper, CustomUrlHelper>();
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
 
-            // Set up application services
-            app.UseServices(services =>
-            {
-                services.Configure<AppOptions>(optionsSetup =>
-                {
-                    optionsSetup.ServeCDNContent = true;
-                    optionsSetup.CDNServerBaseUrl = "http://cdn.contoso.com";
-                    optionsSetup.GenerateLowercaseUrls = true;
-                });
-
-                // Add MVC services to the services container
-                services.AddMvc();
-
-                services.AddScoped<IUrlHelper, CustomUrlHelper>();
-            });
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>

@@ -16,34 +16,37 @@ namespace ControllersFromServicesWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public IServiceProvider ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc()
+                    .WithControllersAsServices(
+                     new[]
+                     {
+                            typeof(TimeScheduleController).GetTypeInfo().Assembly
+                     });
+
+            services.AddTransient<QueryValueService>();
+
+#if DNX451
+            // Create the autofac container
+            var builder = new ContainerBuilder();
+
+            // Create the container and use the default application services as a fallback
+            AutofacRegistration.Populate(
+                builder,
+                services);
+
+            return builder.Build()
+                          .Resolve<IServiceProvider>();
+#else
+            return services.BuildServiceProvider();
+#endif
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            app.UseServices(services =>
-            {
-                services.AddMvc()
-                        .WithControllersAsServices(
-                         new[]
-                         {
-                            typeof(TimeScheduleController).GetTypeInfo().Assembly
-                         });
-
-                services.AddTransient<QueryValueService>();
-
-#if DNX451
-                // Create the autofac container
-                var builder = new ContainerBuilder();
-
-                // Create the container and use the default application services as a fallback
-                AutofacRegistration.Populate(
-                    builder,
-                    services);
-
-                return builder.Build()
-                              .Resolve<IServiceProvider>();
-#endif
-            });
 
             app.UseMvc(routes =>
             {

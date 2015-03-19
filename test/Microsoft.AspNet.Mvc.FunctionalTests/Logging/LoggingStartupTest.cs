@@ -11,6 +11,7 @@ using LoggingWebSite.Controllers;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Logging;
+using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -20,6 +21,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(LoggingWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
         [Fact]
         public async Task AssemblyValues_LoggedAtStartup()
@@ -87,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         private async Task<IEnumerable<LogInfoDto>> GetLogsByDataTypeAsync<T>()
         {
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var response = await client.GetStringAsync("http://localhost/logs");

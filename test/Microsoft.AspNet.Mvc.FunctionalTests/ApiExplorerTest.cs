@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Xml;
+using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -17,12 +18,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         private const string SiteName = nameof(ApiExplorerWebSite);
         private readonly Action<IApplicationBuilder> _app = new ApiExplorerWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new ApiExplorerWebSite.Startup().ConfigureServices;
 
         [Fact]
         public async Task ApiExplorer_IsVisible_EnabledWithConvention()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -39,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_IsVisible_DisabledWithConvention()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -56,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_IsVisible_DisabledWithAttribute()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -73,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_IsVisible_EnabledWithAttribute()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -90,7 +92,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_GroupName_SetByConvention()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -108,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_GroupName_SetByAttributeOnController()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -126,7 +128,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_GroupName_SetByAttributeOnAction()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -144,7 +146,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_RouteTemplate_DisplaysFixedRoute()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -162,7 +164,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_RouteTemplate_DisplaysRouteWithParameters()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -186,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_RouteTemplate_StripsInlineConstraintsFromThePath()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var url = "http://localhost/ApiExplorerRouteAndPathParametersInformation/Constraint/5";
 
@@ -211,7 +213,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_RouteTemplate_StripsCatchAllsFromThePath()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var url = "http://localhost/ApiExplorerRouteAndPathParametersInformation/CatchAll/5";
 
@@ -235,7 +237,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_RouteTemplate_StripsCatchAllsWithConstraintsFromThePath()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var url = "http://localhost/ApiExplorerRouteAndPathParametersInformation/CatchAllAndConstraint/5";
 
@@ -262,7 +264,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_RouteTemplateStripsMultipleConstraints_OnTheSamePathSegment()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/ApiExplorerRouteAndPathParametersInformation/"
@@ -301,7 +303,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_RouteTemplateStripsMultipleConstraints_InMultipleSegments()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var url = "http://localhost/ApiExplorerRouteAndPathParametersInformation/"
                 + "MultipleParametersInMultipleSegments/12/01/1987";
@@ -339,7 +341,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_DescribeParameters_FromAllSources()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var url = "http://localhost/ApiExplorerRouteAndPathParametersInformation/MultipleTypesOfParameters/1/2/3";
 
@@ -370,7 +372,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_RouteTemplate_MakesParametersOptional()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -392,7 +394,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_HttpMethod_All()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -410,7 +412,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_HttpMethod_Single()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -432,7 +434,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_HttpMethod_Single(string httpMethod)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -458,7 +460,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_ResponseType_VoidWithoutAttribute(string action)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -483,7 +485,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_ResponseType_UnknownWithoutAttribute(string action)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -506,7 +508,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_ResponseType_KnownWithoutAttribute(string action, string type)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -530,7 +532,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_ResponseType_KnownWithAttribute(string action, string type)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -551,7 +553,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_ResponseType_OverrideOnAction(string action, string type)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -570,7 +572,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_ResponseContentType_Unset()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -600,7 +602,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_ResponseContentType_Specific()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -626,7 +628,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_ResponseContentType_NoMatch()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -651,7 +653,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             string formatterType)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -673,7 +675,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_Parameters_SimpleTypes_Default()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -701,7 +703,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_Parameters_SimpleTypes_BinderMetadataOnParameters()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -729,7 +731,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_ParametersSimpleModel()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -753,7 +755,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_Parameters_SimpleTypes_SimpleModel_FromBody()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
@@ -781,7 +783,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiExplorer_Parameters_SimpleTypes_ComplexModel()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName);
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act

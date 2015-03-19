@@ -11,23 +11,24 @@ namespace AutofacWebSite
 {
     public class Startup
     {
+        // Set up application services
+        public IServiceProvider ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc();
+            services.AddTransient<HelloWorldBuilder>();
+
+            var builder = new ContainerBuilder();
+            AutofacRegistration.Populate(builder,
+                                         services);
+
+            var container = builder.Build();
+
+            return container.Resolve<IServiceProvider>();
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             var configuration = app.GetTestConfiguration();
-
-            app.UseServices(services =>
-            {
-                services.AddMvc();
-                services.AddTransient<HelloWorldBuilder>();
-
-                var builder = new ContainerBuilder();
-                AutofacRegistration.Populate(builder,
-                                             services);
-
-                var container = builder.Build();
-
-                return container.Resolve<IServiceProvider>();
-            });
 
             app.UseMvc(routes =>
             {
