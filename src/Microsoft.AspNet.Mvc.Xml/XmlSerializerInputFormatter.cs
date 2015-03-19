@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
@@ -71,7 +72,11 @@ namespace Microsoft.AspNet.Mvc.Xml
         {
             var request = context.ActionContext.HttpContext.Request;
 
-            using (var xmlReader = CreateXmlReader(new NonDisposableStream(request.Body)))
+            MediaTypeHeaderValue requestContentType;
+            MediaTypeHeaderValue.TryParse(request.ContentType, out requestContentType);
+            var effectiveEncoding = SelectCharacterEncoding(requestContentType);
+
+            using (var xmlReader = CreateXmlReader(new NonDisposableStream(request.Body), effectiveEncoding))
             {
                 var type = GetSerializableType(context.ModelType);
 
@@ -116,11 +121,11 @@ namespace Microsoft.AspNet.Mvc.Xml
         /// Called during deserialization to get the <see cref="XmlReader"/>.
         /// </summary>
         /// <param name="readStream">The <see cref="Stream"/> from which to read.</param>
+        /// <param name="encoding">The <see cref="Encoding"/> used to read the stream.</param>
         /// <returns>The <see cref="XmlReader"/> used during deserialization.</returns>
-        protected virtual XmlReader CreateXmlReader([NotNull] Stream readStream)
+        protected virtual XmlReader CreateXmlReader([NotNull] Stream readStream, [NotNull] Encoding encoding)
         {
-            return XmlDictionaryReader.CreateTextReader(
-                readStream, _readerQuotas);
+            return XmlDictionaryReader.CreateTextReader(readStream, encoding, _readerQuotas, onClose: null);
         }
 
         /// <summary>

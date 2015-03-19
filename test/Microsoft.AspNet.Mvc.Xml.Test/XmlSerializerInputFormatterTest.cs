@@ -296,16 +296,16 @@ namespace Microsoft.AspNet.Mvc.Xml
         }
 
         [Fact]
-        public async Task ReadAsync_ThrowsOnInvalidCharacters()
+        public async Task ReadAsync_FallsbackToUTF8_WhenCharSet_NotInContentType()
         {
             // Arrange
             var expectedException = TestPlatformHelper.IsMono ? typeof(InvalidOperationException) :
                                                                 typeof(XmlException);
             var expectedMessage = TestPlatformHelper.IsMono ?
                 "There is an error in XML document." :
-                "The encoding in the declaration 'UTF-8' does not match the encoding of the document 'utf-16LE'.";
+                "The expected encoding 'utf-8' does not match the actual encoding 'utf-16LE'.";
 
-            var inpStart = Encodings.UTF16EncodingLittleEndian.GetBytes("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            var inpStart = Encodings.UTF16EncodingLittleEndian.GetBytes("<?xml version=\"1.0\" encoding=\"UTF-16\"?>" +
                 "<DummyClass><SampleInt>");
             byte[] inp = { 192, 193 };
             var inpEnd = Encodings.UTF16EncodingLittleEndian.GetBytes("</SampleInt></DummyClass>");
@@ -317,6 +317,28 @@ namespace Microsoft.AspNet.Mvc.Xml
 
             var formatter = new XmlSerializerInputFormatter();
             var context = GetInputFormatterContext(contentBytes, typeof(TestLevelTwo));
+
+            // Act and Assert
+            var ex = await Assert.ThrowsAsync(expectedException, () => formatter.ReadAsync(context));
+            Assert.Equal(expectedMessage, ex.Message);
+        }
+
+        [Fact]
+        public async Task ReadAsync_UsesContentTypeCharSet_ToReadStream()
+        {
+            // Arrange
+            var expectedException = TestPlatformHelper.IsMono ? typeof(InvalidOperationException) :
+                                                                typeof(XmlException);
+            var expectedMessage = TestPlatformHelper.IsMono ?
+                "There is an error in XML document." :
+                "The expected encoding 'utf-16LE' does not match the actual encoding 'utf-8'.";
+
+            var inputBytes = Encodings.UTF8EncodingWithoutBOM.GetBytes("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<DummyClass><SampleInt>1000</SampleInt></DummyClass>");
+            
+            var formatter = new XmlSerializerInputFormatter();
+            var actionContext = GetActionContext(inputBytes, contentType: "application/xml; charset=utf-16");
+            var context = new InputFormatterContext(actionContext, typeof(TestLevelOne));
 
             // Act and Assert
             var ex = await Assert.ThrowsAsync(expectedException, () => formatter.ReadAsync(context));
@@ -369,7 +391,9 @@ namespace Microsoft.AspNet.Mvc.Xml
 
             var formatter = new XmlSerializerInputFormatter();
             var contentBytes = Encodings.UTF16EncodingLittleEndian.GetBytes(input);
-            var context = GetInputFormatterContext(contentBytes, typeof(TestLevelOne));
+
+            var actionContext = GetActionContext(contentBytes, contentType: "application/xml; charset=utf-16");
+            var context = new InputFormatterContext(actionContext, typeof(TestLevelOne));
 
             // Act
             var model = await formatter.ReadAsync(context);
@@ -398,6 +422,7 @@ namespace Microsoft.AspNet.Mvc.Xml
                                      new AspNet.Routing.RouteData(),
                                      new ActionDescriptor());
         }
+
         private static HttpContext GetHttpContext(byte[] contentBytes,
                                                   string contentType = "application/xml")
         {
