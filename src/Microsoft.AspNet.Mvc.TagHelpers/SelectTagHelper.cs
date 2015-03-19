@@ -14,6 +14,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;select&gt; elements with an <c>asp-for</c> attribute.
     /// </summary>
+    [TargetElement("select", Attributes = ForAttributeName)]
     public class SelectTagHelper : TagHelper
     {
         private const string ForAttributeName = "asp-for";
@@ -57,63 +58,47 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// </exception>
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            if (For == null)
+            // Note null or empty For.Name is allowed because TemplateInfo.HtmlFieldPrefix may be sufficient.
+            // IHtmlGenerator will enforce name requirements.
+            var metadata = For.Metadata;
+            if (metadata == null)
             {
-                // Regular HTML <select/> element. Just make sure Items wasn't specified.
-                if (Items != null)
-                {
-                    var message = Resources.FormatSelectTagHelper_CannotDetermineContentWhenOnlyItemsSpecified(
-                        "<select>",
-                        ForAttributeName,
-                        ItemsAttributeName);
-                    throw new InvalidOperationException(message);
-                }
+                throw new InvalidOperationException(Resources.FormatTagHelpers_NoProvidedMetadata(
+                    "<select>",
+                    ForAttributeName,
+                    nameof(IModelMetadataProvider),
+                    For.Name));
             }
-            else
+
+            // Base allowMultiple on the instance or declared type of the expression to avoid a
+            // "SelectExpressionNotEnumerable" InvalidOperationException during generation.
+            // Metadata.IsCollectionType() is similar but does not take runtime type into account.
+            var realModelType = For.ModelExplorer.ModelType;
+            var allowMultiple = typeof(string) != realModelType && typeof(IEnumerable).IsAssignableFrom(realModelType);
+
+            // Ensure GenerateSelect() _never_ looks anything up in ViewData.
+            var items = Items ?? Enumerable.Empty<SelectListItem>();
+
+            ICollection<string> selectedValues;
+            var tagBuilder = Generator.GenerateSelect(
+                ViewContext,
+                For.ModelExplorer,
+                optionLabel: null,
+                expression: For.Name,
+                selectList: items,
+                allowMultiple: allowMultiple,
+                htmlAttributes: null,
+                selectedValues: out selectedValues);
+
+            if (tagBuilder != null)
             {
-                // Note null or empty For.Name is allowed because TemplateInfo.HtmlFieldPrefix may be sufficient.
-                // IHtmlGenerator will enforce name requirements.
-                var metadata = For.Metadata;
-                if (metadata == null)
-                {
-                    throw new InvalidOperationException(Resources.FormatTagHelpers_NoProvidedMetadata(
-                        "<select>",
-                        ForAttributeName,
-                        nameof(IModelMetadataProvider),
-                        For.Name));
-                }
-
-                // Base allowMultiple on the instance or declared type of the expression to avoid a
-                // "SelectExpressionNotEnumerable" InvalidOperationException during generation.
-                // Metadata.IsCollectionType() is similar but does not take runtime type into account.
-                var realModelType = For.ModelExplorer.ModelType;
-                var allowMultiple =
-                        typeof(string) != realModelType && typeof(IEnumerable).IsAssignableFrom(realModelType);
-
-                // Ensure GenerateSelect() _never_ looks anything up in ViewData.
-                var items = Items ?? Enumerable.Empty<SelectListItem>();
-
-                ICollection<string> selectedValues;
-                var tagBuilder = Generator.GenerateSelect(
-                    ViewContext,
-                    For.ModelExplorer,
-                    optionLabel: null,
-                    expression: For.Name,
-                    selectList: items,
-                    allowMultiple: allowMultiple,
-                    htmlAttributes: null,
-                    selectedValues: out selectedValues);
-
-                if (tagBuilder != null)
-                {
-                    output.MergeAttributes(tagBuilder);
-                    output.PostContent.Append(tagBuilder.InnerHtml);
-                }
-
-                // Whether or not (not being highly unlikely) we generate anything, could update contained <option/>
-                // elements. Provide selected values for <option/> tag helpers. They'll run next.
-                ViewContext.FormContext.FormData[SelectedValuesFormDataKey] = selectedValues;
+                output.MergeAttributes(tagBuilder);
+                output.PostContent.Append(tagBuilder.InnerHtml);
             }
+
+            // Whether or not (not being highly unlikely) we generate anything, could update contained <option/>
+            // elements. Provide selected values for <option/> tag helpers. They'll run next.
+            ViewContext.FormContext.FormData[SelectedValuesFormDataKey] = selectedValues;
         }
     }
 }

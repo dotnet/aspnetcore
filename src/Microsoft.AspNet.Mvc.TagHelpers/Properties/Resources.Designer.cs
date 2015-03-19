@@ -91,22 +91,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot determine body for {0}. '{2}' must be null if '{1}' is null.
-        /// </summary>
-        internal static string SelectTagHelper_CannotDetermineContentWhenOnlyItemsSpecified
-        {
-            get { return GetString("SelectTagHelper_CannotDetermineContentWhenOnlyItemsSpecified"); }
-        }
-
-        /// <summary>
-        /// Cannot determine body for {0}. '{2}' must be null if '{1}' is null.
-        /// </summary>
-        internal static string FormatSelectTagHelper_CannotDetermineContentWhenOnlyItemsSpecified(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("SelectTagHelper_CannotDetermineContentWhenOnlyItemsSpecified"), p0, p1, p2);
-        }
-
-        /// <summary>
         /// The {2} was unable to provide metadata about '{1}' expression value '{3}' for {0}.
         /// </summary>
         internal static string TagHelpers_NoProvidedMetadata

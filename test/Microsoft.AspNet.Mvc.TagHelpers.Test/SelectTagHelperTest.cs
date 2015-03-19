@@ -603,37 +603,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Same(selectedValues, keyValuePair.Value);
         }
 
-        [Fact]
-        public async Task ProcessAsync_Throws_IfForNotBoundButItemsIs()
-        {
-            // Arrange
-            var contextAttributes = new Dictionary<string, object>();
-            var originalAttributes = new Dictionary<string, string>();
-            var expectedTagName = "select";
-            var expectedMessage = "Cannot determine body for <select>. 'asp-items' must be null if 'asp-for' is null.";
-
-            var tagHelperContext = new TagHelperContext(
-                contextAttributes,
-                items: new Dictionary<object, object>(),
-                uniqueId: "test",
-                getChildContentAsync: () =>
-                {
-                    var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.SetContent("Something");
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
-                });
-            var output = new TagHelperOutput(expectedTagName, originalAttributes);
-            var tagHelper = new SelectTagHelper
-            {
-                Items = Enumerable.Empty<SelectListItem>(),
-            };
-
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => tagHelper.ProcessAsync(tagHelperContext, output));
-            Assert.Equal(expectedMessage, exception.Message);
-        }
-
         public class NameAndId
         {
             public NameAndId(string name, string id)

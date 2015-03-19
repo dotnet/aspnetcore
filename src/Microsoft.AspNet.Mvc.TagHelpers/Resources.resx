@@ -132,9 +132,6 @@
   <data name="InputTagHelper_ValueRequired" xml:space="preserve">
     <value>'{1}' must not be null for {0} if '{2}' is '{3}'.</value>
   </data>
-  <data name="SelectTagHelper_CannotDetermineContentWhenOnlyItemsSpecified" xml:space="preserve">
-    <value>Cannot determine body for {0}. '{2}' must be null if '{1}' is null.</value>
-  </data>
   <data name="TagHelpers_NoProvidedMetadata" xml:space="preserve">
     <value>The {2} was unable to provide metadata about '{1}' expression value '{3}' for {0}.</value>
   </data>

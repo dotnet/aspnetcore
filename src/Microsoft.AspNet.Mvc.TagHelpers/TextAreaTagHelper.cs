@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;textarea&gt; elements with an <c>asp-for</c> attribute.
     /// </summary>
-    [TargetElement("textarea")]
+    [TargetElement("textarea", Attributes = ForAttributeName)]
     public class TextAreaTagHelper : TagHelper
     {
         private const string ForAttributeName = "asp-for";
@@ -33,23 +33,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <remarks>Does nothing if <see cref="For"/> is <c>null</c>.</remarks>
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            if (For != null)
+            var tagBuilder = Generator.GenerateTextArea(
+                ViewContext,
+                For.ModelExplorer,
+                For.Name,
+                rows: 0,
+                columns: 0,
+                htmlAttributes: null);
+
+            if (tagBuilder != null)
             {
-                var tagBuilder = Generator.GenerateTextArea(
-                    ViewContext,
-                    For.ModelExplorer,
-                    For.Name,
-                    rows: 0,
-                    columns: 0,
-                    htmlAttributes: null);
+                // Overwrite current Content to ensure expression result round-trips correctly.
+                output.Content.SetContent(tagBuilder.InnerHtml);
 
-                if (tagBuilder != null)
-                {
-                    // Overwrite current Content to ensure expression result round-trips correctly.
-                    output.Content.SetContent(tagBuilder.InnerHtml);
-
-                    output.MergeAttributes(tagBuilder);
-                }
+                output.MergeAttributes(tagBuilder);
             }
         }
     }

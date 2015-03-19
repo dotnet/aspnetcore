@@ -154,67 +154,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(expectedTagName, output.TagName);
         }
 
-        [Fact]
-        public async Task TagHelper_LeavesOutputUnchanged_IfForNotBound()
-        {
-            // Arrange
-            var expectedAttributes = new Dictionary<string, string>
-            {
-                { "class", "form-control" },
-            };
-            var expectedPreContent = "original pre-content";
-            var expectedContent = "original content";
-            var expectedPostContent = "original post-content";
-            var expectedTagName = "textarea";
-
-            var metadataProvider = new TestModelMetadataProvider();
-            var modelExplorer = metadataProvider
-                .GetModelExplorerForType(typeof(Model), model: null)
-                .GetExplorerForProperty(nameof(Model.Text));
-
-            var modelExpression = new ModelExpression(nameof(Model.Text), modelExplorer);
-            var tagHelper = new TextAreaTagHelper();
-
-            var tagHelperContext = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>(),
-                items: new Dictionary<object, object>(),
-                uniqueId: "test",
-                getChildContentAsync: () =>
-                {
-                    var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.SetContent("Something");
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
-                });
-            var output = new TagHelperOutput(expectedTagName, expectedAttributes)
-            {
-                SelfClosing = true,
-            };
-            output.PreContent.SetContent(expectedPreContent);
-            output.Content.SetContent(expectedContent);
-            output.PostContent.SetContent(expectedPostContent);
-
-            var htmlGenerator = new TestableHtmlGenerator(metadataProvider)
-            {
-                ValidationAttributes =
-                {
-                    {  "valid", "from validation attributes" },
-                }
-            };
-            Model model = null;
-            var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);
-            tagHelper.ViewContext = viewContext;
-            tagHelper.Generator = htmlGenerator;
-
-            // Act
-            await tagHelper.ProcessAsync(tagHelperContext, output);
-
-            // Assert
-            Assert.Equal(expectedAttributes, output.Attributes);
-            Assert.Equal(expectedContent, output.Content.GetContent());
-            Assert.True(output.SelfClosing);
-            Assert.Equal(expectedTagName, output.TagName);
-        }
-
         public class NameAndId
         {
             public NameAndId(string name, string id)
