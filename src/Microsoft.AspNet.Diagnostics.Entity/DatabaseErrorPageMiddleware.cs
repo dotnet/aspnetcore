@@ -1,21 +1,19 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Entity.Utilities;
 using Microsoft.AspNet.Diagnostics.Entity.Views;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.RequestContainer;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
-using Microsoft.Data.Entity.Internal;
 using Microsoft.Data.Entity.Relational;
 using Microsoft.Data.Entity.Relational.Migrations;
 using Microsoft.Framework.Logging;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Diagnostics.Entity
 {
@@ -65,37 +63,34 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                 {
                     if (ShouldDisplayErrorPage(_loggerProvider.Logger.LastError, ex, _logger))
                     {
-                        using (RequestServicesContainer.EnsureRequestServices(context, _serviceProvider))
+                        var dbContextType = _loggerProvider.Logger.LastError.ContextType;
+                        var dbContext = (DbContext)context.RequestServices.GetService(dbContextType);
+                        if (dbContext == null)
                         {
-                            var dbContextType = _loggerProvider.Logger.LastError.ContextType;
-                            var dbContext = (DbContext)context.RequestServices.GetService(dbContextType);
-                            if (dbContext == null)
+                            _logger.LogError(Strings.FormatDatabaseErrorPageMiddleware_ContextNotRegistered(dbContextType.FullName));
+                        }
+                        else
+                        {
+                            if (!(dbContext.Database is RelationalDatabase))
                             {
-                                _logger.LogError(Strings.FormatDatabaseErrorPageMiddleware_ContextNotRegistered(dbContextType.FullName));
+                                _logger.LogVerbose(Strings.DatabaseErrorPage_NotRelationalDatabase);
                             }
                             else
                             {
-                                if (!(dbContext.Database is RelationalDatabase))
+                                var databaseExists = dbContext.Database.AsRelational().Exists();
+
+                                var migrator = ((IAccessor<Migrator>)dbContext.Database).Service;
+
+                                var pendingMigrations = migrator.GetUnappliedMigrations().Select(m => m.Id);
+
+                                var pendingModelChanges = migrator.HasPendingModelChanges();
+
+                                if ((!databaseExists && pendingMigrations.Any()) || pendingMigrations.Any() || pendingModelChanges)
                                 {
-                                    _logger.LogVerbose(Strings.DatabaseErrorPage_NotRelationalDatabase);
-                                }
-                                else
-                                {
-                                    var databaseExists = dbContext.Database.AsRelational().Exists();
-
-                                    var migrator = ((IAccessor<Migrator>)dbContext.Database).Service;
-
-                                    var pendingMigrations = migrator.GetUnappliedMigrations().Select(m => m.Id);
-
-                                    var pendingModelChanges = migrator.HasPendingModelChanges();
-
-                                    if ((!databaseExists && pendingMigrations.Any()) || pendingMigrations.Any() || pendingModelChanges)
-                                    {
-                                        var page = new DatabaseErrorPage();
-                                        page.Model = new DatabaseErrorPageModel(dbContextType, ex, databaseExists, pendingModelChanges, pendingMigrations, _options);
-                                        await page.ExecuteAsync(context).WithCurrentCulture();
-                                        return;
-                                    }
+                                    var page = new DatabaseErrorPage();
+                                    page.Model = new DatabaseErrorPageModel(dbContextType, ex, databaseExists, pendingModelChanges, pendingMigrations, _options);
+                                    await page.ExecuteAsync(context).WithCurrentCulture();
+                                    return;
                                 }
                             }
                         }

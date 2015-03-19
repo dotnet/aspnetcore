@@ -231,21 +231,20 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             {
                 var server = TestServer.Create(app =>
                 {
-                    app.UseServices(services =>
-                    {
-                        services.AddEntityFramework().AddSqlServer();
-                        services.AddScoped<BloggingContextWithMigrations>();
-
-                        var optionsBuilder = new DbContextOptionsBuilder();
-                        optionsBuilder.UseSqlServer(database.ConnectionString);
-                        services.AddInstance<DbContextOptions>(optionsBuilder.Options);
-                    });
-
                     var options = DatabaseErrorPageOptions.ShowAll;
                     options.MigrationsEndPointPath = new PathString(migrationsEndpoint);
                     app.UseDatabaseErrorPage(options);
 
                     app.UseMiddleware<PendingMigrationsMiddleware>();
+                },
+                services =>
+                {
+                    services.AddEntityFramework().AddSqlServer();
+                    services.AddScoped<BloggingContextWithMigrations>();
+
+                    var optionsBuilder = new DbContextOptionsBuilder();
+                    optionsBuilder.UseSqlServer(database.ConnectionString);
+                    services.AddInstance<DbContextOptions>(optionsBuilder.Options);
                 });
 
                 HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
@@ -266,21 +265,16 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
                 var server = TestServer.Create(app =>
                 {
-                    app.UseServices(services =>
-                    {
-                        services.AddEntityFramework()
-                            .AddSqlServer();
-
-                        var optionsBuilder = new DbContextOptionsBuilder();
-                        optionsBuilder.UseSqlServer(database.ConnectionString);
-                        services.AddInstance<DbContextOptions>(optionsBuilder.Options);
-                    });
-
                     app.UseDatabaseErrorPage();
-
                     app.UseMiddleware<ContextNotRegisteredInServicesMiddleware>();
-
                     app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
+                },
+                services =>
+                {
+                    services.AddEntityFramework().AddSqlServer();
+                    var optionsBuilder = new DbContextOptionsBuilder();
+                    optionsBuilder.UseSqlServer(database.ConnectionString);
+                    services.AddInstance<DbContextOptions>(optionsBuilder.Options);
                 });
 
                 var ex = await Assert.ThrowsAsync<SqlException>(async () =>
@@ -383,18 +377,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             {
                 return TestServer.Create(app =>
                 {
-                    app.UseServices(services =>
-                    {
-                        services.AddEntityFramework()
-                            .AddSqlServer();
-
-                        services.AddScoped<TContext>();
-
-                        var optionsBuilder = new DbContextOptionsBuilder();
-                        optionsBuilder.UseSqlServer(database.ConnectionString);
-                        services.AddInstance<DbContextOptions>(optionsBuilder.Options);
-                    });
-
                     app.UseDatabaseErrorPage();
 
                     app.UseMiddleware<TMiddleware>();
@@ -403,6 +385,17 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     {
                         app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
                     }
+                },
+                services =>
+                {
+                    services.AddEntityFramework()
+                        .AddSqlServer();
+
+                    services.AddScoped<TContext>();
+
+                    var optionsBuilder = new DbContextOptionsBuilder();
+                    optionsBuilder.UseSqlServer(database.ConnectionString);
+                    services.AddInstance(optionsBuilder.Options);
                 });
             }
         }

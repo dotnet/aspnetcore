@@ -2,17 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Entity.Utilities;
 using Microsoft.AspNet.Http;
 using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Relational.Migrations.Infrastructure;
-using Microsoft.Framework.DependencyInjection;
-using System.Net;
 using Microsoft.Framework.Logging;
-using Microsoft.AspNet.RequestContainer;
 
 namespace Microsoft.AspNet.Diagnostics.Entity
 {
@@ -44,29 +41,26 @@ namespace Microsoft.AspNet.Diagnostics.Entity
             {
                 _logger.LogVerbose(Strings.FormatMigrationsEndPointMiddleware_RequestPathMatched(context.Request.Path));
 
-                using (RequestServicesContainer.EnsureRequestServices(context, _serviceProvider))
-                { 
-                    var db = await GetDbContext(context, _logger).WithCurrentCulture();
-                    if (db != null)
+                var db = await GetDbContext(context, _logger).WithCurrentCulture();
+                if (db != null)
+                {
+                    try
                     {
-                        try
-                        {
-                            _logger.LogVerbose(Strings.FormatMigrationsEndPointMiddleware_ApplyingMigrations(db.GetType().FullName));
+                        _logger.LogVerbose(Strings.FormatMigrationsEndPointMiddleware_ApplyingMigrations(db.GetType().FullName));
 
-                            db.Database.AsRelational().ApplyMigrations();
+                        db.Database.AsRelational().ApplyMigrations();
 
-                            context.Response.StatusCode = (int)HttpStatusCode.NoContent;
-                            context.Response.Headers.Add("Pragma", new[] { "no-cache" });
-                            context.Response.Headers.Add("Cache-Control", new[] { "no-cache" });
+                        context.Response.StatusCode = (int)HttpStatusCode.NoContent;
+                        context.Response.Headers.Add("Pragma", new[] { "no-cache" });
+                        context.Response.Headers.Add("Cache-Control", new[] { "no-cache" });
 
-                            _logger.LogVerbose(Strings.FormatMigrationsEndPointMiddleware_Applied(db.GetType().FullName));
-                        }
-                        catch (Exception ex)
-                        {
-                            var message = Strings.FormatMigrationsEndPointMiddleware_Exception(db.GetType().FullName);
-                            _logger.LogError(message);
-                            throw new InvalidOperationException(message, ex);
-                        }
+                        _logger.LogVerbose(Strings.FormatMigrationsEndPointMiddleware_Applied(db.GetType().FullName));
+                    }
+                    catch (Exception ex)
+                    {
+                        var message = Strings.FormatMigrationsEndPointMiddleware_Exception(db.GetType().FullName);
+                        _logger.LogError(message);
+                        throw new InvalidOperationException(message, ex);
                     }
                 }
             }

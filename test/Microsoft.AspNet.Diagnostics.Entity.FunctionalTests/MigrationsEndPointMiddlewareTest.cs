@@ -17,6 +17,7 @@ using Microsoft.Data.Entity.Relational.Migrations.History;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 using Microsoft.AspNet.Diagnostics.Entity.Tests.Helpers;
+using Microsoft.AspNet.Hosting.Startup;
 
 namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 {
@@ -70,13 +71,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
                 TestServer server = TestServer.Create(app =>
                 {
-                    app.UseServices(services =>
-                        {
-                            services.AddEntityFramework().AddSqlServer();
-                            services.AddScoped<BloggingContextWithMigrations>();
-                            services.AddInstance<DbContextOptions>(optionsBuilder.Options);
-                        });
-
                     if (useCustomPath)
                     {
                         app.UseMigrationsEndPoint(new MigrationsEndPointOptions { Path = path });
@@ -85,6 +79,12 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     {
                         app.UseMigrationsEndPoint();
                     }
+                },
+                services =>
+                {
+                    services.AddEntityFramework().AddSqlServer();
+                    services.AddScoped<BloggingContextWithMigrations>();
+                    services.AddInstance<DbContextOptions>(optionsBuilder.Options);
                 });
 
                 using (var db = BloggingContextWithMigrations.CreateWithoutExternalServiceProvider(optionsBuilder.Options))
@@ -155,14 +155,9 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Context_not_registered_in_services()
         {
-            var server = TestServer.Create(app =>
-            {
-                app.UseServices(services =>
-                {
-                    services.AddEntityFramework().AddSqlServer();
-                });
-                app.UseMigrationsEndPoint();
-            });
+            var server = TestServer.Create(
+                app => app.UseMigrationsEndPoint(),
+                services => services.AddEntityFramework().AddSqlServer());
 
             var formData = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
                 {
@@ -185,17 +180,14 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 var optionsBuilder = new DbContextOptionsBuilder();
                 optionsBuilder.UseSqlServer(database.ConnectionString);
 
-                TestServer server = TestServer.Create(app =>
-                {
-                    app.UseServices(services =>
+                TestServer server = TestServer.Create(
+                    app => app.UseMigrationsEndPoint(),
+                    services =>
                     {
                         services.AddEntityFramework().AddSqlServer();
                         services.AddScoped<BloggingContextWithSnapshotThatThrows>();
-                        services.AddInstance<DbContextOptions>(optionsBuilder.Options);
+                        services.AddInstance(optionsBuilder.Options);
                     });
-
-                    app.UseMigrationsEndPoint();
-                });
 
                 var formData = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
                     {
