@@ -3,7 +3,6 @@
 
 using System;
 using System.Security.Claims;
-using System.Security.Principal;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -15,19 +14,10 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public void IdentityNullCheckTest()
         {
-            IPrincipal p = null;
+            ClaimsPrincipal p = null;
             Assert.Throws<ArgumentNullException>("principal", () => p.GetUserId());
             Assert.Throws<ArgumentNullException>("principal", () => p.GetUserName());
-            ClaimsPrincipal cp = null;
-            Assert.Throws<ArgumentNullException>("principal", () => cp.FindFirstValue(null));
-        }
-
-        [Fact]
-        public void IdentityNullIfNotClaimsIdentityTest()
-        {
-            IPrincipal identity = new TestPrincipal();
-            Assert.Null(identity.GetUserId());
-            Assert.Null(identity.GetUserName());
+            Assert.Throws<ArgumentNullException>("principal", () => p.FindFirstValue(null));
         }
 
         [Fact]
@@ -81,40 +71,6 @@ namespace Microsoft.AspNet.Identity.Test
                     new Claim(ClaimTypes.Name, "Name")
                 },
                 ExternalAuthenticationScheme));
-        }
-
-        private class TestPrincipal : IPrincipal
-        {
-            public IIdentity Identity
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public bool IsInRole(string role)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        private class TestIdentity : IIdentity
-        {
-            public string AuthenticationType
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public bool IsAuthenticated
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public string Name
-            {
-                get { throw new NotImplementedException(); }
-            }
         }
     }
 }

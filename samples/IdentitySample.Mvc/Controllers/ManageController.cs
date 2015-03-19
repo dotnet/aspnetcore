@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using System.Security.Principal;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using IdentitySample.Models;
 using IdentitySamples;
