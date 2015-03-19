@@ -39,8 +39,8 @@ namespace TestOutput
                 __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
                 __tagHelperExecutionContext.Add(__CatchAllTagHelper);
                 __tagHelperExecutionContext.AddHtmlAttribute("catchAll", "hi");
-                __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
-                WriteTagHelperAsync(__tagHelperExecutionContext).Wait();
+                __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                await WriteTagHelperAsync(__tagHelperExecutionContext);
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
                 WriteLiteral("<strong>World</strong></p>\r\n    <input checked=\"true\" />\r\n    ");
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
@@ -59,8 +59,8 @@ namespace TestOutput
 #line default
 #line hidden
                 __tagHelperExecutionContext.AddTagHelperAttribute("checked", __InputTagHelper2.Checked);
-                __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
-                WriteTagHelperAsync(__tagHelperExecutionContext).Wait();
+                __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                await WriteTagHelperAsync(__tagHelperExecutionContext);
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
                 WriteLiteral("\r\n    ");
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
@@ -82,8 +82,8 @@ namespace TestOutput
                 __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
                 __tagHelperExecutionContext.Add(__CatchAllTagHelper);
                 __tagHelperExecutionContext.AddHtmlAttribute("catchAll", "hi");
-                __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
-                WriteTagHelperAsync(__tagHelperExecutionContext).Wait();
+                __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                await WriteTagHelperAsync(__tagHelperExecutionContext);
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
                 WriteLiteral("\r\n");
             }
@@ -91,8 +91,8 @@ namespace TestOutput
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
             __tagHelperExecutionContext.AddHtmlAttribute("class", "btn");
-            __tagHelperExecutionContext.Output = __tagHelperRunner.RunAsync(__tagHelperExecutionContext).Result;
-            WriteTagHelperAsync(__tagHelperExecutionContext).Wait();
+            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await WriteTagHelperAsync(__tagHelperExecutionContext);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
         }
         #pragma warning restore 1998
