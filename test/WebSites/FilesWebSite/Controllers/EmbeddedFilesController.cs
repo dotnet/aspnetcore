@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Reflection;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc;
 
@@ -13,7 +13,7 @@ namespace FilesWebSite
         {
             return new FilePathResult("/Greetings.txt", "text/plain")
             {
-                FileProvider = new EmbeddedFileProvider(GetType().Assembly, "EmbeddedResources"),
+                FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "EmbeddedResources"),
                 FileDownloadName = "downloadName.txt"
             };
         }

@@ -16,7 +16,7 @@
     },
     "frameworks": {
         "dnx451": { },
-        "dnx50": { }
+        "dnxcore50": { }
     },
     "webroot": "wwwroot"
 }
