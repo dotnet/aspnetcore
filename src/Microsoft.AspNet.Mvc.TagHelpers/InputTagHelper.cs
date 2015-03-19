@@ -15,6 +15,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;input&gt; elements with an <c>asp-for</c> attribute.
     /// </summary>
+    [TargetElement("input", Attributes = ForAttributeName)]
     public class InputTagHelper : TagHelper
     {
         private const string ForAttributeName = "asp-for";
@@ -121,93 +122,79 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 output.CopyHtmlAttribute(nameof(Value), context);
             }
 
-            if (For == null)
+            // Note null or empty For.Name is allowed because TemplateInfo.HtmlFieldPrefix may be sufficient.
+            // IHtmlGenerator will enforce name requirements.
+            var metadata = For.Metadata;
+            var modelExplorer = For.ModelExplorer;
+            if (metadata == null)
             {
-                // Regular HTML <input/> element. Just make sure Format wasn't specified.
-                if (Format != null)
-                {
-                    throw new InvalidOperationException(Resources.FormatInputTagHelper_UnableToFormat(
-                        "<input>",
-                        ForAttributeName,
-                        FormatAttributeName));
-                }
+                throw new InvalidOperationException(Resources.FormatTagHelpers_NoProvidedMetadata(
+                    "<input>",
+                    ForAttributeName,
+                    nameof(IModelMetadataProvider),
+                    For.Name));
+            }
+
+            string inputType;
+            string inputTypeHint;
+            if (string.IsNullOrEmpty(InputTypeName))
+            {
+                // Note GetInputType never returns null.
+                inputType = GetInputType(modelExplorer, out inputTypeHint);
             }
             else
             {
-                // Note null or empty For.Name is allowed because TemplateInfo.HtmlFieldPrefix may be sufficient.
-                // IHtmlGenerator will enforce name requirements.
-                var metadata = For.Metadata;
-                var modelExplorer = For.ModelExplorer;
-                if (metadata == null)
-                {
-                    throw new InvalidOperationException(Resources.FormatTagHelpers_NoProvidedMetadata(
-                        "<input>",
-                        ForAttributeName,
-                        nameof(IModelMetadataProvider),
-                        For.Name));
-                }
+                inputType = InputTypeName.ToLowerInvariant();
+                inputTypeHint = null;
+            }
 
-                string inputType;
-                string inputTypeHint;
-                if (string.IsNullOrEmpty(InputTypeName))
-                {
-                    // Note GetInputType never returns null.
-                    inputType = GetInputType(modelExplorer, out inputTypeHint);
-                }
-                else
-                {
-                    inputType = InputTypeName.ToLowerInvariant();
-                    inputTypeHint = null;
-                }
+            // inputType may be more specific than default the generator chooses below.
+            if (!output.Attributes.ContainsKey("type"))
+            {
+                output.Attributes["type"] = inputType;
+            }
 
-                // inputType may be more specific than default the generator chooses below.
-                if (!output.Attributes.ContainsKey("type"))
-                {
-                    output.Attributes["type"] = inputType;
-                }
+            TagBuilder tagBuilder;
+            switch (inputType)
+            {
+                case "checkbox":
+                    GenerateCheckBox(modelExplorer, output);
+                    return;
 
-                TagBuilder tagBuilder;
-                switch (inputType)
-                {
-                    case "checkbox":
-                        GenerateCheckBox(modelExplorer, output);
-                        return;
+                case "hidden":
+                    tagBuilder = Generator.GenerateHidden(
+                        ViewContext,
+                        modelExplorer,
+                        For.Name,
+                        value: For.Model,
+                        useViewData: false,
+                        htmlAttributes: null);
+                    break;
 
-                    case "hidden":
-                        tagBuilder = Generator.GenerateHidden(
-                            ViewContext,
-                            modelExplorer,
-                            For.Name,
-                            value: For.Model,
-                            useViewData: false,
-                            htmlAttributes: null);
-                        break;
+                case "password":
+                    tagBuilder = Generator.GeneratePassword(
+                        ViewContext,
+                        modelExplorer,
+                        For.Name,
+                        value: null,
+                        htmlAttributes: null);
+                    break;
 
-                    case "password":
-                        tagBuilder = Generator.GeneratePassword(
-                            ViewContext,
-                            modelExplorer,
-                            For.Name,
-                            value: null,
-                            htmlAttributes: null);
-                        break;
+                case "radio":
+                    tagBuilder = GenerateRadio(modelExplorer);
+                    break;
 
-                    case "radio":
-                        tagBuilder = GenerateRadio(modelExplorer);
-                        break;
+                default:
+                    tagBuilder = GenerateTextBox(modelExplorer, inputTypeHint, inputType);
+                    break;
+            }
 
-                    default:
-                        tagBuilder = GenerateTextBox(modelExplorer, inputTypeHint, inputType);
-                        break;
-                }
-
-                if (tagBuilder != null)
-                {
-                    // This TagBuilder contains the one <input/> element of interest. Since this is not the "checkbox"
-                    // special-case, output is a self-closing element no longer guarunteed.
-                    output.MergeAttributes(tagBuilder);
-                    output.Content.Append(tagBuilder.InnerHtml);
-                }
+            if (tagBuilder != null)
+            {
+                // This TagBuilder contains the one <input/> element of interest. Since this is not the "checkbox"
+                // special-case, output is a self-closing element no longer guarunteed.
+                output.MergeAttributes(tagBuilder);
+                output.Content.Append(tagBuilder.InnerHtml);
             }
         }
 

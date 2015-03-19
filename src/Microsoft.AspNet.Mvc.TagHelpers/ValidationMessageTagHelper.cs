@@ -8,10 +8,10 @@ using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
     /// <summary>
-    /// <see cref="ITagHelper"/> implementation targeting &lt;span&gt; elements with an <c>asp-validation-for</c>
+    /// <see cref="ITagHelper"/> implementation targeting any HTML element with an <c>asp-validation-for</c>
     /// attribute.
     /// </summary>
-    [TargetElement("span")]
+    [TargetElement("span", Attributes = ValidationForAttributeName)]
     public class ValidationMessageTagHelper : TagHelper
     {
         private const string ValidationForAttributeName = "asp-validation-for";

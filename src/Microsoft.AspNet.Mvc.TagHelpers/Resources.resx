@@ -129,9 +129,6 @@
   <data name="InputTagHelper_InvalidExpressionResult" xml:space="preserve">
     <value>Unexpected '{1}' expression result type '{2}' for {0}. '{1}' must be of type '{3}' if '{4}' is '{5}'.</value>
   </data>
-  <data name="InputTagHelper_UnableToFormat" xml:space="preserve">
-    <value>Unable to format without a '{1}' expression for {0}. '{2}' must be null if '{1}' is null.</value>
-  </data>
   <data name="InputTagHelper_ValueRequired" xml:space="preserve">
     <value>'{1}' must not be null for {0} if '{2}' is '{3}'.</value>
   </data>

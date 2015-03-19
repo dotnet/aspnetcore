@@ -75,22 +75,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Unable to format without a '{1}' expression for {0}. '{2}' must be null if '{1}' is null.
-        /// </summary>
-        internal static string InputTagHelper_UnableToFormat
-        {
-            get { return GetString("InputTagHelper_UnableToFormat"); }
-        }
-
-        /// <summary>
-        /// Unable to format without a '{1}' expression for {0}. '{2}' must be null if '{1}' is null.
-        /// </summary>
-        internal static string FormatInputTagHelper_UnableToFormat(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("InputTagHelper_UnableToFormat"), p0, p1, p2);
-        }
-
-        /// <summary>
         /// '{1}' must not be null for {0} if '{2}' is '{3}'.
         /// </summary>
         internal static string InputTagHelper_ValueRequired

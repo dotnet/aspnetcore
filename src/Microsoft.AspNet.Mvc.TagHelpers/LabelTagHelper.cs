@@ -10,6 +10,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;label&gt; elements with an <c>asp-for</c> attribute.
     /// </summary>
+    [TargetElement("label", Attributes = ForAttributeName)]
     public class LabelTagHelper : TagHelper
     {
         private const string ForAttributeName = "asp-for";
@@ -32,34 +33,32 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <remarks>Does nothing if <see cref="For"/> is <c>null</c>.</remarks>
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
-            if (For != null)
+            var tagBuilder = Generator.GenerateLabel(
+                ViewContext,
+                For.ModelExplorer,
+                For.Name,
+                labelText: null,
+                htmlAttributes: null);
+
+            if (tagBuilder != null)
             {
-                var tagBuilder = Generator.GenerateLabel(ViewContext,
-                                                         For.ModelExplorer,
-                                                         For.Name,
-                                                         labelText: null,
-                                                         htmlAttributes: null);
+                output.MergeAttributes(tagBuilder);
 
-                if (tagBuilder != null)
+                // We check for whitespace to detect scenarios such as:
+                // <label for="Name">
+                // </label>
+                if (!output.IsContentModified)
                 {
-                    output.MergeAttributes(tagBuilder);
+                    var childContent = await context.GetChildContentAsync();
 
-                    // We check for whitespace to detect scenarios such as:
-                    // <label for="Name">
-                    // </label>
-                    if (!output.IsContentModified)
+                    if (childContent.IsWhiteSpace)
                     {
-                        var childContent = await context.GetChildContentAsync();
-
-                        if (childContent.IsWhiteSpace)
-                        {
-                            // Provide default label text since there was nothing useful in the Razor source.
-                            output.Content.SetContent(tagBuilder.InnerHtml);
-                        }
-                        else
-                        {
-                            output.Content.SetContent(childContent);
-                        }
+                        // Provide default label text since there was nothing useful in the Razor source.
+                        output.Content.SetContent(tagBuilder.InnerHtml);
+                    }
+                    else
+                    {
+                        output.Content.SetContent(childContent);
                     }
                 }
             }

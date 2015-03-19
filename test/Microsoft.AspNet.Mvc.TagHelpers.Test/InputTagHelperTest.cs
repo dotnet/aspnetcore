@@ -617,62 +617,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(expectedTagName, output.TagName);
         }
 
-        [Fact]
-        public async Task TagHelper_RestoresTypeAndValue_IfForNotBound()
-        {
-            // Arrange
-            var expectedAttributes = new Dictionary<string, string>
-            {
-                { "class", "form-control" },
-                { "type", "datetime" },
-                { "value", "2014-10-15T23:24:19.000-7:00" },
-            };
-            var expectedPreContent = "original pre-content";
-            var expectedContent = "original content";
-            var expectedPostContent = "original post-content";
-            var expectedTagName = "input";
-
-            var tagHelperContext = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>(),
-                items: new Dictionary<object, object>(),
-                uniqueId: "test",
-                getChildContentAsync: () =>
-                {
-                    var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.SetContent("Something");
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
-                });
-
-            var output = new TagHelperOutput(expectedTagName, expectedAttributes)
-            {
-                SelfClosing = false,
-            };
-            output.PreContent.SetContent(expectedPreContent);
-            output.Content.SetContent(expectedContent);
-            output.PostContent.SetContent(expectedPostContent);
-
-            var htmlGenerator = new TestableHtmlGenerator(new EmptyModelMetadataProvider())
-            {
-                ValidationAttributes =
-                {
-                    {  "valid", "from validation attributes" },
-                }
-            };
-            var tagHelper = GetTagHelper(htmlGenerator, model: null, propertyName: nameof(Model.Text));
-            tagHelper.For = null;
-
-            // Act
-            await tagHelper.ProcessAsync(tagHelperContext, output);
-
-            // Assert
-            Assert.Equal(expectedAttributes, output.Attributes);
-            Assert.Equal(expectedPreContent, output.PreContent.GetContent());
-            Assert.Equal(expectedContent, output.Content.GetContent());
-            Assert.Equal(expectedPostContent, output.PostContent.GetContent());
-            Assert.False(output.SelfClosing);
-            Assert.Equal(expectedTagName, output.TagName);
-        }
-
         private static InputTagHelper GetTagHelper(
             IHtmlGenerator htmlGenerator, 
             object model, 
@@ -687,38 +631,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 propertyName: propertyName,
                 expressionName: propertyName,
                 metadataProvider: metadataProvider);
-        }
-
-        [Fact]
-        public async Task ProcessAsync_Throws_IfForNotBoundButFormatIs()
-        {
-            // Arrange
-            var contextAttributes = new Dictionary<string, object>();
-            var originalAttributes = new Dictionary<string, string>();
-            var expectedTagName = "select";
-            var expectedMessage = "Unable to format without a 'asp-for' expression for <input>. 'asp-format' must " +
-                "be null if 'asp-for' is null.";
-
-            var tagHelperContext = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>(),
-                items: new Dictionary<object, object>(),
-                uniqueId: "test",
-                getChildContentAsync: () =>
-                {
-                    var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.SetContent("Something");
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
-                });
-            var output = new TagHelperOutput(expectedTagName, originalAttributes);
-            var tagHelper = new InputTagHelper
-            {
-                Format = "{0}",
-            };
-
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => tagHelper.ProcessAsync(tagHelperContext, output));
-            Assert.Equal(expectedMessage, exception.Message);
         }
 
         private static InputTagHelper GetTagHelper(

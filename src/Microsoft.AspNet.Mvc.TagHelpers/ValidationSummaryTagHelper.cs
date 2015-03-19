@@ -8,10 +8,10 @@ using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
     /// <summary>
-    /// <see cref="ITagHelper"/> implementation targeting &lt;div&gt; elements with an <c>asp-validation-summary</c>
+    /// <see cref="ITagHelper"/> implementation targeting any HTML element with an <c>asp-validation-summary</c>
     /// attribute.
     /// </summary>
-    [TargetElement("div")]
+    [TargetElement("div", Attributes = ValidationSummaryAttributeName)]
     public class ValidationSummaryTagHelper : TagHelper
     {
         private const string ValidationSummaryAttributeName = "asp-validation-summary";
