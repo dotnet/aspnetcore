@@ -1,16 +1,14 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.DataProtection;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.AspNet.Authentication.Google;
 using Microsoft.AspNet.Authentication.MicrosoftAccount;
 using Microsoft.AspNet.Authentication.OAuth;
+using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json.Linq;
 
@@ -18,25 +16,25 @@ namespace CookieSample
 {
     public class Startup
     {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddDataProtection();
+            services.Configure<ExternalAuthenticationOptions>(options =>
+            {
+                options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            });
+            services.ConfigureClaimsTransformation(p =>
+            {
+                var id = new ClaimsIdentity("xform");
+                id.AddClaim(new Claim("ClaimsTransformation", "TransformAddedClaim"));
+                p.AddIdentity(id);
+                return p;
+            });
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             app.UseErrorPage();
-
-            app.UseServices(services =>
-            {
-                services.AddDataProtection();
-                services.Configure<ExternalAuthenticationOptions>(options =>
-                {
-                    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                });
-                services.ConfigureClaimsTransformation(p =>
-                {
-                    var id = new ClaimsIdentity("xform");
-                    id.AddClaim(new Claim("ClaimsTransformation", "TransformAddedClaim"));
-                    p.AddIdentity(id);
-                    return p;
-                });
-            });
 
             app.UseCookieAuthentication(options =>
                 {
