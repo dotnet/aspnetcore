@@ -5,10 +5,9 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.ConfigurationModel;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Runtime.Infrastructure;
 
 namespace Microsoft.AspNet.WebSockets.Client.Test
 {
@@ -45,20 +44,14 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             var config = new Configuration();
             config.Add(new MemoryConfigurationSource());
             config.Set("server.urls", "http://localhost:54321");
-            var services = HostingServices.Create(CallContextServiceLocator.Locator?.ServiceProvider, config)
-                .BuildServiceProvider();
-            var applicationLifetime = services.GetRequiredService<IApplicationLifetime>();
 
             var context = new HostingContext()
             {
-                ApplicationLifetime = applicationLifetime,
                 Configuration = config,
                 ServerFactoryLocation = "Kestrel",
-                ApplicationStartup = startup,
+                StartupMethods = new StartupMethods(startup, configureServices: null)
             };
-
-            var engine = services.GetRequiredService<IHostingEngine>();
-            return engine.Start(context);
+            return new HostingEngine().Start(context);
         }
     }
 }
