@@ -10,18 +10,17 @@ namespace OpenIdConnectSample
 {
     public class Startup
     {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddDataProtection();
+            services.Configure<ExternalAuthenticationOptions>(options =>
+            {
+                options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            });
+        }
+
         public void Configure(IApplicationBuilder app)
         {
-            app.UseServices(services =>
-            {
-                services.AddDataProtection();
-                services.Configure<ExternalAuthenticationOptions>(options =>
-                {
-                    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                });
-
-            });
-
             app.UseCookieAuthentication(options =>
             {
                 options.AutomaticAuthentication = true;

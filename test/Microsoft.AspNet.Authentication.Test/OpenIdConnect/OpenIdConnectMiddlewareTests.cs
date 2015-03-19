@@ -193,15 +193,6 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         {
             return TestServer.Create(app =>
             {
-                app.UseServices(services =>
-                {
-                    services.AddDataProtection();
-                    services.Configure<ExternalAuthenticationOptions>(options =>
-                    {
-                        options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                    });
-                });
-
                 app.UseCookieAuthentication(options =>
                 {
                     options.AuthenticationScheme = "OpenIdConnect";
@@ -228,7 +219,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                     else if (req.Path == new PathString("/signout_with_specific_redirect_uri"))
                     {
                         res.SignOut(
-                            OpenIdConnectAuthenticationDefaults.AuthenticationScheme, 
+                            OpenIdConnectAuthenticationDefaults.AuthenticationScheme,
                             new AuthenticationProperties() { RedirectUri = "http://www.example.com/specific_redirect_uri" });
                     }
                     else if (handler != null)
@@ -239,6 +230,14 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                     {
                         await next();
                     }
+                });
+            },
+            services =>
+            {
+                services.AddDataProtection();
+                services.Configure<ExternalAuthenticationOptions>(options =>
+                {
+                    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 });
             });
         }

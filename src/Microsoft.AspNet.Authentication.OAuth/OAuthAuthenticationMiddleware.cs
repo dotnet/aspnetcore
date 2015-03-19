@@ -26,19 +26,17 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// Initializes a new <see cref="OAuthAuthenticationMiddleware"/>.
         /// </summary>
         /// <param name="next">The next middleware in the HTTP pipeline to invoke.</param>
-        /// <param name="services"></param>
         /// <param name="dataProtectionProvider"></param>
         /// <param name="loggerFactory"></param>
         /// <param name="options">Configuration options for the middleware.</param>
         public OAuthAuthenticationMiddleware(
             [NotNull] RequestDelegate next,
-            [NotNull] IServiceProvider services,
             [NotNull] IDataProtectionProvider dataProtectionProvider,
             [NotNull] ILoggerFactory loggerFactory,
             [NotNull] IOptions<ExternalAuthenticationOptions> externalOptions,
             [NotNull] IOptions<TOptions> options,
             ConfigureOptions<TOptions> configureOptions = null)
-            : base(next, services, options, configureOptions)
+            : base(next, options, configureOptions)
         {
             // todo: review error handling
             if (string.IsNullOrWhiteSpace(Options.AuthenticationScheme))

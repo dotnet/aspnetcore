@@ -3,7 +3,8 @@
     "description": "ASP.NET 5 middleware that enables an application to support Facebook's OAuth 2.0 authentication workflow.",
     "dependencies": {
         "Microsoft.AspNet.Authentication.OAuth": "1.0.0-*",
-        "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" }
+        "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" },
+        "Newtonsoft.Json": "6.0.6"
     },
     "frameworks": {
         "dnx451": { },

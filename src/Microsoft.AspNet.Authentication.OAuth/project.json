@@ -4,7 +4,8 @@
     "dependencies": {
         "Microsoft.AspNet.DataProtection": "1.0.0-*",
         "Microsoft.AspNet.Authentication": "1.0.0-*",
-        "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" }
+        "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" },
+        "Newtonsoft.Json": "6.0.6"
     },
     "frameworks": {
         "dnx451": {

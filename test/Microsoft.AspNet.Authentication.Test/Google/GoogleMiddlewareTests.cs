@@ -482,21 +482,6 @@ namespace Microsoft.AspNet.Authentication.Google
         {
             return TestServer.Create(app =>
             {
-                app.UseServices(services =>
-                {
-                    services.AddDataProtection();
-                    services.Configure<ExternalAuthenticationOptions>(options =>
-                    {
-                        options.SignInScheme = CookieAuthenticationScheme;
-                    });
-                    services.ConfigureClaimsTransformation(p =>
-                    {
-                        var id = new ClaimsIdentity("xform");
-                        id.AddClaim(new Claim("xform", "yup"));
-                        p.AddIdentity(id);
-                        return p;
-                    });
-                });
                 app.UseCookieAuthentication(options =>
                 {
                     options.AuthenticationScheme = CookieAuthenticationScheme;
@@ -541,6 +526,21 @@ namespace Microsoft.AspNet.Authentication.Google
                     {
                         await next();
                     }
+                });
+            },
+            services =>
+            {
+                services.AddDataProtection();
+                services.Configure<ExternalAuthenticationOptions>(options =>
+                {
+                    options.SignInScheme = CookieAuthenticationScheme;
+                });
+                services.ConfigureClaimsTransformation(p =>
+                {
+                    var id = new ClaimsIdentity("xform");
+                    id.AddClaim(new Claim("xform", "yup"));
+                    p.AddIdentity(id);
+                    return p;
                 });
             });
         }

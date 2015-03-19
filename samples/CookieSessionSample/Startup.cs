@@ -9,13 +9,13 @@ namespace CookieSessionSample
 {
     public class Startup
     {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddDataProtection();
+        }
+
         public void Configure(IApplicationBuilder app)
         {
-            app.UseServices(services =>
-            {
-                services.AddDataProtection();
-            });
-
             app.UseCookieAuthentication(options => 
             {
                 options.SessionStore = new MemoryCacheSessionStore();

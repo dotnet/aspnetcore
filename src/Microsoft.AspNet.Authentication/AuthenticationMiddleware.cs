@@ -5,7 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.RequestContainer;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
@@ -14,11 +13,9 @@ namespace Microsoft.AspNet.Authentication
     public abstract class AuthenticationMiddleware<TOptions> where TOptions : AuthenticationOptions, new()
     {
         private readonly RequestDelegate _next;
-        private readonly IServiceProvider _services;
 
         protected AuthenticationMiddleware(
             [NotNull] RequestDelegate next, 
-            [NotNull] IServiceProvider services, 
             [NotNull] IOptions<TOptions> options, 
             ConfigureOptions<TOptions> configureOptions)
         {
@@ -32,7 +29,6 @@ namespace Microsoft.AspNet.Authentication
                 Options = options.Options;
             }
             _next = next;
-            _services = services;
         }
 
         public string AuthenticationScheme { get; set; }
@@ -41,32 +37,29 @@ namespace Microsoft.AspNet.Authentication
 
         public async Task Invoke(HttpContext context)
         {
-            using (RequestServicesContainer.EnsureRequestServices(context, _services))
+            AuthenticationHandler<TOptions> handler = CreateHandler();
+            await handler.Initialize(Options, context);
+            try
             {
-                AuthenticationHandler<TOptions> handler = CreateHandler();
-                await handler.Initialize(Options, context);
+                if (!await handler.InvokeAsync())
+                {
+                    await _next(context);
+                }
+            }
+            catch (Exception)
+            {
                 try
                 {
-                    if (!await handler.InvokeAsync())
-                    {
-                        await _next(context);
-                    }
+                    handler.Faulted = true;
+                    await handler.TeardownAsync();
                 }
                 catch (Exception)
                 {
-                    try
-                    {
-                        handler.Faulted = true;
-                        await handler.TeardownAsync();
-                    }
-                    catch (Exception)
-                    {
-                        // Don't mask the original exception
-                    }
-                    throw;
+                    // Don't mask the original exception
                 }
-                await handler.TeardownAsync();
+                throw;
             }
+            await handler.TeardownAsync();
         }
 
         protected abstract AuthenticationHandler<TOptions> CreateHandler();

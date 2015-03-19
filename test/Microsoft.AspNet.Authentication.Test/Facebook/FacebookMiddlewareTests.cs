@@ -24,33 +24,33 @@ namespace Microsoft.AspNet.Authentication.Facebook
             var server = CreateServer(
                 app =>
                 {
-                    app.UseServices(services =>
-                    {
-                        services.AddDataProtection();
-                        services.ConfigureFacebookAuthentication(options =>
-                        {
-                            options.AppId = "Test App Id";
-                            options.AppSecret = "Test App Secret";
-                            options.Notifications = new FacebookAuthenticationNotifications
-                            {
-                                OnApplyRedirect = context =>
-                                {
-                                    context.Response.Redirect(context.RedirectUri + "&custom=test");
-                                }
-                            };
-                        });
-                        services.ConfigureCookieAuthentication(options =>
-                        {
-                            options.AuthenticationScheme = "External";
-                            options.AutomaticAuthentication = true;
-                        });
-                        services.Configure<ExternalAuthenticationOptions>(options =>
-                        {
-                            options.SignInScheme = "External";
-                        });
-                    });
                     app.UseFacebookAuthentication();
                     app.UseCookieAuthentication();
+                },
+                services =>
+                {
+                    services.AddDataProtection();
+                    services.ConfigureFacebookAuthentication(options =>
+                    {
+                        options.AppId = "Test App Id";
+                        options.AppSecret = "Test App Secret";
+                        options.Notifications = new FacebookAuthenticationNotifications
+                        {
+                            OnApplyRedirect = context =>
+                            {
+                                context.Response.Redirect(context.RedirectUri + "&custom=test");
+                            }
+                        };
+                    });
+                    services.ConfigureCookieAuthentication(options =>
+                    {
+                        options.AuthenticationScheme = "External";
+                        options.AutomaticAuthentication = true;
+                    });
+                    services.Configure<ExternalAuthenticationOptions>(options =>
+                    {
+                        options.SignInScheme = "External";
+                    });
                 },
                 context =>
                 {
@@ -69,25 +69,25 @@ namespace Microsoft.AspNet.Authentication.Facebook
             var server = CreateServer(
                 app =>
                 {
-                    app.UseServices(services =>
-                    {
-                        services.AddDataProtection();
-                        services.ConfigureFacebookAuthentication(options =>
-                        {
-                            options.AppId = "Test App Id";
-                            options.AppSecret = "Test App Secret";
-                        });
-                        services.ConfigureCookieAuthentication(options =>
-                        {
-                            options.AuthenticationScheme = "External";
-                        });
-                        services.Configure<ExternalAuthenticationOptions>(options =>
-                        {
-                            options.SignInScheme = "External";
-                        });
-                    });
                     app.UseFacebookAuthentication();
                     app.UseCookieAuthentication();
+                },
+                services =>
+                {
+                    services.AddDataProtection();
+                    services.ConfigureFacebookAuthentication(options =>
+                    {
+                        options.AppId = "Test App Id";
+                        options.AppSecret = "Test App Secret";
+                    });
+                    services.ConfigureCookieAuthentication(options =>
+                    {
+                        options.AuthenticationScheme = "External";
+                    });
+                    services.Configure<ExternalAuthenticationOptions>(options =>
+                    {
+                        options.SignInScheme = "External";
+                    });
                 },
                 context =>
                 {
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
             location.ShouldContain("state=");
         }
 
-        private static TestServer CreateServer(Action<IApplicationBuilder> configure, Func<HttpContext, bool> handler)
+        private static TestServer CreateServer(Action<IApplicationBuilder> configure, Action<IServiceCollection> configureServices, Func<HttpContext, bool> handler)
         {
             return TestServer.Create(app =>
             {
@@ -120,7 +120,8 @@ namespace Microsoft.AspNet.Authentication.Facebook
                         await next();
                     }
                 });
-            });
+            },
+            configureServices);
         }
 
         private static async Task<Transaction> SendAsync(TestServer server, string uri, string cookieHeader = null)

@@ -524,17 +524,6 @@ namespace Microsoft.AspNet.Authentication.Cookies
         {
             var server = TestServer.Create(app =>
             {
-                if (claimsTransform != null)
-                {
-                    app.UseServices(services => {
-                        services.AddDataProtection();
-                        services.ConfigureClaimsTransformation(claimsTransform);
-                    });
-                }
-                else
-                {
-                    app.UseServices(services => services.AddDataProtection());
-                }
                 app.UseCookieAuthentication(configureOptions);
                 if (claimsTransform != null)
                 {
@@ -581,6 +570,14 @@ namespace Microsoft.AspNet.Authentication.Cookies
                         await next();
                     }
                 });
+            },
+            services =>
+            {
+                services.AddDataProtection();
+                if (claimsTransform != null)
+                {
+                    services.ConfigureClaimsTransformation(claimsTransform);
+                }
             });
             server.BaseAddress = baseAddress;
             return server;

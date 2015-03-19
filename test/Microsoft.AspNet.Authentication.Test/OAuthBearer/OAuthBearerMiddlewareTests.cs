@@ -233,11 +233,6 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
         {
             return TestServer.Create(app =>
             {
-                app.UseServices(services =>
-                {
-                    services.AddDataProtection();
-                });
-
                 if (configureOptions != null)
                 {
                     app.UseOAuthBearerAuthentication(configureOptions);
@@ -261,7 +256,8 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
                     }
 
                 });
-            });
+            },
+            services => services.AddDataProtection());
         }
 
         private static async Task<Transaction> SendAsync(TestServer server, string uri, string authorizationHeader = null)

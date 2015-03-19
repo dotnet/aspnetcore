@@ -105,14 +105,6 @@ namespace Microsoft.AspNet.Authentication.Twitter
         {
             return TestServer.Create(app =>
             {
-                app.UseServices(services =>
-                {
-                    services.AddDataProtection();
-                    services.Configure<ExternalAuthenticationOptions>(options =>
-                    {
-                        options.SignInScheme = "External";
-                    });
-                });
                 app.UseCookieAuthentication(options =>
                 {
                     options.AuthenticationScheme = "External";
@@ -127,6 +119,14 @@ namespace Microsoft.AspNet.Authentication.Twitter
                     {
                         await next();
                     }
+                });
+            },
+            services =>
+            {
+                services.AddDataProtection();
+                services.Configure<ExternalAuthenticationOptions>(options =>
+                {
+                    options.SignInScheme = "External";
                 });
             });
         }

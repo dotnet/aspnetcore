@@ -18,12 +18,11 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
         public CookieAuthenticationMiddleware(
             [NotNull] RequestDelegate next,
-            [NotNull] IServiceProvider services,
             [NotNull] IDataProtectionProvider dataProtectionProvider,
             [NotNull] ILoggerFactory loggerFactory,
             [NotNull] IOptions<CookieAuthenticationOptions> options,
             ConfigureOptions<CookieAuthenticationOptions> configureOptions)
-            : base(next, services, options, configureOptions)
+            : base(next, options, configureOptions)
         {
             if (Options.Notifications == null)
             {
