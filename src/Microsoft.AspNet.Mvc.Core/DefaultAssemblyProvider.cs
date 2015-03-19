@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc
         // DefaultControllerTypeProvider uses CandidateAssemblies to determine if the base type of a POCO controller
         // lives in an assembly that references MVC. CandidateAssemblies excludes all assemblies from the
         // ReferenceAssemblies set. Consequently adding WebApiCompatShim to this set would cause the ApiController to
-        /// fail this test.
+        // fail this test.
         protected virtual HashSet<string> ReferenceAssemblies { get; } = new HashSet<string>(StringComparer.Ordinal)
         {
             "Microsoft.AspNet.Mvc",
@@ -35,6 +35,8 @@ namespace Microsoft.AspNet.Mvc
             "Microsoft.AspNet.Mvc.Razor",
             "Microsoft.AspNet.Mvc.Razor.Host",
             "Microsoft.AspNet.Mvc.TagHelpers",
+            "Microsoft.AspNet.Mvc.Xml",
+            "Microsoft.AspNet.PageExecutionInstrumentation.Interfaces",
         };
 
         /// <inheritdoc />
