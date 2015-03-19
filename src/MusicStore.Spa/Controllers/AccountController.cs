@@ -1,4 +1,4 @@
-﻿using System.Security.Principal;
+﻿using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Identity;
