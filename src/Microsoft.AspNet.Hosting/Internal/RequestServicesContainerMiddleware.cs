@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.RequestContainer
+namespace Microsoft.AspNet.Hosting.Internal
 {
-    public class ContainerMiddleware
+    public class RequestServicesContainerMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IServiceProvider _services;
 
-        public ContainerMiddleware(RequestDelegate next, IServiceProvider services)
+        public RequestServicesContainerMiddleware(RequestDelegate next, IServiceProvider services)
         {
             _services = services;
             _next = next;
@@ -21,11 +21,6 @@ namespace Microsoft.AspNet.RequestContainer
 
         public async Task Invoke(HttpContext httpContext)
         {
-            if (httpContext.RequestServices != null)
-            {
-                throw new Exception("TODO: nested request container scope? this is probably a mistake on your part?");
-            }
-
             using (var container = RequestServicesContainer.EnsureRequestServices(httpContext, _services))
             {
                 await _next.Invoke(httpContext);

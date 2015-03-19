@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
-using Microsoft.AspNet.Http;
 using Xunit;
 
 namespace Microsoft.AspNet.TestHost

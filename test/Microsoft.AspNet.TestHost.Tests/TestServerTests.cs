@@ -21,10 +21,8 @@ namespace Microsoft.AspNet.TestHost
         public void CreateWithDelegate()
         {
             // Arrange
-            var services = HostingServices.Create().BuildServiceProvider();
-
             // Act & Assert (Does not throw)
-            TestServer.Create(services, app => { });
+            TestServer.Create(app => { });
         }
 
         [Fact]
@@ -35,6 +33,21 @@ namespace Microsoft.AspNet.TestHost
 
             // Act & Assert
             Assert.Throws<InvalidOperationException>(() => TestServer.Create(services, new Startup().Configuration));
+        }
+
+        [Fact]
+        public async Task RequestServicesAutoCreated()
+        {
+            TestServer server = TestServer.Create(app =>
+            {
+                app.Run(context =>
+                {
+                    return context.Response.WriteAsync("RequestServices:" + (context.RequestServices != null));
+                });
+            });
+
+            string result = await server.CreateClient().GetStringAsync("/path");
+            Assert.Equal("RequestServices:True", result);
         }
 
         [Fact]
@@ -92,7 +105,8 @@ namespace Microsoft.AspNet.TestHost
                     var accessor = app.ApplicationServices.GetRequiredService<ContextHolder>();
                     return context.Response.WriteAsync("HasContext:" + (accessor.Accessor.HttpContext != null));
                 });
-            }, newHostServices => newHostServices.AddSingleton<ContextHolder>());
+            },
+            services => services.AddSingleton<ContextHolder>().BuildServiceProvider());
 
             string result = await server.CreateClient().GetStringAsync("/path");
             Assert.Equal("HasContext:True", result);

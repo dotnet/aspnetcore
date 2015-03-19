@@ -6,6 +6,7 @@
         "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
         "Microsoft.AspNet.FileProviders": "1.0.0-*",
         "Microsoft.AspNet.Http.Core": "1.0.0-*",
+        "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
         "Microsoft.Framework.Logging": "1.0.0-*",
         "Microsoft.Framework.DependencyInjection": "1.0.0-*",
         "Newtonsoft.Json": "6.0.6"

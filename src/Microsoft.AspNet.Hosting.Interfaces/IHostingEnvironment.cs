@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Hosting
 {
     public interface IHostingEnvironment
     {
-        string EnvironmentName { get; set; }
+        string EnvironmentName { get; set;  }
 
         string WebRootPath { get; }
 

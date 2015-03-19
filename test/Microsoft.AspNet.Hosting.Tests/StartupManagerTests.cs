@@ -12,7 +12,6 @@ using Xunit;
 
 namespace Microsoft.AspNet.Hosting.Tests
 {
-
     public class StartupManagerTests : IFakeStartupCallback
     {
         private readonly IList<object> _configurationMethodCalledList = new List<object>();
@@ -20,16 +19,16 @@ namespace Microsoft.AspNet.Hosting.Tests
         [Fact]
         public void StartupClassMayHaveHostingServicesInjected()
         {
-            var serviceCollection = new ServiceCollection().AddHosting();
+            var serviceCollection = new ServiceCollection();
             serviceCollection.AddInstance<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
 
-            var loader = services.GetRequiredService<IStartupLoader>();
-
             var diagnosticMessages = new List<string>();
-            var startup = loader.LoadStartup("Microsoft.AspNet.Hosting.Tests", "WithServices", diagnosticMessages);
+            var startup = ApplicationStartup.LoadStartupMethods(services, "Microsoft.AspNet.Hosting.Tests", "WithServices", diagnosticMessages);
 
-            startup.Invoke(new ApplicationBuilder(services));
+            var app = new ApplicationBuilder(services);
+            app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
+            startup.ConfigureDelegate(app);
 
             Assert.Equal(2, _configurationMethodCalledList.Count);
         }
@@ -45,15 +44,14 @@ namespace Microsoft.AspNet.Hosting.Tests
         [InlineData("BaseClass")]
         public void StartupClassAddsConfigureServicesToApplicationServices(string environment)
         {
-            var services = HostingServices.Create().BuildServiceProvider();
-            var loader = services.GetRequiredService<IStartupLoader>();
+            var services = new ServiceCollection().BuildServiceProvider();
             var diagnosticMesssages = new List<string>();
 
-            var startup = loader.LoadStartup("Microsoft.AspNet.Hosting.Tests", environment ?? "", diagnosticMesssages);
+            var startup = ApplicationStartup.LoadStartupMethods(services, "Microsoft.AspNet.Hosting.Tests", environment ?? "", diagnosticMesssages);
 
             var app = new ApplicationBuilder(services);
-
-            startup.Invoke(app);
+            app.ApplicationServices = startup.ConfigureServicesDelegate(new ServiceCollection());
+            startup.ConfigureDelegate(app);
 
             var options = app.ApplicationServices.GetRequiredService<IOptions<FakeOptions>>().Options;
             Assert.NotNull(options);
@@ -61,92 +59,46 @@ namespace Microsoft.AspNet.Hosting.Tests
             Assert.Equal(environment, options.Environment);
         }
 
-        [Theory]
-        [InlineData("Null")]
-        [InlineData("FallbackProvider")]
-        public void StartupClassConfigureServicesThatFallsbackToApplicationServices(string env)
-        {
-            var services = HostingServices.Create().BuildServiceProvider();
-            var loader = services.GetRequiredService<IStartupLoader>();
-            var diagnosticMessages = new List<string>();
-
-            var startup = loader.LoadStartup("Microsoft.AspNet.Hosting.Tests", env, diagnosticMessages);
-
-            var app = new ApplicationBuilder(services);
-
-            startup.Invoke(app);
-
-            Assert.Equal(services, app.ApplicationServices);
-        }
-
-        // REVIEW: With the manifest change, Since the ConfigureServices are not imported, UseServices will mask what's in ConfigureServices
-        // This will throw since ConfigureServices consumes manifest and then UseServices will blow up
-        [Fact(Skip = "Review Failure")]
-        public void StartupClassWithConfigureServicesAndUseServicesHidesConfigureServices()
-        {
-            var services = HostingServices.Create().BuildServiceProvider();
-            var loader = services.GetRequiredService<IStartupLoader>();
-            var diagnosticMessages = new List<string>();
-
-            var startup = loader.LoadStartup("Microsoft.AspNet.Hosting.Tests", "UseServices", diagnosticMessages);
-
-            var app = new ApplicationBuilder(services);
-
-            startup.Invoke(app);
-
-            Assert.NotNull(app.ApplicationServices.GetRequiredService<FakeService>());
-            Assert.Null(app.ApplicationServices.GetService<IFakeService>());
-
-            var options = app.ApplicationServices.GetRequiredService<IOptions<FakeOptions>>().Options;
-            Assert.NotNull(options);
-            Assert.Equal("Configured", options.Message);
-            Assert.False(options.Configured); // Options never resolved from inner containers
-        }
-
         [Fact]
         public void StartupWithNoConfigureThrows()
         {
-            var serviceCollection = HostingServices.Create();
+            var serviceCollection = new ServiceCollection();
             serviceCollection.AddInstance<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
-            var loader = services.GetRequiredService<IStartupLoader>();
             var diagnosticMessages = new List<string>();
 
-            var ex = Assert.Throws<Exception>(() => loader.LoadStartup("Microsoft.AspNet.Hosting.Tests", "Boom", diagnosticMessages));
+            var ex = Assert.Throws<InvalidOperationException>(() => ApplicationStartup.LoadStartupMethods(services, "Microsoft.AspNet.Hosting.Tests", "Boom", diagnosticMessages));
             Assert.Equal("A method named 'ConfigureBoom' or 'Configure' in the type 'Microsoft.AspNet.Hosting.Fakes.StartupBoom' could not be found.", ex.Message);
         }
 
         [Fact]
-        public void StartupWithConfigureServicesNotResolvedThrows()
+        public void StartupClassCanHandleConfigureServicesThatReturnsNull()
         {
-            var serviceCollection = HostingServices.Create();
+            var serviceCollection = new ServiceCollection();
             var services = serviceCollection.BuildServiceProvider();
-            var loader = services.GetRequiredService<IStartupLoader>();
+
             var diagnosticMessages = new List<string>();
-
-            var startup = loader.LoadStartup("Microsoft.AspNet.Hosting.Tests", "WithConfigureServicesNotResolved", diagnosticMessages);
-
+            var startup = ApplicationStartup.LoadStartupMethods(services, "Microsoft.AspNet.Hosting.Tests", "WithNullConfigureServices", diagnosticMessages);
 
             var app = new ApplicationBuilder(services);
-
-            var ex = Assert.Throws<Exception>(() => startup.Invoke(app));
-
-            Assert.Equal("Could not resolve a service of type 'System.Int32' for the parameter 'notAService' of method 'Configure' on type 'Microsoft.AspNet.Hosting.Fakes.StartupWithConfigureServicesNotResolved'.", ex.Message);
+            app.ApplicationServices = startup.ConfigureServicesDelegate(new ServiceCollection());
+            Assert.NotNull(app.ApplicationServices);
+            startup.ConfigureDelegate(app);
+            Assert.NotNull(app.ApplicationServices);
         }
 
         [Fact]
         public void StartupClassWithConfigureServicesShouldMakeServiceAvailableInConfigure()
         {
-            var serviceCollection = HostingServices.Create();
+            var serviceCollection = new ServiceCollection();
             var services = serviceCollection.BuildServiceProvider();
-            var loader = services.GetRequiredService<IStartupLoader>();
-
-            var app = new ApplicationBuilder(services);
 
             var diagnosticMessages = new List<string>();
-            var startup = loader.LoadStartup("Microsoft.AspNet.Hosting.Tests", "WithConfigureServices", diagnosticMessages);
+            var startup = ApplicationStartup.LoadStartupMethods(services, "Microsoft.AspNet.Hosting.Tests", "WithConfigureServices", diagnosticMessages);
 
-            startup.Invoke(app);
+            var app = new ApplicationBuilder(services);
+            app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
+            startup.ConfigureDelegate(app);
 
             var foo = app.ApplicationServices.GetRequiredService<StartupWithConfigureServices.IFoo>();
             Assert.True(foo.Invoked);

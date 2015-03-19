@@ -19,31 +19,15 @@ namespace Microsoft.AspNet.Hosting
         private readonly IList<StartInstance> _startInstances = new List<StartInstance>();
 
         [Fact]
-        public void HostingEngineCanBeResolvedWithDefaultServices()
-        {
-            var services = HostingServices.Create().BuildServiceProvider();
-
-            var engine = services.GetRequiredService<IHostingEngine>();
-
-            Assert.NotNull(engine);
-        }
-
-        [Fact]
         public void HostingEngineCanBeStarted()
         {
-            var services = HostingServices.Create().BuildServiceProvider();
-
-            var engine = services.GetRequiredService<IHostingEngine>();
-            var applicationLifetime = services.GetRequiredService<IApplicationLifetime>();
-
             var context = new HostingContext
             {
-                ApplicationLifetime = applicationLifetime,
                 ServerFactory = this,
                 ApplicationName = "Microsoft.AspNet.Hosting.Tests"
             };
 
-            var engineStart = engine.Start(context);
+            var engineStart = new HostingEngine().Start(context);
 
             Assert.NotNull(engineStart);
             Assert.Equal(1, _startInstances.Count);
@@ -55,38 +39,96 @@ namespace Microsoft.AspNet.Hosting
         }
 
         [Fact]
+        public void ApplicationNameDefaultsToApplicationEnvironmentName()
+        {
+            var context = new HostingContext
+            {
+                ServerFactory = this
+            };
+
+            var engine = new HostingEngine();
+
+            using (engine.Start(context))
+            {
+                Assert.Equal("Microsoft.AspNet.Hosting.Tests", context.ApplicationName);
+            }
+        }
+
+        [Fact]
+        public void EnvDefaultsToDevelopmentIfNoConfig()
+        {
+            var context = new HostingContext
+            {
+                ServerFactory = this
+            };
+
+            var engine = new HostingEngine();
+
+            using (engine.Start(context))
+            {
+                Assert.Equal("Development", context.EnvironmentName);
+                var env = context.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+                Assert.Equal("Development", env.EnvironmentName);
+            }
+        }
+
+        [Fact]
+        public void EnvDefaultsToDevelopmentConfigValueIfSpecified()
+        {
+            var vals = new Dictionary<string, string>
+            {
+                { "ASPNET_ENV", "Staging" }
+            };
+
+            var config = new Configuration()
+                .Add(new MemoryConfigurationSource(vals));
+
+            var context = new HostingContext
+            {
+                ServerFactory = this,
+                Configuration = config
+            };
+
+            var engine = new HostingEngine();
+
+            using (engine.Start(context))
+            {
+                Assert.Equal("Staging", context.EnvironmentName);
+                var env = context.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+                Assert.Equal("Staging", env.EnvironmentName);
+            }
+        }
+
+        [Fact]
         public void WebRootCanBeResolvedFromTheProjectJson()
         {
-            var services = HostingServices.Create().BuildServiceProvider();
-            var env = services.GetRequiredService<IHostingEnvironment>();
+            var context = new HostingContext
+            {
+                ServerFactory = this
+            };
+
+            var engineStart = new HostingEngine().Start(context);
+            var env = context.ApplicationServices.GetRequiredService<IHostingEnvironment>();
             Assert.Equal(Path.GetFullPath("testroot"), env.WebRootPath);
             Assert.True(env.WebRootFileProvider.GetFileInfo("TextFile.txt").Exists);
         }
 
         [Fact]
-        public void Validate_Environment_Name()
-        {
-            var services = HostingServices.Create().BuildServiceProvider();
-            var env = services.GetRequiredService<IHostingEnvironment>();
-            Assert.Equal("Development", env.EnvironmentName);
-
-            var config = new Configuration()
-                .AddCommandLine(new string[] { "--ASPNET_ENV", "Overridden_Environment" });
-
-            services = HostingServices.Create(fallbackServices: null, configuration: config)
-                .BuildServiceProvider();
-
-            env = services.GetRequiredService<IHostingEnvironment>();
-            Assert.Equal("Overridden_Environment", env.EnvironmentName);
-        }
-
-        [Fact]
         public void IsEnvironment_Extension_Is_Case_Insensitive()
         {
-            var services = HostingServices.Create().BuildServiceProvider();
-            var env = services.GetRequiredService<IHostingEnvironment>();
-            Assert.True(env.IsEnvironment("Development"));
-            Assert.True(env.IsEnvironment("developMent"));
+            var context = new HostingContext
+            {
+                ServerFactory = this
+            };
+
+            var engine = new HostingEngine();
+
+            using (engine.Start(context))
+            {
+                var env = context.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+                Assert.True(env.IsEnvironment("Development"));
+                Assert.True(env.IsEnvironment("developMent"));
+            }
         }
 
         public void Initialize(IApplicationBuilder builder)

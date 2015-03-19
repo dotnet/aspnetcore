@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22530.0
+VisualStudioVersion = 14.0.22710.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E0497F39-AFFB-4819-A116-E39E361915AB}"
 EndProject
@@ -14,8 +14,6 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Hosting", "src\Microsoft.AspNet.Hosting\Microsoft.AspNet.Hosting.xproj", "{3944F036-7E75-47E8-AA52-C4B89A64EC3A}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Hosting.Tests", "test\Microsoft.AspNet.Hosting.Tests\Microsoft.AspNet.Hosting.Tests.xproj", "{D4F18D58-52B1-435D-A012-10F2CDF158C4}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.RequestContainer", "src\Microsoft.AspNet.RequestContainer\Microsoft.AspNet.RequestContainer.xproj", "{374A5B0C-3E93-4A23-A4A0-EE2AB6DF7814}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A66E3673-3976-4152-B902-2D0EC1428EA2}"
 	ProjectSection(SolutionItems) = preProject
@@ -74,16 +72,6 @@ Global
 		{D4F18D58-52B1-435D-A012-10F2CDF158C4}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{D4F18D58-52B1-435D-A012-10F2CDF158C4}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{D4F18D58-52B1-435D-A012-10F2CDF158C4}.Release|x86.ActiveCfg = Release|Any CPU
-		{374A5B0C-3E93-4A23-A4A0-EE2AB6DF7814}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{374A5B0C-3E93-4A23-A4A0-EE2AB6DF7814}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{374A5B0C-3E93-4A23-A4A0-EE2AB6DF7814}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{374A5B0C-3E93-4A23-A4A0-EE2AB6DF7814}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{374A5B0C-3E93-4A23-A4A0-EE2AB6DF7814}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{374A5B0C-3E93-4A23-A4A0-EE2AB6DF7814}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{374A5B0C-3E93-4A23-A4A0-EE2AB6DF7814}.Release|Any CPU.Build.0 = Release|Any CPU
-		{374A5B0C-3E93-4A23-A4A0-EE2AB6DF7814}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{374A5B0C-3E93-4A23-A4A0-EE2AB6DF7814}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{374A5B0C-3E93-4A23-A4A0-EE2AB6DF7814}.Release|x86.ActiveCfg = Release|Any CPU
 		{BB780FBB-7842-4759-8DE7-96FA2E5571C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BB780FBB-7842-4759-8DE7-96FA2E5571C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB780FBB-7842-4759-8DE7-96FA2E5571C1}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -105,7 +93,6 @@ Global
 		{1A415A3F-1081-45DB-809B-EE19CEA02DC0} = {E0497F39-AFFB-4819-A116-E39E361915AB}
 		{3944F036-7E75-47E8-AA52-C4B89A64EC3A} = {E0497F39-AFFB-4819-A116-E39E361915AB}
 		{D4F18D58-52B1-435D-A012-10F2CDF158C4} = {FEB39027-9158-4DE2-997F-7ADAEF8188D0}
-		{374A5B0C-3E93-4A23-A4A0-EE2AB6DF7814} = {E0497F39-AFFB-4819-A116-E39E361915AB}
 		{BB780FBB-7842-4759-8DE7-96FA2E5571C1} = {E0497F39-AFFB-4819-A116-E39E361915AB}
 	EndGlobalSection
 EndGlobal

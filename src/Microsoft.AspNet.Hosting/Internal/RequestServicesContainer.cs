@@ -5,7 +5,7 @@ using System;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
 
-namespace Microsoft.AspNet.RequestContainer
+namespace Microsoft.AspNet.Hosting.Internal
 {
     public class RequestServicesContainer : IDisposable
     {
