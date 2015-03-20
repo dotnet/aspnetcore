@@ -18,5 +18,17 @@ namespace ModelBindingWebSite.Models
 
         [Required]
         public ModelWithValidation Field4 { get; set; }
+
+        [Required]
+        public ModelWithValidation Field5 { get; set; }
+
+        [Required]
+        public ModelWithValidation Field6 { get; set; }
+
+        [Required]
+        public ModelWithValidation Field7 { get; set; }
+
+        [Required]
+        public ModelWithValidation Field8 { get; set; }
     }
 }

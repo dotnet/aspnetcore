@@ -146,6 +146,127 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
+        public async Task ModelBinder_FallsBackToEmpty_IfBinderMatchesButDoesNotSetModel()
+        {
+            // Arrange
+            var bindingContext = new ModelBindingContext
+            {
+                FallbackToEmptyPrefix = true,
+                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
+                ModelName = "someName",
+                ModelState = new ModelStateDictionary(),
+                ValueProvider = new SimpleHttpValueProvider
+                {
+                    { "someOtherName", "dummyValue" }
+                },
+                OperationBindingContext = new OperationBindingContext
+                {
+                    ValidatorProvider = GetValidatorProvider()
+                }
+            };
+
+            var count = 0;
+            var modelBinder = new Mock<IModelBinder>();
+            modelBinder
+                .Setup(mb => mb.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Callback<ModelBindingContext>(context =>
+                {
+                    // Expect two calls; the second with empty ModelName.
+                    Assert.InRange(count, 0, 1);
+                    count++;
+                    if (count == 1)
+                    {
+                        Assert.Equal("someName", context.ModelName);
+                    }
+                    else
+                    {
+                        Assert.Empty(context.ModelName);
+                    }
+                })
+                .Returns(Task.FromResult(new ModelBindingResult(model: null, key: "someName", isModelSet: false)));
+
+            var composite = CreateCompositeBinder(modelBinder.Object);
+
+            // Act & Assert
+            var result = await composite.BindModelAsync(bindingContext);
+        }
+
+        [Fact]
+        public async Task ModelBinder_DoesNotFallBackToEmpty_IfFallbackToEmptyPrefixFalse()
+        {
+            // Arrange
+            var bindingContext = new ModelBindingContext
+            {
+                FallbackToEmptyPrefix = false,
+                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
+                ModelName = "someName",
+                ModelState = new ModelStateDictionary(),
+                ValueProvider = new SimpleHttpValueProvider
+                {
+                    { "someOtherName", "dummyValue" }
+                },
+                OperationBindingContext = new OperationBindingContext
+                {
+                    ValidatorProvider = GetValidatorProvider()
+                }
+            };
+
+            var modelBinder = new Mock<IModelBinder>();
+            modelBinder
+                .Setup(mb => mb.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Callback<ModelBindingContext>(context =>
+                {
+                    Assert.Equal("someName", context.ModelName);
+                })
+                .Returns(Task.FromResult(new ModelBindingResult(model: null, key: "someName", isModelSet: false)))
+                .Verifiable();
+
+            var composite = CreateCompositeBinder(modelBinder.Object);
+
+            // Act & Assert
+            var result = await composite.BindModelAsync(bindingContext);
+            modelBinder.Verify(mb => mb.BindModelAsync(It.IsAny<ModelBindingContext>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ModelBinder_DoesNotFallBackToEmpty_IfErrorsAreAdded()
+        {
+            // Arrange
+            var bindingContext = new ModelBindingContext
+            {
+                FallbackToEmptyPrefix = false,
+                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
+                ModelName = "someName",
+                ModelState = new ModelStateDictionary(),
+                ValueProvider = new SimpleHttpValueProvider
+                {
+                    { "someOtherName", "dummyValue" }
+                },
+                OperationBindingContext = new OperationBindingContext
+                {
+                    ValidatorProvider = GetValidatorProvider()
+                }
+            };
+
+            var modelBinder = new Mock<IModelBinder>();
+            modelBinder
+                .Setup(mb => mb.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Callback<ModelBindingContext>(context =>
+                {
+                    Assert.Equal("someName", context.ModelName);
+                    context.ModelState.AddModelError(context.ModelName, "this is an error message");
+                })
+                .Returns(Task.FromResult(new ModelBindingResult(model: null, key: "someName", isModelSet: false)))
+                .Verifiable();
+
+            var composite = CreateCompositeBinder(modelBinder.Object);
+
+            // Act & Assert
+            var result = await composite.BindModelAsync(bindingContext);
+            modelBinder.Verify(mb => mb.BindModelAsync(It.IsAny<ModelBindingContext>()), Times.Once);
+        }
+
+        [Fact]
         public async Task ModelBinder_ReturnsTrue_SetsNullValue_SetsModelStateKey()
         {
             // Arrange

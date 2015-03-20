@@ -92,16 +92,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return true;
             }
 
-            // 3. The model name is not prefixed and a value provider can directly provide a value for the model name.
-            //    The fact that it is not prefixed means that the containsPrefixAsync call checks for the exact
-            //    model name instead of doing a prefix match.
-            if (!bindingContext.ModelName.Contains(".") &&
-                await bindingContext.ValueProvider.ContainsPrefixAsync(bindingContext.ModelName))
-            {
-                return true;
-            }
-
-            // 4. Any of the model properties can be bound using a value provider.
+            // 3. Any of the model properties can be bound using a value provider.
             if (await CanValueBindAnyModelProperties(context))
             {
                 return true;

@@ -18,6 +18,18 @@ namespace ModelBindingWebSite.Controllers
             return Content(System.Text.Encoding.UTF8.GetString(byteValues));
         }
 
+        [HttpPost("/integers")]
+        public IActionResult CollectionToJson(int[] model)
+        {
+            return Json(model);
+        }
+
+        [HttpPost("/cities")]
+        public IActionResult PocoCollectionToJson(List<City> model)
+        {
+            return Json(model);
+        }
+
         public object ModelWithTooManyValidationErrors(LargeModelWithValidation model)
         {
             return CreateValidationDictionary();
