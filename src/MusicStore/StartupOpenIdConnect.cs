@@ -46,13 +46,13 @@ namespace MusicStore
             // Add EF services to the services container
             if (useInMemoryStore)
             {
-                services.AddEntityFramework(Configuration)
+                services.AddEntityFramework()
                         .AddInMemoryStore()
                         .AddDbContext<MusicStoreContext>();
             }
             else
             {
-                services.AddEntityFramework(Configuration)
+                services.AddEntityFramework()
                         .AddSqlServer()
                         .AddDbContext<MusicStoreContext>();
             }

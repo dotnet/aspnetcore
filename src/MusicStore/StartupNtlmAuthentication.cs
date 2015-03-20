@@ -44,7 +44,7 @@ namespace MusicStore
         public void ConfigureServices(IServiceCollection services)
         {
             // Add EF services to the services container
-            services.AddEntityFramework(Configuration)
+            services.AddEntityFramework()
                     .AddSqlServer()
                     .AddDbContext<MusicStoreContext>();
 
