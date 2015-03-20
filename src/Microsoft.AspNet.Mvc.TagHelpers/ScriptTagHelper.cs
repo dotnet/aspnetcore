@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting;
@@ -11,6 +10,7 @@ using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Runtime;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
@@ -27,6 +27,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     [TargetElement("script", Attributes = FallbackSrcIncludeAttributeName)]
     [TargetElement("script", Attributes = FallbackSrcExcludeAttributeName)]
     [TargetElement("script", Attributes = FallbackTestExpressionAttributeName)]
+    [TargetElement("script", Attributes = FileVersionAttributeName)]
     public class ScriptTagHelper : TagHelper
     {
         private const string SrcIncludeAttributeName = "asp-src-include";
@@ -36,8 +37,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string FallbackSrcExcludeAttributeName = "asp-fallback-src-exclude";
         private const string FallbackTestExpressionAttributeName = "asp-fallback-test";
         private const string SrcAttributeName = "src";
+        private const string FileVersionAttributeName = "asp-file-version";
+
+        private FileVersionProvider _fileVersionProvider;
 
         private static readonly ModeAttributes<Mode>[] ModeDetails = new[] {
+            // Regular src with file version alone
+            ModeAttributes.Create(Mode.FileVersion, new[] { FileVersionAttributeName }),
             // Globbed src (include only)
             ModeAttributes.Create(Mode.GlobbedSrc, new [] { SrcIncludeAttributeName }),
             // Globbed src (include & exclude)
@@ -67,14 +73,18 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private enum Mode
         {
             /// <summary>
+            /// Just adding a file version for the generated urls.
+            /// </summary>
+            FileVersion = 0,
+            /// <summary>
             /// Just performing file globbing search for the src, rendering a separate &lt;script&gt; for each match.
             /// </summary>
-            GlobbedSrc = 0,
+            GlobbedSrc = 1,
             /// <summary>
             /// Rendering a fallback block if primary javascript fails to load. Will also do globbing for both the
             /// primary and fallback srcs if the appropriate properties are set.
             /// </summary>
-            Fallback = 1
+            Fallback = 2
         }
 
         /// <summary>
@@ -97,6 +107,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// </summary>
         [HtmlAttributeName(FallbackSrcAttributeName)]
         public string FallbackSrc { get; set; }
+
+        /// <summary>
+        /// Value indicating if file version should be appended to src urls.
+        /// </summary>
+        /// <remarks>
+        /// A query string "v" with the encoded content of the file is added.
+        /// </remarks>
+        [HtmlAttributeName(FileVersionAttributeName)]
+        public bool? FileVersion { get; set; }
 
         /// <summary>
         /// A comma separated list of globbed file patterns of JavaScript scripts to fallback to in the case the
@@ -137,11 +156,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [Activate]
         protected internal IMemoryCache Cache { get; set; }
 
-        // Internal for ease of use when testing.
-        protected internal GlobbingUrlBuilder GlobbingUrlBuilder { get; set; }
-
         [Activate]
         protected internal IHtmlEncoder HtmlEncoder { get; set; }
+
+        // Internal for ease of use when testing.
+        protected internal GlobbingUrlBuilder GlobbingUrlBuilder { get; set; }
 
         /// <inheritdoc />
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
@@ -167,9 +186,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var builder = new DefaultTagHelperContent();
             var originalContent = await context.GetChildContentAsync();
 
-            if (mode == Mode.Fallback && string.IsNullOrEmpty(SrcInclude))
+            if (mode == Mode.Fallback && string.IsNullOrEmpty(SrcInclude) || mode == Mode.FileVersion)
             {
                 // No globbing to do, just build a <script /> tag to match the original one in the source file
+                // Or just add file version to the script tag.
                 BuildScriptTag(originalContent, attributes, builder);
             }
             else
@@ -194,14 +214,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Build a <script> tag for each matched src as well as the original one in the source file
             string staticSrc;
-            attributes.TryGetValue("src", out staticSrc);
+            attributes.TryGetValue(SrcAttributeName, out staticSrc);
 
             EnsureGlobbingUrlBuilder();
             var urls = GlobbingUrlBuilder.BuildUrlList(staticSrc, SrcInclude, SrcExclude);
 
             foreach (var url in urls)
             {
-                attributes["src"] = HtmlEncoder.HtmlEncode(url);
+                attributes[SrcAttributeName] = url;
                 var content =
                     string.Equals(url, staticSrc, StringComparison.OrdinalIgnoreCase) ? originalContent : null;
                 BuildScriptTag(content, attributes, builder);
@@ -211,6 +231,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private void BuildFallbackBlock(IDictionary<string, string> attributes, DefaultTagHelperContent builder)
         {
             EnsureGlobbingUrlBuilder();
+            EnsureFileVersionProvider();
 
             var fallbackSrcs = GlobbingUrlBuilder.BuildUrlList(FallbackSrc, FallbackSrcInclude, FallbackSrcExclude);
 
@@ -226,9 +247,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     builder.Append("<script");
 
-                    if (!attributes.ContainsKey("src"))
+                    if (!attributes.ContainsKey(SrcAttributeName))
                     {
-                        AppendSrc(builder, "src", src);
+                        AppendAttribute(
+                            builder,
+                            SrcAttributeName, 
+                            HtmlEncoder.HtmlEncode(ShouldAddFileVersion() ? _fileVersionProvider.AddFileVersionToPath(src) : src),
+                            escapteQuotes: true);
                     }
 
                     foreach (var attribute in attributes)
@@ -238,21 +263,22 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                             var encodedKey = JavaScriptStringEncoder.Default.JavaScriptStringEncode(attribute.Key);
                             var encodedValue = JavaScriptStringEncoder.Default.JavaScriptStringEncode(attribute.Value);
 
-                            builder.Append(string.Format(
-                                CultureInfo.InvariantCulture,
-                                " {0}=\\\"{1}\\\"",
-                                encodedKey,
-                                encodedValue));
+                            AppendAttribute(builder, encodedKey, encodedValue, escapteQuotes: true);
                         }
                         else
                         {
-                            AppendSrc(builder, attribute.Key, src);
+                            AppendAttribute(
+                                builder,
+                                attribute.Key,
+                                HtmlEncoder.HtmlEncode(
+                                    ShouldAddFileVersion() ? _fileVersionProvider.AddFileVersionToPath(src) : src),
+                                escapteQuotes: true);
                         }
                     }
 
                     builder.Append("><\\/script>");
                 }
-                
+
                 builder.Append("\"));</script>");
             }
         }
@@ -268,17 +294,37 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
-        private static void BuildScriptTag(
+        private void EnsureFileVersionProvider()
+        {
+            if (_fileVersionProvider == null)
+            {
+                _fileVersionProvider = new FileVersionProvider(
+                    HostingEnvironment.WebRootFileProvider,
+                    Cache,
+                    ViewContext.HttpContext.Request.PathBase);
+            }
+        }
+
+        private void BuildScriptTag(
             TagHelperContent content,
             IDictionary<string, string> attributes,
             TagHelperContent builder)
         {
+            EnsureFileVersionProvider();
             builder.Append("<script");
 
             foreach (var attribute in attributes)
             {
-                builder.Append(
-                    string.Format(CultureInfo.InvariantCulture, " {0}=\"{1}\"", attribute.Key, attribute.Value));
+                string attributeValue = attribute.Value;
+                if (string.Equals(attribute.Key, SrcAttributeName, StringComparison.OrdinalIgnoreCase))
+                {
+                    attributeValue = HtmlEncoder.HtmlEncode(
+                        ShouldAddFileVersion() ?
+                            _fileVersionProvider.AddFileVersionToPath(attribute.Value) :
+                            attributeValue);
+                }
+
+                AppendAttribute(builder, attribute.Key, attributeValue, escapteQuotes: false);
             }
 
             builder.Append(">")
@@ -286,15 +332,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                    .Append("</script>");
         }
 
-        private void AppendSrc(TagHelperContent content, string srcKey, string srcValue)
+        private bool ShouldAddFileVersion()
         {
-            // Append src attribute in the original place and replace the content the fallback content
-            // No need to encode the key because we know it is "src".
-            content.Append(" ")
-                   .Append(srcKey)
-                   .Append("=\\\"")
-                   .Append(HtmlEncoder.HtmlEncode(srcValue))
-                   .Append("\\\"");
+            return FileVersion ?? false;
         }
+
+        private void AppendAttribute(TagHelperContent content, string key, string value, bool escapteQuotes)
+        {
+            content
+                .Append(" ")
+                .Append(key)
+                .Append(escapteQuotes ? "=\\\"" : "=\"")
+                .Append(value)
+                .Append(escapteQuotes ? "\\\"" : "\"");
+        }
+
     }
 }

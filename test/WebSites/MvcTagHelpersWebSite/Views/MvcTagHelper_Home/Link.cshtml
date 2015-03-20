@@ -181,6 +181,23 @@
           asp-fallback-href="~/site.css"
           asp-fallback-test-class="hidden"
           asp-fallback-test-property="visibility" />
+
+    <!-- Plain link tag with file version -->
+    <link href="~/site.css" rel="stylesheet" asp-file-version="true" />
+
+    <!-- Globbed link tag with existing file and file version -->
+    <link asp-href-include="**/site.css" rel="stylesheet" asp-file-version="true" />
+
+    <!-- Fallback with file version -->
+    <link href="~/site.min.css" rel="stylesheet" data-extra="test"
+          asp-fallback-href="~/site.css"
+          asp-fallback-test-class="hidden"
+          asp-fallback-test-property="visibility"
+          asp-fallback-test-value="hidden"
+          asp-file-version="true" />
+
+    <!-- Globbed link tag with existing file, static href and file version -->
+    <link href="~/site.css" asp-href-include="**/*.css" rel="stylesheet" asp-file-version="true" />
 </head>
 <body>
 

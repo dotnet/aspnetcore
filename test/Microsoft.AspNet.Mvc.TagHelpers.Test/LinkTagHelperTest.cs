@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Hosting;
@@ -14,7 +15,10 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.Caching.Memory;
+using Microsoft.Framework.Expiration.Interfaces;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Runtime;
 using Microsoft.Framework.WebEncoders;
 using Moq;
 using Xunit;
@@ -82,6 +86,79 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                             tagHelper.FallbackTestProperty = "visibility";
                             tagHelper.FallbackTestValue = "hidden";
                         }
+                    },
+                    // File Version
+                    {
+                        new Dictionary<string, object>
+                        {
+                            ["asp-file-version"] = "true"
+                        },
+                        tagHelper =>
+                        {
+                            tagHelper.FileVersion = true;
+                        }
+                    },
+                    {
+                        new Dictionary<string, object>
+                        {
+                            ["asp-href-include"] = "*.css",
+                            ["asp-file-version"] = "true"
+                        },
+                        tagHelper =>
+                        {
+                            tagHelper.HrefInclude = "*.css";
+                            tagHelper.FileVersion = true;
+                        }
+                    },
+                    {
+                        new Dictionary<string, object>
+                        {
+                            ["asp-href-include"] = "*.css",
+                            ["asp-href-exclude"] = "*.min.css",
+                            ["asp-file-version"] = "true"
+                        },
+                        tagHelper =>
+                        {
+                            tagHelper.HrefInclude = "*.css";
+                            tagHelper.HrefExclude = "*.min.css";
+                            tagHelper.FileVersion = true;
+                        }
+                    },
+                    {
+                        new Dictionary<string, object>
+                        {
+                            ["asp-fallback-href"] = "test.css",
+                            ["asp-fallback-test-class"] = "hidden",
+                            ["asp-fallback-test-property"] = "visibility",
+                            ["asp-fallback-test-value"] = "hidden",
+                            ["asp-file-version"] = "true"
+                        },
+                        tagHelper =>
+                        {
+                            tagHelper.FallbackHref = "test.css";
+                            tagHelper.FallbackTestClass = "hidden";
+                            tagHelper.FallbackTestProperty = "visibility";
+                            tagHelper.FallbackTestValue = "hidden";
+                            tagHelper.FileVersion = true;
+                        }
+                    },
+                    {
+                        new Dictionary<string, object>
+                        {
+                            ["asp-fallback-href-include"] = "*.css",
+                            ["asp-fallback-test-class"] = "hidden",
+                            ["asp-fallback-test-property"] = "visibility",
+                            ["asp-fallback-test-value"] = "hidden",
+                            ["asp-file-version"] = "true"
+                        },
+                        tagHelper =>
+                        {
+                            tagHelper.FallbackHrefInclude = "*.css";
+                            tagHelper.FallbackTestClass = "hidden";
+                            tagHelper.FallbackTestProperty = "visibility";
+                            tagHelper.FallbackTestValue = "hidden";
+                            tagHelper.FileVersion = true;
+                        }
                     }
                 };
             }
@@ -105,6 +182,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
+                Cache = MakeCache()
             };
             setProperties(helper);
 
@@ -151,7 +229,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 FallbackHref = "test.css",
                 FallbackTestClass = "hidden",
                 FallbackTestProperty = "visibility",
-                FallbackTestValue = "hidden"
+                FallbackTestValue = "hidden",
+                Cache = MakeCache(),
             };
 
             // Act
@@ -250,7 +329,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
-                ViewContext = viewContext
+                ViewContext = viewContext,
+                Cache = MakeCache(),
             };
             setProperties(helper);
 
@@ -275,7 +355,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
-                ViewContext = viewContext
+                ViewContext = viewContext,
+                Cache = MakeCache(),
             };
 
             // Act
@@ -315,7 +396,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
-                HrefInclude = "**/*.css"
+                HrefInclude = "**/*.css",
+                Cache = MakeCache(),
             };
 
             // Act
@@ -355,7 +437,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
-                HrefInclude = "**/*.css"
+                HrefInclude = "**/*.css",
+                Cache = MakeCache(),
             };
 
             // Act
@@ -366,9 +449,134 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                          "<link href=\"HtmlEncode[[/base.css]]\" rel=\"stylesheet\" />", output.Content.GetContent());
         }
 
-        private static ViewContext MakeViewContext()
+        [Fact]
+        public void RendersLinkTags_AddsFileVersion()
+        {
+            // Arrange
+            var context = MakeTagHelperContext(
+                attributes: new Dictionary<string, object>
+                {
+                    ["href"] = "/css/site.css",
+                    ["rel"] = "stylesheet",
+                    ["asp-file-version"] = "true"
+                });
+            var output = MakeTagHelperOutput("link", attributes: new Dictionary<string, string>
+            {
+                ["href"] = "/css/site.css",
+                ["rel"] = "stylesheet"
+            });
+            var logger = new Mock<ILogger<LinkTagHelper>>();
+            var hostingEnvironment = MakeHostingEnvironment();
+            var viewContext = MakeViewContext();
+            var helper = new LinkTagHelper
+            {
+                HtmlEncoder = new TestHtmlEncoder(),
+                Logger = logger.Object,
+                HostingEnvironment = hostingEnvironment,
+                ViewContext = viewContext,
+                HrefInclude = "**/*.css",
+                FileVersion = true,
+                Cache = MakeCache(),
+            };
+
+            // Act
+            helper.Process(context, output);
+
+            // Assert
+            Assert.Equal("<link href=\"HtmlEncode[[/css/site.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\"" +
+                " rel=\"stylesheet\" />", output.Content.GetContent());
+        }
+
+        [Fact]
+        public void RendersLinkTags_AddsFileVersion_WithRequestPathBase()
+        {
+            // Arrange
+            var context = MakeTagHelperContext(
+                attributes: new Dictionary<string, object>
+                {
+                    ["href"] = "/bar/css/site.css",
+                    ["rel"] = "stylesheet",
+                    ["asp-file-version"] = "true"
+                });
+            var output = MakeTagHelperOutput("link", attributes: new Dictionary<string, string>
+            {
+                ["href"] = "/bar/css/site.css",
+                ["rel"] = "stylesheet"
+            });
+            var logger = new Mock<ILogger<LinkTagHelper>>();
+            var hostingEnvironment = MakeHostingEnvironment();
+            var viewContext = MakeViewContext("/bar");
+            var helper = new LinkTagHelper
+            {
+                HtmlEncoder = new TestHtmlEncoder(),
+                Logger = logger.Object,
+                HostingEnvironment = hostingEnvironment,
+                ViewContext = viewContext,
+                HrefInclude = "**/*.css",
+                FileVersion = true,
+                Cache = MakeCache(),
+            };
+
+            // Act
+            helper.Process(context, output);
+
+            // Assert
+            Assert.Equal("<link href=\"HtmlEncode[[/bar/css/site.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-" +
+                "j1ncoSt3SABJtkGk]]\" rel=\"stylesheet\" />", output.Content.GetContent());
+        }
+
+        [Fact]
+        public void RendersLinkTags_GlobbedHref_AddsFileVersion()
+        {
+            // Arrange
+            var context = MakeTagHelperContext(
+                attributes: new Dictionary<string, object>
+                {
+                    ["href"] = "/css/site.css",
+                    ["rel"] = "stylesheet",
+                    ["asp-href-include"] = "**/*.css",
+                    ["asp-file-version"] = "true"
+                });
+            var output = MakeTagHelperOutput("link", attributes: new Dictionary<string, string>
+            {
+                ["href"] = "/css/site.css",
+                ["rel"] = "stylesheet"
+            });
+            var logger = new Mock<ILogger<LinkTagHelper>>();
+            var hostingEnvironment = MakeHostingEnvironment();
+            var viewContext = MakeViewContext();
+            var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>();
+            globbingUrlBuilder.Setup(g => g.BuildUrlList("/css/site.css", "**/*.css", null))
+                .Returns(new[] { "/css/site.css", "/base.css" });
+            var helper = new LinkTagHelper
+            {
+                HtmlEncoder = new TestHtmlEncoder(),
+                GlobbingUrlBuilder = globbingUrlBuilder.Object,
+                Logger = logger.Object,
+                HostingEnvironment = hostingEnvironment,
+                ViewContext = viewContext,
+                HrefInclude = "**/*.css",
+                FileVersion = true,
+                Cache = MakeCache(),
+            };
+
+            // Act
+            helper.Process(context, output);
+            
+            // Assert
+            Assert.Equal("<link href=\"HtmlEncode[[/css/site.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\"" +
+                " rel=\"stylesheet\" /><link href=\"HtmlEncode[[/base.css" +
+                "?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\" rel=\"stylesheet\" />", output.Content.GetContent());
+        }
+
+        private static ViewContext MakeViewContext(string requestPathBase = null)
         {
             var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+            if (requestPathBase != null)
+            {
+                actionContext.HttpContext.Request.PathBase = new Http.PathString(requestPathBase);
+            }
+
             var metadataProvider = new EmptyModelMetadataProvider();
             var viewData = new ViewDataDictionary(metadataProvider);
             var viewContext = new ViewContext(
@@ -411,13 +619,57 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var emptyDirectoryContents = new Mock<IDirectoryContents>();
             emptyDirectoryContents.Setup(dc => dc.GetEnumerator())
                 .Returns(Enumerable.Empty<IFileInfo>().GetEnumerator());
+            var mockFile = new Mock<IFileInfo>();
+            mockFile.SetupGet(f => f.Exists).Returns(true);
+            mockFile
+                .Setup(m => m.CreateReadStream())
+                .Returns(() => new MemoryStream(Encoding.UTF8.GetBytes("Hello World!")));
             var mockFileProvider = new Mock<IFileProvider>();
             mockFileProvider.Setup(fp => fp.GetDirectoryContents(It.IsAny<string>()))
                 .Returns(emptyDirectoryContents.Object);
+            mockFileProvider.Setup(fp => fp.GetFileInfo(It.IsAny<string>()))
+                .Returns(mockFile.Object);
             var hostingEnvironment = new Mock<IHostingEnvironment>();
             hostingEnvironment.Setup(h => h.WebRootFileProvider).Returns(mockFileProvider.Object);
 
             return hostingEnvironment.Object;
+        }
+
+        private static IApplicationEnvironment MakeApplicationEnvironment(string applicationName = "testApplication")
+        {
+            var applicationEnvironment = new Mock<IApplicationEnvironment>();
+            applicationEnvironment.Setup(a => a.ApplicationName).Returns(applicationName);
+            return applicationEnvironment.Object;
+        }
+
+        private static IMemoryCache MakeCache(object result = null)
+        {
+            var cache = new Mock<IMemoryCache>();
+            cache.CallBase = true;
+            cache.Setup(c => c.TryGetValue(It.IsAny<string>(), It.IsAny<IEntryLink>(), out result))
+                .Returns(result != null);
+
+            var cacheSetContext = new Mock<ICacheSetContext>();
+            cacheSetContext.Setup(c => c.AddExpirationTrigger(It.IsAny<IExpirationTrigger>()));
+            cache
+                .Setup(
+                    c => c.Set(
+                        /*key*/ It.IsAny<string>(),
+                        /*link*/ It.IsAny<IEntryLink>(),
+                        /*state*/ It.IsAny<object>(),
+                        /*create*/ It.IsAny<Func<ICacheSetContext, object>>()))
+                .Returns((
+                    string input,
+                    IEntryLink entryLink,
+                    object state,
+                    Func<ICacheSetContext, object> create) =>
+                {
+                    {
+                        cacheSetContext.Setup(c => c.State).Returns(state);
+                        return create(cacheSetContext.Object);
+                    }
+                });
+            return cache.Object;
         }
 
         private class TestHtmlEncoder : IHtmlEncoder

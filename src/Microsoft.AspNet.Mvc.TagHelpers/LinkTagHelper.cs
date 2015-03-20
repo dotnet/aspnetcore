@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Runtime;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
@@ -29,6 +29,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     [TargetElement("link", Attributes = FallbackTestClassAttributeName)]
     [TargetElement("link", Attributes = FallbackTestPropertyAttributeName)]
     [TargetElement("link", Attributes = FallbackTestValueAttributeName)]
+    [TargetElement("link", Attributes = FileVersionAttributeName)]
     public class LinkTagHelper : TagHelper
     {
         private const string HrefIncludeAttributeName = "asp-href-include";
@@ -40,8 +41,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string FallbackTestPropertyAttributeName = "asp-fallback-test-property";
         private const string FallbackTestValueAttributeName = "asp-fallback-test-value";
         private const string FallbackJavaScriptResourceName = "compiler/resources/LinkTagHelper_FallbackJavaScript.js";
+        private const string FileVersionAttributeName = "asp-file-version";
+        private const string HrefAttributeName = "href";
+
+        private FileVersionProvider _fileVersionProvider;
 
         private static readonly ModeAttributes<Mode>[] ModeDetails = new[] {
+            // Regular src with file version alone
+            ModeAttributes.Create(Mode.FileVersion, new[] { FileVersionAttributeName }),
             // Globbed Href (include only) no static href
             ModeAttributes.Create(Mode.GlobbedHref, new [] { HrefIncludeAttributeName }),
             // Globbed Href (include & exclude), no static href
@@ -77,14 +84,18 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private enum Mode
         {
             /// <summary>
+            /// Just adding a file version for the generated urls.
+            /// </summary>
+            FileVersion = 0,
+            /// <summary>
             /// Just performing file globbing search for the href, rendering a separate &lt;link&gt; for each match.
             /// </summary>
-            GlobbedHref = 0,
+            GlobbedHref = 1,
             /// <summary>
             /// Rendering a fallback block if primary stylesheet fails to load. Will also do globbing for both the
             /// primary and fallback hrefs if the appropriate properties are set.
             /// </summary>
-            Fallback = 1,
+            Fallback = 2,
         }
 
         /// <summary>
@@ -107,6 +118,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// </summary>
         [HtmlAttributeName(FallbackHrefAttributeName)]
         public string FallbackHref { get; set; }
+
+        /// <summary>
+        /// Value indicating if file version should be appended to the href urls.
+        /// </summary>
+        /// <remarks>
+        /// If <c>true</c> then a query string "v" with the encoded content of the file is added.
+        /// </remarks>
+        [HtmlAttributeName(FileVersionAttributeName)]
+        public bool? FileVersion { get; set; }
 
         /// <summary>
         /// A comma separated list of globbed file patterns of CSS stylesheets to fallback to in the case the primary
@@ -149,7 +169,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [HtmlAttributeName(FallbackTestValueAttributeName)]
         public string FallbackTestValue { get; set; }
 
-        // Properties are protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
+        // Properties are protected to ensure subclasses are correctly activated.
+        // Internal for ease of use when testing.
         [Activate]
         protected internal ILoggerFactory LoggerFactory { get; set; }
 
@@ -194,9 +215,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var builder = new DefaultTagHelperContent();
 
-            if (mode == Mode.Fallback && string.IsNullOrEmpty(HrefInclude))
+            if (mode == Mode.Fallback && string.IsNullOrEmpty(HrefInclude) || mode == Mode.FileVersion)
             {
-                // No globbing to do, just build a <link /> tag to match the original one in the source file
+                // No globbing to do, just build a <link /> tag to match the original one in the source file.
+                // Or just add file version to the link tag.
                 BuildLinkTag(attributes, builder);
             }
             else
@@ -218,14 +240,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Build a <link /> tag for each matched href as well as the original one in the source file
             string staticHref;
-            attributes.TryGetValue("href", out staticHref);
+            attributes.TryGetValue(HrefAttributeName, out staticHref);
 
             EnsureGlobbingUrlBuilder();
             var urls = GlobbingUrlBuilder.BuildUrlList(staticHref, HrefInclude, HrefExclude);
 
             foreach (var url in urls)
             {
-                attributes["href"] = HtmlEncoder.HtmlEncode(url);
+                attributes[HrefAttributeName] = url;
                 BuildLinkTag(attributes, builder);
             }
         }
@@ -233,10 +255,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private void BuildFallbackBlock(TagHelperContent builder)
         {
             EnsureGlobbingUrlBuilder();
-            var fallbackHrefs = GlobbingUrlBuilder.BuildUrlList(FallbackHref, FallbackHrefInclude, FallbackHrefExclude);
+            var fallbackHrefs =
+                GlobbingUrlBuilder.BuildUrlList(FallbackHref, FallbackHrefInclude, FallbackHrefExclude).ToArray();
 
-            if (fallbackHrefs.Any())
+            if (fallbackHrefs.Length > 0)
             {
+                if (ShouldAddFileVersion())
+                {
+                    for (var i=0; i < fallbackHrefs.Length; i++)
+                    {
+                        fallbackHrefs[i] = _fileVersionProvider.AddFileVersionToPath(fallbackHrefs[i]);
+                    }
+                }
+
                 builder.Append(Environment.NewLine);
 
                 // Build the <meta /> tag that's used to test for the presence of the stylesheet
@@ -269,17 +300,46 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
-        private static void BuildLinkTag(IDictionary<string, string> attributes, TagHelperContent builder)
+        private void EnsureFileVersionProvider()
         {
+            if (_fileVersionProvider == null)
+            {
+                _fileVersionProvider = new FileVersionProvider(
+                    HostingEnvironment.WebRootFileProvider,
+                    Cache,
+                    ViewContext.HttpContext.Request.PathBase);
+            }
+        }
+
+        private void BuildLinkTag(IDictionary<string, string> attributes, TagHelperContent builder)
+        {
+            EnsureFileVersionProvider();
             builder.Append("<link ");
 
             foreach (var attribute in attributes)
             {
-                builder.Append(
-                    string.Format(CultureInfo.InvariantCulture, "{0}=\"{1}\" ", attribute.Key, attribute.Value));
+                var attributeValue = attribute.Value;
+                if (string.Equals(attribute.Key, HrefAttributeName, StringComparison.OrdinalIgnoreCase))
+                {
+                    attributeValue = HtmlEncoder.HtmlEncode(
+                        ShouldAddFileVersion() ?
+                            _fileVersionProvider.AddFileVersionToPath(attributeValue) :
+                            attributeValue);
+                }
+
+                builder
+                    .Append(attribute.Key)
+                    .Append("=\"")
+                    .Append(attributeValue)
+                    .Append("\" ");
             }
 
             builder.Append("/>");
+        }
+
+        private bool ShouldAddFileVersion()
+        {
+            return FileVersion ?? false;
         }
     }
 }
