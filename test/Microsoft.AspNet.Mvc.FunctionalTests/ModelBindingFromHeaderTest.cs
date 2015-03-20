@@ -295,7 +295,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         // This model sets a value for 'Title', and the model binder won't trounce it.
         //
-        // There's no validation error because we validate the initialized value.
+        // There's a validation error because we validate the value in the request (not present).
         [Fact]
         public async Task FromHeader_BindHeader_ToModel_NoValues_InitializedValue_ValidationError()
         {
@@ -325,11 +325,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("Title", error);
         }
 
-        // This model uses default value for 'Title'.
+        // This model uses [DefaultValueAttribute(...)] for 'Title', and the model binder won't 
+        // trounce it.
         //
-        // There's no validation error because we validate the default value.
+        // There's a validation error because we validate the value in the request (not present).
         [Fact]
-        public async Task FromHeader_BindHeader_ToModel_NoValues_DefaultValue_NoValidationError()
+        public async Task FromHeader_BindHeader_ToModel_NoValues_DefaultValueAttribute_ValidationError()
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
