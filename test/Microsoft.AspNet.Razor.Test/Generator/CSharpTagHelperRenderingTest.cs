@@ -33,7 +33,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                         assemblyName: "SomeAssembly",
                         attributes: new TagHelperAttributeDescriptor[]
                         {
-                            new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
+                            new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
+                            new TagHelperAttributeDescriptor("checked", inputCheckedPropertyInfo)
                         },
                         requiredAttributes: new[] { "type" }),
                     new TagHelperDescriptor(
@@ -45,14 +46,15 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
                             new TagHelperAttributeDescriptor("checked", inputCheckedPropertyInfo)
                         },
-                        requiredAttributes: new[] { "type", "checked" }),
+                        requiredAttributes: new[] { "checked" }),
                     new TagHelperDescriptor(
                         tagName: "input",
                         typeName: "InputTagHelper",
                         assemblyName: "SomeAssembly",
                         attributes: new TagHelperAttributeDescriptor[]
                         {
-                            new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
+                            new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
+                            new TagHelperAttributeDescriptor("checked", inputCheckedPropertyInfo)
                         },
                         requiredAttributes: new[] { "type" }),
                     new TagHelperDescriptor(
@@ -64,7 +66,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
                             new TagHelperAttributeDescriptor("checked", inputCheckedPropertyInfo)
                         },
-                        requiredAttributes: new[] { "type", "checked" })
+                        requiredAttributes: new[] { "checked" })
                 };
             }
         }

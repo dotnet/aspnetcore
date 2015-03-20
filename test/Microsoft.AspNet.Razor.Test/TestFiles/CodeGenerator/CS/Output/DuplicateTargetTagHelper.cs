@@ -35,10 +35,16 @@ namespace TestOutput
             __tagHelperExecutionContext.Add(__InputTagHelper);
             __InputTagHelper.Type = "checkbox";
             __tagHelperExecutionContext.AddTagHelperAttribute("type", __InputTagHelper.Type);
+#line 3 "DuplicateTargetTagHelper.cshtml"
+     __InputTagHelper.Checked = true;
+
+#line default
+#line hidden
+            __tagHelperExecutionContext.AddTagHelperAttribute("checked", __InputTagHelper.Checked);
             __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
             __tagHelperExecutionContext.Add(__CatchAllTagHelper);
             __CatchAllTagHelper.Type = __InputTagHelper.Type;
-            __tagHelperExecutionContext.AddHtmlAttribute("checked", "true");
+            __CatchAllTagHelper.Checked = __InputTagHelper.Checked;
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
