@@ -9,6 +9,7 @@ namespace Microsoft.Framework.DependencyInjection
     {
         public static IServiceCollection AddRouting(this IServiceCollection services)
         {
+            services.AddOptions();
             services.TryAdd(ServiceDescriptor.Transient<IInlineConstraintResolver, DefaultInlineConstraintResolver>());
             return services;
         }
