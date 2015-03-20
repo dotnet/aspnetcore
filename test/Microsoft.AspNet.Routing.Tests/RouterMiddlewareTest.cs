@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Routing
             };
 
             var router = new TestRouter(isHandled);
-            var middleware = new RouterMiddleware(next, httpContext.ApplicationServices, loggerFactory, router);
+            var middleware = new RouterMiddleware(next, loggerFactory, router);
 
             // Act
             await middleware.Invoke(httpContext);
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Routing
             };
 
             var router = new TestRouter(isHandled);
-            var middleware = new RouterMiddleware(next, httpContext.ApplicationServices, loggerFactory, router);
+            var middleware = new RouterMiddleware(next, loggerFactory, router);
 
             // Act
             await middleware.Invoke(httpContext);
@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Routing
 
             var router = new TestRouter(isHandled);
 
-            var middleware = new RouterMiddleware(next, httpContext.ApplicationServices, loggerFactory, router);
+            var middleware = new RouterMiddleware(next, loggerFactory, router);
 
             // Act
             await middleware.Invoke(httpContext);
@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.Routing
             };
 
             var router = new TestRouter(isHandled);
-            var middleware = new RouterMiddleware(next, httpContext.ApplicationServices, loggerFactory, router);
+            var middleware = new RouterMiddleware(next, loggerFactory, router);
 
             // Act
             await middleware.Invoke(httpContext);

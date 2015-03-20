@@ -12,13 +12,13 @@ namespace RoutingSample.Web
 {
     public class Startup
     {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddRouting();
+        }
+
         public void Configure(IApplicationBuilder builder)
         {
-            builder.UseServices(services =>
-            {
-                services.AddRouting();
-            });
-
             var endpoint1 = new DelegateRouteEndpoint(async (context) =>
                                                         await context
                                                                 .HttpContext
