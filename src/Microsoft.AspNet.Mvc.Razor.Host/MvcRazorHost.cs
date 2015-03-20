@@ -51,6 +51,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public MvcRazorHost(string root) :
             this(new DefaultCodeTreeCache(new PhysicalFileProvider(root)))
         {
+            ApplicationRoot = root;
         }
 #endif
         /// <summary>
@@ -111,6 +112,13 @@ namespace Microsoft.AspNet.Mvc.Razor
                 NamespaceImports.Add(ns);
             }
         }
+
+#if NET45
+        /// <summary>
+        /// The path to the application root.
+        /// </summary>
+        public string ApplicationRoot { get; }
+#endif
 
         /// <summary>
         /// Gets the model type used by default when no model is specified.
@@ -186,6 +194,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         public override RazorParser DecorateRazorParser([NotNull] RazorParser razorParser, string sourceFileName)
         {
+#if NET45
+            // Need to convert sourceFileName to application relative (rooted paths are passed in by tooling).
+            if (Path.IsPathRooted(sourceFileName))
+            {
+                sourceFileName = sourceFileName.Substring(ApplicationRoot.Length);
+            }
+#endif
+
             var inheritedCodeTrees = ChunkInheritanceUtility.GetInheritedCodeTrees(sourceFileName);
             return new MvcRazorParser(razorParser, inheritedCodeTrees, DefaultInheritedChunks);
         }
