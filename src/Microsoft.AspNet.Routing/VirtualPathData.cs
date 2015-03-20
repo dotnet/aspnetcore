@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing
@@ -12,7 +14,6 @@ namespace Microsoft.AspNet.Routing
     /// </summary>
     public class VirtualPathData
     {
-        private string _virtualPath;
         private readonly IDictionary<string, object> _dataToken;
 
         /// <summary>
@@ -34,6 +35,21 @@ namespace Microsoft.AspNet.Routing
         public VirtualPathData(
             [NotNull] IRouter router,
             string virtualPath,
+            IDictionary<string, object> dataTokens)
+                : this(router, CreatePathString(virtualPath), dataTokens)
+
+        {
+        }
+
+        /// <summary>
+        ///  Initializes a new instance of the <see cref="VirtualPathData"/> class.
+        /// </summary>
+        /// <param name="router">The object that is used to generate the URL.</param>
+        /// <param name="virtualPath">The generated URL.</param>
+        /// <param name="dataTokens">The collection of custom values.</param>
+        public VirtualPathData(
+            [NotNull] IRouter router,
+            PathString virtualPath,
             IDictionary<string, object> dataTokens)
         {
             Router = router;
@@ -65,16 +81,26 @@ namespace Microsoft.AspNet.Routing
         /// <summary>
         /// Gets or sets the URL that was generated from the <see cref="Router"/>.
         /// </summary>
-        public string VirtualPath
+        public PathString VirtualPath { get; set; }
+
+        private static PathString CreatePathString(string path)
         {
-            get
+            if (!string.IsNullOrEmpty(path))
             {
-                return _virtualPath ?? string.Empty;
+                PathString pathString;
+                if (path.Length > 0 && !path.StartsWith("/", StringComparison.Ordinal))
+                {
+                    pathString = new PathString("/" + path);
+                }
+                else
+                {
+                    pathString = new PathString(path);
+                }
+
+                return pathString;
             }
-            set
-            {
-                _virtualPath = value;
-            }
+
+            return PathString.Empty;
         }
     }
 }

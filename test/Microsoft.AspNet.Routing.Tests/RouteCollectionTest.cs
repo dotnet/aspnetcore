@@ -20,12 +20,12 @@ namespace Microsoft.AspNet.Routing
     public class RouteCollectionTest
     {
         [Theory]
-        [InlineData(@"Home/Index/23", "home/index/23", true)]
-        [InlineData(@"Home/Index/23", "Home/Index/23", false)]
-        [InlineData(@"Home/Index/23?Param1=ABC&Param2=Xyz", "Home/Index/23?Param1=ABC&Param2=Xyz", false)]
-        [InlineData(@"Home/Index/23?Param1=ABC&Param2=Xyz", "home/index/23?Param1=ABC&Param2=Xyz", true)]
-        [InlineData(@"Home/Index/23#Param1=ABC&Param2=Xyz", "Home/Index/23#Param1=ABC&Param2=Xyz", false)]
-        [InlineData(@"Home/Index/23#Param1=ABC&Param2=Xyz", "home/index/23#Param1=ABC&Param2=Xyz", true)]
+        [InlineData(@"Home/Index/23", "/home/index/23", true)]
+        [InlineData(@"Home/Index/23", "/Home/Index/23", false)]
+        [InlineData(@"Home/Index/23?Param1=ABC&Param2=Xyz", "/Home/Index/23?Param1=ABC&Param2=Xyz", false)]
+        [InlineData(@"Home/Index/23?Param1=ABC&Param2=Xyz", "/home/index/23?Param1=ABC&Param2=Xyz", true)]
+        [InlineData(@"Home/Index/23#Param1=ABC&Param2=Xyz", "/Home/Index/23#Param1=ABC&Param2=Xyz", false)]
+        [InlineData(@"Home/Index/23#Param1=ABC&Param2=Xyz", "/home/index/23#Param1=ABC&Param2=Xyz", true)]
         public void GetVirtualPath_CanLowerCaseUrls_BasedOnOptions(
             string returnUrl,
             string lowercaseUrl,
@@ -45,15 +45,15 @@ namespace Microsoft.AspNet.Routing
             var pathData = routeCollection.GetVirtualPath(virtualPathContext);
 
             // Assert
-            Assert.Equal(lowercaseUrl, pathData.VirtualPath);
+            Assert.Equal(new PathString(lowercaseUrl), pathData.VirtualPath);
             Assert.Same(target.Object, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
-
+        
         [Theory]
-        [InlineData(@"\u0130", @"\u0130", true)]
-        [InlineData(@"\u0049", @"\u0049", true)]
-        [InlineData(@"�ino", @"�ino", true)]
+        [InlineData(@"\u0130", @"/\u0130", true)]
+        [InlineData(@"\u0049", @"/\u0049", true)]
+        [InlineData(@"�ino", @"/�ino", true)]
         public void GetVirtualPath_DoesntLowerCaseUrls_Invariant(
             string returnUrl,
             string lowercaseUrl,
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Routing
             var pathData = routeCollection.GetVirtualPath(virtualPathContext);
 
             // Assert
-            Assert.Equal(lowercaseUrl, pathData.VirtualPath);
+            Assert.Equal(new PathString(lowercaseUrl), pathData.VirtualPath);
             Assert.Same(target.Object, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Routing
         public void GetVirtualPath_ReturnsDataTokens(RouteValueDictionary dataTokens, string routerName)
         {
             // Arrange
-            var virtualPath = "TestVirtualPath";
+            var virtualPath = new PathString("/TestVirtualPath");
 
             var pathContextValues = new RouteValueDictionary { { "controller", virtualPath } };
 
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Routing
                 Assert.Equal(dataToken.Value, pathData.DataTokens[dataToken.Key]);
             }
         }
-
+        
         [Fact]
         public async Task RouteAsync_LogsCorrectValuesWhenHandled()
         {
@@ -269,8 +269,8 @@ namespace Microsoft.AspNet.Routing
         }
 
         [Theory]
-        [InlineData(false, "RouteName")]
-        [InlineData(true, "routename")]
+        [InlineData(false, "/RouteName")]
+        [InlineData(true, "/routename")]
         public void NamedRouteTests_GetNamedRoute_ReturnsValue(bool lowercaseUrls, string expectedUrl)
         {
             // Arrange
@@ -283,7 +283,7 @@ namespace Microsoft.AspNet.Routing
             var pathData = routeCollection.GetVirtualPath(virtualPathContext);
 
             // Assert
-            Assert.Equal(expectedUrl, pathData.VirtualPath);
+            Assert.Equal(new PathString(expectedUrl), pathData.VirtualPath);
             var namedRouter = Assert.IsAssignableFrom<INamedRouter>(pathData.Router);
             Assert.Equal(virtualPathContext.RouteName, namedRouter.Name);
             Assert.Empty(pathData.DataTokens);
@@ -302,7 +302,7 @@ namespace Microsoft.AspNet.Routing
             // Assert
             Assert.Null(stringVirtualPath);
         }
-
+        
         [Fact]
         public void NamedRouteTests_GetNamedRoute_AmbiguousRoutesInCollection_DoesNotThrowForUnambiguousRoute()
         {
@@ -317,12 +317,12 @@ namespace Microsoft.AspNet.Routing
             var pathData = routeCollection.GetVirtualPath(virtualPathContext);
 
             // Assert
-            Assert.Equal("route1", pathData.VirtualPath);
+            Assert.Equal(new PathString("/route1"), pathData.VirtualPath);
             var namedRouter = Assert.IsAssignableFrom<INamedRouter>(pathData.Router);
             Assert.Equal("Route1", namedRouter.Name);
             Assert.Empty(pathData.DataTokens);
         }
-
+        
         [Fact]
         public void NamedRouteTests_GetNamedRoute_AmbiguousRoutesInCollection_ThrowsForAmbiguousRoute()
         {
@@ -390,7 +390,7 @@ namespace Microsoft.AspNet.Routing
             // Act
             var pathData = routeCollection.GetVirtualPath(virtualPathContext);
 
-            Assert.Equal("best", pathData.VirtualPath);
+            Assert.Equal(new PathString("/best"), pathData.VirtualPath);
             var namedRouter = Assert.IsAssignableFrom<INamedRouter>(pathData.Router);
             Assert.Equal("Match", namedRouter.Name);
             Assert.Empty(pathData.DataTokens);
@@ -420,7 +420,7 @@ namespace Microsoft.AspNet.Routing
             // Act
             var pathData = routeCollection.GetVirtualPath(virtualPathContext);
 
-            Assert.Equal("best", pathData.VirtualPath);
+            Assert.Equal(new PathString("/best"), pathData.VirtualPath);
             var namedRouter = Assert.IsAssignableFrom<INamedRouter>(pathData.Router);
             Assert.Equal("Match", namedRouter.Name);
             Assert.Empty(pathData.DataTokens);
@@ -450,7 +450,7 @@ namespace Microsoft.AspNet.Routing
             // Act
             var pathData = routeCollection.GetVirtualPath(virtualPathContext);
 
-            Assert.Equal("best", pathData.VirtualPath);
+            Assert.Equal(new PathString("/best"), pathData.VirtualPath);
             var namedRouter = Assert.IsAssignableFrom<INamedRouter>(pathData.Router);
             Assert.Equal("Match", namedRouter.Name);
             Assert.Empty(pathData.DataTokens);
@@ -479,7 +479,7 @@ namespace Microsoft.AspNet.Routing
             // Act
             var pathData = routeCollection.GetVirtualPath(virtualPathContext);
 
-            Assert.Equal("best", pathData.VirtualPath);
+            Assert.Equal(new PathString("/best"), pathData.VirtualPath);
             Assert.Same(route1.Object, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
@@ -543,7 +543,7 @@ namespace Microsoft.AspNet.Routing
             // Act
             var pathData = routeCollection.GetVirtualPath(virtualPathContext);
 
-            Assert.Equal("best", pathData.VirtualPath);
+            Assert.Equal(new PathString("/best"), pathData.VirtualPath);
             Assert.Same(route2.Object, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
@@ -576,7 +576,7 @@ namespace Microsoft.AspNet.Routing
             // Act
             var pathData = routeCollection.GetVirtualPath(virtualPathContext);
 
-            Assert.Equal("best", pathData.VirtualPath);
+            Assert.Equal(new PathString("/best"), pathData.VirtualPath);
             Assert.Same(route3.Object, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
@@ -609,7 +609,7 @@ namespace Microsoft.AspNet.Routing
             // Act
             var pathData = routeCollection.GetVirtualPath(virtualPathContext);
 
-            Assert.Equal("best", pathData.VirtualPath);
+            Assert.Equal(new PathString("/best"), pathData.VirtualPath);
             Assert.Same(route2.Object, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
@@ -644,7 +644,7 @@ namespace Microsoft.AspNet.Routing
             // Act
             var pathData = routeCollection.GetVirtualPath(virtualPathContext);
 
-            Assert.Equal("best", pathData.VirtualPath);
+            Assert.Equal(new PathString("/best"), pathData.VirtualPath);
             Assert.Same(route3.Object, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
@@ -663,19 +663,19 @@ namespace Microsoft.AspNet.Routing
                 yield return new object[] {
                     "{controller}/{action}",
                     new RouteValueDictionary { { "controller", "Home" }, { "action", "Index" } },
-                    "home/index",
+                    "/home/index",
                     true };
 
                 yield return new object[] {
                     "{controller}/{action}/",
                     new RouteValueDictionary { { "controller", "Home" }, { "action", "Index" } },
-                    "Home/Index",
+                    "/Home/Index",
                     false };
 
                 yield return new object[] {
                     "api/{action}/",
                     new RouteValueDictionary { { "action", "Create" } },
-                    "api/create",
+                    "/api/create",
                     true };
 
                 yield return new object[] {
@@ -685,7 +685,7 @@ namespace Microsoft.AspNet.Routing
                         { "id", "23" },
                         { "Param1", "Value1" },
                         { "Param2", "Value2" } },
-                    "api/create/23?Param1=Value1&Param2=Value2",
+                    "/api/create/23?Param1=Value1&Param2=Value2",
                     true };
 
                 yield return new object[] {
@@ -695,7 +695,7 @@ namespace Microsoft.AspNet.Routing
                         { "id", "23" },
                         { "Param1", "Value1" },
                         { "Param2", "Value2" } },
-                    "api/Create/23?Param1=Value1&Param2=Value2",
+                    "/api/Create/23?Param1=Value1&Param2=Value2",
                     false };
             }
         }
@@ -720,7 +720,7 @@ namespace Microsoft.AspNet.Routing
 
             // Assert
             Assert.True(context.IsBound);
-            Assert.Equal(expectedUrl, pathData.VirtualPath);
+            Assert.Equal(new PathString(expectedUrl), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }

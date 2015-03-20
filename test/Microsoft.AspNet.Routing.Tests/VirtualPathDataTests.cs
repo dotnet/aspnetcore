@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if DNX451
+using Microsoft.AspNet.Http;
 using Moq;
 using Xunit;
 
@@ -14,14 +15,14 @@ namespace Microsoft.AspNet.Routing
         {
             // Arrange
             var router = new Mock<IRouter>().Object;
-            var path = "virtual path";
+            var path = new PathString("/virtual path");
 
             // Act
             var pathData = new VirtualPathData(router, path, null);
 
             // Assert
             Assert.Same(router, pathData.Router);
-            Assert.Same(path, pathData.VirtualPath);
+            Assert.Equal(path, pathData.VirtualPath);
             Assert.NotNull(pathData.DataTokens);
             Assert.Empty(pathData.DataTokens);
         }
@@ -31,7 +32,7 @@ namespace Microsoft.AspNet.Routing
         {
             // Arrange
             var router = new Mock<IRouter>().Object;
-            var path = "virtual path";
+            var path = new PathString("/virtual path");
             var dataTokens = new RouteValueDictionary();
             dataTokens["TestKey"] = "TestValue";
 
@@ -40,7 +41,7 @@ namespace Microsoft.AspNet.Routing
 
             // Assert
             Assert.Same(router, pathData.Router);
-            Assert.Same(path, pathData.VirtualPath);
+            Assert.Equal(path, pathData.VirtualPath);
             Assert.NotNull(pathData.DataTokens);
             Assert.Equal("TestValue", pathData.DataTokens["TestKey"]);
             Assert.Equal(1, pathData.DataTokens.Count);
@@ -58,7 +59,7 @@ namespace Microsoft.AspNet.Routing
 
             // Assert
             Assert.Same(router, pathData.Router);
-            Assert.Equal(string.Empty, pathData.VirtualPath);
+            Assert.Equal(new PathString(string.Empty), pathData.VirtualPath);
             Assert.NotNull(pathData.DataTokens);
             Assert.Empty(pathData.DataTokens);
         }

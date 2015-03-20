@@ -953,7 +953,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             // Assert
             Assert.True(context.IsBound);
-            Assert.Equal("Home", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Home"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -979,7 +979,7 @@ namespace Microsoft.AspNet.Routing.Template
             RouteValueDictionary dataTokens)
         {
             // Arrange
-            var path = "TestPath";
+            var path = new PathString("/TestPath");
 
             var target = new Mock<IRouter>(MockBehavior.Strict);
             target
@@ -1024,7 +1024,7 @@ namespace Microsoft.AspNet.Routing.Template
             RouteValueDictionary dataTokens)
         {
             // Arrange
-            var path = "TestPath";
+            var path = new PathString("/TestPath");
 
             var target = new Mock<IRouter>(MockBehavior.Strict);
             target
@@ -1070,7 +1070,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             // Assert
             Assert.False(context.IsBound);
-            Assert.Equal("Home", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Home"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1087,7 +1087,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             // Assert
             Assert.True(context.IsBound);
-            Assert.Equal("Home/Index", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Home/Index"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1130,7 +1130,7 @@ namespace Microsoft.AspNet.Routing.Template
             // Assert
             Assert.True(context.IsBound);
             Assert.NotNull(pathData);
-            Assert.Equal("hello/1234", pathData.VirtualPath);
+            Assert.Equal(new PathString("/hello/1234"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1173,7 +1173,7 @@ namespace Microsoft.AspNet.Routing.Template
             // Assert
             Assert.True(context.IsBound);
             Assert.NotNull(pathData);
-            Assert.Equal("hello/1234", pathData.VirtualPath);
+            Assert.Equal(new PathString("/hello/1234"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1205,7 +1205,7 @@ namespace Microsoft.AspNet.Routing.Template
             // Assert
             Assert.True(context.IsBound);
             Assert.NotNull(pathData);
-            Assert.Equal("hello/1234", pathData.VirtualPath);
+            Assert.Equal(new PathString("/hello/1234"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
@@ -1234,7 +1234,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Store", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Home/Store"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
@@ -1263,7 +1263,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Admin/Home/Store", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Admin/Home/Store"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
@@ -1291,7 +1291,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Store?id=5", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Home/Store?id=5"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
@@ -1322,7 +1322,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("slug/Home/Store", pathData.VirtualPath);
+            Assert.Equal(new PathString("/slug/Home/Store"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
@@ -1353,7 +1353,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("slug/Home/Store", pathData.VirtualPath);
+            Assert.Equal(new PathString("/slug/Home/Store"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
@@ -1383,7 +1383,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("slug/Shopping", pathData.VirtualPath);
+            Assert.Equal(new PathString("/slug/Shopping"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
@@ -1414,7 +1414,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("slug/Home/Store", pathData.VirtualPath);
+            Assert.Equal(new PathString("/slug/Home/Store"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
@@ -1433,7 +1433,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/4", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Home/Index/4"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1465,7 +1465,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/98", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Home/Index/98"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1482,7 +1482,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Home/Index"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1514,7 +1514,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/14", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Home/Index/14"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1537,7 +1537,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/products", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Home/Index/products"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1559,7 +1559,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/products.xml", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Home/Index/products.xml"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1581,7 +1581,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/products", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Home/Index/products"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1603,7 +1603,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/products.xml", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Home/Index/products.xml"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1625,7 +1625,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/products", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Home/Index/products"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1647,7 +1647,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/products?format=json", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Home/Index/products?format=json"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1669,7 +1669,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/.products", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Home/Index/.products"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1691,7 +1691,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Home/Index/"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1713,7 +1713,7 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Home/Index"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
