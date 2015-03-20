@@ -41,7 +41,8 @@ namespace MusicStore
             {
                 services.AddEntityFramework()
                         .AddSqlServer()
-                        .AddDbContext<MusicStoreContext>();
+                        .AddDbContext<MusicStoreContext>(options =>
+                            options.UserSqlServer(Configuration.Get("Data:DefaultConnection:ConnectionString")));
             }
 
             // Add Identity services to the services container
