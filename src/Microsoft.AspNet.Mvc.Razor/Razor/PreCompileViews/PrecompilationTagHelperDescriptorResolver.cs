@@ -50,7 +50,14 @@ namespace Microsoft.AspNet.Mvc.Razor
                                                          GetExportedTypesFromCompilation);
             }
 
-            return base.GetExportedTypes(assemblyName);
+            return GetExportedTypesCore(assemblyName);
+        }
+
+        private IEnumerable<TypeInfo> GetExportedTypesCore(AssemblyName assemblyName)
+        {
+            var assembly = _loadContext.Load(assemblyName.Name);
+
+            return assembly.ExportedTypes.Select(type => type.GetTypeInfo());
         }
 
         private TypeInfo[] GetExportedTypesFromCompilation()
