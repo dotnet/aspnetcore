@@ -72,9 +72,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         Task ExecuteAsync();
 
         /// <summary>
-        /// Verifies that RenderBody is called and that RenderSection is called for all sections for a page that is
+        /// Verifies that RenderBody is called for the page that is
         /// part of view execution hierarchy.
         /// </summary>
-        void EnsureBodyAndSectionsWereRendered();
+        void EnsureBodyWasRendered();
+
+        /// <summary>
+        /// Gets the sections that are rendered in the page.
+        /// </summary>
+        IEnumerable<string> RenderedSections { get; }
     }
 }

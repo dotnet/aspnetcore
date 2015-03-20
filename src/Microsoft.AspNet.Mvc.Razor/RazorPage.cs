@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -48,6 +47,15 @@ namespace Microsoft.AspNet.Mvc.Razor
                 }
 
                 return ViewContext.HttpContext;
+            }
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<string> RenderedSections
+        {
+            get
+            {
+                return _renderedSections;
             }
         }
 
@@ -716,20 +724,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public void EnsureBodyAndSectionsWereRendered()
+        public void EnsureBodyWasRendered()
         {
-            // If PreviousSectionWriters is set, ensure all defined sections were rendered.
-            if (PreviousSectionWriters != null)
-            {
-                var sectionsNotRendered = PreviousSectionWriters.Keys.Except(_renderedSections,
-                                                                             StringComparer.OrdinalIgnoreCase);
-                if (sectionsNotRendered.Any())
-                {
-                    var sectionNames = string.Join(", ", sectionsNotRendered);
-                    throw new InvalidOperationException(Resources.FormatSectionsNotRendered(sectionNames));
-                }
-            }
-
             // If BodyContent is set, ensure it was rendered.
             if (RenderBodyDelegate != null && !_renderedBody)
             {
