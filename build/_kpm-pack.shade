@@ -17,6 +17,6 @@ var projectName='${Path.GetFileName(projectFolder)}'
 var projectBin='${Path.Combine(projectFolder, "bin", configuration)}'
 
 directory delete="${projectBin}"
-exec program='cmd' commandline='/C kpm pack${pack_options} ${projectFolder} --configuration ${configuration}' if='!IsMono'
-exec program='kpm' commandline='pack${pack_options} ${projectFolder} --configuration ${configuration}' if='IsMono'
+exec program='cmd' commandline='/C dnu pack${pack_options} ${projectFolder} --configuration ${configuration}' if='!IsMono'
+exec program='dnu' commandline='pack${pack_options} ${projectFolder} --configuration ${configuration}' if='IsMono'
 copy sourceDir='${projectBin}' outputDir='${Path.Combine(BUILD_DIR, projectName)}'

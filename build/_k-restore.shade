@@ -6,5 +6,5 @@ k-restore
 
 default restore_options='${E("NUGET3_restore_options")}'
 
-exec program='cmd' commandline='/C kpm restore${restore_options}' if='!IsMono'
-exec program='kpm' commandline='restore${restore_options}' if='IsMono'
+exec program='cmd' commandline='/C dnu restore${restore_options}' if='!IsMono'
+exec program='dnu' commandline='restore${restore_options}' if='IsMono'
