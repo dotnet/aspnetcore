@@ -37,28 +37,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             get { return true; }
         }
 
-        public bool IsReadOnly
-        {
-            get
-            {
-                throw new NotSupportedException();
-            }
-        }
-
         public Stream CreateReadStream()
         {
             var bytes = Encoding.UTF8.GetBytes(Content);
             return new MemoryStream(bytes);
-        }
-
-        public void WriteContent(byte[] content)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Delete()
-        {
-            throw new NotSupportedException();
         }
     }
 }
