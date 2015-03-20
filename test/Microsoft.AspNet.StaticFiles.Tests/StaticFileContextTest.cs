@@ -99,11 +99,6 @@ namespace Microsoft.AspNet.StaticFiles
                 get { return false; }
             }
 
-            public bool IsReadOnly
-            {
-                get { return false;  }
-            }
-
             public DateTimeOffset LastModified { get; set; }
 
             public long Length { get; set; }
@@ -113,16 +108,6 @@ namespace Microsoft.AspNet.StaticFiles
             public string PhysicalPath { get; set; }
 
             public Stream CreateReadStream()
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Delete()
-            {
-                throw new NotImplementedException();
-            }
-
-            public void WriteContent(byte[] content)
             {
                 throw new NotImplementedException();
             }
