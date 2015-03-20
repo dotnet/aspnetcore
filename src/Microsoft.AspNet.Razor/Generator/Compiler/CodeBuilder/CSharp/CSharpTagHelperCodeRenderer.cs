@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
@@ -56,11 +55,15 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         /// <param name="chunk">A <see cref="TagHelperChunk"/> to render.</param>
         public void RenderTagHelper(TagHelperChunk chunk)
         {
-            var tagHelperDescriptors = chunk.Descriptors;
+            // Remove any duplicate TagHelperDescriptors that referrence the same type name. Duplicates can occur when
+            // multiple TargetElement attributes are on a TagHelper type and matchs overlap for an HTML element.
+            // Having more than one descriptor with the same TagHelper type results in generated code that runs
+            // the same TagHelper X many times (instead of once) over a single HTML element.
+            var tagHelperDescriptors = chunk.Descriptors.Distinct(TypeNameTagHelperDescriptorComparer.Default);
 
             RenderBeginTagHelperScope(chunk.TagName, chunk.SelfClosing, chunk.Children);
 
-            RenderTagHelpersCreation(chunk);
+            RenderTagHelpersCreation(chunk, tagHelperDescriptors);
 
             var attributeDescriptors = tagHelperDescriptors.SelectMany(descriptor => descriptor.Attributes);
             var boundHTMLAttributes = attributeDescriptors.Select(descriptor => descriptor.Name);
@@ -146,10 +149,10 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             return Guid.NewGuid().ToString("N");
         }
 
-        private void RenderTagHelpersCreation(TagHelperChunk chunk)
+        private void RenderTagHelpersCreation(
+            TagHelperChunk chunk,
+            IEnumerable<TagHelperDescriptor> tagHelperDescriptors)
         {
-            var tagHelperDescriptors = chunk.Descriptors;
-
             // This is to maintain value accessors for attributes when creating the TagHelpers.
             // Ultimately it enables us to do scenarios like this:
             // myTagHelper1.Foo = DateTime.Now;
@@ -549,6 +552,26 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             public int GetHashCode(TagHelperAttributeDescriptor descriptor)
             {
                 return StringComparer.OrdinalIgnoreCase.GetHashCode(descriptor.Name);
+            }
+        }
+
+        private class TypeNameTagHelperDescriptorComparer : IEqualityComparer<TagHelperDescriptor>
+        {
+            public static readonly TypeNameTagHelperDescriptorComparer Default =
+                new TypeNameTagHelperDescriptorComparer();
+
+            private TypeNameTagHelperDescriptorComparer()
+            {
+            }
+
+            public bool Equals(TagHelperDescriptor descriptorX, TagHelperDescriptor descriptorY)
+            {
+                return string.Equals(descriptorX.TypeName, descriptorY.TypeName, StringComparison.Ordinal);
+            }
+
+            public int GetHashCode(TagHelperDescriptor descriptor)
+            {
+                return StringComparer.Ordinal.GetHashCode(descriptor.TypeName);
             }
         }
     }

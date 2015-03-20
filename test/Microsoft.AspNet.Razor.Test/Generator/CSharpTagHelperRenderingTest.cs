@@ -19,6 +19,56 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         private static IEnumerable<TagHelperDescriptor> PrefixedPAndInputTagHelperDescriptors
             => BuildPAndInputTagHelperDescriptors("THS");
 
+        private static IEnumerable<TagHelperDescriptor> DuplicateTargetTagHelperDescriptors
+        {
+            get
+            {
+                var inputTypePropertyInfo = typeof(TestType).GetProperty("Type");
+                var inputCheckedPropertyInfo = typeof(TestType).GetProperty("Checked");
+                return new[]
+                {
+                    new TagHelperDescriptor(
+                        tagName: "*",
+                        typeName: "CatchAllTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[]
+                        {
+                            new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
+                        },
+                        requiredAttributes: new[] { "type" }),
+                    new TagHelperDescriptor(
+                        tagName: "*",
+                        typeName: "CatchAllTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[]
+                        {
+                            new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
+                            new TagHelperAttributeDescriptor("checked", inputCheckedPropertyInfo)
+                        },
+                        requiredAttributes: new[] { "type", "checked" }),
+                    new TagHelperDescriptor(
+                        tagName: "input",
+                        typeName: "InputTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[]
+                        {
+                            new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
+                        },
+                        requiredAttributes: new[] { "type" }),
+                    new TagHelperDescriptor(
+                        tagName: "input",
+                        typeName: "InputTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[]
+                        {
+                            new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
+                            new TagHelperAttributeDescriptor("checked", inputCheckedPropertyInfo)
+                        },
+                        requiredAttributes: new[] { "type", "checked" })
+                };
+            }
+        }
+
         private static IEnumerable<TagHelperDescriptor> AttributeTargetingTagHelperDescriptors
         {
             get
@@ -91,6 +141,13 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                         "BasicTagHelpers",
                         DefaultPAndInputTagHelperDescriptors,
                         DefaultPAndInputTagHelperDescriptors,
+                        false
+                    },
+                    {
+                        "DuplicateTargetTagHelper",
+                        "DuplicateTargetTagHelper",
+                        DuplicateTargetTagHelperDescriptors,
+                        DuplicateTargetTagHelperDescriptors,
                         false
                     },
                     {
@@ -410,6 +467,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     { "BasicTagHelpers.RemoveTagHelper", DefaultPAndInputTagHelperDescriptors },
                     { "BasicTagHelpers.Prefixed", PrefixedPAndInputTagHelperDescriptors },
                     { "ComplexTagHelpers", DefaultPAndInputTagHelperDescriptors },
+                    { "DuplicateTargetTagHelper", DuplicateTargetTagHelperDescriptors },
                     { "EmptyAttributeTagHelpers", DefaultPAndInputTagHelperDescriptors },
                     { "EscapedTagHelpers", DefaultPAndInputTagHelperDescriptors },
                     { "AttributeTargetingTagHelpers", AttributeTargetingTagHelperDescriptors },

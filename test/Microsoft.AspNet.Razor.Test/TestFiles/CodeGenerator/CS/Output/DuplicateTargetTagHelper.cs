@@ -1,0 +1,48 @@
+#pragma checksum "DuplicateTargetTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "9cd2f5a40be40d26a0756bf6a74cee58bd13927f"
+namespace TestOutput
+{
+    using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+    using System;
+    using System.Threading.Tasks;
+
+    public class DuplicateTargetTagHelper
+    {
+        #line hidden
+        #pragma warning disable 0414
+        private TagHelperContent __tagHelperStringValueBuffer = null;
+        #pragma warning restore 0414
+        private TagHelperExecutionContext __tagHelperExecutionContext = null;
+        private TagHelperRunner __tagHelperRunner = null;
+        private TagHelperScopeManager __tagHelperScopeManager = new TagHelperScopeManager();
+        private InputTagHelper __InputTagHelper = null;
+        private CatchAllTagHelper __CatchAllTagHelper = null;
+        #line hidden
+        public DuplicateTargetTagHelper()
+        {
+        }
+
+        #pragma warning disable 1998
+        public override async Task ExecuteAsync()
+        {
+            __tagHelperRunner = __tagHelperRunner ?? new TagHelperRunner();
+            Instrumentation.BeginContext(33, 2, true);
+            WriteLiteral("\r\n");
+            Instrumentation.EndContext();
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
+            }
+            , StartTagHelperWritingScope, EndTagHelperWritingScope);
+            __InputTagHelper = CreateTagHelper<InputTagHelper>();
+            __tagHelperExecutionContext.Add(__InputTagHelper);
+            __InputTagHelper.Type = "checkbox";
+            __tagHelperExecutionContext.AddTagHelperAttribute("type", __InputTagHelper.Type);
+            __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
+            __tagHelperExecutionContext.Add(__CatchAllTagHelper);
+            __CatchAllTagHelper.Type = __InputTagHelper.Type;
+            __tagHelperExecutionContext.AddHtmlAttribute("checked", "true");
+            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await WriteTagHelperAsync(__tagHelperExecutionContext);
+            __tagHelperExecutionContext = __tagHelperScopeManager.End();
+        }
+        #pragma warning restore 1998
+    }
+}
