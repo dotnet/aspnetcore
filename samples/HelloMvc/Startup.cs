@@ -6,18 +6,18 @@ namespace HelloMvc
 {
     public class Startup
     {
+	public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc();
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             app.UseErrorPage();
 
-            app.UseServices(services =>
-            {
-                services.AddMvc();
-            });
-
             app.UseMvc();
 
             app.UseWelcomePage();
-        }
+        }       
     }
 }
