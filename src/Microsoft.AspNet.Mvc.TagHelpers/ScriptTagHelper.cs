@@ -19,9 +19,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <see cref="ITagHelper"/> implementation targeting &lt;script&gt; elements that supports fallback src paths.
     /// </summary>
     /// <remarks>
-    /// <see cref="FallbackSrc" /> and <see cref="FallbackTestExpression" /> are required to not be
-    /// <c>null</c> or empty to process.
+    /// The tag helper won't process for cases with just the 'src' attribute.
     /// </remarks>
+    [TargetElement("script", Attributes = SrcIncludeAttributeName)]
+    [TargetElement("script", Attributes = SrcExcludeAttributeName)]
+    [TargetElement("script", Attributes = FallbackSrcAttributeName)]
+    [TargetElement("script", Attributes = FallbackSrcIncludeAttributeName)]
+    [TargetElement("script", Attributes = FallbackSrcExcludeAttributeName)]
+    [TargetElement("script", Attributes = FallbackTestExpressionAttributeName)]
     public class ScriptTagHelper : TagHelper
     {
         private const string SrcIncludeAttributeName = "asp-src-include";

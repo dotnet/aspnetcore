@@ -18,6 +18,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;link&gt; elements that supports fallback href paths.
     /// </summary>
+    /// <remarks>
+    /// The tag helper won't process for cases with just the 'href' attribute.
+    /// </remarks>
+    [TargetElement("link", Attributes = HrefIncludeAttributeName)]
+    [TargetElement("link", Attributes = HrefExcludeAttributeName)]
+    [TargetElement("link", Attributes = FallbackHrefAttributeName)]
+    [TargetElement("link", Attributes = FallbackHrefIncludeAttributeName)]
+    [TargetElement("link", Attributes = FallbackHrefExcludeAttributeName)]
+    [TargetElement("link", Attributes = FallbackTestClassAttributeName)]
+    [TargetElement("link", Attributes = FallbackTestPropertyAttributeName)]
+    [TargetElement("link", Attributes = FallbackTestValueAttributeName)]
     public class LinkTagHelper : TagHelper
     {
         private const string HrefIncludeAttributeName = "asp-href-include";
@@ -233,7 +244,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     CultureInfo.InvariantCulture,
                     "<meta name=\"x-stylesheet-fallback-test\" class=\"{0}\" />",
                     HtmlEncoder.HtmlEncode(FallbackTestClass)));
-                
+
                 // Build the <script /> tag that checks the effective style of <meta /> tag above and renders the extra
                 // <link /> tag to load the fallback stylesheet if the test CSS property value is found to be false,
                 // indicating that the primary stylesheet failed to load.
