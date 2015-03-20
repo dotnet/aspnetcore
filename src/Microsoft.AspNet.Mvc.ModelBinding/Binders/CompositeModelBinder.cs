@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -34,14 +33,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public virtual async Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
         {
-            var newBindingContext = CreateNewBindingContext(bindingContext,
-                                                            bindingContext.ModelName);
-
+            var newBindingContext = CreateNewBindingContext(bindingContext, bindingContext.ModelName);
             var modelBindingResult = await TryBind(newBindingContext);
-            if (modelBindingResult == null && !string.IsNullOrEmpty(bindingContext.ModelName)
-                && bindingContext.FallbackToEmptyPrefix)
+
+            if (modelBindingResult == null &&
+                bindingContext.FallbackToEmptyPrefix &&
+                !string.IsNullOrEmpty(bindingContext.ModelName))
             {
-                // fallback to empty prefix?
+                // Fall back to empty prefix.
                 newBindingContext = CreateNewBindingContext(bindingContext,
                                                             modelName: string.Empty);
                 modelBindingResult = await TryBind(newBindingContext);
@@ -75,13 +74,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     // {
                     // }
                     //
-                    // In this case, for the model parameter the key would be SimpleType instead of model.SimpleType. 
+                    // In this case, for the model parameter the key would be SimpleType instead of model.SimpleType.
                     // (i.e here the prefix for the model key is empty).
                     // For the id parameter the key would be id.
                     return modelBindingResult;
                 }
             }
 
+            // Fall through to update the ModelBindingResult's key.
             return new ModelBindingResult(
                 modelBindingResult.Model,
                 bindingContext.ModelName,

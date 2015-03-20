@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -40,13 +39,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             try
             {
                 var model = Convert.FromBase64String(value);
-                return new ModelBindingResult(model, bindingContext.ModelName, true);
+                return new ModelBindingResult(model, bindingContext.ModelName, isModelSet: true);
             }
             catch (Exception ex)
             {
                 bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, ex);
             }
 
+            // Matched the type (byte[]) only this binder supports.
+            // Always tell the model binding system to skip other model binders i.e. return non-null.
             return new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
         }
     }

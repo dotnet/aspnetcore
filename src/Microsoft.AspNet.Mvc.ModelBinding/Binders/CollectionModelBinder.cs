@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     BindComplexCollection(bindingContext);
             var boundCollection = await bindCollectionTask;
             var model = GetModel(boundCollection);
-            return new ModelBindingResult(model, bindingContext.ModelName, true);
+            return new ModelBindingResult(model, bindingContext.ModelName, isModelSet: true);
         }
 
         // Used when the ValueProvider contains the collection to be bound as a single element, e.g. the raw value

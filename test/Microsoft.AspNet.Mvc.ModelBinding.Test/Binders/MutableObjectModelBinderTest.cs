@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Testing;
@@ -106,17 +105,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [Fact]
         public async Task CanCreateModel_ReturnsFalse_ForNonTopLevelModel_IfModelIsMarkedWithBinderMetadata()
         {
+            // Get the property metadata so that it is not a top level object.
             var modelMetadata = GetMetadataForType(typeof(Document))
-                                        .Properties
-                                        .First(metadata => metadata.PropertyName == nameof(Document.SubDocument));
+                .Properties
+                .First(metadata => metadata.PropertyName == nameof(Document.SubDocument));
             var bindingContext = new MutableObjectBinderContext
             {
                 ModelBindingContext = new ModelBindingContext
                 {
-                    // Get the property metadata so that it is not a top level object.
-                    ModelMetadata = GetMetadataForType(typeof(Document))
-                                        .Properties
-                                        .First(metadata => metadata.PropertyName == nameof(Document.SubDocument)),
+                    ModelMetadata = modelMetadata,
                     OperationBindingContext = new OperationBindingContext
                     {
                         ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
@@ -381,7 +378,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 .Verifiable();
             testableBinder
                 .Setup(o => o.GetMetadataForProperties(bindingContext))
-                              .Returns(new ModelMetadata[0]);
+                .Returns(new ModelMetadata[0]);
 
             // Act
             var retValue = await testableBinder.Object.BindModelAsync(bindingContext);
@@ -389,8 +386,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Assert
             Assert.NotNull(retValue);
             Assert.True(retValue.IsModelSet);
-            Assert.Same(model, retValue.Model);
-            Assert.IsType<Person>(retValue.Model);
+            var returnedPerson = Assert.IsType<Person>(retValue.Model);
+            Assert.Same(model, returnedPerson);
             testableBinder.Verify();
         }
 
@@ -442,8 +439,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Assert
             Assert.NotNull(retValue);
             Assert.True(retValue.IsModelSet);
-            Assert.Same(model, retValue.Model);
-            Assert.IsType<Person>(retValue.Model);
+            var returnedPerson = Assert.IsType<Person>(retValue.Model);
+            Assert.Same(model, returnedPerson);
             testableBinder.Verify();
         }
 

@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
             var model = valueProviderResult.RawValue;
             ModelBindingHelper.ReplaceEmptyStringWithNull(bindingContext.ModelMetadata, ref model);
-            return new ModelBindingResult(model, bindingContext.ModelName, true);
+            return new ModelBindingResult(model, bindingContext.ModelName, isModelSet: true);
         }
 
         internal static async Task<ValueProviderResult> GetCompatibleValueProviderResult(ModelBindingContext context)

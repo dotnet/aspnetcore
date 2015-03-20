@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
 
-            return Task.FromResult(new ModelBindingResult(model, bindingContext.ModelName, model != null));
+            return Task.FromResult(new ModelBindingResult(model, bindingContext.ModelName, isModelSet: model != null));
         }
     }
 }

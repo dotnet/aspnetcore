@@ -23,22 +23,28 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Gets or sets the model associated with this context.
+        /// Gets the model associated with this context.
         /// </summary>
         public object Model { get; }
 
         /// <summary>
-        /// Gets or sets the model name which was used to bind the model.
-        /// 
+        /// <para>
+        /// Gets the model name which was used to bind the model.
+        /// </para>
+        /// <para>
         /// This property can be used during validation to add model state for a bound model.
+        /// </para>
         /// </summary>
         public string Key { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether or not the <see cref="Model"/> value has been set.
-        /// 
+        /// <para>
+        /// Gets a value indicating whether or not the <see cref="Model"/> value has been set.
+        /// </para>
+        /// <para>
         /// This property can be used to distinguish between a model binder which does not find a value and
         /// the case where a model binder sets the <c>null</c> value.
+        /// </para>
         /// </summary>
         public bool IsModelSet { get; }
     }

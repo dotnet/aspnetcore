@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model = new FormCollection(new Dictionary<string, string[]>());
             }
 
-            return new ModelBindingResult(model, bindingContext.ModelName, true);
+            return new ModelBindingResult(model, bindingContext.ModelName, isModelSet: true);
         }
     }
 }

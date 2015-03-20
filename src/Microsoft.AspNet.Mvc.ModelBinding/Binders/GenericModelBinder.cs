@@ -22,10 +22,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
                 var modelBindingResult = result != null ?
                     new ModelBindingResult(result.Model, result.Key, result.IsModelSet) :
-                    new ModelBindingResult(null, bindingContext.ModelName, false);
+                    new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
 
-                // Was able to resolve a binder type, hence we should tell the model binding system to return
-                // true so that none of the other model binders participate.
+                // Were able to resolve a binder type.
+                // Always tell the model binding system to skip other model binders i.e. return non-null.
                 return modelBindingResult;
             }
 

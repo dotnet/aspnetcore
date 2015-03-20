@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var requestServices = bindingContext.OperationBindingContext.HttpContext.RequestServices;
             var createFactory = _typeActivatorCache.GetOrAdd(bindingContext.BinderType, _createFactory);
             var instance = createFactory(requestServices, arguments: null);
-            
+
             var modelBinder = instance as IModelBinder;
             if (modelBinder == null)
             {
@@ -54,12 +54,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var result = await modelBinder.BindModelAsync(bindingContext);
 
-            var modelBindingResult = result != null ? 
+            var modelBindingResult = result != null ?
                 new ModelBindingResult(result.Model, result.Key, result.IsModelSet) :
-                new ModelBindingResult(null, bindingContext.ModelName, false);
+                new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
 
-            // return a non null modelbinding result here, because this binder will handle all cases where the
-            //  model binder is specified by metadata.
+            // A model binder was specified by metadata and this binder handles all such cases.
+            // Always tell the model binding system to skip other model binders i.e. return non-null.
             return modelBindingResult;
         }
     }

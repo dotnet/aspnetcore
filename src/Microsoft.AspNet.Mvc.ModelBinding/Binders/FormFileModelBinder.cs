@@ -25,14 +25,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 var postedFiles = await GetFormFilesAsync(bindingContext);
                 var value = postedFiles.FirstOrDefault();
-                return new ModelBindingResult(value, bindingContext.ModelName, value != null);
+                return new ModelBindingResult(value, bindingContext.ModelName, isModelSet: value != null);
             }
             else if (typeof(IEnumerable<IFormFile>).GetTypeInfo().IsAssignableFrom(
                     bindingContext.ModelType.GetTypeInfo()))
             {
                 var postedFiles = await GetFormFilesAsync(bindingContext);
                 var value = ModelBindingHelper.ConvertValuesToCollectionType(bindingContext.ModelType, postedFiles);
-                return new ModelBindingResult(value, bindingContext.ModelName, value != null);
+                return new ModelBindingResult(value, bindingContext.ModelName, isModelSet: value != null);
             }
 
             return null;

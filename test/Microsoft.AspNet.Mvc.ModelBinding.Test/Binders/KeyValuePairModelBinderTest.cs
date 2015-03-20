@@ -4,7 +4,6 @@
 #if DNX451
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Moq;
@@ -25,11 +24,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new KeyValuePairModelBinder<int, string>();
 
             // Act
-            var retVal = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(retVal);
-            Assert.Null(retVal.Model);
+            Assert.NotNull(result);
+            Assert.Null(result.Model);
             Assert.False(bindingContext.ModelState.IsValid);
             Assert.Equal("someName", bindingContext.ModelName);
             var error = Assert.Single(bindingContext.ModelState["someName.Key"].Errors);
@@ -47,11 +46,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new KeyValuePairModelBinder<int, string>();
 
             // Act
-            var retVal = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(retVal);
-            Assert.Null(retVal.Model);
+            Assert.NotNull(result);
+            Assert.Null(result.Model);
             Assert.False(bindingContext.ModelState.IsValid);
             Assert.Equal("someName", bindingContext.ModelName);
             Assert.Equal(bindingContext.ModelState["someName.Value"].Errors.First().ErrorMessage, "A value is required.");
@@ -73,10 +72,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new KeyValuePairModelBinder<int, string>();
 
             // Act
-            var retVal = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Null(retVal);
+            Assert.Null(result);
             Assert.True(bindingContext.ModelState.IsValid);
             Assert.Equal(0, bindingContext.ModelState.ErrorCount);
         }
@@ -92,11 +91,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new KeyValuePairModelBinder<int, string>();
 
             // Act
-            var retVal = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(retVal);
-            Assert.Equal(new KeyValuePair<int, string>(42, "some-value"), retVal.Model);
+            Assert.NotNull(result);
+            Assert.Equal(new KeyValuePair<int, string>(42, "some-value"), result.Model);
         }
 
         [Fact]
@@ -107,11 +106,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new KeyValuePairModelBinder<int, string>();
 
             // Act
-            var retVal = await binder.TryBindStrongModel<int>(bindingContext, "key");
+            var result = await binder.TryBindStrongModel<int>(bindingContext, "key");
 
             // Assert
-            Assert.True(retVal.IsModelSet);
-            Assert.Equal(42, retVal.Model);
+            Assert.True(result.IsModelSet);
+            Assert.Equal(42, result.Model);
             Assert.Empty(bindingContext.ModelState);
         }
 
@@ -133,11 +132,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new KeyValuePairModelBinder<int, string>();
 
             // Act
-            var retVal = await binder.TryBindStrongModel<int>(bindingContext, "key");
+            var result = await binder.TryBindStrongModel<int>(bindingContext, "key");
 
             // Assert
-            Assert.True(retVal.IsModelSet);
-            Assert.Null(retVal.Model);
+            Assert.True(result.IsModelSet);
+            Assert.Null(result.Model);
             Assert.Empty(bindingContext.ModelState);
         }
 
