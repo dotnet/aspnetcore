@@ -165,7 +165,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             var modeResult = AttributeMatcher.DetermineMode(context, ModeDetails);
 
-            var logger = Logger ?? LoggerFactory.CreateLogger<ScriptTagHelper>();
+            var logger = Logger ?? LoggerFactory.CreateLogger<LinkTagHelper>();
 
             modeResult.LogDetails(logger, this, context.UniqueId, ViewContext.View.Path);
 
