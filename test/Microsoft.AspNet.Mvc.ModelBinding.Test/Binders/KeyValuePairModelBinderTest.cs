@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     public class KeyValuePairModelBinderTest
     {
         [Fact]
-        public async Task BindModel_MissingKey_ReturnsTrue_AndAddsModelValidationError()
+        public async Task BindModel_MissingKey_ReturnsResult_AndAddsModelValidationError()
         {
             // Arrange
             var valueProvider = new SimpleHttpValueProvider();
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task BindModel_MissingValue_ReturnsTrue_AndAddsModelValidationError()
+        public async Task BindModel_MissingValue_ReturnsResult_AndAddsModelValidationError()
         {
             // Arrange
             var valueProvider = new SimpleHttpValueProvider();

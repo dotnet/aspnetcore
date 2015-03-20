@@ -410,7 +410,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
 
-            // for each property that was bound, call the setter, recording exceptions as necessary
+            // For each property that ComplexModelDtoModelBinder attempted to bind, call the setter, recording
+            // exceptions as necessary.
             foreach (var entry in dto.Results)
             {
                 var dtoResult = entry.Value;

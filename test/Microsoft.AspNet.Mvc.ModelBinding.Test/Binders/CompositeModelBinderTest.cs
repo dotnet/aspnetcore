@@ -112,10 +112,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task ModelBinder_ReturnsTrue_WithoutSettingValue()
+        public async Task ModelBinder_ReturnsNull_IfBinderMatchesButDoesNotSetModel()
         {
             // Arrange
-
             var bindingContext = new ModelBindingContext
             {
                 FallbackToEmptyPrefix = true,
@@ -135,7 +134,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var modelBinder = new Mock<IModelBinder>();
             modelBinder
                 .Setup(mb => mb.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns(Task.FromResult(new ModelBindingResult(null, "someName", false)));
+                .Returns(Task.FromResult(new ModelBindingResult(model: null, key: "someName", isModelSet: false)));
 
             var composite = CreateCompositeBinder(modelBinder.Object);
 
@@ -143,10 +142,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await composite.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.False(result.IsModelSet);
-            Assert.Equal("someName", result.Key);
-            Assert.Null(result.Model);
+            Assert.Null(result);
         }
 
         [Fact]

@@ -97,7 +97,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var result = await binder.BindModelAsync(bindingContext);
                 if (result != null)
                 {
-                    return result;
+                    // Use returned ModelBindingResult if it either indicates the model was set or is related to a
+                    // ModelState entry. The second condition is necessary because the ModelState entry would never be
+                    // validated if caller fell back to the empty prefix, leading to an possibly-incorrect !IsValid.
+                    //
+                    // In most (hopefully all) cases, the ModelState entry exists because some binders add errors
+                    // before returning a result with !IsModelSet. Those binders often cannot run twice anyhow.
+                    if (result.IsModelSet || bindingContext.ModelState.ContainsKey(bindingContext.ModelName))
+                    {
+                        return result;
+                    }
+
+                    // Current binder should have been able to bind value but found nothing. Exit loop in a way that
+                    // tells caller to fall back to the empty prefix, if appropriate. Do not return result because it
+                    // means only "other binders are not applicable".
+                    break;
                 }
             }
 
