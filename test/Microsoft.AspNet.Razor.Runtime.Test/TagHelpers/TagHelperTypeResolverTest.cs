@@ -46,8 +46,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 #if DNX451
                 "abcd' or one of its dependencies. The system cannot find the file specified.";
 #else
-                "abcd, Culture=neutral, PublicKeyToken=null' or one of its dependencies. Could not find or load a " +
-                "specific file. (Exception from HRESULT: 0x80131621)";
+                "abcd, Culture=neutral, PublicKeyToken=null' or one of its dependencies. " +
+                "The system cannot find the file specified.";
 #endif
 
             // Act
