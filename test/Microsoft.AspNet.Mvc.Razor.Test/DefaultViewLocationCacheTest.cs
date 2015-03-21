@@ -126,6 +126,59 @@ namespace Microsoft.AspNet.Mvc.Razor
                     expanderContext,
                     "test3:1:controller3:area3:culture:fr:theme:sleek"
                 };
+
+                yield return new object[]
+                {
+                    new ViewLocationExpanderContext(
+                        GetActionContextWithActionDescriptor(
+                            new Dictionary<string, object>()
+                            {
+                                {"controller", "MyController" },
+                            },
+                            new Dictionary<string, string>()
+                            {
+                                {"controller", "mycontroller" },
+                            },
+                            isAttributeRouted: true),
+                        "test",
+                        isPartial: false),
+                    "test:0:mycontroller"
+                };
+
+                yield return new object[]
+                {
+                    new ViewLocationExpanderContext(
+                        GetActionContextWithActionDescriptor(
+                            new Dictionary<string, object>()
+                            {
+                                {"controller", "MyController" },
+                            },
+                            new Dictionary<string, string>()
+                            {
+                                {"controller", "mycontroller" },
+                            },
+                            isAttributeRouted: true),
+                        "test",
+                        isPartial: false),
+                    "test:0:mycontroller"
+                };
+
+                yield return new object[]
+                {
+                    new ViewLocationExpanderContext(
+                        GetActionContextWithActionDescriptor(
+                            new Dictionary<string, object>()
+                            {
+                                {"controller", "mycontroller" },
+                            },
+                            new Dictionary<string, string>()
+                            {
+                            },
+                            isAttributeRouted: true),
+                        "test",
+                        isPartial: false),
+                    "test:0:mycontroller"
+                };
             }
         }
 
@@ -150,7 +203,42 @@ namespace Microsoft.AspNet.Mvc.Razor
                 routeData.Values["area"] = area;
             }
 
-            return new ActionContext(new DefaultHttpContext(), routeData, new ActionDescriptor());
+            var actionDesciptor = new ActionDescriptor();
+            actionDesciptor.RouteConstraints = new List<RouteDataActionConstraint>();
+            return new ActionContext(new DefaultHttpContext(), routeData, actionDesciptor);
+        }
+
+        private static ActionContext GetActionContextWithActionDescriptor(
+            IDictionary<string, object> routeValues,
+            IDictionary<string, string> routesInActionDescriptor,
+            bool isAttributeRouted)
+        {
+            var httpContext = new DefaultHttpContext();
+            var routeData = new RouteData();
+            foreach (var kvp in routeValues)
+            {
+                routeData.Values.Add(kvp.Key, kvp.Value);
+            }
+
+            var actionDescriptor = new ActionDescriptor();
+            if (isAttributeRouted)
+            {
+                actionDescriptor.AttributeRouteInfo = new Routing.AttributeRouteInfo();
+                foreach (var kvp in routesInActionDescriptor)
+                {
+                    actionDescriptor.RouteValueDefaults.Add(kvp.Key, kvp.Value);
+                }
+            }
+            else
+            {
+                actionDescriptor.RouteConstraints = new List<RouteDataActionConstraint>();
+                foreach (var kvp in routesInActionDescriptor)
+                {
+                    actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(kvp.Key, kvp.Value));
+                }
+            }
+
+            return new ActionContext(httpContext, routeData, actionDescriptor);
         }
     }
 }

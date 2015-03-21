@@ -10,6 +10,7 @@ using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
+using Microsoft.AspNet.Mvc.Routing;
 
 namespace Microsoft.AspNet.Mvc.Razor.Test
 {
@@ -594,7 +595,151 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             Assert.Equal(expected, result.SearchedLocations);
         }
 
-       [Fact]
+        [Theory]
+        // Looks in RouteValueDefaults
+        [InlineData(true)]
+        // Looks in RouteConstraints
+        [InlineData(false)]
+        public void FindPage_SelectsActionCaseInsensitively(bool isAttributeRouted)
+        {
+            // The ActionDescriptor contains "Foo" and the RouteData contains "foo"
+            // which matches the case of the constructor thus searching in the appropriate location.
+            // Arrange
+            var routeValues = new Dictionary<string, object>
+            {
+                { "controller", "foo" }
+            };
+
+            var page = new Mock<IRazorPage>(MockBehavior.Strict).Object;
+            var pageFactory = new Mock<IRazorPageFactory>();
+            pageFactory.Setup(p => p.CreateInstance("/Views/Foo/details.cshtml"))
+                       .Returns(page)
+                       .Verifiable();
+
+            var viewEngine = CreateViewEngine(pageFactory.Object);
+            var routesInActionDescriptor = new Dictionary<string, string>()
+            {
+                { "controller", "Foo" }
+            };
+
+            var context = GetActionContextWithActionDescriptor(routeValues, routesInActionDescriptor, isAttributeRouted);
+
+            // Act
+            var result = viewEngine.FindPage(context, "details");
+
+            // Assert
+            Assert.Equal("details", result.Name);
+            Assert.Same(page, result.Page);
+            Assert.Null(result.SearchedLocations);
+            pageFactory.Verify();
+        }
+
+        [Theory]
+        // Looks in RouteValueDefaults
+        [InlineData(true)]
+        // Looks in RouteConstraints
+        [InlineData(false)]
+        public void FindPage_LooksForPages_UsingActionDescriptor_Controller(bool isAttributeRouted)
+        {
+            // Arrange
+            var expected = new[]
+            {
+                "/Views/bar/foo.cshtml",
+                "/Views/Shared/foo.cshtml",
+            };
+
+            var routeValues = new Dictionary<string, object>
+            {
+                { "controller", "Bar" }
+            };
+            var routesInActionDescriptor = new Dictionary<string, string>()
+            {
+                { "controller", "bar" }
+            };
+            var page = Mock.Of<IRazorPage>();
+
+            var viewEngine = CreateViewEngine();
+            var context = GetActionContextWithActionDescriptor(routeValues, routesInActionDescriptor, isAttributeRouted);
+
+            // Act
+            var result = viewEngine.FindPage(context, "foo");
+
+            // Assert
+            Assert.Equal("foo", result.Name);
+            Assert.Null(result.Page);
+            Assert.Equal(expected, result.SearchedLocations);
+        }
+
+        [Theory]
+        // Looks in RouteValueDefaults
+        [InlineData(true)]
+        // Looks in RouteConstraints
+        [InlineData(false)]
+        public void FindPage_LooksForPages_UsingActionDescriptor_Areas(bool isAttributeRouted)
+        {
+            // Arrange
+            var expected = new[]
+            {
+                "/Areas/world/Views/bar/foo.cshtml",
+                "/Areas/world/Views/Shared/foo.cshtml",
+                "/Views/Shared/foo.cshtml"
+            };
+
+            var routeValues = new Dictionary<string, object>
+            {
+                { "controller", "Bar" },
+                { "area", "World" }
+            };
+            var routesInActionDescriptor = new Dictionary<string, string>()
+            {
+                { "controller", "bar" },
+                { "area", "world" }
+            };
+            var page = Mock.Of<IRazorPage>();
+
+            var viewEngine = CreateViewEngine();
+            var context = GetActionContextWithActionDescriptor(routeValues, routesInActionDescriptor, isAttributeRouted);
+
+            // Act
+            var result = viewEngine.FindPage(context, "foo");
+
+            // Assert
+            Assert.Equal("foo", result.Name);
+            Assert.Null(result.Page);
+            Assert.Equal(expected, result.SearchedLocations);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void FindPage_LooksForPages_UsesRouteValuesAsFallback(bool isAttributeRouted)
+        {
+            // Arrange
+            var expected = new[]
+            {
+                "/Views/foo/bar.cshtml",
+                "/Views/Shared/bar.cshtml",
+            };
+
+            var routeValues = new Dictionary<string, object>()
+            {
+                { "controller", "foo" }
+            };
+            var page = Mock.Of<IRazorPage>();
+
+            var viewEngine = CreateViewEngine();
+            var context = GetActionContextWithActionDescriptor(routeValues, new Dictionary<string, string>(), isAttributeRouted);
+
+            // Act
+            var result = viewEngine.FindPage(context, "bar");
+
+            // Assert
+            Assert.Equal("bar", result.Name);
+            Assert.Null(result.Page);
+            Assert.Equal(expected, result.SearchedLocations);
+        }
+
+        [Fact]
         public void AreaViewLocationFormats_ContainsExpectedLocations()
         {
             // Arrange
@@ -624,6 +769,252 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             // Act & Assert
             Assert.Equal(viewLocations, viewEngine.ViewLocationFormats);
+        }
+
+        [Fact]
+        public void GetNormalizedRouteValue_ReturnsValueFromRouteConstraints_IfKeyHandlingIsRequired()
+        {
+            // Arrange
+            var key = "some-key";
+            var actionDescriptor = new ActionDescriptor
+            {
+                RouteConstraints = new[]
+                {
+                    new RouteDataActionConstraint(key, "Route-Value")
+                }
+            };
+
+            var actionContext = new ActionContext
+            {
+                ActionDescriptor = actionDescriptor,
+                RouteData = new RouteData()
+            };
+
+            actionContext.RouteData.Values[key] = "route-value";
+
+            // Act
+            var result = RazorViewEngine.GetNormalizedRouteValue(actionContext, key);
+
+            // Assert
+            Assert.Equal("Route-Value", result);
+        }
+
+        [Fact]
+        public void GetNormalizedRouteValue_ReturnsRouteValue_IfValueDoesNotMatchRouteConstraint()
+        {
+            // Arrange
+            var key = "some-key";
+            var actionDescriptor = new ActionDescriptor
+            {
+                RouteConstraints = new[]
+                {
+                    new RouteDataActionConstraint(key, "different-value")
+                }
+            };
+
+            var actionContext = new ActionContext
+            {
+                ActionDescriptor = actionDescriptor,
+                RouteData = new RouteData()
+            };
+
+            actionContext.RouteData.Values[key] = "route-value";
+
+            // Act
+            var result = RazorViewEngine.GetNormalizedRouteValue(actionContext, key);
+
+            // Assert
+            Assert.Equal("route-value", result);
+        }
+
+        [Fact]
+        public void GetNormalizedRouteValue_ReturnsNull_IfRouteConstraintKeyHandlingIsDeny()
+        {
+            // Arrange
+            var key = "some-key";
+            var actionDescriptor = new ActionDescriptor
+            {
+                RouteConstraints = new[]
+                {
+                    new RouteDataActionConstraint(key, routeValue: string.Empty)
+                }
+            };
+
+            var actionContext = new ActionContext
+            {
+                ActionDescriptor = actionDescriptor,
+                RouteData = new RouteData()
+            };
+
+            actionContext.RouteData.Values[key] = "route-value";
+
+            // Act
+            var result = RazorViewEngine.GetNormalizedRouteValue(actionContext, key);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void GetNormalizedRouteValue_ReturnsRouteDataValue_IfRouteConstraintKeyHandlingIsCatchAll()
+        {
+            // Arrange
+            var key = "some-key";
+            var actionDescriptor = new ActionDescriptor
+            {
+                RouteConstraints = new[]
+                {
+                    RouteDataActionConstraint.CreateCatchAll(key)
+                }
+            };
+
+            var actionContext = new ActionContext
+            {
+                ActionDescriptor = actionDescriptor,
+                RouteData = new RouteData()
+            };
+
+            actionContext.RouteData.Values[key] = "route-value";
+
+            // Act
+            var result = RazorViewEngine.GetNormalizedRouteValue(actionContext, key);
+
+            // Assert
+            Assert.Equal("route-value", result);
+        }
+
+        [Fact]
+        public void GetNormalizedRouteValue_UsesRouteValueDefaults_IfAttributeRouted()
+        {
+            // Arrange
+            var key = "some-key";
+            var actionDescriptor = new ActionDescriptor
+            {
+                AttributeRouteInfo = new AttributeRouteInfo(),
+            };
+            actionDescriptor.RouteValueDefaults[key] = "Route-Value";
+
+            var actionContext = new ActionContext
+            {
+                ActionDescriptor = actionDescriptor,
+                RouteData = new RouteData()
+            };
+
+            actionContext.RouteData.Values[key] = "route-value";
+
+            // Act
+            var result = RazorViewEngine.GetNormalizedRouteValue(actionContext, key);
+
+            // Assert
+            Assert.Equal("Route-Value", result);
+        }
+
+        [Fact]
+        public void GetNormalizedRouteValue_UsesRouteValue_IfRouteValueDefaultsDoesNotMatchRouteValue()
+        {
+            // Arrange
+            var key = "some-key";
+            var actionDescriptor = new ActionDescriptor
+            {
+                AttributeRouteInfo = new AttributeRouteInfo(),
+            };
+            actionDescriptor.RouteValueDefaults[key] = "different-value";
+
+            var actionContext = new ActionContext
+            {
+                ActionDescriptor = actionDescriptor,
+                RouteData = new RouteData()
+            };
+
+            actionContext.RouteData.Values[key] = "route-value";
+
+            // Act
+            var result = RazorViewEngine.GetNormalizedRouteValue(actionContext, key);
+
+            // Assert
+            Assert.Equal("route-value", result);
+        }
+
+        [Fact]
+        public void GetNormalizedRouteValue_ConvertsRouteDefaultToStringValue_IfAttributeRouted()
+        {
+            using (new CultureReplacer())
+            {
+                // Arrange
+                var key = "some-key";
+                var actionDescriptor = new ActionDescriptor
+                {
+                    AttributeRouteInfo = new AttributeRouteInfo(),
+                };
+                actionDescriptor.RouteValueDefaults[key] = 32;
+
+                var actionContext = new ActionContext
+                {
+                    ActionDescriptor = actionDescriptor,
+                    RouteData = new RouteData()
+                };
+
+                actionContext.RouteData.Values[key] = 32;
+
+                // Act
+                var result = RazorViewEngine.GetNormalizedRouteValue(actionContext, key);
+
+                // Assert
+                Assert.Equal("32", result);
+            }
+        }
+
+        [Fact]
+        public void GetNormalizedRouteValue_UsesRouteDataValue_IfKeyDoesNotExistInRouteDefaultValues()
+        {
+            // Arrange
+            var key = "some-key";
+            var actionDescriptor = new ActionDescriptor
+            {
+                AttributeRouteInfo = new AttributeRouteInfo(),
+            };
+
+            var actionContext = new ActionContext
+            {
+                ActionDescriptor = actionDescriptor,
+                RouteData = new RouteData()
+            };
+
+            actionContext.RouteData.Values[key] = "route-value";
+
+            // Act
+            var result = RazorViewEngine.GetNormalizedRouteValue(actionContext, key);
+
+            // Assert
+            Assert.Equal("route-value", result);
+        }
+
+        [Fact]
+        public void GetNormalizedRouteValue_ConvertsRouteValueToString()
+        {
+            using (new CultureReplacer())
+            {
+                // Arrange
+                var key = "some-key";
+                var actionDescriptor = new ActionDescriptor
+                {
+                    AttributeRouteInfo = new AttributeRouteInfo(),
+                };
+
+                var actionContext = new ActionContext
+                {
+                    ActionDescriptor = actionDescriptor,
+                    RouteData = new RouteData()
+                };
+
+                actionContext.RouteData.Values[key] = 43;
+
+                // Act
+                var result = RazorViewEngine.GetNormalizedRouteValue(actionContext, key);
+
+                // Assert
+                Assert.Equal("43", result);
+            }
         }
 
         private RazorViewEngine CreateViewEngine(IRazorPageFactory pageFactory = null,
@@ -673,7 +1064,42 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 routeData.Values.Add(kvp.Key, kvp.Value);
             }
 
-            return new ActionContext(httpContext, routeData, new ActionDescriptor());
+            var actionDesciptor = new ActionDescriptor();
+            actionDesciptor.RouteConstraints = new List<RouteDataActionConstraint>();
+            return new ActionContext(httpContext, routeData, actionDesciptor);
+        }
+
+        private static ActionContext GetActionContextWithActionDescriptor(
+            IDictionary<string, object> routeValues,
+            IDictionary<string, string> routesInActionDescriptor,
+            bool isAttributeRouted)
+        {
+            var httpContext = new DefaultHttpContext();
+            var routeData = new RouteData();
+            foreach (var kvp in routeValues)
+            {
+                routeData.Values.Add(kvp.Key, kvp.Value);
+            }
+
+            var actionDescriptor = new ActionDescriptor();
+            if (isAttributeRouted)
+            {
+                actionDescriptor.AttributeRouteInfo = new AttributeRouteInfo();
+                foreach (var kvp in routesInActionDescriptor)
+                {
+                    actionDescriptor.RouteValueDefaults.Add(kvp.Key, kvp.Value);
+                }
+            }
+            else
+            {
+                actionDescriptor.RouteConstraints = new List<RouteDataActionConstraint>();
+                foreach (var kvp in routesInActionDescriptor)
+                {
+                    actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(kvp.Key, kvp.Value));
+                }
+            }
+
+            return new ActionContext(httpContext, routeData, actionDescriptor);
         }
 
         private class OverloadedLocationViewEngine : RazorViewEngine

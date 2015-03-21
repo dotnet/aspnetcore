@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
+using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Razor.OptionDescriptors;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.Internal;
@@ -133,6 +135,62 @@ namespace Microsoft.AspNet.Mvc.Razor
             return GetRazorPageResult(context, pageName, isPartial: true);
         }
 
+        /// <summary>
+        /// Gets the case-normalized route value for the specified route <paramref name="key"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="ActionContext"/>.</param>
+        /// <param name="key">The route key to lookup.</param>
+        /// <returns>The value corresponding to the key.</returns>
+        /// <remarks>
+        /// The casing of a route value in <see cref="ActionContext.RouteData"/> is determined by the client.
+        /// This making constructing paths for view locations in a case sensitive file system unreliable. Using the
+        /// <see cref="ActionDescriptor.RouteValueDefaults"/> for attribute routes and
+        /// <see cref="ActionDescriptor.RouteConstraints"/> for traditional routes to get route values produces
+        /// consistently cased results.
+        /// </remarks>
+        internal static string GetNormalizedRouteValue(ActionContext context, string key)
+        {
+            object routeValue;
+            if (!context.RouteData.Values.TryGetValue(key, out routeValue))
+            {
+                return null;
+            }
+
+            var actionDescriptor = context.ActionDescriptor;
+            string normalizedValue = null;
+            if (actionDescriptor.AttributeRouteInfo != null)
+            {
+                object match;
+                if (actionDescriptor.RouteValueDefaults.TryGetValue(key, out match))
+                {
+                    normalizedValue = match?.ToString();
+                }
+            }
+            else
+            {
+                // For traditional routes, lookup the key in RouteConstraints if the key is RequireKey.
+                var match = actionDescriptor.RouteConstraints.FirstOrDefault(
+                    constraint => string.Equals(constraint.RouteKey, key, StringComparison.OrdinalIgnoreCase));
+                if (match != null && match.KeyHandling != RouteKeyHandling.CatchAll)
+                {
+                    if (match.KeyHandling == RouteKeyHandling.DenyKey)
+                    {
+                        return null;
+                    }
+
+                    normalizedValue = match.RouteValue;
+                }
+            }
+
+            var stringRouteValue = routeValue?.ToString();
+            if (string.Equals(normalizedValue, stringRouteValue, StringComparison.OrdinalIgnoreCase))
+            {
+                return normalizedValue;
+            }
+
+            return stringRouteValue;
+        }
+
         private RazorPageResult GetRazorPageResult(ActionContext context,
                                                    string pageName,
                                                    bool isPartial)
@@ -164,8 +222,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                                             bool isPartial)
         {
             // Initialize the dictionary for the typical case of having controller and action tokens.
-            var routeValues = context.RouteData.Values;
-            var areaName = routeValues.GetValueOrDefault<string>(AreaKey);
+            var areaName = GetNormalizedRouteValue(context, AreaKey);
 
             // Only use the area view location formats if we have an area token.
             var viewLocations = !string.IsNullOrEmpty(areaName) ? AreaViewLocationFormats :
@@ -204,7 +261,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
 
             // 3. Use the expanded locations to look up a page.
-            var controllerName = routeValues.GetValueOrDefault<string>(ControllerKey);
+            var controllerName = GetNormalizedRouteValue(context, ControllerKey);
             var searchedLocations = new List<string>();
             foreach (var path in viewLocations)
             {
