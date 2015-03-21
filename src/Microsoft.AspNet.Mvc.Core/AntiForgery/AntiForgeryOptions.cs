@@ -17,7 +17,6 @@ namespace Microsoft.AspNet.Mvc
 
         public AntiForgeryOptions()
         {
-            _cookieName = GetAntiForgeryCookieName();
         }
 
         /// <summary>
@@ -92,11 +91,6 @@ namespace Microsoft.AspNet.Mvc
         {
             get;
             set;
-        }
-
-        private string GetAntiForgeryCookieName()
-        {
-            return AntiForgeryTokenFieldName;
         }
     }
 }

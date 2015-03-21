@@ -94,6 +94,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // AntiForgery must be passed to TestableHtmlGenerator constructor but will never be called.
             var optionsAccessor = new Mock<IOptions<MvcOptions>>();
+            var mockDataProtectionOptions = new Mock<IOptions<DataProtectionOptions>>();
+            mockDataProtectionOptions
+                .SetupGet(options => options.Options)
+                .Returns(Mock.Of<DataProtectionOptions>());
+            optionsAccessor.SetupGet(o => o.Options).Returns(new MvcOptions());
             optionsAccessor
                 .SetupGet(o => o.Options)
                 .Returns(new MvcOptions());
@@ -102,7 +107,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Mock.Of<IDataProtectionProvider>(),
                 Mock.Of<IAntiForgeryAdditionalDataProvider>(),
                 optionsAccessor.Object,
-                new HtmlEncoder());
+                new HtmlEncoder(),
+                mockDataProtectionOptions.Object);
 
             return antiForgery;
         }

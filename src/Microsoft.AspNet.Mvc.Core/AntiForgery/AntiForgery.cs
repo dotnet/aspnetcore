@@ -1,10 +1,15 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.WebEncoders;
@@ -24,9 +29,13 @@ namespace Microsoft.AspNet.Mvc
                            [NotNull] IDataProtectionProvider dataProtectionProvider,
                            [NotNull] IAntiForgeryAdditionalDataProvider additionalDataProvider,
                            [NotNull] IOptions<MvcOptions> mvcOptions,
-                           [NotNull] IHtmlEncoder htmlEncoder)
+                           [NotNull] IHtmlEncoder htmlEncoder,
+                           [NotNull] IOptions<DataProtectionOptions> dataProtectionOptions)
         {
             var config = mvcOptions.Options.AntiForgeryOptions;
+            var applicationId = dataProtectionOptions.Options.ApplicationDiscriminator ?? string.Empty;
+            config.CookieName = config.CookieName ?? ComputeCookieName(applicationId);
+
             var serializer = new AntiForgeryTokenSerializer(dataProtectionProvider.CreateProtector(_purpose));
             var tokenStore = new AntiForgeryTokenStore(config, serializer);
             var tokenProvider = new TokenProvider(config, claimUidExtractor, additionalDataProvider);
@@ -108,6 +117,16 @@ namespace Microsoft.AspNet.Mvc
         public void SetCookieTokenAndHeader([NotNull] HttpContext context)
         {
             _worker.SetCookieTokenAndHeader(context);
+        }
+
+        private string ComputeCookieName(string applicationId)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(applicationId));
+                var subHash = hash.Take(8).ToArray();
+                return WebEncoders.Base64UrlEncode(subHash);
+            }
         }
     }
 }

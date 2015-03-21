@@ -38,8 +38,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Even though there are two forms there should only be one response cookie,
             // as for the second form, the cookie from the first token should be reused.
-            Assert.Equal(1, setCookieHeader.Length);
-            Assert.True(setCookieHeader[0].StartsWith("__RequestVerificationToken"));
+            Assert.Single(setCookieHeader);
         }
 
         [Fact]
@@ -59,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var cookieToken = AntiForgeryTestHelper.RetrieveAntiForgeryCookie(getResponse);
 
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
-            request.Headers.Add("Cookie", "__RequestVerificationToken=" + cookieToken);
+            request.Headers.Add("Cookie", cookieToken.Key + "=" + cookieToken.Value);
             var nameValueCollection = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string,string>("__RequestVerificationToken", formToken),
@@ -88,9 +87,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var resposneBody = await getResponse.Content.ReadAsStringAsync();
             var formToken = AntiForgeryTestHelper.RetrieveAntiForgeryToken(resposneBody, "Account/Login");
 
-            var cookieToken = "asdad";
+            var cookieToken = AntiForgeryTestHelper.RetrieveAntiForgeryCookie(getResponse);
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
-            request.Headers.Add("Cookie", "__RequestVerificationToken=" + cookieToken);
+            request.Headers.Add("Cookie", cookieToken.Key + "=invalidCookie");
 
             var nameValueCollection = new List<KeyValuePair<string, string>>
             {
@@ -121,7 +120,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var cookieToken = AntiForgeryTestHelper.RetrieveAntiForgeryCookie(getResponse);
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
             var formToken = "adsad";
-            request.Headers.Add("Cookie", "__RequestVerificationToken=" + cookieToken);
+            request.Headers.Add("Cookie", cookieToken.Key + "=" + cookieToken.Value);
             var nameValueCollection = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string,string>("__RequestVerificationToken", formToken),
@@ -156,9 +155,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var resposneBody2 = await getResponse2.Content.ReadAsStringAsync();
             var cookieToken2 = AntiForgeryTestHelper.RetrieveAntiForgeryCookie(getResponse2);
 
-            var cookieToken = cookieToken2;
+            var cookieToken = cookieToken2.Value;
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
-            request.Headers.Add("Cookie", "__RequestVerificationToken=" + cookieToken);
+            request.Headers.Add("Cookie", string.Format("{0}={1}", cookieToken2.Key, cookieToken2.Value));
             var formToken = formToken1;
             var nameValueCollection = new List<KeyValuePair<string, string>>
             {
@@ -188,6 +187,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var getResponse = await client.GetAsync("http://localhost/Account/Login");
             var resposneBody = await getResponse.Content.ReadAsStringAsync();
             var formToken = AntiForgeryTestHelper.RetrieveAntiForgeryToken(resposneBody, "Account/Login");
+            var cookieTokenKey = AntiForgeryTestHelper.RetrieveAntiForgeryCookie(getResponse).Key;
 
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
             var nameValueCollection = new List<KeyValuePair<string, string>>
@@ -204,7 +204,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var exception = response.GetServerException();
-            Assert.Equal("The required anti-forgery cookie \"__RequestVerificationToken\" is not present.", exception.ExceptionMessage);
+            Assert.Equal(
+                "The required anti-forgery cookie \"" + cookieTokenKey + "\" is not present.",
+                exception.ExceptionMessage);
         }
 
         [Fact]
@@ -218,7 +220,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var cookieToken = AntiForgeryTestHelper.RetrieveAntiForgeryCookie(getResponse);
 
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
-            request.Headers.Add("Cookie", "__RequestVerificationToken=" + cookieToken);
+            request.Headers.Add("Cookie", cookieToken.Key + "=" + cookieToken.Value);
             var nameValueCollection = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string,string>("UserName", "abra"),
@@ -251,9 +253,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("SAMEORIGIN", header);
 
             var setCookieHeader = response.Headers.GetValues("Set-Cookie").ToArray();
-
-            var cookie = Assert.Single(setCookieHeader);
-            Assert.True(cookie.StartsWith("__RequestVerificationToken"));
+            Assert.Single(setCookieHeader);
         }
 
         [Fact]
@@ -271,7 +271,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var cookieToken = AntiForgeryTestHelper.RetrieveAntiForgeryCookie(getResponse);
 
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/FlushAsyncLogin");
-            request.Headers.Add("Cookie", "__RequestVerificationToken=" + cookieToken);
+            request.Headers.Add("Cookie", cookieToken.Key + "=" + cookieToken.Value);
             var nameValueCollection = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string,string>("__RequestVerificationToken", formToken),

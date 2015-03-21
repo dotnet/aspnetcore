@@ -51,13 +51,25 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             }
         }
 
-        public static string RetrieveAntiForgeryCookie(HttpResponseMessage response)
+        public static CookieMetadata RetrieveAntiForgeryCookie(HttpResponseMessage response)
         {
             var setCookieArray = response.Headers.GetValues("Set-Cookie").ToArray();
-            return setCookieArray[0].Split(';')
-                                    .Where(headerValue => headerValue.StartsWith("__RequestVerificationToken"))
-                                    .First()
-                                    .Split('=')[1];
+            var cookie = setCookieArray[0].Split(';').First().Split('=');
+            var cookieKey = cookie[0];
+            var cookieData = cookie[1];
+
+            return new CookieMetadata()
+            {
+                Key = cookieKey,
+                Value = cookieData
+            };
+        }
+
+        public class CookieMetadata
+        {
+            public string Key { get; set; }
+
+            public string Value { get; set; }
         }
     }
 }
