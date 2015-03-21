@@ -156,8 +156,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var display = new DisplayAttribute()
             {
-                Name = "DisplayAttribute_Name",
+#if USE_REAL_RESOURCES
+                Name = nameof(Test.Resources.DisplayAttribute_Name),
+                ResourceType = typeof(Test.Resources),
+#else
+                Name = nameof(Test.Resources.DisplayAttribute_Name),
                 ResourceType = typeof(Test.TestResources),
+#endif
             };
 
             var attributes = new Attribute[] { display };
@@ -180,8 +185,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var display = new DisplayAttribute()
             {
-                Description = "DisplayAttribute_Description",
+#if USE_REAL_RESOURCES
+                Description = nameof(Test.Resources.DisplayAttribute_Description),
+                ResourceType = typeof(Test.Resources),
+#else
+                Description = nameof(Test.Resources.DisplayAttribute_Description),
                 ResourceType = typeof(Test.TestResources),
+#endif
             };
 
             var attributes = new Attribute[] { display };
@@ -568,7 +578,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             [Display(Name = "menos uno")]
             MinusOne = -1,
 
+#if USE_REAL_RESOURCES
+            [Display(Name = nameof(Test.Resources.DisplayAttribute_Name), ResourceType = typeof(Test.Resources))]
+#else
             [Display(Name = nameof(Test.TestResources.DisplayAttribute_Name), ResourceType = typeof(Test.TestResources))]
+#endif
             MinusTwo = -2,
         }
 

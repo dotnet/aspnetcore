@@ -3,12 +3,12 @@
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
-    // This class is a 'fake' resources for testing DisplayAttribute. We can't use actual resources
-    // because our generator makes it an internal class, which doesn't work with DisplayAttribute.
+    // Wrap resources to make them available as public properties for [Display]. That attribute does not support
+    // internal properties.
     public static class TestResources
     {
-        public static string DisplayAttribute_Description { get; } = "description from resources";
+        public static string DisplayAttribute_Description { get; } = Resources.DisplayAttribute_Description;
 
-        public static string DisplayAttribute_Name { get; } = "name from resources";
+        public static string DisplayAttribute_Name { get; } = Resources.DisplayAttribute_Name;
     }
 }
