@@ -1198,7 +1198,7 @@ function dnvm-setup {
     $ps1Command = Join-Path $ScriptFolder "$CommandName.ps1"
     if(Test-Path $ps1Command) {
         _WriteOut "Installing '$CommandName.ps1' to '$Destination' ..."
-        Copy-Item $ps1Command $Destination -Force
+        Copy-Item $ps1Command "$Destination" -Force
     } else {
         _WriteOut "WARNING: Could not find '$CommandName.ps1' in '$ScriptFolder'. Unable to install!"
     }
