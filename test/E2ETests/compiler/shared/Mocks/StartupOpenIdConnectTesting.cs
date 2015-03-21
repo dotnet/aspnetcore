@@ -5,6 +5,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Identity;
+using Microsoft.Data.Entity;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
@@ -44,7 +45,8 @@ namespace MusicStore
             {
                 services.AddEntityFramework()
                         .AddSqlServer()
-                        .AddDbContext<MusicStoreContext>();
+                        .AddDbContext<MusicStoreContext>(options =>
+                            options.UseSqlServer(Configuration.Get("Data:DefaultConnection:ConnectionString")));
             }
 
             // Add Identity services to the services container
