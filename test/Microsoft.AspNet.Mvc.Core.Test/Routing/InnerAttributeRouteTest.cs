@@ -404,7 +404,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal("template/5", result.VirtualPath);
+            Assert.Equal(new PathString("/template/5"), result.VirtualPath);
             Assert.Same(route, result.Router);
             Assert.Empty(result.DataTokens);
 
@@ -412,14 +412,14 @@ namespace Microsoft.AspNet.Mvc.Routing
         }
 
         [Theory]
-        [InlineData("template/{parameter:int}", "template/5", 5)]
-        [InlineData("template/{parameter:int?}", "template/5", 5)]
-        [InlineData("template/{parameter:int?}", "template", null)]
+        [InlineData("template/{parameter:int}", "/template/5", 5)]
+        [InlineData("template/{parameter:int?}", "/template/5", 5)]
+        [InlineData("template/{parameter:int?}", "/template", null)]
         [InlineData("template/{parameter:int?}", null, "asdf")]
-        [InlineData("template/{parameter:alpha?}", "template/asdf", "asdf")]
-        [InlineData("template/{parameter:alpha?}", "template", null)]
-        [InlineData("template/{parameter:int:range(1,20)?}", "template", null)]
-        [InlineData("template/{parameter:int:range(1,20)?}", "template/5", 5)]
+        [InlineData("template/{parameter:alpha?}", "/template/asdf", "asdf")]
+        [InlineData("template/{parameter:alpha?}", "/template", null)]
+        [InlineData("template/{parameter:int:range(1,20)?}", "/template", null)]
+        [InlineData("template/{parameter:int:range(1,20)?}", "/template/5", 5)]
         [InlineData("template/{parameter:int:range(1,20)?}", null, 21)]
         public void AttributeRoute_GenerateLink_OptionalInlineParameter
             (string template, string expectedPath, object parameter)
@@ -466,7 +466,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             else
             {
                 Assert.NotNull(result);
-                Assert.Equal(expectedPath, result.VirtualPath);
+                Assert.Equal(new PathString(expectedPath), result.VirtualPath);
                 Assert.Same(route, result.Router);
                 Assert.Empty(result.DataTokens);
             }
@@ -516,7 +516,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal("template/5", result.VirtualPath);
+            Assert.Equal(new PathString("/template/5"), result.VirtualPath);
             Assert.Same(route, result.Router);
             Assert.Empty(result.DataTokens);
 
@@ -561,7 +561,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal("template/5", result.VirtualPath);
+            Assert.Equal(new PathString("/template/5"), result.VirtualPath);
             Assert.Same(route, result.Router);
             Assert.Empty(result.DataTokens);
 
@@ -606,7 +606,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal("first/5", result.VirtualPath);
+            Assert.Equal(new PathString("/first/5"), result.VirtualPath);
             Assert.Same(route, result.Router);
             Assert.Empty(result.DataTokens);
 
@@ -710,7 +710,8 @@ namespace Microsoft.AspNet.Mvc.Routing
             IEnumerable<AttributeRouteLinkGenerationEntry> namedEntries)
         {
             // Arrange
-            var expectedLink = namedEntries.First().Template.Parameters.Any() ? "template/5" : "template";
+            var expectedLink = new PathString(
+                namedEntries.First().Template.Parameters.Any() ? "/template/5" : "/template");
 
             var expectedGroup = "0&" + namedEntries.First().TemplateText;
             string selectedGroup = null;
@@ -775,7 +776,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal("named", result.VirtualPath);
+            Assert.Equal(new PathString("/named"), result.VirtualPath);
             Assert.Same(route, result.Router);
             Assert.Empty(result.DataTokens);
 
@@ -899,7 +900,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal("template/5", result.VirtualPath);
+            Assert.Equal(new PathString("/template/5"), result.VirtualPath);
             Assert.Same(route, result.Router);
             Assert.Empty(result.DataTokens);
 
@@ -982,7 +983,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(pathData);
-            Assert.Equal("api/Store", pathData.VirtualPath);
+            Assert.Equal(new PathString("/api/Store"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1001,7 +1002,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(pathData);
-            Assert.Equal("api/Store", pathData.VirtualPath);
+            Assert.Equal(new PathString("/api/Store"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1036,7 +1037,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(pathData);
-            Assert.Equal("api/Store", pathData.VirtualPath);
+            Assert.Equal(new PathString("/api/Store"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1055,7 +1056,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(pathData);
-            Assert.Equal("api/Store/Index", pathData.VirtualPath);
+            Assert.Equal(new PathString("/api/Store/Index"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1088,7 +1089,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(pathData);
-            Assert.Equal("api/AwesomeCo/dosomething/Store/Index", pathData.VirtualPath);
+            Assert.Equal(new PathString("/api/AwesomeCo/dosomething/Store/Index"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
@@ -1109,7 +1110,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(pathData);
-            Assert.Equal("api/Store", pathData.VirtualPath);
+            Assert.Equal(new PathString("/api/Store"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1137,7 +1138,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(pathData);
-            Assert.Equal("api/Store/Index/5", pathData.VirtualPath);
+            Assert.Equal(new PathString("/api/Store/Index/5"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
@@ -1181,7 +1182,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(pathData);
-            Assert.Equal("api/Store", pathData.VirtualPath);
+            Assert.Equal(new PathString("/api/Store"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1200,7 +1201,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(pathData);
-            Assert.Equal("api/Store?id=5", pathData.VirtualPath);
+            Assert.Equal(new PathString("/api/Store?id=5"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1244,7 +1245,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(pathData);
-            Assert.Equal("api2/Blog", pathData.VirtualPath);
+            Assert.Equal(new PathString("/api2/Blog"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1277,7 +1278,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(pathData);
-            Assert.Equal("api2/Store", pathData.VirtualPath);
+            Assert.Equal(new PathString("/api2/Store"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
@@ -1305,7 +1306,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(pathData);
-            Assert.Equal("Help/Store", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Help/Store"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1331,7 +1332,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(pathData);
-            Assert.Equal("Help/Store", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Help/Store"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1359,7 +1360,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(pathData);
-            Assert.Equal("Help/Store", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Help/Store"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1387,7 +1388,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(pathData);
-            Assert.Equal("Store", pathData.VirtualPath);
+            Assert.Equal(new PathString("/Store"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -1406,56 +1407,56 @@ namespace Microsoft.AspNet.Mvc.Routing
                         "Test/{val1}/{val2}.{val3?}",                        
                         new {val1 = "someval1", val2 = "someval2", val3 = "someval3a"},
                         new {val3 = "someval3v"},
-                        "Test/someval1/someval2.someval3v",
+                        "/Test/someval1/someval2.someval3v",
                     },
                     new object[]
                     {
                         "Test/{val1}/{val2}.{val3?}",
                         new {val3 = "someval3a"},
                         new {val1 = "someval1", val2 = "someval2", val3 = "someval3v" },
-                        "Test/someval1/someval2.someval3v",
+                        "/Test/someval1/someval2.someval3v",
                     },
                     new object[]
                     {
                         "Test/{val1}/{val2}.{val3?}",
                         null,
                         new {val1 = "someval1", val2 = "someval2" },
-                        "Test/someval1/someval2",
+                        "/Test/someval1/someval2",
                     },                    
                     new object[]
                     {
                         "Test/{val1}.{val2}.{val3}.{val4?}",
                         new {val1 = "someval1", val2 = "someval2" },                        
                         new {val4 = "someval4", val3 = "someval3" },
-                        "Test/someval1.someval2.someval3.someval4",
+                        "/Test/someval1.someval2.someval3.someval4",
                     },
                     new object[]
                     {
                         "Test/{val1}.{val2}.{val3}.{val4?}",
                         new {val1 = "someval1", val2 = "someval2" },                        
                         new {val3 = "someval3" },
-                        "Test/someval1.someval2.someval3",
+                        "/Test/someval1.someval2.someval3",
                     },
                     new object[]
                     {
                         "Test/.{val2?}",
                         null,
                         new {val2 = "someval2" },
-                        "Test/.someval2",
+                        "/Test/.someval2",
                     },
                     new object[]
                     {
                         "Test/.{val2?}",
                         null,
                         null,
-                        "Test/",
+                        "/Test/",
                     },
                     new object[]
                     {
                         "Test/{val1}.{val2}",
                         new {val1 = "someval1", val2 = "someval2" },
                         new {val3 = "someval3" },
-                        "Test/someval1.someval2?val3=someval3",
+                        "/Test/someval1.someval2?val3=someval3",
                     },
                 };
             }
@@ -1480,7 +1481,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Assert
             Assert.NotNull(pathData);
-            Assert.Equal(expected, pathData.VirtualPath);
+            Assert.Equal(new PathString(expected), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }

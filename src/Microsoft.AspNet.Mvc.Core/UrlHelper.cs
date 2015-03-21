@@ -108,14 +108,7 @@ namespace Microsoft.AspNet.Mvc
             // VirtualPathData.VirtualPath returns string.Empty for null.
             Debug.Assert(pathData.VirtualPath != null);
 
-            var path = pathData.VirtualPath;
-            // See Routing Issue#31
-            if (path.Length > 0 && path[0] != '/')
-            {
-                path = "/" + path;
-            }
-
-            var fullPath = _httpContext.Request.PathBase.Add(new PathString(path)).Value;
+            var fullPath = _httpContext.Request.PathBase.Add(pathData.VirtualPath).Value;
             if (fullPath.Length == 0)
             {
                 return "/";
