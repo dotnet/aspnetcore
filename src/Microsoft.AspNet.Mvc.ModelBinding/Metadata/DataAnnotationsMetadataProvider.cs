@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
@@ -91,6 +94,39 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 displayMetadata.EditFormatString = displayFormatAttribute.DataFormatString;
             }
 
+            // IsEnum et cetera
+            var underlyingType = Nullable.GetUnderlyingType(context.Key.ModelType) ?? context.Key.ModelType;
+            if (underlyingType.IsEnum())
+            {
+                // IsEnum
+                displayMetadata.IsEnum = true;
+
+                // IsFlagsEnum
+                var underlyingTypeInfo = underlyingType.GetTypeInfo();
+                displayMetadata.IsFlagsEnum =
+                    underlyingTypeInfo.GetCustomAttribute<FlagsAttribute>(inherit: false) != null;
+
+                // EnumDisplayNamesAndValues and EnumNamesAndValues
+                //
+                // Order EnumDisplayNamesAndValues to match Enum.GetNames(). That method orders by absolute value,
+                // then its behavior is undefined (but hopefully stable). Add to EnumNamesAndValues in same order but
+                // Dictionary does not guarantee order will be preserved.
+                var displayNamesAndValues = new List<KeyValuePair<string, string>>();
+                var namesAndValues = new Dictionary<string, string>();
+                foreach (var name in Enum.GetNames(underlyingType))
+                {
+                    var field = underlyingType.GetField(name);
+                    var displayName = GetDisplayName(field);
+                    var value = ((Enum)field.GetValue(obj: null)).ToString("d");
+
+                    displayNamesAndValues.Add(new KeyValuePair<string, string>(displayName, value));
+                    namesAndValues.Add(name, value);
+                }
+
+                displayMetadata.EnumDisplayNamesAndValues = displayNamesAndValues;
+                displayMetadata.EnumNamesAndValues = namesAndValues;
+            }
+
             // HasNonDefaultEditFormat
             if (!string.IsNullOrEmpty(displayFormatAttribute?.DataFormatString) &&
                 displayFormatAttribute?.ApplyFormatInEditMode == true)
@@ -139,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 displayMetadata.Order = displayAttribute.GetOrder().Value;
             }
 
-            // ShowForDisplay 
+            // ShowForDisplay
             if (scaffoldColumnAttribute != null)
             {
                 displayMetadata.ShowForDisplay = scaffoldColumnAttribute.Scaffold;
@@ -157,7 +193,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 displayMetadata.SimpleDisplayProperty = displayColumnAttribute.DisplayColumn;
             }
 
-            // TemplateHinte
+            // TemplateHint
             if (uiHintAttribute != null)
             {
                 displayMetadata.TemplateHint = uiHintAttribute.UIHint;
@@ -175,6 +211,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             {
                 context.ValidationMetadata.ValiatorMetadata.Add(attribute);
             }
+        }
+
+        // Return non-empty name specified in a [Display] attribute for a field, if any; field.Name otherwise.
+        private static string GetDisplayName(FieldInfo field)
+        {
+            var display = field.GetCustomAttribute<DisplayAttribute>(inherit: false);
+            if (display != null)
+            {
+                var name = display.GetName();
+                if (!string.IsNullOrEmpty(name))
+                {
+                    return name;
+                }
+            }
+
+            return field.Name;
         }
     }
 }

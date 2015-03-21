@@ -121,6 +121,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public abstract string EditFormatString { get; }
 
         /// <summary>
+        /// Gets the ordered display names and values of all <see cref="Enum"/> values in <see cref="ModelType"/> or
+        /// <c>Nullable.GetUnderlyingType(ModelType)</c>.
+        /// </summary>
+        /// <value>
+        /// An <see cref="IEnumerable{KeyValuePair{string, string}}"/> of mappings between <see cref="Enum"/> field names
+        /// and values. <c>null</c> if <see cref="IsEnum"/> is <c>false</c>.
+        /// </value>
+        public abstract IEnumerable<KeyValuePair<string, string>> EnumDisplayNamesAndValues { get; }
+
+        /// <summary>
+        /// Gets the names and values of all <see cref="Enum"/> values in <see cref="ModelType"/> or
+        /// <c>Nullable.GetUnderlyingType(ModelType)</c>.
+        /// </summary>
+        /// <value>
+        /// An <see cref="IReadOnlyDictionary{string, string}"/> of mappings between <see cref="Enum"/> field names
+        /// and values. <c>null</c> if <see cref="IsEnum"/> is <c>false</c>.
+        /// </value>
+        public abstract IReadOnlyDictionary<string, string> EnumNamesAndValues { get; }
+
+        /// <summary>
         /// Gets a value indicating whether <see cref="EditFormatString"/> has a non-<c>null</c>, non-empty
         /// value different from the default for the datatype.
         /// </summary>
@@ -144,6 +164,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// editor template returns only the hidden &lt;input&gt; element for the property.
         /// </remarks>
         public abstract bool HideSurroundingHtml { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether <see cref="ModelType"/> or <c>Nullable.GetUnderlyingType(ModelType)</c> is
+        /// for an <see cref="Enum"/>.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if <c>type.IsEnum</c> (<c>type.GetTypeInfo().IsEnum</c> for DNX Core 5.0) is <c>true</c> for
+        /// <see cref="ModelType"/> or <c>Nullable.GetUnderlyingType(ModelType)</c>; <c>false</c> otherwise.
+        /// </value>
+        public abstract bool IsEnum { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether <see cref="ModelType"/> or <c>Nullable.GetUnderlyingType(ModelType)</c> is
+        /// for an <see cref="Enum"/> with an associated <see cref="FlagsAttribute"/>.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if <see cref="IsEnum"/> is <c>true</c> and <see cref="ModelType"/> or
+        /// <c>Nullable.GetUnderlyingType(ModelType)</c> has an associated <see cref="FlagsAttribute"/>; <c>false</c>
+        /// otherwise.
+        /// </value>
+        public abstract bool IsFlagsEnum { get; }
 
         /// <summary>
         /// Gets a value indicating whether or not the model value is read-only. This is only applicable when

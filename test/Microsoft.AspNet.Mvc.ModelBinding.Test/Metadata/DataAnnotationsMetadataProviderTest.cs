@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Xunit;
 
@@ -9,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 {
     public class DataAnnotationsMetadataProviderTest
     {
-        // Includes attributes with a 'simple' effect on display details. 
+        // Includes attributes with a 'simple' effect on display details.
         public static TheoryData<object, Func<DisplayMetadata, object>, object> DisplayDetailsData
         {
             get
@@ -47,8 +48,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         [Theory]
         [MemberData(nameof(DisplayDetailsData))]
         public void GetDisplayDetails_SimpleAttributes(
-            object attribute, 
-            Func<DisplayMetadata, object> accessor, 
+            object attribute,
+            Func<DisplayMetadata, object> accessor,
             object expected)
         {
             // Arrange
@@ -192,6 +193,438 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             // Assert
             Assert.Equal("description from resources", context.DisplayMetadata.Description);
+        }
+
+        [Theory]
+        [InlineData(typeof(EmptyClass), false)]
+        [InlineData(typeof(ClassWithFields), false)]
+        [InlineData(typeof(ClassWithProperties), false)]
+        [InlineData(typeof(EmptyEnum), true)]
+        [InlineData(typeof(EmptyEnum?), true)]
+        [InlineData(typeof(EnumWithDisplayNames), true)]
+        [InlineData(typeof(EnumWithDisplayNames?), true)]
+        [InlineData(typeof(EnumWithDuplicates), true)]
+        [InlineData(typeof(EnumWithDuplicates?), true)]
+        [InlineData(typeof(EnumWithFlags), true)]
+        [InlineData(typeof(EnumWithFlags?), true)]
+        [InlineData(typeof(EnumWithFields), true)]
+        [InlineData(typeof(EnumWithFields?), true)]
+        [InlineData(typeof(EmptyStruct), false)]
+        [InlineData(typeof(StructWithFields), false)]
+        [InlineData(typeof(StructWithFields?), false)]
+        [InlineData(typeof(StructWithProperties), false)]
+        public void GetDisplayDetails_IsEnum_ReflectsModelType(Type type, bool expectedIsEnum)
+        {
+            // Arrange
+            var provider = new DataAnnotationsMetadataProvider();
+
+            var key = ModelMetadataIdentity.ForType(type);
+            var attributes = new object[0];
+            var context = new DisplayMetadataProviderContext(key, attributes);
+
+            // Act
+            provider.GetDisplayMetadata(context);
+
+            // Assert
+            Assert.Equal(expectedIsEnum, context.DisplayMetadata.IsEnum);
+        }
+
+        [Theory]
+        [InlineData(typeof(EmptyClass), false)]
+        [InlineData(typeof(ClassWithFields), false)]
+        [InlineData(typeof(ClassWithProperties), false)]
+        [InlineData(typeof(EmptyEnum), false)]
+        [InlineData(typeof(EmptyEnum?), false)]
+        [InlineData(typeof(EnumWithDisplayNames), false)]
+        [InlineData(typeof(EnumWithDisplayNames?), false)]
+        [InlineData(typeof(EnumWithDuplicates), false)]
+        [InlineData(typeof(EnumWithDuplicates?), false)]
+        [InlineData(typeof(EnumWithFlags), true)]
+        [InlineData(typeof(EnumWithFlags?), true)]
+        [InlineData(typeof(EnumWithFields), false)]
+        [InlineData(typeof(EnumWithFields?), false)]
+        [InlineData(typeof(EmptyStruct), false)]
+        [InlineData(typeof(StructWithFields), false)]
+        [InlineData(typeof(StructWithFields?), false)]
+        [InlineData(typeof(StructWithProperties), false)]
+        public void GetDisplayDetails_IsFlagsEnum_ReflectsModelType(Type type, bool expectedIsFlagsEnum)
+        {
+            // Arrange
+            var provider = new DataAnnotationsMetadataProvider();
+
+            var key = ModelMetadataIdentity.ForType(type);
+            var attributes = new object[0];
+            var context = new DisplayMetadataProviderContext(key, attributes);
+
+            // Act
+            provider.GetDisplayMetadata(context);
+
+            // Assert
+            Assert.Equal(expectedIsFlagsEnum, context.DisplayMetadata.IsFlagsEnum);
+        }
+
+        // Type -> expected EnumNamesAndValues
+        public static TheoryData<Type, IReadOnlyDictionary<string, string>> EnumNamesData
+        {
+            get
+            {
+                return new TheoryData<Type, IReadOnlyDictionary<string, string>>
+                {
+                    { typeof(ClassWithFields), null },
+                    { typeof(StructWithFields), null },
+                    { typeof(StructWithFields?), null },
+                    { typeof(EmptyEnum), new Dictionary<string, string>() },
+                    { typeof(EmptyEnum?), new Dictionary<string, string>() },
+                    {
+                        typeof(EnumWithDisplayNames),
+                        new Dictionary<string, string>
+                        {
+                            { nameof(EnumWithDisplayNames.MinusTwo), "-2" },
+                            { nameof(EnumWithDisplayNames.MinusOne), "-1" },
+                            { nameof(EnumWithDisplayNames.Zero), "0" },
+                            { nameof(EnumWithDisplayNames.One), "1" },
+                            { nameof(EnumWithDisplayNames.Two), "2" },
+                            { nameof(EnumWithDisplayNames.Three), "3" },
+                        }
+                    },
+                    {
+                        typeof(EnumWithDisplayNames?),
+                        new Dictionary<string, string>
+                        {
+                            { nameof(EnumWithDisplayNames.MinusTwo), "-2" },
+                            { nameof(EnumWithDisplayNames.MinusOne), "-1" },
+                            { nameof(EnumWithDisplayNames.Zero), "0" },
+                            { nameof(EnumWithDisplayNames.One), "1" },
+                            { nameof(EnumWithDisplayNames.Two), "2" },
+                            { nameof(EnumWithDisplayNames.Three), "3" },
+                        }
+                    },
+                    {
+                        typeof(EnumWithDuplicates),
+                        new Dictionary<string, string>
+                        {
+                            { nameof(EnumWithDuplicates.Zero), "0" },
+                            { nameof(EnumWithDuplicates.None), "0" },
+                            { nameof(EnumWithDuplicates.One), "1" },
+                            { nameof(EnumWithDuplicates.Two), "2" },
+                            { nameof(EnumWithDuplicates.Duece), "2" },
+                            { nameof(EnumWithDuplicates.Three), "3" },
+                            { nameof(EnumWithDuplicates.MoreThanTwo), "3" },
+                        }
+                    },
+                    {
+                        typeof(EnumWithDuplicates?),
+                        new Dictionary<string, string>
+                        {
+                            { nameof(EnumWithDuplicates.Zero), "0" },
+                            { nameof(EnumWithDuplicates.None), "0" },
+                            { nameof(EnumWithDuplicates.One), "1" },
+                            { nameof(EnumWithDuplicates.Two), "2" },
+                            { nameof(EnumWithDuplicates.Duece), "2" },
+                            { nameof(EnumWithDuplicates.Three), "3" },
+                            { nameof(EnumWithDuplicates.MoreThanTwo), "3" },
+                        }
+                    },
+                    {
+                        typeof(EnumWithFlags),
+                        new Dictionary<string, string>
+                        {
+                            { nameof(EnumWithFlags.All), "-1" },
+                            { nameof(EnumWithFlags.Zero), "0" },
+                            { nameof(EnumWithFlags.One), "1" },
+                            { nameof(EnumWithFlags.Two), "2" },
+                            { nameof(EnumWithFlags.Four), "4" },
+                        }
+                    },
+                    {
+                        typeof(EnumWithFlags?),
+                        new Dictionary<string, string>
+                        {
+                            { nameof(EnumWithFlags.All), "-1" },
+                            { nameof(EnumWithFlags.Zero), "0" },
+                            { nameof(EnumWithFlags.One), "1" },
+                            { nameof(EnumWithFlags.Two), "2" },
+                            { nameof(EnumWithFlags.Four), "4" },
+                        }
+                    },
+                    {
+                        typeof(EnumWithFields),
+                        new Dictionary<string, string>
+                        {
+                            { nameof(EnumWithFields.MinusTwo), "-2" },
+                            { nameof(EnumWithFields.MinusOne), "-1" },
+                            { nameof(EnumWithFields.Zero), "0" },
+                            { nameof(EnumWithFields.One), "1" },
+                            { nameof(EnumWithFields.Two), "2" },
+                            { nameof(EnumWithFields.Three), "3" },
+                        }
+                    },
+                    {
+                        typeof(EnumWithFields?),
+                        new Dictionary<string, string>
+                        {
+                            { nameof(EnumWithFields.MinusTwo), "-2" },
+                            { nameof(EnumWithFields.MinusOne), "-1" },
+                            { nameof(EnumWithFields.Zero), "0" },
+                            { nameof(EnumWithFields.One), "1" },
+                            { nameof(EnumWithFields.Two), "2" },
+                            { nameof(EnumWithFields.Three), "3" },
+                        }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(EnumNamesData))]
+        public void GetDisplayDetails_EnumNamesAndValues_ReflectsModelType(
+            Type type,
+            IReadOnlyDictionary<string, string> expectedDictionary)
+        {
+            // Arrange
+            var provider = new DataAnnotationsMetadataProvider();
+
+            var key = ModelMetadataIdentity.ForType(type);
+            var attributes = new object[0];
+            var context = new DisplayMetadataProviderContext(key, attributes);
+
+            // Act
+            provider.GetDisplayMetadata(context);
+
+            // Assert
+            // This assertion does *not* require entry orders to match.
+            Assert.Equal(expectedDictionary, context.DisplayMetadata.EnumNamesAndValues);
+        }
+
+        // Type -> expected EnumDisplayNamesAndValues
+        public static TheoryData<Type, IEnumerable<KeyValuePair<string, string>>> EnumDisplayNamesData
+        {
+            get
+            {
+                return new TheoryData<Type, IEnumerable<KeyValuePair<string, string>>>
+                {
+                    { typeof(ClassWithFields), null },
+                    { typeof(StructWithFields), null },
+                    { typeof(EmptyEnum), new List<KeyValuePair<string, string>>() },
+                    { typeof(EmptyEnum?), new List<KeyValuePair<string, string>>() },
+                    {
+                        typeof(EnumWithDisplayNames),
+                        new List<KeyValuePair<string, string>>
+                        {
+                            new KeyValuePair<string, string>("cero", "0"),
+                            new KeyValuePair<string, string>("uno", "1"),
+                            new KeyValuePair<string, string>("dos", "2"),
+                            new KeyValuePair<string, string>("tres", "3"),
+                            new KeyValuePair<string, string>("name from resources", "-2"),
+                            new KeyValuePair<string, string>("menos uno", "-1"),
+                        }
+                    },
+                    {
+                        typeof(EnumWithDisplayNames?),
+                        new List<KeyValuePair<string, string>>
+                        {
+                            new KeyValuePair<string, string>("cero", "0"),
+                            new KeyValuePair<string, string>("uno", "1"),
+                            new KeyValuePair<string, string>("dos", "2"),
+                            new KeyValuePair<string, string>("tres", "3"),
+                            new KeyValuePair<string, string>("name from resources", "-2"),
+                            new KeyValuePair<string, string>("menos uno", "-1"),
+                        }
+                    },
+                    {
+                        // Note order duplicates appear cannot be inferred easily e.g. does not match the source.
+                        // Zero is before None but Two is before Duece in the class below.
+                        typeof(EnumWithDuplicates),
+                        new List<KeyValuePair<string, string>>
+                        {
+                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.Zero), "0"),
+                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.None), "0"),
+                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.One), "1"),
+                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.Duece), "2"),
+                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.Two), "2"),
+                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.MoreThanTwo), "3"),
+                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.Three), "3"),
+                        }
+                    },
+                    {
+                        typeof(EnumWithDuplicates?),
+                        new List<KeyValuePair<string, string>>
+                        {
+                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.Zero), "0"),
+                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.None), "0"),
+                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.One), "1"),
+                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.Duece), "2"),
+                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.Two), "2"),
+                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.MoreThanTwo), "3"),
+                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.Three), "3"),
+                        }
+                    },
+                    {
+                        typeof(EnumWithFlags),
+                        new List<KeyValuePair<string, string>>
+                        {
+                            new KeyValuePair<string, string>(nameof(EnumWithFlags.Zero), "0"),
+                            new KeyValuePair<string, string>(nameof(EnumWithFlags.One), "1"),
+                            new KeyValuePair<string, string>(nameof(EnumWithFlags.Two), "2"),
+                            new KeyValuePair<string, string>(nameof(EnumWithFlags.Four), "4"),
+                            new KeyValuePair<string, string>(nameof(EnumWithFlags.All), "-1"),
+                        }
+                    },
+                    {
+                        typeof(EnumWithFlags?),
+                        new List<KeyValuePair<string, string>>
+                        {
+                            new KeyValuePair<string, string>(nameof(EnumWithFlags.Zero), "0"),
+                            new KeyValuePair<string, string>(nameof(EnumWithFlags.One), "1"),
+                            new KeyValuePair<string, string>(nameof(EnumWithFlags.Two), "2"),
+                            new KeyValuePair<string, string>(nameof(EnumWithFlags.Four), "4"),
+                            new KeyValuePair<string, string>(nameof(EnumWithFlags.All), "-1"),
+                        }
+                    },
+                    {
+                        typeof(EnumWithFields),
+                        new List<KeyValuePair<string, string>>
+                        {
+                            new KeyValuePair<string, string>(nameof(EnumWithFields.Zero), "0"),
+                            new KeyValuePair<string, string>(nameof(EnumWithFields.One), "1"),
+                            new KeyValuePair<string, string>(nameof(EnumWithFields.Two), "2"),
+                            new KeyValuePair<string, string>(nameof(EnumWithFields.Three), "3"),
+                            new KeyValuePair<string, string>(nameof(EnumWithFields.MinusTwo), "-2"),
+                            new KeyValuePair<string, string>(nameof(EnumWithFields.MinusOne), "-1"),
+                        }
+                    },
+                    {
+                        typeof(EnumWithFields?),
+                        new List<KeyValuePair<string, string>>
+                        {
+                            new KeyValuePair<string, string>(nameof(EnumWithFields.Zero), "0"),
+                            new KeyValuePair<string, string>(nameof(EnumWithFields.One), "1"),
+                            new KeyValuePair<string, string>(nameof(EnumWithFields.Two), "2"),
+                            new KeyValuePair<string, string>(nameof(EnumWithFields.Three), "3"),
+                            new KeyValuePair<string, string>(nameof(EnumWithFields.MinusTwo), "-2"),
+                            new KeyValuePair<string, string>(nameof(EnumWithFields.MinusOne), "-1"),
+                        }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(EnumDisplayNamesData))]
+        public void GetDisplayDetails_EnumDisplayNamesAndValues_ReflectsModelType(
+            Type type,
+            IEnumerable<KeyValuePair<string, string>> expectedKeyValuePairs)
+        {
+            // Arrange
+            var provider = new DataAnnotationsMetadataProvider();
+
+            var key = ModelMetadataIdentity.ForType(type);
+            var attributes = new object[0];
+            var context = new DisplayMetadataProviderContext(key, attributes);
+
+            // Act
+            provider.GetDisplayMetadata(context);
+
+            // Assert
+            Assert.Equal(expectedKeyValuePairs, context.DisplayMetadata.EnumDisplayNamesAndValues);
+        }
+
+        private class EmptyClass
+        {
+        }
+
+        private class ClassWithFields
+        {
+            public const int Zero = 0;
+
+            public const int One = 1;
+        }
+
+        private class ClassWithProperties
+        {
+            public int Id { get; set; }
+
+            public string Name { get; set; }
+        }
+
+        private enum EmptyEnum
+        {
+        }
+
+        private enum EnumWithDisplayNames
+        {
+            [Display(Name = "tres")]
+            Three = 3,
+
+            [Display(Name = "dos")]
+            Two = 2,
+
+            [Display(Name = "uno")]
+            One = 1,
+
+            [Display(Name = "cero")]
+            Zero = 0,
+
+            [Display(Name = "menos uno")]
+            MinusOne = -1,
+
+            [Display(Name = nameof(Test.TestResources.DisplayAttribute_Name), ResourceType = typeof(Test.TestResources))]
+            MinusTwo = -2,
+        }
+
+        private enum EnumWithDuplicates
+        {
+            Zero = 0,
+            One = 1,
+            Three = 3,
+            MoreThanTwo = 3,
+            Two = 2,
+            None = 0,
+            Duece = 2,
+        }
+
+        [Flags]
+        private enum EnumWithFlags
+        {
+            Four = 4,
+            Two = 2,
+            One = 1,
+            Zero = 0,
+            All = -1,
+        }
+
+        private enum EnumWithFields
+        {
+            MinusTwo = -2,
+            MinusOne = -1,
+            Three = 3,
+            Two = 2,
+            One = 1,
+            Zero = 0,
+        }
+
+        private struct EmptyStruct
+        {
+        }
+
+        private struct StructWithFields
+        {
+            public const int Zero = 0;
+
+            public const int One = 1;
+        }
+
+        private struct StructWithProperties
+        {
+            public StructWithProperties(int id, string name)
+            {
+                Id = id;
+                Name = name;
+            }
+
+            public int Id { get; private set; }
+
+            public string Name { get; private set; }
         }
     }
 }

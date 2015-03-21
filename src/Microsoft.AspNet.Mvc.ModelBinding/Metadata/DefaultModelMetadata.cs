@@ -211,6 +211,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
+        public override IEnumerable<KeyValuePair<string, string>> EnumDisplayNamesAndValues
+        {
+            get
+            {
+                return DisplayMetadata.EnumDisplayNamesAndValues;
+            }
+        }
+
+        /// <inheritdoc />
+        public override IReadOnlyDictionary<string, string> EnumNamesAndValues
+        {
+            get
+            {
+                return DisplayMetadata.EnumNamesAndValues;
+            }
+        }
+
+        /// <inheritdoc />
         public override bool HasNonDefaultEditFormat
         {
             get
@@ -234,6 +252,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             get
             {
                 return DisplayMetadata.HtmlEncode;
+            }
+        }
+
+        /// <inheritdoc />
+        public override bool IsEnum
+        {
+            get
+            {
+                return DisplayMetadata.IsEnum;
+            }
+        }
+
+        /// <inheritdoc />
+        public override bool IsFlagsEnum
+        {
+            get
+            {
+                return DisplayMetadata.IsFlagsEnum;
             }
         }
 
@@ -274,7 +310,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                         _isRequired = !ModelType.AllowsNullValue();
                     }
                 }
-                
+
                 return _isRequired.Value;
             }
         }

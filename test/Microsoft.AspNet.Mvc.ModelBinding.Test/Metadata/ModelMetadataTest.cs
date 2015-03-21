@@ -269,6 +269,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
 
+            public override IEnumerable<KeyValuePair<string, string>> EnumDisplayNamesAndValues
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override IReadOnlyDictionary<string, string> EnumNamesAndValues
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
             public override bool HasNonDefaultEditFormat
             {
                 get
@@ -286,6 +302,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             public override bool HtmlEncode
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override bool IsEnum
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override bool IsFlagsEnum
             {
                 get
                 {

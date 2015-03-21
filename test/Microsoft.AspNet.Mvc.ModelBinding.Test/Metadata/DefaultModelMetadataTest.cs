@@ -39,6 +39,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             Assert.True(metadata.HtmlEncode);
             Assert.False(metadata.IsComplexType);
             Assert.False(metadata.IsCollectionType);
+            Assert.False(metadata.IsEnum);
+            Assert.False(metadata.IsFlagsEnum);
             Assert.False(metadata.IsNullableValueType);
             Assert.False(metadata.IsReadOnly);
             Assert.False(metadata.IsRequired);
@@ -50,6 +52,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             Assert.Null(metadata.DisplayFormatString);
             Assert.Null(metadata.DisplayName);
             Assert.Null(metadata.EditFormatString);
+            Assert.Null(metadata.EnumDisplayNamesAndValues);
+            Assert.Null(metadata.EnumNamesAndValues);
             Assert.Null(metadata.NullDisplayText);
             Assert.Null(metadata.TemplateHint);
             Assert.Null(metadata.SimpleDisplayProperty);
