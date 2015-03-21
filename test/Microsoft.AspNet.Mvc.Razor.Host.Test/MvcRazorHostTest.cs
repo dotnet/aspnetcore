@@ -1,20 +1,52 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.Mvc.Razor.Directives;
+using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
+using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Text;
+using Microsoft.Framework.Internal;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
     public class MvcRazorHostTest
     {
+        [Theory]
+        [InlineData("//")]
+        [InlineData("C:/")]
+        [InlineData(@"\\")]
+        [InlineData(@"C:\")]
+        public void DecorateRazorParser_DesignTimeRazorPathNormalizer_NormalizesChunkInheritanceUtilityPaths(
+            string rootPrefix)
+        {
+            // Arrange
+            var rootedAppPath = $"{rootPrefix}SomeComputer/Location/Project/";
+            var rootedFilePath = $"{rootPrefix}SomeComputer/Location/Project/src/file.cshtml";
+            var host = new MvcRazorHost(
+                codeTreeCache: null,
+                pathNormalizer: new DesignTimeRazorPathNormalizer(rootedAppPath));
+            var parser = new RazorParser(
+                host.CodeLanguage.CreateCodeParser(),
+                host.CreateMarkupParser(),
+                tagHelperDescriptorResolver: null);
+            var chunkInheritanceUtility = new PathValidatingChunkInheritanceUtility(host);
+            host.ChunkInheritanceUtility = chunkInheritanceUtility;
+
+            // Act
+            host.DecorateRazorParser(parser, rootedFilePath);
+
+            // Assert
+            Assert.Equal("src/file.cshtml", chunkInheritanceUtility.InheritedCodeTreePagePath, StringComparer.Ordinal);
+        }
+
         [Fact]
         public void MvcRazorHost_EnablesInstrumentationByDefault()
         {
@@ -252,6 +284,23 @@ namespace Microsoft.AspNet.Mvc.Razor
             return new LineMapping(
                 documentLocation: new MappingLocation(documentLocation, contentLength),
                 generatedLocation: new MappingLocation(generatedLocation, contentLength));
+        }
+
+        private class PathValidatingChunkInheritanceUtility : ChunkInheritanceUtility
+        {
+            public PathValidatingChunkInheritanceUtility(MvcRazorHost razorHost)
+                : base(razorHost, codeTreeCache: null, defaultInheritedChunks: new Chunk[0])
+            {
+            }
+
+            public string InheritedCodeTreePagePath { get; private set; }
+
+            public override IReadOnlyList<CodeTree> GetInheritedCodeTrees([NotNull] string pagePath)
+            {
+                InheritedCodeTreePagePath = pagePath;
+
+                return new CodeTree[0];
+            }
         }
 
         /// <summary>

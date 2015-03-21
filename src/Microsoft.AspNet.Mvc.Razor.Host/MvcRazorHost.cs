@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Razor.Directives;
+using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
@@ -36,31 +37,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         // This field holds the type name without the generic decoration (MyBaseType)
         private readonly string _baseType;
         private readonly ICodeTreeCache _codeTreeCache;
+        private readonly RazorPathNormalizer _pathNormalizer;
         private ChunkInheritanceUtility _chunkInheritanceUtility;
 
-#if NET45
-        /// <summary>
-        /// Initializes a new instance of <see cref="MvcRazorHost"/> with the specified
-        /// <param name="root"/>.
-        /// </summary>
-        /// <param name="root">The path to the application base.</param>
-        // Note: This constructor is used by tooling and is created once for each
-        // Razor page that is loaded. Consequently, each loaded page has its own copy of
-        // the CodeTreeCache, but this ok - having a shared CodeTreeCache per application in tooling
-        // is problematic to manage.
-        public MvcRazorHost(string root) :
-            this(new DefaultCodeTreeCache(new PhysicalFileProvider(root)))
-        {
-            ApplicationRoot = root;
-        }
-#endif
-        /// <summary>
-        /// Initializes a new instance of <see cref="MvcRazorHost"/> using the specified <paramref name="fileProvider"/>.
-        /// </summary>
-        /// <param name="fileProvider">A <see cref="IFileProvider"/> rooted at the application base path.</param>
-        public MvcRazorHost(ICodeTreeCache codeTreeCache)
+        internal MvcRazorHost(ICodeTreeCache codeTreeCache, RazorPathNormalizer pathNormalizer)
             : base(new CSharpRazorCodeLanguage())
         {
+            _pathNormalizer = pathNormalizer;
             _baseType = BaseType;
             _codeTreeCache = codeTreeCache;
 
@@ -115,10 +98,26 @@ namespace Microsoft.AspNet.Mvc.Razor
 
 #if NET45
         /// <summary>
-        /// The path to the application root.
+        /// Initializes a new instance of <see cref="MvcRazorHost"/> with the specified  <paramref name="root"/>.
         /// </summary>
-        public string ApplicationRoot { get; }
+        /// <param name="root">The path to the application base.</param>
+        // Note: This constructor is used by tooling and is created once for each
+        // Razor page that is loaded. Consequently, each loaded page has its own copy of
+        // the CodeTreeCache, but this ok - having a shared CodeTreeCache per application in tooling
+        // is problematic to manage.
+        public MvcRazorHost(string root) 
+            : this(new DefaultCodeTreeCache(new PhysicalFileProvider(root)), new DesignTimeRazorPathNormalizer(root))
+        {
+        }
 #endif
+        /// <summary>
+        /// Initializes a new instance of <see cref="MvcRazorHost"/> using the specified <paramref name="codeTreeCache"/>.
+        /// </summary>
+        /// <param name="codeTreeCache">An <see cref="ICodeTreeCache"/> rooted at the application base path.</param>
+        public MvcRazorHost(ICodeTreeCache codeTreeCache)
+            : this(codeTreeCache, new RazorPathNormalizer())
+        {
+        }
 
         /// <summary>
         /// Gets the model type used by default when no model is specified.
@@ -168,7 +167,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             get { return "CreateModelExpression"; }
         }
 
-        private ChunkInheritanceUtility ChunkInheritanceUtility
+        // Internal for testing
+        internal ChunkInheritanceUtility ChunkInheritanceUtility
         {
             get
             {
@@ -179,6 +179,10 @@ namespace Microsoft.AspNet.Mvc.Razor
                 }
 
                 return _chunkInheritanceUtility;
+            }
+            set
+            {
+                _chunkInheritanceUtility = value;
             }
         }
 
@@ -194,13 +198,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         public override RazorParser DecorateRazorParser([NotNull] RazorParser razorParser, string sourceFileName)
         {
-#if NET45
-            // Need to convert sourceFileName to application relative (rooted paths are passed in by tooling).
-            if (Path.IsPathRooted(sourceFileName))
-            {
-                sourceFileName = sourceFileName.Substring(ApplicationRoot.Length);
-            }
-#endif
+            sourceFileName = _pathNormalizer.NormalizePath(sourceFileName);
 
             var inheritedCodeTrees = ChunkInheritanceUtility.GetInheritedCodeTrees(sourceFileName);
             return new MvcRazorParser(razorParser, inheritedCodeTrees, DefaultInheritedChunks);

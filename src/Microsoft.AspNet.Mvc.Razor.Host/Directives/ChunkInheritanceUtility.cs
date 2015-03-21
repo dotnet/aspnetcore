@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         /// <param name="pagePath">The path of the page to locate inherited chunks for.</param>
         /// <returns>A <see cref="IReadOnlyList{CodeTree}"/> of parsed <c>_GlobalImport</c>
         /// <see cref="CodeTree"/>s.</returns>
-        public IReadOnlyList<CodeTree> GetInheritedCodeTrees([NotNull] string pagePath)
+        public virtual IReadOnlyList<CodeTree> GetInheritedCodeTrees([NotNull] string pagePath)
         {
             var inheritedCodeTrees = new List<CodeTree>();
             var templateEngine = new RazorTemplateEngine(_razorHost);
