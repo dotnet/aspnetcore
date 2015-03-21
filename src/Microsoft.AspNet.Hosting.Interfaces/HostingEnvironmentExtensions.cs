@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Hosting
@@ -22,6 +23,24 @@ namespace Microsoft.AspNet.Hosting
                 hostingEnvironment.EnvironmentName,
                 environmentName,
                 StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Gives the physical path corresponding to the given virtual path.
+        /// </summary>
+        /// <param name="hostingEnvironment">An instance of <see cref="IHostingEnvironment"/> service.</param>
+        /// <param name="virtualPath">Path relative to the root.</param>
+        /// <returns>Physical path corresponding to virtual path.</returns>
+        public static string MapPath(
+            [NotNull]this IHostingEnvironment hostingEnvironment,
+            string virtualPath)
+        {
+            if (virtualPath == null)
+            {
+                return hostingEnvironment.WebRootPath;
+            }
+
+            return Path.Combine(hostingEnvironment.WebRootPath, virtualPath);
         }
     }
 }
