@@ -21,9 +21,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly Action<IServiceCollection> _configureServices = new XmlFormattersWebSite.Startup().ConfigureServices;
 
         [Theory]
-#if !DNXCORE50
         [InlineData("application/xml-xmlser")]
-#endif
         [InlineData("application/xml-dcs")]
         public async Task ModelStateErrors_AreSerialized(string acceptHeader)
         {
@@ -46,9 +44,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Theory]
-#if !DNXCORE50
         [InlineData("application/xml-xmlser")]
-#endif
         [InlineData("application/xml-dcs")]
         public async Task PostedSerializableError_IsBound(string acceptHeader)
         {
