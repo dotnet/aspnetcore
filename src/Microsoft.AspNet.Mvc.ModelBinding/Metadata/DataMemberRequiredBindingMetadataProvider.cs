@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
     /// <summary>
     /// An <see cref="IBindingMetadataProvider"/> for <see cref="DataMemberAttribute.IsRequired"/>.
     /// </summary>
-    public class DataMemberRequiredValidationMetadataProvider : IBindingMetadataProvider
+    public class DataMemberRequiredBindingMetadataProvider : IBindingMetadataProvider
     {
         /// <inheritdoc />
         public void GetBindingMetadata([NotNull] BindingMetadataProviderContext context)
@@ -19,6 +19,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             // Types cannot be required; only properties can
             if (context.Key.MetadataKind != ModelMetadataKind.Property)
             {
+                return;
+            }
+
+            if (context.BindingMetadata.IsRequired == true)
+            {
+                // This value is already required, no need to look at attributes.
                 return;
             }
 

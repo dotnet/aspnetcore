@@ -22,7 +22,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// <inheritdoc />
         public void GetBindingMetadata([NotNull] BindingMetadataProviderContext context)
         {
-            context.BindingMetadata.IsRequired = context.Attributes.OfType<RequiredAttribute>().Any();
+            var requiredAttribute = context.Attributes.OfType<RequiredAttribute>().FirstOrDefault();
+            if (requiredAttribute != null)
+            {
+                context.BindingMetadata.IsRequired = true;
+            }
 
             var editableAttribute = context.Attributes.OfType<EditableAttribute>().FirstOrDefault();
             if (editableAttribute != null)

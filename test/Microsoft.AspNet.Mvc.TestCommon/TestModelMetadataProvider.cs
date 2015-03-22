@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new DefaultBindingMetadataProvider(),
                 new DefaultValidationMetadataProvider(),
                 new DataAnnotationsMetadataProvider(),
-                new DataMemberRequiredValidationMetadataProvider(),
+                new DataMemberRequiredBindingMetadataProvider(),
             };
 
             var compositeDetailsProvider = new DefaultCompositeMetadataDetailsProvider(detailsProviders);
