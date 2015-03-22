@@ -3,7 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Testing;
+using Microsoft.Framework.Internal;
+using Microsoft.Framework.WebEncoders;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -856,6 +862,354 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Assert
             Assert.Equal(expectedHtml, html.ToString());
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
+        }
+
+        [Fact]
+        public void GetEnumSelectListTEnum_ThrowsWithFlagsEnum()
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var htmlHelper = new TestHtmlHelper(metadataProvider);
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgument(
+                () => htmlHelper.GetEnumSelectList<EnumWithFlags>(),
+                "TEnum",
+                $"The type '{ typeof(EnumWithFlags).FullName }' is not supported.");
+        }
+
+        [Fact]
+        public void GetEnumSelectListTEnum_ThrowsWithNonEnum()
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var htmlHelper = new TestHtmlHelper(metadataProvider);
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgument(
+                () => htmlHelper.GetEnumSelectList<StructWithFields>(),
+                "TEnum",
+                $"The type '{ typeof(StructWithFields).FullName }' is not supported.");
+        }
+
+        [Fact]
+        public void GetEnumSelectListTEnum_WrapsGetEnumSelectListModelMetadata()
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadata = metadataProvider.GetMetadataForType(typeof(EnumWithFields));
+            var htmlHelper = new TestHtmlHelper(metadataProvider);
+
+            // Act
+            var result = htmlHelper.GetEnumSelectList<EnumWithFields>();
+
+            // Assert
+            Assert.Equal(metadata.ModelType, htmlHelper.Metadata.ModelType);
+
+            Assert.Same(htmlHelper.SelectListItems, result);            // No replacement of the underlying List
+            VerifySelectList(htmlHelper.CopiedSelectListItems, result); // No change to the (mutable) items
+        }
+
+        [Fact]
+        public void GetEnumSelectListType_ThrowsWithFlagsEnum()
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var htmlHelper = new TestHtmlHelper(metadataProvider);
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgument(
+                () => htmlHelper.GetEnumSelectList(typeof(EnumWithFlags)),
+                "enumType",
+                $"The type '{ typeof(EnumWithFlags).FullName }' is not supported.");
+        }
+
+        [Fact]
+        public void GetEnumSelectListType_ThrowsWithNonEnum()
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var htmlHelper = new TestHtmlHelper(metadataProvider);
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgument(
+                () => htmlHelper.GetEnumSelectList(typeof(StructWithFields)),
+                "enumType",
+                $"The type '{ typeof(StructWithFields).FullName }' is not supported.");
+        }
+
+        [Fact]
+        public void GetEnumSelectListType_ThrowsWithNonStruct()
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var htmlHelper = new TestHtmlHelper(metadataProvider);
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgument(
+                () => htmlHelper.GetEnumSelectList(typeof(ClassWithFields)),
+                "enumType",
+                $"The type '{ typeof(ClassWithFields).FullName }' is not supported.");
+        }
+
+        [Fact]
+        public void GetEnumSelectListType_WrapsGetEnumSelectListModelMetadata()
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadata = metadataProvider.GetMetadataForType(typeof(EnumWithFields));
+            var htmlHelper = new TestHtmlHelper(metadataProvider);
+
+            // Act
+            var result = htmlHelper.GetEnumSelectList(typeof(EnumWithFields));
+
+            // Assert
+            Assert.Equal(metadata.ModelType, htmlHelper.Metadata.ModelType);
+
+            Assert.Same(htmlHelper.SelectListItems, result);            // No replacement of the underlying List
+            VerifySelectList(htmlHelper.CopiedSelectListItems, result); // No change to the (mutable) items
+        }
+
+        public static TheoryData<Type, IEnumerable<SelectListItem>> GetEnumSelectListData
+        {
+            get
+            {
+                return new TheoryData<Type, IEnumerable<SelectListItem>>
+                {
+                    { typeof(EmptyEnum), Enumerable.Empty<SelectListItem>() },
+                    { typeof(EmptyEnum?), Enumerable.Empty<SelectListItem>() },
+                    {
+                        typeof(EnumWithDisplayNames),
+                        new List<SelectListItem>
+                        {
+                            new SelectListItem { Text = "cero", Value = "0" },
+                            new SelectListItem { Text = nameof(EnumWithDisplayNames.One), Value = "1" },
+                            new SelectListItem { Text = "dos", Value = "2" },
+                            new SelectListItem { Text = "tres", Value = "3" },
+                            new SelectListItem { Text = "name from resources", Value = "-2" },
+                            new SelectListItem { Text = "menos uno", Value = "-1" },
+                        }
+                    },
+                    {
+                        typeof(EnumWithDisplayNames?),
+                        new List<SelectListItem>
+                        {
+                            new SelectListItem { Text = "cero", Value = "0" },
+                            new SelectListItem { Text = nameof(EnumWithDisplayNames.One), Value = "1" },
+                            new SelectListItem { Text = "dos", Value = "2" },
+                            new SelectListItem { Text = "tres", Value = "3" },
+                            new SelectListItem { Text = "name from resources", Value = "-2" },
+                            new SelectListItem { Text = "menos uno", Value = "-1" },
+                        }
+                    },
+                    {
+                        typeof(EnumWithDuplicates),
+                        new List<SelectListItem>
+                        {
+                            new SelectListItem { Text = nameof(EnumWithDuplicates.Zero), Value = "0" },
+                            new SelectListItem { Text = nameof(EnumWithDuplicates.None), Value = "0" },
+                            new SelectListItem { Text = nameof(EnumWithDuplicates.One), Value = "1" },
+                            new SelectListItem { Text = nameof(EnumWithDuplicates.Duece), Value = "2" },
+                            new SelectListItem { Text = nameof(EnumWithDuplicates.Two), Value = "2" },
+                            new SelectListItem { Text = nameof(EnumWithDuplicates.MoreThanTwo), Value = "3" },
+                            new SelectListItem { Text = nameof(EnumWithDuplicates.Three), Value = "3" },
+                        }
+                    },
+                    {
+                        typeof(EnumWithDuplicates?),
+                        new List<SelectListItem>
+                        {
+                            new SelectListItem { Text = nameof(EnumWithDuplicates.Zero), Value = "0" },
+                            new SelectListItem { Text = nameof(EnumWithDuplicates.None), Value = "0" },
+                            new SelectListItem { Text = nameof(EnumWithDuplicates.One), Value = "1" },
+                            new SelectListItem { Text = nameof(EnumWithDuplicates.Duece), Value = "2" },
+                            new SelectListItem { Text = nameof(EnumWithDuplicates.Two), Value = "2" },
+                            new SelectListItem { Text = nameof(EnumWithDuplicates.MoreThanTwo), Value = "3" },
+                            new SelectListItem { Text = nameof(EnumWithDuplicates.Three), Value = "3" },
+                        }
+                    },
+                    {
+                        typeof(EnumWithFields),
+                        new List<SelectListItem>
+                        {
+                            new SelectListItem { Text = nameof(EnumWithFields.Zero), Value = "0" },
+                            new SelectListItem { Text = nameof(EnumWithFields.One), Value = "1" },
+                            new SelectListItem { Text = nameof(EnumWithFields.Two), Value = "2" },
+                            new SelectListItem { Text = nameof(EnumWithFields.Three), Value = "3" },
+                            new SelectListItem { Text = nameof(EnumWithFields.MinusTwo), Value = "-2" },
+                            new SelectListItem { Text = nameof(EnumWithFields.MinusOne), Value = "-1" },
+                        }
+                    },
+                    {
+                        typeof(EnumWithFields?),
+                        new List<SelectListItem>
+                        {
+                            new SelectListItem { Text = nameof(EnumWithFields.Zero), Value = "0" },
+                            new SelectListItem { Text = nameof(EnumWithFields.One), Value = "1" },
+                            new SelectListItem { Text = nameof(EnumWithFields.Two), Value = "2" },
+                            new SelectListItem { Text = nameof(EnumWithFields.Three), Value = "3" },
+                            new SelectListItem { Text = nameof(EnumWithFields.MinusTwo), Value = "-2" },
+                            new SelectListItem { Text = nameof(EnumWithFields.MinusOne), Value = "-1" },
+                        }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(GetEnumSelectListData))]
+        public void GetEnumSelectList_ReturnsExpectedItems(Type type, IEnumerable<SelectListItem> expected)
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadata = metadataProvider.GetMetadataForType(type);
+            var htmlHelper = new TestHtmlHelper(metadataProvider);
+
+            // Act
+            var result = htmlHelper.GetEnumSelectList(type);
+
+            // Assert
+            VerifySelectList(expected, result);
+        }
+
+        // Confirm methods that wrap GetEnumSelectList(ModelMetadata) are not changing anything in returned collection.
+        private void VerifySelectList(IEnumerable<SelectListItem> expected, IEnumerable<SelectListItem> actual)
+        {
+            Assert.NotNull(actual);
+            Assert.Equal(expected.Count(), actual.Count());
+            for (var i = 0; i < actual.Count(); i++)
+            {
+                var expectedItem = expected.ElementAt(i);
+                var actualItem = actual.ElementAt(i);
+
+                Assert.False(actualItem.Disabled);
+                Assert.Null(actualItem.Group);
+                Assert.False(actualItem.Selected);
+                Assert.Equal(expectedItem.Text, actualItem.Text);
+                Assert.Equal(expectedItem.Value, actualItem.Value);
+            }
+        }
+
+        private class TestHtmlHelper : HtmlHelper
+        {
+            public TestHtmlHelper([NotNull] IModelMetadataProvider metadataProvider)
+                : base(
+                      new Mock<IHtmlGenerator>(MockBehavior.Strict).Object,
+                      new Mock<ICompositeViewEngine>(MockBehavior.Strict).Object,
+                      metadataProvider,
+                      new Mock<IHtmlEncoder>(MockBehavior.Strict).Object,
+                      new Mock<IUrlEncoder>(MockBehavior.Strict).Object,
+                      new Mock<IJavaScriptStringEncoder>(MockBehavior.Strict).Object)
+            {
+            }
+
+            public ModelMetadata Metadata { get; private set; }
+
+            public IEnumerable<SelectListItem> SelectListItems { get; private set; }
+
+            public IEnumerable<SelectListItem> CopiedSelectListItems { get; private set; }
+
+            protected override IEnumerable<SelectListItem> GetEnumSelectList([NotNull] ModelMetadata metadata)
+            {
+                Metadata = metadata;
+                SelectListItems = base.GetEnumSelectList(metadata);
+                if (SelectListItems != null)
+                {
+                    // Perform a deep copy to help confirm the mutable items are not changed.
+                    var copiedSelectListItems = new List<SelectListItem>();
+                    CopiedSelectListItems = copiedSelectListItems;
+                    foreach (var item in SelectListItems)
+                    {
+                        var copy = new SelectListItem
+                        {
+                            Disabled = item.Disabled,
+                            Group = item.Group,
+                            Selected = item.Selected,
+                            Text = item.Text,
+                            Value = item.Value,
+                        };
+
+                        copiedSelectListItems.Add(copy);
+                    }
+                }
+
+                return SelectListItems;
+            }
+        }
+
+        private class ClassWithFields
+        {
+            public const int Zero = 0;
+
+            public const int One = 1;
+        }
+
+        private enum EmptyEnum
+        {
+        }
+
+        private enum EnumWithDisplayNames
+        {
+            [Display(Name = "tres")]
+            Three = 3,
+
+            [Display(Name = "dos")]
+            Two = 2,
+
+            // Display attribute exists but does not set Name.
+            [Display(ShortName = "uno")]
+            One = 1,
+
+            [Display(Name = "cero")]
+            Zero = 0,
+
+            [Display(Name = "menos uno")]
+            MinusOne = -1,
+
+#if USE_REAL_RESOURCES
+            [Display(Name = nameof(Test.Resources.DisplayAttribute_Name), ResourceType = typeof(Test.Resources))]
+#else
+            [Display(Name = nameof(TestResources.DisplayAttribute_Name), ResourceType = typeof(TestResources))]
+#endif
+            MinusTwo = -2,
+        }
+
+        private enum EnumWithDuplicates
+        {
+            Zero = 0,
+            One = 1,
+            Three = 3,
+            MoreThanTwo = 3,
+            Two = 2,
+            None = 0,
+            Duece = 2,
+        }
+
+        [Flags]
+        private enum EnumWithFlags
+        {
+            Four = 4,
+            Two = 2,
+            One = 1,
+            Zero = 0,
+            All = -1,
+        }
+
+        private enum EnumWithFields
+        {
+            MinusTwo = -2,
+            MinusOne = -1,
+            Three = 3,
+            Two = 2,
+            One = 1,
+            Zero = 0,
+        }
+
+        private struct StructWithFields
+        {
+            public const int Zero = 0;
+
+            public const int One = 1;
         }
 
         private class ModelContainingList

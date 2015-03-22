@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -374,7 +375,37 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <paramref name="metadata"/> is <c>null</c>; ignored otherwise.
         /// </param>
         /// <returns>An <see cref="IEnumerable{ModelClientValidationRule}"/> containing the relevant rules.</returns>
-        IEnumerable<ModelClientValidationRule> GetClientValidationRules(ModelExplorer modelExplorer, string expression);
+        IEnumerable<ModelClientValidationRule> GetClientValidationRules(
+            ModelExplorer modelExplorer,
+            string expression);
+
+        /// <summary>
+        /// Returns a select list for the given <typeparamref name="TEnum"/>.
+        /// </summary>
+        /// <typeparam name="TEnum">Type to generate a select list for.</typeparam>
+        /// <returns>
+        /// An <see cref="IEnumerable{SelectListItem}"/> containing the select list for the given
+        /// <typeparamref name="TEnum"/>.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// Thrown if <typeparamref name="TEnum"/> is not an <see cref="Enum"/> or if it has a
+        /// <see cref="FlagsAttribute"/>.
+        /// </exception>
+        IEnumerable<SelectListItem> GetEnumSelectList<TEnum>() where TEnum : struct;
+
+        /// <summary>
+        /// Returns a select list for the given <paramref name="enumType"/>.
+        /// </summary>
+        /// <param name="enumType"><see cref="Type"/> to generate a select list for.</param>
+        /// <returns>
+        /// An <see cref="IEnumerable{SelectListItem}"/> containing the select list for the given
+        /// <paramref name="enumType"/>.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// Thrown if <paramref name="enumType"/> is not an <see cref="Enum"/> or if it has a
+        /// <see cref="FlagsAttribute"/>.
+        /// </exception>
+        IEnumerable<SelectListItem> GetEnumSelectList([NotNull] Type enumType);
 
         /// <summary>
         /// Returns an &lt;input&gt; element of type "hidden" for the specified <paramref name="expression"/>.

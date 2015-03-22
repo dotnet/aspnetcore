@@ -351,6 +351,39 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
+        public IEnumerable<SelectListItem> GetEnumSelectList<TEnum>() where TEnum : struct
+        {
+            var type = typeof(TEnum);
+            var metadata = MetadataProvider.GetMetadataForType(type);
+            if (!metadata.IsEnum || metadata.IsFlagsEnum)
+            {
+                var message = Resources.FormatHtmlHelper_TypeNotSupported_ForGetEnumSelectList(
+                    type.FullName,
+                    nameof(Enum).ToLowerInvariant(),
+                    nameof(FlagsAttribute));
+                throw new ArgumentException(message, nameof(TEnum));
+            }
+
+            return GetEnumSelectList(metadata);
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<SelectListItem> GetEnumSelectList([NotNull] Type enumType)
+        {
+            var metadata = MetadataProvider.GetMetadataForType(enumType);
+            if (!metadata.IsEnum || metadata.IsFlagsEnum)
+            {
+                var message = Resources.FormatHtmlHelper_TypeNotSupported_ForGetEnumSelectList(
+                    enumType.FullName,
+                    nameof(Enum).ToLowerInvariant(),
+                    nameof(FlagsAttribute));
+                throw new ArgumentException(message, nameof(enumType));
+            }
+
+            return GetEnumSelectList(metadata);
+        }
+
+        /// <inheritdoc />
         public HtmlString Hidden(string expression, object value, object htmlAttributes)
         {
             return GenerateHidden(
@@ -1015,6 +1048,44 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string expression)
         {
             return _htmlGenerator.GetClientValidationRules(ViewContext, modelExplorer, expression);
+        }
+
+        /// <summary>
+        /// Returns a select list for the given <paramref name="metadata"/>.
+        /// </summary>
+        /// <param name="metadata"><see cref="ModelMetadata"/> to generate a select list for.</param>
+        /// <returns>
+        /// An <see cref="IEnumerable{SelectListItem}"/> containing the select list for the given
+        /// <paramref name="metadata"/>.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// Thrown if <paramref name="metadata"/>'s <see cref="ModelMetadata.ModelType"/> is not an <see cref="Enum"/>
+        /// or if it has a <see cref="FlagsAttribute"/>.
+        /// </exception>
+        protected virtual IEnumerable<SelectListItem> GetEnumSelectList([NotNull] ModelMetadata metadata)
+        {
+            if (!metadata.IsEnum || metadata.IsFlagsEnum)
+            {
+                var message = Resources.FormatHtmlHelper_TypeNotSupported_ForGetEnumSelectList(
+                    metadata.ModelType.FullName,
+                    nameof(Enum).ToLowerInvariant(),
+                    nameof(FlagsAttribute));
+                throw new ArgumentException(message, nameof(metadata));
+            }
+
+            var selectList = new List<SelectListItem>();
+            foreach (var keyValuePair in metadata.EnumDisplayNamesAndValues)
+            {
+                var selectListItem = new SelectListItem
+                {
+                    Text = keyValuePair.Key,
+                    Value = keyValuePair.Value,
+                };
+
+                selectList.Add(selectListItem);
+            }
+
+            return selectList;
         }
     }
 }

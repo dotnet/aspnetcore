@@ -731,6 +731,22 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
+        /// The type '{0}' is not supported. Type must be an {1} that does not have an associated {2}.
+        /// </summary>
+        internal static string HtmlHelper_TypeNotSupported_ForGetEnumSelectList
+        {
+            get { return GetString("HtmlHelper_TypeNotSupported_ForGetEnumSelectList"); }
+        }
+
+        /// <summary>
+        /// The type '{0}' is not supported. Type must be an {1} that does not have an associated {2}.
+        /// </summary>
+        internal static string FormatHtmlHelper_TypeNotSupported_ForGetEnumSelectList(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("HtmlHelper_TypeNotSupported_ForGetEnumSelectList"), p0, p1, p2);
+        }
+
+        /// <summary>
         /// The ViewData item that has the key '{0}' is of type '{1}' but must be of type '{2}'.
         /// </summary>
         internal static string HtmlHelper_WrongSelectDataType

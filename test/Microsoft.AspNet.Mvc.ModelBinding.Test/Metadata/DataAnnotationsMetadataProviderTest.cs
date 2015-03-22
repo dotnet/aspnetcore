@@ -422,7 +422,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                         new List<KeyValuePair<string, string>>
                         {
                             new KeyValuePair<string, string>("cero", "0"),
-                            new KeyValuePair<string, string>("uno", "1"),
+                            new KeyValuePair<string, string>(nameof(EnumWithDisplayNames.One), "1"),
                             new KeyValuePair<string, string>("dos", "2"),
                             new KeyValuePair<string, string>("tres", "3"),
                             new KeyValuePair<string, string>("name from resources", "-2"),
@@ -434,7 +434,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                         new List<KeyValuePair<string, string>>
                         {
                             new KeyValuePair<string, string>("cero", "0"),
-                            new KeyValuePair<string, string>("uno", "1"),
+                            new KeyValuePair<string, string>(nameof(EnumWithDisplayNames.One), "1"),
                             new KeyValuePair<string, string>("dos", "2"),
                             new KeyValuePair<string, string>("tres", "3"),
                             new KeyValuePair<string, string>("name from resources", "-2"),
@@ -569,7 +569,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             [Display(Name = "dos")]
             Two = 2,
 
-            [Display(Name = "uno")]
+            // Display attribute exists but does not set Name.
+            [Display(ShortName = "uno")]
             One = 1,
 
             [Display(Name = "cero")]
