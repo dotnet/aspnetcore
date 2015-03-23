@@ -22,7 +22,6 @@ namespace Microsoft.AspNet.Routing
         private readonly Dictionary<string, INamedRouter> _namedRoutes =
                                     new Dictionary<string, INamedRouter>(StringComparer.OrdinalIgnoreCase);
 
-        private ILogger _logger;
         private RouteOptions _options;
 
         public IRouter this[int index]
@@ -55,44 +54,31 @@ namespace Microsoft.AspNet.Routing
 
         public async virtual Task RouteAsync(RouteContext context)
         {
-            EnsureLogger(context.HttpContext);
-            using (_logger.BeginScope("RouteCollection.RouteAsync"))
+            for (var i = 0; i < Count; i++)
             {
-                for (var i = 0; i < Count; i++)
+                var route = this[i];
+
+                var oldRouteData = context.RouteData;
+
+                var newRouteData = new RouteData(oldRouteData);
+                newRouteData.Routers.Add(route);
+
+                try
                 {
-                    var route = this[i];
+                    context.RouteData = newRouteData;
 
-                    var oldRouteData = context.RouteData;
-
-                    var newRouteData = new RouteData(oldRouteData);
-                    newRouteData.Routers.Add(route);
-
-                    try
+                    await route.RouteAsync(context);
+                    if (context.IsHandled)
                     {
-                        context.RouteData = newRouteData;
-
-                        await route.RouteAsync(context);
-                        if (context.IsHandled)
-                        {
-                            break;
-                        }
-                    }
-                    finally
-                    {
-                        if (!context.IsHandled)
-                        {
-                            context.RouteData = oldRouteData;
-                        }
+                        break;
                     }
                 }
-
-                if (_logger.IsEnabled(LogLevel.Verbose))
+                finally
                 {
-                    _logger.WriteValues(new RouteCollectionRouteAsyncValues()
+                    if (!context.IsHandled)
                     {
-                        Handled = context.IsHandled,
-                        Routes = _routes
-                    });
+                        context.RouteData = oldRouteData;
+                    }
                 }
             }
         }
@@ -239,15 +225,6 @@ namespace Microsoft.AspNet.Routing
             }
 
             return path;
-        }
-
-        private void EnsureLogger(HttpContext context)
-        {
-            if (_logger == null)
-            {
-                var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
-                _logger = factory.CreateLogger<RouteCollection>();
-            }
         }
 
         private void EnsureOptions(HttpContext context)

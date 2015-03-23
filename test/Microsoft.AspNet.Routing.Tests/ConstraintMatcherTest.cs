@@ -57,88 +57,18 @@ namespace Microsoft.AspNet.Routing
                 {"a", new PassConstraint()},
                 {"b", new FailConstraint()}
             };
-            var sink = SetUpMatch(constraints, true);
+            var sink = SetUpMatch(constraints, loggerEnabled: true);
+            var expectedMessage = "Route value 'value' with key 'b' did not match the constraint " +
+                $"'{typeof(FailConstraint).FullName}'.";
 
             // Assert
-            // There are no begin scopes called.
             Assert.Empty(sink.Scopes);
-
-            // There are two records for WriteCore.
-            Assert.Equal(2, sink.Writes.Count);
-
-            var write = sink.Writes[0];
-            Assert.Equal(_name, write.LoggerName);
-            var values = Assert.IsType<RouteConstraintMatcherMatchValues>(write.State);
-            Assert.Equal("RouteConstraintMatcher.Match", values.Name);
-            Assert.Equal("a", values.ConstraintKey);
-            Assert.Equal(constraints["a"], values.Constraint);
-            Assert.Equal(true, values.Matched);
-
-            write = sink.Writes[1];
-            Assert.Equal(_name, write.LoggerName);
-            values = Assert.IsType<RouteConstraintMatcherMatchValues>(write.State);
-            Assert.Equal("RouteConstraintMatcher.Match", values.Name);
-            Assert.Equal("b", values.ConstraintKey);
-            Assert.Equal(constraints["b"], values.Constraint);
-            Assert.Equal(false, values.Matched);
+            Assert.Single(sink.Writes);
+            Assert.Equal(expectedMessage, sink.Writes[0].State?.ToString());
         }
 
         [Fact]
-        public void MatchFail_DisabledLoggerDoesNotLog()
-        {
-            // Arrange & Act
-            var constraints = new Dictionary<string, IRouteConstraint>
-            {
-                {"a", new PassConstraint()},
-                {"b", new FailConstraint()}
-            };
-            var sink = SetUpMatch(constraints, false);
-
-            // Assert
-            // There are no begin scopes called.
-            Assert.Empty(sink.Scopes);
-
-            // Logger is disabled so it should not write
-            Assert.Empty(sink.Writes);
-        }
-
-        [Fact]
-        public void MatchSuccess_LogsCorrectData()
-        {
-            // Arrange & Act
-            var constraints = new Dictionary<string, IRouteConstraint>
-            {
-                {"a", new PassConstraint()},
-                {"b", new PassConstraint()}
-            };
-            var sink = SetUpMatch(constraints, true);
-
-            // Assert
-            // There are no begin scopes called.
-            Assert.Empty(sink.Scopes);
-
-            // There are two records WriteCore.
-            Assert.Equal(2, sink.Writes.Count);
-
-            var write = sink.Writes[0];
-            Assert.Equal(_name, write.LoggerName);
-            var values = Assert.IsType<RouteConstraintMatcherMatchValues>(write.State);
-            Assert.Equal("RouteConstraintMatcher.Match", values.Name);
-            Assert.Equal("a", values.ConstraintKey);
-            Assert.Equal(constraints["a"], values.Constraint);
-            Assert.Equal(true, values.Matched);
-
-            write = sink.Writes[1];
-            Assert.Equal(_name, write.LoggerName);
-            values = Assert.IsType<RouteConstraintMatcherMatchValues>(write.State);
-            Assert.Equal("RouteConstraintMatcher.Match", values.Name);
-            Assert.Equal("b", values.ConstraintKey);
-            Assert.Equal(constraints["b"], values.Constraint);
-            Assert.Equal(true, values.Matched);
-        }
-
-        [Fact]
-        public void MatchSuccess_DisabledLoggerDoesNotLog()
+        public void MatchSuccess_DoesNotLog()
         {
             // Arrange & Act
             var constraints = new Dictionary<string, IRouteConstraint>
@@ -149,10 +79,7 @@ namespace Microsoft.AspNet.Routing
             var sink = SetUpMatch(constraints, false);
 
             // Assert
-            // There are no begin scopes called.
             Assert.Empty(sink.Scopes);
-
-            // Disabled Logger should not write
             Assert.Empty(sink.Writes);
         }
 
@@ -193,7 +120,7 @@ namespace Microsoft.AspNet.Routing
                 httpContext: new Mock<HttpContext>().Object,
                 route: new Mock<IRouter>().Object,
                 routeDirection: RouteDirection.IncomingRequest,
-                logger:  NullLogger.Instance));
+                logger: NullLogger.Instance));
         }
 
         [Fact]
@@ -268,11 +195,11 @@ namespace Microsoft.AspNet.Routing
                 logger: NullLogger.Instance));
         }
 
-        private TestSink SetUpMatch(Dictionary<string, IRouteConstraint> constraints, bool enabled)
+        private TestSink SetUpMatch(Dictionary<string, IRouteConstraint> constraints, bool loggerEnabled)
         {
             // Arrange
             var sink = new TestSink();
-            var logger = new TestLogger(_name, sink, enabled);
+            var logger = new TestLogger(_name, sink, loggerEnabled);
 
             var routeValueDictionary = new RouteValueDictionary(new { a = "value", b = "value" });
 

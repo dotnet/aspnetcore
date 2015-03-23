@@ -3,8 +3,6 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing.Logging;
-using Microsoft.AspNet.Routing.Logging.Internal;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 
@@ -29,29 +27,20 @@ namespace Microsoft.AspNet.Routing
                 var constraint = kvp.Value;
                 if (!constraint.Match(httpContext, route, kvp.Key, routeValues, routeDirection))
                 {
-                    if (routeDirection.Equals(RouteDirection.IncomingRequest)
-                        && logger.IsEnabled(LogLevel.Verbose))
+                    if (routeDirection.Equals(RouteDirection.IncomingRequest))
                     {
-                        logger.WriteValues(new RouteConstraintMatcherMatchValues()
-                        {
-                            ConstraintKey = kvp.Key,
-                            Constraint = kvp.Value,
-                            Matched = false
-                        });
+                        object routeValue;
+                        routeValues.TryGetValue(kvp.Key, out routeValue);
+
+                        logger.LogVerbose(
+                            "Route value '{RouteValue}' with key '{RouteKey}' did not match " +
+                            "the constraint '{RouteConstraint}'.",
+                            routeValue,
+                            kvp.Key,
+                            kvp.Value);
                     }
 
                     return false;
-                }
-
-                if (routeDirection.Equals(RouteDirection.IncomingRequest)
-                    && logger.IsEnabled(LogLevel.Verbose))
-                {
-                    logger.WriteValues(new RouteConstraintMatcherMatchValues()
-                    {
-                        ConstraintKey = kvp.Key,
-                        Constraint = kvp.Value,
-                        Matched = true
-                    });
                 }
             }
 

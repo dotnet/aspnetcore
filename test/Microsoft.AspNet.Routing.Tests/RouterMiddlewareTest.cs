@@ -5,7 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http.Core;
-using Microsoft.AspNet.Routing.Logging;
 using Microsoft.Framework.Logging.Testing;
 using Xunit;
 
@@ -14,9 +13,10 @@ namespace Microsoft.AspNet.Routing
     public class RouterMiddlewareTest
     {
         [Fact]
-        public async void Invoke_LogsCorrectValuesWhenNotHandled()
+        public async void Invoke_LogsCorrectValues_WhenNotHandled()
         {
             // Arrange
+            var expectedMessage = "Request did not match any routes.";
             var isHandled = false;
 
             var sink = new TestSink(
@@ -40,58 +40,13 @@ namespace Microsoft.AspNet.Routing
             await middleware.Invoke(httpContext);
 
             // Assert
-            Assert.Single(sink.Scopes);
-            var scope = sink.Scopes[0];
-            Assert.Equal(typeof(RouterMiddleware).FullName, scope.LoggerName);
-            Assert.Equal("RouterMiddleware.Invoke", scope.Scope.ToString());
-
+            Assert.Empty(sink.Scopes);
             Assert.Single(sink.Writes);
-
-            var write = sink.Writes[0];
-            Assert.Equal(typeof(RouterMiddleware).FullName, write.LoggerName);
-            Assert.Equal("RouterMiddleware.Invoke", write.Scope.ToString());
-            var values = Assert.IsType<RouterMiddlewareInvokeValues>(write.State);
-            Assert.Equal("RouterMiddleware.Invoke", values.Name);
-            Assert.Equal(false, values.Handled);
+            Assert.Equal(expectedMessage, sink.Writes[0].State?.ToString());
         }
 
         [Fact]
-        public async void Invoke_DoesNotLogWhenDisabledAndNotHandled()
-        {
-            // Arrange
-            var isHandled = false;
-
-            var sink = new TestSink(
-                TestSink.EnableWithTypeName<RouterMiddleware>,
-                TestSink.EnableWithTypeName<RouterMiddleware>);
-            var loggerFactory = new TestLoggerFactory(sink, enabled: false);
-
-            var httpContext = new DefaultHttpContext();
-            httpContext.ApplicationServices = new ServiceProvider();
-            httpContext.RequestServices = httpContext.ApplicationServices;
-
-            RequestDelegate next = (c) =>
-            {
-                return Task.FromResult<object>(null);
-            };
-
-            var router = new TestRouter(isHandled);
-            var middleware = new RouterMiddleware(next, loggerFactory, router);
-
-            // Act
-            await middleware.Invoke(httpContext);
-
-            // Assert
-            Assert.Single(sink.Scopes);
-            var scope = sink.Scopes[0];
-            Assert.Equal(typeof(RouterMiddleware).FullName, scope.LoggerName);
-            Assert.Equal("RouterMiddleware.Invoke", scope.Scope.ToString());
-
-            Assert.Empty(sink.Writes);
-        }
-
-        [Fact]
-        public async void Invoke_LogsCorrectValuesWhenHandled()
+        public async void Invoke_DoesNotLog_WhenHandled()
         {
             // Arrange
             var isHandled = true;
@@ -111,63 +66,13 @@ namespace Microsoft.AspNet.Routing
             };
 
             var router = new TestRouter(isHandled);
-
             var middleware = new RouterMiddleware(next, loggerFactory, router);
 
             // Act
             await middleware.Invoke(httpContext);
 
             // Assert
-            // exists a BeginScope, verify contents
-            Assert.Single(sink.Scopes);
-            var scope = sink.Scopes[0];
-            Assert.Equal(typeof(RouterMiddleware).FullName, scope.LoggerName);
-            Assert.Equal("RouterMiddleware.Invoke", scope.Scope.ToString());
-
-            Assert.Single(sink.Writes);
-
-            var write = sink.Writes[0];
-            Assert.Equal(typeof(RouterMiddleware).FullName, write.LoggerName);
-            Assert.Equal("RouterMiddleware.Invoke", write.Scope.ToString());
-            Assert.Equal(typeof(RouterMiddlewareInvokeValues), write.State.GetType());
-            var values = (RouterMiddlewareInvokeValues)write.State;
-            Assert.Equal("RouterMiddleware.Invoke", values.Name);
-            Assert.Equal(true, values.Handled);
-        }
-
-        [Fact]
-        public async void Invoke_DoesNotLogWhenDisabledAndHandled()
-        {
-            // Arrange
-            var isHandled = true;
-
-            var sink = new TestSink(
-                TestSink.EnableWithTypeName<RouterMiddleware>,
-                TestSink.EnableWithTypeName<RouterMiddleware>);
-            var loggerFactory = new TestLoggerFactory(sink, enabled: false);
-
-            var httpContext = new DefaultHttpContext();
-            httpContext.ApplicationServices = new ServiceProvider();
-            httpContext.RequestServices = httpContext.ApplicationServices;
-
-            RequestDelegate next = (c) =>
-            {
-                return Task.FromResult<object>(null);
-            };
-
-            var router = new TestRouter(isHandled);
-            var middleware = new RouterMiddleware(next, loggerFactory, router);
-
-            // Act
-            await middleware.Invoke(httpContext);
-
-            // Assert
-            // exists a BeginScope, verify contents
-            Assert.Single(sink.Scopes);
-            var scope = sink.Scopes[0];
-            Assert.Equal(typeof(RouterMiddleware).FullName, scope.LoggerName);
-            Assert.Equal("RouterMiddleware.Invoke", scope.Scope.ToString());
-
+            Assert.Empty(sink.Scopes);
             Assert.Empty(sink.Writes);
         }
 

@@ -11,9 +11,9 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Constraints;
 using Microsoft.AspNet.Routing.Logging;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.Logging.Internal;
 using Microsoft.Framework.Logging.Testing;
 using Microsoft.Framework.Logging;
-using Microsoft.AspNet.WebUtilities;
 using Moq;
 using Xunit;
 
@@ -23,20 +23,38 @@ namespace Microsoft.AspNet.Routing.Template
     {
         private static IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
 
-        private async Task<Tuple<TestSink, RouteContext>> SetUp(bool enabled, string template, string requestPath)
+        private async Task<Tuple<TestSink, RouteContext>> SetUp(
+            bool loggerEnabled,
+            string routeName,
+            string template,
+            string requestPath,
+            TestSink testSink = null)
         {
-            var sink = new TestSink(
-                TestSink.EnableWithTypeName<TemplateRoute>,
-                TestSink.EnableWithTypeName<TemplateRoute>);
-            var loggerFactory = new TestLoggerFactory(sink, enabled);
+            if (testSink == null)
+            {
+                testSink = new TestSink(
+                    TestSink.EnableWithTypeName<TemplateRoute>,
+                    TestSink.EnableWithTypeName<TemplateRoute>);
+            }
 
-            var route = CreateRoute(template);
+            var loggerFactory = new TestLoggerFactory(testSink, loggerEnabled);
+
+            TemplateRoute route;
+            if (!string.IsNullOrEmpty(routeName))
+            {
+                route = CreateRoute(routeName, template);
+            }
+            else
+            {
+                route = CreateRoute(template);
+            }
+
             var context = CreateRouteContext(requestPath, loggerFactory);
 
             // Act
             await route.RouteAsync(context);
 
-            return Tuple.Create(sink, context);
+            return Tuple.Create(testSink, context);
         }
 
         [Fact]
@@ -65,132 +83,81 @@ namespace Microsoft.AspNet.Routing.Template
         public async Task RouteAsync_MatchSuccess_LogsCorrectValues()
         {
             // Arrange & Act
+            var routeName = "Default";
             var template = "{controller}/{action}";
-            var result = await SetUp(true, template, "/Home/Index");
+            var result = await SetUp(
+                routeName: routeName,
+                template: template,
+                requestPath: "/Home/Index",
+                loggerEnabled: true);
             var sink = result.Item1;
-            var context = result.Item2;
+            var expected = "Request successfully matched the route with " +
+                $"name '{routeName}' and template '{template}'.";
 
             // Assert
-            Assert.Equal(1, sink.Scopes.Count);
-            var scope = sink.Scopes[0];
-            Assert.Equal(typeof(TemplateRoute).FullName, scope.LoggerName);
-            Assert.Equal("TemplateRoute.RouteAsync", scope.Scope.ToString());
-
-            Assert.Equal(1, sink.Writes.Count);
-
-            var write = sink.Writes[0];
-            Assert.Equal(typeof(TemplateRoute).FullName, write.LoggerName);
-            Assert.Equal("TemplateRoute.RouteAsync", write.Scope.ToString());
-
-            // verify WriteCore state contents
-            var values = Assert.IsType<TemplateRouteRouteAsyncValues>(write.State);
-            Assert.Equal("TemplateRoute.RouteAsync", values.Name);
-            Assert.Equal("Home/Index", values.RequestPath);
-            Assert.Equal(template, values.Template);
-            Assert.NotNull(values.DefaultValues);
-            Assert.NotNull(values.ProducedValues);
-            Assert.Equal(true, values.MatchedTemplate);
-            Assert.Equal(true, values.MatchedConstraints);
-            Assert.Equal(true, values.Matched);
-            Assert.Equal(context.IsHandled, values.Handled);
-        }
-
-        [Fact]
-        public async Task RouteAsync_MatchSuccess_DoesNotLogWhenDisabled()
-        {
-            // Arrange & Act
-            var template = "{controller}/{action}";
-            var result = await SetUp(false, template, "/Home/Index");
-            var sink = result.Item1;
-
-            // Assert
-            Assert.Equal(1, sink.Scopes.Count);
-            var scope = sink.Scopes[0];
-            Assert.Equal(typeof(TemplateRoute).FullName, scope.LoggerName);
-            Assert.Equal("TemplateRoute.RouteAsync", scope.Scope.ToString());
-
-            Assert.Equal(0, sink.Writes.Count);
+            Assert.Empty(sink.Scopes);
+            Assert.Single(sink.Writes);
+            Assert.Equal(expected, sink.Writes[0].State?.ToString());
         }
 
         [Fact]
         public async Task RouteAsync_MatchFailOnValues_LogsCorrectValues()
         {
             // Arrange & Act
+            var routeName = "Default";
             var template = "{controller}/{action}";
-            var result = await SetUp(true, template, "/Home/Index/Failure");
+            var result = await SetUp(
+                routeName: routeName,
+                template: template,
+                requestPath: "/Home/Index/Failure",
+                loggerEnabled: true);
             var sink = result.Item1;
-            var context = result.Item2;
+            var expected = $"Request did not match the route with name '{routeName}' and template '{template}'.";
 
             // Assert
-            Assert.Equal(1, sink.Scopes.Count);
-            var scope = sink.Scopes[0];
-            Assert.Equal(typeof(TemplateRoute).FullName, scope.LoggerName);
-            Assert.Equal("TemplateRoute.RouteAsync", scope.Scope.ToString());
-
-            Assert.Equal(1, sink.Writes.Count);
-
-            var write = sink.Writes[0];
-            Assert.Equal(typeof(TemplateRoute).FullName, write.LoggerName);
-            Assert.Equal("TemplateRoute.RouteAsync", write.Scope.ToString());
-            var values = Assert.IsType<TemplateRouteRouteAsyncValues>(write.State);
-            Assert.Equal("TemplateRoute.RouteAsync", values.Name);
-            Assert.Equal("Home/Index/Failure", values.RequestPath);
-            Assert.Equal(template, values.Template);
-            Assert.NotNull(values.DefaultValues);
-            Assert.Empty(values.ProducedValues);
-            Assert.Equal(false, values.MatchedTemplate);
-            Assert.Equal(false, values.MatchedConstraints);
-            Assert.Equal(false, values.Matched);
-            Assert.Equal(context.IsHandled, values.Handled);
-        }
-
-        [Fact]
-        public async Task RouteAsync_MatchFailOnValues_DoesNotLogWhenDisabled()
-        {
-            // Arrange
-            var template = "{controller}/{action}";
-            var result = await SetUp(false, template, "/Home/Index/Failure");
-            var sink = result.Item1;
-
-            // Assert
-            Assert.Equal(1, sink.Scopes.Count);
-            var scope = sink.Scopes[0];
-            Assert.Equal(typeof(TemplateRoute).FullName, scope.LoggerName);
-            Assert.Equal("TemplateRoute.RouteAsync", scope.Scope.ToString());
-
-            Assert.Equal(0, sink.Writes.Count);
+            Assert.Empty(sink.Scopes);
+            Assert.Single(sink.Writes);
+            Assert.Equal(expected, sink.Writes[0].State?.ToString());
         }
 
         [Fact]
         public async Task RouteAsync_MatchFailOnConstraints_LogsCorrectValues()
         {
             // Arrange & Act
+            var sink = new TestSink((writeEnabled) => true, (scopeEnabled) => true);
             var template = "{controller}/{action}/{id:int}";
-            var result = await SetUp(true, template, "/Home/Index/Failure");
-            var sink = result.Item1;
-            var context = result.Item2;
+            var result = await SetUp(
+                routeName: "Default",
+                template: template,
+                requestPath: "/Home/Index/Failure",
+                loggerEnabled: true,
+                testSink: sink);
+            var expectedMessage = "Route value 'Failure' with key 'id' did not match the " +
+                $"constraint '{typeof(IntRouteConstraint).FullName}'.";
+            var expectedLogValues = new[]
+            {
+                new KeyValuePair<string, object>("RouteValue", "Failure"),
+                new KeyValuePair<string, object>("RouteKey", "id"),
+                new KeyValuePair<string, object>("RouteConstraint", typeof(IntRouteConstraint).FullName)
+            };
 
             // Assert
-            Assert.Equal(1, sink.Scopes.Count);
-            var scope = sink.Scopes[0];
-            Assert.Equal(typeof(TemplateRoute).FullName, scope.LoggerName);
-            Assert.Equal("TemplateRoute.RouteAsync", scope.Scope.ToString());
-
-            Assert.Equal(1, sink.Writes.Count);
-
-            var write = sink.Writes[0];
-            Assert.Equal(typeof(TemplateRoute).FullName, write.LoggerName);
-            Assert.Equal("TemplateRoute.RouteAsync", write.Scope.ToString());
-            var values = Assert.IsType<TemplateRouteRouteAsyncValues>(write.State);
-            Assert.Equal("TemplateRoute.RouteAsync", values.Name);
-            Assert.Equal("Home/Index/Failure", values.RequestPath);
-            Assert.Equal(template, values.Template);
-            Assert.NotNull(values.DefaultValues);
-            Assert.NotNull(values.ProducedValues);
-            Assert.Equal(true, values.MatchedTemplate);
-            Assert.Equal(false, values.MatchedConstraints);
-            Assert.Equal(false, values.Matched);
-            Assert.Equal(context.IsHandled, values.Handled);
+            Assert.Empty(sink.Scopes);
+            Assert.Single(sink.Writes);
+            var sinkWrite = sink.Writes[0];
+            var formattedLogValues = Assert.IsType<FormattedLogValues>(sinkWrite.State);
+            Assert.Equal(expectedMessage, formattedLogValues.ToString());
+            var actualLogValues = formattedLogValues.GetValues();
+            foreach(var expectedPair in expectedLogValues)
+            {
+                Assert.Contains(
+                    actualLogValues, 
+                    (kvp) =>
+                    {
+                        return string.Equals(expectedPair.Key, kvp.Key)
+                        && string.Equals(expectedPair.Value?.ToString(), kvp.Value?.ToString());
+                    });
+            }
         }
 
         [Fact]
@@ -472,23 +439,6 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         [Fact]
-        public async Task RouteAsync_MatchFailOnConstraints_DoesNotLogWhenDisabled()
-        {
-            // Arrange & Act
-            var template = "{controller}/{action}/{id:int}";
-            var result = await SetUp(false, template, "/Home/Index/Failure");
-            var sink = result.Item1;
-
-            // Assert
-            Assert.Equal(1, sink.Scopes.Count);
-            var scope = sink.Scopes[0];
-            Assert.Equal(typeof(TemplateRoute).FullName, scope.LoggerName);
-            Assert.Equal("TemplateRoute.RouteAsync", scope.Scope.ToString());
-
-            Assert.Equal(0, sink.Writes.Count);
-        }
-
-        [Fact]
         public async Task RouteAsync_InlineConstraint_OptionalParameter()
         {
             // Arrange
@@ -701,7 +651,7 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.False(context.IsHandled);
         }
 
-        #region Route Matching
+#region Route Matching
 
         // PathString in HttpAbstractions guarantees a leading slash - so no value in testing other cases.
         [Fact]
@@ -794,7 +744,7 @@ namespace Microsoft.AspNet.Routing.Template
         public async Task Match_RejectedByHandler()
         {
             // Arrange
-            var route = CreateRoute("{controller}", accept: false);
+            var route = CreateRoute("{controller}", handleRequest: false);
             var context = CreateRouteContext("/Home");
 
             // Act
@@ -811,7 +761,7 @@ namespace Microsoft.AspNet.Routing.Template
         public async Task Match_RejectedByHandler_ClearsRouters()
         {
             // Arrange
-            var route = CreateRoute("{controller}", accept: false);
+            var route = CreateRoute("{controller}", handleRequest: false);
             var context = CreateRouteContext("/Home");
 
             // Act
@@ -826,7 +776,7 @@ namespace Microsoft.AspNet.Routing.Template
         public async Task Match_SetsRouters()
         {
             // Arrange
-            var target = CreateTarget(accept: true);
+            var target = CreateTarget(handleRequest: true);
             var route = CreateRoute(target, "{controller}");
             var context = CreateRouteContext("/Home");
 
@@ -937,9 +887,9 @@ namespace Microsoft.AspNet.Routing.Template
 
             return new RouteContext(context.Object);
         }
-        #endregion
+#endregion
 
-        #region Route Binding
+#region Route Binding
 
         [Fact]
         public void GetVirtualPath_Success()
@@ -1062,7 +1012,7 @@ namespace Microsoft.AspNet.Routing.Template
         public void GetVirtualPath_ValuesRejectedByHandler_StillGeneratesPath()
         {
             // Arrange
-            var route = CreateRoute("{controller}", accept: false);
+            var route = CreateRoute("{controller}", handleRequest: false);
             var context = CreateVirtualPathContext(new { controller = "Home" });
 
             // Act
@@ -1308,7 +1258,7 @@ namespace Microsoft.AspNet.Routing.Template
             var route = CreateRoute(
                 template: "slug/{controller}/{action}",
                 defaults: null,
-                accept: true,
+                handleRequest: true,
                 constraints: new { c = constraint });
 
             var context = CreateVirtualPathContext(
@@ -1339,7 +1289,7 @@ namespace Microsoft.AspNet.Routing.Template
             var route = CreateRoute(
                 template: "slug/{controller}/{action}",
                 defaults: new { otherthing = "17" },
-                accept: true,
+                handleRequest: true,
                 constraints: new { c = constraint });
 
             var context = CreateVirtualPathContext(
@@ -1369,7 +1319,7 @@ namespace Microsoft.AspNet.Routing.Template
             var route = CreateRoute(
                 template: "slug/{controller}/{action}",
                 defaults: new { action = "Index" },
-                accept: true,
+                handleRequest: true,
                 constraints: new { c = constraint });
 
             var context = CreateVirtualPathContext(
@@ -1400,7 +1350,7 @@ namespace Microsoft.AspNet.Routing.Template
             var route = CreateRoute(
                 template: "slug/{controller}/{action}",
                 defaults: new { otherthing = "17", thirdthing = "13" },
-                accept: true,
+                handleRequest: true,
                 constraints: new { c = constraint });
 
             var context = CreateVirtualPathContext(
@@ -1527,7 +1477,7 @@ namespace Microsoft.AspNet.Routing.Template
             var route = CreateRoute(
                 template: "{controller}/{action}/{name:alpha}",
                 defaults: null,
-                accept: true,
+                handleRequest: true,
                 constraints: new { name = constraint });
 
             var context = CreateVirtualPathContext(
@@ -1549,7 +1499,7 @@ namespace Microsoft.AspNet.Routing.Template
             var route = CreateRoute(
                 template: "{controller}/{action}/{name}.{format?}",
                 defaults: null,
-                accept: true,
+                handleRequest: true,
                 constraints: null);
 
             var context = CreateVirtualPathContext(
@@ -1571,7 +1521,7 @@ namespace Microsoft.AspNet.Routing.Template
             var route = CreateRoute(
                 template: "{controller}/{action}/{name}.{format?}",
                 defaults: null,
-                accept: true,
+                handleRequest: true,
                 constraints: null);
 
             var context = CreateVirtualPathContext(
@@ -1593,7 +1543,7 @@ namespace Microsoft.AspNet.Routing.Template
             var route = CreateRoute(
                 template: "{controller}/{action}/{name}.{format?}",
                 defaults: new { format = "json" },
-                accept: true,
+                handleRequest: true,
                 constraints: null);
 
             var context = CreateVirtualPathContext(
@@ -1615,7 +1565,7 @@ namespace Microsoft.AspNet.Routing.Template
             var route = CreateRoute(
                 template: "{controller}/{action}/{name}.{format?}",
                 defaults: new { format = "json" },
-                accept: true,
+                handleRequest: true,
                 constraints: null);
 
             var context = CreateVirtualPathContext(
@@ -1637,7 +1587,7 @@ namespace Microsoft.AspNet.Routing.Template
             var route = CreateRoute(
                 template: "{controller}/{action}/{name}",
                 defaults: null,
-                accept: true,
+                handleRequest: true,
                 constraints: null);
 
             var context = CreateVirtualPathContext(
@@ -1659,7 +1609,7 @@ namespace Microsoft.AspNet.Routing.Template
             var route = CreateRoute(
                 template: "{controller}/{action}/.{name?}",
                 defaults: null,
-                accept: true,
+                handleRequest: true,
                 constraints: null);
 
             var context = CreateVirtualPathContext(
@@ -1681,7 +1631,7 @@ namespace Microsoft.AspNet.Routing.Template
             var route = CreateRoute(
                 template: "{controller}/{action}/.{name?}",
                 defaults: null,
-                accept: true,
+                handleRequest: true,
                 constraints: null);
 
             var context = CreateVirtualPathContext(
@@ -1703,7 +1653,7 @@ namespace Microsoft.AspNet.Routing.Template
             var route = CreateRoute(
                 template: "{controller}/{action}/{name?}",
                 defaults: null,
-                accept: true,
+                handleRequest: true,
                 constraints: null);
 
             var context = CreateVirtualPathContext(
@@ -1744,9 +1694,9 @@ namespace Microsoft.AspNet.Routing.Template
             return new VirtualPathContext(null, null, null, routeName);
         }
 
-        #endregion
+#endregion
 
-        #region Route Registration
+#region Route Registration
 
         public static IEnumerable<object[]> DataTokens
         {
@@ -1912,7 +1862,7 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.Equal("RouteName", name);
         }
 
-        #endregion
+#endregion
 
         // DataTokens test data for TemplateRoute.GetVirtualPath
         public static IEnumerable<object[]> DataTokensTestData
@@ -1939,18 +1889,30 @@ namespace Microsoft.AspNet.Routing.Template
             return routeBuilder;
         }
 
-        private static TemplateRoute CreateRoute(string template, bool accept = true)
+        private static TemplateRoute CreateRoute(string routeName, string template, bool handleRequest = true)
         {
-            return new TemplateRoute(CreateTarget(accept), template, _inlineConstraintResolver);
+            return new TemplateRoute(
+                CreateTarget(handleRequest),
+                routeName,
+                template,
+                defaults: null,
+                constraints: null,
+                dataTokens: null,
+                inlineConstraintResolver: _inlineConstraintResolver);
+        }
+
+        private static TemplateRoute CreateRoute(string template, bool handleRequest = true)
+        {
+            return new TemplateRoute(CreateTarget(handleRequest), template, _inlineConstraintResolver);
         }
 
         private static TemplateRoute CreateRoute(string template,
                                                  object defaults,
-                                                 bool accept = true,
+                                                 bool handleRequest = true,
                                                  object constraints = null,
                                                  object dataTokens = null)
         {
-            return new TemplateRoute(CreateTarget(accept),
+            return new TemplateRoute(CreateTarget(handleRequest),
                                      template,
                                      new RouteValueDictionary(defaults),
                                      (constraints as IDictionary<string, object>) ??
@@ -1984,17 +1946,17 @@ namespace Microsoft.AspNet.Routing.Template
                                      inlineConstraintResolver: _inlineConstraintResolver);
         }
 
-        private static IRouter CreateTarget(bool accept = true)
+        private static IRouter CreateTarget(bool handleRequest = true)
         {
             var target = new Mock<IRouter>(MockBehavior.Strict);
             target
                 .Setup(e => e.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(c => c.IsBound = accept)
+                .Callback<VirtualPathContext>(c => c.IsBound = handleRequest)
                 .Returns<VirtualPathContext>(rc => null);
 
             target
                 .Setup(e => e.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>((c) => c.IsHandled = accept)
+                .Callback<RouteContext>((c) => c.IsHandled = handleRequest)
                 .Returns(Task.FromResult<object>(null));
 
             return target.Object;

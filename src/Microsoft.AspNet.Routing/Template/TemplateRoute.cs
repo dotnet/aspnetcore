@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing.Logging;
-using Microsoft.AspNet.Routing.Logging.Internal;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
@@ -99,84 +97,63 @@ namespace Microsoft.AspNet.Routing.Template
         public async virtual Task RouteAsync([NotNull] RouteContext context)
         {
             EnsureLoggers(context.HttpContext);
-            using (_logger.BeginScope("TemplateRoute.RouteAsync"))
+
+            var requestPath = context.HttpContext.Request.Path.Value;
+
+            if (!string.IsNullOrEmpty(requestPath) && requestPath[0] == '/')
             {
-                var requestPath = context.HttpContext.Request.Path.Value;
+                requestPath = requestPath.Substring(1);
+            }
 
-                if (!string.IsNullOrEmpty(requestPath) && requestPath[0] == '/')
+            var values = _matcher.Match(requestPath);
+
+            if (values == null)
+            {
+                // If we got back a null value set, that means the URI did not match
+
+                _logger.LogVerbose(
+                    "Request did not match the route with name '{RouteName}' and template '{RouteTemplate}'.",
+                    Name,
+                    RouteTemplate);
+
+                return;
+            }
+
+            var oldRouteData = context.RouteData;
+
+            var newRouteData = new RouteData(oldRouteData);
+            MergeValues(newRouteData.DataTokens, _dataTokens);
+            newRouteData.Routers.Add(_target);
+            MergeValues(newRouteData.Values, values);
+
+            if (!RouteConstraintMatcher.Match(
+                Constraints,
+                newRouteData.Values,
+                context.HttpContext,
+                this,
+                RouteDirection.IncomingRequest,
+                _constraintLogger))
+            {
+                return;
+            }
+
+            _logger.LogInformation(
+                "Request successfully matched the route with name '{RouteName}' and template '{RouteTemplate}'.",
+                Name,
+                RouteTemplate);
+
+            try
+            {
+                context.RouteData = newRouteData;
+
+                await _target.RouteAsync(context);
+            }
+            finally
+            {
+                // Restore the original values to prevent polluting the route data.
+                if (!context.IsHandled)
                 {
-                    requestPath = requestPath.Substring(1);
-                }
-
-                var values = _matcher.Match(requestPath);
-
-                if (values == null)
-                {
-                    if (_logger.IsEnabled(LogLevel.Verbose))
-                    {
-                        _logger.WriteValues(CreateRouteAsyncValues(
-                            requestPath,
-                            context.RouteData.Values,
-                            matchedValues: false,
-                            matchedConstraints: false,
-                            handled: context.IsHandled));
-                    }
-
-                    // If we got back a null value set, that means the URI did not match
-                    return;
-                }
-
-                var oldRouteData = context.RouteData;
-
-                var newRouteData = new RouteData(oldRouteData);
-                MergeValues(newRouteData.DataTokens, _dataTokens);
-                newRouteData.Routers.Add(_target);
-                MergeValues(newRouteData.Values, values);
-
-                if (!RouteConstraintMatcher.Match(
-                    Constraints,
-                    newRouteData.Values,
-                    context.HttpContext,
-                    this,
-                    RouteDirection.IncomingRequest,
-                    _constraintLogger))
-                {
-                    if (_logger.IsEnabled(LogLevel.Verbose))
-                    {
-                        _logger.WriteValues(CreateRouteAsyncValues(
-                            requestPath,
-                            newRouteData.Values,
-                            matchedValues: true,
-                            matchedConstraints: false,
-                            handled: context.IsHandled));
-                    }
-
-                    return;
-                }
-
-                try
-                {
-                    context.RouteData = newRouteData;
-
-                    await _target.RouteAsync(context);
-
-                    if (_logger.IsEnabled(LogLevel.Verbose))
-                    {
-                        _logger.WriteValues(CreateRouteAsyncValues(
-                            requestPath,
-                            newRouteData.Values,
-                            matchedValues: true,
-                            matchedConstraints: true,
-                            handled: context.IsHandled));
-                    }
-                }
-                finally
-                {
-                    // Restore the original values to prevent polluting the route data.
-                    if (!context.IsHandled)
-                    {
-                        context.RouteData = oldRouteData;
-                    }
+                    context.RouteData = oldRouteData;
                 }
             }
         }
@@ -325,27 +302,6 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             return result;
-        }
-
-        private TemplateRouteRouteAsyncValues CreateRouteAsyncValues(
-            string requestPath,
-            IDictionary<string, object> producedValues,
-            bool matchedValues,
-            bool matchedConstraints,
-            bool handled)
-        {
-            var values = new TemplateRouteRouteAsyncValues();
-            values.Template = _routeTemplate;
-            values.RequestPath = requestPath;
-            values.DefaultValues = Defaults;
-            values.ProducedValues = producedValues;
-            values.Constraints = _constraints;
-            values.Target = _target;
-            values.MatchedTemplate = matchedValues;
-            values.MatchedConstraints = matchedConstraints;
-            values.Matched = matchedValues && matchedConstraints;
-            values.Handled = handled;
-            return values;
         }
 
         private static void MergeValues(

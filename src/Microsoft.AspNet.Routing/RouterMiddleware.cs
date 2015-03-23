@@ -30,22 +30,16 @@ namespace Microsoft.AspNet.Builder
 
         public async Task Invoke(HttpContext httpContext)
         {
-            using (_logger.BeginScope("RouterMiddleware.Invoke"))
+            var context = new RouteContext(httpContext);
+            context.RouteData.Routers.Add(_router);
+
+            await _router.RouteAsync(context);
+
+            if (!context.IsHandled)
             {
-                var context = new RouteContext(httpContext);
-                context.RouteData.Routers.Add(_router);
+                _logger.LogVerbose("Request did not match any routes.");
 
-                await _router.RouteAsync(context);
-
-                if (_logger.IsEnabled(LogLevel.Verbose))
-                {
-                    _logger.WriteValues(new RouterMiddlewareInvokeValues() { Handled = context.IsHandled });
-                }
-
-                if (!context.IsHandled)
-                {
-                    await _next.Invoke(httpContext);
-                }
+                await _next.Invoke(httpContext);
             }
         }
     }
