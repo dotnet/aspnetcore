@@ -691,8 +691,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 ViewContext,
                 modelExplorer,
                 optionLabel,
-                expression: expression,
-                selectList: selectList,
+                expression,
+                selectList,
                 allowMultiple: false,
                 htmlAttributes: htmlAttributes);
             if (tagBuilder == null)

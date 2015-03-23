@@ -79,16 +79,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Ensure GenerateSelect() _never_ looks anything up in ViewData.
             var items = Items ?? Enumerable.Empty<SelectListItem>();
 
-            ICollection<string> selectedValues;
+            var currentValues = Generator.GetCurrentValues(
+                ViewContext,
+                For.ModelExplorer,
+                expression: For.Name,
+                allowMultiple: allowMultiple);
             var tagBuilder = Generator.GenerateSelect(
                 ViewContext,
                 For.ModelExplorer,
                 optionLabel: null,
                 expression: For.Name,
                 selectList: items,
+                currentValues: currentValues,
                 allowMultiple: allowMultiple,
-                htmlAttributes: null,
-                selectedValues: out selectedValues);
+                htmlAttributes: null);
 
             if (tagBuilder != null)
             {
@@ -98,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Whether or not (not being highly unlikely) we generate anything, could update contained <option/>
             // elements. Provide selected values for <option/> tag helpers. They'll run next.
-            ViewContext.FormContext.FormData[SelectedValuesFormDataKey] = selectedValues;
+            ViewContext.FormContext.FormData[SelectedValuesFormDataKey] = currentValues;
         }
     }
 }

@@ -159,6 +159,40 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object routeValues,
             object htmlAttributes);
 
+        /// <summary>
+        /// Generate a &lt;select&gt; element for the <paramref name="expression"/>.
+        /// </summary>
+        /// <param name="viewContext">A <see cref="ViewContext"/> instance for the current scope.</param>
+        /// <param name="modelExplorer">
+        /// <see cref="ModelExplorer"/> for the <paramref name="expression"/>. If <c>null</c>, determines validation
+        /// attributes using <paramref name="viewContext"/> and the <paramref name="expression"/>.
+        /// </param>
+        /// <param name="optionLabel">Optional text for a default empty &lt;option&gt; element.</param>
+        /// <param name="expression">Expression name, relative to the current model.</param>
+        /// <param name="selectList">
+        /// A collection of <see cref="SelectListItem"/> objects used to populate the &lt;select&gt; element with
+        /// &lt;optgroup&gt; and &lt;option&gt; elements. If <c>null</c>, finds this collection at
+        /// <c>ViewContext.ViewData[expression]</c>.
+        /// </param>
+        /// <param name="allowMultiple">
+        /// If <c>true</c>, includes a <c>multiple</c> attribute in the generated HTML. Otherwise generates a
+        /// single-selection &lt;select&gt; element.
+        /// </param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the &lt;select&gt; element. Alternatively, an
+        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>A new <see cref="TagBuilder"/> describing the &lt;select&gt; element.</returns>
+        /// <remarks>
+        /// <para>
+        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// &lt;select&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
+        /// attribute.
+        /// </para>
+        /// <para>
+        /// See <see cref="GetCurrentValues"/> for information about how current values are determined.
+        /// </para>
+        /// </remarks>
         TagBuilder GenerateSelect(
             [NotNull] ViewContext viewContext,
             ModelExplorer modelExplorer,
@@ -168,15 +202,55 @@ namespace Microsoft.AspNet.Mvc.Rendering
             bool allowMultiple,
             object htmlAttributes);
 
+        /// <summary>
+        /// Generate a &lt;select&gt; element for the <paramref name="expression"/>.
+        /// </summary>
+        /// <param name="viewContext">A <see cref="ViewContext"/> instance for the current scope.</param>
+        /// <param name="modelExplorer">
+        /// <see cref="ModelExplorer"/> for the <paramref name="expression"/>. If <c>null</c>, determines validation
+        /// attributes using <paramref name="viewContext"/> and the <paramref name="expression"/>.
+        /// </param>
+        /// <param name="optionLabel">Optional text for a default empty &lt;option&gt; element.</param>
+        /// <param name="expression">Expression name, relative to the current model.</param>
+        /// <param name="selectList">
+        /// A collection of <see cref="SelectListItem"/> objects used to populate the &lt;select&gt; element with
+        /// &lt;optgroup&gt; and &lt;option&gt; elements. If <c>null</c>, finds this collection at
+        /// <c>ViewContext.ViewData[expression]</c>.
+        /// </param>
+        /// <param name="currentValues">
+        /// An <see cref="IReadOnlyCollection{string}"/> containing values for &lt;option&gt; elements to select. If
+        /// <c>null</c>, selects &lt;option&gt; elements based on <see cref="SelectListItem.Selected"/> values in
+        /// <paramref name="selectList"/>.
+        /// </param>
+        /// <param name="allowMultiple">
+        /// If <c>true</c>, includes a <c>multiple</c> attribute in the generated HTML. Otherwise generates a
+        /// single-selection &lt;select&gt; element.
+        /// </param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the &lt;select&gt; element. Alternatively, an
+        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>A new <see cref="TagBuilder"/> describing the &lt;select&gt; element.</returns>
+        /// <remarks>
+        /// <para>
+        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// &lt;select&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
+        /// attribute.
+        /// </para>
+        /// <para>
+        /// See <see cref="GetCurrentValues"/> for information about how the <paramref name="currentValues"/>
+        /// collection may be created.
+        /// </para>
+        /// </remarks>
         TagBuilder GenerateSelect(
             [NotNull] ViewContext viewContext,
             ModelExplorer modelExplorer,
             string optionLabel,
             string expression,
             IEnumerable<SelectListItem> selectList,
+            IReadOnlyCollection<string> currentValues,
             bool allowMultiple,
-            object htmlAttributes,
-            out ICollection<string> selectedValues);
+            object htmlAttributes);
 
         TagBuilder GenerateTextArea(
             [NotNull] ViewContext viewContext,
@@ -216,5 +290,45 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] ViewContext viewContext,
             ModelExplorer modelExplorer,
             string expression);
+
+        /// <summary>
+        /// Gets the collection of current values for the given <paramref name="expression"/>.
+        /// </summary>
+        /// <param name="viewContext">A <see cref="ViewContext"/> instance for the current scope.</param>
+        /// <param name="modelExplorer">
+        /// <see cref="ModelExplorer"/> for the <paramref name="expression"/>. If <c>null</c>, calculates the
+        /// <paramref name="expression"/> result using <see cref="ViewDataDictionary.Eval(string)"/>.
+        /// </param>
+        /// <param name="expression">Expression name, relative to the current model.</param>
+        /// <param name="allowMultiple">
+        /// If <c>true</c>, require a collection <paramref name="expression"/> result. Otherwise, treat result as a
+        /// single value.
+        /// </param>
+        /// <returns>
+        /// <para>
+        /// <c>null</c> if no <paramref name="expression"/> result is found. Otherwise an
+        /// <see cref="IReadOnlyCollection{string}"/> containing current values for the given
+        /// <paramref name="expression"/>.
+        /// </para>
+        /// <para>
+        /// Converts the <paramref name="expression"/> result to a <see cref="string"/>. If that result is an
+        /// <see cref="System.Collections.IEnumerable"/> type, instead converts each item in the collection and returns
+        /// them separately.
+        /// </para>
+        /// <para>
+        /// If the <paramref name="expression"/> result or the element type is an <see cref="System.Enum"/>, returns a
+        /// <see cref="string"/> containing the integer representation of the <see cref="System.Enum"/> value as well
+        /// as all <see cref="System.Enum"/> names for that value. Otherwise returns the default <see cref="string"/>
+        /// conversion of the value.
+        /// </para>
+        /// </returns>
+        /// <remarks>
+        /// See <see cref="GenerateSelect"/> for information about how the return value may be used.
+        /// </remarks>
+        IReadOnlyCollection<string> GetCurrentValues(
+            [NotNull] ViewContext viewContext,
+            ModelExplorer modelExplorer,
+            string expression,
+            bool allowMultiple);
     }
 }

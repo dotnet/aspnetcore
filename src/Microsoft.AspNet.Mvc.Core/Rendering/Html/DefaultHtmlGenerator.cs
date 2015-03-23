@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -20,6 +21,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
     public class DefaultHtmlGenerator : IHtmlGenerator
     {
         private const string HiddenListItem = @"<li style=""display:none""></li>";
+        private static readonly MethodInfo ConvertEnumFromStringMethod =
+            typeof(DefaultHtmlGenerator).GetTypeInfo().GetDeclaredMethod(nameof(ConvertEnumFromString));
 
         private readonly AntiForgery _antiForgery;
         private readonly IScopedInstance<ActionBindingContext> _bindingContextAccessor;
@@ -377,16 +380,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
             bool allowMultiple,
             object htmlAttributes)
         {
-            ICollection<string> ignored;
+            var currentValues = GetCurrentValues(viewContext, modelExplorer, expression, allowMultiple);
             return GenerateSelect(
                 viewContext,
                 modelExplorer,
                 optionLabel,
                 expression,
                 selectList,
+                currentValues,
                 allowMultiple,
-                htmlAttributes,
-                selectedValues: out ignored);
+                htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -396,9 +399,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string optionLabel,
             string expression,
             IEnumerable<SelectListItem> selectList,
+            IReadOnlyCollection<string> currentValues,
             bool allowMultiple,
-            object htmlAttributes,
-            out ICollection<string> selectedValues)
+            object htmlAttributes)
         {
             var fullName = GetFullHtmlFieldName(viewContext, expression);
             if (string.IsNullOrEmpty(fullName))
@@ -407,7 +410,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             // If we got a null selectList, try to use ViewData to get the list of items.
-            var usedViewData = false;
             if (selectList == null)
             {
                 if (string.IsNullOrEmpty(expression))
@@ -419,39 +421,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 }
 
                 selectList = GetSelectListItems(viewContext, expression);
-                usedViewData = true;
             }
 
-            var type = allowMultiple ? typeof(string[]) : typeof(string);
-            var defaultValue = GetModelStateValue(viewContext, fullName, type);
-
-            // If ModelState did not contain a current value, fall back to ViewData- or ModelExplorer-supplied value.
-            if (defaultValue == null)
+            modelExplorer = modelExplorer ??
+                ExpressionMetadataProvider.FromStringExpression(expression, viewContext.ViewData, _metadataProvider);
+            if (currentValues != null)
             {
-                if (modelExplorer == null)
-                {
-                    // Html.DropDownList() and Html.ListBox() helper case.
-                    // Cannot use ViewData if it contains the select list.
-                    if (!usedViewData)
-                    {
-                        defaultValue = viewContext.ViewData.Eval(expression);
-                    }
-                }
-                else
-                {
-                    // <select/>, Html.DropDownListFor() and Html.ListBoxFor() helper case. Do not use ViewData.
-                    defaultValue = modelExplorer.Model;
-                }
-            }
-
-            if (defaultValue != null)
-            {
-                selectList =
-                    UpdateSelectListItemsWithDefaultValue(selectList, defaultValue, allowMultiple, out selectedValues);
-            }
-            else
-            {
-                selectedValues = new string[0];
+                selectList = UpdateSelectListItemsWithDefaultValue(modelExplorer, selectList, currentValues);
             }
 
             // Convert each ListItem to an <option> tag and wrap them with <optgroup> if requested.
@@ -746,16 +722,135 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 modelExplorer.Metadata,
                 _metadataProvider,
                 viewContext.HttpContext.RequestServices);
-            
+
             var validatorProviderContext = new ModelValidatorProviderContext(modelExplorer.Metadata);
             validatorProvider.GetValidators(validatorProviderContext);
 
             var validators = validatorProviderContext.Validators;
 
-            return 
+            return
                 validators
                 .OfType<IClientModelValidator>()
                 .SelectMany(v => v.GetClientValidationRules(validationContext));
+        }
+
+        /// <inheritdoc />
+        public virtual IReadOnlyCollection<string> GetCurrentValues(
+            [NotNull] ViewContext viewContext,
+            ModelExplorer modelExplorer,
+            string expression,
+            bool allowMultiple)
+        {
+            var fullName = GetFullHtmlFieldName(viewContext, expression);
+            if (string.IsNullOrEmpty(fullName))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(expression));
+            }
+
+            var type = allowMultiple ? typeof(string[]) : typeof(string);
+            var rawValue = GetModelStateValue(viewContext, fullName, type);
+
+            // If ModelState did not contain a current value, fall back to ViewData- or ModelExplorer-supplied value.
+            if (rawValue == null)
+            {
+                if (modelExplorer == null)
+                {
+                    // Html.DropDownList() and Html.ListBox() helper case.
+                    rawValue = viewContext.ViewData.Eval(expression);
+                    if (rawValue is IEnumerable<SelectListItem>)
+                    {
+                        // This ViewData item contains the fallback selectList collection for GenerateSelect().
+                        // Do not try to use this collection.
+                        rawValue = null;
+                    }
+                }
+                else
+                {
+                    // <select/>, Html.DropDownListFor() and Html.ListBoxFor() helper case. Do not use ViewData.
+                    rawValue = modelExplorer.Model;
+                }
+
+                if (rawValue == null)
+                {
+                    return null;
+                }
+            }
+
+            // Convert raw value to a collection.
+            IEnumerable rawValues;
+            if (allowMultiple)
+            {
+                rawValues = rawValue as IEnumerable;
+                if (rawValues == null || rawValues is string)
+                {
+                    throw new InvalidOperationException(
+                        Resources.FormatHtmlHelper_SelectExpressionNotEnumerable(nameof(expression)));
+                }
+            }
+            else
+            {
+                rawValues = new[] { rawValue };
+            }
+
+            modelExplorer = modelExplorer ??
+                ExpressionMetadataProvider.FromStringExpression(expression, viewContext.ViewData, _metadataProvider);
+
+            var enumNames = modelExplorer.Metadata.EnumNamesAndValues;
+            var isTargetEnum = modelExplorer.Metadata.IsEnum;
+            var innerType =
+                Nullable.GetUnderlyingType(modelExplorer.Metadata.ModelType) ?? modelExplorer.Metadata.ModelType;
+
+            // Convert raw value collection to strings.
+            var currentValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var value in rawValues)
+            {
+                // Add original or converted string.
+                var stringValue = (value as string) ?? Convert.ToString(value, CultureInfo.CurrentCulture);
+
+                // Do not add simple names of enum properties here because whitespace isn't relevant for their binding.
+                // Will add matching names just below.
+                if (enumNames == null || !enumNames.ContainsKey(stringValue.Trim()))
+                {
+                    currentValues.Add(stringValue);
+                }
+
+                // Remainder handles isEnum cases. Convert.ToString() returns field names for enum values but select
+                // list may (well, should) contain integer values.
+                var enumValue = value as Enum;
+                if (isTargetEnum && enumValue == null && value != null)
+                {
+                    var valueType = value.GetType();
+                    if (typeof(long).IsAssignableFrom(valueType) || typeof(ulong).IsAssignableFrom(valueType))
+                    {
+                        // E.g. user added an int to a ViewData entry and called a string-based HTML helper.
+                        enumValue = ConvertEnumFromInteger(value, innerType);
+                    }
+                    else if (!string.IsNullOrEmpty(stringValue))
+                    {
+                        // E.g. got a string from ModelState.
+                        var methodInfo = ConvertEnumFromStringMethod.MakeGenericMethod(innerType);
+                        enumValue = (Enum)methodInfo.Invoke(obj: null, parameters: new[] { stringValue });
+                    }
+                }
+
+                if (enumValue != null)
+                {
+                    // Add integer value.
+                    var integerString = enumValue.ToString("d");
+                    currentValues.Add(integerString);
+
+                    // Add all simple names for this value.
+                    var matchingNames = enumNames
+                        .Where(kvp => string.Equals(integerString, kvp.Value, StringComparison.Ordinal))
+                        .Select(kvp => kvp.Key);
+                    foreach (var name in matchingNames)
+                    {
+                        currentValues.Add(name);
+                    }
+                }
+            }
+
+            return (IReadOnlyCollection<string>)currentValues;
         }
 
         internal static string EvalString(ViewContext viewContext, string key, string format)
@@ -990,6 +1085,32 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return UnobtrusiveValidationAttributesGenerator.GetValidationAttributes(clientRules);
         }
 
+        private static Enum ConvertEnumFromInteger(object value, Type targetType)
+        {
+            try
+            {
+                return (Enum)Enum.ToObject(targetType, value);
+            }
+            catch (Exception exception)
+            when (exception is FormatException || exception.InnerException is FormatException)
+            {
+                // The integer was too large for this enum type.
+                return null;
+            }
+        }
+
+        private static object ConvertEnumFromString<TEnum>(string value) where TEnum : struct
+        {
+            TEnum enumValue;
+            if (Enum.TryParse(value, out enumValue))
+            {
+                return enumValue;
+            }
+
+            // Do not return default(TEnum) when parse was unsuccessful.
+            return null;
+        }
+
         private static bool EvalBoolean(ViewContext viewContext, string key)
         {
             return Convert.ToBoolean(viewContext.ViewData.Eval(key), CultureInfo.InvariantCulture);
@@ -1060,48 +1181,26 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         private static IEnumerable<SelectListItem> UpdateSelectListItemsWithDefaultValue(
+            ModelExplorer modelExplorer,
             IEnumerable<SelectListItem> selectList,
-            object defaultValue,
-            bool allowMultiple,
-            out ICollection<string> selectedValues)
+            IReadOnlyCollection<string> currentValues)
         {
-            IEnumerable defaultValues;
-            if (allowMultiple)
-            {
-                defaultValues = defaultValue as IEnumerable;
-                if (defaultValues == null || defaultValues is string)
-                {
-                    throw new InvalidOperationException(
-                        Resources.FormatHtmlHelper_SelectExpressionNotEnumerable("expression"));
-                }
-            }
-            else
-            {
-                defaultValues = new[] { defaultValue };
-            }
-
-            var values =
-                defaultValues.OfType<object>().Select(value => Convert.ToString(value, CultureInfo.CurrentCulture));
-
-            // ToString() by default returns an enum value's name.  But selectList may use numeric values.
-            var enumValues = defaultValues.OfType<Enum>().Select(value => value.ToString());
-            values = values.Concat(enumValues);
-
-            selectedValues = new HashSet<string>(values, StringComparer.OrdinalIgnoreCase);
-
             // Perform deep copy of selectList to avoid changing user's Selected property values.
             var newSelectList = new List<SelectListItem>();
             foreach (SelectListItem item in selectList)
             {
-                var newItem = new SelectListItem
+                var value = item.Value ?? item.Text;
+                var selected = currentValues.Contains(value);
+                var copy = new SelectListItem
                 {
                     Disabled = item.Disabled,
                     Group = item.Group,
-                    Selected = selectedValues.Contains(item.Value ?? item.Text),
+                    Selected = selected,
                     Text = item.Text,
                     Value = item.Value,
                 };
-                newSelectList.Add(newItem);
+
+                newSelectList.Add(copy);
             }
 
             return newSelectList;

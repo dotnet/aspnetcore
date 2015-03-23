@@ -243,12 +243,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(expectedTagName, output.TagName);
 
             Assert.NotNull(viewContext.FormContext?.FormData);
-            var keyValuePair = Assert.Single(
+            Assert.Single(
                 viewContext.FormContext.FormData,
                 entry => entry.Key == SelectTagHelper.SelectedValuesFormDataKey);
-            Assert.NotNull(keyValuePair.Value);
-            var selectedValues = Assert.IsAssignableFrom<ICollection<string>>(keyValuePair.Value);
-            Assert.InRange(selectedValues.Count, 0, 1);
         }
 
         [Theory]
@@ -341,12 +338,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(expectedTagName, output.TagName);
 
             Assert.NotNull(viewContext.FormContext?.FormData);
-            var keyValuePair = Assert.Single(
+            Assert.Single(
                 viewContext.FormContext.FormData,
                 entry => entry.Key == SelectTagHelper.SelectedValuesFormDataKey);
-            Assert.NotNull(keyValuePair.Value);
-            var selectedValues = Assert.IsAssignableFrom<ICollection<string>>(keyValuePair.Value);
-            Assert.InRange(selectedValues.Count, 0, 1);
 
             Assert.Equal(savedDisabled, items.Select(item => item.Disabled));
             Assert.Equal(savedGroup, items.Select(item => item.Group));
@@ -446,12 +440,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(expectedTagName, output.TagName);
 
             Assert.NotNull(viewContext.FormContext?.FormData);
-            var keyValuePair = Assert.Single(
+            Assert.Single(
                 viewContext.FormContext.FormData,
                 entry => entry.Key == SelectTagHelper.SelectedValuesFormDataKey);
-            Assert.NotNull(keyValuePair.Value);
-            var selectedValues = Assert.IsAssignableFrom<ICollection<string>>(keyValuePair.Value);
-            Assert.InRange(selectedValues.Count, 0, 1);
 
             Assert.Equal(savedDisabled, items.Select(item => item.Disabled));
             Assert.Equal(savedGroup, items.Select(item => item.Group));
@@ -504,17 +495,25 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var modelExpression = new ModelExpression(string.Empty, modelExplorer);
             viewContext.ViewData.TemplateInfo.HtmlFieldPrefix = propertyName;
 
-            ICollection<string> selectedValues = new string[0];
+            var currentValues = new string[0];
+            htmlGenerator
+                .Setup(real => real.GetCurrentValues(
+                    viewContext,
+                    modelExplorer,
+                    string.Empty,   // expression
+                    false))         // allowMultiple
+                .Returns(currentValues)
+                .Verifiable();
             htmlGenerator
                 .Setup(real => real.GenerateSelect(
                     viewContext,
                     modelExplorer,
-                    null,         // optionLabel
-                    string.Empty, // name
+                    null,           // optionLabel
+                    string.Empty,   // expression
                     expectedItems,
-                    false,        // allowMultiple
-                    null,         // htmlAttributes
-                    out selectedValues))
+                    currentValues,
+                    false,          // allowMultiple
+                    null))          // htmlAttributes
                 .Returns((TagBuilder)null)
                 .Verifiable();
 
@@ -536,7 +535,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var keyValuePair = Assert.Single(
                 viewContext.FormContext.FormData,
                 entry => entry.Key == SelectTagHelper.SelectedValuesFormDataKey);
-            Assert.Same(selectedValues, keyValuePair.Value);
+            Assert.Same(currentValues, keyValuePair.Value);
         }
 
         [Theory]
@@ -569,17 +568,25 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator.Object, metadataProvider);
-            ICollection<string> selectedValues = new string[0];
+            var currentValues = new string[0];
+            htmlGenerator
+                .Setup(real => real.GetCurrentValues(
+                    viewContext,
+                    modelExplorer,
+                    propertyName,   // expression
+                    allowMultiple))
+                .Returns(currentValues)
+                .Verifiable();
             htmlGenerator
                 .Setup(real => real.GenerateSelect(
                     viewContext,
                     modelExplorer,
-                    null,         // optionLabel
-                    propertyName, // name
+                    null,           // optionLabel
+                    propertyName,   // expression
                     It.IsAny<IEnumerable<SelectListItem>>(),
+                    currentValues,
                     allowMultiple,
-                    null,         // htmlAttributes
-                    out selectedValues))
+                    null))          // htmlAttributes
                 .Returns((TagBuilder)null)
                 .Verifiable();
 
@@ -600,7 +607,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var keyValuePair = Assert.Single(
                 viewContext.FormContext.FormData,
                 entry => entry.Key == SelectTagHelper.SelectedValuesFormDataKey);
-            Assert.Same(selectedValues, keyValuePair.Value);
+            Assert.Same(currentValues, keyValuePair.Value);
         }
 
         public class NameAndId
