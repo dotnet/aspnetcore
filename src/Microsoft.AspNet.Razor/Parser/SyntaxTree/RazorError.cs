@@ -9,6 +9,11 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 {
     public class RazorError : IEquatable<RazorError>
     {
+        public RazorError()
+            : this(message: string.Empty, location: SourceLocation.Undefined)
+        {
+        }
+
         public RazorError(string message, SourceLocation location)
             : this(message, location, 1)
         {
@@ -31,9 +36,9 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         {
         }
 
-        public string Message { get; private set; }
-        public SourceLocation Location { get; private set; }
-        public int Length { get; private set; }
+        public string Message { get; set; }
+        public SourceLocation Location { get; set; }
+        public int Length { get; set; }
 
         public override string ToString()
         {
