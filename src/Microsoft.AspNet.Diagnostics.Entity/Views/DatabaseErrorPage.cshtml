@@ -58,7 +58,6 @@
         <code> @Strings.DatabaseErrorPage_AddMigrationCommand </code>
         <br />
         <code> @Strings.DatabaseErrorPage_ApplyMigrationsCommand </code>
-        <p><strong>@Strings.DatabaseErrorPage_EnableMigrationsCommandsInfo</strong></p>
         <hr />
     }
     else if (Model.PendingMigrations.Any())
@@ -77,53 +76,8 @@
                 </ul>
             }
 
-            @if (Model.Options.EnableMigrationCommands)
-            {
-                <p>
-                    <button id="applyMigrations" onclick=" ApplyMigrations() ">@Strings.DatabaseErrorPage_ApplyMigrationsButton</button>
-                    <span id="applyMigrationsError" class="error"></span>
-                    <span id="applyMigrationsSuccess"></span>
-                </p>
-                <script>
-                    function ApplyMigrations() {
-                        applyMigrations.disabled = true;
-                        applyMigrationsError.innerHTML = "";
-                        applyMigrations.innerHTML = "@Strings.DatabaseErrorPage_ApplyMigrationsButtonRunning";
-
-                        var req = new XMLHttpRequest();
-                        req.open("POST", "@Model.Options.MigrationsEndPointPath.Value", true);
-                        var params = "context=" + encodeURIComponent("@Model.ContextType.AssemblyQualifiedName");
-                        req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-                        req.setRequestHeader("Content-length", params.length);
-                        req.setRequestHeader("Connection", "close");
-
-                        req.onload = function (e) {
-                            if (req.status == 204) {
-                                applyMigrations.innerHTML = "@Strings.DatabaseErrorPage_ApplyMigrationsButtonDone";
-                                applyMigrationsSuccess.innerHTML = "@Strings.DatabaseErrorPage_MigrationsAppliedRefresh";
-                            } else {
-                                ErrorApplyingMigrations();
-                            }
-                        };
-
-                        req.onerror = function (e) {
-                            ErrorApplyingMigrations();
-                        };
-
-                        req.send(params);
-                    }
-
-                    function ErrorApplyingMigrations() {
-                        applyMigrations.innerHTML = "@Strings.DatabaseErrorPage_ApplyMigrationsButton";
-                        applyMigrationsError.innerHTML = "@Strings.DatabaseErrorPage_ApplyMigrationsFailed";
-                        applyMigrations.disabled = false;
-                    }
-                </script>
-            }
-
             <p>@Strings.DatabaseErrorPage_HowToApplyFromCmd</p>
             <code>@Strings.DatabaseErrorPage_ApplyMigrationsCommand</code>
-            <p><strong>@Strings.DatabaseErrorPage_EnableMigrationsCommandsInfo</strong></p>
             <hr />
         </div>
     }
@@ -135,7 +89,6 @@
             <code>@Strings.DatabaseErrorPage_AddMigrationCommand</code>
             <br />
             <code>@Strings.DatabaseErrorPage_ApplyMigrationsCommand</code>
-            <p><strong>@Strings.DatabaseErrorPage_EnableMigrationsCommandsInfo</strong></p>
             <hr />
         </div>
     }

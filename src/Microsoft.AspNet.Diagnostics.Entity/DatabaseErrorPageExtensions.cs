@@ -21,14 +21,7 @@ namespace Microsoft.AspNet.Builder
             Check.NotNull(builder, "builder");
             Check.NotNull(options, "options");
 
-            builder = builder.UseMiddleware<DatabaseErrorPageMiddleware>(options);
-
-            if(options.EnableMigrationCommands)
-            {
-                builder.UseMigrationsEndPoint(new MigrationsEndPointOptions { Path = options.MigrationsEndPointPath });
-            }
-
-            return builder;
+            return builder.UseMiddleware<DatabaseErrorPageMiddleware>(options); 
         }
     }
 }

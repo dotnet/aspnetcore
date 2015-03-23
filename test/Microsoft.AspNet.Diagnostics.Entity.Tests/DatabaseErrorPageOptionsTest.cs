@@ -14,7 +14,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             Assert.False(options.ShowExceptionDetails);
             Assert.False(options.ListMigrations);
-            Assert.False(options.EnableMigrationCommands);
         }
 
         [Fact]
@@ -25,7 +24,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             Assert.True(options.ShowExceptionDetails);
             Assert.True(options.ListMigrations);
-            Assert.True(options.EnableMigrationCommands);
         }
 
         [Fact]
@@ -36,7 +34,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             Assert.False(options.ShowExceptionDetails);
             Assert.True(options.ListMigrations);
-            Assert.True(options.EnableMigrationCommands);
         }
 
         [Fact]
@@ -47,18 +44,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             Assert.True(options.ShowExceptionDetails);
             Assert.False(options.ListMigrations);
-            Assert.True(options.EnableMigrationCommands);
-        }
-
-        [Fact]
-        public void EnableMigrationCommands_overides_default_visibility()
-        {
-            var options = new DatabaseErrorPageOptions { EnableMigrationCommands = false };
-            options.SetDefaultVisibility(true);
-
-            Assert.True(options.ShowExceptionDetails);
-            Assert.True(options.ListMigrations);
-            Assert.False(options.EnableMigrationCommands);
         }
     }
 }

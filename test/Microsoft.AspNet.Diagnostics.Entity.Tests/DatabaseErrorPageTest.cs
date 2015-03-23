@@ -198,45 +198,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             Assert.DoesNotContain("111_MigrationOne", content);
         }
 
-        [Fact]
-        public async Task EnableMigrationCommands_is_respected()
-        {
-            var options = new DatabaseErrorPageOptions { EnableMigrationCommands = false };
-            options.SetDefaultVisibility(true);
-
-            var model = new DatabaseErrorPageModel(
-               contextType: typeof(BloggingContext),
-               exception: new Exception(),
-               databaseExists: true,
-               pendingModelChanges: false,
-               pendingMigrations: new string[] { "111_MigrationOne" },
-               options: options);
-
-            var content = await ExecutePage(options, model);
-
-            Assert.DoesNotContain(options.MigrationsEndPointPath.Value, content);
-        }
-
-        [Fact]
-        public async Task MigrationsEndPointPath_is_respected()
-        {
-            var options = new DatabaseErrorPageOptions { MigrationsEndPointPath = new PathString("/HitThisEndPoint") };
-            options.SetDefaultVisibility(true);
-
-            var model = new DatabaseErrorPageModel(
-               contextType: typeof(BloggingContext),
-               exception: new Exception(),
-               databaseExists: true,
-               pendingModelChanges: false,
-               pendingMigrations: new string[] { "111_MigrationOne" },
-               options: options);
-
-            var content = await ExecutePage(options, model);
-
-            Assert.Contains(options.MigrationsEndPointPath.Value, content);
-        }
-
-
         private static async Task<string> ExecutePage(DatabaseErrorPageOptions options, DatabaseErrorPageModel model)
         {
             var page = new DatabaseErrorPage();

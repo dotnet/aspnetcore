@@ -91,70 +91,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity
         }
 
         /// <summary>
-        /// Apply Migrations
-        /// </summary>
-        internal static string DatabaseErrorPage_ApplyMigrationsButton
-        {
-            get { return GetString("DatabaseErrorPage_ApplyMigrationsButton"); }
-        }
-
-        /// <summary>
-        /// Apply Migrations
-        /// </summary>
-        internal static string FormatDatabaseErrorPage_ApplyMigrationsButton()
-        {
-            return GetString("DatabaseErrorPage_ApplyMigrationsButton");
-        }
-
-        /// <summary>
-        /// Migrations Applied
-        /// </summary>
-        internal static string DatabaseErrorPage_ApplyMigrationsButtonDone
-        {
-            get { return GetString("DatabaseErrorPage_ApplyMigrationsButtonDone"); }
-        }
-
-        /// <summary>
-        /// Migrations Applied
-        /// </summary>
-        internal static string FormatDatabaseErrorPage_ApplyMigrationsButtonDone()
-        {
-            return GetString("DatabaseErrorPage_ApplyMigrationsButtonDone");
-        }
-
-        /// <summary>
-        /// Applying Migrations...
-        /// </summary>
-        internal static string DatabaseErrorPage_ApplyMigrationsButtonRunning
-        {
-            get { return GetString("DatabaseErrorPage_ApplyMigrationsButtonRunning"); }
-        }
-
-        /// <summary>
-        /// Applying Migrations...
-        /// </summary>
-        internal static string FormatDatabaseErrorPage_ApplyMigrationsButtonRunning()
-        {
-            return GetString("DatabaseErrorPage_ApplyMigrationsButtonRunning");
-        }
-
-        /// <summary>
-        /// An error occurred applying migrations, try applying them from the command line
-        /// </summary>
-        internal static string DatabaseErrorPage_ApplyMigrationsFailed
-        {
-            get { return GetString("DatabaseErrorPage_ApplyMigrationsFailed"); }
-        }
-
-        /// <summary>
-        /// An error occurred applying migrations, try applying them from the command line
-        /// </summary>
-        internal static string FormatDatabaseErrorPage_ApplyMigrationsFailed()
-        {
-            return GetString("DatabaseErrorPage_ApplyMigrationsFailed");
-        }
-
-        /// <summary>
         /// You can also apply migrations from the command line:
         /// </summary>
         internal static string DatabaseErrorPage_HowToApplyFromCmd
@@ -168,22 +104,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity
         internal static string FormatDatabaseErrorPage_HowToApplyFromCmd()
         {
             return GetString("DatabaseErrorPage_HowToApplyFromCmd");
-        }
-
-        /// <summary>
-        /// Try refreshing the page
-        /// </summary>
-        internal static string DatabaseErrorPage_MigrationsAppliedRefresh
-        {
-            get { return GetString("DatabaseErrorPage_MigrationsAppliedRefresh"); }
-        }
-
-        /// <summary>
-        /// Try refreshing the page
-        /// </summary>
-        internal static string FormatDatabaseErrorPage_MigrationsAppliedRefresh()
-        {
-            return GetString("DatabaseErrorPage_MigrationsAppliedRefresh");
         }
 
         /// <summary>
@@ -315,118 +235,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity
         }
 
         /// <summary>
-        /// Migrations successfully applied for context '{0}'.
-        /// </summary>
-        internal static string MigrationsEndPointMiddleware_Applied
-        {
-            get { return GetString("MigrationsEndPointMiddleware_Applied"); }
-        }
-
-        /// <summary>
-        /// Migrations successfully applied for context '{0}'.
-        /// </summary>
-        internal static string FormatMigrationsEndPointMiddleware_Applied(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("MigrationsEndPointMiddleware_Applied"), p0);
-        }
-
-        /// <summary>
-        /// Request is valid, applying migrations for context '{0}'.
-        /// </summary>
-        internal static string MigrationsEndPointMiddleware_ApplyingMigrations
-        {
-            get { return GetString("MigrationsEndPointMiddleware_ApplyingMigrations"); }
-        }
-
-        /// <summary>
-        /// Request is valid, applying migrations for context '{0}'.
-        /// </summary>
-        internal static string FormatMigrationsEndPointMiddleware_ApplyingMigrations(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("MigrationsEndPointMiddleware_ApplyingMigrations"), p0);
-        }
-
-        /// <summary>
-        /// The context type '{0}' was not found in services. This usually means the context was not registered in services during startup. You probably want to call AddScoped&lt;{0}&gt;() inside the UseServices(...) call in your application startup code.
-        /// </summary>
-        internal static string MigrationsEndPointMiddleware_ContextNotRegistered
-        {
-            get { return GetString("MigrationsEndPointMiddleware_ContextNotRegistered"); }
-        }
-
-        /// <summary>
-        /// The context type '{0}' was not found in services. This usually means the context was not registered in services during startup. You probably want to call AddScoped&lt;{0}&gt;() inside the UseServices(...) call in your application startup code.
-        /// </summary>
-        internal static string FormatMigrationsEndPointMiddleware_ContextNotRegistered(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("MigrationsEndPointMiddleware_ContextNotRegistered"), p0);
-        }
-
-        /// <summary>
-        /// An error occurred while applying the migrations for '{0}'. See InnerException for details.
-        /// </summary>
-        internal static string MigrationsEndPointMiddleware_Exception
-        {
-            get { return GetString("MigrationsEndPointMiddleware_Exception"); }
-        }
-
-        /// <summary>
-        /// An error occurred while applying the migrations for '{0}'. See InnerException for details.
-        /// </summary>
-        internal static string FormatMigrationsEndPointMiddleware_Exception(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("MigrationsEndPointMiddleware_Exception"), p0);
-        }
-
-        /// <summary>
-        /// The context type '{0}' could not be loaded. Ensure this is the correct type name for the context you are trying to apply migrations for.
-        /// </summary>
-        internal static string MigrationsEndPointMiddleware_InvalidContextType
-        {
-            get { return GetString("MigrationsEndPointMiddleware_InvalidContextType"); }
-        }
-
-        /// <summary>
-        /// The context type '{0}' could not be loaded. Ensure this is the correct type name for the context you are trying to apply migrations for.
-        /// </summary>
-        internal static string FormatMigrationsEndPointMiddleware_InvalidContextType(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("MigrationsEndPointMiddleware_InvalidContextType"), p0);
-        }
-
-        /// <summary>
-        /// No context type was specified. Ensure the form data from the request includes a contextTypeName value, specifying the context to apply migrations for.
-        /// </summary>
-        internal static string MigrationsEndPointMiddleware_NoContextType
-        {
-            get { return GetString("MigrationsEndPointMiddleware_NoContextType"); }
-        }
-
-        /// <summary>
-        /// No context type was specified. Ensure the form data from the request includes a contextTypeName value, specifying the context to apply migrations for.
-        /// </summary>
-        internal static string FormatMigrationsEndPointMiddleware_NoContextType()
-        {
-            return GetString("MigrationsEndPointMiddleware_NoContextType");
-        }
-
-        /// <summary>
-        /// Request path matched the path configured for this migrations endpoint ({0}). Attempting to process the migrations request.
-        /// </summary>
-        internal static string MigrationsEndPointMiddleware_RequestPathMatched
-        {
-            get { return GetString("MigrationsEndPointMiddleware_RequestPathMatched"); }
-        }
-
-        /// <summary>
-        /// Request path matched the path configured for this migrations endpoint ({0}). Attempting to process the migrations request.
-        /// </summary>
-        internal static string FormatMigrationsEndPointMiddleware_RequestPathMatched(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("MigrationsEndPointMiddleware_RequestPathMatched"), p0);
-        }
-
-        /// <summary>
         /// A database operation failed while processing the request.
         /// </summary>
         internal static string DatabaseErrorPage_Title
@@ -440,22 +248,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity
         internal static string FormatDatabaseErrorPage_Title()
         {
             return GetString("DatabaseErrorPage_Title");
-        }
-
-        /// <summary>
-        /// To use migrations from a command prompt you will need to &lt;a href='http://go.microsoft.com/fwlink/?LinkId=518242'&gt;install .NET Version Manager (dnvm)&lt;/a&gt;. Once installed, you can run migration commands from a standard command prompt in the project directory.
-        /// </summary>
-        internal static string DatabaseErrorPage_EnableMigrationsCommandsInfo
-        {
-            get { return GetString("DatabaseErrorPage_EnableMigrationsCommandsInfo"); }
-        }
-
-        /// <summary>
-        /// To use migrations from a command prompt you will need to &lt;a href='http://go.microsoft.com/fwlink/?LinkId=518242'&gt;install .NET Version Manager (dnvm)&lt;/a&gt;. Once installed, you can run migration commands from a standard command prompt in the project directory.
-        /// </summary>
-        internal static string FormatDatabaseErrorPage_EnableMigrationsCommandsInfo()
-        {
-            return GetString("DatabaseErrorPage_EnableMigrationsCommandsInfo");
         }
 
         /// <summary>

@@ -2,6 +2,7 @@
     "version": "1.0.0-*",
     "dependencies": {
         "Microsoft.AspNet.Diagnostics.Elm": "1.0.0-*",
+        "Microsoft.AspNet.Diagnostics.Entity": "7.0.0-*",
         "Microsoft.AspNet.Razor": "4.0.0-*"
     },
 

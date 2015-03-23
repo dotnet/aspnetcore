@@ -8,11 +8,9 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 {
     public class DatabaseErrorPageOptions
     {
-        private PathString _migrationsEndPointPath = MigrationsEndPointOptions.DefaultPath;
         private bool _defaultVisibility;
         private bool? _showExceptionDetails;
         private bool? _listMigrations;
-        private bool? _enableMigrationCommands;
 
         public static DatabaseErrorPageOptions ShowAll
         {
@@ -23,18 +21,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                 {
                     ShowExceptionDetails = true,
                     ListMigrations = true,
-                    EnableMigrationCommands = true
                 };
-            }
-        }
-
-        public virtual PathString MigrationsEndPointPath
-        {
-            get { return _migrationsEndPointPath; }
-            set
-            {
-                Check.NotNull(value, "value");
-                _migrationsEndPointPath = value;
             }
         }
 
@@ -48,12 +35,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity
         {
             get { return _listMigrations ?? _defaultVisibility; }
             set { _listMigrations = value; }
-        }
-
-        public virtual bool EnableMigrationCommands
-        {
-            get { return _enableMigrationCommands ?? _defaultVisibility; }
-            set { _enableMigrationCommands = value; }
         }
 
         public virtual void SetDefaultVisibility(bool isVisible)
