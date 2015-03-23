@@ -19,22 +19,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         {
             Type[] actualTypes;
 
-            var enumerable = type.ExtractGenericInterface(typeof(IEnumerable<>));
-            if (enumerable == null)
+            if (type.IsGenericType() &&
+                type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
             {
-                actualTypes = new Type[] { type };
+                actualTypes = type.GenericTypeArguments;
             }
             else
             {
-                actualTypes = enumerable.GenericTypeArguments;
-                // The following special case is for IEnumerable<KeyValuePair<K,V>>,
-                // supertype of IDictionary<K,V>, and IReadOnlyDictionary<K,V>.
-                if (actualTypes.Length == 1
-                    && actualTypes[0].IsGenericType() 
-                    && actualTypes[0].GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
-                {
-                    actualTypes = actualTypes[0].GenericTypeArguments;
-                }
+                actualTypes = new Type[] { type };
             }
 
             foreach (var actualType in actualTypes)
