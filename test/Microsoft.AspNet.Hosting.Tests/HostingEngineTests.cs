@@ -131,6 +131,32 @@ namespace Microsoft.AspNet.Hosting
             }
         }
 
+        [Theory]
+        [InlineData(null, "")]
+        [InlineData("", "")]
+        [InlineData("/", "/")]
+        [InlineData(@"\", @"\")]
+        [InlineData("sub", "sub")]
+        [InlineData("sub/sub2/sub3", @"sub/sub2/sub3")]
+        [InlineData(@"sub/sub2\sub3\", @"sub/sub2/sub3/")]
+        public void MapPath_Facts(string virtualPath, string expectedSuffix)
+        {
+            var context = new HostingContext
+            {
+                ServerFactory = this
+            };
+
+            var engine = new HostingEngine();
+
+            using (engine.Start(context))
+            {
+                var env = context.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+                var mappedPath = env.MapPath(virtualPath);
+                expectedSuffix = expectedSuffix.Replace('/', Path.DirectorySeparatorChar);
+                Assert.Equal(Path.Combine(env.WebRootPath, expectedSuffix), mappedPath);
+            }
+        }
+
         public void Initialize(IApplicationBuilder builder)
         {
 

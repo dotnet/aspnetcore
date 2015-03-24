@@ -40,6 +40,8 @@ namespace Microsoft.AspNet.Hosting
                 return hostingEnvironment.WebRootPath;
             }
 
+            // On windows replace / with \.
+            virtualPath = virtualPath.Replace('/', Path.DirectorySeparatorChar);
             return Path.Combine(hostingEnvironment.WebRootPath, virtualPath);
         }
     }
