@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Hosting
         /// <returns>True if the specified name is same as the current environment.</returns>
         public static bool IsEnvironment(
             [NotNull]this IHostingEnvironment hostingEnvironment,
-            [NotNull]string environmentName)
+            string environmentName)
         {
             return string.Equals(
                 hostingEnvironment.EnvironmentName,
