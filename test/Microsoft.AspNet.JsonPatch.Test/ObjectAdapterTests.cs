@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.JsonPatch.Test
 {
-    public class SimpleObjectAdapterTests
+    public class ObjectAdapterTests
     {
         [Fact]
         public void AddResultsShouldReplace()

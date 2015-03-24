@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.JsonPatch.Operations;
 
 namespace Microsoft.AspNet.JsonPatch.Exceptions
 {
-    public class JsonPatchException : Exception
+    public class JsonPatchException<T> : JsonPatchException where T : class
     {
-        public new Exception InnerException { get; internal set; }
-
-        public object AffectedObject { get; private set; }
+        public Operation<T> FailedOperation { get; private set; }
+        public new T AffectedObject { get; private set; }
 
         private string _message = "";
         public override string Message
@@ -18,6 +18,7 @@ namespace Microsoft.AspNet.JsonPatch.Exceptions
             {
                 return _message;
             }
+
         }
 
         public JsonPatchException()
@@ -25,9 +26,23 @@ namespace Microsoft.AspNet.JsonPatch.Exceptions
 
         }
 
-        public JsonPatchException(string message, Exception innerException)
+        public JsonPatchException(Operation<T> operation, string message, T affectedObject)
         {
+            FailedOperation = operation;
             _message = message;
+            AffectedObject = affectedObject;
+        }
+
+        public JsonPatchException(Operation<T> operation, string message, T affectedObject, int statusCode)
+            : this(operation, message, affectedObject)
+        {
+            StatusCode = statusCode;
+        }
+
+        public JsonPatchException(Operation<T> operation, string message, T affectedObject,
+            int statusCode, Exception innerException)
+            : this(operation, message, affectedObject, statusCode)
+        {
             InnerException = innerException;
         }
     }

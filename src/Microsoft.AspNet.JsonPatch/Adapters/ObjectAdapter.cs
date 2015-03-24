@@ -12,11 +12,11 @@ using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNet.JsonPatch.Adapters
 {
-    public class SimpleObjectAdapter<T> : IObjectAdapter<T> where T : class
+    public class ObjectAdapter<T> : IObjectAdapter<T> where T : class
     {
         public IContractResolver ContractResolver { get; set; }
 
-        public SimpleObjectAdapter(IContractResolver contractResolver)
+        public ObjectAdapter(IContractResolver contractResolver)
         {
             ContractResolver = contractResolver;
         }
@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                             throw new JsonPatchException<T>(operationToReport,
                                 string.Format("Patch failed: provided path is invalid for array property type at " +
                                     "location path: {0}: position larger than array size",
-                                    path),
+                                    path, 422),
                                 objectToApplyTo);
                         }
                     }
@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                        string.Format("Patch failed: provided path is invalid for array property type at location " +
                             "path: {0}: expected array",
                             path),
-                       objectToApplyTo);
+                       objectToApplyTo, 422);
                 }
             }
             else
@@ -251,7 +251,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                             string.Format("Patch failed: provided from path is invalid for array property type at " +
                                 "location from: {0}: invalid position",
                                 operation.from),
-                            objectToApplyTo);
+                            objectToApplyTo, 422);
                     }
 
                     valueAtFromLocation = array[positionAsInteger];
@@ -262,7 +262,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                        string.Format("Patch failed: provided from path is invalid for array property type at " +
                             "location from: {0}: expected array",
                             operation.from),
-                       objectToApplyTo);
+                       objectToApplyTo, 422);
                 }
             }
             else
@@ -360,7 +360,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                                 string.Format("Patch failed: provided path is invalid for array property type at " +
                                     "location path: {0}: position larger than array size",
                                     path),
-                                objectToApplyTo);
+                                objectToApplyTo, 422);
                         }
                     }
                 }
@@ -370,7 +370,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                        string.Format("Patch failed: provided path is invalid for array property type at " +
                             "location path: {0}: expected array",
                             path),
-                       objectToApplyTo);
+                       objectToApplyTo, 422);
                 }
             }
             else
@@ -481,7 +481,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                             string.Format("Patch failed: provided from path is invalid for array property type at " +
                                 "location path: {0}: invalid position",
                                 operation.path),
-                            objectToApplyTo);
+                            objectToApplyTo, 422);
                     }
 
                     valueAtPathLocation = array[positionInPathAsInteger];
@@ -492,7 +492,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                        string.Format("Patch failed: provided from path is invalid for array property type at " +
                             "location path: {0}: expected array",
                             operation.path),
-                       objectToApplyTo);
+                       objectToApplyTo, 422);
                 }
             }
             else
@@ -600,7 +600,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                             string.Format("Patch failed: provided from path is invalid for array property type at " +
                                 "location from: {0}: invalid position",
                                 operation.from),
-                            objectToApplyTo);
+                            objectToApplyTo, 422);
                     }
 
                     valueAtFromLocation = array[positionAsInteger];
@@ -611,7 +611,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                        string.Format("Patch failed: provided from path is invalid for array property type at " +
                             "location from: {0}: expected array",
                             operation.from),
-                       objectToApplyTo);
+                       objectToApplyTo, 422);
                 }
             }
             else
@@ -636,14 +636,14 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                 throw new JsonPatchException<T>(
                     operation,
                     string.Format("Patch failed: property at location {0} does not exist", propertyPath),
-                    objectToApplyTo);
+                    objectToApplyTo, 422);
             }
             if (patchProperty.Property.Ignored)
             {
                 throw new JsonPatchException<T>(
                     operation,
                     string.Format("Patch failed: cannot update property at location {0}", propertyPath),
-                    objectToApplyTo);
+                    objectToApplyTo, 422);
             }
         }
 
@@ -663,7 +663,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             var errorMessage = "Patch failed: provided value is invalid for property type at location path: ";
             if (!result.CanBeConverted)
             {
-                throw new JsonPatchException<T>(operation, string.Format(errorMessage + "{0}", path), objectToApplyTo);
+                throw new JsonPatchException<T>(operation, string.Format(errorMessage + "{0}", path), objectToApplyTo, 422);
             }
         }
     }
