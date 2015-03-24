@@ -68,8 +68,6 @@
             "dependencies": {
                 "AutofacWebSite": "1.0.0"
             }
-        },
-        "dnxcore50": {
         }
     }
 }
