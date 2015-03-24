@@ -30,20 +30,20 @@
         @for (var index = 0; index < Model.Count(); ++index)
         {
             <div class="form-group">
-                <label asp-for="@Model[index].Name" />
+                <label asp-for="@Model[index].Name"></label>
                 <input type="text" asp-for="@Model[index].Name" disabled="disabled" readonly="readonly" />
             </div>
             <div class="form-group">
-                <label asp-for="@Model[index].DateOfBirth" />
+                <label asp-for="@Model[index].DateOfBirth"></label>
                 <input type="date" asp-for="@Model[index].DateOfBirth" asp-format="{0:yyyy-MM-dd}" disabled="disabled" readonly="readonly" />
             </div>
             <div class="form-group">
-                <label asp-for="@Model[index].YearsEmployeed" />
+                <label asp-for="@Model[index].YearsEmployeed"></label>
                 <input type="number" asp-for="@Model[index].YearsEmployeed" disabled="disabled" readonly="readonly" />
             </div>
             <div class="form-group">
-                <label asp-for="@Model[index].Blurb" />
-                <textarea rows="4" asp-for="@Model[index].Blurb" disabled="disabled" readonly="readonly" />
+                <label asp-for="@Model[index].Blurb"></label>
+                <textarea rows="4" asp-for="@Model[index].Blurb" disabled="disabled" readonly="readonly"></textarea>
             </div>
 
             <p>

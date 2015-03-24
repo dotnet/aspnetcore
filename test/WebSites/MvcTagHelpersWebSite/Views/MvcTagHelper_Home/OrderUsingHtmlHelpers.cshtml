@@ -74,7 +74,7 @@ Html.BeginForm(actionName: "Submit", controllerName: "MvcTagHelper_Order"))
         </div><text>
         </text>@Html.ValidationSummary(message: null, htmlAttributes: new { @class = "order" })<text>
         </text>@Html.HiddenFor(m => m.Customer.Key)<text></text>
-        <input type="submit"></input><text>
+        <input type="submit"/><text>
     </text>@Html.AntiForgeryToken();
     }@**@
 </body>
