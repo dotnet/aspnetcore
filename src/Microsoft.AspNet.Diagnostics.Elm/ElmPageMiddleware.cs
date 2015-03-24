@@ -93,8 +93,14 @@ namespace Microsoft.AspNet.Diagnostics.Elm
                 NamePrefix = string.Empty
             };
             var isRedirect = false;
-            var form = await context.Request.ReadFormAsync();
-            if (form.ContainsKey("clear"))
+
+            IFormCollection form = null;
+            if (context.Request.HasFormContentType)
+            {
+                form = await context.Request.ReadFormAsync();
+            }
+
+            if (form != null && form.ContainsKey("clear"))
             {
                 _store.Clear();
                 context.Response.Redirect(context.Request.PathBase.Add(_options.Path).ToString());
