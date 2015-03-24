@@ -57,7 +57,7 @@ namespace E2ETests
                         startParameters.ServerType == ServerType.IIS)
                     {
                         // Bundle to IIS root\application folder.
-                        KpmBundle(startParameters, logger, Path.Combine(Environment.GetEnvironmentVariable("SystemDrive") + @"\", @"inetpub\wwwroot"));
+                        DnuBundle(startParameters, logger, Path.Combine(Environment.GetEnvironmentVariable("SystemDrive") + @"\", @"inetpub\wwwroot"));
 
                         // Drop a Microsoft.AspNet.Hosting.ini with ASPNET_ENV information.
                         logger.LogInformation("Creating Microsoft.AspNet.Hosting.ini file with ASPNET_ENV.");
@@ -96,7 +96,7 @@ namespace E2ETests
                     else
 #endif
                     {
-                        KpmBundle(startParameters, logger);
+                        DnuBundle(startParameters, logger);
                     }
                 }
 
@@ -140,7 +140,7 @@ namespace E2ETests
             {
                 // We use full path to runtime to pack.
                 startParameters.Runtime = new DirectoryInfo(runtimeBin).Parent.FullName;
-                KpmBundle(startParameters, logger);
+                DnuBundle(startParameters, logger);
             }
 
             //Mono now supports --appbase 
@@ -291,7 +291,7 @@ namespace E2ETests
             return runtimeName;
         }
 
-        private static void KpmBundle(StartParameters startParameters, ILogger logger, string bundleRoot = null)
+        private static void DnuBundle(StartParameters startParameters, ILogger logger, string bundleRoot = null)
         {
             startParameters.BundledApplicationRootPath = Path.Combine(bundleRoot ?? Path.GetTempPath(), Guid.NewGuid().ToString());
 
@@ -303,11 +303,11 @@ namespace E2ETests
                     startParameters.Runtime,
                     startParameters.BundleWithNoSource ? "--no-source" : string.Empty);
 
-            logger.LogInformation("Executing command kpm {args}", parameters);
+            logger.LogInformation("Executing command dnu {args}", parameters);
 
             var startInfo = new ProcessStartInfo
             {
-                FileName = "kpm",
+                FileName = "dnu",
                 Arguments = parameters,
                 UseShellExecute = true,
                 CreateNoWindow = true
@@ -323,7 +323,7 @@ namespace E2ETests
                 Path.Combine(startParameters.BundledApplicationRootPath, "wwwroot") :
                 Path.Combine(startParameters.BundledApplicationRootPath, "approot", "src", "MusicStore");
 
-            logger.LogInformation("kpm bundle finished with exit code : {exitCode}", hostProcess.ExitCode);
+            logger.LogInformation("dnu bundle finished with exit code : {exitCode}", hostProcess.ExitCode);
         }
 
         public static void CleanUpApplication(StartParameters startParameters, Process hostProcess, string musicStoreDbName, ILogger logger)

@@ -7,7 +7,7 @@ This project is part of ASP.NET 5.0. You can find samples, documentation and get
 	1. Open MusicStore.sln in Visual Studio 2015 and run the individual applications on `IIS Express`.
 * If you don't have Visual Studio 2015
 	1. Open a command prompt and cd `\src\MusicStore\`.
-	2. Execute `kpm restore`.
+	2. Execute `dnu restore`.
 	3. Execute `Helios.cmd` to launch the app on IISExpress from command line (Application started at URL **http://localhost:5001/**).
 	   NOTE: App and tests require Visual Studio 2015 LocalDB on the machine to run.
 
@@ -23,7 +23,7 @@ This project is part of ASP.NET 5.0. You can find samples, documentation and get
 ## To run the sample on Mac/Mono:
 * Follow [Home](https://github.com/aspnet/home) instructions to install mono, kvm on Mac.
 * Open a command prompt and cd `\src\MusicStore\`.
-* Execute `kpm restore`.
+* Execute `dnu restore`.
 * Try `k kestrel` to run the application.
 **NOTE: On Mono since SQL client is not available the sample uses an InMemoryStore to run the application. So the changes that you make will not be persisted.
 
