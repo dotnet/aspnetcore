@@ -7,6 +7,7 @@ using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Http.Core.Authentication;
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Framework.DependencyInjection;
 using MusicStore.Models;
