@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Framework.Internal;
@@ -20,15 +22,18 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
                 defaultSeverity: DiagnosticSeverity.Error,
                 isEnabledByDefault: true);
 
-            var textSpan = new TextSpan(error.Location.AbsoluteIndex, error.Length);
-            var linePositionStart = new LinePosition(error.Location.LineIndex, error.Location.CharacterIndex);
-            var linePositionEnd = new LinePosition(error.Location.LineIndex,
-                                                   error.Location.CharacterIndex + error.Length);
+            var location = error.Location;
+            if (location == SourceLocation.Undefined)
+            {
+                location = SourceLocation.Zero;
+            }
+            var length = Math.Max(0, error.Length);
+
+            var textSpan = new TextSpan(location.AbsoluteIndex, length);
+            var linePositionStart = new LinePosition(location.LineIndex, location.CharacterIndex);
+            var linePositionEnd = new LinePosition(location.LineIndex, location.CharacterIndex + length);
             var linePositionSpan = new LinePositionSpan(linePositionStart, linePositionEnd);
-
-            var location = Location.Create(filePath, textSpan, linePositionSpan);
-
-            return Diagnostic.Create(descriptor, location);
+            return Diagnostic.Create(descriptor, Location.Create(filePath, textSpan, linePositionSpan));
         }
     }
 }
