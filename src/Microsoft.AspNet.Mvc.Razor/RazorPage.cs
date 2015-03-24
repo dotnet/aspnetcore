@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -47,15 +48,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 }
 
                 return ViewContext.HttpContext;
-            }
-        }
-
-        /// <inheritdoc />
-        public IEnumerable<string> RenderedSections
-        {
-            get
-            {
-                return _renderedSections;
             }
         }
 
@@ -724,13 +716,27 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public void EnsureBodyWasRendered()
+        public void EnsureRenderedBodyOrSections()
         {
-            // If BodyContent is set, ensure it was rendered.
-            if (RenderBodyDelegate != null && !_renderedBody)
+            // a) all sections defined for this page are rendered.
+            // b) if no sections are defined, then the body is rendered if it's available.
+            if (PreviousSectionWriters != null && PreviousSectionWriters.Count > 0)
             {
+                var sectionsNotRendered = PreviousSectionWriters.Keys.Except(
+                    _renderedSections,
+                    StringComparer.OrdinalIgnoreCase);
+
+                if (sectionsNotRendered.Any())
+                {
+                    var sectionNames = string.Join(", ", sectionsNotRendered);
+                    throw new InvalidOperationException(Resources.FormatSectionsNotRendered(Path, sectionNames));
+                }
+            }
+            else if (RenderBodyDelegate != null && !_renderedBody)
+            {
+                // There are no sections defined, but RenderBody was NOT called.
                 // If a body was defined, then RenderBody should have been called.
-                var message = Resources.FormatRenderBodyNotCalled(nameof(RenderBody));
+                var message = Resources.FormatRenderBodyNotCalled(nameof(RenderBody), Path);
                 throw new InvalidOperationException(message);
             }
         }

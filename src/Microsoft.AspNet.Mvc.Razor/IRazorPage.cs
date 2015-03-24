@@ -72,14 +72,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         Task ExecuteAsync();
 
         /// <summary>
-        /// Verifies that RenderBody is called for the page that is
-        /// part of view execution hierarchy.
+        /// Verifies that all sections defined in <see cref="PreviousSectionWriters"/> were rendered, or
+        /// the body was rendered if no sections were defined.
         /// </summary>
-        void EnsureBodyWasRendered();
-
-        /// <summary>
-        /// Gets the sections that are rendered in the page.
-        /// </summary>
-        IEnumerable<string> RenderedSections { get; }
+        /// <exception cref="InvalidOperationException">if one or more sections were not rendered or if no sections were
+        /// defined and the body was not rendered.</exception>
+        void EnsureRenderedBodyOrSections();
     }
 }

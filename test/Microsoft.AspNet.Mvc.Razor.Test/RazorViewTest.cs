@@ -438,7 +438,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             var layout = new TestableRazorPage(v =>
             {
                 v.RenderBodyPublic();
-            });
+            })
+            {
+                Path = LayoutPath
+            };
             var viewEngine = new Mock<IRazorViewEngine>();
             viewEngine.Setup(p => p.FindPage(It.IsAny<ActionContext>(), LayoutPath))
                        .Returns(new RazorPageResult(LayoutPath, layout));
@@ -452,7 +455,128 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Act and Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
-            Assert.Equal("The following sections have been defined but have not been rendered: 'head, foot'.", ex.Message);
+            Assert.Equal("The following sections have been defined but have not been rendered by the page "
+                + $"at '{LayoutPath}': 'head, foot'.", ex.Message);
+        }
+
+        [Fact]
+        public async Task RenderAsync_SucceedsIfNestedSectionsAreRendered()
+        {
+            // Arrange
+            var expected = string.Join(
+                Environment.NewLine,
+                "layout-section-content",
+                "page-section-content");
+
+            var htmlEncoder = new HtmlEncoder();
+            var page = new TestableRazorPage(v =>
+            {
+                v.HtmlEncoder = htmlEncoder;
+                v.Layout = "~/Shared/Layout1.cshtml";
+                v.DefineSection("foo", async writer =>
+                {
+                    await writer.WriteAsync("page-section-content");
+                });
+            });
+            var nestedLayout = new TestableRazorPage(v =>
+            {
+                v.HtmlEncoder = htmlEncoder;
+                v.Layout = "~/Shared/Layout2.cshtml";
+                v.RenderBodyPublic();
+                v.DefineSection("foo", async writer =>
+                {
+                    await writer.WriteLineAsync("layout-section-content");
+                    await v.RenderSectionAsync("foo");
+                });
+            })
+            {
+                Path = "/Shared/Layout1.cshtml"
+            };
+            var baseLayout = new TestableRazorPage(v =>
+            {
+                v.HtmlEncoder = htmlEncoder;
+                v.RenderBodyPublic();
+                v.RenderSection("foo");
+            })
+            {
+                Path = "/Shared/Layout2.cshtml"
+            };
+
+            var viewEngine = new Mock<IRazorViewEngine>();
+            viewEngine.Setup(p => p.FindPage(It.IsAny<ActionContext>(), "~/Shared/Layout1.cshtml"))
+                       .Returns(new RazorPageResult("~/Shared/Layout1.cshtml", nestedLayout));
+            viewEngine.Setup(p => p.FindPage(It.IsAny<ActionContext>(), "~/Shared/Layout2.cshtml"))
+                       .Returns(new RazorPageResult("~/Shared/Layout2.cshtml", baseLayout));
+
+            var view = new RazorView(viewEngine.Object,
+                                     Mock.Of<IRazorPageActivator>(),
+                                     CreateViewStartProvider(),
+                                     page,
+                                     isPartial: false);
+            var viewContext = CreateViewContext(view);
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            Assert.Equal(expected, viewContext.Writer.ToString());
+        }
+
+        [Fact]
+        public async Task RenderAsync_SucceedsIfRenderBodyIsNotInvoked_ButAllSectionsAreRendered()
+        {
+            // Arrange
+            var expected = string.Join(
+                Environment.NewLine,
+                "layout-section-content",
+                "page-section-content");
+
+            var htmlEncoder = new HtmlEncoder();
+            var page = new TestableRazorPage(v =>
+            {
+                v.HtmlEncoder = htmlEncoder;
+                v.Layout = "NestedLayout";
+                v.WriteLiteral("Page body content that will not be written");
+                v.DefineSection("sectionA", async writer =>
+                {
+                    await writer.WriteAsync("page-section-content");
+                });
+            });
+            var nestedLayout = new TestableRazorPage(v =>
+            {
+                v.HtmlEncoder = htmlEncoder;
+                v.Layout = "Layout";
+                v.WriteLiteral("Nested layout content that will not be written");
+                v.DefineSection("sectionB", async writer =>
+                {
+                    await writer.WriteLineAsync("layout-section-content");
+                    await v.RenderSectionAsync("sectionA");
+                });
+            });
+            var baseLayout = new TestableRazorPage(v =>
+            {
+                v.HtmlEncoder = htmlEncoder;
+                v.RenderSection("sectionB");
+            });
+
+            var viewEngine = new Mock<IRazorViewEngine>();
+            viewEngine.Setup(p => p.FindPage(It.IsAny<ActionContext>(), "NestedLayout"))
+                       .Returns(new RazorPageResult("NestedLayout", nestedLayout));
+            viewEngine.Setup(p => p.FindPage(It.IsAny<ActionContext>(), "Layout"))
+                       .Returns(new RazorPageResult("Layout", baseLayout));
+
+            var view = new RazorView(viewEngine.Object,
+                                     Mock.Of<IRazorPageActivator>(),
+                                     CreateViewStartProvider(),
+                                     page,
+                                     isPartial: false);
+            var viewContext = CreateViewContext(view);
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            Assert.Equal(expected, viewContext.Writer.ToString());
         }
 
         [Fact]
@@ -476,17 +600,23 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.Layout = "~/Shared/Layout2.cshtml";
                 v.Write("NestedLayout" + Environment.NewLine);
                 v.RenderBodyPublic();
-                v.DefineSection("foo", async writer =>
+                v.DefineSection("foo", async _ =>
                 {
-                    await writer.WriteLineAsync(htmlEncoder.HtmlEncode(v.RenderSection("foo").ToString()));
+                    await v.RenderSectionAsync("foo");
                 });
-            });
+            })
+            {
+                Path = "/Shared/Layout1.cshtml"
+            };
             var baseLayout = new TestableRazorPage(v =>
             {
                 v.HtmlEncoder = htmlEncoder;
                 v.Write("BaseLayout" + Environment.NewLine);
                 v.RenderBodyPublic();
-            });
+            })
+            {
+                Path = "/Shared/Layout2.cshtml"
+            };
 
             var viewEngine = new Mock<IRazorViewEngine>();
             viewEngine.Setup(p => p.FindPage(It.IsAny<ActionContext>(), "~/Shared/Layout1.cshtml"))
@@ -503,7 +633,72 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Act and Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
-            Assert.Equal("The following sections have been defined but have not been rendered: 'foo'.", ex.Message);
+            Assert.Equal("The following sections have been defined but have not been rendered by the page at "
+                + "'/Shared/Layout1.cshtml': 'foo'.", ex.Message);
+        }
+
+        [Fact]
+        public async Task RenderAsync_WithNestedSectionsOfTheSameName_ThrowsIfSectionsWereDefinedButNotRendered()
+        {
+            // Arrange
+            var htmlEncoder = new HtmlEncoder();
+            var page = new TestableRazorPage(v =>
+            {
+                v.HtmlEncoder = htmlEncoder;
+                v.Layout = "~/Shared/Layout1.cshtml";
+                v.WriteLiteral("BodyContent");
+                v.DefineSection("foo", async writer =>
+                {
+                    await writer.WriteLineAsync("foo-content");
+                });
+            })
+            {
+                Path = "Page"
+            };
+
+            var nestedLayout = new TestableRazorPage(v =>
+            {
+                v.HtmlEncoder = htmlEncoder;
+                v.Layout = "~/Shared/Layout2.cshtml";
+                v.Write("NestedLayout" + Environment.NewLine);
+                v.RenderBodyPublic();
+                v.DefineSection("foo", async writer =>
+                {
+                    await writer.WriteLineAsync("dont-render-inner-foo");
+                });
+            })
+            {
+                Path = "/Shared/Layout1.cshtml"
+            };
+
+            var baseLayout = new TestableRazorPage(v =>
+            {
+                v.HtmlEncoder = htmlEncoder;
+                v.Write("BaseLayout" + Environment.NewLine);
+                v.RenderBodyPublic();
+                v.RenderSection("foo");
+            })
+            {
+                Path = "/Shared/Layout2.cshtml"
+            };
+
+            var viewEngine = new Mock<IRazorViewEngine>();
+            viewEngine.Setup(p => p.FindPage(It.IsAny<ActionContext>(), "~/Shared/Layout1.cshtml"))
+                       .Returns(new RazorPageResult("~/Shared/Layout1.cshtml", nestedLayout));
+            viewEngine.Setup(p => p.FindPage(It.IsAny<ActionContext>(), "~/Shared/Layout2.cshtml"))
+                       .Returns(new RazorPageResult("~/Shared/Layout2.cshtml", baseLayout));
+
+            var view = new RazorView(viewEngine.Object,
+                                     Mock.Of<IRazorPageActivator>(),
+                                     CreateViewStartProvider(),
+                                     page,
+                                     isPartial: false);
+            var viewContext = CreateViewContext(view);
+
+            // Act and Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
+            Assert.Equal("The following sections have been defined but have not been rendered by the page at " +
+                "'/Shared/Layout1.cshtml': 'foo'.", ex.Message);
         }
 
         [Fact]
@@ -516,7 +711,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             });
             var layout = new TestableRazorPage(v =>
             {
-            });
+            })
+            {
+                Path = LayoutPath
+            };
             var viewEngine = new Mock<IRazorViewEngine>();
             viewEngine.Setup(p => p.FindPage(It.IsAny<ActionContext>(), LayoutPath))
                        .Returns(new RazorPageResult(LayoutPath, layout));
@@ -530,7 +728,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Act and Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
-            Assert.Equal("RenderBody must be called from a layout page.", ex.Message);
+            Assert.Equal($"RenderBody has not been called for the page at '{LayoutPath}'.", ex.Message);
         }
 
         [Fact]

@@ -403,21 +403,70 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public async Task EnsureBodyWasRendered_ThrowsIfRenderBodyIsNotCalledFromPage()
+        public async Task EnsureRenderedBodyOrSections_ThrowsIfRenderBodyIsNotCalledFromPage_AndNoSectionsAreDefined()
         {
             // Arrange
-            var expected = new HelperResult(action: null);
+            var path = "page-path";
             var page = CreatePage(v =>
             {
             });
+            page.Path = path;
             page.RenderBodyDelegate = CreateBodyAction("some content");
 
             // Act
             await page.ExecuteAsync();
-            var ex = Assert.Throws<InvalidOperationException>(() => page.EnsureBodyWasRendered());
+            var ex = Assert.Throws<InvalidOperationException>(() => page.EnsureRenderedBodyOrSections());
 
             // Assert
-            Assert.Equal("RenderBody must be called from a layout page.", ex.Message);
+            Assert.Equal($"RenderBody has not been called for the page at '{path}'.", ex.Message);
+        }
+
+        [Fact]
+        public async Task EnsureRenderedBodyOrSections_ThrowsIfDefinedSectionsAreNotRendered()
+        {
+            // Arrange
+            var path = "page-path";
+            var sectionName = "sectionA";
+            var page = CreatePage(v =>
+            {
+            });
+            page.Path = path;
+            page.RenderBodyDelegate = CreateBodyAction("some content");
+            page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
+            {
+                { sectionName, _nullRenderAsyncDelegate }
+            };
+
+            // Act
+            await page.ExecuteAsync();
+            var ex = Assert.Throws<InvalidOperationException>(() => page.EnsureRenderedBodyOrSections());
+
+            // Assert
+            Assert.Equal("The following sections have been defined but have not been rendered by the page at " +
+                $"'{path}': '{sectionName}'.", ex.Message);
+        }
+
+        [Fact]
+        public async Task EnsureRenderedBodyOrSections_SucceedsIfRenderBodyIsNotCalled_ButAllDefinedSectionsAreRendered()
+        {
+            // Arrange
+            var sectionA = "sectionA";
+            var sectionB = "sectionB";
+            var page = CreatePage(v =>
+            {
+                v.RenderSection(sectionA);
+                v.RenderSection(sectionB);
+            });
+            page.RenderBodyDelegate = CreateBodyAction("some content");
+            page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
+            {
+                { sectionA, _nullRenderAsyncDelegate },
+                { sectionB, _nullRenderAsyncDelegate },
+            };
+
+            // Act and Assert
+            await page.ExecuteAsync();
+            page.EnsureRenderedBodyOrSections();
         }
 
         [Fact]
@@ -801,7 +850,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 selfClosing: false,
                 items: new Dictionary<object, object>(),
                 uniqueId: string.Empty,
-                executeChildContentAsync: () => {
+                executeChildContentAsync: () =>
+                {
                     defaultTagHelperContent.SetContent(input);
                     return Task.FromResult(result: true);
                 },
