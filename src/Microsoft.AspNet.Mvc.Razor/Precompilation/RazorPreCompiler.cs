@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FileProviders;
+using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -18,7 +19,7 @@ using Microsoft.Framework.Internal;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Roslyn;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 {
     public class RazorPreCompiler
     {

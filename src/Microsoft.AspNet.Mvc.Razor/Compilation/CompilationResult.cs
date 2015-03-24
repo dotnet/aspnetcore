@@ -5,7 +5,7 @@ using System;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     /// <summary>
     /// Represents the result of compilation.

@@ -3,7 +3,7 @@
 
 using System.IO;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.Razor.Internal
 {
     internal static class Crc32
     {

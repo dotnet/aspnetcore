@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     /// <summary>
     /// Caches the result of runtime compilation of Razor files for the duration of the app lifetime.

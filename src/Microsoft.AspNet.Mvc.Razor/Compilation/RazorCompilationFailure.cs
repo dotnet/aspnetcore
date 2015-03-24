@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     /// <summary>
     /// <see cref="ICompilationFailure"/> for Razor parse failures.

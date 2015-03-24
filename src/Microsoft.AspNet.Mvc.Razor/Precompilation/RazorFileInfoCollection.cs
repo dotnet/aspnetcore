@@ -7,7 +7,7 @@ using System.IO;
 using System.Reflection;
 using Microsoft.Framework.Runtime;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 {
     /// <summary>
     /// Specifies metadata about precompiled views.

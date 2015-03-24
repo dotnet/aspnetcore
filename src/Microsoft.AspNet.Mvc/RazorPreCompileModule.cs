@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.FileProviders;
-using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.AspNet.Mvc.Razor.Precompilation;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime;

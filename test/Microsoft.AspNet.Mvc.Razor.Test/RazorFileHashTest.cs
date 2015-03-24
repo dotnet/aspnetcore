@@ -12,7 +12,7 @@ using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     public class RazorFileHashTest
     {

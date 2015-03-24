@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.AspNet.Mvc.Razor.Precompilation;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime;
 using PrecompilationWebSite;

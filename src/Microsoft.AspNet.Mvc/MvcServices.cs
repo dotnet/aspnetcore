@@ -12,6 +12,7 @@ using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Mvc.Razor.OptionDescriptors;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -81,8 +82,8 @@ namespace Microsoft.AspNet.Mvc
             // Dataflow - ModelBinding, Validation and Formatting
             //
             // The DefaultModelMetadataProvider does significant caching and should be a singleton.
-            services.AddSingleton<ModelBinding.IModelMetadataProvider, DefaultModelMetadataProvider>();
-            services.AddTransient<ModelBinding.Metadata.ICompositeMetadataDetailsProvider>(serviceProvider =>
+            services.AddSingleton<IModelMetadataProvider, DefaultModelMetadataProvider>();
+            services.AddTransient<ICompositeMetadataDetailsProvider>(serviceProvider =>
             {
                 var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Options;
                 return new DefaultCompositeMetadataDetailsProvider(options.ModelMetadataDetailsProviders);
@@ -156,7 +157,7 @@ namespace Microsoft.AspNet.Mvc
             // These do caching so they should stay singleton
             services.AddSingleton<IViewComponentSelector, DefaultViewComponentSelector>();
             services.AddSingleton<IViewComponentActivator, DefaultViewComponentActivator>();
-            services.AddSingleton<IViewComponentDescriptorCollectionProvider, 
+            services.AddSingleton<IViewComponentDescriptorCollectionProvider,
                 DefaultViewComponentDescriptorCollectionProvider>();
 
             services.AddTransient<IViewComponentDescriptorProvider, DefaultViewComponentDescriptorProvider>();

@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     /// <summary>
     /// Represents the result of compilation that does not come from the <see cref="ICompilerCache" />.

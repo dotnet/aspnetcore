@@ -7,7 +7,7 @@ using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Razor;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     /// <summary>
     /// Default implementation of <see cref="IRazorCompilationService"/>.

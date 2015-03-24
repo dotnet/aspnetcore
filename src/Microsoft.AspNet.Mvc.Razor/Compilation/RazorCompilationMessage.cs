@@ -5,7 +5,7 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Runtime;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     /// <summary>
     /// <see cref="ICompilationMessage"/> for a <see cref="RazorError"/> encountered during parsing.

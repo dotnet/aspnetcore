@@ -9,11 +9,13 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNet.FileProviders;
+using Microsoft.AspNet.Mvc.Razor.Internal;
+using Microsoft.AspNet.Mvc.Razor.Precompilation;
 using Microsoft.Framework.Runtime;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     public class CompilerCacheTest
     {

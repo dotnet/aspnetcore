@@ -12,7 +12,7 @@ using Microsoft.AspNet.Razor.TagHelpers;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor.Test
+namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     public class RazorCompilationServiceTest
     {

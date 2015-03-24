@@ -11,7 +11,7 @@ using Microsoft.Framework.Runtime.Compilation;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     public class RoslynCompilationServiceTest
     {

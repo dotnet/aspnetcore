@@ -19,7 +19,7 @@ using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Compilation;
 using Microsoft.Framework.Runtime.Roslyn;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     /// <summary>
     /// A type that uses Roslyn to compile C# content.

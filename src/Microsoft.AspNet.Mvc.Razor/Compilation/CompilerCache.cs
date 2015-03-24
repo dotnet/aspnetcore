@@ -6,12 +6,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.FileProviders;
+using Microsoft.AspNet.Mvc.Razor.Precompilation;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Runtime;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     /// <summary>
     /// Caches the result of runtime compilation of Razor files for the duration of the app lifetime.

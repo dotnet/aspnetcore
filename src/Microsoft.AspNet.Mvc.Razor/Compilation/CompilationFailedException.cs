@@ -7,7 +7,7 @@ using System.Linq;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     /// <summary>
     /// An <see cref="Exception"/> thrown when accessing the result of a failed compilation.

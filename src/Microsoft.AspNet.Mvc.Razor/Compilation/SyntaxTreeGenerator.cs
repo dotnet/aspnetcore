@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Runtime.Roslyn;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     public static class SyntaxTreeGenerator
     {

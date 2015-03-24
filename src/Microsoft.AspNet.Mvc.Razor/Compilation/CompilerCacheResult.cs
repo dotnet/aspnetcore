@@ -3,7 +3,7 @@
 
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     /// <summary>
     /// Result of <see cref="ICompilerCache"/>.
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Initializes a new instance of <see cref="CompilerCacheResult"/> with the specified
         /// <see cref="CompilationResult"/>.
         /// </summary>
-        /// <param name="compilationResult">The <see cref="Razor.CompilationResult"/> </param>
+        /// <param name="compilationResult">The <see cref="Compilation.CompilationResult"/> </param>
         public CompilerCacheResult([NotNull] CompilationResult compilationResult)
         {
             CompilationResult = compilationResult;
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// The <see cref="Razor.CompilationResult"/>.
+        /// The <see cref="Compilation.CompilationResult"/>.
         /// </summary>
         /// <remarks>This property is null when file lookup failed.</remarks>
         public CompilationResult CompilationResult { get; }
