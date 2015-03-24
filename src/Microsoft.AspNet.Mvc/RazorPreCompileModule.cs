@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Runtime.Versioning;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.DependencyInjection;
@@ -42,29 +42,17 @@ namespace Microsoft.AspNet.Mvc
         /// <remarks>Pre-compiles all Razor views in the application.</remarks>
         public virtual void BeforeCompile(IBeforeCompileContext context)
         {
-            var applicationEnvironment = _appServices.GetRequiredService<IApplicationEnvironment>();
             var compilerOptionsProvider = _appServices.GetRequiredService<ICompilerOptionsProvider>();
-            var compilationSettings = compilerOptionsProvider.GetCompilationSettings(applicationEnvironment);
+            var loadContextAccessor = _appServices.GetRequiredService<IAssemblyLoadContextAccessor>();
+            var compilationSettings = GetCompilationSettings(compilerOptionsProvider, context.ProjectContext);
+            var fileProvider = new PhysicalFileProvider(context.ProjectContext.ProjectDirectory);
 
-            // Create something similar to a HttpContext.RequestServices provider. Necessary because this class is
-            // instantiated in a lower-level "HttpContext.ApplicationServices" context. One important added service
-            // is an IOptions<RazorViewEngineOptions> but use AddMvc() for simplicity and flexibility.
-            // We also need an IApplicationEnvironment with a base path that matches the containing web site, to
-            // find the razor files. We don't have a guarantee that the base path of the current application is
-            // this site. For example similar functional test changes to the IApplicationEnvironment happen later,
-            // after everything is compiled. IOptions<RazorViewEngineOptions> setup initializes the
-            // RazorViewEngineOptions based on this IApplicationEnvironment implementation.
-            var directory = context.ProjectContext.ProjectDirectory;
-            var precompilationApplicationEnvironment = new PrecompilationApplicationEnvironment(
-                applicationEnvironment,
-                context.ProjectContext.ProjectDirectory);
-
-            var replacedServices = new ServiceCollection();
-            replacedServices.AddMvc();
-            replacedServices.AddInstance<IApplicationEnvironment>(precompilationApplicationEnvironment);
-            var wrappedServices = new WrappingServiceProvider(_appServices, replacedServices);
-
-            var viewCompiler = new RazorPreCompiler(wrappedServices, context, _memoryCache, compilationSettings)
+            var viewCompiler = new RazorPreCompiler(
+                context,
+                loadContextAccessor,
+                fileProvider,
+                _memoryCache,
+                compilationSettings)
             {
                 GenerateSymbols = GenerateSymbols
             };
@@ -77,74 +65,14 @@ namespace Microsoft.AspNet.Mvc
         {
         }
 
-        private class WrappingServiceProvider : IServiceProvider
+        private static CompilationSettings GetCompilationSettings(
+            ICompilerOptionsProvider compilerOptionsProvider,
+            IProjectContext projectContext)
         {
-            private readonly IServiceProvider _fallback;
-            private readonly IServiceProvider _override;
-
-            // Need full wrap for generics like IOptions
-            public WrappingServiceProvider(IServiceProvider fallback, IServiceCollection replacedServices)
-            {
-                _fallback = fallback;
-                _override = replacedServices.BuildServiceProvider();
-            }
-
-            public object GetService(Type serviceType)
-            {
-                return _override.GetService(serviceType) ?? _fallback.GetService(serviceType);
-            }
-        }
-
-        private class PrecompilationApplicationEnvironment : IApplicationEnvironment
-        {
-            private readonly IApplicationEnvironment _originalApplicationEnvironment;
-            private readonly string _applicationBasePath;
-
-            public PrecompilationApplicationEnvironment(IApplicationEnvironment original, string appBasePath)
-            {
-                _originalApplicationEnvironment = original;
-                _applicationBasePath = appBasePath;
-            }
-
-            public string ApplicationName
-            {
-                get
-                {
-                    return _originalApplicationEnvironment.ApplicationName;
-                }
-            }
-
-            public string Version
-            {
-                get
-                {
-                    return _originalApplicationEnvironment.Version;
-                }
-            }
-
-            public string ApplicationBasePath
-            {
-                get
-                {
-                    return _applicationBasePath;
-                }
-            }
-
-            public string Configuration
-            {
-                get
-                {
-                    return _originalApplicationEnvironment.Configuration;
-                }
-            }
-
-            public FrameworkName RuntimeFramework
-            {
-                get
-                {
-                    return _originalApplicationEnvironment.RuntimeFramework;
-                }
-            }
+            return compilerOptionsProvider.GetCompilerOptions(projectContext.Name,
+                                                              projectContext.TargetFramework,
+                                                              projectContext.Configuration)
+                                          .ToCompilationSettings(projectContext.TargetFramework);
         }
     }
 }

@@ -14,9 +14,7 @@ using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Framework.Caching.Memory;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Roslyn;
 
@@ -24,32 +22,16 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public class RazorPreCompiler
     {
-        private readonly IFileProvider _fileProvider;
-
         public RazorPreCompiler(
-            [NotNull] IServiceProvider designTimeServiceProvider,
-            [NotNull] IBeforeCompileContext compileContext,
-            [NotNull] IMemoryCache precompilationCache,
-            [NotNull] CompilationSettings compilationSettings)
-            : this(
-                compileContext,
-                designTimeServiceProvider.GetRequiredService<IAssemblyLoadContextAccessor>(),
-                designTimeServiceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>(),
-                precompilationCache,
-                compilationSettings)
-        {
-        }
-
-        private RazorPreCompiler(
             [NotNull] IBeforeCompileContext compileContext,
             [NotNull] IAssemblyLoadContextAccessor loadContextAccessor,
-            [NotNull] IOptions<RazorViewEngineOptions> optionsAccessor,
+            [NotNull] IFileProvider fileProvider,
             [NotNull] IMemoryCache precompilationCache,
             [NotNull] CompilationSettings compilationSettings)
         {
             CompileContext = compileContext;
             LoadContext = loadContextAccessor.GetLoadContext(GetType().GetTypeInfo().Assembly);
-            _fileProvider = optionsAccessor.Options.FileProvider;
+            FileProvider = fileProvider;
             CompilationSettings = compilationSettings;
             PreCompilationCache = precompilationCache;
             TagHelperTypeResolver = new PrecompilationTagHelperTypeResolver(CompileContext, LoadContext);
@@ -59,6 +41,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Gets or sets a value that determines if symbols (.pdb) file for the precompiled views is generated.
         /// </summary>
         public bool GenerateSymbols { get; set; }
+
+        protected IFileProvider FileProvider { get; }
 
         protected IBeforeCompileContext CompileContext { get; }
 
@@ -200,7 +184,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         protected IMvcRazorHost GetRazorHost()
         {
             var descriptorResolver = new TagHelperDescriptorResolver(TagHelperTypeResolver);
-            return new MvcRazorHost(new DefaultCodeTreeCache(_fileProvider))
+            return new MvcRazorHost(new DefaultCodeTreeCache(FileProvider))
             {
                 TagHelperDescriptorResolver = descriptorResolver
             };
@@ -213,10 +197,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             if (entry != null)
             {
-                cacheSetContext.AddExpirationTrigger(_fileProvider.Watch(fileInfo.RelativePath));
+                cacheSetContext.AddExpirationTrigger(FileProvider.Watch(fileInfo.RelativePath));
                 foreach (var path in ViewHierarchyUtility.GetGlobalImportLocations(fileInfo.RelativePath))
                 {
-                    cacheSetContext.AddExpirationTrigger(_fileProvider.Watch(path));
+                    cacheSetContext.AddExpirationTrigger(FileProvider.Watch(path));
                 }
             }
 
@@ -225,7 +209,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private void GetFileInfosRecursive(string root, List<RelativeFileInfo> razorFiles)
         {
-            var fileInfos = _fileProvider.GetDirectoryContents(root);
+            var fileInfos = FileProvider.GetDirectoryContents(root);
 
             foreach (var fileInfo in fileInfos)
             {
@@ -299,7 +283,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private class PrecompileRazorFileInfoCollection : RazorFileInfoCollection
         {
             public PrecompileRazorFileInfoCollection(string assemblyResourceName,
-                                                     string symbolsResourceName, 
+                                                     string symbolsResourceName,
                                                      IReadOnlyList<RazorFileInfo> fileInfos)
             {
                 AssemblyResourceName = assemblyResourceName;
