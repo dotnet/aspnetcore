@@ -210,6 +210,9 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             contextMock
                 .Setup(c => c.Request.ReadFormAsync(It.IsAny<System.Threading.CancellationToken>()))
                 .Returns(Task.FromResult(new Mock<IFormCollection>().Object));
+            contextMock
+                .Setup(c => c.Request.HasFormContentType)
+                .Returns(true);
 
             return contextMock;
         }
