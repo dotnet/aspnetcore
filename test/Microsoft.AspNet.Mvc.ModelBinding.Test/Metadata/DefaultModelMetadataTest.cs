@@ -106,30 +106,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             Assert.Equal(typeof(Exception), metadata.ContainerType);
         }
 
-        [Fact]
-        public void CreateMetadataForParameter()
-        {
-            // Arrange
-            var provider = new EmptyModelMetadataProvider();
-            var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
-
-            var methodInfo = GetType().GetMethod(
-                "ActionMethod",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-
-            var parameterInfo = methodInfo.GetParameters().Where(p => p.Name == "input").Single();
-
-            var key = ModelMetadataIdentity.ForParameter(parameterInfo);
-            var cache = new DefaultMetadataDetailsCache(key, new object[0]);
-
-            // Act
-            var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
-
-            Assert.Equal(typeof(string), metadata.ModelType);
-            Assert.Equal("input", metadata.PropertyName);
-            Assert.Null(metadata.ContainerType);
-        }
-
         [Theory]
         [InlineData(typeof(string))]
         [InlineData(typeof(IDisposable))]

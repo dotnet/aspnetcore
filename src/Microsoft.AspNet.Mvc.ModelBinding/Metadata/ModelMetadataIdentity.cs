@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Reflection;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
@@ -22,21 +21,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             return new ModelMetadataIdentity()
             {
                 ModelType = modelType,
-            };
-        }
-
-        /// <summary>
-        /// Creates a <see cref="ModelMetadataIdentity"/> for the provided <see cref="ParameterInfo"/>.
-        /// </summary>
-        /// <param name="parameterInfo">The model parameter.</param>
-        /// <returns>A <see cref="ModelMetadataIdentity"/>.</returns>
-        public static ModelMetadataIdentity ForParameter([NotNull] ParameterInfo parameterInfo)
-        {
-            return new ModelMetadataIdentity()
-            {
-                ParameterInfo = parameterInfo,
-                Name = parameterInfo.Name,
-                ModelType = parameterInfo.ParameterType,
             };
         }
 
@@ -70,12 +54,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// instance, or <c>null</c> if the current instance does not represent a property.
         /// </summary>
         public Type ContainerType { get; private set; }
-
-        /// <summary>
-        /// Gets the <see cref="ParameterInfo"/> represented by the current instance, or <c>null</c>
-        /// if the current instance does not represent a parameter.
-        /// </summary>
-        public ParameterInfo ParameterInfo { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="Type"/> represented by the current instance.

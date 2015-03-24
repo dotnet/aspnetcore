@@ -167,10 +167,49 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
         private class TypeCache : ConcurrentDictionary<ModelMetadataIdentity, DefaultMetadataDetailsCache>
         {
+            public TypeCache()
+                : base(ModelMetadataIdentityComparer.Instance)
+            {
+            }
         }
 
         private class PropertiesCache : ConcurrentDictionary<ModelMetadataIdentity, DefaultMetadataDetailsCache[]>
         {
+            public PropertiesCache()
+                : base(ModelMetadataIdentityComparer.Instance)
+            {
+            }
+        }
+
+        private class ModelMetadataIdentityComparer : IEqualityComparer<ModelMetadataIdentity>
+        {
+            public static readonly ModelMetadataIdentityComparer Instance = new ModelMetadataIdentityComparer();
+
+            public bool Equals(ModelMetadataIdentity x, ModelMetadataIdentity y)
+            {
+                return
+                    x.ContainerType == y.ContainerType &&
+                    x.ModelType == y.ModelType &&
+                    x.Name == y.Name;
+            }
+
+            public int GetHashCode(ModelMetadataIdentity obj)
+            {
+                var hash = 17;
+                hash = hash * 23 + obj.ModelType.GetHashCode();
+
+                if (obj.ContainerType != null)
+                {
+                    hash = hash * 23 + obj.ContainerType.GetHashCode();
+                }
+
+                if (obj.Name != null)
+                {
+                    hash = hash * 23 + obj.Name.GetHashCode();
+                }
+
+                return hash;
+            }
         }
     }
 }
