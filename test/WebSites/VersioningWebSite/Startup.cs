@@ -18,7 +18,7 @@ namespace VersioningWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            var configuration = app.GetTestConfiguration();
+            app.UseCultureReplacer();
 
             app.UseMvc(routes =>
             {

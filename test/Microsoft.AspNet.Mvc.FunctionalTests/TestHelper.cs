@@ -28,13 +28,40 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             string applicationWebSiteName,
             string applicationPath)
         {
-            return CreateServer(builder, applicationWebSiteName, applicationPath, configureServices: null);
+            return CreateServer(
+                builder,
+                applicationWebSiteName,
+                applicationPath,
+                configureServices: (Action<IServiceCollection>)null);
         }
 
         public static TestServer CreateServer(
             Action<IApplicationBuilder> builder,
             string applicationWebSiteName,
             Action<IServiceCollection> configureServices)
+        {
+            return CreateServer(
+                builder,
+                applicationWebSiteName,
+                applicationPath: null,
+                configureServices: configureServices);
+        }
+
+        public static TestServer CreateServer(
+            Action<IApplicationBuilder> builder,
+            string applicationWebSiteName,
+            string applicationPath,
+            Action<IServiceCollection> configureServices)
+        {
+            return TestServer.Create(
+                builder,
+                services => AddTestServices(services, applicationWebSiteName, applicationPath, configureServices));
+        }
+
+        public static TestServer CreateServer(
+            Action<IApplicationBuilder> builder,
+            string applicationWebSiteName,
+            Func<IServiceCollection, IServiceProvider> configureServices)
         {
             return CreateServer(
                 builder,
@@ -57,32 +84,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     AddTestServices(services, applicationWebSiteName, applicationPath, configureServices: null);
                     return (configureServices != null) ? configureServices(services) : services.BuildServiceProvider();
                 });
-        }
-
-        public static TestServer CreateServer(
-            Action<IApplicationBuilder> builder,
-            string applicationWebSiteName,
-            Func<IServiceCollection, IServiceProvider> configureServices)
-        {
-            return TestServer.Create(
-                CallContextServiceLocator.Locator.ServiceProvider,
-                builder,
-                services =>
-                {
-                    AddTestServices(services, applicationWebSiteName, applicationPath: null, configureServices: null);
-                    return configureServices(services);
-                });
-        }
-
-        public static TestServer CreateServer(
-            Action<IApplicationBuilder> builder,
-            string applicationWebSiteName,
-            string applicationPath,
-            Action<IServiceCollection> configureServices)
-        {
-            return TestServer.Create(
-                builder,
-                services => AddTestServices(services, applicationWebSiteName, applicationPath, configureServices));
         }
 
         private static void AddTestServices(

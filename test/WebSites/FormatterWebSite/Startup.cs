@@ -28,7 +28,7 @@ namespace FormatterWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            var configuration = app.GetTestConfiguration();
+            app.UseCultureReplacer();
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>

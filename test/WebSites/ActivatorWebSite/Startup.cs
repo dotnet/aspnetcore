@@ -19,7 +19,7 @@ namespace ActivatorWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            var configuration = app.GetTestConfiguration();
+            app.UseCultureReplacer();
 
             // Used to report exceptions that MVC doesn't handle
             app.UseErrorReporter();

@@ -9,7 +9,7 @@ namespace AddServicesWebSite
     {
         public void Configure(IApplicationBuilder app)
         {
-            var configuration = app.GetTestConfiguration();
+            app.UseCultureReplacer();
 
             // Not calling AddMvc() here.
             // The purpose of the Website is to demonstrate that it throws

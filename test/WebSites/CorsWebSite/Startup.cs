@@ -51,7 +51,7 @@ namespace CorsWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            var configuration = app.GetTestConfiguration();
+            app.UseCultureReplacer();
 
             app.UseMvc();
         }

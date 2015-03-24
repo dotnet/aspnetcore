@@ -15,7 +15,7 @@ namespace CorsMiddlewareWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            var configuration = app.GetTestConfiguration();
+            app.UseCultureReplacer();
 
             app.UseCors(policy => policy.WithOrigins("http://example.com"));
             app.UseMvc();

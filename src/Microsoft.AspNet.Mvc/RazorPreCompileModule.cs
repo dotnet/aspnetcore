@@ -77,7 +77,6 @@ namespace Microsoft.AspNet.Mvc
         {
         }
 
-        // REVIEW: Welcome back to life delegating SP!!!
         private class WrappingServiceProvider : IServiceProvider
         {
             private readonly IServiceProvider _fallback;

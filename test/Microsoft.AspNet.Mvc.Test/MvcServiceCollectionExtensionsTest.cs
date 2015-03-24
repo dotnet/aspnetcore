@@ -52,12 +52,10 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var collection = new ServiceCollection();
             var assemblies = new[] { GetType().Assembly };
-            var configuration = new Configuration();
             var controllerTypes = new[] { typeof(ControllerTypeA), typeof(TypeBController) };
 
             // Act
-            MvcServiceCollectionExtensions.WithControllersAsServices(collection,
-                                                                     assemblies);
+            MvcServiceCollectionExtensions.WithControllersAsServices(collection, assemblies);
 
             // Assert
             var services = collection.ToList();
