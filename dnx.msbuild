@@ -53,6 +53,7 @@
                          $(DropSource)**\Microsoft.Framework*.nupkg;
                          $(DropSource)**\Microsoft.Net*.nupkg;
                          $(DropSource)**\NuGet.*.nupkg;
+                         $(DropSourcE)**\SecretManager.*.nupkg;
                          $(DropSource)**\StyleCop.KRules*.nupkg"
             />
             <SymbolPackages
@@ -63,6 +64,7 @@
                          $(SymbolPackagePath)**\Microsoft.AspNet*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Framework*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Net*.nupkg;
+                         $(SymbolPackagePath)**\SecretManager.*.nupkg;
                          $(DropSource)**\NuGet.*.nupkg"
             />
         </ItemGroup>
@@ -95,6 +97,7 @@
                          $(UnsignedPackagesPath)**\Microsoft.Framework*.dll;                         
                          $(UnsignedPackagesPath)**\Microsoft.Net*.dll;
                          $(UnsignedPackagesPath)**\NuGet.*.dll;
+                         $(UnsignedPackagesPath)**\SecretManager.dll;
                          $(UnsignedPackagesPath)**\signalrclient.dll;
                          $(UnsignedPackagesPath)**\StyleCop.KRules*.dll;
                          $(UnsignedPackagesPath)**\dnx*.exe"
@@ -169,6 +172,7 @@
                                  $(UnsignedPackagesPath)**\Microsoft.Framework.*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Net.*.nuspec;
                                  $(UnsignedPackagesPath)**\NuGet.*.nuspec;
+                                 $(UnsignedPackagesPath)**\SecretManager.*.nuspec;
                                  $(UnsignedPackagesPath)**\StyleCop.KRules*.nuspec"/>
         </ItemGroup>
 
@@ -239,6 +243,7 @@
                                         $(SymbolPackagePath)Microsoft.Framework*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Net*.symbols.nupkg;
                                         $(SymbolPackagePath)NuGet.*.symbols.nupkg;
+                                        $(SymbolPackagePath)SecretManager.*.symbols.nupkg;
                                         $(SymbolPackagePath)PageGenerator.*.symbols.nupkg;
                                         $(SymbolPackagePath)StyleCop.KRules*.symbols.nupkg"/>
         </ItemGroup>
