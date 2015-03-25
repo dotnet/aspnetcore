@@ -27,11 +27,11 @@ if test ! -d packages/KoreBuild; then
     mono .nuget/nuget.exe install Sake -version 0.2 -o packages -ExcludeVersion
 fi
 
-if ! type k > /dev/null 2>&1; then
+if ! type dnvm > /dev/null 2>&1; then
     source packages/KoreBuild/build/dnvm.sh
 fi
 
-if ! type k > /dev/null 2>&1; then
+if ! type dnx > /dev/null 2>&1; then
     dnvm upgrade
 fi
 

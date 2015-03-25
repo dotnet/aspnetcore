@@ -1,7 +1,7 @@
 @{/*
 
 k 
-    Run klr commands in your project. Executes k cmd.
+    Run dnx commands in your project. Executes dnx cmd.
 
 command=''
 dnvmUse=''
@@ -12,6 +12,6 @@ default dnvmUse=''
 
 var dnvmPath='${Directory.GetCurrentDirectory()}\packages\KoreBuild\build\dnvm'
 
-exec program='cmd' commandline='/C k ${command}' if='!IsMono && string.IsNullOrEmpty(dnvmUse)'
-exec program='cmd' commandline='/C "${dnvmPath}" use ${dnvmUse} && k ${command}' if='!IsMono && !string.IsNullOrEmpty(dnvmUse)'
-exec program='k' commandline='${command}' if='IsMono'
+exec program='cmd' commandline='/C dnx . ${command}' if='!IsMono && string.IsNullOrEmpty(dnvmUse)'
+exec program='cmd' commandline='/C "${dnvmPath}" use ${dnvmUse} && dnx . ${command}' if='!IsMono && !string.IsNullOrEmpty(dnvmUse)'
+exec program='dnx' commandline='. ${command}' if='IsMono'
