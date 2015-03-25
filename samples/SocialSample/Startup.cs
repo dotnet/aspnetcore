@@ -89,7 +89,7 @@ namespace CookieSample
              netsh http add urlacl url=http://mssecsample.localhost.this:54540/ user=[domain\user]
 
             The sample app can then be run via:
-             k web
+             dnx . web
             */
             app.UseOAuthAuthentication("Microsoft-AccessToken", options =>
             {
