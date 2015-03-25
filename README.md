@@ -14,17 +14,17 @@ This project is part of ASP.NET 5.0. You can find samples, documentation and get
 ## Run on WebListener/Kestrel:
 * Open a command prompt and cd `\src\MusicStore\`.
 * **[WebListener]:**
-	4. Run `k web` (Application started at URL **http://localhost:5002/**).
+	4. Run `dnx . web` (Application started at URL **http://localhost:5002/**).
 * **[Kestrel]:**
-	5. Run `k kestrel` (Application started at URL **http://localhost:5004/**).
+	5. Run `dnx . kestrel` (Application started at URL **http://localhost:5004/**).
 * **[CustomHost]:**
-	6. Run `k run` (This hosts the app in a console application - Application started at URL **http://localhost:5003/**).
+	6. Run `dnx . run` (This hosts the app in a console application - Application started at URL **http://localhost:5003/**).
 
 ## To run the sample on Mac/Mono:
 * Follow [Home](https://github.com/aspnet/home) instructions to install mono, kvm on Mac.
 * Open a command prompt and cd `\src\MusicStore\`.
 * Execute `dnu restore`.
-* Try `k kestrel` to run the application.
+* Try `dnx . kestrel` to run the application.
 **NOTE: On Mono since SQL client is not available the sample uses an InMemoryStore to run the application. So the changes that you make will not be persisted.
 
 ### Deploy on Heroku

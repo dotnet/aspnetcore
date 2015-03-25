@@ -181,7 +181,7 @@ namespace MusicStore
             // netsh http add urlacl url=http://ktesting:5001/ user=[domain\user]
 
             // The sample app can then be run via:
-            // k web
+            // dnx . web
             app.UseMicrosoftAccountAuthentication();
 
             // Add MVC to the request pipeline
