@@ -7,12 +7,16 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Hosting
@@ -150,6 +154,115 @@ namespace Microsoft.AspNet.Hosting
             RunMapPath(virtualPath, expectedSuffix);
         }
 
+        [Fact]
+        public void HostingEngine_CreatesDefaultRequestIdentifierFeature_IfNotPresent()
+        {
+            // Arrange
+            HttpContext httpContext = null;
+            var requestDelegate = new RequestDelegate(innerHttpContext =>
+                {
+                    httpContext = innerHttpContext;
+                    return Task.FromResult(0);
+                });
+            var featuresSupportedByHost = new FeatureCollection();
+            var hostingEngine = CreateHostingEngine(featuresSupportedByHost, requestDelegate);
+
+            // Act
+            var disposable = hostingEngine.Start();
+
+            // Assert
+            Assert.NotNull(httpContext);
+            Assert.IsType<DefaultRequestIdentifierFeature>(httpContext.GetFeature<IRequestIdentifierFeature>());
+        }
+
+        [Fact]
+        public void Hosting_CreatesDefaultRequestIdentifierFeature_IfNotPresent_ForImmutableFeatureCollection()
+        {
+            // Arrange
+            HttpContext httpContext = null;
+            var requestDelegate = new RequestDelegate(innerHttpContext =>
+            {
+                httpContext = innerHttpContext;
+                return Task.FromResult(0);
+            });
+            var featuresSupportedByHost = new Mock<IFeatureCollection>();
+            featuresSupportedByHost
+                .Setup(fc => fc.Add(It.IsAny<Type>(), It.IsAny<object>()))
+                .Throws(new NotImplementedException());
+            featuresSupportedByHost
+                .Setup(fc => fc.Add(new KeyValuePair<Type, object>(It.IsAny<Type>(), It.IsAny<object>())))
+                .Throws(new NotImplementedException());
+            var hostingEngine = CreateHostingEngine(featuresSupportedByHost.Object, requestDelegate);
+
+            // Act
+            var disposable = hostingEngine.Start();
+
+            // Assert
+            Assert.NotNull(httpContext);
+            Assert.IsType<DefaultRequestIdentifierFeature>(httpContext.GetFeature<IRequestIdentifierFeature>());
+        }
+
+        [Fact]
+        public void HostingEngine_DoesNot_CreateDefaultRequestIdentifierFeature_IfPresent()
+        {
+            // Arrange
+            HttpContext httpContext = null;
+            var requestDelegate = new RequestDelegate(innerHttpContext =>
+            {
+                httpContext = innerHttpContext;
+                return Task.FromResult(0);
+            });
+            var featuresSupportedByHost = new FeatureCollection();
+            var requestIdentifierFeature = new Mock<IRequestIdentifierFeature>().Object;
+            featuresSupportedByHost.Add(typeof(IRequestIdentifierFeature), requestIdentifierFeature);
+            var hostingEngine = CreateHostingEngine(featuresSupportedByHost, requestDelegate);
+
+            // Act
+            var disposable = hostingEngine.Start();
+
+            // Assert
+            Assert.NotNull(httpContext);
+            Assert.Same(requestIdentifierFeature, httpContext.GetFeature<IRequestIdentifierFeature>());
+        }
+
+        private IHostingEngine CreateHostingEngine(
+            IFeatureCollection featuresSupportedByHost,
+            RequestDelegate requestDelegate)
+        {
+            var applicationBuilder = new Mock<IApplicationBuilder>();
+            applicationBuilder.Setup(appBuilder => appBuilder.Build()).Returns(requestDelegate);
+            var applicationBuilderFactory = new Mock<IApplicationBuilderFactory>();
+            applicationBuilderFactory
+                .Setup(abf => abf.CreateBuilder(It.IsAny<object>()))
+                .Returns(applicationBuilder.Object);
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.Add(
+                new ServiceDescriptor(typeof(IApplicationBuilderFactory), applicationBuilderFactory.Object));
+            serviceCollection.Add(
+                new ServiceDescriptor(typeof(ILogger<HostingEngine>), new Mock<ILogger<HostingEngine>>().Object));
+            serviceCollection.Add(
+                new ServiceDescriptor(typeof(IHttpContextFactory), new HttpContextFactory()));
+            serviceCollection.Add(
+                new ServiceDescriptor(typeof(IHttpContextAccessor), new Mock<IHttpContextAccessor>().Object));
+
+            var startupLoader = new Mock<IStartupLoader>();
+            var startupMethods = new StartupMethods(
+                (appBuilder) => { },
+                (configureServices) => configureServices.BuildServiceProvider());
+            startupLoader.Setup(sl => sl.Load(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()))
+                .Returns(startupMethods);
+
+            var hostingEngine = new HostingEngine(
+                serviceCollection,
+                startupLoader.Object,
+                new Mock<IConfiguration>().Object,
+                new Mock<IHostingEnvironment>().Object,
+                "TestAppName");
+
+            return hostingEngine.UseServer(new TestServerFactory(featuresSupportedByHost));
+        }
+
         private void RunMapPath(string virtualPath, string expectedSuffix)
         {
             var engine = WebHost.CreateEngine().UseServer(this);
@@ -205,6 +318,27 @@ namespace Microsoft.AspNet.Hosting
             public IHostingEngine Create(IConfiguration config)
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        private class TestServerFactory : IServerFactory
+        {
+            private readonly IFeatureCollection _featuresSupportedByThisHost;
+
+            public TestServerFactory(IFeatureCollection featuresSupportedByThisHost)
+            {
+                _featuresSupportedByThisHost = featuresSupportedByThisHost;
+            }
+
+            public IServerInformation Initialize(IConfiguration configuration)
+            {
+                return null;
+            }
+
+            public IDisposable Start(IServerInformation serverInformation, Func<IFeatureCollection, Task> application)
+            {
+                application(_featuresSupportedByThisHost).Wait();
+                return null;
             }
         }
     }

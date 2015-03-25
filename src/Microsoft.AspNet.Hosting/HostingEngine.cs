@@ -6,11 +6,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
+using Microsoft.AspNet.Http;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Hosting
 {
@@ -24,7 +27,7 @@ namespace Microsoft.AspNet.Hosting
 
         // Start/ApplicationServices block use methods
         private bool _useDisabled;
-        
+
         private IApplicationBuilderFactory _builderFactory;
         private IApplicationBuilder _builder;
         private IServiceProvider _applicationServices;
@@ -56,14 +59,20 @@ namespace Microsoft.AspNet.Hosting
 
             var applicationDelegate = BuildApplicationDelegate();
 
-            var _contextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
-            var _contextAccessor = _applicationServices.GetRequiredService<IHttpContextAccessor>();
+            var logger = _applicationServices.GetRequiredService<ILogger<HostingEngine>>();
+            var contextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
+            var contextAccessor = _applicationServices.GetRequiredService<IHttpContextAccessor>();
             var server = _serverFactory.Start(_serverInstance,
-                features =>
+                async features =>
                 {
-                    var httpContext = _contextFactory.CreateHttpContext(features);
-                    _contextAccessor.HttpContext = httpContext;
-                    return applicationDelegate(httpContext);
+                    var httpContext = contextFactory.CreateHttpContext(features);
+                    var requestIdentifier = GetRequestIdentifier(httpContext);
+
+                    using (logger.BeginScope("Request Id: {RequestId}", requestIdentifier))
+                    {
+                        contextAccessor.HttpContext = httpContext;
+                        await applicationDelegate(httpContext);
+                    }
                 });
 
             return new Disposable(() =>
@@ -163,6 +172,18 @@ namespace Microsoft.AspNet.Hosting
             }
         }
 
+        private Guid GetRequestIdentifier(HttpContext httpContext)
+        {
+            var requestIdentifierFeature = httpContext.GetFeature<IRequestIdentifierFeature>();
+            if (requestIdentifierFeature == null)
+            {
+                requestIdentifierFeature = new DefaultRequestIdentifierFeature();
+                httpContext.SetFeature<IRequestIdentifierFeature>(requestIdentifierFeature);
+            }
+
+            return requestIdentifierFeature.TraceIdentifier;
+        }
+
         // Consider cutting
         public IHostingEngine UseEnvironment(string environment)
         {
@@ -207,7 +228,7 @@ namespace Microsoft.AspNet.Hosting
         public IHostingEngine UseStartup(Action<IApplicationBuilder> configureApp, Action<IServiceCollection> configureServices)
         {
             CheckUseAllowed();
-            _startup = new StartupMethods(configureApp, 
+            _startup = new StartupMethods(configureApp,
                 services => {
                     if (configureServices != null)
                     {
