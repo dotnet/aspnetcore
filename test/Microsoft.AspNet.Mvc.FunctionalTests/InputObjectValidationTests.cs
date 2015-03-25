@@ -44,7 +44,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             }
         }
 
-#if !DNXCORE50
         [Fact]
         public async Task CheckIfObjectIsDeserializedWithoutErrors()
         {
@@ -71,7 +70,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("User has been registerd : " + sampleName,
                 await response.Content.ReadAsStringAsync());
         }
-#endif
 
         [Fact]
         public async Task CheckIfObjectIsDeserialized_WithErrors()
