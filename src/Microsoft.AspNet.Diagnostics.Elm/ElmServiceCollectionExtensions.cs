@@ -10,26 +10,25 @@ namespace Microsoft.Framework.DependencyInjection
     public static class ElmServiceCollectionExtensions
     {
         /// <summary>
-        /// Registers an <see cref="ElmStore"/> and configures <see cref="ElmOptions"/>.
+        /// Registers an <see cref="ElmStore"/> and configures default <see cref="ElmOptions"/>.
         /// </summary>
         public static IServiceCollection AddElm([NotNull] this IServiceCollection services)
         {
-            return services.AddElm(configureOptions: null);
+            services.AddOptions();
+            services.AddSingleton<ElmStore>();
+            return services;
         }
 
         /// <summary>
-        /// Registers an <see cref="ElmStore"/> and configures <see cref="ElmOptions"/>.
+        /// Configures a set of <see cref="ElmOptions"/> for the application.
         /// </summary>
-        public static IServiceCollection AddElm([NotNull] this IServiceCollection services, Action<ElmOptions> configureOptions)
+        /// <param name="services">The services available in the application.</param>
+        /// <param name="configureOptions">The <see cref="ElmOptions"/> which need to be configured.</param>
+        public static void ConfigureElm(
+            [NotNull] this IServiceCollection services, 
+            [NotNull] Action<ElmOptions> configureOptions)
         {
-            services.AddSingleton<ElmStore>(); // registering the service so it can be injected into constructors
-
-            if (configureOptions != null)
-            {
-                services.Configure(configureOptions);
-            }
-
-            return services;
+            services.Configure(configureOptions);
         }
     }
 }
