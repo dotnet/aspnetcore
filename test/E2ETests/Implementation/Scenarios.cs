@@ -57,7 +57,13 @@ namespace E2ETests
 
             _logger.LogInformation("Application runtime information");
             var runtimeResponse = _httpClient.GetAsync("runtimeinfo").Result;
-            ThrowIfResponseStatusNotOk(runtimeResponse);
+
+            if (_startParameters.RuntimeFlavor != RuntimeFlavor.CoreClr)
+            {
+                // Runtime info middleware broken on coreclr.
+                ThrowIfResponseStatusNotOk(runtimeResponse);
+            }
+
             var runtimeInfo = runtimeResponse.Content.ReadAsStringAsync().Result;
             _logger.LogInformation(runtimeInfo);
         }

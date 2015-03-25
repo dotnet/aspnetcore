@@ -19,7 +19,6 @@ namespace E2ETests
 
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.DotNet)]
-        // Fails due to https://github.com/aspnet/XRE/issues/1129. 
         [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5004/")]
         public void OpenIdConnect_OnMono(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
