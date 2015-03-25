@@ -260,7 +260,7 @@ namespace E2ETests
 
         private static string SwitchPathToRuntimeFlavor(RuntimeFlavor runtimeFlavor, RuntimeArchitecture runtimeArchitecture, ILogger logger)
         {
-            var runtimePath = Environment.GetCommandLineArgs().First();
+            var runtimePath = Process.GetCurrentProcess().MainModule.FileName;
             logger.LogInformation(string.Empty);
             logger.LogInformation("Current runtime path is : {0}", runtimePath);
 
