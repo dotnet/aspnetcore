@@ -12,7 +12,7 @@ module.exports = function (grunt) {
                     expand: true,
                     cwd: "js",
                     src: "**/*.js",
-                    dest: "Compiler/Resources"
+                    dest: "compiler/resources"
                 }]
             }
         }
