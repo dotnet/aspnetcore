@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         // Razor page that is loaded. Consequently, each loaded page has its own copy of
         // the CodeTreeCache, but this ok - having a shared CodeTreeCache per application in tooling
         // is problematic to manage.
-        public MvcRazorHost(string root) 
+        public MvcRazorHost(string root)
             : this(new DefaultCodeTreeCache(new PhysicalFileProvider(root)), new DesignTimeRazorPathNormalizer(root))
         {
         }
@@ -214,7 +214,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         public override CodeBuilder DecorateCodeBuilder([NotNull] CodeBuilder incomingBuilder,
                                                         [NotNull] CodeBuilderContext context)
         {
-            var inheritedChunks = ChunkInheritanceUtility.GetInheritedCodeTrees(context.SourceFile);
+            // Need the normalized path to resolve inherited chunks only. Full paths are needed for generated Razor 
+            // files checksum and line pragmas to enable DesignTime debugging.
+            var normalizedPath = _pathNormalizer.NormalizePath(context.SourceFile);
+            var inheritedChunks = ChunkInheritanceUtility.GetInheritedCodeTrees(normalizedPath);
 
             ChunkInheritanceUtility.MergeInheritedCodeTrees(context.CodeTreeBuilder.CodeTree,
                                                          inheritedChunks,

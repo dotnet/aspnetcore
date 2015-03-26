@@ -47,6 +47,39 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.Equal("src/file.cshtml", chunkInheritanceUtility.InheritedCodeTreePagePath, StringComparer.Ordinal);
         }
 
+        [Theory]
+        [InlineData("//")]
+        [InlineData("C:/")]
+        [InlineData(@"\\")]
+        [InlineData(@"C:\")]
+        public void DecorateCodeBuilder_DesignTimeRazorPathNormalizer_NormalizesChunkInheritanceUtilityPaths(
+            string rootPrefix)
+        {
+            // Arrange
+            var rootedAppPath = $"{rootPrefix}SomeComputer/Location/Project/";
+            var rootedFilePath = $"{rootPrefix}SomeComputer/Location/Project/src/file.cshtml";
+            var host = new MvcRazorHost(
+                codeTreeCache: null,
+                pathNormalizer: new DesignTimeRazorPathNormalizer(rootedAppPath));
+            var chunkInheritanceUtility = new PathValidatingChunkInheritanceUtility(host);
+            var codeBuilderContext = new CodeBuilderContext(
+                new CodeGeneratorContext(
+                    host,
+                    host.DefaultClassName,
+                    host.DefaultNamespace,
+                    rootedFilePath,
+                    shouldGenerateLinePragmas: true),
+                new ParserErrorSink());
+            var codeBuilder = new CSharpCodeBuilder(codeBuilderContext);
+            host.ChunkInheritanceUtility = chunkInheritanceUtility;
+
+            // Act
+            host.DecorateCodeBuilder(codeBuilder, codeBuilderContext);
+
+            // Assert
+            Assert.Equal("src/file.cshtml", chunkInheritanceUtility.InheritedCodeTreePagePath, StringComparer.Ordinal);
+        }
+
         [Fact]
         public void MvcRazorHost_EnablesInstrumentationByDefault()
         {
