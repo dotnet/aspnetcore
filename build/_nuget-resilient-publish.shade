@@ -1,0 +1,42 @@
+use namespace="System.Threading.Tasks"
+
+@{/*
+
+nuget-resilient-publish
+    Publishes NuGet packages with retries
+
+sourcePackagesDir=''
+    Required. Path to packages to push
+
+nugetFeed=''
+    Required. Feed to publish to.
+*/}
+
+@{
+   var packages = Directory.EnumerateFiles(sourcePackagesDir, "*.nupkg")
+                           .Where(p => !p.EndsWith(".symbols.nupkg"))
+                           .ToArray();
+
+    Parallel.ForEach(packages, package =>
+    {
+        var retries = 0;
+        var packagePath = Path.Combine(sourcePackagesDir, package);
+        start:
+        try
+        {
+            NuGetPush (nugetFeed, packagePath, "");
+        }
+        catch
+        {
+            if (++retries == 3)
+            {
+                throw;
+            }
+
+            goto start;
+        }
+    });
+}
+
+macro name='NuGetPush' source='string' nupkgFile='string' extra='string'
+    nuget-push
