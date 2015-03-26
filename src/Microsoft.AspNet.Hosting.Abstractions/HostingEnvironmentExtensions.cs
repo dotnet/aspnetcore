@@ -9,6 +9,29 @@ namespace Microsoft.AspNet.Hosting
 {
     public static class HostingEnvironmentExtensions
     {
+        private const string DevelopmentEnvironmentName = "Development";
+        private const string ProductionEnvironmentName = "Production";
+
+        /// <summary>
+        /// Checks if the current hosting environment name is development.
+        /// </summary>
+        /// <param name="hostingEnvironment">An instance of <see cref="IHostingEnvironment"/> service.</param>
+        /// <returns>True if the environment name is Development, otherwise false.</returns>
+        public static bool IsDevelopment([NotNull]this IHostingEnvironment hostingEnvironment)
+        {
+            return hostingEnvironment.IsEnvironment(DevelopmentEnvironmentName);
+        }
+
+        /// <summary>
+        /// Checks if the current hosting environment name is Production.
+        /// </summary>
+        /// <param name="hostingEnvironment">An instance of <see cref="IHostingEnvironment"/> service.</param>
+        /// <returns>True if the environment name is Production, otherwise false.</returns>
+        public static bool IsProduction([NotNull]this IHostingEnvironment hostingEnvironment)
+        {
+            return hostingEnvironment.IsEnvironment(ProductionEnvironmentName);
+        }
+
         /// <summary>
         /// Compares the current hosting environment name against the specified value.
         /// </summary>
