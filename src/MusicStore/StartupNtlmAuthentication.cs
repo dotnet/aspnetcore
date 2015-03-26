@@ -50,6 +50,14 @@ namespace MusicStore
                     .AddDbContext<MusicStoreContext>(options =>
                             options.UseSqlServer(Configuration.Get("Data:DefaultConnection:ConnectionString")));
 
+            services.ConfigureCors(options =>
+            {
+                options.AddPolicy("CorsPolicy", builder =>
+                {
+                    builder.WithOrigins("http://example.com");
+                });
+            });
+
             // Add MVC services to the services container
             services.AddMvc();
 

@@ -70,6 +70,14 @@ namespace MusicStore
                 options.ClientId = "[ClientId]";
             });
 
+            services.ConfigureCors(options =>
+            {
+                options.AddPolicy("CorsPolicy", builder =>
+                {
+                    builder.WithOrigins("http://example.com");
+                });
+            });
+
             // Add MVC services to the services container
             services.AddMvc();
 

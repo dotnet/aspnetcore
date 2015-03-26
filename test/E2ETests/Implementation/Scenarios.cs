@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -346,9 +347,21 @@ namespace E2ETests
 
         private string FetchAlbumIdFromName(string albumName)
         {
+            // Run some CORS validation.
             _logger.LogInformation("Fetching the album id of '{album}'", albumName);
+            _httpClient.DefaultRequestHeaders.Add("Origin", "http://notpermitteddomain.com");
             var response = _httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", albumName)).Result;
             ThrowIfResponseStatusNotOk(response);
+            IEnumerable<string> values;
+            Assert.False(response.Headers.TryGetValues("Access-Control-Allow-Origin", out values));
+
+            _httpClient.DefaultRequestHeaders.Remove("Origin");
+            _httpClient.DefaultRequestHeaders.Add("Origin", "http://example.com");
+            response = _httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", albumName)).Result;
+            ThrowIfResponseStatusNotOk(response);
+            Assert.Equal("http://example.com", response.Headers.GetValues("Access-Control-Allow-Origin").First());
+            _httpClient.DefaultRequestHeaders.Remove("Origin");
+
             var albumId = response.Content.ReadAsStringAsync().Result;
             _logger.LogInformation("Album id for album '{album}' is '{id}'", albumName, albumId);
             return albumId;
