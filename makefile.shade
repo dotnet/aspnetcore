@@ -40,10 +40,15 @@ functions
             "Scaffolding",
             "Security",
             "SignalR-Server",
+            "SignalR-SQLServer",
+            "SignalR-Redis",
             "StaticFiles",
             "WebListener",
             "KestrelHttpServer",
             "WebSockets",
+            "Session",
+            "UserSecrets",
+            "CORS",
             "Entropy",
         };
         
@@ -169,10 +174,15 @@ var buildTarget = "compile"
             CloneOrUpdate(repo);
             
             GitCommand(repo, "checkout origin/dev -B release");
-            File.Copy(Path.Combine("build-template", "NuGet.release.config"),
-                      Path.Combine(repo, "NuGet.config"),
-                      overwrite: true);
-            GitCommand(repo, "commit -am \"Updating to release NuGet.config\"");
+
+            if(!ShouldSkipCopyingNugetConfig(repo))
+            {
+                File.Copy(Path.Combine("build-template", "NuGet.release.config"),
+                          Path.Combine(repo, "NuGet.config"),
+                          overwrite: true);
+                GitCommand(repo, "commit -am \"Updating to release NuGet.config\"");
+            }
+
             GitCommand(repo, "push origin release:release");
             GitCommand(repo, "checkout origin/dev -B dev");
             GitCommand(repo, "merge release -s ours");
@@ -420,10 +430,21 @@ functions
         {
             var nonDefaultRepos = new[]
             {
-              "KRuntime",
-              "MusicStore"
+              "XRE",
+              "MusicStore",
+              "Coherence",
+              "Coherence-Signed",
+              "dnvm",
             };
-            return Enumerable.Concat(repos, nonDefaultRepos);
+
+            return Enumerable.Concat(nonDefaultRepos, repos);
+        }
+
+        bool ShouldSkipCopyingNugetConfig(string repo)
+        {
+            var skipList = new string[]{"Coherence-Signed"};
+
+            return skipList.Any(r => r == repo);
         }
 
         void CloneOrUpdate(string repo)
