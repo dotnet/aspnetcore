@@ -494,15 +494,10 @@ namespace Microsoft.AspNet.Identity
 
             using (await BeginLoggingScopeAsync(user))
             {
-                await UpdateUserName(user, userName);
+                await Store.SetUserNameAsync(user, userName, CancellationToken);
+                await UpdateSecurityStampInternal(user);
                 return Logger.Log(await UpdateUserAsync(user));
             }
-        }
-
-        private async Task UpdateUserName(TUser user, string userName)
-        {
-            await Store.SetUserNameAsync(user, userName, CancellationToken);
-            await UpdateNormalizedUserNameAsync(user);
         }
 
         /// <summary>
@@ -540,7 +535,7 @@ namespace Microsoft.AspNet.Identity
                     Logger.Log(await UpdateUserAsync(user));
                 }
 
-                return Logger.Log(result != PasswordVerificationResult.Failed); 
+                return Logger.Log(result != PasswordVerificationResult.Failed);
             }
         }
 
@@ -1945,7 +1940,7 @@ namespace Microsoft.AspNet.Identity
                     return Logger.Log(IdentityResult.Success);
                 }
                 await store.ResetAccessFailedCountAsync(user, CancellationToken);
-                return Logger.Log(await UpdateUserAsync(user)); 
+                return Logger.Log(await UpdateUserAsync(user));
             }
         }
 
@@ -1998,7 +1993,6 @@ namespace Microsoft.AspNet.Identity
             var state = Resources.FormatLoggingResultMessageForUser(methodName, await GetUserIdAsync(user));
             return Logger?.BeginScope(state);
         }
-            
 
         private void ThrowIfDisposed()
         {

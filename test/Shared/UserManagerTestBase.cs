@@ -128,15 +128,56 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
-        public async Task CanSetUserName()
+        public async Task CheckSetUserNameValidatesUser()
         {
             var manager = CreateManager();
-            var user = CreateTestUser("UpdateAsync");
+            manager.UserValidators.Add(new UserValidator<TUser>());
+            var username = "UpdateAsync" + Guid.NewGuid().ToString();
+            var newUsername = "New" + Guid.NewGuid().ToString();
+            var user = CreateTestUser(username, useNamePrefixAsUserName: true);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            Assert.Null(await manager.FindByNameAsync("New"));
-            IdentityResultAssert.IsSuccess(await manager.SetUserNameAsync(user, "New"));
-            Assert.NotNull(await manager.FindByNameAsync("New"));
-            Assert.Null(await manager.FindByNameAsync("UpdateAsync"));
+            Assert.Null(await manager.FindByNameAsync(newUsername));
+            IdentityResultAssert.IsSuccess(await manager.SetUserNameAsync(user, newUsername));
+            Assert.NotNull(await manager.FindByNameAsync(newUsername));
+            Assert.Null(await manager.FindByNameAsync(username));
+
+            var newUser = CreateTestUser(username, useNamePrefixAsUserName: true);
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(newUser));
+            IdentityResultAssert.IsFailure(await manager.SetUserNameAsync(newUser, ""), IdentityErrorDescriber.Default.InvalidUserName(""));
+            IdentityResultAssert.IsFailure(await manager.SetUserNameAsync(newUser, newUsername), IdentityErrorDescriber.Default.DuplicateUserName(newUsername));
+        }
+
+        [Fact]
+        public async Task SetUserNameUpdatesSecurityStamp()
+        {
+            var manager = CreateManager();
+            var username = "UpdateAsync" + Guid.NewGuid().ToString();
+            var newUsername = "New" + Guid.NewGuid().ToString();
+            var user = CreateTestUser(username, useNamePrefixAsUserName: true);
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            var stamp = await manager.GetSecurityStampAsync(user);
+            Assert.Null(await manager.FindByNameAsync(newUsername));
+            IdentityResultAssert.IsSuccess(await manager.SetUserNameAsync(user, newUsername));
+            Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
+        }
+
+        [Fact]
+        public async Task CheckSetEmailValidatesUser()
+        {
+            var manager = CreateManager();
+            manager.Options.User.RequireUniqueEmail = true;
+            manager.UserValidators.Add(new UserValidator<TUser>());
+            var random = new Random();
+            var email = "foo" + random.Next() + "@example.com";
+            var newEmail = "bar" + random.Next() + "@example.com";
+            var user = CreateTestUser(email: email);
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, newEmail));
+
+            var newUser = CreateTestUser(email: email);
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(newUser));
+            IdentityResultAssert.IsFailure(await manager.SetEmailAsync(newUser, newEmail), IdentityErrorDescriber.Default.DuplicateEmail(newEmail));
+            IdentityResultAssert.IsFailure(await manager.SetEmailAsync(newUser, ""), IdentityErrorDescriber.Default.InvalidEmail(""));
         }
 
         [Fact]
@@ -1019,7 +1060,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = CreateRoleManager();
             var roleName = "delete" + Guid.NewGuid().ToString();
-            var role = CreateTestRole(roleName, useRoleNamePrefixAsRoleName:true);
+            var role = CreateTestRole(roleName, useRoleNamePrefixAsRoleName: true);
             Assert.False(await manager.RoleExistsAsync(roleName));
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
             Assert.True(await manager.RoleExistsAsync(roleName));
@@ -1118,7 +1159,7 @@ namespace Microsoft.AspNet.Identity.Test
             var userMgr = CreateManager(context);
             var roleMgr = CreateRoleManager(context);
             var roleName = "delete" + Guid.NewGuid().ToString();
-            var role = CreateTestRole(roleName, useRoleNamePrefixAsRoleName:true);
+            var role = CreateTestRole(roleName, useRoleNamePrefixAsRoleName: true);
             Assert.False(await roleMgr.RoleExistsAsync(roleName));
             IdentityResultAssert.IsSuccess(await roleMgr.CreateAsync(role));
             var user = CreateTestUser();
@@ -1276,7 +1317,7 @@ namespace Microsoft.AspNet.Identity.Test
             var userMgr = CreateManager(context);
             var roleMgr = CreateRoleManager(context);
             var roleName = "addUserDupeTest" + Guid.NewGuid().ToString();
-            var role = CreateTestRole(roleName, useRoleNamePrefixAsRoleName:true);
+            var role = CreateTestRole(roleName, useRoleNamePrefixAsRoleName: true);
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await userMgr.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await roleMgr.CreateAsync(role));
