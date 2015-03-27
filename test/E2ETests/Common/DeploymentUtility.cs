@@ -217,8 +217,22 @@ namespace E2ETests
                 CreateNoWindow = true
             };
 
+            // Work around for https://github.com/aspnet/dnx/issues/1515
+            string backup_Dnx_Packages = string.Empty;
+            if (startParameters.BundleWithNoSource)
+            {
+                backup_Dnx_Packages = Environment.GetEnvironmentVariable("DNX_PACKAGES");
+                Environment.SetEnvironmentVariable("DNX_PACKAGES", string.Empty);
+            }
+
             var hostProcess = Process.Start(startInfo);
             logger.LogInformation("Started iisexpress. Process Id : {processId}", hostProcess.Id);
+
+            if (startParameters.BundleWithNoSource)
+            {
+                // Roll back the change.
+                Environment.SetEnvironmentVariable("DNX_PACKAGES", backup_Dnx_Packages);
+            }
 
             return hostProcess;
         }
@@ -236,7 +250,22 @@ namespace E2ETests
                 CreateNoWindow = true
             };
 
+            // Work around for https://github.com/aspnet/dnx/issues/1515
+            string backup_Dnx_Packages = string.Empty;
+            if (startParameters.BundleWithNoSource)
+            {
+                backup_Dnx_Packages = Environment.GetEnvironmentVariable("DNX_PACKAGES");
+                Environment.SetEnvironmentVariable("DNX_PACKAGES", string.Empty);
+            }
+
             var hostProcess = Process.Start(startInfo);
+
+            if (startParameters.BundleWithNoSource)
+            {
+                // Roll back the change.
+                Environment.SetEnvironmentVariable("DNX_PACKAGES", backup_Dnx_Packages);
+            }
+
             //Sometimes reading MainModule returns null if called immediately after starting process.
             Thread.Sleep(1 * 1000);
 
@@ -252,7 +281,7 @@ namespace E2ETests
             }
             catch (Win32Exception win32Exception)
             {
-                logger.LogWarning("Cannot access 64 bit modules from a 32 bit process. Failed with following message.", win32Exception);
+                logger.LogWarning("Cannot access 64 bit modules from a 32 bit process. Failed with following message : {error}", win32Exception.Message);
             }
 
             return hostProcess;
