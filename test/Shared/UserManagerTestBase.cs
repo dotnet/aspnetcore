@@ -402,7 +402,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
         }
 
-        [Fact(Skip = "Temporarily skipping")]
+        [Fact]
         public async Task CanAddRemoveUserClaim()
         {
             var manager = CreateManager();
@@ -429,7 +429,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Equal(0, userClaims.Count);
         }
 
-        [Fact(Skip = "Temporarily skipping")]
+        [Fact]
         public async Task RemoveClaimOnlyAffectsUser()
         {
             var manager = CreateManager();
