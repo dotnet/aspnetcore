@@ -9,7 +9,7 @@ namespace E2ETests
 {
     public partial class SmokeTests
     {
-        [ConditionalTheory]
+        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5001/")]
         public void OpenIdConnect_OnX86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
@@ -17,7 +17,7 @@ namespace E2ETests
             OpenIdConnectTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.DotNet)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5004/")]
         public void OpenIdConnect_OnMono(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
@@ -43,10 +43,10 @@ namespace E2ETests
                 var stopwatch = Stopwatch.StartNew();
                 var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
 
-                _logger.LogInformation("Pointing MusicStore DB to '{connString}'", string.Format(CONNECTION_STRING_FORMAT, musicStoreDbName));
+                _logger.LogInformation("Pointing MusicStore DB to '{connString}'", string.Format(DbUtils.CONNECTION_STRING_FORMAT, musicStoreDbName));
 
                 //Override the connection strings using environment based configuration
-                Environment.SetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection", string.Format(CONNECTION_STRING_FORMAT, musicStoreDbName));
+                Environment.SetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection", string.Format(DbUtils.CONNECTION_STRING_FORMAT, musicStoreDbName));
 
                 _applicationBaseUrl = applicationBaseUrl;
                 Process hostProcess = null;

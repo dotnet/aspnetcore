@@ -10,7 +10,7 @@ namespace E2ETests
 {
     public partial class SmokeTests
     {
-        [ConditionalTheory]
+        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5001/", false)]
         // [InlineData(ServerType.IISExpress, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5001/", true)]
@@ -19,7 +19,7 @@ namespace E2ETests
             Publish_And_Run_Tests(serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.DotNet)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5004/", false)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5004/", true)]
@@ -28,7 +28,7 @@ namespace E2ETests
             Publish_And_Run_Tests(serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData(ServerType.WebListener, RuntimeFlavor.DesktopClr, RuntimeArchitecture.amd64, "http://localhost:5002/", false)]
         //https://github.com/aspnet/KRuntime/issues/642
@@ -57,10 +57,10 @@ namespace E2ETests
                 var stopwatch = Stopwatch.StartNew();
                 var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
 
-                _logger.LogInformation("Pointing MusicStore DB to '{connString}'", string.Format(CONNECTION_STRING_FORMAT, musicStoreDbName));
+                _logger.LogInformation("Pointing MusicStore DB to '{connString}'", string.Format(DbUtils.CONNECTION_STRING_FORMAT, musicStoreDbName));
 
                 //Override the connection strings using environment based configuration
-                Environment.SetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection", string.Format(CONNECTION_STRING_FORMAT, musicStoreDbName));
+                Environment.SetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection", string.Format(DbUtils.CONNECTION_STRING_FORMAT, musicStoreDbName));
 
                 _applicationBaseUrl = applicationBaseUrl;
                 Process hostProcess = null;

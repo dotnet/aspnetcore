@@ -9,8 +9,6 @@ namespace E2ETests
 {
     public partial class SmokeTests
     {
-        private const string CONNECTION_STRING_FORMAT = "Server=(localdb)\\MSSQLLocalDB;Database={0};Trusted_Connection=True;MultipleActiveResultSets=true";
-
         private string _applicationBaseUrl;
         private HttpClient _httpClient;
         private HttpClientHandler _httpClientHandler;
@@ -24,7 +22,7 @@ namespace E2ETests
             _logger = loggerFactory.CreateLogger<SmokeTests>();
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5001/")]
         [InlineData(ServerType.WebListener, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5002/")]
@@ -37,7 +35,7 @@ namespace E2ETests
             SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [SkipOn32BitOS]
         [InlineData(ServerType.WebListener, RuntimeFlavor.DesktopClr, RuntimeArchitecture.amd64, "http://localhost:5002/")]
@@ -48,7 +46,7 @@ namespace E2ETests
             SmokeTestSuite(serverType, donetFlavor, architecture, applicationBaseUrl);
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.DotNet)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5004/")]
         public void SmokeTestSuite_OnMono(ServerType serverType, RuntimeFlavor donetFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
@@ -56,7 +54,7 @@ namespace E2ETests
             SmokeTestSuite(serverType, donetFlavor, architecture, applicationBaseUrl);
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [SkipIfNativeModuleNotInstalled]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
@@ -67,7 +65,7 @@ namespace E2ETests
             SmokeTestSuite(serverType, donetFlavor, architecture, applicationBaseUrl);
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [SkipIfNativeModuleNotInstalled]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
@@ -79,7 +77,7 @@ namespace E2ETests
             SmokeTestSuite(serverType, donetFlavor, architecture, applicationBaseUrl);
         }
 
-        // [ConditionalTheory]
+        // [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Unix)]
         [SkipIfCurrentRuntimeIsCoreClr]
@@ -107,10 +105,10 @@ namespace E2ETests
                 var stopwatch = Stopwatch.StartNew();
                 var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
 
-                _logger.LogInformation("Pointing MusicStore DB to '{connString}'", string.Format(CONNECTION_STRING_FORMAT, musicStoreDbName));
+                _logger.LogInformation("Pointing MusicStore DB to '{connString}'", string.Format(DbUtils.CONNECTION_STRING_FORMAT, musicStoreDbName));
 
                 //Override the connection strings using environment based configuration
-                Environment.SetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection", string.Format(CONNECTION_STRING_FORMAT, musicStoreDbName));
+                Environment.SetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection", string.Format(DbUtils.CONNECTION_STRING_FORMAT, musicStoreDbName));
 
                 _applicationBaseUrl = applicationBaseUrl;
                 Process hostProcess = null;
