@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.Versioning;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Runtime.Compilation;
 using Moq;
 using Xunit;
 
