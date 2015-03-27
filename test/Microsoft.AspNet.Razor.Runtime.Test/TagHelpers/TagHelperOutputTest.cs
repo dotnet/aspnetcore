@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput("p",
-                attributes: new Dictionary<string, string>
+                attributes: new Dictionary<string, object>
                 {
                     { "class", "btn" },
                     { "something", "   spaced    " }
@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput("p",
-                attributes: new Dictionary<string, string>
+                attributes: new Dictionary<string, object>
                 {
                     { originalName, "btn" },
                 });
@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             var attribute = Assert.Single(tagHelperOutput.Attributes);
-            Assert.Equal(new KeyValuePair<string, string>(originalName, "super button"), attribute);
+            Assert.Equal(new KeyValuePair<string, object>(originalName, "super button"), attribute);
         }
     }
 }

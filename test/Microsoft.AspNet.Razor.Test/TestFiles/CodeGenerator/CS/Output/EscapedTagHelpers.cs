@@ -45,7 +45,7 @@ namespace TestOutput
             __tagHelperExecutionContext.Add(__InputTagHelper);
             StartTagHelperWritingScope();
 #line 6 "EscapedTagHelpers.cshtml"
-Write(DateTime.Now);
+WriteLiteral(DateTime.Now);
 
 #line default
 #line hidden

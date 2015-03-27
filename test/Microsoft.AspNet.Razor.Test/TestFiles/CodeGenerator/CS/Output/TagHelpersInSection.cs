@@ -64,7 +64,7 @@ namespace TestOutput
                 StartTagHelperWritingScope();
                 WriteLiteral("Current Time: ");
 #line 9 "TagHelpersInSection.cshtml"
-Write(DateTime.Now);
+WriteLiteral(DateTime.Now);
 
 #line default
 #line hidden
@@ -79,7 +79,7 @@ Write(DateTime.Now);
 #line default
 #line hidden
                 __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-                __tagHelperExecutionContext.AddHtmlAttribute("unboundproperty", __tagHelperStringValueBuffer.ToString());
+                __tagHelperExecutionContext.AddHtmlAttribute("unboundproperty", Html.Raw(__tagHelperStringValueBuffer.ToString()));
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 await WriteTagHelperToAsync(__razor_template_writer, __tagHelperExecutionContext);
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();

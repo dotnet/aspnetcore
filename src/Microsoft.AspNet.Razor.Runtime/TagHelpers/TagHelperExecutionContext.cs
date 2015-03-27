@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             SelfClosing = selfClosing;
             AllAttributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            HTMLAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            HTMLAttributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             TagName = tagName;
             Items = items;
             UniqueId = uniqueId;
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <summary>
         /// HTML attributes.
         /// </summary>
-        public IDictionary<string, string> HTMLAttributes { get; }
+        public IDictionary<string, object> HTMLAttributes { get; }
 
         /// <summary>
         /// <see cref="ITagHelper"/> bound attributes and HTML attributes.
@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </summary>
         /// <param name="name">The HTML attribute name.</param>
         /// <param name="value">The HTML attribute value.</param>
-        public void AddHtmlAttribute([NotNull] string name, string value)
+        public void AddHtmlAttribute([NotNull] string name, object value)
         {
             HTMLAttributes.Add(name, value);
             AllAttributes.Add(name, value);
