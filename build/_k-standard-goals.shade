@@ -20,6 +20,10 @@ default Configuration='${E("Configuration")}'
   {
     E("DNX_AUTHOR", AUTHORS);
   }
+  if (string.IsNullOrEmpty(E("DNX_ASSEMBLY_FILE_VERSION")))
+  {
+    E("DNX_ASSEMBLY_FILE_VERSION", CreateDayBasedVersionNumber());
+  }
   if (string.IsNullOrEmpty(Configuration))
   {
     Configuration = "Debug";
