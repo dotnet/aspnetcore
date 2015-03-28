@@ -50,8 +50,8 @@ namespace E2ETests
                     ServerType = serverType,
                     RuntimeFlavor = runtimeFlavor,
                     RuntimeArchitecture = architecture,
-                    BundleApplicationBeforeStart = true,
-                    BundleWithNoSource = noSource
+                    PublishApplicationBeforeStart = true,
+                    PublishWithNoSource = noSource
                 };
 
                 var stopwatch = Stopwatch.StartNew();
@@ -94,7 +94,7 @@ namespace E2ETests
                     {
                         if (Directory.GetFiles(_startParameters.ApplicationPath, "*.cmd", SearchOption.TopDirectoryOnly).Length > 0)
                         {
-                            throw new Exception("bundleExclude parameter values are not honored.");
+                            throw new Exception("publishExclude parameter values are not honored.");
                         }
                     }
 

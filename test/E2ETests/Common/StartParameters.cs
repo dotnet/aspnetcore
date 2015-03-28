@@ -21,11 +21,11 @@
 
         public string ApplicationPath { get; set; }
 
-        public bool BundleApplicationBeforeStart { get; set; }
+        public bool PublishApplicationBeforeStart { get; set; }
 
-        public string BundledApplicationRootPath { get; set; }
+        public string PublishedApplicationRootPath { get; set; }
 
-        public bool BundleWithNoSource { get; set; }
+        public bool PublishWithNoSource { get; set; }
 
         public string Runtime { get; set; }
 
