@@ -59,7 +59,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta4-10347"
+$BuildVersion="beta5-10350"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -511,7 +511,7 @@ function Unpack-Package([string]$DownloadFile, [string]$UnpackFolder) {
       try {
           # Shell will not recognize nupkg as a zip and throw, so rename it to zip
           $runtimeZip = [System.IO.Path]::ChangeExtension($DownloadFile, "zip")
-          Rename-Item $runtimeFile $runtimeZip
+          Rename-Item $DownloadFile $runtimeZip
           # Use the shell to uncompress the nupkg
           $shell_app=new-object -com shell.application
           $zip_file = $shell_app.namespace($runtimeZip)
@@ -1054,13 +1054,18 @@ function dnvm-install {
         }
         elseif ($Runtime -eq "coreclr") {
             if ($NoNative) {
-              _WriteOut "Skipping native image compilation."
+                _WriteOut "Skipping native image compilation."
             }
             else {
-              _WriteOut "Compiling native images for $runtimeFullName to improve startup performance..."
-              Write-Progress -Activity "Installing runtime" "Generating runtime native images" -Id 1
-              Start-Process $CrossGenCommand -Wait -WindowStyle Hidden
-              _WriteOut "Finished native image compilation."
+                _WriteOut "Compiling native images for $runtimeFullName to improve startup performance..."
+                Write-Progress -Activity "Installing runtime" "Generating runtime native images" -Id 1
+                if ($DebugPreference -eq 'SilentlyContinue') {
+                    Start-Process $CrossGenCommand -Wait -WindowStyle Hidden
+                }
+                else {
+                    Start-Process $CrossGenCommand -Wait -NoNewWindow
+                }
+                _WriteOut "Finished native image compilation."
             }
         }
         else {
@@ -1173,6 +1178,40 @@ function dnvm-name {
     Get-RuntimeName $VersionOrAlias $Architecture $Runtime
 }
 
+
+# Checks if a specified file exists in the destination folder and if not, copies the file
+# to the destination folder. 
+function Safe-Filecopy {
+    param(
+        [Parameter(Mandatory=$true, Position=0)] $Filename, 
+        [Parameter(Mandatory=$true, Position=1)] $SourceFolder,
+        [Parameter(Mandatory=$true, Position=2)] $DestinationFolder)
+
+    # Make sure the destination folder is created if it doesn't already exist.
+    if(!(Test-Path $DestinationFolder)) {
+        _WriteOut "Creating destination folder '$DestinationFolder' ... "
+        
+        New-Item -Type Directory $Destination | Out-Null
+    }
+
+    $sourceFilePath = Join-Path $SourceFolder $Filename
+    $destFilePath = Join-Path $DestinationFolder $Filename
+
+    if(Test-Path $sourceFilePath) {
+        _WriteOut "Installing '$Filename' to '$DestinationFolder' ... "
+
+        if (Test-Path $destFilePath) {
+            _WriteOut "  Skipping: file already exists" -ForegroundColor Yellow
+        }
+        else {
+            Copy-Item $sourceFilePath $destFilePath -Force
+        }
+    }
+    else {
+        _WriteOut "WARNING: Unable to install: Could not find '$Filename' in '$SourceFolder'. " 
+    }
+}
+
 <#
 .SYNOPSIS
     Installs the version manager into your User profile directory
@@ -1191,28 +1230,12 @@ function dnvm-setup {
 
     $ScriptFolder = Split-Path -Parent $ScriptPath
 
-    if(!(Test-Path $Destination)) {
-        New-Item -Type Directory $Destination | Out-Null
-    }
-
-    $ps1Command = Join-Path $ScriptFolder "$CommandName.ps1"
-    if(Test-Path $ps1Command) {
-        _WriteOut "Installing '$CommandName.ps1' to '$Destination' ..."
-        Copy-Item $ps1Command $Destination -Force
-    } else {
-        _WriteOut "WARNING: Could not find '$CommandName.ps1' in '$ScriptFolder'. Unable to install!"
-    }
-    $cmdCommand = Join-Path $ScriptFolder "$CommandName.cmd"
-    if(Test-Path $cmdCommand) {
-        _WriteOut "Installing '$CommandName.cmd' to '$Destination' ..."
-        Copy-Item $cmdCommand $Destination -Force
-    } else {
-        _WriteOut "WARNING: Could not find '$CommandName.cmd' in '$ScriptFolder'. Unable to install!"
-    }
+    # Copy script files (if necessary):
+    Safe-Filecopy "$CommandName.ps1" $ScriptFolder $Destination
+    Safe-Filecopy "$CommandName.cmd" $ScriptFolder $Destination
 
     # Configure Environment Variables
     # Also, clean old user home values if present
-
     # We'll be removing any existing homes, both
     $PathsToRemove = @(
         "%USERPROFILE%\$DefaultUserDirectoryName",
