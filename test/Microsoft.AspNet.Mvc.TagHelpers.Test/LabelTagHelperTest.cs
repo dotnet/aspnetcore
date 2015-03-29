@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.Framework.WebEncoders;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
@@ -165,7 +164,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var expectedTagName = "not-label";
-            var expectedAttributes = new Dictionary<string, string>
+            var expectedAttributes = new Dictionary<string, object>
             {
                 { "class", "form-control" },
                 { "for", tagHelperOutputContent.ExpectedId }
@@ -196,7 +195,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent(tagHelperOutputContent.OriginalChildContent);
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var htmlAttributes = new Dictionary<string, string>
+            var htmlAttributes = new Dictionary<string, object>
             {
                 { "class", "form-control" },
             };

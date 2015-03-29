@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -27,14 +26,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
         [Activate]
         protected internal ViewContext ViewContext { get; set; }
-
-        /// <summary>
-        /// Specifies that this &lt;option&gt; is pre-selected.
-        /// </summary>
-        /// <remarks>
-        /// Passed through to the generated HTML in all cases.
-        /// </remarks>
-        public string Selected { get; set; }
 
         /// <summary>
         /// Specifies a value for the &lt;option&gt; element.
@@ -59,12 +50,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 output.CopyHtmlAttribute(nameof(Value), context);
             }
 
-            if (Selected != null)
-            {
-                // This <option/> will always be selected.
-                output.CopyHtmlAttribute(nameof(Selected), context);
-            }
-            else
+            // Nothing to do if this <option/> is already selected.
+            if (!output.Attributes.ContainsKey("selected"))
             {
                 // Is this <option/> element a child of a <select/> element the SelectTagHelper targeted?
                 object formDataEntry;

@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
             var output = new TagHelperOutput(
                 expectedTagName,
-                attributes: new Dictionary<string, string>
+                attributes: new Dictionary<string, object>
                 {
                     { "id", "myvalidationmessage" }
                 });
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
             var output = new TagHelperOutput(
                 "span",
-                attributes: new Dictionary<string, string>());
+                attributes: new Dictionary<string, object>());
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);
@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var output = new TagHelperOutput(
                 "span",
-                attributes: new Dictionary<string, string>());
+                attributes: new Dictionary<string, object>());
             output.Content.SetContent(outputContent);
 
             var context = new TagHelperContext(
@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var output = new TagHelperOutput(
                 "span",
-                attributes: new Dictionary<string, string>());
+                attributes: new Dictionary<string, object>());
 
             var context = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>(),
@@ -259,7 +259,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
             var output = new TagHelperOutput(
                 "span",
-                attributes: new Dictionary<string, string>());
+                attributes: new Dictionary<string, object>());
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);

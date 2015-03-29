@@ -3,7 +3,9 @@
 
 using System.Collections.Generic;
 using System.IO;
+#if NET45
 using Microsoft.AspNet.FileProviders;
+#endif
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Razor;
@@ -18,6 +20,8 @@ namespace Microsoft.AspNet.Mvc.Razor
     public class MvcRazorHost : RazorEngineHost, IMvcRazorHost
     {
         private const string BaseType = "Microsoft.AspNet.Mvc.Razor.RazorPage";
+        private const string HtmlHelperPropertyName = "Html";
+
         private static readonly string[] _defaultNamespaces = new[]
         {
             "System",
@@ -28,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         };
         private static readonly Chunk[] _defaultInheritedChunks = new[]
         {
-            new InjectChunk("Microsoft.AspNet.Mvc.Rendering.IHtmlHelper<TModel>", "Html"),
+            new InjectChunk("Microsoft.AspNet.Mvc.Rendering.IHtmlHelper<TModel>", HtmlHelperPropertyName),
             new InjectChunk("Microsoft.AspNet.Mvc.IViewComponentHelper", "Component"),
             new InjectChunk("Microsoft.AspNet.Mvc.IUrlHelper", "Url"),
         };
@@ -76,6 +80,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                     ScopeManagerBeginMethodName = nameof(TagHelperScopeManager.Begin),
                     ScopeManagerEndMethodName = nameof(TagHelperScopeManager.End),
 
+                    TagHelperContentTypeName = nameof(TagHelperContent),
+
                     // Can't use nameof because RazorPage is not accessible here.
                     CreateTagHelperMethodName = "CreateTagHelper",
                     StartTagHelperWritingScopeMethodName = "StartTagHelperWritingScope",
@@ -83,6 +89,9 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                     WriteTagHelperAsyncMethodName = "WriteTagHelperAsync",
                     WriteTagHelperToAsyncMethodName = "WriteTagHelperToAsync",
+
+                    // Can't use nameof because IHtmlHelper is (also) not accessible here.
+                    MarkAsHtmlEncodedMethodName = HtmlHelperPropertyName + ".Raw",
                 })
             {
                 ResolveUrlMethodName = "Href",

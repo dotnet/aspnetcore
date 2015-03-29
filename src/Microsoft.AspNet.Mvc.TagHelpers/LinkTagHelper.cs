@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Hosting;
@@ -10,7 +11,6 @@ using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.Runtime;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
@@ -97,6 +97,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             /// </summary>
             Fallback = 2,
         }
+
+        /// <summary>
+        /// Address of the linked resource.
+        /// </summary>
+        /// <remarks>
+        /// Passed through to the generated HTML in all cases.
+        /// </remarks>
+        [HtmlAttributeName(HrefAttributeName)]
+        public string Href { get; set; }
 
         /// <summary>
         /// A comma separated list of globbed file patterns of CSS stylesheets to load.
@@ -189,12 +198,21 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [Activate]
         protected internal IHtmlEncoder HtmlEncoder { get; set; }
 
+        [Activate]
+        protected internal IJavaScriptStringEncoder JavaScriptEncoder { get; set; }
+
         // Internal for ease of use when testing.
         protected internal GlobbingUrlBuilder GlobbingUrlBuilder { get; set; }
 
         /// <inheritdoc />
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
+            // Pass through attribute that is also a well-known HTML attribute.
+            if (Href != null)
+            {
+                output.CopyHtmlAttribute(HrefAttributeName, context);
+            }
+
             var modeResult = AttributeMatcher.DetermineMode(context, ModeDetails);
 
             var logger = Logger ?? LoggerFactory.CreateLogger<LinkTagHelper>();
@@ -210,8 +228,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Get the highest matched mode
             var mode = modeResult.FullMatches.Select(match => match.Mode).Max();
 
-            // NOTE: Values in TagHelperOutput.Attributes are already HtmlEncoded
-            var attributes = new Dictionary<string, string>(output.Attributes);
+            // NOTE: Values in TagHelperOutput.Attributes may already be HTML-encoded.
+            var attributes = new Dictionary<string, object>(output.Attributes);
 
             var builder = new DefaultTagHelperContent();
 
@@ -236,17 +254,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             output.Content.SetContent(builder);
         }
 
-        private void BuildGlobbedLinkTags(IDictionary<string, string> attributes, TagHelperContent builder)
+        private void BuildGlobbedLinkTags(IDictionary<string, object> attributes, TagHelperContent builder)
         {
-            // Build a <link /> tag for each matched href as well as the original one in the source file
-            string staticHref;
-            attributes.TryGetValue(HrefAttributeName, out staticHref);
-
             EnsureGlobbingUrlBuilder();
-            var urls = GlobbingUrlBuilder.BuildUrlList(staticHref, HrefInclude, HrefExclude);
 
+            // Build a <link /> tag for each matched href as well as the original one in the source file
+            var urls = GlobbingUrlBuilder.BuildUrlList(Href, HrefInclude, HrefExclude);
             foreach (var url in urls)
             {
+                // "url" values come from bound attributes and globbing. Must always be non-null.
+                Debug.Assert(url != null);
+
                 attributes[HrefAttributeName] = url;
                 BuildLinkTag(attributes, builder);
             }
@@ -260,10 +278,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             if (fallbackHrefs.Length > 0)
             {
-                if (ShouldAddFileVersion())
+                if (FileVersion == true)
                 {
                     for (var i=0; i < fallbackHrefs.Length; i++)
                     {
+                        // fallbackHrefs come from bound attributes and globbing. Must always be non-null.
+                        Debug.Assert(fallbackHrefs[i] != null);
+
                         fallbackHrefs[i] = _fileVersionProvider.AddFileVersionToPath(fallbackHrefs[i]);
                     }
                 }
@@ -279,13 +300,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 // Build the <script /> tag that checks the effective style of <meta /> tag above and renders the extra
                 // <link /> tag to load the fallback stylesheet if the test CSS property value is found to be false,
                 // indicating that the primary stylesheet failed to load.
-                builder.Append("<script>")
-                       .Append(string.Format(CultureInfo.InvariantCulture,
-                            JavaScriptResources.GetEmbeddedJavaScript(FallbackJavaScriptResourceName),
-                            JavaScriptStringEncoder.Default.JavaScriptStringEncode(FallbackTestProperty),
-                            JavaScriptStringEncoder.Default.JavaScriptStringEncode(FallbackTestValue),
-                            JavaScriptStringArrayEncoder.Encode(JavaScriptStringEncoder.Default, fallbackHrefs)))
-                       .Append("</script>");
+                builder
+                    .Append("<script>")
+                    .Append(string.Format(
+                        CultureInfo.InvariantCulture,
+                        JavaScriptResources.GetEmbeddedJavaScript(FallbackJavaScriptResourceName),
+                        JavaScriptEncoder.JavaScriptStringEncode(FallbackTestProperty),
+                        JavaScriptEncoder.JavaScriptStringEncode(FallbackTestValue),
+                        JavaScriptStringArrayEncoder.Encode(JavaScriptEncoder, fallbackHrefs)))
+                    .Append("</script>");
             }
         }
 
@@ -311,7 +334,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
-        private void BuildLinkTag(IDictionary<string, string> attributes, TagHelperContent builder)
+        private void BuildLinkTag(IDictionary<string, object> attributes, TagHelperContent builder)
         {
             EnsureFileVersionProvider();
             builder.Append("<link ");
@@ -319,27 +342,27 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             foreach (var attribute in attributes)
             {
                 var attributeValue = attribute.Value;
-                if (string.Equals(attribute.Key, HrefAttributeName, StringComparison.OrdinalIgnoreCase))
+                if (FileVersion == true &&
+                    string.Equals(attribute.Key, HrefAttributeName, StringComparison.OrdinalIgnoreCase))
                 {
-                    attributeValue = HtmlEncoder.HtmlEncode(
-                        ShouldAddFileVersion() ?
-                            _fileVersionProvider.AddFileVersionToPath(attributeValue) :
-                            attributeValue);
+                    // "href" values come from bound attributes and globbing. So anything but a non-null string is
+                    // unexpected but could happen if another helper targeting the same element does something odd.
+                    // Pass through existing value in that case.
+                    var attributeStringValue = attributeValue as string;
+                    if (attributeStringValue != null)
+                    {
+                        attributeValue = _fileVersionProvider.AddFileVersionToPath(attributeStringValue);
+                    }
                 }
 
                 builder
                     .Append(attribute.Key)
                     .Append("=\"")
-                    .Append(attributeValue)
+                    .Append(HtmlEncoder, ViewContext.Writer.Encoding, attributeValue)
                     .Append("\" ");
             }
 
             builder.Append("/>");
-        }
-
-        private bool ShouldAddFileVersion()
-        {
-            return FileVersion ?? false;
         }
     }
 }

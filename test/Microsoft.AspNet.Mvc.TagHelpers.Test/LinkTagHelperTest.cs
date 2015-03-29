@@ -179,6 +179,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var helper = new LinkTagHelper
             {
                 HtmlEncoder = new HtmlEncoder(),
+                JavaScriptEncoder = new JavaScriptStringEncoder(),
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
@@ -202,8 +203,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var context = MakeTagHelperContext(
                 attributes: new Dictionary<string, object>
                 {
-                    ["rel"] = "stylesheet",
-                    ["data-extra"] = "something",
+                    ["rel"] = new HtmlString("stylesheet"),
+                    ["data-extra"] = new HtmlString("something"),
                     ["href"] = "test.css",
                     ["asp-fallback-href"] = "test.css",
                     ["asp-fallback-test-class"] = "hidden",
@@ -211,11 +212,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     ["asp-fallback-test-value"] = "hidden"
                 });
             var output = MakeTagHelperOutput("link",
-                attributes: new Dictionary<string, string>
+                attributes: new Dictionary<string, object>
                 {
-                    ["rel"] = "stylesheet",
-                    ["data-extra"] = "something",
-                    ["href"] = "test.css"
+                    ["rel"] = new HtmlString("stylesheet"),
+                    ["data-extra"] = new HtmlString("something"),
                 });
             var logger = new Mock<ILogger<LinkTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
@@ -223,6 +223,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var helper = new LinkTagHelper
             {
                 HtmlEncoder = new HtmlEncoder(),
+                JavaScriptEncoder = new JavaScriptStringEncoder(),
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
@@ -230,6 +231,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 FallbackTestClass = "hidden",
                 FallbackTestProperty = "visibility",
                 FallbackTestValue = "hidden",
+                Href = "test.css",
                 Cache = MakeCache(),
             };
 
@@ -374,14 +376,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var context = MakeTagHelperContext(
                 attributes: new Dictionary<string, object>
                 {
+                    ["rel"] = new HtmlString("stylesheet"),
                     ["href"] = "/css/site.css",
-                    ["rel"] = "stylesheet",
                     ["asp-href-include"] = "**/*.css"
                 });
-            var output = MakeTagHelperOutput("link", attributes: new Dictionary<string, string>
+            var output = MakeTagHelperOutput("link", attributes: new Dictionary<string, object>
             {
-                ["href"] = "/css/site.css",
-                ["rel"] = "stylesheet"
+                ["rel"] = new HtmlString("stylesheet"),
             });
             var logger = new Mock<ILogger<LinkTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
@@ -396,6 +397,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
+                Href = "/css/site.css",
                 HrefInclude = "**/*.css",
                 Cache = MakeCache(),
             };
@@ -404,8 +406,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             helper.Process(context, output);
 
             // Assert
-            Assert.Equal("<link href=\"/css/site.css\" rel=\"stylesheet\" />" +
-                         "<link href=\"/base.css\" rel=\"stylesheet\" />", output.Content.GetContent());
+            Assert.Equal(
+                "<link rel=\"stylesheet\" href=\"/css/site.css\" />" +
+                "<link rel=\"stylesheet\" href=\"/base.css\" />",
+                output.Content.GetContent());
         }
 
         [Fact]
@@ -415,14 +419,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var context = MakeTagHelperContext(
                 attributes: new Dictionary<string, object>
                 {
-                    ["href"] = "/css/site.css",
                     ["rel"] = "stylesheet",
+                    ["href"] = "/css/site.css",
                     ["asp-href-include"] = "**/*.css"
                 });
-            var output = MakeTagHelperOutput("link", attributes: new Dictionary<string, string>
+            var output = MakeTagHelperOutput("link", attributes: new Dictionary<string, object>
             {
-                ["href"] = "/css/site.css",
-                ["rel"] = "stylesheet"
+                ["rel"] = "stylesheet",
             });
             var logger = new Mock<ILogger<LinkTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
@@ -437,6 +440,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
+                Href = "/css/site.css",
                 HrefInclude = "**/*.css",
                 Cache = MakeCache(),
             };
@@ -445,8 +449,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             helper.Process(context, output);
 
             // Assert
-            Assert.Equal("<link href=\"HtmlEncode[[/css/site.css]]\" rel=\"stylesheet\" />" +
-                         "<link href=\"HtmlEncode[[/base.css]]\" rel=\"stylesheet\" />", output.Content.GetContent());
+            Assert.Equal(
+                "<link rel=\"HtmlEncode[[stylesheet]]\" href=\"HtmlEncode[[/css/site.css]]\" />" +
+                "<link rel=\"HtmlEncode[[stylesheet]]\" href=\"HtmlEncode[[/base.css]]\" />",
+                output.Content.GetContent());
         }
 
         [Fact]
@@ -456,14 +462,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var context = MakeTagHelperContext(
                 attributes: new Dictionary<string, object>
                 {
+                    ["rel"] = new HtmlString("stylesheet"),
                     ["href"] = "/css/site.css",
-                    ["rel"] = "stylesheet",
                     ["asp-file-version"] = "true"
                 });
-            var output = MakeTagHelperOutput("link", attributes: new Dictionary<string, string>
+            var output = MakeTagHelperOutput("link", attributes: new Dictionary<string, object>
             {
-                ["href"] = "/css/site.css",
-                ["rel"] = "stylesheet"
+                ["rel"] = new HtmlString("stylesheet"),
             });
             var logger = new Mock<ILogger<LinkTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
@@ -474,6 +479,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
+                Href = "/css/site.css",
                 HrefInclude = "**/*.css",
                 FileVersion = true,
                 Cache = MakeCache(),
@@ -483,8 +489,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             helper.Process(context, output);
 
             // Assert
-            Assert.Equal("<link href=\"HtmlEncode[[/css/site.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\"" +
-                " rel=\"stylesheet\" />", output.Content.GetContent());
+            Assert.Equal(
+                "<link rel=\"stylesheet\" href=\"HtmlEncode[[/css/site.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\" />",
+                output.Content.GetContent());
         }
 
         [Fact]
@@ -494,14 +501,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var context = MakeTagHelperContext(
                 attributes: new Dictionary<string, object>
                 {
+                    ["rel"] = new HtmlString("stylesheet"),
                     ["href"] = "/bar/css/site.css",
-                    ["rel"] = "stylesheet",
                     ["asp-file-version"] = "true"
                 });
-            var output = MakeTagHelperOutput("link", attributes: new Dictionary<string, string>
+            var output = MakeTagHelperOutput("link", attributes: new Dictionary<string, object>
             {
-                ["href"] = "/bar/css/site.css",
-                ["rel"] = "stylesheet"
+                ["rel"] = new HtmlString("stylesheet"),
             });
             var logger = new Mock<ILogger<LinkTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
@@ -512,6 +518,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
+                Href = "/bar/css/site.css",
                 HrefInclude = "**/*.css",
                 FileVersion = true,
                 Cache = MakeCache(),
@@ -521,8 +528,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             helper.Process(context, output);
 
             // Assert
-            Assert.Equal("<link href=\"HtmlEncode[[/bar/css/site.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-" +
-                "j1ncoSt3SABJtkGk]]\" rel=\"stylesheet\" />", output.Content.GetContent());
+            Assert.Equal(
+                "<link rel=\"stylesheet\" href=\"HtmlEncode[[/bar/css/site.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\" />",
+                output.Content.GetContent());
         }
 
         [Fact]
@@ -532,15 +540,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var context = MakeTagHelperContext(
                 attributes: new Dictionary<string, object>
                 {
+                    ["rel"] = new HtmlString("stylesheet"),
                     ["href"] = "/css/site.css",
-                    ["rel"] = "stylesheet",
                     ["asp-href-include"] = "**/*.css",
                     ["asp-file-version"] = "true"
                 });
-            var output = MakeTagHelperOutput("link", attributes: new Dictionary<string, string>
+            var output = MakeTagHelperOutput("link", attributes: new Dictionary<string, object>
             {
-                ["href"] = "/css/site.css",
-                ["rel"] = "stylesheet"
+                ["rel"] = new HtmlString("stylesheet"),
             });
             var logger = new Mock<ILogger<LinkTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
@@ -555,6 +562,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
+                Href = "/css/site.css",
                 HrefInclude = "**/*.css",
                 FileVersion = true,
                 Cache = MakeCache(),
@@ -562,11 +570,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Act
             helper.Process(context, output);
-            
+
             // Assert
-            Assert.Equal("<link href=\"HtmlEncode[[/css/site.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\"" +
-                " rel=\"stylesheet\" /><link href=\"HtmlEncode[[/base.css" +
-                "?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\" rel=\"stylesheet\" />", output.Content.GetContent());
+            Assert.Equal(
+                "<link rel=\"stylesheet\" href=\"HtmlEncode[[/css/site.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\" />" +
+                "<link rel=\"stylesheet\" href=\"HtmlEncode[[/base.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\" />",
+                output.Content.GetContent());
         }
 
         private static ViewContext MakeViewContext(string requestPathBase = null)
@@ -607,9 +616,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
         }
 
-        private static TagHelperOutput MakeTagHelperOutput(string tagName, IDictionary<string, string> attributes = null)
+        private static TagHelperOutput MakeTagHelperOutput(string tagName, IDictionary<string, object> attributes = null)
         {
-            attributes = attributes ?? new Dictionary<string, string>();
+            attributes = attributes ?? new Dictionary<string, object>();
 
             return new TagHelperOutput(tagName, attributes);
         }
@@ -670,28 +679,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     }
                 });
             return cache.Object;
-        }
-
-        private class TestHtmlEncoder : IHtmlEncoder
-        {
-            public string HtmlEncode(string value)
-            {
-                return "HtmlEncode[[" + value + "]]";
-            }
-
-            public void HtmlEncode(string value, int startIndex, int charCount, TextWriter output)
-            {
-                output.Write("HtmlEncode[[");
-                output.Write(value.Substring(startIndex, charCount));
-                output.Write("]]");
-            }
-
-            public void HtmlEncode(char[] value, int startIndex, int charCount, TextWriter output)
-            {
-                output.Write("HtmlEncode[[");
-                output.Write(value, startIndex, charCount);
-                output.Write("]]");
-            }
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         null, null, null, null,
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }
                             },
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         null, string.Empty, "value", null,
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "value", "value" }, { "selected", "" }
                             },
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         null, "selected", "value", null,
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "value", "value" }, { "selected", "selected" }
                             },
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         null, null, "value", Enumerable.Empty<string>(),
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "value", "value" }
                             },
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         null, null, "value", new [] { string.Empty, },
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "value", "value" }
                             },
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         null, string.Empty, "value", new [] { string.Empty, },
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "value", "value" }, { "selected", "" }
                             },
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         null, null, "value", new [] { "value", },
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "value", "value" }, { "selected", "selected" }
                             },
@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         null, null, "value", new [] { string.Empty, "value", },
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "value", "value" }, { "selected", "selected" }
                             },
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         string.Empty, null, null, null,
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }
                             },
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         string.Empty, string.Empty, null, null,
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "selected", "" }
                             },
@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         string.Empty, "selected", null, null,
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "selected", "selected" }
                             },
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         string.Empty, null, null, Enumerable.Empty<string>(),
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }
                             },
@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         string.Empty, null, null, new [] { string.Empty, },
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "selected", "selected" }
                             },
@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         string.Empty, string.Empty, null, new [] { string.Empty, },
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "selected", "" }
                             },
@@ -166,7 +166,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         string.Empty, null, null, new [] { "text", },
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }
                             },
@@ -176,18 +176,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         string.Empty, null, null, new [] { string.Empty, "text", },
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "selected", "selected" }
                             },
                             "")
                     },
-
                     {
                         "text", null, null, null,
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }
                             },
@@ -197,7 +196,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         "text", string.Empty, null, null,
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "selected", "" }
                             },
@@ -207,7 +206,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         "text", "selected", null, null,
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "selected", "selected" }
                             },
@@ -217,7 +216,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         "text", null, null, Enumerable.Empty<string>(),
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }
                             },
@@ -227,7 +226,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         "text", null, null, new [] { string.Empty, },
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }
                             },
@@ -237,7 +236,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         "text", null, null, new [] { "text", },
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "selected", "selected" }
                             },
@@ -247,7 +246,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         "text", string.Empty, null, new [] { "text", },
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "selected", "" }
                             },
@@ -257,18 +256,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         "text", null, null, new [] { string.Empty, "text", },
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "selected", "selected" }
                             },
                             "text")
                     },
-
                     {
                         "text", string.Empty, "value", null,
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "value", "value" }, { "selected", "" }
                             },
@@ -278,7 +276,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         "text", "selected", "value", null,
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "value", "value" }, { "selected", "selected" }
                             },
@@ -288,7 +286,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         "text", null, "value", Enumerable.Empty<string>(),
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "value", "value" }
                             },
@@ -298,7 +296,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         "text", null, "value", new [] { string.Empty, },
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "value", "value" }
                             },
@@ -308,7 +306,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         "text", string.Empty, "value", new [] { string.Empty, },
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "value", "value" }, { "selected", "" }
                             },
@@ -318,7 +316,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         "text", null, "value", new [] { "text", },
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "value", "value" }
                             },
@@ -328,7 +326,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         "text", null, "value", new [] { "value", },
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "value", "value" }, { "selected", "selected" }
                             },
@@ -338,7 +336,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         "text", null, "value", new [] { string.Empty, "value", },
                         GetTagHelperOutput(
                             "not-option",
-                            new Dictionary<string, string>
+                            new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "value", "value" }, { "selected", "selected" }
                             },
@@ -381,17 +379,21 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             TagHelperOutput expectedTagHelperOutput)
         {
             // Arrange
-            var originalAttributes = new Dictionary<string, string>
+            var originalAttributes = new Dictionary<string, object>
             {
                 { "label", "my-label" },
             };
+            if (selected != null)
+            {
+                originalAttributes.Add("selected", selected);
+            }
 
-            var contextAttributes = new Dictionary<string, object>
+            var contextAttributes = new Dictionary<string, object>(originalAttributes);
+            if (value != null)
             {
-                { "label", "my-label" },
-                { "selected", selected },
-                { "value", value },
-            };
+                contextAttributes.Add("value", value);
+            }
+
             var tagHelperContext = new TagHelperContext(
                 contextAttributes,
                 items: new Dictionary<object, object>(),
@@ -402,6 +404,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent(originalContent);
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
+
             var output = new TagHelperOutput(expectedTagHelperOutput.TagName, originalAttributes)
             {
                 SelfClosing = false,
@@ -418,7 +421,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var tagHelper = new OptionTagHelper
             {
                 Generator = htmlGenerator,
-                Selected = selected,
                 Value = value,
                 ViewContext = viewContext,
             };
@@ -446,9 +448,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             TagHelperOutput ignored)
         {
             // Arrange
-            var originalAttributes = new Dictionary<string, string>
+            var originalAttributes = new Dictionary<string, object>
             {
                 { "label", "my-label" },
+                { "selected", selected },
             };
             var originalTagName = "not-option";
 
@@ -487,7 +490,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             viewContext.FormContext.FormData[SelectTagHelper.SelectedValuesFormDataKey] = selectedValues;
             var tagHelper = new OptionTagHelper
             {
-                Selected = selected,
                 Value = value,
                 ViewContext = viewContext,
             };
@@ -507,9 +509,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             TagHelperOutput ignoredOutput)
         {
             // Arrange
-            var originalAttributes = new Dictionary<string, string>
+            var originalAttributes = new Dictionary<string, object>
             {
                 { "label", "my-label" },
+                { "selected", selected },
             };
             var originalTagName = "not-option";
 
@@ -541,7 +544,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var tagHelper = new OptionTagHelper
             {
-                Selected = selected,
                 Value = value,
             };
 
@@ -551,7 +553,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         private static TagHelperOutput GetTagHelperOutput(
-            string tagName, IDictionary<string, string> attributes, string content)
+            string tagName, IDictionary<string, object> attributes, string content)
         {
             var tagHelperOutput = new TagHelperOutput(tagName, attributes);
             tagHelperOutput.Content.SetContent(content);

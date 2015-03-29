@@ -658,9 +658,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Assert
             var buffer = writer.BufferedWriter.Buffer;
-            Assert.Equal(2, buffer.BufferEntries.Count);
+            Assert.Equal(3, buffer.BufferEntries.Count);
             Assert.Equal("Hello world", buffer.BufferEntries[0]);
-            Assert.Same(stringCollectionWriter.Buffer.BufferEntries, buffer.BufferEntries[1]);
+            Assert.Equal("text1", buffer.BufferEntries[1]);
+            Assert.Equal("text2", buffer.BufferEntries[2]);
         }
 
         public static TheoryData<TagHelperOutput, string> WriteTagHelper_InputData
@@ -672,21 +673,21 @@ namespace Microsoft.AspNet.Mvc.Razor
                 {
                     {
                         // parameters: TagName, Attributes, SelfClosing, PreContent, Content, PostContent
-                        GetTagHelperOutput("div", new Dictionary<string, string>(), false, null, "Hello World!", null),
+                        GetTagHelperOutput("div", new Dictionary<string, object>(), false, null, "Hello World!", null),
                         "<div>Hello World!</div>"
                     },
                     {
-                        GetTagHelperOutput(null, new Dictionary<string, string>(), false, null, "Hello World!", null),
+                        GetTagHelperOutput(null, new Dictionary<string, object>(), false, null, "Hello World!", null),
                         "Hello World!"
                     },
                     {
-                        GetTagHelperOutput("  ", new Dictionary<string, string>(), false, null, "Hello World!", null),
+                        GetTagHelperOutput("  ", new Dictionary<string, object>(), false, null, "Hello World!", null),
                         "Hello World!"
                     },
                     {
                         GetTagHelperOutput(
                             "p",
-                            new Dictionary<string, string>() { { "test", "testVal" } },
+                            new Dictionary<string, object>() { { "test", "testVal" } },
                             false,
                             null,
                             "Hello World!",
@@ -696,7 +697,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             "p",
-                            new Dictionary<string, string>() { { "test", "testVal" }, { "something", "  spaced  " } },
+                            new Dictionary<string, object>() { { "test", "testVal" }, { "something", "  spaced  " } },
                             false,
                             null,
                             "Hello World!",
@@ -706,7 +707,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             "p",
-                            new Dictionary<string, string>() { { "test", "testVal" } },
+                            new Dictionary<string, object>() { { "test", "testVal" } },
                             true,
                             null,
                             "Hello World!",
@@ -716,7 +717,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             "p",
-                            new Dictionary<string, string>() { { "test", "testVal" }, { "something", "  spaced  " } },
+                            new Dictionary<string, object>() { { "test", "testVal" }, { "something", "  spaced  " } },
                             true,
                             null,
                             "Hello World!",
@@ -724,31 +725,31 @@ namespace Microsoft.AspNet.Mvc.Razor
                         "<p test=\"testVal\" something=\"  spaced  \" />"
                     },
                     {
-                        GetTagHelperOutput("p", new Dictionary<string, string>(), false, "Hello World!", null, null),
+                        GetTagHelperOutput("p", new Dictionary<string, object>(), false, "Hello World!", null, null),
                         "<p>Hello World!</p>"
                     },
                     {
-                        GetTagHelperOutput("p", new Dictionary<string, string>(), false, null, "Hello World!", null),
+                        GetTagHelperOutput("p", new Dictionary<string, object>(), false, null, "Hello World!", null),
                         "<p>Hello World!</p>"
                     },
                     {
-                        GetTagHelperOutput("p", new Dictionary<string, string>(), false, null, null, "Hello World!"),
+                        GetTagHelperOutput("p", new Dictionary<string, object>(), false, null, null, "Hello World!"),
                         "<p>Hello World!</p>"
                     },
                     {
-                        GetTagHelperOutput("p", new Dictionary<string, string>(), false, "Hello", "Test", "World!"),
+                        GetTagHelperOutput("p", new Dictionary<string, object>(), false, "Hello", "Test", "World!"),
                         "<p>HelloTestWorld!</p>"
                     },
                     {
-                        GetTagHelperOutput("p", new Dictionary<string, string>(), true, "Hello", "Test", "World!"),
+                        GetTagHelperOutput("p", new Dictionary<string, object>(), true, "Hello", "Test", "World!"),
                         "<p />"
                     },
                     {
-                        GetTagHelperOutput("custom", new Dictionary<string, string>(), false, "Hello", "Test", "World!"),
+                        GetTagHelperOutput("custom", new Dictionary<string, object>(), false, "Hello", "Test", "World!"),
                         "<custom>HelloTestWorld!</custom>"
                     },
                     {
-                        GetTagHelperOutput("random", new Dictionary<string, string>(), true, "Hello", "Test", "World!"),
+                        GetTagHelperOutput("random", new Dictionary<string, object>(), true, "Hello", "Test", "World!"),
                         "<random />"
                     }
                 };
@@ -807,8 +808,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 },
                 startTagHelperWritingScope: () => { },
                 endTagHelperWritingScope: () => defaultTagHelperContent);
-            tagHelperExecutionContext.Output =
-                new TagHelperOutput("p", new Dictionary<string, string>());
+            tagHelperExecutionContext.Output = new TagHelperOutput("p", new Dictionary<string, object>());
             if (childContentRetrieved)
             {
                 await tagHelperExecutionContext.GetChildContentAsync();
@@ -840,8 +840,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 executeChildContentAsync: () => { return Task.FromResult(result: true); },
                 startTagHelperWritingScope: () => { },
                 endTagHelperWritingScope: () => new DefaultTagHelperContent());
-            tagHelperExecutionContext.Output =
-                new TagHelperOutput("p", new Dictionary<string, string>());
+            tagHelperExecutionContext.Output = new TagHelperOutput("p", new Dictionary<string, object>());
             tagHelperExecutionContext.Output.Content.SetContent("Hello World!");
 
             // Act
@@ -886,7 +885,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private static TagHelperOutput GetTagHelperOutput(
             string tagName,
-            IDictionary<string, string> attributes,
+            IDictionary<string, object> attributes,
             bool selfClosing,
             string preContent,
             string content,

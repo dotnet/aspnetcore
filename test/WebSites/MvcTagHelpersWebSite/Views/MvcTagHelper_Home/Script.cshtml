@@ -11,15 +11,15 @@
 </head>
 <body>
     <h2>Script tag helper test</h2>
-    <script src="~/site.js" data-foo="foo-data1">
+    <script src="~/site.js" data-foo="foo-data1" title="&lt;the title>">
         // Regular script with comment in body, and extra properties.
     </script>
 
-    <script src="~/blank.js" asp-fallback-src="~/site.js" asp-fallback-test="false" data-foo="foo-data2">
+    <script src="~/blank.js?a=b&c=d" asp-fallback-src="~/site.js?a=b&c=d" asp-fallback-test="false" data-foo="foo-data2" title="&lt;the title>">
         // TagHelper script with comment in body, and extra properties.
     </script>
 
-    <script src="~/blank.js" asp-fallback-src-include="**/site.js" asp-fallback-test="false">
+    <script src="~/blank.js" asp-fallback-src-include="**/site.js" asp-fallback-test="false" title='"the" title'>
         // Fallback to globbed src
     </script>
 

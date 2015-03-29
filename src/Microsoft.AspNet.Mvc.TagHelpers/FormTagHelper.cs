@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
         [Activate]
         protected internal IHtmlGenerator Generator { get; set; }
-        
+
         /// <summary>
         /// The name of the action method.
         /// </summary>
@@ -41,12 +41,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public string Controller { get; set; }
 
         /// <summary>
-        /// The HTTP method for processing the form, either GET or POST.
-        /// </summary>
-        public string Method { get; set; }
-
-        /// <summary>
-        /// Whether the anti-forgery token should be generated. 
+        /// Whether the anti-forgery token should be generated.
         /// </summary>
         /// <value>Defaults to <c>false</c> if user provides an <c>action</c> attribute; <c>true</c> otherwise.</value>
         [HtmlAttributeName(AntiForgeryAttributeName)]
@@ -84,12 +79,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 // User is using the FormTagHelper like a normal <form> tag. Anti-forgery default should be false to
                 // not force the anti-forgery token on the user.
                 antiForgeryDefault = false;
-
-                // Restore method attribute.
-                if (Method != null)
-                {
-                    output.CopyHtmlAttribute(nameof(Method), context);
-                }
             }
             else
             {
@@ -98,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                                                         Action,
                                                         Controller,
                                                         routeValues,
-                                                        Method,
+                                                        method: null,
                                                         htmlAttributes: null);
 
                 if (tagBuilder != null)
@@ -120,7 +109,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         // TODO: https://github.com/aspnet/Razor/issues/89 - We will not need this method once #89 is completed.
         private static Dictionary<string, object> GetRouteValues(
-            TagHelperOutput output, IEnumerable<KeyValuePair<string, string>> routePrefixedAttributes)
+            TagHelperOutput output,
+            IEnumerable<KeyValuePair<string, object>> routePrefixedAttributes)
         {
             Dictionary<string, object> routeValues = null;
             if (routePrefixedAttributes.Any())
@@ -128,10 +118,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 // Prefixed values should be treated as bound attributes, remove them from the output.
                 output.RemoveRange(routePrefixedAttributes);
 
-                // Generator.GenerateForm does not accept a Dictionary<string, string> for route values.
+                // Remove prefix from keys and convert all values to strings. HtmlString and similar classes are not
+                // meaningful to routing.
                 routeValues = routePrefixedAttributes.ToDictionary(
                     attribute => attribute.Key.Substring(RouteAttributePrefix.Length),
-                    attribute => (object)attribute.Value);
+                    attribute => (object)attribute.Value.ToString());
             }
 
             return routeValues;

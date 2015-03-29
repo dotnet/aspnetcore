@@ -223,6 +223,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var helper = new ScriptTagHelper
             {
                 HtmlEncoder = new HtmlEncoder(),
+                JavaScriptEncoder = new JavaScriptStringEncoder(),
                 Logger = logger,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
@@ -441,10 +442,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = MakeViewContext();
 
             var output = MakeTagHelperOutput("src",
-                attributes: new Dictionary<string, string>
+                attributes: new Dictionary<string, object>
                 {
                     ["data-extra"] = "something",
-                    ["src"] = "/blank.js",
                     ["data-more"] = "else",
                 });
 
@@ -454,11 +454,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var helper = new ScriptTagHelper
             {
                 HtmlEncoder = new HtmlEncoder(),
+                JavaScriptEncoder = new JavaScriptStringEncoder(),
                 Logger = logger,
                 ViewContext = viewContext,
                 HostingEnvironment = hostingEnvironment,
                 FallbackSrc = "~/blank.js",
                 FallbackTestExpression = "http://www.example.com/blank.js",
+                Src = "/blank.js",
                 Cache = MakeCache(),
             };
 
@@ -467,7 +469,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.StartsWith(
-                "<script data-extra=\"something\" src=\"/blank.js\" data-more=\"else\"", output.Content.GetContent());
+                "<script data-extra=\"something\" data-more=\"else\" src=\"/blank.js\"", output.Content.GetContent());
             Assert.Empty(logger.Logged);
         }
 
@@ -481,10 +483,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     ["src"] = "/js/site.js",
                     ["asp-src-include"] = "**/*.js"
                 });
-            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, string>
-            {
-                ["src"] = "/js/site.js"
-            });
+            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, object>());
             var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
@@ -497,6 +496,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
+                Src = "/js/site.js",
                 SrcInclude = "**/*.js",
                 HtmlEncoder = new HtmlEncoder(),
                 Cache = MakeCache(),
@@ -519,10 +519,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     ["src"] = "/js/site.js",
                     ["asp-src-include"] = "**/*.js"
                 });
-            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, string>
-            {
-                ["src"] = "/js/site.js"
-            });
+            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, object>());
             var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
@@ -535,8 +532,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
+                Src = "/js/site.js",
                 SrcInclude = "**/*.js",
                 HtmlEncoder = new TestHtmlEncoder(),
+                JavaScriptEncoder = new TestJavaScriptEncoder(),
                 Cache = MakeCache(),
             };
 
@@ -558,10 +557,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     ["src"] = "/js/site.js",
                     ["asp-file-version"] = "true"
                 });
-            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, string>
-            {
-                ["src"] = "/js/site.js"
-            });
+            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, object>());
 
             var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
@@ -574,6 +570,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 ViewContext = viewContext,
                 FileVersion = true,
                 HtmlEncoder = new TestHtmlEncoder(),
+                JavaScriptEncoder = new TestJavaScriptEncoder(),
+                Src = "/js/site.js",
                 Cache = MakeCache(),
             };
 
@@ -596,10 +594,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     ["src"] = "/bar/js/site.js",
                     ["asp-file-version"] = "true"
                 });
-            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, string>
-            {
-                ["src"] = "/bar/js/site.js"
-            });
+            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, object>());
 
             var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
@@ -612,6 +607,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 ViewContext = viewContext,
                 FileVersion = true,
                 HtmlEncoder = new TestHtmlEncoder(),
+                JavaScriptEncoder = new TestJavaScriptEncoder(),
+                Src = "/bar/js/site.js",
                 Cache = MakeCache(),
             };
 
@@ -636,10 +633,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     ["asp-fallback-test"] = "isavailable()",
                     ["asp-file-version"] = "true"
                 });
-            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, string>
-            {
-                ["src"] = "/js/site.js"
-            });
+            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, object>());
 
             var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
@@ -654,6 +648,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 FallbackTestExpression = "isavailable()",
                 FileVersion = true,
                 HtmlEncoder = new TestHtmlEncoder(),
+                JavaScriptEncoder = new TestJavaScriptEncoder(),
+                Src = "/js/site.js",
                 Cache = MakeCache(),
             };
 
@@ -663,7 +659,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             Assert.Equal(
                 "<script src=\"HtmlEncode[[/js/site.js?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\">" +
-                "</script>\r\n<script>(isavailable()||document.write(\"<script src=\\\"HtmlEncode[[fallback.js" +
+                "</script>\r\n<script>(isavailable()||document.write(\"<script src=\\\"JavaScriptEncode[[fallback.js" +
                 "?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\\\"><\\/script>\"));</script>",
                 output.Content.GetContent());
         }
@@ -679,10 +675,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     ["asp-src-include"] = "*.js",
                     ["asp-file-version"] = "true"
                 });
-            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, string>
-            {
-                ["src"] = "/js/site.js"
-            });
+            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, object>());
             var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
@@ -698,6 +691,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 SrcInclude = "*.js",
                 FileVersion = true,
                 HtmlEncoder = new TestHtmlEncoder(),
+                JavaScriptEncoder = new TestJavaScriptEncoder(),
+                Src = "/js/site.js",
                 Cache = MakeCache(),
             };
 
@@ -748,9 +743,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             return viewContext;
         }
 
-        private TagHelperOutput MakeTagHelperOutput(string tagName, IDictionary<string, string> attributes = null)
+        private TagHelperOutput MakeTagHelperOutput(string tagName, IDictionary<string, object> attributes = null)
         {
-            attributes = attributes ?? new Dictionary<string, string>();
+            attributes = attributes ?? new Dictionary<string, object>();
 
             return new TagHelperOutput(tagName, attributes);
         }
@@ -816,28 +811,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     }
                 });
             return cache.Object;
-        }
-
-        private class TestHtmlEncoder : IHtmlEncoder
-        {
-            public string HtmlEncode(string value)
-            {
-                return "HtmlEncode[[" + value + "]]";
-            }
-
-            public void HtmlEncode(string value, int startIndex, int charCount, TextWriter output)
-            {
-                output.Write("HtmlEncode[[");
-                output.Write(value.Substring(startIndex, charCount));
-                output.Write("]]");
-            }
-
-            public void HtmlEncode(char[] value, int startIndex, int charCount, TextWriter output)
-            {
-                output.Write("HtmlEncode[[");
-                output.Write(value, startIndex, charCount);
-                output.Write("]]");
-            }
         }
     }
 }

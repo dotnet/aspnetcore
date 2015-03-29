@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
             var output = new TagHelperOutput(
                 expectedTagName,
-                attributes: new Dictionary<string, string>
+                attributes: new Dictionary<string, object>
                 {
                     { "class", "form-control" }
                 });
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, string>());
+                attributes: new Dictionary<string, object>());
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);
@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "original content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, string>());
+                attributes: new Dictionary<string, object>());
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent("Content of validation summary");
@@ -201,7 +201,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, string>());
+                attributes: new Dictionary<string, object>());
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);
@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "original content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, string>());
+                attributes: new Dictionary<string, object>());
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent("Content of validation message");

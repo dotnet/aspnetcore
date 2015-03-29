@@ -32,6 +32,7 @@
         "LoggingWebSite": "1.0.0",
         "LowercaseUrlsWebSite": "1.0.0-*",
         "Microsoft.AspNet.Mvc": "6.0.0-*",
+        "Microsoft.AspNet.Mvc.TestCommon": { "version": "6.0.0-*", "type": "build" },
         "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
         "Microsoft.AspNet.Mvc.Xml": "6.0.0-*",
         "Microsoft.AspNet.TestHost": "1.0.0-*",
