@@ -15,7 +15,7 @@
         "dnx451": {},
         "dnxcore50": {}
     },
-    "bundleExclude": [
+    "publishExclude": [
         "node_modules",
         "bower_components",
         "**.kproj",
