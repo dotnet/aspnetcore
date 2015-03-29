@@ -219,8 +219,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <paramref name="expression"/> to set &lt;select&gt; element's "name" attribute. Sanitizes the string
         /// representation of the <paramref name="expression"/> to set element's "id" attribute.
         /// </remarks>
-        public static HtmlString DropDownListFor<TModel, TResult>([
-            NotNull] this IHtmlHelper<TModel> htmlHelper,
+        public static HtmlString DropDownListFor<TModel, TResult>(
+            [NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TResult>> expression,
             IEnumerable<SelectListItem> selectList,
             string optionLabel)
