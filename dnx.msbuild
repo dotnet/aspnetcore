@@ -335,7 +335,7 @@
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\AddCommand.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\WrapCommand.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\InstallCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Bundle\BundleManager.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Publish\PublishManager.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Install\InstallBuilder.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Install\InstallGlobalCommand.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Install\UninstallCommand.cs;
