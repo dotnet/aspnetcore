@@ -23,27 +23,22 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var sink = new TestSink();
             var loggerFactory = new TestLoggerFactory(sink);
-
-            var context = CreateRouteContext(loggerFactory: loggerFactory);
-
+            var displayName = "A.B.C";
+            var actionDescriptor = new Mock<ActionDescriptor>();
+            actionDescriptor.SetupGet(ad => ad.DisplayName)
+                            .Returns(displayName);
+            var context = CreateRouteContext(actionDescriptor: actionDescriptor.Object, loggerFactory: loggerFactory);
             var handler = new MvcRouteHandler();
+            var expectedMessage = $"Executing action {displayName}";
 
             // Act
             await handler.RouteAsync(context);
 
             // Assert
-            var scope = Assert.Single(sink.Scopes);
-            Assert.Equal(typeof(MvcRouteHandler).FullName, scope.LoggerName);
-            Assert.Equal("MvcRouteHandler.RouteAsync", scope.Scope.ToString());
-
-            var write = Assert.Single(sink.Writes);
-            Assert.Equal(typeof(MvcRouteHandler).FullName, write.LoggerName);
-            Assert.Equal("MvcRouteHandler.RouteAsync", write.Scope.ToString());
-            var values = Assert.IsType<MvcRouteHandlerRouteAsyncValues>(write.State);
-            Assert.Equal("MvcRouteHandler.RouteAsync", values.Name);
-            Assert.True(values.ActionSelected);
-            Assert.True(values.ActionInvoked);
-            Assert.True(values.Handled);
+            Assert.Single(sink.Scopes);
+            Assert.StartsWith("ActionId: ", sink.Scopes[0].Scope?.ToString());
+            Assert.Single(sink.Writes);
+            Assert.Equal(expectedMessage, sink.Writes[0].State?.ToString());
         }
 
         [Fact]
@@ -62,61 +57,15 @@ namespace Microsoft.AspNet.Mvc
                 loggerFactory: loggerFactory);
 
             var handler = new MvcRouteHandler();
+            var expectedMessage = "No actions matched the current request.";
 
             // Act
             await handler.RouteAsync(context);
 
             // Assert
-            var scope = Assert.Single(sink.Scopes);
-            Assert.Equal(typeof(MvcRouteHandler).FullName, scope.LoggerName);
-            Assert.Equal("MvcRouteHandler.RouteAsync", scope.Scope.ToString());
-
-            var write = Assert.Single(sink.Writes);
-            Assert.Equal(typeof(MvcRouteHandler).FullName, write.LoggerName);
-            Assert.Equal("MvcRouteHandler.RouteAsync", write.Scope.ToString());
-            var values = Assert.IsType<MvcRouteHandlerRouteAsyncValues>(write.State);
-            Assert.Equal("MvcRouteHandler.RouteAsync", values.Name);
-            Assert.False(values.ActionSelected);
-            Assert.False(values.ActionInvoked);
-            Assert.False(values.Handled);
-        }
-
-        [Fact]
-        public async Task RouteAsync_FailOnNoInvoker_LogsCorrectValues()
-        {
-            // Arrange
-            var sink = new TestSink();
-            var loggerFactory = new TestLoggerFactory(sink);
-
-            var mockInvokerFactory = new Mock<IActionInvokerFactory>();
-            mockInvokerFactory.Setup(f => f.CreateInvoker(It.IsAny<ActionContext>()))
-                .Returns<IActionInvoker>(null);
-
-            var context = CreateRouteContext(
-                invokerFactory: mockInvokerFactory.Object,
-                loggerFactory: loggerFactory);
-
-            var handler = new MvcRouteHandler();
-
-            // Act
-            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-                await handler.RouteAsync(context));
-
-            // Assert
-            var scope = Assert.Single(sink.Scopes);
-            Assert.Equal(typeof(MvcRouteHandler).FullName, scope.LoggerName);
-            Assert.Equal("MvcRouteHandler.RouteAsync", scope.Scope.ToString());
-
-            Assert.Equal(1, sink.Writes.Count);
-
-            var write = sink.Writes[0];
-            Assert.Equal(typeof(MvcRouteHandler).FullName, write.LoggerName);
-            Assert.Equal("MvcRouteHandler.RouteAsync", write.Scope.ToString());
-            var values = Assert.IsType<MvcRouteHandlerRouteAsyncValues>(write.State);
-            Assert.Equal("MvcRouteHandler.RouteAsync", values.Name);
-            Assert.True(values.ActionSelected);
-            Assert.False(values.ActionInvoked);
-            Assert.False(values.Handled);
+            Assert.Empty(sink.Scopes);
+            Assert.Single(sink.Writes);
+            Assert.Equal(expectedMessage, sink.Writes[0].State?.ToString());
         }
 
         [Fact]
@@ -241,6 +190,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private RouteContext CreateRouteContext(
+            ActionDescriptor actionDescriptor = null,
             IActionSelector actionSelector = null,
             IActionInvokerFactory invokerFactory = null,
             ILoggerFactory loggerFactory = null,
@@ -248,13 +198,17 @@ namespace Microsoft.AspNet.Mvc
         {
             var mockContextAccessor = new Mock<IScopedInstance<ActionContext>>();
 
-            if (actionSelector == null)
+            if (actionDescriptor == null)
             {
                 var mockAction = new Mock<ActionDescriptor>();
+                actionDescriptor = mockAction.Object;
+            }
 
+            if (actionSelector == null)
+            {
                 var mockActionSelector = new Mock<IActionSelector>();
                 mockActionSelector.Setup(a => a.SelectAsync(It.IsAny<RouteContext>()))
-                    .Returns(Task.FromResult(mockAction.Object));
+                    .Returns(Task.FromResult(actionDescriptor));
 
                 actionSelector = mockActionSelector.Object;
             }

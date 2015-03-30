@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Internal.Routing;
-using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;
 using Microsoft.Framework.Internal;
@@ -102,42 +101,35 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// <inheritdoc />
         public async Task RouteAsync([NotNull] RouteContext context)
         {
-            using (_logger.BeginScope("AttributeRoute.RouteAsync"))
+            foreach (var route in _matchingRoutes)
             {
-                foreach (var route in _matchingRoutes)
+                var oldRouteData = context.RouteData;
+
+                var newRouteData = new RouteData(oldRouteData);
+                newRouteData.Routers.Add(route);
+
+                try
                 {
-                    var oldRouteData = context.RouteData;
-
-                    var newRouteData = new RouteData(oldRouteData);
-                    newRouteData.Routers.Add(route);
-
-                    try
+                    context.RouteData = newRouteData;
+                    await route.RouteAsync(context);
+                }
+                finally
+                {
+                    if (!context.IsHandled)
                     {
-                        context.RouteData = newRouteData;
-                        await route.RouteAsync(context);
+                        context.RouteData = oldRouteData;
                     }
-                    finally
-                    {
-                        if (!context.IsHandled)
-                        {
-                            context.RouteData = oldRouteData;
-                        }
-                    }
+                }
 
-                    if (context.IsHandled)
-                    {
-                        break;
-                    }
+                if (context.IsHandled)
+                {
+                    break;
                 }
             }
 
-            if (_logger.IsEnabled(LogLevel.Verbose))
+            if (!context.IsHandled)
             {
-                _logger.WriteValues(new AttributeRouteRouteAsyncValues()
-                {
-                    MatchingRoutes = _matchingRoutes,
-                    Handled = context.IsHandled
-                });
+                _logger.LogVerbose("Request did not match any attribute route.");
             }
         }
 

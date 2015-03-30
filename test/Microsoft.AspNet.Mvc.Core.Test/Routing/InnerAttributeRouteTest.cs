@@ -907,69 +907,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             Assert.Equal(string.Format("1&{0}", template), selectedGroup);
         }
 
-        [Fact]
-        public async void AttributeRoute_RouteAsyncHandled_LogsCorrectValues()
-        {
-            // Arrange
-            var sink = new TestSink();
-            var loggerFactory = new TestLoggerFactory(sink);
-
-            var entry = CreateMatchingEntry("api/Store");
-            var route = CreateRoutingAttributeRoute(loggerFactory, entry);
-
-            var context = CreateRouteContext("/api/Store");
-
-            // Act
-            await route.RouteAsync(context);
-
-            // Assert
-            Assert.Equal(1, sink.Scopes.Count);
-            var scope = sink.Scopes[0];
-            Assert.Equal(typeof(AttributeRoute).FullName, scope.LoggerName);
-            Assert.Equal("AttributeRoute.RouteAsync", scope.Scope.ToString());
-
-            Assert.Equal(1, sink.Writes.Count);
-
-            var write = sink.Writes[0];
-            Assert.Equal(typeof(AttributeRoute).FullName, write.LoggerName);
-            Assert.Equal("AttributeRoute.RouteAsync", write.Scope.ToString());
-            var values = Assert.IsType<AttributeRouteRouteAsyncValues>(write.State);
-            Assert.Equal("AttributeRoute.RouteAsync", values.Name);
-            Assert.True(values.Handled);
-        }
-
-        [Fact]
-        public async void AttributeRoute_RouteAsyncNotHandled_LogsCorrectValues()
-        {
-            // Arrange
-            var sink = new TestSink();
-            var loggerFactory = new TestLoggerFactory(sink);
-
-            var entry = CreateMatchingEntry("api/Store");
-            var route = CreateRoutingAttributeRoute(loggerFactory, entry);
-
-            var context = CreateRouteContext("/");
-
-            // Act
-            await route.RouteAsync(context);
-
-            // Assert
-            Assert.Equal(1, sink.Scopes.Count);
-            var scope = sink.Scopes[0];
-            Assert.Equal(typeof(AttributeRoute).FullName, scope.LoggerName);
-            Assert.Equal("AttributeRoute.RouteAsync", scope.Scope.ToString());
-
-            Assert.Equal(1, sink.Writes.Count);
-
-            var write = sink.Writes[0];
-            Assert.Equal(typeof(AttributeRoute).FullName, write.LoggerName);
-            Assert.Equal("AttributeRoute.RouteAsync", write.Scope.ToString());
-            var values = Assert.IsType<AttributeRouteRouteAsyncValues>(write.State);
-            Assert.Equal("AttributeRoute.RouteAsync", values.Name);
-            Assert.False(values.Handled);
-        }
-
-        [Fact]
+       [Fact]
         public void AttributeRoute_GenerateLink_NoRequiredValues()
         {
             // Arrange

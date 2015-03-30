@@ -13,7 +13,13 @@ namespace Microsoft.AspNet.Mvc
         {
             Properties = new Dictionary<object, object>();
             RouteValueDefaults = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            Id = Guid.NewGuid().ToString();
         }
+
+        /// <summary>
+        /// Gets an id which uniquely identifies the action.
+        /// </summary>
+        public string Id { get; }
 
         public virtual string Name { get; set; }
 

@@ -26,91 +26,6 @@ namespace Microsoft.AspNet.Mvc
     public class DefaultActionSelectorTests
     {
         [Fact]
-        public async void SelectAsync_NoMatchedActions_LogIsCorrect()
-        {
-            // Arrange
-            var sink = new TestSink();
-            var loggerFactory = new TestLoggerFactory(sink);
-
-            var routeContext = CreateRouteContext("POST");
-
-            var actions = new ActionDescriptor[0];
-            var selector = CreateSelector(actions, loggerFactory);
-
-            // Act
-            var action = await selector.SelectAsync(routeContext);
-
-            // Assert
-            Assert.Equal(1, sink.Scopes.Count);
-            var scope = sink.Scopes[0];
-            Assert.Equal(typeof(DefaultActionSelector).FullName, scope.LoggerName);
-            Assert.Equal("DefaultActionSelector.SelectAsync", scope.Scope.ToString());
-
-            Assert.Equal(1, sink.Writes.Count);
-
-            var write = sink.Writes[0];
-            Assert.Equal(typeof(DefaultActionSelector).FullName, write.LoggerName);
-            Assert.Equal("DefaultActionSelector.SelectAsync", write.Scope.ToString());
-            var values = Assert.IsType<DefaultActionSelectorSelectAsyncValues>(write.State);
-            Assert.Equal("DefaultActionSelector.SelectAsync", values.Name);
-            Assert.Empty(values.ActionsMatchingRouteConstraints);
-            Assert.Empty(values.ActionsMatchingActionConstraints);
-            Assert.Empty(values.FinalMatches);
-            Assert.Null(values.SelectedAction);
-
-            // (does not throw)
-            Assert.NotEmpty(values.Summary);
-        }
-
-        [Fact]
-        public async void SelectAsync_MatchedActions_LogIsCorrect()
-        {
-            // Arrange
-            var sink = new TestSink();
-            var loggerFactory = new TestLoggerFactory(sink);
-
-            var matched = new ActionDescriptor()
-            {
-                ActionConstraints = new List<IActionConstraintMetadata>()
-                {
-                    new HttpMethodConstraint(new string[] { "POST" }),
-                },
-                Parameters = new List<ParameterDescriptor>(),
-            };
-
-            var notMatched = new ActionDescriptor()
-            {
-                Parameters = new List<ParameterDescriptor>(),
-            };
-
-            var actions = new ActionDescriptor[] { matched, notMatched };
-            var selector = CreateSelector(actions, loggerFactory);
-
-            var routeContext = CreateRouteContext("POST");
-
-            // Act
-            var action = await selector.SelectAsync(routeContext);
-
-            // Assert
-            Assert.Equal(1, sink.Scopes.Count);
-            var scope = sink.Scopes[0];
-            Assert.Equal(typeof(DefaultActionSelector).FullName, scope.LoggerName);
-            Assert.Equal("DefaultActionSelector.SelectAsync", scope.Scope.ToString());
-
-            Assert.Equal(1, sink.Writes.Count);
-
-            var write = sink.Writes[0];
-            Assert.Equal(typeof(DefaultActionSelector).FullName, write.LoggerName);
-            Assert.Equal("DefaultActionSelector.SelectAsync", write.Scope.ToString());
-            var values = Assert.IsType<DefaultActionSelectorSelectAsyncValues>(write.State);
-            Assert.Equal("DefaultActionSelector.SelectAsync", values.Name);
-            Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingRouteConstraints);
-            Assert.Equal<ActionDescriptor>(new[] { matched }, values.ActionsMatchingActionConstraints);
-            Assert.Equal(matched, Assert.Single(values.FinalMatches));
-            Assert.Equal(matched, values.SelectedAction);
-        }
-
-        [Fact]
         public async void SelectAsync_AmbiguousActions_LogIsCorrect()
         {
             // Arrange
@@ -122,10 +37,12 @@ namespace Microsoft.AspNet.Mvc
                 new ActionDescriptor() { DisplayName = "A1" },
                 new ActionDescriptor() { DisplayName = "A2" },
             };
-
             var selector = CreateSelector(actions, loggerFactory);
 
             var routeContext = CreateRouteContext("POST");
+            var actionNames = string.Join(Environment.NewLine, actions.Select(action => action.DisplayName));
+            var expectedMessage = "Request matched multiple actions resulting in " +
+                $"ambiguity. Matching actions: {actionNames}";
 
             // Act
             await Assert.ThrowsAsync<AmbiguousActionException>(async () =>
@@ -134,25 +51,9 @@ namespace Microsoft.AspNet.Mvc
             });
 
             // Assert
-            Assert.Equal(1, sink.Scopes.Count);
-            var scope = sink.Scopes[0];
-            Assert.Equal(typeof(DefaultActionSelector).FullName, scope.LoggerName);
-            Assert.Equal("DefaultActionSelector.SelectAsync", scope.Scope.ToString());
-
-            Assert.Equal(1, sink.Writes.Count);
-
-            var write = sink.Writes[0];
-            Assert.Equal(typeof(DefaultActionSelector).FullName, write.LoggerName);
-            Assert.Equal("DefaultActionSelector.SelectAsync", write.Scope.ToString());
-            var values = Assert.IsType<DefaultActionSelectorSelectAsyncValues>(write.State);
-            Assert.Equal("DefaultActionSelector.SelectAsync", values.Name);
-            Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingRouteConstraints);
-            Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingActionConstraints);
-            Assert.Equal<ActionDescriptor>(actions, values.FinalMatches);
-            Assert.Null(values.SelectedAction);
-
-            // (does not throw)
-            Assert.NotEmpty(values.Summary);
+            Assert.Empty(sink.Scopes);
+            Assert.Single(sink.Writes);
+            Assert.Equal(expectedMessage, sink.Writes[0].State?.ToString());
         }
 
         [Fact]
