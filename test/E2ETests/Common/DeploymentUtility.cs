@@ -33,8 +33,8 @@ namespace E2ETests
                 }
                 else
                 {
-                    // Cannot override with environment in case of IIS. Bundle and write a Microsoft.AspNet.Hosting.ini file.
-                    startParameters.BundleApplicationBeforeStart = true;
+                    // Cannot override with environment in case of IIS. Publish and write a Microsoft.AspNet.Hosting.ini file.
+                    startParameters.PublishApplicationBeforeStart = true;
                 }
             }
 
@@ -50,14 +50,14 @@ namespace E2ETests
                 startParameters.Runtime = SwitchPathToRuntimeFlavor(startParameters.RuntimeFlavor, startParameters.RuntimeArchitecture, logger);
 
                 //Reason to do pack here instead of in a common place is use the right runtime to do the packing. Previous line switches to use the right runtime.
-                if (startParameters.BundleApplicationBeforeStart)
+                if (startParameters.PublishApplicationBeforeStart)
                 {
 #if DNX451
                     if (startParameters.ServerType == ServerType.IISNativeModule ||
                         startParameters.ServerType == ServerType.IIS)
                     {
-                        // Bundle to IIS root\application folder.
-                        DnuBundle(startParameters, logger, Path.Combine(Environment.GetEnvironmentVariable("SystemDrive") + @"\", @"inetpub\wwwroot"));
+                        // Publish to IIS root\application folder.
+                        DnuPublish(startParameters, logger, Path.Combine(Environment.GetEnvironmentVariable("SystemDrive") + @"\", @"inetpub\wwwroot"));
 
                         // Drop a Microsoft.AspNet.Hosting.ini with ASPNET_ENV information.
                         logger.LogInformation("Creating Microsoft.AspNet.Hosting.ini file with ASPNET_ENV.");
@@ -96,7 +96,7 @@ namespace E2ETests
                     else
 #endif
                     {
-                        DnuBundle(startParameters, logger);
+                        DnuPublish(startParameters, logger);
                     }
                 }
 
@@ -136,11 +136,11 @@ namespace E2ETests
                 throw new Exception("Runtime not detected on the machine.");
             }
 
-            if (startParameters.BundleApplicationBeforeStart)
+            if (startParameters.PublishApplicationBeforeStart)
             {
                 // We use full path to runtime to pack.
                 startParameters.Runtime = new DirectoryInfo(runtimeBin).Parent.FullName;
-                DnuBundle(startParameters, logger);
+                DnuPublish(startParameters, logger);
             }
 
             //Mono now supports --appbase 
@@ -180,7 +180,7 @@ namespace E2ETests
                     startParameters.ApplicationHostConfigTemplateContent.Replace("[ApplicationPhysicalPath]", Path.Combine(startParameters.ApplicationPath, "wwwroot"));
             }
 
-            if (!startParameters.BundleApplicationBeforeStart)
+            if (!startParameters.PublishApplicationBeforeStart)
             {
                 IISExpressHelper.CopyAspNetLoader(startParameters.ApplicationPath);
             }
@@ -320,17 +320,17 @@ namespace E2ETests
             return runtimeName;
         }
 
-        private static void DnuBundle(StartParameters startParameters, ILogger logger, string bundleRoot = null)
+        private static void DnuPublish(StartParameters startParameters, ILogger logger, string publishRoot = null)
         {
-            startParameters.BundledApplicationRootPath = Path.Combine(bundleRoot ?? Path.GetTempPath(), Guid.NewGuid().ToString());
+            startParameters.PublishedApplicationRootPath = Path.Combine(publishRoot ?? Path.GetTempPath(), Guid.NewGuid().ToString());
 
             var parameters =
                 string.Format(
-                    "bundle {0} -o {1} --runtime {2} {3}",
+                    "publish {0} -o {1} --runtime {2} {3}",
                     startParameters.ApplicationPath,
-                    startParameters.BundledApplicationRootPath,
+                    startParameters.PublishedApplicationRootPath,
                     startParameters.Runtime,
-                    startParameters.BundleWithNoSource ? "--no-source" : string.Empty);
+                    startParameters.PublishWithNoSource ? "--no-source" : string.Empty);
 
             logger.LogInformation("Executing command dnu {args}", parameters);
 
@@ -349,10 +349,10 @@ namespace E2ETests
                 (startParameters.ServerType == ServerType.IISExpress ||
                 startParameters.ServerType == ServerType.IISNativeModule ||
                 startParameters.ServerType == ServerType.IIS) ?
-                Path.Combine(startParameters.BundledApplicationRootPath, "wwwroot") :
-                Path.Combine(startParameters.BundledApplicationRootPath, "approot", "src", "MusicStore");
+                Path.Combine(startParameters.PublishedApplicationRootPath, "wwwroot") :
+                Path.Combine(startParameters.PublishedApplicationRootPath, "approot", "src", "MusicStore");
 
-            logger.LogInformation("dnu bundle finished with exit code : {exitCode}", hostProcess.ExitCode);
+            logger.LogInformation("dnu publish finished with exit code : {exitCode}", hostProcess.ExitCode);
         }
 
         public static void CleanUpApplication(StartParameters startParameters, Process hostProcess, string musicStoreDbName, ILogger logger)
@@ -410,12 +410,12 @@ namespace E2ETests
                 }
             }
 
-            if (startParameters.BundleApplicationBeforeStart)
+            if (startParameters.PublishApplicationBeforeStart)
             {
                 try
                 {
-                    //We've originally bundled the application in a temp folder. We need to delete it. 
-                    Directory.Delete(startParameters.BundledApplicationRootPath, true);
+                    //We've originally published the application in a temp folder. We need to delete it. 
+                    Directory.Delete(startParameters.PublishedApplicationRootPath, true);
                 }
                 catch (Exception exception)
                 {
