@@ -7,6 +7,7 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.Data.Entity;
 using Microsoft.Framework.Caching.Memory;
 using MusicStore.Hubs;
 using MusicStore.Models;
