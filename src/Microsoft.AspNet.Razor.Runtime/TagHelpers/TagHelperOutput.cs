@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         // Internal for testing
         internal TagHelperOutput(string tagName)
-            : this(tagName, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase))
+            : this(tagName, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase))
         {
         }
 
@@ -31,10 +31,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="attributes">The HTML attributes.</param>
         public TagHelperOutput(
             string tagName,
-            [NotNull] IDictionary<string, string> attributes)
+            [NotNull] IDictionary<string, object> attributes)
         {
             TagName = tagName;
-            Attributes = new Dictionary<string, string>(attributes, StringComparer.OrdinalIgnoreCase);
+            Attributes = new Dictionary<string, object>(attributes, StringComparer.OrdinalIgnoreCase);
             _preContent = new DefaultTagHelperContent();
             _content = new DefaultTagHelperContent();
             _postContent = new DefaultTagHelperContent();
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <summary>
         /// The HTML element's main content.
         /// </summary>
-        /// <remarks>Value occurs in the <see cref="ITagHelper"/>'s final output after <see cref="PreContent"/> and 
+        /// <remarks>Value occurs in the <see cref="ITagHelper"/>'s final output after <see cref="PreContent"/> and
         /// before <see cref="PostContent"/></remarks>
         public TagHelperContent Content
         {
@@ -104,7 +104,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <summary>
         /// The HTML element's attributes.
         /// </summary>
-        public IDictionary<string, string> Attributes { get; }
+        /// <remarks>
+        /// MVC will HTML encode <see cref="string"/> values when generating the start tag. It will not HTML encode
+        /// a <c>Microsoft.AspNet.Mvc.Rendering.HtmlString</c> instance. MVC converts most other types to a
+        /// <see cref="string"/>, then HTML encodes the result.
+        /// </remarks>
+        public IDictionary<string, object> Attributes { get; }
 
         /// <summary>
         /// Changes <see cref="TagHelperOutput"/> to generate nothing.

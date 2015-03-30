@@ -45,7 +45,7 @@ __InputTagHelper2.Checked = ;
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("checked", __InputTagHelper2.Checked);
-            __tagHelperExecutionContext.AddHtmlAttribute("class", "");
+            __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw(""));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
@@ -70,7 +70,7 @@ __InputTagHelper2.Checked = ;
 #line default
 #line hidden
                 __tagHelperExecutionContext.AddTagHelperAttribute("checked", __InputTagHelper2.Checked);
-                __tagHelperExecutionContext.AddHtmlAttribute("class", "");
+                __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw(""));
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();

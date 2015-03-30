@@ -25,6 +25,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         private readonly CSharpCodeWriter _writer;
         private readonly CodeBuilderContext _context;
         private readonly IChunkVisitor _bodyVisitor;
+        private readonly IChunkVisitor _literalBodyVisitor;
         private readonly GeneratedTagHelperContext _tagHelperContext;
         private readonly bool _designTimeMode;
 
@@ -35,15 +36,18 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         /// <param name="writer">The <see cref="CSharpCodeWriter"/> used to write code.</param>
         /// <param name="context">A <see cref="CodeBuilderContext"/> instance that contains information about
         /// the current code generation process.</param>
-        public CSharpTagHelperCodeRenderer([NotNull] IChunkVisitor bodyVisitor,
-                                           [NotNull] CSharpCodeWriter writer,
-                                           [NotNull] CodeBuilderContext context)
+        public CSharpTagHelperCodeRenderer(
+            [NotNull] IChunkVisitor bodyVisitor,
+            [NotNull] CSharpCodeWriter writer,
+            [NotNull] CodeBuilderContext context)
         {
             _bodyVisitor = bodyVisitor;
             _writer = writer;
             _context = context;
             _tagHelperContext = context.Host.GeneratedClassContext.GeneratedTagHelperContext;
             _designTimeMode = context.Host.DesignTimeMode;
+
+            _literalBodyVisitor = new CSharpLiteralCodeVisitor(this, writer, context);
             AttributeValueCodeRenderer = new TagHelperAttributeValueCodeRenderer();
         }
 
@@ -55,7 +59,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         /// <param name="chunk">A <see cref="TagHelperChunk"/> to render.</param>
         public void RenderTagHelper(TagHelperChunk chunk)
         {
-            // Remove any duplicate TagHelperDescriptors that referrence the same type name. Duplicates can occur when
+            // Remove any duplicate TagHelperDescriptors that reference the same type name. Duplicates can occur when
             // multiple TargetElement attributes are on a TagHelper type and matchs overlap for an HTML element.
             // Having more than one descriptor with the same TagHelper type results in generated code that runs
             // the same TagHelper X many times (instead of once) over a single HTML element.
@@ -214,7 +218,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     // plain text then we need to prepare the value prior to setting it below.
                     if (!attributeValueRecorded && bufferableAttribute && !isPlainTextValue)
                     {
-                        BuildBufferedWritingScope(attributeValueChunk);
+                        BuildBufferedWritingScope(attributeValueChunk, htmlEncodeValues: false);
                     }
 
                     // We capture the tag helpers property value accessor so we can retrieve it later (if we need to).
@@ -326,7 +330,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 // C# code, then we need to buffer it.
                 if (!isPlainTextValue)
                 {
-                    BuildBufferedWritingScope(attributeValue);
+                    BuildBufferedWritingScope(attributeValue, htmlEncodeValues: true);
                 }
 
                 // Execution contexts are a runtime feature, therefore no need to add anything to them.
@@ -335,11 +339,13 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     continue;
                 }
 
-                _writer.WriteStartInstanceMethodInvocation(
-                    ExecutionContextVariableName,
-                    _tagHelperContext.ExecutionContextAddHtmlAttributeMethodName);
-                _writer.WriteStringLiteral(htmlAttribute.Key)
-                       .WriteParameterSeparator();
+                _writer
+                    .WriteStartInstanceMethodInvocation(
+                        ExecutionContextVariableName,
+                        _tagHelperContext.ExecutionContextAddHtmlAttributeMethodName)
+                    .WriteStringLiteral(htmlAttribute.Key)
+                    .WriteParameterSeparator()
+                    .WriteStartMethodInvocation(_tagHelperContext.MarkAsHtmlEncodedMethodName);
 
                 // If it's a plain text value then we need to surround the value with quotes.
                 if (isPlainTextValue)
@@ -351,7 +357,9 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     RenderBufferedAttributeValueAccessor(_writer);
                 }
 
-                _writer.WriteEndMethodInvocation();
+                _writer
+                    .WriteEndMethodInvocation(endLine: false)
+                    .WriteEndMethodInvocation();
             }
         }
 
@@ -435,13 +443,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 complexValue: false);
         }
 
-        private void BuildBufferedWritingScope(Chunk htmlAttributeChunk)
-        {
-            // Render a buffered writing scope for the html attribute value.
-            BuildBufferedWritingScope(new[] { htmlAttributeChunk });
-        }
-
-        private void BuildBufferedWritingScope(IList<Chunk> chunks)
+        // Render a buffered writing scope for the HTML attribute value.
+        private void BuildBufferedWritingScope(Chunk htmlAttributeChunk, bool htmlEncodeValues)
         {
             // We're building a writing scope around the provided chunks which captures everything written from the
             // page. Therefore, we do not want to write to any other buffer since we're using the pages buffer to
@@ -463,7 +466,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     _writer.WriteMethodInvocation(_tagHelperContext.StartTagHelperWritingScopeMethodName);
                 }
 
-                _bodyVisitor.Accept(chunks);
+                var visitor = htmlEncodeValues ? _bodyVisitor : _literalBodyVisitor;
+                visitor.Accept(htmlAttributeChunk);
 
                 // Scopes are a runtime feature.
                 if (!_designTimeMode)
@@ -539,6 +543,37 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             plainText = literalChildChunk.Text;
 
             return true;
+        }
+
+        // A CSharpCodeVisitor which does not HTML encode values. Used when rendering bound string attribute values.
+        private class CSharpLiteralCodeVisitor : CSharpCodeVisitor
+        {
+            public CSharpLiteralCodeVisitor(
+                CSharpTagHelperCodeRenderer tagHelperRenderer,
+                CSharpCodeWriter writer,
+                CodeBuilderContext context)
+                : base(writer, context)
+            {
+                // Ensure that no matter how this class is used, we don't create numerous CSharpTagHelperCodeRenderer
+                // instances.
+                TagHelperRenderer = tagHelperRenderer;
+            }
+
+            protected override string WriteMethodName
+            {
+                get
+                {
+                    return Context.Host.GeneratedClassContext.WriteLiteralMethodName;
+                }
+            }
+
+            protected override string WriteToMethodName
+            {
+                get
+                {
+                    return Context.Host.GeneratedClassContext.WriteLiteralToMethodName;
+                }
+            }
         }
 
         // This class is used to compare tag helper attributes by comparing only the HTML attribute name.

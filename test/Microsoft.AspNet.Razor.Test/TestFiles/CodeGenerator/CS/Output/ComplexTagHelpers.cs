@@ -69,8 +69,8 @@ namespace TestOutput
                     __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
                     __tagHelperExecutionContext.Add(__InputTagHelper2);
                     __InputTagHelper2.Type = __InputTagHelper.Type;
-                    __tagHelperExecutionContext.AddHtmlAttribute("value", "");
-                    __tagHelperExecutionContext.AddHtmlAttribute("placeholder", "Enter in a new time...");
+                    __tagHelperExecutionContext.AddHtmlAttribute("value", Html.Raw(""));
+                    __tagHelperExecutionContext.AddHtmlAttribute("placeholder", Html.Raw("Enter in a new time..."));
                     __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                     await WriteTagHelperAsync(__tagHelperExecutionContext);
                     __tagHelperExecutionContext = __tagHelperScopeManager.End();
@@ -100,7 +100,7 @@ namespace TestOutput
                     __tagHelperExecutionContext.Add(__InputTagHelper);
                     StartTagHelperWritingScope();
 #line 16 "ComplexTagHelpers.cshtml"
-Write(checkbox);
+WriteLiteral(checkbox);
 
 #line default
 #line hidden
@@ -134,7 +134,7 @@ Write(checkbox);
                 __tagHelperExecutionContext.Add(__InputTagHelper);
                 StartTagHelperWritingScope();
 #line 17 "ComplexTagHelpers.cshtml"
-Write(true ? "checkbox" : "anything");
+WriteLiteral(true ? "checkbox" : "anything");
 
 #line default
 #line hidden
@@ -203,7 +203,7 @@ Write(DateTime.Now);
 #line default
 #line hidden
             __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-            __tagHelperExecutionContext.AddHtmlAttribute("time", __tagHelperStringValueBuffer.ToString());
+            __tagHelperExecutionContext.AddHtmlAttribute("time", Html.Raw(__tagHelperStringValueBuffer.ToString()));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();

@@ -22,13 +22,17 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             : base(writer, context)
         {
             _paddingBuilder = new CSharpPaddingBuilder(context.Host);
-            TagHelperRenderer = new CSharpTagHelperCodeRenderer(this, writer, context);
         }
 
         public CSharpTagHelperCodeRenderer TagHelperRenderer
         {
             get
             {
+                if (_tagHelperCodeRenderer == null)
+                {
+                    _tagHelperCodeRenderer = new CSharpTagHelperCodeRenderer(this, Writer, Context);
+                }
+
                 return _tagHelperCodeRenderer;
             }
             set
@@ -39,6 +43,30 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 }
 
                 _tagHelperCodeRenderer = value;
+            }
+        }
+
+        /// <summary>
+        /// Method used to write an <see cref="object"/> to the current output.
+        /// </summary>
+        /// <remarks>Default is to HTML encode all but a few types.</remarks>
+        protected virtual string WriteMethodName
+        {
+            get
+            {
+                return Context.Host.GeneratedClassContext.WriteMethodName;
+            }
+        }
+
+        /// <summary>
+        /// Method used to write an <see cref="object"/> to a specified <see cref="System.IO.TextWriter"/>.
+        /// </summary>
+        /// <remarks>Default is to HTML encode all but a few types.</remarks>
+        protected virtual string WriteToMethodName
+        {
+            get
+            {
+                return Context.Host.GeneratedClassContext.WriteToMethodName;
             }
         }
 
@@ -394,13 +422,14 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 {
                     if (!string.IsNullOrEmpty(Context.TargetWriterName))
                     {
-                        Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteToMethodName)
-                              .Write(Context.TargetWriterName)
-                              .WriteParameterSeparator();
+                        Writer
+                            .WriteStartMethodInvocation(WriteToMethodName)
+                            .Write(Context.TargetWriterName)
+                            .WriteParameterSeparator();
                     }
                     else
                     {
-                        Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteMethodName);
+                        Writer.WriteStartMethodInvocation(WriteMethodName);
                     }
 
                     Accept(chunk.Children);
@@ -424,25 +453,30 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             {
                 if (!string.IsNullOrEmpty(Context.TargetWriterName))
                 {
-                    var generatedStart = Context.Host.GeneratedClassContext.WriteToMethodName.Length +
-                                         Context.TargetWriterName.Length +
-                                         3; // 1 for the opening '(' and 2 for ', '
+                    var generatedStart =
+                        WriteToMethodName.Length +
+                        Context.TargetWriterName.Length +
+                        3; // 1 for the opening '(' and 2 for ', '
 
                     var padding = _paddingBuilder.BuildExpressionPadding(contentSpan, generatedStart);
 
-                    Writer.Write(padding)
-                          .WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteToMethodName)
-                          .Write(Context.TargetWriterName)
-                          .WriteParameterSeparator();
+                    Writer
+                        .Write(padding)
+                        .WriteStartMethodInvocation(WriteToMethodName)
+                        .Write(Context.TargetWriterName)
+                        .WriteParameterSeparator();
                 }
                 else
                 {
-                    var generatedStart = Context.Host.GeneratedClassContext.WriteMethodName.Length +
-                                         1; // for the opening '('
+                    var generatedStart =
+                        WriteMethodName.Length +
+                         1; // for the opening '('
+
                     var padding = _paddingBuilder.BuildExpressionPadding(contentSpan, generatedStart);
 
-                    Writer.Write(padding)
-                          .WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteMethodName);
+                    Writer
+                        .Write(padding)
+                        .WriteStartMethodInvocation(WriteMethodName);
                 }
 
                 Accept(chunk.Children);

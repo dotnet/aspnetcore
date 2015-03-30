@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.Razor.Generator
             ExecutionContextAddTagHelperAttributeMethodName = "AddTagHelperAttribute";
             ExecutionContextAddHtmlAttributeMethodName = "AddHtmlAttribute";
             ExecutionContextOutputPropertyName = "Output";
+            MarkAsHtmlEncodedMethodName = "Html.Raw";
             StartTagHelperWritingScopeMethodName = "StartTagHelperWritingScope";
             EndTagHelperWritingScopeMethodName = "EndTagHelperWritingScope";
             RunnerTypeName = "TagHelperRunner";
@@ -70,6 +71,12 @@ namespace Microsoft.AspNet.Razor.Generator
         /// The property accessor for the tag helper's output.
         /// </summary>
         public string ExecutionContextOutputPropertyName { get; set; }
+
+        /// <summary>
+        /// The name of the method used to wrap a <see cref="string"/> value and mark it as HTML-encoded.
+        /// </summary>
+        /// <remarks>Used together with <see cref="ExecutionContextAddHtmlAttributeMethodName"/>.</remarks>
+        public string MarkAsHtmlEncodedMethodName { get; set; }
 
         /// <summary>
         /// The name of the method used to start a new writing scope.

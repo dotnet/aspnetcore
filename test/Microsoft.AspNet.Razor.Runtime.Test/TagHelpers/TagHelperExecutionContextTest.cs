@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             var attribute = Assert.Single(executionContext.HTMLAttributes);
-            Assert.Equal(new KeyValuePair<string, string>(originalName, "something else"), attribute);
+            Assert.Equal(new KeyValuePair<string, object>(originalName, "something else"), attribute);
         }
 
         [MemberData(nameof(DictionaryCaseTestingData))]
@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
-            var expectedAttributes = new Dictionary<string, string>
+            var expectedAttributes = new Dictionary<string, object>
             {
                 { "class", "btn" },
                 { "foo", "bar" }

@@ -38,7 +38,7 @@ namespace TestOutput
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
                 __tagHelperExecutionContext.Add(__CatchAllTagHelper);
-                __tagHelperExecutionContext.AddHtmlAttribute("catchAll", "hi");
+                __tagHelperExecutionContext.AddHtmlAttribute("catchAll", Html.Raw("hi"));
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
@@ -81,7 +81,7 @@ namespace TestOutput
                 __tagHelperExecutionContext.AddTagHelperAttribute("checked", __InputTagHelper2.Checked);
                 __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
                 __tagHelperExecutionContext.Add(__CatchAllTagHelper);
-                __tagHelperExecutionContext.AddHtmlAttribute("catchAll", "hi");
+                __tagHelperExecutionContext.AddHtmlAttribute("catchAll", Html.Raw("hi"));
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
@@ -90,7 +90,7 @@ namespace TestOutput
             , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
-            __tagHelperExecutionContext.AddHtmlAttribute("class", "btn");
+            __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw("btn"));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
