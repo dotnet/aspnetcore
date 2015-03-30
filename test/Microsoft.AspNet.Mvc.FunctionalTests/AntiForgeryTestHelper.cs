@@ -16,7 +16,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             return RetrieveAntiForgeryTokens(
                 htmlContent,
-                attribute => attribute.Value.EndsWith(actionUrl, StringComparison.OrdinalIgnoreCase))
+                attribute => attribute.Value.EndsWith(actionUrl, StringComparison.OrdinalIgnoreCase) ||
+                    attribute.Value.EndsWith($"HtmlEncode[[{ actionUrl }]]", StringComparison.OrdinalIgnoreCase))
                 .FirstOrDefault();
         }
 
@@ -40,8 +41,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                         {
                             if (input.Attribute("name") != null &&
                                 input.Attribute("type") != null &&
-                                input.Attribute("name").Value == "__RequestVerificationToken" &&
-                                input.Attribute("type").Value == "hidden")
+                                (input.Attribute("name").Value == "__RequestVerificationToken" &&
+                                 input.Attribute("type").Value == "hidden" ||
+                                 input.Attribute("name").Value == "HtmlEncode[[__RequestVerificationToken]]" &&
+                                 input.Attribute("type").Value == "HtmlEncode[[hidden]]"))
                             {
                                 yield return input.Attributes("value").First().Value;
                             }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -24,18 +25,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <param name="context">The <see cref="TagHelperContext"/>.</param>
         /// <remarks>Only copies the attribute if <paramref name="tagHelperOutput"/>'s
         /// <see cref="TagHelperOutput.Attributes"/> does not contain an attribute with the given
-        /// <paramref name="attributeName"/></remarks>
-        public static void CopyHtmlAttribute(this TagHelperOutput tagHelperOutput,
-                                             string attributeName,
-                                             TagHelperContext context)
+        /// <paramref name="attributeName"/>.</remarks>
+        public static void CopyHtmlAttribute(
+            [NotNull] this TagHelperOutput tagHelperOutput,
+            [NotNull] string attributeName,
+            [NotNull] TagHelperContext context)
         {
-            // We look for the original attribute so we can restore the exact attribute name the user typed.
-            var entry = context.AllAttributes.First(attribute =>
-                attribute.Key.Equals(attributeName, StringComparison.OrdinalIgnoreCase));
-
-            if (!tagHelperOutput.Attributes.ContainsKey(entry.Key))
+            if (!tagHelperOutput.Attributes.ContainsKey(attributeName))
             {
-                tagHelperOutput.Attributes.Add(entry.Key, entry.Value.ToString());
+                // We look for the original attribute so we can restore the exact attribute name the user typed.
+                // Approach also ignores changes made to tagHelperOutput[attributeName].
+                var entry = context.AllAttributes.First(
+                    attribute => attribute.Key.Equals(attributeName, StringComparison.OrdinalIgnoreCase));
+                tagHelperOutput.Attributes.Add(entry.Key, entry.Value);
             }
         }
 
@@ -47,8 +49,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <param name="prefix">A prefix to look for.</param>
         /// <returns><see cref="KeyValuePair{string, string}"/>s with <see cref="KeyValuePair{string, string}.Key"/>
         /// starting with the given <paramref name="prefix"/>.</returns>
-        public static IEnumerable<KeyValuePair<string, string>> FindPrefixedAttributes(
-            this TagHelperOutput tagHelperOutput, string prefix)
+        public static IEnumerable<KeyValuePair<string, object>> FindPrefixedAttributes(
+            [NotNull] this TagHelperOutput tagHelperOutput,
+            [NotNull] string prefix)
         {
             // TODO: https://github.com/aspnet/Razor/issues/89 - We will not need this method once #89 is completed.
 
@@ -68,7 +71,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <param name="tagBuilder">The <see cref="TagBuilder"/> to merge attributes from.</param>
         /// <remarks>Existing <see cref="TagHelperOutput.Attributes"/> on the given <paramref name="tagHelperOutput"/>
         /// are not overridden; "class" attributes are merged with spaces.</remarks>
-        public static void MergeAttributes(this TagHelperOutput tagHelperOutput, TagBuilder tagBuilder)
+        public static void MergeAttributes(
+            [NotNull] this TagHelperOutput tagHelperOutput,
+            [NotNull] TagBuilder tagBuilder)
         {
             foreach (var attribute in tagBuilder.Attributes)
             {
@@ -90,7 +95,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <param name="tagHelperOutput">The <see cref="TagHelperOutput"/> this method extends.</param>
         /// <param name="attributes">Attributes to remove.</param>
         public static void RemoveRange(
-            this TagHelperOutput tagHelperOutput, IEnumerable<KeyValuePair<string, string>> attributes)
+            [NotNull] this TagHelperOutput tagHelperOutput,
+            [NotNull] IEnumerable<KeyValuePair<string, object>> attributes)
         {
             foreach (var attribute in attributes)
             {

@@ -286,11 +286,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                 foreach (var attribute in tagHelperOutput.Attributes)
                 {
-                    var value = HtmlEncoder.HtmlEncode(attribute.Value);
                     writer.Write(' ');
                     writer.Write(attribute.Key);
                     writer.Write("=\"");
-                    writer.Write(value);
+                    WriteTo(writer, HtmlEncoder, attribute.Value, escapeQuotes: true);
                     writer.Write('"');
                 }
 
@@ -358,26 +357,67 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </remarks>
         public virtual void WriteTo([NotNull] TextWriter writer, object value)
         {
-            if (value != null && value != HtmlString.Empty)
+            WriteTo(writer, HtmlEncoder, value, escapeQuotes: false);
+        }
+
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> with HTML encoding to given <paramref name="writer"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
+        /// <param name="encoder">The <see cref="IHtmlEncoder"/> to use when encoding <paramref name="value"/>.</param>
+        /// <param name="value">The <see cref="object"/> to write.</param>
+        /// <param name="escapeQuotes">
+        /// If <c>true</c> escapes double quotes in a <paramref name="value"/> of type <see cref="HtmlString"/>.
+        /// Otherwise writes <see cref="HtmlString"/> values as-is.
+        /// </param>
+        /// <remarks>
+        /// <paramref name="value"/>s of type <see cref="HtmlString"/> are written without encoding and the
+        /// <see cref="HelperResult.WriteTo(TextWriter)"/> is invoked for <see cref="HelperResult"/> types.
+        /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the
+        /// <paramref name="writer"/>.
+        /// </remarks>
+        public static void WriteTo(
+            [NotNull] TextWriter writer,
+            [NotNull] IHtmlEncoder encoder,
+            object value,
+            bool escapeQuotes)
+        {
+            if (value == null || value == HtmlString.Empty)
             {
-                var helperResult = value as HelperResult;
-                if (helperResult != null)
-                {
-                    helperResult.WriteTo(writer);
-                }
-                else
-                {
-                    var htmlString = value as HtmlString;
-                    if (htmlString != null)
-                    {
-                        writer.Write(htmlString);
-                    }
-                    else
-                    {
-                        WriteTo(writer, value.ToString());
-                    }
-                }
+                return;
             }
+
+            var helperResult = value as HelperResult;
+            if (helperResult != null)
+            {
+                helperResult.WriteTo(writer);
+                return;
+            }
+
+            var htmlString = value as HtmlString;
+            if (htmlString != null)
+            {
+                if (escapeQuotes)
+                {
+                    // In this case the text likely came directly from the Razor source. Since the original string is
+                    // an attribute value that may have been quoted with single quotes, must handle any double quotes
+                    // in the value. Writing the value out surrounded by double quotes.
+                    //
+                    // Do not combine following condition with check of escapeQuotes; htmlString.ToString() can be
+                    // expensive when the HtmlString is created with a StringCollectionTextWriter.
+                    var stringValue = htmlString.ToString();
+                    if (stringValue.Contains("\""))
+                    {
+                        writer.Write(stringValue.Replace("\"", "&quot;"));
+                        return;
+                    }
+                }
+
+                htmlString.WriteTo(writer);
+                return;
+            }
+
+            WriteTo(writer, encoder, value.ToString());
         }
 
         /// <summary>
@@ -387,9 +427,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="value">The <see cref="string"/> to write.</param>
         public virtual void WriteTo([NotNull] TextWriter writer, string value)
         {
+            WriteTo(writer, HtmlEncoder, value);
+        }
+
+        private static void WriteTo(TextWriter writer, IHtmlEncoder encoder, string value)
+        {
             if (!string.IsNullOrEmpty(value))
             {
-                HtmlEncoder.HtmlEncode(value, writer);
+                encoder.HtmlEncode(value, writer);
             }
         }
 
@@ -770,34 +815,6 @@ namespace Microsoft.AspNet.Mvc.Razor
             if (PreviousSectionWriters == null)
             {
                 throw new InvalidOperationException(Resources.FormatRazorPage_MethodCannotBeCalled(methodName));
-            }
-        }
-
-        private class TagHelperContentWrapperTextWriter : TextWriter
-        {
-            public TagHelperContentWrapperTextWriter(Encoding encoding)
-            {
-                Content = new DefaultTagHelperContent();
-                Encoding = encoding;
-            }
-
-            public TagHelperContent Content { get; }
-
-            public override Encoding Encoding { get; }
-
-            public override void Write(string value)
-            {
-                Content.Append(value);
-            }
-
-            public override void Write(char value)
-            {
-                Content.Append(value.ToString());
-            }
-
-            public override string ToString()
-            {
-                return Content.ToString();
             }
         }
     }

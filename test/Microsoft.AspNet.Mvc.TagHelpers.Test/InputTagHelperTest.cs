@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             string expectedValue)
         {
             // Arrange
-            var expectedAttributes = new Dictionary<string, string>
+            var expectedAttributes = new Dictionary<string, object>
             {
                 { "class", "form-control" },
                 { "type", "text" },
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var originalAttributes = new Dictionary<string, string>
+            var originalAttributes = new Dictionary<string, object>
             {
                 { "class", "form-control" },
             };
@@ -166,7 +166,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var originalAttributes = new Dictionary<string, string>
+            var originalAttributes = new Dictionary<string, object>
             {
                 { "class", "form-control" },
             };
@@ -242,7 +242,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 contextAttributes["type"] = inputTypeName;  // Support restoration of type attribute, if any.
             }
 
-            var expectedAttributes = new Dictionary<string, string>
+            var expectedAttributes = new Dictionary<string, object>
             {
                 { "class", "form-control hidden-control" },
                 { "type", inputTypeName ?? "hidden" },      // Generator restores type attribute; adds "hidden" if none.
@@ -262,7 +262,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var originalAttributes = new Dictionary<string, string>
+            var originalAttributes = new Dictionary<string, object>
             {
                 { "class", "form-control" },
             };
@@ -341,7 +341,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 contextAttributes["type"] = inputTypeName;  // Support restoration of type attribute, if any.
             }
 
-            var expectedAttributes = new Dictionary<string, string>
+            var expectedAttributes = new Dictionary<string, object>
             {
                 { "class", "form-control password-control" },
                 { "type", inputTypeName ?? "password" },    // Generator restores type attribute; adds "password" if none.
@@ -361,7 +361,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var originalAttributes = new Dictionary<string, string>
+            var originalAttributes = new Dictionary<string, object>
             {
                 { "class", "form-control" },
             };
@@ -436,7 +436,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 contextAttributes["type"] = inputTypeName;  // Support restoration of type attribute, if any.
             }
 
-            var expectedAttributes = new Dictionary<string, string>
+            var expectedAttributes = new Dictionary<string, object>
             {
                 { "class", "form-control radio-control" },
                 { "type", inputTypeName ?? "radio" },       // Generator restores type attribute; adds "radio" if none.
@@ -457,7 +457,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var originalAttributes = new Dictionary<string, string>
+            var originalAttributes = new Dictionary<string, object>
             {
                 { "class", "form-control" },
             };
@@ -542,7 +542,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 contextAttributes["type"] = inputTypeName;  // Support restoration of type attribute, if any.
             }
 
-            var expectedAttributes = new Dictionary<string, string>
+            var expectedAttributes = new Dictionary<string, object>
             {
                 { "class", "form-control text-control" },
                 { "type", inputTypeName ?? "text" },        // Generator restores type attribute; adds "text" if none.
@@ -562,7 +562,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var originalAttributes = new Dictionary<string, string>
+            var originalAttributes = new Dictionary<string, object>
             {
                 { "class", "form-control" },
             };

@@ -7,34 +7,34 @@
 </head>
 <body>
     <h2>Script tag helper test</h2>
-    <script src="/site.js" data-foo="foo-data1">
+    <script src="/site.js" data-foo="foo-data1" title="&lt;the title>">
         // Regular script with comment in body, and extra properties.
     </script>
 
-    <script src="/blank.js" data-foo="foo-data2">
+    <script data-foo="foo-data2" title="&lt;the title>" src="/blank.js?a=b&amp;c=d">
         // TagHelper script with comment in body, and extra properties.
     </script>
-<script>(false||document.write("<script src=\"/site.js\" data-foo=\"foo-data2\"><\/script>"));</script>
+<script>(false||document.write("<script data-foo=\"foo-data2\" title=\"\u0026lt;the title\u003E\" src=\"\/site.js?a=b\u0026c=d\"><\/script>"));</script>
 
-    <script src="/blank.js">
+    <script title="&quot;the&quot; title" src="/blank.js">
         // Fallback to globbed src
     </script>
-<script>(false||document.write("<script src=\"/site.js\"><\/script>"));</script>
+<script>(false||document.write("<script title=\"\u0022the\u0022 title\" src=\"\/site.js\"><\/script>"));</script>
 
     <script src="/blank.js">
         // Fallback to globbed src with exclude
     </script>
-<script>(false||document.write("<script src=\"/site.js\"><\/script><script src=\"/sub/site2.js\"><\/script>"));</script>
+<script>(false||document.write("<script src=\"\/site.js\"><\/script><script src=\"\/sub\/site2.js\"><\/script>"));</script>
 
     <script src="/blank.js">
         // Fallback to globbed and static src
     </script>
-<script>(false||document.write("<script src=\"/site.js\"><\/script><script src=\"/sub/site2.js\"><\/script>"));</script>
+<script>(false||document.write("<script src=\"\/site.js\"><\/script><script src=\"\/sub\/site2.js\"><\/script>"));</script>
 
     <script src="/blank.js">
         // Fallback to globbed and static src should de-dupe
     </script>
-<script>(false||document.write("<script src=\"/site.js\"><\/script>"));</script>
+<script>(false||document.write("<script src=\"\/site.js\"><\/script>"));</script>
 
     <script src="/blank.js">
         // Fallback to globbed src with missing include
@@ -43,7 +43,7 @@
     <script src="/blank.js">
         // Fallback to static and globbed src with missing include
     </script>
-<script>(false||document.write("<script src=\"/site.js\"><\/script>"));</script>
+<script>(false||document.write("<script src=\"\/site.js\"><\/script>"));</script>
 
     <script src="/blank.js">
         // Fallback to globbed src outside of webroot
@@ -56,7 +56,7 @@
     <script data-foo="foo-data3">
         // Valid TagHelper (although no src is provided) script with comment in body, and extra properties.
     </script>
-<script>(false||document.write("<script src=\"/site.js\" data-foo=\"foo-data3\"><\/script>"));</script>
+<script>(false||document.write("<script data-foo=\"foo-data3\" src=\"\/site.js\"><\/script>"));</script>
 
     <script src="/blank.js">
         // Invalid TagHelper script with comment in body.
@@ -96,12 +96,12 @@
     <script src="/blank.js">
         // TagHelper script with comment in body, and file version.
     </script>
-<script>(false||document.write("<script src=\"/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I\"><\/script>"));</script>
+<script>(false||document.write("<script src=\"\/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I\"><\/script>"));</script>
 
     <script src="/blank.js">
         // Fallback to globbed src with file version.
     </script>
-<script>(false||document.write("<script src=\"/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I\"><\/script>"));</script>
+<script>(false||document.write("<script src=\"\/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I\"><\/script>"));</script>
 
     <script src="/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I">
         // Regular script with comment in body, and file version.

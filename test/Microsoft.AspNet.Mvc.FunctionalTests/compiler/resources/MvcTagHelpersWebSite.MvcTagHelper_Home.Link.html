@@ -7,19 +7,19 @@
     <title>Link</title>
 
     <!-- Plain link tag -->
-    <link href="/site.css" rel="stylesheet" />
+    <link href="/site.css" rel="stylesheet" title="&lt;the title>" />
 
     <!-- Globbed link tag with existing file -->
-    <link rel="stylesheet" href="/site.css" />
+    <link rel="stylesheet" title="&lt;the title>" href="/site.css" />
 
     <!-- Globbed link tag with existing file and exclude -->
-    <link rel="stylesheet" href="/site.css" /><link rel="stylesheet" href="/sub/site2.css" />
+    <link rel="stylesheet" title="&quot;the&quot; title" href="/site.css" /><link rel="stylesheet" title="&quot;the&quot; title" href="/sub/site2.css" />
 
     <!-- Globbed link tag missing include -->
     <link rel="stylesheet" />
 
     <!-- Globbed link tag missing include but with static href -->
-    <link href="/site.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/site.css" />
 
     <!-- Globbed link tag with missing file -->
     
@@ -31,14 +31,14 @@
     
 
     <!-- Globbed link tag with existing file and static href -->
-    <link href="/site.css" rel="stylesheet" /><link href="/sub/site2.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/site.css" /><link rel="stylesheet" href="/sub/site2.css" />
 
     <!-- Globbed link tag with existing file and static href should dedupe -->
-    <link href="/site.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/site.css" />
 
     <!-- Fallback to static href -->
-    <link href="/site.min.css" rel="stylesheet" data-extra="test" />
-<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
+    <link rel="stylesheet" data-extra="test" title="&quot;the&quot; title" href="/site.min.css?a=b&amp;c=d" />
+<meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css?a=b\u0026c=d"]);</script>
 
     <!-- Fallback from globbed href to static href -->
     
@@ -49,11 +49,11 @@
 <meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
 
     <!-- Fallback from globbed and static href to static href -->
-    <link href="site.min.css" rel="stylesheet" data-extra="test" /><link href="/site.css" rel="stylesheet" data-extra="test" />
+    <link rel="stylesheet" data-extra="test" href="site.min.css" /><link rel="stylesheet" data-extra="test" href="/site.css" />
 <meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
 
     <!-- Fallback from globbed and static href with exclude to static href -->
-    <link href="site.min.css" rel="stylesheet" data-extra="test" />
+    <link rel="stylesheet" data-extra="test" href="site.min.css" />
 <meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
 
     <!-- Fallback to static href with no primary href -->
@@ -61,19 +61,19 @@
 <meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
 
     <!-- Fallback to globbed href -->
-    <link href="/site.min.css" rel="stylesheet" data-extra="test" />
+    <link rel="stylesheet" data-extra="test" href="/site.min.css" />
 <meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
 
     <!-- Fallback to static and globbed href -->
-    <link href="/site.min.css" rel="stylesheet" data-extra="test" />
+    <link rel="stylesheet" data-extra="test" href="/site.min.css" />
 <meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css","\/sub\/site2.css"]);</script>
 
     <!-- Fallback to static and globbed href should dedupe -->
-    <link href="/site.min.css" rel="stylesheet" data-extra="test" />
+    <link rel="stylesheet" data-extra="test" href="/site.min.css" />
 <meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
 
     <!-- Fallback to static and globbed href with exclude -->
-    <link href="/site.min.css" rel="stylesheet" data-extra="test" />
+    <link rel="stylesheet" data-extra="test" href="/site.min.css" />
 <meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css","\/sub\/site2.css"]);</script>
 
     <!-- Fallback from globbed href to glbobed href -->
@@ -85,44 +85,44 @@
 <meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
 
     <!-- Fallback from globbed and static href to globbed href -->
-    <link href="site.min.css" rel="stylesheet" data-extra="test" /><link href="/site.css" rel="stylesheet" data-extra="test" />
+    <link rel="stylesheet" data-extra="test" href="site.min.css" /><link rel="stylesheet" data-extra="test" href="/site.css" />
 <meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
 
     <!-- Fallback from globbed and static href with exclude to globbed href -->
-    <link href="site.min.css" rel="stylesheet" data-extra="test" />
+    <link rel="stylesheet" data-extra="test" href="site.min.css" />
 <meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
 
     <!-- Kitchen sink, all the attributes -->
-    <link href="site.min.css" rel="stylesheet" data-extra="test" />
+    <link rel="stylesheet" data-extra="test" href="site.min.css" />
 <meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css","\/sub\/site2.css"]);</script>
 
     <!-- Fallback to globbed href that doesn't exist -->
-    <link href="/site.min.css" rel="stylesheet" data-extra="test" />
+    <link rel="stylesheet" data-extra="test" href="/site.min.css" />
 
     <!-- Fallback to globbed href outside webroot -->
-    <link href="/site.min.css" rel="stylesheet" data-extra="test" />
+    <link rel="stylesheet" data-extra="test" href="/site.min.css" />
 
     <!-- Fallback with missing attribute -->
-    <link href="/site.min.css" rel="stylesheet" data-extra="test" />
+    <link rel="stylesheet" data-extra="test" href="/site.min.css" />
 
     <!-- Fallback with missing attribute -->
-    <link href="/site.min.css" rel="stylesheet" data-extra="test" />
+    <link rel="stylesheet" data-extra="test" href="/site.min.css" />
 
     <!-- Fallback with missing attribute -->
-    <link href="/site.min.css" rel="stylesheet" data-extra="test" />
+    <link rel="stylesheet" data-extra="test" href="/site.min.css" />
 
     <!-- Plain link tag with file version -->
-    <link href="/site.css?v=XY7YsMemPf8AGU4SIX9ED9eOjK1LOQWu2dmCNmh-pQc" rel="stylesheet" />
+    <link rel="stylesheet" href="/site.css?v=XY7YsMemPf8AGU4SIX9ED9eOjK1LOQWu2dmCNmh-pQc" />
 
     <!-- Globbed link tag with existing file and file version -->
     <link rel="stylesheet" href="/site.css?v=XY7YsMemPf8AGU4SIX9ED9eOjK1LOQWu2dmCNmh-pQc" />
 
     <!-- Fallback with file version -->
-    <link href="/site.min.css" rel="stylesheet" data-extra="test" />
+    <link rel="stylesheet" data-extra="test" href="/site.min.css" />
 <meta name="x-stylesheet-fallback-test" class="hidden" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css?v=XY7YsMemPf8AGU4SIX9ED9eOjK1LOQWu2dmCNmh-pQc"]);</script>
 
     <!-- Globbed link tag with existing file, static href and file version -->
-    <link href="/site.css?v=XY7YsMemPf8AGU4SIX9ED9eOjK1LOQWu2dmCNmh-pQc" rel="stylesheet" /><link href="/sub/site2.css?v=30cxPex0tA9xEatW7f1Qhnn8tVLAHgE6xwIZhESq0y0" rel="stylesheet" /><link href="/sub/site3.css?v=fSxxOr1Q4Dq2uPuzlju5UYGuK0SKABI-ghvaIGEsZDc" rel="stylesheet" /><link href="/sub/site3.min.css?v=s8JMmAZxBn0dzuhRtQ0wgOvNBK4XRJRWEC2wfzsVF9M" rel="stylesheet" />
+    <link rel="stylesheet" href="/site.css?v=XY7YsMemPf8AGU4SIX9ED9eOjK1LOQWu2dmCNmh-pQc" /><link rel="stylesheet" href="/sub/site2.css?v=30cxPex0tA9xEatW7f1Qhnn8tVLAHgE6xwIZhESq0y0" /><link rel="stylesheet" href="/sub/site3.css?v=fSxxOr1Q4Dq2uPuzlju5UYGuK0SKABI-ghvaIGEsZDc" /><link rel="stylesheet" href="/sub/site3.min.css?v=s8JMmAZxBn0dzuhRtQ0wgOvNBK4XRJRWEC2wfzsVF9M" />
 </head>
 <body>
 

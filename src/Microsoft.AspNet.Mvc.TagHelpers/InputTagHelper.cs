@@ -8,7 +8,6 @@ using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -112,7 +111,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Pass through attributes that are also well-known HTML attributes. Must be done prior to any copying
             // from a TagBuilder.
-            if (!string.IsNullOrEmpty(InputTypeName))
+            if (InputTypeName != null)
             {
                 output.CopyHtmlAttribute("type", context);
             }

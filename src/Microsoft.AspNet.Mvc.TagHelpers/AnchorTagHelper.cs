@@ -153,7 +153,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         // TODO: https://github.com/aspnet/Razor/issues/89 - We will not need this method once #89 is completed.
         private static Dictionary<string, object> GetRouteValues(
-            TagHelperOutput output, IEnumerable<KeyValuePair<string, string>> routePrefixedAttributes)
+            TagHelperOutput output,
+            IEnumerable<KeyValuePair<string, object>> routePrefixedAttributes)
         {
             Dictionary<string, object> routeValues = null;
             if (routePrefixedAttributes.Any())
@@ -161,10 +162,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 // Prefixed values should be treated as bound attributes, remove them from the output.
                 output.RemoveRange(routePrefixedAttributes);
 
-                // Generator.GenerateForm does not accept a Dictionary<string, string> for route values.
+                // Remove prefix from keys and convert all values to strings. HtmlString and similar classes are not
+                // meaningful to routing.
                 routeValues = routePrefixedAttributes.ToDictionary(
                     attribute => attribute.Key.Substring(RouteAttributePrefix.Length),
-                    attribute => (object)attribute.Value);
+                    attribute => (object)attribute.Value.ToString());
             }
 
             return routeValues;

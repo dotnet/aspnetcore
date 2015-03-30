@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.TagHelpers;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.WebEncoders;
 using MvcTagHelpersWebSite;
 using Xunit;
 
@@ -57,6 +58,50 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // as the file name, in order to update a baseline you just need to change the file in that folder.
             var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
                 "compiler/resources/MvcTagHelpersWebSite.MvcTagHelper_Home." + action + ".html");
+
+            // Act
+            // The host is not important as everything runs in memory and tests are isolated from each other.
+            var response = await client.GetAsync("http://localhost/MvcTagHelper_Home/" + action);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+
+            if (antiForgeryPath != null)
+            {
+                var forgeryToken = AntiForgeryTestHelper.RetrieveAntiForgeryToken(responseContent, antiForgeryPath);
+                expectedContent = string.Format(expectedContent, forgeryToken);
+            }
+
+            Assert.Equal(expectedContent.Trim(), responseContent.Trim());
+        }
+
+        [Theory]
+        [InlineData("EditWarehouse", null)]
+        [InlineData("Index", null)]
+        [InlineData("Link", null)]
+        [InlineData("Order", "/MvcTagHelper_Order/Submit")]
+        [InlineData("OrderUsingHtmlHelpers", "/MvcTagHelper_Order/Submit")]
+        [InlineData("Product", null)]
+        [InlineData("Script", null)]
+        public async Task MvcTagHelpers_GenerateEncodedResults(string action, string antiForgeryPath)
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, services =>
+            {
+                _configureServices(services);
+                services.AddTransient<IHtmlEncoder, TestHtmlEncoder>();
+                services.AddTransient<IJavaScriptStringEncoder, TestJavaScriptEncoder>();
+                services.AddTransient<IUrlEncoder, TestUrlEncoder>();
+            });
+            var client = server.CreateClient();
+            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+
+            // The K runtime compiles every file under compiler/resources as a resource at runtime with the same name
+            // as the file name, in order to update a baseline you just need to change the file in that folder.
+            var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
+                "compiler/resources/MvcTagHelpersWebSite.MvcTagHelper_Home." + action + ".Encoded.html");
 
             // Act
             // The host is not important as everything runs in memory and tests are isolated from each other.
@@ -347,7 +392,7 @@ Products: Laptops (3)";
             // Arrange
             var newServices = new ServiceCollection();
             newServices.InitializeTagHelper<FormTagHelper>((helper, _) => helper.AntiForgery = optionsAntiForgery);
-            var server = TestHelper.CreateServer(_app, SiteName, 
+            var server = TestHelper.CreateServer(_app, SiteName,
                 services =>
                 {
                     services.Add(newServices);

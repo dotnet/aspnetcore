@@ -23,12 +23,14 @@ namespace TagHelpersWebSite.TagHelpers
 
         public bool? MakePretty { get; set; }
 
+        public string Style { get; set; }
+
         [Activate]
         public ViewContext ViewContext { get; set; }
 
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            // Need to check if output.TagName == null in-case the ConditionTagHelper calls into SuppressOutput and 
+            // Need to check if output.TagName == null in-case the ConditionTagHelper calls into SuppressOutput and
             // therefore sets the TagName to null.
             if (MakePretty.HasValue && !MakePretty.Value ||
                 output.TagName == null)
@@ -40,9 +42,8 @@ namespace TagHelpersWebSite.TagHelpers
 
             if (PrettyTagStyles.TryGetValue(output.TagName, out prettyStyle))
             {
-                var style = string.Empty;
-
-                if (output.Attributes.TryGetValue("style", out style))
+                var style = Style ?? string.Empty;
+                if (!string.IsNullOrEmpty(style))
                 {
                     style += ";";
                 }

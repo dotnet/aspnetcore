@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.Framework.WebEncoders;
 using Moq;
 using Xunit;
 
@@ -172,13 +171,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             string ignored)
         {
             // Arrange
-            var originalAttributes = new Dictionary<string, string>
+            var originalAttributes = new Dictionary<string, object>
             {
                 { "class", "form-control" },
             };
             var originalPostContent = "original content";
 
-            var expectedAttributes = new Dictionary<string, string>(originalAttributes)
+            var expectedAttributes = new Dictionary<string, object>(originalAttributes)
             {
                 { "id", nameAndId.Id },
                 { "name", nameAndId.Name },
@@ -258,13 +257,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             string expectedOptions)
         {
             // Arrange
-            var originalAttributes = new Dictionary<string, string>
+            var originalAttributes = new Dictionary<string, object>
             {
                 { "class", "form-control" },
             };
             var originalPostContent = "original content";
 
-            var expectedAttributes = new Dictionary<string, string>(originalAttributes)
+            var expectedAttributes = new Dictionary<string, object>(originalAttributes)
             {
                 { "id", nameAndId.Id },
                 { "name", nameAndId.Name },
@@ -359,13 +358,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             string expectedOptions)
         {
             // Arrange
-            var originalAttributes = new Dictionary<string, string>
+            var originalAttributes = new Dictionary<string, object>
             {
                 { "class", "form-control" },
             };
             var originalPostContent = "original content";
 
-            var expectedAttributes = new Dictionary<string, string>(originalAttributes)
+            var expectedAttributes = new Dictionary<string, object>(originalAttributes)
             {
                 { "id", nameAndId.Id },
                 { "name", nameAndId.Name },
@@ -465,7 +464,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 // Provided for completeness. Select tag helper does not confirm AllAttributes set is consistent.
                 { attributeName, attributeValue },
             };
-            var originalAttributes = new Dictionary<string, string>
+            var originalAttributes = new Dictionary<string, object>
             {
                 { attributeName, attributeValue },
             };
@@ -547,7 +546,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var contextAttributes = new Dictionary<string, object>();
-            var originalAttributes = new Dictionary<string, string>();
+            var originalAttributes = new Dictionary<string, object>();
             var propertyName = "Property1";
             var tagName = "select";
 

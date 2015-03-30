@@ -7,13 +7,13 @@
     <title>Link</title>
 
     <!-- Plain link tag -->
-    <link href="~/site.css" rel="stylesheet" />
+    <link href="~/site.css" rel="stylesheet" title="&lt;the title>" />
 
     <!-- Globbed link tag with existing file -->
-    <link asp-href-include="**/site.css" rel="stylesheet" />
+    <link asp-href-include="**/site.css" rel="stylesheet" title="&lt;the title>" />
 
     <!-- Globbed link tag with existing file and exclude -->
-    <link asp-href-include="**/*.css" asp-href-exclude="**/site3*.css" rel="stylesheet" />
+    <link asp-href-include="**/*.css" asp-href-exclude="**/site3*.css" rel="stylesheet" title='"the" title' />
 
     <!-- Globbed link tag missing include -->
     <link asp-href-exclude="**/site2.css" rel="stylesheet" />
@@ -37,8 +37,8 @@
     <link href="~/site.css" asp-href-include="**/site.css" rel="stylesheet" />
 
     <!-- Fallback to static href -->
-    <link href="~/site.min.css" rel="stylesheet" data-extra="test"
-          asp-fallback-href="~/site.css"
+    <link href="~/site.min.css?a=b&c=d" rel="stylesheet" data-extra="test" title='"the" title'
+          asp-fallback-href="~/site.css?a=b&c=d"
           asp-fallback-test-class="hidden"
           asp-fallback-test-property="visibility"
           asp-fallback-test-value="hidden" />

@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
             var output = new TagHelperOutput(
                 expectedTagName,
-                attributes: new Dictionary<string, string>
+                attributes: new Dictionary<string, object>
                 {
                     { "id", "myanchor" },
                     { "asp-route-foo", "bar" },
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
             var output = new TagHelperOutput(
                 "a",
-                attributes: new Dictionary<string, string>());
+                attributes: new Dictionary<string, object>());
             output.Content.SetContent(string.Empty);
 
             var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
             var output = new TagHelperOutput(
                 "a",
-                attributes: new Dictionary<string, string>());
+                attributes: new Dictionary<string, object>());
             output.Content.SetContent(string.Empty);
 
             var generator = new Mock<IHtmlGenerator>();
@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var anchorTagHelper = new AnchorTagHelper();
             var output = new TagHelperOutput(
                 "a",
-                attributes: new Dictionary<string, string>()
+                attributes: new Dictionary<string, object>()
                 {
                     { "href", "http://www.contoso.com" }
                 });
@@ -218,7 +218,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             typeof(AnchorTagHelper).GetProperty(propertyName).SetValue(anchorTagHelper, "Home");
             var output = new TagHelperOutput(
                 "a",
-                attributes: new Dictionary<string, string>());
+                attributes: new Dictionary<string, object>());
             var expectedErrorMessage = "Cannot determine an 'href' attribute for <a>. An <a> with a specified " +
                 "'asp-route' must not have an 'asp-action' or 'asp-controller' attribute.";
 
