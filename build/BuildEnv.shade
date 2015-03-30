@@ -12,8 +12,8 @@ functions
         // If the computer date is set before the start date, then the version is 0
         if (now >= start)
         {
-            var monthsSinceStart = (now.Year - start.Year) * 12 + now.Month;
-            version = monthsSinceStart.ToString("000") + now.Day.ToString("00");
+            var yearsSinceStart = (now.Year - start.Year) + 1;
+            version = yearsSinceStart + now.ToString("MMdd");
         }
 
         return version;
