@@ -6,31 +6,19 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
+    /// <summary>
+    /// A <see cref="IValueProviderFactory"/> that creates <see cref="IValueProvider"/> instances that
+    /// read values from the request query-string.
+    /// </summary>
     public class QueryStringValueProviderFactory : IValueProviderFactory
     {
-        private static readonly object _cacheKey = new object();
-
+        /// <inheritdoc />
         public IValueProvider GetValueProvider([NotNull] ValueProviderFactoryContext context)
         {
-            // Process the query collection once-per request.
-            var storage = context.HttpContext.Items;
-            object value;
-            IValueProvider provider;
-            if (!storage.TryGetValue(_cacheKey, out value))
-            {
-                var queryCollection = context.HttpContext.Request.Query;
-                provider = new ReadableStringCollectionValueProvider(
-                    BindingSource.Query,
-                    queryCollection,
-                    CultureInfo.InvariantCulture);
-
-                storage[_cacheKey] = provider;
-            }
-            else
-            {
-                provider = (ReadableStringCollectionValueProvider)value;
-            }
-            return provider;
+            return new ReadableStringCollectionValueProvider(
+                BindingSource.Query,
+                context.HttpContext.Request.Query,
+                CultureInfo.InvariantCulture);
         }
     }
 }
