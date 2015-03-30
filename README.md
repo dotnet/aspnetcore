@@ -57,12 +57,12 @@ After the script has run open a new command prompt to start using KVM.
 
 #### OS X:
 
-To install KVM and the correct version of Mono on OS X using [Homebrew](http://brew.sh) follow the following steps: 
+To install DNVM and the correct version of Mono on OS X using [Homebrew](http://brew.sh) follow the following steps: 
 
  * Install [Homebrew](http://brew.sh) if it is not already installed.
  * Run command `brew tap aspnet/k` to tap the ASP.NET vNext related git repositories. If you had already tapped the repo for previous releases, run `brew untap aspnet/k` to delete the old commands and tap again to get the updated brew scripts.
- * Run command `brew install kvm` to install KVM. This also automatically install the latest KRE package from https://www.nuget.org/api/v2 feed.
- * Run command `source kvm.sh` on your terminal if your terminal cannot understand kvm. 
+ * Run command `brew install dnvm` to install DNVM. This also automatically install the latest KRE package from https://www.nuget.org/api/v2 feed.
+ * Run command `source dnvm.sh` on your terminal if your terminal cannot understand dnvm. 
 
 #### Linux:
 
