@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Mvc;
+using Microsoft.Data.Entity;
 using AutoMapper;
 using MusicStore.Infrastructure;
 using MusicStore.Models;
