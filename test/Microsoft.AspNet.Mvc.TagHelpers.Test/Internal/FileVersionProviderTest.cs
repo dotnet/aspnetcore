@@ -36,6 +36,38 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             Assert.Equal(expected, result);
         }
 
+        // Verifies if the stream is closed after reading.
+        [Fact]
+        public void AddsVersionToFiles_DoesNotLockFileAfterReading()
+        {
+            // Arrange
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes("Hello World!"));
+            var mockFile = new Mock<IFileInfo>();
+            mockFile.SetupGet(f => f.Exists).Returns(true);
+            mockFile
+                .Setup(m => m.CreateReadStream())
+                .Returns(stream);
+
+            var mockFileProvider = new Mock<IFileProvider>();
+            mockFileProvider.Setup(fp => fp.GetFileInfo(It.IsAny<string>()))
+                .Returns(mockFile.Object);
+
+            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            hostingEnvironment.Setup(h => h.WebRootFileProvider).Returns(mockFileProvider.Object);
+
+            var fileVersionProvider = new FileVersionProvider(
+                hostingEnvironment.Object.WebRootFileProvider,
+                GetMockCache(),
+                GetRequestPathBase());
+
+            // Act
+            var result = fileVersionProvider.AddFileVersionToPath("/hello/world");
+
+            // Assert
+            Assert.False(stream.CanRead);
+            Assert.Throws<ObjectDisposedException>(() => fileVersionProvider.AddFileVersionToPath("/hello/world"));
+        }
+
         [Theory]
         [InlineData("/testApp/hello/world", true, "/testApp")]
         [InlineData("/testApp/foo/bar/hello/world", true, "/testApp/foo/bar")]

@@ -77,8 +77,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         {
             using (var sha256 = SHA256.Create())
             {
-                var hash = sha256.ComputeHash(fileInfo.CreateReadStream());
-                return WebEncoders.Base64UrlEncode(hash);
+                using (var readStream = fileInfo.CreateReadStream())
+                {
+                    var hash = sha256.ComputeHash(readStream);
+                    return WebEncoders.Base64UrlEncode(hash);
+                }
             }
         }
     }
