@@ -10,25 +10,46 @@ using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Hosting.Startup
 {
-    public static class ApplicationStartup
+    public class StartupLoader : IStartupLoader
     {
-        internal static ConfigureServicesDelegate DefaultBuildServiceProvider = s => s.BuildServiceProvider();
+        private readonly IServiceProvider _services;
 
-        public static StartupMethods LoadStartupMethods(
-            IServiceProvider services,
-            string applicationName,
+        public StartupLoader(IServiceProvider services)
+        {
+            _services = services;
+        }
+
+        public StartupMethods Load(
+            Type startupType,
             string environmentName,
             IList<string> diagnosticMessages)
         {
-            if (string.IsNullOrEmpty(applicationName))
+            var configureMethod = FindConfigureDelegate(startupType, environmentName);
+            var servicesMethod = FindConfigureServicesDelegate(startupType, environmentName);
+
+            object instance = null;
+            if (!configureMethod.MethodInfo.IsStatic || (servicesMethod != null && !servicesMethod.MethodInfo.IsStatic))
             {
-                throw new ArgumentException("Value cannot be null or empty.", "applicationName");
+                instance = ActivatorUtilities.GetServiceOrCreateInstance(_services, startupType);
             }
 
-            var assembly = Assembly.Load(new AssemblyName(applicationName));
+            return new StartupMethods(configureMethod.Build(instance), servicesMethod?.Build(instance));
+        }
+
+        public StartupMethods Load(
+            string startupAssemblyName,
+            string environmentName,
+            IList<string> diagnosticMessages)
+        {
+            if (string.IsNullOrEmpty(startupAssemblyName))
+            {
+                throw new ArgumentException("Value cannot be null or empty.", nameof(startupAssemblyName));
+            }
+
+            var assembly = Assembly.Load(new AssemblyName(startupAssemblyName));
             if (assembly == null)
             {
-                throw new InvalidOperationException(String.Format("The assembly '{0}' failed to load.", applicationName));
+                throw new InvalidOperationException(String.Format("The assembly '{0}' failed to load.", startupAssemblyName));
             }
 
             var startupNameWithEnv = "Startup" + environmentName;
@@ -37,9 +58,9 @@ namespace Microsoft.AspNet.Hosting.Startup
             // Check the most likely places first
             var type =
                 assembly.GetType(startupNameWithEnv) ??
-                assembly.GetType(applicationName + "." + startupNameWithEnv) ??
+                assembly.GetType(startupAssemblyName + "." + startupNameWithEnv) ??
                 assembly.GetType(startupNameWithoutEnv) ??
-                assembly.GetType(applicationName + "." + startupNameWithoutEnv);
+                assembly.GetType(startupAssemblyName + "." + startupNameWithoutEnv);
 
             if (type == null)
             {
@@ -61,29 +82,19 @@ namespace Microsoft.AspNet.Hosting.Startup
                 throw new InvalidOperationException(String.Format("A type named '{0}' or '{1}' could not be found in assembly '{2}'.",
                     startupNameWithEnv,
                     startupNameWithoutEnv,
-                    applicationName));
+                    startupAssemblyName));
             }
 
-            var configureMethod = FindConfigureDelegate(type, environmentName);
-            var servicesMethod = FindConfigureServicesDelegate(type, environmentName);
-
-            object instance = null;
-            if (!configureMethod.MethodInfo.IsStatic || (servicesMethod != null && !servicesMethod.MethodInfo.IsStatic))
-            {
-                instance = ActivatorUtilities.GetServiceOrCreateInstance(services, type);
-            }
-
-            return new StartupMethods(configureMethod.Build(instance), servicesMethod?.Build(instance));
+            return Load(type, environmentName, diagnosticMessages);
         }
 
-
-        public static ConfigureBuilder FindConfigureDelegate(Type startupType, string environmentName)
+        private static ConfigureBuilder FindConfigureDelegate(Type startupType, string environmentName)
         {
             var configureMethod = FindMethod(startupType, "Configure{0}", environmentName, typeof(void), required: true);
             return new ConfigureBuilder(configureMethod);
         }
 
-        public static ConfigureServicesBuilder FindConfigureServicesDelegate(Type startupType, string environmentName)
+        private static ConfigureServicesBuilder FindConfigureServicesDelegate(Type startupType, string environmentName)
         {
             var servicesMethod = FindMethod(startupType, "Configure{0}Services", environmentName, typeof(IServiceProvider), required: false)
                 ?? FindMethod(startupType, "Configure{0}Services", environmentName, typeof(void), required: false);

@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Http;
+using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.AspNet.Hosting
 {
-    // REVIEW: move to interfaces
-    public interface IHttpContextAccessor
+    public interface IHostingFactory
     {
-        HttpContext HttpContext { get; set; }
+        IHostingEngine Create(IConfiguration config);
     }
 }

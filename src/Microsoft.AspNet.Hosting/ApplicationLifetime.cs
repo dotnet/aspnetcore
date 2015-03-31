@@ -14,10 +14,6 @@ namespace Microsoft.AspNet.Hosting
         private readonly CancellationTokenSource _stoppingSource = new CancellationTokenSource();
         private readonly CancellationTokenSource _stoppedSource = new CancellationTokenSource();
 
-        public ApplicationLifetime()
-        {
-        }
-
         /// <summary>
         /// Triggered when the application host is performing a graceful shutdown.
         /// Request may still be in flight. Shutdown will block until this event completes.

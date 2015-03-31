@@ -2,15 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Runtime.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNet.TestHost
@@ -32,7 +38,7 @@ namespace Microsoft.AspNet.TestHost
             var services = new ServiceCollection().BuildServiceProvider();
 
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => TestServer.Create(services, new Startup().Configuration));
+            Assert.Throws<InvalidOperationException>(() => TestServer.Create(services, new Configuration(), new Startup().Configure, configureServices: null));
         }
 
         [Fact]
@@ -48,6 +54,54 @@ namespace Microsoft.AspNet.TestHost
 
             string result = await server.CreateClient().GetStringAsync("/path");
             Assert.Equal("RequestServices:True", result);
+        }
+
+        [Fact]
+        public async Task CanChangeApplicationName()
+        {
+            var fallbackServices = CallContextServiceLocator.Locator.ServiceProvider;
+            var appName = "gobblegobble";
+
+            var builder = TestServer.CreateBuilder(fallbackServices, new Configuration(),
+                app =>
+                {
+                    app.Run(context =>
+                    {
+                        var appEnv = app.ApplicationServices.GetRequiredService<IApplicationEnvironment>();
+                        return context.Response.WriteAsync("AppName:" + appEnv.ApplicationName);
+                    });
+                },
+                configureServices: null);
+
+            builder.ApplicationName = appName;
+            var server = builder.Build();
+
+            string result = await server.CreateClient().GetStringAsync("/path");
+            Assert.Equal("AppName:" + appName, result);
+        }
+
+        [Fact]
+        public async Task CanChangeAppPath()
+        {
+            var fallbackServices = CallContextServiceLocator.Locator.ServiceProvider;
+            var appPath = ".";
+
+            var builder = TestServer.CreateBuilder(fallbackServices, new Configuration(),
+                app =>
+                {
+                    app.Run(context =>
+                    {
+                        var env = app.ApplicationServices.GetRequiredService<IApplicationEnvironment>();
+                        return context.Response.WriteAsync("AppPath:" + env.ApplicationBasePath);
+                    });
+                },
+                configureServices: null);
+
+            builder.ApplicationBasePath = appPath;
+            var server = builder.Build();
+
+            string result = await server.CreateClient().GetStringAsync("/path");
+            Assert.Equal("AppPath:" + appPath, result);
         }
 
         [Fact]
@@ -97,16 +151,13 @@ namespace Microsoft.AspNet.TestHost
         {
             TestServer server = TestServer.Create(app =>
             {
-                var a = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
-
                 app.Run(context =>
                 {
-                    var b = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
                     var accessor = app.ApplicationServices.GetRequiredService<ContextHolder>();
                     return context.Response.WriteAsync("HasContext:" + (accessor.Accessor.HttpContext != null));
                 });
             },
-            services => services.AddSingleton<ContextHolder>().BuildServiceProvider());
+            services => services.AddSingleton<ContextHolder>());
 
             string result = await server.CreateClient().GetStringAsync("/path");
             Assert.Equal("HasContext:True", result);
@@ -188,19 +239,70 @@ namespace Microsoft.AspNet.TestHost
             Assert.Throws<AggregateException>(() => { string result = server.CreateClient().GetStringAsync("/path").Result; });
         }
 
+        [Fact]
+        public async Task CanCreateViaStartupType()
+        {
+            TestServer server = TestServer.Create<TestStartup>();
+            HttpResponseMessage result = await server.CreateClient().GetAsync("/");
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal("FoundService:True", await result.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task CanCreateViaStartupTypeAndSpecifyEnv()
+        {
+            var builder = TestServer.CreateBuilder<TestStartup>();
+            builder.Environment = "Foo";
+            var server = builder.Build();
+            HttpResponseMessage result = await server.CreateClient().GetAsync("/");
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal("FoundFoo:False", await result.Content.ReadAsStringAsync());
+        }
+
         public class Startup
         {
-            public void Configuration(IApplicationBuilder builder)
+            public void Configure(IApplicationBuilder builder)
             {
                 builder.Run(ctx => ctx.Response.WriteAsync("Startup"));
             }
         }
 
-        public class AnotherStartup
+        public class SimpleService
         {
-            public void Configuration(IApplicationBuilder builder)
+            public SimpleService()
             {
-                builder.Run(ctx => ctx.Response.WriteAsync("Another Startup"));
+            }
+
+            public string Message { get; set; }
+        }
+
+        public class TestStartup
+        {
+            public void ConfigureServices(IServiceCollection services)
+            {
+                services.AddSingleton<SimpleService>();
+            }
+
+            public void ConfigureFooServices(IServiceCollection services)
+            {
+            }
+
+            public void Configure(IApplicationBuilder app)
+            {
+                app.Run(context =>
+                {
+                    var service = app.ApplicationServices.GetRequiredService<SimpleService>();
+                    return context.Response.WriteAsync("FoundService:" + (service != null));
+                });
+            }
+
+            public void ConfigureFoo(IApplicationBuilder app)
+            {
+                app.Run(context =>
+                {
+                    var service = app.ApplicationServices.GetService<SimpleService>();
+                    return context.Response.WriteAsync("FoundFoo:" + (service != null));
+                });
             }
         }
     }

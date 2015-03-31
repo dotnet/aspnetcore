@@ -7,10 +7,13 @@ namespace Microsoft.AspNet.Hosting
 {
     public interface IHostingEnvironment
     {
+        // This must be settable!
         string EnvironmentName { get; set;  }
 
-        string WebRootPath { get; }
+        // This must be settable!
+        string WebRootPath { get; set; }
 
-        IFileProvider WebRootFileProvider { get; }
+        // This must be settable!
+        IFileProvider WebRootFileProvider { get; set; }
     }
 }

@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.TestHost
         [Fact]
         public void AddRequestHeader()
         {
-            TestServer server = TestServer.Create(app => { });
+            var server = TestServer.Create(app => { });
             server.CreateRequest("/")
                 .AddHeader("Host", "MyHost:90")
                 .And(request =>
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.TestHost
         [Fact]
         public void AddContentHeaders()
         {
-            TestServer server = TestServer.Create(app => { });
+            var server = TestServer.Create(app => { });
             server.CreateRequest("/")
                 .AddHeader("Content-Type", "Test/Value")
                 .And(request =>
