@@ -8,6 +8,7 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Runtime.Infrastructure;
 
 namespace Microsoft.AspNet.WebSockets.Client.Test
 {
@@ -45,13 +46,11 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             config.Add(new MemoryConfigurationSource());
             config.Set("server.urls", "http://localhost:54321");
 
-            var context = new HostingContext()
-            {
-                Configuration = config,
-                ServerFactoryLocation = "Kestrel",
-                StartupMethods = new StartupMethods(startup, configureServices: null)
-            };
-            return new HostingEngine().Start(context);
+            var engine = WebHost.CreateEngine(config)
+                .UseServer("Kestrel")
+                .UseStartup(startup);
+
+            return engine.Start();
         }
     }
 }
