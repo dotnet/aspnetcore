@@ -219,7 +219,7 @@ namespace E2ETests
 
             // Work around for https://github.com/aspnet/dnx/issues/1515
             string backup_Dnx_Packages = string.Empty;
-            if (startParameters.BundleWithNoSource)
+            if (startParameters.PublishWithNoSource)
             {
                 backup_Dnx_Packages = Environment.GetEnvironmentVariable("DNX_PACKAGES");
                 Environment.SetEnvironmentVariable("DNX_PACKAGES", string.Empty);
@@ -228,7 +228,7 @@ namespace E2ETests
             var hostProcess = Process.Start(startInfo);
             logger.LogInformation("Started iisexpress. Process Id : {processId}", hostProcess.Id);
 
-            if (startParameters.BundleWithNoSource)
+            if (startParameters.PublishWithNoSource)
             {
                 // Roll back the change.
                 Environment.SetEnvironmentVariable("DNX_PACKAGES", backup_Dnx_Packages);
@@ -252,7 +252,7 @@ namespace E2ETests
 
             // Work around for https://github.com/aspnet/dnx/issues/1515
             string backup_Dnx_Packages = string.Empty;
-            if (startParameters.BundleWithNoSource)
+            if (startParameters.PublishWithNoSource)
             {
                 backup_Dnx_Packages = Environment.GetEnvironmentVariable("DNX_PACKAGES");
                 Environment.SetEnvironmentVariable("DNX_PACKAGES", string.Empty);
@@ -260,7 +260,7 @@ namespace E2ETests
 
             var hostProcess = Process.Start(startInfo);
 
-            if (startParameters.BundleWithNoSource)
+            if (startParameters.PublishWithNoSource)
             {
                 // Roll back the change.
                 Environment.SetEnvironmentVariable("DNX_PACKAGES", backup_Dnx_Packages);
