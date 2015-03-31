@@ -199,6 +199,7 @@ namespace IdentitySample.Controllers
                     }
                 }
                 AddErrors(result);
+                ViewBag.LoginProvider = info.Login.LoginProvider;
             }
 
             ViewBag.ReturnUrl = returnUrl;
