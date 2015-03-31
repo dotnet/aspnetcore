@@ -17,14 +17,9 @@ namespace MusicStore
             var config = new Configuration();
             config.AddCommandLine(args);
 
-            var context = new HostingContext()
-            {
-                Configuration = config,
-                ServerFactoryLocation = "Microsoft.AspNet.Server.WebListener",
-                ApplicationName = "MusicStore"
-            };
-
-            using (new HostingEngine().Start(context))
+            using (WebHost.CreateEngine(config)
+                .UseServer("Microsoft.AspNet.Server.WebListener")
+                .Start())
             {
                 Console.WriteLine("Started the server..");
                 Console.WriteLine("Press any key to stop the server");
