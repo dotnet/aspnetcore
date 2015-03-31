@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 Enumerable.Empty<IMetadataDetailsProvider>());
 
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var cache = new DefaultMetadataDetailsCache(key, new object[0]);
+            var cache = new DefaultMetadataDetails(key, new object[0]);
 
             // Act
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 Enumerable.Empty<IMetadataDetailsProvider>());
 
             var key = ModelMetadataIdentity.ForType(typeof(Exception));
-            var cache = new DefaultMetadataDetailsCache(key, new object[0]);
+            var cache = new DefaultMetadataDetails(key, new object[0]);
 
             // Act
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForProperty(typeof(string), "Message", typeof(Exception));
-            var cache = new DefaultMetadataDetailsCache(key, new object[0]);
+            var cache = new DefaultMetadataDetails(key, new object[0]);
 
             // Act
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForType(modelType);
-            var cache = new DefaultMetadataDetailsCache(key, new object[0]);
+            var cache = new DefaultMetadataDetails(key, new object[0]);
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
 
@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForType(modelType);
-            var cache = new DefaultMetadataDetailsCache(key, new object[0]);
+            var cache = new DefaultMetadataDetails(key, new object[0]);
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
 
@@ -162,13 +162,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 new DefaultModelMetadata(
                     provider.Object, 
                     detailsProvider,
-                    new DefaultMetadataDetailsCache(
+                    new DefaultMetadataDetails(
                         ModelMetadataIdentity.ForProperty(typeof(int), "Prop1", typeof(string)),
                         attributes: null)),
                 new DefaultModelMetadata(
                     provider.Object,
                     detailsProvider,
-                    new DefaultMetadataDetailsCache(
+                    new DefaultMetadataDetails(
                         ModelMetadataIdentity.ForProperty(typeof(int), "Prop2", typeof(string)),
                         attributes: null)),
             };
@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 .Returns(expectedProperties);
 
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var cache = new DefaultMetadataDetailsCache(key, new object[0]);
+            var cache = new DefaultMetadataDetails(key, new object[0]);
 
             var metadata = new DefaultModelMetadata(provider.Object, detailsProvider, cache);
 
@@ -238,7 +238,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 expectedProperties.Add(new DefaultModelMetadata(
                     provider.Object,
                     detailsProvider,
-                    new DefaultMetadataDetailsCache(
+                    new DefaultMetadataDetails(
                         ModelMetadataIdentity.ForProperty(typeof(int), originalName, typeof(string)),
                         attributes: null)));
             }
@@ -248,7 +248,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 .Returns(expectedProperties);
 
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var cache = new DefaultMetadataDetailsCache(key, new object[0]);
+            var cache = new DefaultMetadataDetails(key, new object[0]);
 
             var metadata = new DefaultModelMetadata(provider.Object, detailsProvider, cache);
 
@@ -338,7 +338,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             var expectedProperties = new List<DefaultModelMetadata>();
             foreach (var kvp in originalNamesAndOrders)
             {
-                var propertyCache = new DefaultMetadataDetailsCache(
+                var propertyCache = new DefaultMetadataDetails(
                         ModelMetadataIdentity.ForProperty(typeof(int), kvp.Key, typeof(string)),
                         attributes: null);
 
@@ -356,7 +356,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 .Returns(expectedProperties);
 
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var cache = new DefaultMetadataDetailsCache(key, new object[0]);
+            var cache = new DefaultMetadataDetails(key, new object[0]);
 
             var metadata = new DefaultModelMetadata(provider.Object, detailsProvider, cache);
 
@@ -377,7 +377,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var cache = new DefaultMetadataDetailsCache(key, new object[0]);
+            var cache = new DefaultMetadataDetails(key, new object[0]);
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
 
@@ -398,7 +398,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var cache = new DefaultMetadataDetailsCache(key, new object[0]);
+            var cache = new DefaultMetadataDetails(key, new object[0]);
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
 

@@ -838,10 +838,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 _attributes = attributes;
             }
 
-            protected override DefaultMetadataDetailsCache CreateTypeCacheEntry(ModelMetadataIdentity key)
+            protected override DefaultMetadataDetails CreateTypeDetails([NotNull]ModelMetadataIdentity key)
             {
-                var entry = base.CreateTypeCacheEntry(key);
-                return new DefaultMetadataDetailsCache(key, _attributes.Concat(entry.Attributes).ToArray());
+                var entry = base.CreateTypeDetails(key);
+                return new DefaultMetadataDetails(key, _attributes.Concat(entry.Attributes).ToArray());
             }
         }
     }

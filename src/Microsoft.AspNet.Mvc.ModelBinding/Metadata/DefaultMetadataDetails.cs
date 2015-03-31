@@ -7,21 +7,19 @@ using System.Collections.Generic;
 namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 {
     /// <summary>
-    /// A cache of metadata objects for a <see cref="DefaultModelMetadata"/>.
+    /// Holds associated metadata objects for a <see cref="DefaultModelMetadata"/>.
     /// </summary>
     /// <remarks>
-    /// These instances are shared by all <see cref="DefaultModelMetadata"/> instances representing
-    /// the same <see cref="Type"/>, property, or parameter. Any modifications to the data must be
-    /// thread-safe for multiple readers and writers.
+    /// Any modifications to the data must be thread-safe for multiple readers and writers.
     /// </remarks>
-    public class DefaultMetadataDetailsCache
+    public class DefaultMetadataDetails
     {
         /// <summary>
-        /// Creates a new <see cref="DefaultMetadataDetailsCache"/>.
+        /// Creates a new <see cref="DefaultMetadataDetails"/>.
         /// </summary>
         /// <param name="key">The <see cref="ModelMetadataIdentity"/>.</param>
         /// <param name="attributes">The set of model attributes.</param>
-        public DefaultMetadataDetailsCache(ModelMetadataIdentity key, IReadOnlyList<object> attributes)
+        public DefaultMetadataDetails(ModelMetadataIdentity key, IReadOnlyList<object> attributes)
         {
             Key = key;
             Attributes = attributes;
@@ -33,19 +31,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         public IReadOnlyList<object> Attributes { get; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Metadata.BindingMetadata"/>
+        /// Gets or sets the <see cref="Metadata.BindingMetadata"/>.
         /// </summary>
         public BindingMetadata BindingMetadata { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Metadata.DisplayMetadata"/>
+        /// Gets or sets the <see cref="Metadata.DisplayMetadata"/>.
         /// </summary>
         public DisplayMetadata DisplayMetadata { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="ModelMetadataIdentity"/>
+        /// Gets or sets the <see cref="ModelMetadataIdentity"/>.
         /// </summary>
         public ModelMetadataIdentity Key { get; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ModelMetadata"/> entries for the model properties.
+        /// </summary>
+        public ModelMetadata[] Properties { get; set; }
 
         /// <summary>
         /// Gets or sets a property accessor delegate to get the property value from a model object.

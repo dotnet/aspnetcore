@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
     {
         private readonly IModelMetadataProvider _provider;
         private readonly ICompositeMetadataDetailsProvider _detailsProvider;
-        private readonly DefaultMetadataDetailsCache _cache;
+        private readonly DefaultMetadataDetails _details;
 
         private ReadOnlyDictionary<object, object> _additionalValues;
         private bool? _isReadOnly;
@@ -29,16 +29,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// </summary>
         /// <param name="provider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="detailsProvider">The <see cref="ICompositeMetadataDetailsProvider"/>.</param>
-        /// <param name="cache">The <see cref="DefaultMetadataDetailsCache"/>.</param>
+        /// <param name="details">The <see cref="DefaultMetadataDetails"/>.</param>
         public DefaultModelMetadata(
             [NotNull] IModelMetadataProvider provider,
             [NotNull] ICompositeMetadataDetailsProvider detailsProvider,
-            [NotNull] DefaultMetadataDetailsCache cache)
-            : base(cache.Key)
+            [NotNull] DefaultMetadataDetails details)
+            : base(details.Key)
         {
             _provider = provider;
             _detailsProvider = detailsProvider;
-            _cache = cache;
+            _details = details;
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         {
             get
             {
-                return _cache.Attributes;
+                return _details.Attributes;
             }
         }
 
@@ -62,14 +62,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         {
             get
             {
-                if (_cache.BindingMetadata == null)
+                if (_details.BindingMetadata == null)
                 {
-                    var context = new BindingMetadataProviderContext(Identity, _cache.Attributes);
+                    var context = new BindingMetadataProviderContext(Identity, _details.Attributes);
                     _detailsProvider.GetBindingMetadata(context);
-                    _cache.BindingMetadata = context.BindingMetadata;
+                    _details.BindingMetadata = context.BindingMetadata;
                 }
 
-                return _cache.BindingMetadata;
+                return _details.BindingMetadata;
             }
         }
 
@@ -83,14 +83,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         {
             get
             {
-                if (_cache.DisplayMetadata == null)
+                if (_details.DisplayMetadata == null)
                 {
-                    var context = new DisplayMetadataProviderContext(Identity, _cache.Attributes);
+                    var context = new DisplayMetadataProviderContext(Identity, _details.Attributes);
                     _detailsProvider.GetDisplayMetadata(context);
-                    _cache.DisplayMetadata = context.DisplayMetadata;
+                    _details.DisplayMetadata = context.DisplayMetadata;
                 }
 
-                return _cache.DisplayMetadata;
+                return _details.DisplayMetadata;
             }
         }
 
@@ -104,14 +104,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         {
             get
             {
-                if (_cache.ValidationMetadata == null)
+                if (_details.ValidationMetadata == null)
                 {
-                    var context = new ValidationMetadataProviderContext(Identity, _cache.Attributes);
+                    var context = new ValidationMetadataProviderContext(Identity, _details.Attributes);
                     _detailsProvider.GetValidationMetadata(context);
-                    _cache.ValidationMetadata = context.ValidationMetadata;
+                    _details.ValidationMetadata = context.ValidationMetadata;
                 }
 
-                return _cache.ValidationMetadata;
+                return _details.ValidationMetadata;
             }
         }
 
@@ -286,7 +286,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                     }
                     else
                     {
-                        _isReadOnly = _cache.PropertySetter != null;
+                        _isReadOnly = _details.PropertySetter != null;
                     }
                 }
 
