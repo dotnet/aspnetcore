@@ -59,7 +59,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta5-10352"
+$BuildVersion="beta5-10353"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -1004,6 +1004,7 @@ function dnvm-install {
 
     if(Test-Path $RuntimeFolder) {
         _WriteOut "'$runtimeFullName' is already installed."
+        dnvm-use $PackageVersion -Architecture:$Architecture -Runtime:$Runtime -Persistent:$Persistent
     }
     else {
         $Architecture = GetArch $Architecture
@@ -1038,6 +1039,8 @@ function dnvm-install {
         _WriteDebug "Cleaning temporary directory $UnpackFolder"
         Remove-Item $UnpackFolder -Force | Out-Null
 
+        dnvm-use $PackageVersion -Architecture:$Architecture -Runtime:$Runtime -Persistent:$Persistent
+
         if ($Runtime -eq "clr") {
             if (-not $NoNative) {
                 if ((Is-Elevated) -or $Ngen) {
@@ -1070,8 +1073,6 @@ function dnvm-install {
             _WriteOut "Unexpected platform: $Runtime. No optimization would be performed on the package installed."
         }
     }
-
-    dnvm-use $PackageVersion -Architecture:$Architecture -Runtime:$Runtime -Persistent:$Persistent
 
     if($Alias) {
         _WriteDebug "Aliasing installed runtime to '$Alias'"
