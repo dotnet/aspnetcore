@@ -1,0 +1,5 @@
+build_script:
+  - build.cmd verify
+clone_depth: 1
+test: off
+deploy: off
