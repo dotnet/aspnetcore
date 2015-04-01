@@ -2,7 +2,7 @@
   "description": "ASP.NET 5 middleware and abstractions for routing requests to application logic and for generating links.",
   "version": "1.0.0-*",
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": "true"
   },
   "dependencies": {
     "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
