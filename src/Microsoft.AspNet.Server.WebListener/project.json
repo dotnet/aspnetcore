@@ -5,8 +5,8 @@
         "Microsoft.AspNet.FeatureModel": "1.0.0-*",
         "Microsoft.AspNet.Http": "1.0.0-*",
         "Microsoft.AspNet.Http.Interfaces": "1.0.0-*",
-        "Microsoft.AspNet.Hosting.Interfaces": "1.0.0-*",
-        "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
+        "Microsoft.AspNet.Server.Interfaces": "1.0.0-*",
+        "Microsoft.Framework.ConfigurationModel.Interfaces": "1.0.0-*",
         "Microsoft.Framework.Logging": "1.0.0-*",
         "Microsoft.Net.Http.Server": "1.0.0-*",
         "Microsoft.Net.WebSocketAbstractions": "1.0.0-*"
