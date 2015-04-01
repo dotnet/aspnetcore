@@ -9,10 +9,10 @@ using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Session;
-using Microsoft.AspNet.Testing.Logging;
 using Microsoft.Framework.Caching.Distributed;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging.Testing;
 using MusicStore.Models;
 using Xunit;
 
