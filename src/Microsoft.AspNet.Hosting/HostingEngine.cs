@@ -24,8 +24,7 @@ namespace Microsoft.AspNet.Hosting
 
         // Start/ApplicationServices block use methods
         private bool _useDisabled;
-
-        private IServerLoader _serverLoader;
+        
         private IApplicationBuilderFactory _builderFactory;
         private IApplicationBuilder _builder;
         private IServiceProvider _applicationServices;

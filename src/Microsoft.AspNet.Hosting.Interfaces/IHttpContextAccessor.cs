@@ -5,7 +5,6 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Hosting
 {
-    // REVIEW: move to interfaces
     public interface IHttpContextAccessor
     {
         HttpContext HttpContext { get; set; }
