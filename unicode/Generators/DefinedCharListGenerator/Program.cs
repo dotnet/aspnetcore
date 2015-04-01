@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -19,6 +20,7 @@ namespace DefinedCharListGenerator
 
             const uint MAX_UNICODE_CHAR = 0x10FFFF; // Unicode range is U+0000 .. U+10FFFF
             bool[] definedChars = new bool[MAX_UNICODE_CHAR + 1];
+            Dictionary<string, Span> spans = new Dictionary<string, Span>();
 
             // Read all defined characters from the input file.
             string[] allLines = File.ReadAllLines("UnicodeData.txt");
@@ -28,11 +30,33 @@ namespace DefinedCharListGenerator
             foreach (string line in allLines)
             {
                 string[] splitLine = line.Split(new char[] { ';' }, 4);
+                uint codepoint = uint.Parse(splitLine[0], NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+                string rawName = splitLine[1];
+                string category = splitLine[2];
+
+                // spans go into their own dictionary for later processing
+                string spanName;
+                bool isStartOfSpan;
+                if (IsSpanDefinition(rawName, out spanName, out isStartOfSpan))
+                {
+                    if (isStartOfSpan)
+                    {
+                        spans.Add(spanName, new Span() { FirstCodePoint = codepoint, Category = category });
+                    }
+                    else
+                    {
+                        var existingSpan = spans[spanName];
+                        Debug.Assert(existingSpan.FirstCodePoint != 0, "We should've seen the start of this span already.");
+                        Debug.Assert(existingSpan.LastCodePoint == 0, "We shouldn't have seen the end of this span already.");
+                        Debug.Assert(existingSpan.Category == category, "Span start Unicode category doesn't match span end Unicode category.");
+                        existingSpan.LastCodePoint = codepoint;
+                    }
+                    continue;
+                }
 
                 // We only allow certain categories of code points.
                 // Zs (space separators) aren't included, but we allow U+0020 SPACE as a special case
-                uint codepoint = uint.Parse(splitLine[0], NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-                string category = splitLine[2];
+
                 if (!(codepoint == (uint)' ' || IsAllowedUnicodeCategory(category)))
                 {
                     continue;
@@ -40,6 +64,21 @@ namespace DefinedCharListGenerator
 
                 Debug.Assert(codepoint <= MAX_UNICODE_CHAR);
                 definedChars[codepoint] = true;
+            }
+
+            // Next, populate characters that weren't defined on their own lines
+            // but which are instead defined as members of a named span.
+            foreach (var span in spans.Values)
+            {
+                if (IsAllowedUnicodeCategory(span.Category))
+                {
+                    Debug.Assert(span.FirstCodePoint <= MAX_UNICODE_CHAR);
+                    Debug.Assert(span.LastCodePoint <= MAX_UNICODE_CHAR);
+                    for (uint i = span.FirstCodePoint; i <= span.LastCodePoint; i++)
+                    {
+                        definedChars[i] = true;
+                    }
+                }
             }
 
             // Finally, write the list of defined characters out as a bitmap.
@@ -102,6 +141,40 @@ namespace DefinedCharListGenerator
                 || category == "Sk"
                 || category == "So"
                 || category == "Cf"; /* other */
+        }
+
+        private static bool IsSpanDefinition(string rawName, out string spanName, out bool isStartOfSpan)
+        {
+            // Spans are represented within angle brackets, such as the following:
+            // DC00;<Low Surrogate, First>;Cs;0;L;;;;;N;;;;;
+            // DFFF;<Low Surrogate, Last>;Cs;0;L;;;;;N;;;;;
+            if (rawName.StartsWith("<", StringComparison.Ordinal))
+            {
+                if (rawName.EndsWith(", First>", StringComparison.Ordinal))
+                {
+                    spanName = rawName.Substring(1, rawName.Length - 1 - ", First>".Length);
+                    isStartOfSpan = true;
+                    return true;
+                }
+                else if (rawName.EndsWith(", Last>", StringComparison.Ordinal))
+                {
+                    spanName = rawName.Substring(1, rawName.Length - 1 - ", Last>".Length);
+                    isStartOfSpan = false;
+                    return true;
+                }
+            }
+
+            // not surrounded by <>, or <control> or some other non-span
+            spanName = null;
+            isStartOfSpan = false;
+            return false;
+        }
+
+        private class Span
+        {
+            public uint FirstCodePoint;
+            public uint LastCodePoint;
+            public string Category;
         }
     }
 }

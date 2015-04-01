@@ -101,8 +101,7 @@ namespace Microsoft.Framework.WebEncoders
                 bool actual = UnicodeHelpers.IsCharacterDefined((char)i);
                 if (expected != actual)
                 {
-                    string message = String.Format(CultureInfo.InvariantCulture, "Character U+{0:X4}: expected = {1}, actual = {2}", i, expected, actual);
-                    errors.Add(message);
+                    errors.Add($"Character U+{i:X4}: expected = {expected}, actual = {actual}");
                 }
             }
 
@@ -164,9 +163,16 @@ namespace Microsoft.Framework.WebEncoders
             {
                 string[] splitLine = line.Split(';');
                 uint codePoint = UInt32.Parse(splitLine[0], NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+                string name = splitLine[1];
                 if (codePoint >= retVal.Length)
                 {
                     continue; // don't care about supplementary chars
+                }
+
+                if (name.EndsWith(", First>", StringComparison.Ordinal) || name.EndsWith(", Last>", StringComparison.Ordinal))
+                {
+                    // ignore spans - we'll handle them separately
+                    continue;
                 }
 
                 if (codePoint == (uint)' ')
@@ -182,6 +188,24 @@ namespace Microsoft.Framework.WebEncoders
                         seenCategories.Add(category);
                     }
                 }
+            }
+
+            // Handle known spans from Unicode 7.0.0's UnicodeData.txt
+
+            // CJK Ideograph Extension A
+            for (int i = '\u3400'; i <= '\u4DB5'; i++)
+            {
+                retVal[i] = true;
+            }
+            // CJK Ideograph
+            for (int i = '\u4E00'; i <= '\u9FCC'; i++)
+            {
+                retVal[i] = true;
+            }
+            // Hangul Syllable
+            for (int i = '\uAC00'; i <= '\uD7A3'; i++)
+            {
+                retVal[i] = true;
             }
 
             // Finally, we need to make sure we've seen every category which contains
