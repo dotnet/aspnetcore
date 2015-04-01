@@ -5,7 +5,7 @@
   "dependencies": {
     "MusicStore.Spa": "",
     "Microsoft.AspNet.Mvc" : "6.0.0-*",
-    "Microsoft.AspNet.Testing.Logging" :  "1.0.0-*",
+    "Microsoft.Framework.Logging.Testing" :  "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "commands": {
