@@ -91,8 +91,9 @@ namespace Microsoft.AspNet.DataProtection.Repositories
         {
             try
             {
+                var registryView = IntPtr.Size == 4 ? RegistryView.Registry32 : RegistryView.Registry64;
                 // Try reading the auto-generated machine key from HKLM
-                using (var hklmBaseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+                using (var hklmBaseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, registryView))
                 {
                     // Even though this is in HKLM, WAS ensures that applications hosted in IIS are properly isolated.
                     // See APP_POOL::EnsureSharedMachineKeyStorage in WAS source for more info.

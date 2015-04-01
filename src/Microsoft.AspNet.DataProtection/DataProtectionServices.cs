@@ -89,6 +89,7 @@ namespace Microsoft.Framework.DependencyInjection
                         {
                             // If the user profile isn't available, we can protect using DPAPI (to machine).
                             keyEncryptorDescriptor = DataProtectionServiceDescriptors.IXmlEncryptor_Dpapi(protectToMachine: true);
+                            keyRepositoryDescriptor = DataProtectionServiceDescriptors.IXmlRepository_Registry(regKeyStorageKey);
 
                             if (log.IsInformationLevelEnabled())
                             {
