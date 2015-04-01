@@ -1,6 +1,6 @@
 {
     "compilationOptions": {
-        "warningsAsErrors": false
+        "warningsAsErrors": "false"
     },
     "dependencies": {
         "Microsoft.AspNet.Mvc.WebApiCompatShim": "6.0.0-*",
