@@ -1,6 +1,6 @@
 {
     "compilationOptions": {
-        "warningsAsErrors": true
+        "warningsAsErrors": "true"
     },
     "dependencies": {
         "Microsoft.AspNet.Authorization": "1.0.0-*",

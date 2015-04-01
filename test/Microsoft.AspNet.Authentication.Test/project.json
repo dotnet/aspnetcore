@@ -1,6 +1,6 @@
 {
     "compilationOptions": {
-        "warningsAsErrors": true
+        "warningsAsErrors": "true"
     },
     "dependencies": {
         "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
