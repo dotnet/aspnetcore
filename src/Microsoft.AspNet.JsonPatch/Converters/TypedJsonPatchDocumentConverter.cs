@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.JsonPatch.Converters
     {
         public override bool CanConvert(Type objectType)
         {
-            return true;    
+            return true;
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.JsonPatch.Converters
             }
             catch (Exception ex)
             {
-                throw new JsonPatchException("The JsonPatchDocument was malformed and could not be parsed.", ex, 400);
+                throw new JsonPatchException(Resources.FormatInvalidJsonPatchDocument(objectType.Name), ex);
             }
         }
 

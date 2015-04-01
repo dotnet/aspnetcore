@@ -112,7 +112,9 @@ namespace Microsoft.AspNet.JsonPatch.Test
             patchDoc.Add<int>(o => o.IntegerList, 4, 4);
 
             // Act & Assert
-            Assert.Throws<JsonPatchException<SimpleDTO>>(() => { patchDoc.ApplyTo(doc); });
+            var exception = Assert.Throws<JsonPatchException<SimpleDTO>>(() => { patchDoc.ApplyTo(doc); });
+            Assert.Equal("For operation 'add' on array property at path '/integerlist/4', the index is " +
+                "larger than the array size.", exception.Message);
         }
 
         [Fact]
@@ -132,7 +134,9 @@ namespace Microsoft.AspNet.JsonPatch.Test
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
 
             // Act & Assert
-            Assert.Throws<JsonPatchException<SimpleDTO>>(() => { deserialized.ApplyTo(doc); });
+            var exception = Assert.Throws<JsonPatchException<SimpleDTO>>(() => { deserialized.ApplyTo(doc); });
+            Assert.Equal("For operation 'add' on array property at path '/integerlist/4', the index is " +
+                "larger than the array size.", exception.Message);
         }
 
         [Fact]
@@ -235,7 +239,8 @@ namespace Microsoft.AspNet.JsonPatch.Test
             patchDoc.Add<int>(o => o.IntegerList, 4, -1);
 
             // Act & Assert
-            Assert.Throws<JsonPatchException<SimpleDTO>>(() => { patchDoc.ApplyTo(doc); });
+            var exception = Assert.Throws<JsonPatchException<SimpleDTO>>(() => { patchDoc.ApplyTo(doc); });
+            Assert.Equal("Property does not exist at path '/integerlist/-1'.", exception.Message);
         }
 
         [Fact]
@@ -255,7 +260,8 @@ namespace Microsoft.AspNet.JsonPatch.Test
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
 
             // Act & Assert
-            Assert.Throws<JsonPatchException<SimpleDTO>>(() => { deserialized.ApplyTo(doc); });
+            var exception = Assert.Throws<JsonPatchException<SimpleDTO>>(() => { deserialized.ApplyTo(doc); });
+            Assert.Equal("Property does not exist at path '/integerlist/-1'.", exception.Message);
         }
 
         [Fact]
@@ -401,7 +407,9 @@ namespace Microsoft.AspNet.JsonPatch.Test
             patchDoc.Remove<int>(o => o.IntegerList, 3);
 
             // Act & Assert
-            Assert.Throws<JsonPatchException<SimpleDTO>>(() => { patchDoc.ApplyTo(doc); });
+            var exception = Assert.Throws<JsonPatchException<SimpleDTO>>(() => { patchDoc.ApplyTo(doc); });
+            Assert.Equal("For operation 'remove' on array property at path '/integerlist/3', the index is " +
+                "larger than the array size.", exception.Message);
         }
 
         [Fact]
@@ -421,7 +429,9 @@ namespace Microsoft.AspNet.JsonPatch.Test
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
 
             // Act & Assert
-            Assert.Throws<JsonPatchException<SimpleDTO>>(() => { deserialized.ApplyTo(doc); });
+            var exception = Assert.Throws<JsonPatchException<SimpleDTO>>(() => { deserialized.ApplyTo(doc); });
+            Assert.Equal("For operation 'remove' on array property at path '/integerlist/3', the index is " +
+                "larger than the array size.", exception.Message);
         }
 
         [Fact]
@@ -438,7 +448,8 @@ namespace Microsoft.AspNet.JsonPatch.Test
             patchDoc.Remove<int>(o => o.IntegerList, -1);
 
             // Act & Assert
-            Assert.Throws<JsonPatchException<SimpleDTO>>(() => { patchDoc.ApplyTo(doc); });
+            var exception = Assert.Throws<JsonPatchException<SimpleDTO>>(() => { patchDoc.ApplyTo(doc); });
+            Assert.Equal("Property does not exist at path '/integerlist/-1'.", exception.Message);
         }
 
         [Fact]
@@ -458,7 +469,8 @@ namespace Microsoft.AspNet.JsonPatch.Test
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
 
             // Act & Assert
-            Assert.Throws<JsonPatchException<SimpleDTO>>(() => { deserialized.ApplyTo(doc); });
+            var exception = Assert.Throws<JsonPatchException<SimpleDTO>>(() => { deserialized.ApplyTo(doc); });
+            Assert.Equal("Property does not exist at path '/integerlist/-1'.", exception.Message);
         }
 
         [Fact]
@@ -622,11 +634,13 @@ namespace Microsoft.AspNet.JsonPatch.Test
             string serialized = "{\"Operations\": [{ \"op\": \"replace\", \"path\": \"/title\", \"value\": \"New Title\"}]}";
 
             // Act & Assert
-            Assert.Throws<JsonPatchException>(() =>
+            var exception = Assert.Throws<JsonPatchException>(() =>
             {
                 var deserialized
                     = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
             });
+
+            Assert.Equal("The type 'JsonPatchDocument`1' was malformed and could not be parsed.", exception.Message);
         }
 
         [Fact]
@@ -953,10 +967,12 @@ namespace Microsoft.AspNet.JsonPatch.Test
             patchDoc.Replace<int>(o => o.IntegerList, 5, 3);
 
             // Act & Assert
-            Assert.Throws<JsonPatchException<SimpleDTO>>(() =>
+            var exception = Assert.Throws<JsonPatchException<SimpleDTO>>(() =>
             {
                 patchDoc.ApplyTo(doc);
             });
+            Assert.Equal("For operation 'replace' on array property at path '/integerlist/3', the index is " +
+                "larger than the array size.", exception.Message);
         }
 
         [Fact]
@@ -975,10 +991,12 @@ namespace Microsoft.AspNet.JsonPatch.Test
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
 
             // Act & Assert
-            Assert.Throws<JsonPatchException<SimpleDTO>>(() =>
+            var exception = Assert.Throws<JsonPatchException<SimpleDTO>>(() =>
             {
                 deserialized.ApplyTo(doc);
             });
+            Assert.Equal("For operation 'replace' on array property at path '/integerlist/3', the index is " +
+                "larger than the array size.", exception.Message);
         }
 
         [Fact]
@@ -995,10 +1013,11 @@ namespace Microsoft.AspNet.JsonPatch.Test
             patchDoc.Replace<int>(o => o.IntegerList, 5, -1);
 
             // Act & Assert
-            Assert.Throws<JsonPatchException<SimpleDTO>>(() =>
+            var exception = Assert.Throws<JsonPatchException<SimpleDTO>>(() =>
             {
                 patchDoc.ApplyTo(doc);
             });
+            Assert.Equal("Property does not exist at path '/integerlist/-1'.", exception.Message);
         }
 
         [Fact]
@@ -1018,10 +1037,11 @@ namespace Microsoft.AspNet.JsonPatch.Test
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
 
             // Act & Assert
-            Assert.Throws<JsonPatchException<SimpleDTO>>(() =>
+            var exception = Assert.Throws<JsonPatchException<SimpleDTO>>(() =>
             {
                 deserialized.ApplyTo(doc);
             });
+            Assert.Equal("Property does not exist at path '/integerlist/-1'.", exception.Message);
         }
 
         [Fact]

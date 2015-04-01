@@ -33,15 +33,8 @@ namespace Microsoft.AspNet.JsonPatch.Exceptions
             AffectedObject = affectedObject;
         }
 
-        public JsonPatchException(Operation<T> operation, string message, T affectedObject, int statusCode)
+        public JsonPatchException(Operation<T> operation, string message, T affectedObject, Exception innerException)
             : this(operation, message, affectedObject)
-        {
-            StatusCode = statusCode;
-        }
-
-        public JsonPatchException(Operation<T> operation, string message, T affectedObject,
-            int statusCode, Exception innerException)
-            : this(operation, message, affectedObject, statusCode)
         {
             InnerException = innerException;
         }
