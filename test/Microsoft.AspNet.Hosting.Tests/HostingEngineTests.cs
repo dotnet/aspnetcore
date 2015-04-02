@@ -44,6 +44,21 @@ namespace Microsoft.AspNet.Hosting
         }
 
         [Fact]
+        public void HostingEngineInjectsHostingEnvironment()
+        {
+            var engine = WebHost.CreateEngine()
+                .UseServer(this)
+                .UseStartup("Microsoft.AspNet.Hosting.Tests")
+                .UseEnvironment("WithHostingEnvironment");
+
+            using (var server = engine.Start())
+            {
+                var env = engine.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+                Assert.Equal("Changed", env.EnvironmentName);
+            }
+        }
+
+        [Fact]
         public void CanReplaceHostingFactory()
         {
             var factory = WebHost.CreateFactory(services => services.AddTransient<IHostingFactory, TestEngineFactory>());
