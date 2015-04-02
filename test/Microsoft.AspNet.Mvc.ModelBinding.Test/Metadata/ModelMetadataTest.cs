@@ -412,6 +412,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     throw new NotImplementedException();
                 }
             }
+
+            public override Func<object, object> PropertyGetter
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override Action<object, object> PropertySetter
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
         }
     }
 }

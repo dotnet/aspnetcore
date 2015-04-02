@@ -284,9 +284,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                     {
                         _isReadOnly = BindingMetadata.IsReadOnly;
                     }
+                    else if (MetadataKind == ModelMetadataKind.Type)
+                    {
+                        _isReadOnly = false;
+                    }
                     else
                     {
-                        _isReadOnly = _details.PropertySetter != null;
+                        _isReadOnly = _details.PropertySetter == null;
                     }
                 }
 
@@ -405,6 +409,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 }
 
                 return _validatorMetadata;
+            }
+        }
+
+        /// <inheritdoc />
+        public override Func<object, object> PropertyGetter
+        {
+            get
+            {
+                return _details.PropertyGetter;
+            }
+        }
+
+        /// <inheritdoc />
+        public override Action<object, object> PropertySetter
+        {
+            get
+            {
+                return _details.PropertySetter;
             }
         }
     }

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
@@ -120,12 +119,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                     propertyHelper.Property));
 
                 var propertyEntry = new DefaultMetadataDetails(propertyKey, attributes);
-                if (propertyHelper.Property.CanRead && propertyHelper.Property.GetMethod?.IsPrivate == true)
+                if (propertyHelper.Property.CanRead && propertyHelper.Property.GetMethod?.IsPublic == true)
                 {
-                    propertyEntry.PropertyAccessor = PropertyHelper.MakeFastPropertyGetter(propertyHelper.Property);
+                    propertyEntry.PropertyGetter = PropertyHelper.MakeFastPropertyGetter(propertyHelper.Property);
                 }
 
-                if (propertyHelper.Property.CanWrite && propertyHelper.Property.SetMethod?.IsPrivate == true)
+                if (propertyHelper.Property.CanWrite &&
+                    propertyHelper.Property.SetMethod?.IsPublic == true &&
+                    !key.ModelType.IsValueType())
                 {
                     propertyEntry.PropertySetter = PropertyHelper.MakeFastPropertySetter(propertyHelper.Property);
                 }

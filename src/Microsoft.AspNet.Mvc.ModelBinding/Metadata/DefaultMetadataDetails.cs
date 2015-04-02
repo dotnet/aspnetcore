@@ -51,9 +51,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         public ModelMetadata[] Properties { get; set; }
 
         /// <summary>
-        /// Gets or sets a property accessor delegate to get the property value from a model object.
+        /// Gets or sets a property getter delegate to get the property value from a model object.
         /// </summary>
-        public Func<object, object> PropertyAccessor { get; set; }
+        public Func<object, object> PropertyGetter { get; set; }
 
         /// <summary>
         /// Gets or sets a property setter delegate to set the property value on a model object.

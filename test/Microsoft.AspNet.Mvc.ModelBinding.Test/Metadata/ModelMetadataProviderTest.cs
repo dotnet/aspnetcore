@@ -696,9 +696,69 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             Assert.False(metadata.IsRequired);
         }
 
+        [Fact]
+        public void PropertySetter_NotNull_ForPublicSetProperty()
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+
+            // Act
+            var metadata = metadataProvider.GetMetadataForProperty(
+                typeof(ClassWithPublicSetProperty),
+                nameof(ClassWithPublicSetProperty.StringProperty));
+
+            // Assert
+            Assert.NotNull(metadata.PropertySetter);
+            Assert.NotNull(metadata.PropertyGetter);
+        }
+
+        [Fact]
+        public void PropertySetter_Null_ForPrivateSetProperty()
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+
+            // Act
+            var metadata = metadataProvider.GetMetadataForProperty(
+                typeof(ClassWithPrivateSetProperty),
+                nameof(ClassWithPrivateSetProperty.StringProperty));
+
+            // Assert
+            Assert.Null(metadata.PropertySetter);
+            Assert.NotNull(metadata.PropertyGetter);
+        }
+
+        [Fact]
+        public void Metadata_Null_ForPrivateGetProperty()
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var type = typeof(ClassWithPrivateGetProperty);
+            var propertyName = nameof(ClassWithPrivateGetProperty.StringProperty);
+
+            // Act & Assert
+            var metadata = metadataProvider.GetMetadataForType(type);
+            Assert.Null(metadata.Properties[propertyName]);
+        }
+
         private IModelMetadataProvider CreateProvider(params object[] attributes)
         {
             return new AttributeInjectModelMetadataProvider(attributes);
+        }
+
+        private class ClassWithPrivateSetProperty
+        {
+            public string StringProperty { private set; get; }
+        }
+
+        private class ClassWithPublicSetProperty
+        {
+            public string StringProperty { set; get; }
+        }
+
+        private class ClassWithPrivateGetProperty
+        {
+            public string StringProperty { set; private get; }
         }
 
         [DataContract]

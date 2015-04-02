@@ -411,8 +411,93 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             Assert.Equal(firstPropertiesEvaluation, secondPropertiesEvaluation);
         }
 
+        [Fact]
+        public void IsReadOnly_ReturnsFalse_ForType()
+        {
+            // Arrange
+            var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+            var provider = new DefaultModelMetadataProvider(detailsProvider);
+
+            var key = ModelMetadataIdentity.ForType(typeof(int[]));
+            var cache = new DefaultMetadataDetails(key, new object[0]);
+
+            var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+            // Act
+            var isReadOnly = metadata.IsReadOnly;
+
+            // Assert
+            Assert.False(isReadOnly);
+        }
+
+        [Fact]
+        public void IsReadOnly_ReturnsTrue_ForPrivateSetProperty()
+        {
+            // Arrange
+            var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+            var provider = new DefaultModelMetadataProvider(detailsProvider);
+
+            var key = ModelMetadataIdentity.ForType(typeof(TypeWithProperties));
+            var cache = new DefaultMetadataDetails(key, new object[0]);
+
+            var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+            // Act
+            var isReadOnly = metadata.Properties["PublicGetPrivateSetProperty"].IsReadOnly;
+
+            // Assert
+            Assert.True(isReadOnly);
+        }
+
+        [Fact]
+        public void IsReadOnly_ReturnsTrue_ForProtectedSetProperty()
+        {
+            // Arrange
+            var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+            var provider = new DefaultModelMetadataProvider(detailsProvider);
+
+            var key = ModelMetadataIdentity.ForType(typeof(TypeWithProperties));
+            var cache = new DefaultMetadataDetails(key, new object[0]);
+
+            var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+            // Act
+            var isReadOnly = metadata.Properties["PublicGetProtectedSetProperty"].IsReadOnly;
+
+            // Assert
+            Assert.True(isReadOnly);
+        }
+
+        [Fact]
+        public void IsReadOnly_ReturnsFalse_ForPublicSetProperty()
+        {
+            // Arrange
+            var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+            var provider = new DefaultModelMetadataProvider(detailsProvider);
+
+            var key = ModelMetadataIdentity.ForType(typeof(TypeWithProperties));
+            var cache = new DefaultMetadataDetails(key, new object[0]);
+
+            var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+            // Act
+            var isReadOnly = metadata.Properties["PublicGetPublicSetProperty"].IsReadOnly;
+
+            // Assert
+            Assert.False(isReadOnly);
+        }
+
         private void ActionMethod(string input)
         {
+        }
+
+        private class TypeWithProperties
+        {
+            public string PublicGetPrivateSetProperty { get; private set; }
+
+            public int PublicGetProtectedSetProperty { get; protected set; }
+
+            public int PublicGetPublicSetProperty { get; set; }
         }
     }
 }
