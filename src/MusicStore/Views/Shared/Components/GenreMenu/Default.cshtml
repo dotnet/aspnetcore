@@ -1,19 +1,17 @@
-﻿@model IEnumerable<MusicStore.Models.Genre>
+﻿@model IEnumerable<Genre>
 
 <li class="dropdown">
-    <a href="@Url.Action("Index", "Store")" class="dropdown-toggle" data-toggle="dropdown">Store <b class="caret"></b></a>
+    <a asp-controller="Store" asp-action="Index" class="dropdown-toggle" data-toggle="dropdown">Store <b class="caret"></b></a>
     <ul class="dropdown-menu">
         @foreach (var genre in Model)
         {
             <li>
-                @Html.ActionLink(genre.Name,
-                        "Browse", "Store",
-                        new { Genre = genre.Name }, null)
+                <a asp-controller="Store" asp-action="Browse" asp-route-Genre="@genre.Name">@genre.Name</a>
             </li>
         }
         <li class="divider"></li>
         <li>
-            @Html.ActionLink("More...", "Index", "Store")
+            <a asp-controller="Store" asp-action="Index">More...</a>
         </li>
     </ul>
 </li>

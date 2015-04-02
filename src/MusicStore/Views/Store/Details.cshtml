@@ -1,4 +1,4 @@
-﻿@model MusicStore.Models.Album
+﻿@model Album
 
 @{
     ViewBag.Title = "Album - " + Model.Title;
@@ -21,9 +21,9 @@
     </p>
     <p>
         <em>Price:</em>
-        @Html.DisplayFor(model => model.Price)
+        <label>@Model.Price</label>
     </p>
     <p class="button">
-        @Html.ActionLink("Add to cart", "AddToCart", "ShoppingCart", new { id = Model.AlbumId })
+        <a asp-controller="ShoppingCart" asp-action="AddToCart" asp-route-id="@Model.AlbumId">Add to cart</a>
     </p>
 </div>

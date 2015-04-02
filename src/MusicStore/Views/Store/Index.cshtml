@@ -1,4 +1,4 @@
-﻿@model IEnumerable<MusicStore.Models.Genre>
+﻿@model IEnumerable<Genre>
 @{
     ViewBag.Title = "Store";
 }
@@ -10,6 +10,6 @@
 <ul class="list-group">
     @foreach (var genre in Model)
     {
-        <li class="list-group-item">@Html.ActionLink(genre.Name, "Browse", new { genre = genre.Name })</li>
+        <li class="list-group-item"><a asp-controller="Store" asp-action="Browse" asp-route-genre="@genre.Name">@genre.Name</a></li>
     }
 </ul>

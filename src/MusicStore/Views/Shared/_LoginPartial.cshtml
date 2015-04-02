@@ -2,19 +2,15 @@
 
 @if (User.IsSignedIn())
 {
-    using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
-    {
-        @Html.AntiForgeryToken()
-
+    <form asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm" class="navbar-right">
         <ul class="nav navbar-nav navbar-right">
             <li>
-                @Html.ActionLink("Hello " + User.GetUserName() + "!", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" })
+                <a asp-controller="Manage" asp-action="Index" title="Manage">Hello @User.GetUserName()!</a>
             </li>
             <li><a href="javascript:document.getElementById('logoutForm').submit()">Log off</a></li>
         </ul>
-    }
+    </form>
 }
-//Either NTLM will be used or social authentication will be used. Based on the authentication schemes enabled remove an unused block.
 else if (User.Identity.IsAuthenticated)
 {
     //This code block necessary only for NTLM authentication
@@ -27,7 +23,7 @@ else if (User.Identity.IsAuthenticated)
 else
 {
     <ul class="nav navbar-nav navbar-right">
-        <li>@Html.ActionLink("Register", "Register", "Account", routeValues: null, htmlAttributes: new { id = "registerLink" })</li>
-        <li>@Html.ActionLink("Log in", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
+        <li><a id="registerLink" asp-controller="Account" asp-action="Register">Register</a></li>
+        <li><a id="loginLink" asp-controller="Account" asp-action="Login">Log in</a></li>
     </ul>
 }

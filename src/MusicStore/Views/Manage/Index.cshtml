@@ -1,6 +1,6 @@
-﻿@model MusicStore.Models.IndexViewModel
+﻿@model IndexViewModel
 @{
-    ViewBag.Title = "Manage";
+    ViewBag.Title = "Manage your account";
 }
 
 <h2>@ViewBag.Title.</h2>
@@ -15,18 +15,17 @@
             [
             @if (Model.HasPassword)
             {
-                @Html.ActionLink("Change your password", "ChangePassword")
+                <a asp-controller="Manage" asp-action="ChangePassword">Change</a>
             }
             else
             {
-                @Html.ActionLink("Create", "SetPassword")
+                <a asp-controller="Manage" asp-action="SetPassword">Create</a>
             }
             ]
         </dd>
         <dt>External Logins:</dt>
         <dd>
-            @Model.Logins.Count [
-            @Html.ActionLink("Manage", "ManageLogins") ]
+            @Model.Logins.Count [<a asp-controller="Manage" asp-action="ManageLogins">Manage</a>]
         </dd>
         @*
             Phone Numbers can used as a second factor of verification in a two-factor authentication system.
@@ -42,13 +41,13 @@
             @(Model.PhoneNumber ?? "None") [
             @if (Model.PhoneNumber != null)
             {
-                @Html.ActionLink("Change", "AddPhoneNumber")
+                <a asp-controller="Manage" asp-action="AddPhoneNumber">Change</a>
                 @: &nbsp;|&nbsp;
-                @Html.ActionLink("Remove", "RemovePhoneNumber")
+                <a asp-controller="Manage" asp-action="RemovePhoneNumber">Remove</a>
             }
             else
             {
-                @Html.ActionLink("Add", "AddPhoneNumber")
+                <a asp-controller="Manage" asp-action="AddPhoneNumber">Add</a>
             }
             ]
         </dd>
@@ -56,50 +55,42 @@
         <dd>
             @if (Model.TwoFactor)
             {
-                using (Html.BeginForm("DisableTwoFactorAuthentication", "Manage", FormMethod.Post))
-                {
-                    @Html.AntiForgeryToken()
+                <form asp-controller="Manage" asp-action="DisableTwoFactorAuthentication" method="post" class="form-horizontal" role="form">
                     <p>
                         Enabled
                         <input type="submit" value="Disable" class="btn btn-link" />
                     </p>
-                }
+                </form>
             }
             else
             {
-                using (Html.BeginForm("EnableTwoFactorAuthentication", "Manage", FormMethod.Post))
-                {
-                    @Html.AntiForgeryToken()
+                <form asp-controller="Manage" asp-action="EnableTwoFactorAuthentication" method="post" class="form-horizontal" role="form">
                     <p>
                         Disabled
                         <input type="submit" value="Enable" class="btn btn-link" />
                     </p>
-                }
+                </form>
             }
         </dd>
         <dt>Browser remembered:</dt>
         <dd>
             @if (Model.BrowserRemembered)
             {
-                using (Html.BeginForm("ForgetBrowser", "Manage", FormMethod.Post))
-                {
-                    @Html.AntiForgeryToken()
+                <form asp-controller="Manage" asp-action="ForgetBrowser" method="post" class="form-horizontal" role="form">
                     <p>
                         Browser is curently remembered for two factor:
                         <input type="submit" value="Forget Browser" class="btn btn-default" />
                     </p>
-                }
+                </form>
             }
             else
             {
-                using (Html.BeginForm("RememberBrowser", "Manage", FormMethod.Post))
-                {
-                    @Html.AntiForgeryToken()
+                <form asp-controller="Manage" asp-action="ForgetBrowser" method="post" class="form-horizontal" role="form">
                     <p>
                         Browser is curently not remembered for two factor:
                         <input type="submit" value="Remember Browser" class="btn btn-default" />
                     </p>
-                }
+                </form>
             }
         </dd>
     </dl>

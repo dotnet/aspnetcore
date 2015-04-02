@@ -419,7 +419,7 @@ namespace E2ETests
                 }
                 catch (Exception exception)
                 {
-                    logger.LogWarning("Failed to delete directory.", exception);
+                    logger.LogWarning("Failed to delete directory : {error}", exception.Message);
                 }
             }
         }

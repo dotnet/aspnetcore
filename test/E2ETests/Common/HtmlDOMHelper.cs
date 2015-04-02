@@ -46,7 +46,7 @@ namespace E2ETests
                 {
                     foreach (XmlNode input in htmlDocument.GetElementsByTagName("input"))
                     {
-                        if (input.Attributes["name"].Value == "__RequestVerificationToken" && input.Attributes["type"].Value == "hidden")
+                        if (input.Attributes["name"]?.Value == "__RequestVerificationToken" && input.Attributes["type"].Value == "hidden")
                         {
                             return input.Attributes["value"].Value;
                         }

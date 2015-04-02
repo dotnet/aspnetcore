@@ -33,8 +33,6 @@ namespace MusicStore.Controllers
             return View(albums);
         }
 
-        //Can be removed and handled when HandleError filter is implemented
-        //https://github.com/aspnet/Mvc/issues/623
         public IActionResult Error()
         {
             return View("~/Views/Shared/Error.cshtml");

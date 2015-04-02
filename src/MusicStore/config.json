@@ -1,4 +1,7 @@
 ﻿{
+    "AppSettings": {
+        "SiteTitle": "ASP.NET MVC Music Store"
+    },
     "DefaultAdminUsername": "Administrator@test.com",
     "DefaultAdminPassword": "YouShouldChangeThisPassword1!",
     "Data": {

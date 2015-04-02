@@ -1,10 +1,10 @@
-﻿@model MusicStore.Models.Album
+﻿@model Album
 
 @if (Model != null)
 {
     <li>
         <br />
-        <small><i>@Html.Label(null, "New Arrivals!", new { style = "color: red" })</i></small>
-        <i>@Html.ActionLink(Model.Title, "Details", "Store", new { id = Model.AlbumId }, new { id = "NewArrivalsPanel" })</i>
+        <small><i><label title="New Arrivals!" style="color:red">New Arrivals!</label></i></small>
+        <i><a id="NewArrivalsPanel" asp-controller="Store" asp-action="Details" asp-route-id="@Model.AlbumId">@Model.Title</a></i>
     </li>
 }

@@ -1,6 +1,4 @@
-﻿@using MusicStore.Models;
-@using Microsoft.AspNet.Http.Authentication;
-@using Microsoft.AspNet.Identity;
+﻿@using Microsoft.AspNet.Http.Authentication;
 @model ExternalLoginListViewModel
 @inject SignInManager<ApplicationUser> SignInManager
 <h4>Use another service to log in.</h4>
@@ -18,17 +16,15 @@
     }
     else
     {
-        using (Html.BeginForm("ExternalLogin", "Account", new { ReturnUrl = Model.ReturnUrl }))
-        {
-            @Html.AntiForgeryToken()
+        <form asp-controller="Account" asp-action="ExternalLogin" asp-route-returnurl="@ViewBag.ReturnUrl" method="post" class="form-horizontal" role="form">
             <div id="socialLoginList">
                 <p>
-                    @foreach (AuthenticationDescription p in loginProviders.Where(a => a.Caption != null))
+                    @foreach (AuthenticationDescription p in loginProviders)
                     {
                         <button type="submit" class="btn btn-default" id="@p.AuthenticationScheme" name="provider" value="@p.AuthenticationScheme" title="Log in using your @p.Caption account">@p.AuthenticationScheme</button>
                     }
                 </p>
             </div>
-        }
+        </form>
     }
 }

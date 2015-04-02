@@ -1,22 +1,17 @@
-﻿@model MusicStore.Models.Order
+﻿@model Order
 
 @{
     ViewBag.Title = "Address And Payment";
 }
 
 @section Scripts {
-    @*TODO : Until script helpers are available, adding script references manually*@
-    @*@Scripts.Render("~/bundles/jqueryval")*@
-    <script src="@Url.Content("~/Scripts/jquery.validate.js")"></script>
-    <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.js")"></script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }
 
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
+<form>
     <h2>Address And Payment</h2>
     <hr />
-    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div asp-validation-summary="ValidationSummary.All" class="text-danger"></div>
     <fieldset>
         <legend>Shipping Information</legend>
 
@@ -27,7 +22,7 @@
         <p>We're running a promotion: all music is free with the promo code: "FREE"</p>
 
         <div class="editor-label">
-            @Html.Label("Promo Code")
+            <label title="Promo Code">Promo Code</label>
         </div>
         <div class="editor-field">
             @Html.TextBox("PromoCode")
@@ -35,4 +30,4 @@
     </fieldset>
 
     <input type="submit" value="Submit Order" />
-}
+</form>

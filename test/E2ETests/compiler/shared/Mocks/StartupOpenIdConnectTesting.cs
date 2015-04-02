@@ -31,6 +31,8 @@ namespace MusicStore
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<AppSettings>(Configuration.GetSubKey("AppSettings"));
+
             //Sql client not available on mono
             var useInMemoryStore = Type.GetType("Mono.Runtime") != null;
 

@@ -55,7 +55,7 @@
     <em>Review</em> your cart:
 </h3>
 <p class="button">
-    @Html.ActionLink("Checkout >>", "AddressAndPayment", "Checkout")
+    <a asp-controller="Checkout" asp-action="AddressAndPayment">Checkout >></a>
 </p>
 <div id="update-message">
 </div>
@@ -76,8 +76,7 @@
     {
         <tr id="row-@item.CartItemId">
             <td>
-                @Html.ActionLink(item.Album.Title,
-                    "Details", "Store", new { id = item.AlbumId }, null)
+                <a asp-controller="Store" asp-action="Details" asp-route-id="@item.AlbumId">@item.Album.Title</a>
             </td>
             <td>
                 @item.Album.Price

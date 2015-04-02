@@ -43,6 +43,8 @@ namespace MusicStore
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<AppSettings>(Configuration.GetSubKey("AppSettings"));
+
             // Add EF services to the services container
             services.AddEntityFramework()
                     .AddSqlServer()

@@ -34,7 +34,7 @@ namespace E2ETests
 #endif
                         )
                     {
-                        logger.LogWarning("Failed to complete the request.", exception);
+                        logger.LogWarning("Failed to complete the request : {0}.", exception.Message);
                         Thread.Sleep(7 * 1000); //Wait for a while before retry.
                     }
                 }
