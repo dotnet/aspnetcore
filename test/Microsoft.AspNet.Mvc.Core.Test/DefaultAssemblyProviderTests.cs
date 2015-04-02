@@ -100,33 +100,6 @@ namespace Microsoft.AspNet.Mvc.Core
             Assert.Empty(nullProviderCandidates.Select(a => a.Name));
         }
 
-        // This test verifies DefaultAssemblyProvider.ReferenceAssemblies returns the assembly list that we intended.
-        // If ReferenceAssemblies needs to be changed, the expected list in this test should be updated together.
-        [Fact]
-        public void ReferenceAssemblies_ReturnsExpectedReferenceAssemblies()
-        {
-            // Arrange
-            var provider = new MvcAssembliesTestingProvider();
-
-            var expected = new HashSet<string>
-                {
-                    "Microsoft.AspNet.Mvc",
-                    "Microsoft.AspNet.Mvc.Core",
-                    "Microsoft.AspNet.Mvc.ModelBinding",
-                    "Microsoft.AspNet.Mvc.Razor.Host",
-                    "Microsoft.AspNet.Mvc.Razor",
-                    "Microsoft.AspNet.Mvc.TagHelpers",
-                    "Microsoft.AspNet.Mvc.Xml",
-                    "Microsoft.AspNet.PageExecutionInstrumentation.Interfaces",
-                };
-
-            // Act
-            var referenceAssemblies = provider.ReferenceAssemblies;
-
-            // Assert
-            Assert.True(expected.SetEquals(referenceAssemblies));
-        }
-
         // This test verifies DefaultAssemblyProvider.ReferenceAssemblies reflects the actual loadable assemblies
         // of the libraries that Microsoft.AspNet.Mvc dependes on.
         // If we add or remove dependencies, this test should be changed together.
