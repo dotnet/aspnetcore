@@ -1,4 +1,4 @@
-#pragma checksum "Inherits.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "b9264c58289dbea68e46a818fd0c4c4d835b3a84"
+#pragma checksum "Inherits.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "72d6e21c6366f99a17c63abebb46db3470f4d1da"
 namespace TestOutput
 {
     using System;

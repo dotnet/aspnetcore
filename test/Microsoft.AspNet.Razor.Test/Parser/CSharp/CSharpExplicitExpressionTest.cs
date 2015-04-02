@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            new ExpressionBlock(
                                Factory.CodeTransition(),
                                Factory.MetaCode("(").Accepts(AcceptedCharacters.None),
-                               Factory.Code("@\"\r\nFoo\r\nBar\r\nBaz\r\n\"").AsExpression(),
+                               Factory.Code($"@\"{Environment.NewLine}Foo{Environment.NewLine}Bar{Environment.NewLine}Baz{Environment.NewLine}\"").AsExpression(),
                                Factory.MetaCode(")").Accepts(AcceptedCharacters.None)
                                ));
         }

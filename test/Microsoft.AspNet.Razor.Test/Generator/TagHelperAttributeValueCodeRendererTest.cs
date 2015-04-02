@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                              });
         }
 
-        private class CodeBuilderReplacingHost : RazorEngineHost
+        private class CodeBuilderReplacingHost : CodeGenTestHost
         {
             public CodeBuilderReplacingHost(RazorEngineHost originalHost)
                 : base(new CSharpRazorCodeLanguage())

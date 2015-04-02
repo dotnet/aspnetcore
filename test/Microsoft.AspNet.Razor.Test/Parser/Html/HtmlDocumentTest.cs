@@ -103,10 +103,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                         Factory.MetaCode("section Foo {")
                                .AutoCompleteWith(null, atEndOfSpan: true),
                         new MarkupBlock(
-                            Factory.Markup("\r\n    "),
+                            Factory.Markup(Environment.NewLine + "    "),
                             BlockFactory.MarkupTagBlock("<html>"),
                             BlockFactory.MarkupTagBlock("</html>"),
-                            Factory.Markup("\r\n")),
+                            Factory.Markup(Environment.NewLine)),
                         Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                     Factory.EmptyHtml()));
         }

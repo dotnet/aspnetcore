@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator.CodeTree
         {
             var syntaxTreeNode = new Mock<Span>(new SpanBuilder());
             var language = new CSharpRazorCodeLanguage();
-            var host = new RazorEngineHost(language);
+            var host = new CodeGenTestHost(language);
             var codeBuilderContext = new CodeBuilderContext(
                 host,
                 "TestClass",
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator.CodeTree
                 errorSink: new ParserErrorSink());
             codeBuilderContext.CodeTreeBuilder.AddUsingChunk("FakeNamespace1", syntaxTreeNode.Object);
             codeBuilderContext.CodeTreeBuilder.AddUsingChunk("FakeNamespace2.SubNamespace", syntaxTreeNode.Object);
-            var codeBuilder = language.CreateCodeBuilder(codeBuilderContext);
+            var codeBuilder = new CodeGenTestCodeBuilder(codeBuilderContext);
 
             // Act
             var result = codeBuilder.Build();

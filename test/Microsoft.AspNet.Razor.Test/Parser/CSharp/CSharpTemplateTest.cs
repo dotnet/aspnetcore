@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    new MarkupBlock(
                                        Factory.MarkupTransition(),
                                        Factory.MetaMarkup(":", HtmlSymbolType.Colon),
-                                       Factory.Markup(" bar\r\n")
+                                       Factory.Markup(" bar" + Environment.NewLine)
                                            .With(new SingleLineMarkupEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString))
                                            .Accepts(AcceptedCharacters.None)
                                        )
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    new MarkupBlock(
                                        Factory.MarkupTransition(),
                                        Factory.MetaMarkup(":", HtmlSymbolType.Colon),
-                                       Factory.Markup(" bar\r\n")
+                                       Factory.Markup(" bar" + Environment.NewLine)
                                            .With(new SingleLineMarkupEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString))
                                            .Accepts(AcceptedCharacters.None)
                                        )

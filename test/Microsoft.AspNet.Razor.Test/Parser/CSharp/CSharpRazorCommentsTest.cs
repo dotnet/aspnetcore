@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.EmptyHtml(),
                     new ExpressionBlock(
                         Factory.CodeTransition(),
-                        Factory.Code("foo(\r\n")
+                        Factory.Code("foo(" + Environment.NewLine)
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords),
                         new CommentBlock(
                             Factory.CodeTransition(CSharpSymbolType.RazorCommentTransition)
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .Accepts(AcceptedCharacters.None),
                             Factory.CodeTransition(CSharpSymbolType.RazorCommentTransition)
                                    .Accepts(AcceptedCharacters.None)),
-                        Factory.Code("\r\n")
+                        Factory.Code(Environment.NewLine)
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords))),
                 new RazorError(
                     RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
@@ -122,12 +122,12 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     new StatementBlock(
                         Factory.CodeTransition(),
                         Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                        Factory.Code("\r\n").AsStatement(),
+                        Factory.Code(Environment.NewLine).AsStatement(),
                         new MarkupBlock(
                             Factory.Markup("    "),
                             new MarkupTagBlock(
                                 Factory.MarkupTransition("<text").Accepts(AcceptedCharacters.Any)),
-                            Factory.Markup("\r\n    ").Accepts(AcceptedCharacters.None),
+                            Factory.Markup(Environment.NewLine + "    ").Accepts(AcceptedCharacters.None),
                             new CommentBlock(
                                 Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
                                        .Accepts(AcceptedCharacters.None),
@@ -142,9 +142,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                        .Accepts(AcceptedCharacters.None),
                                 Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
                                        .Accepts(AcceptedCharacters.None)),
-                            Factory.Markup("\r\n}")))),
-                new RazorError(RazorResources.ParseError_TextTagCannotContainAttributes, 8, 1, 4),
-                new RazorError(RazorResources.FormatParseError_MissingEndTag("text"), 8, 1, 4),
+                            Factory.Markup(Environment.NewLine + "}")))),
+                new RazorError(RazorResources.ParseError_TextTagCannotContainAttributes, 6 + Environment.NewLine.Length, 1, 4),
+                new RazorError(RazorResources.FormatParseError_MissingEndTag("text"), 6 + Environment.NewLine.Length, 1, 4),
                 new RazorError(RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"), 1, 0, 1));
         }
 

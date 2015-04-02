@@ -1,4 +1,4 @@
-#pragma checksum "TagHelpersInSection.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "f228c34bdcee3e7f64bc3de14469d11a61efb825"
+#pragma checksum "TagHelpersInSection.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "b6492c68360b85d4993de94eeac547b7fb012a26"
 namespace TestOutput
 {
     using System;

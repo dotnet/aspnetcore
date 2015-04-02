@@ -1,4 +1,4 @@
-#pragma checksum "Templates.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "3a6da4fcc3d9b28618d5703e4925d45491b5a013"
+#pragma checksum "Templates.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "32d88538b3b0ca3648493b240101d304878756fe"
 namespace TestOutput
 {
     using System;

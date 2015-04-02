@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                         Factory.Code("Bar")
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                .Accepts(AcceptedCharacters.NonWhiteSpace)),
-                    Factory.Markup(" Baz\r\n")
+                    Factory.Markup(" Baz" + Environment.NewLine)
                            .With(new SingleLineMarkupEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString, AcceptedCharacters.None))));
         }
 
@@ -224,11 +224,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     Factory.Markup("   "),
                     new MarkupTagBlock(
                         Factory.Markup("<ul>").Accepts(AcceptedCharacters.None)),
-                    Factory.Markup("\r\n"),
+                    Factory.Markup(Environment.NewLine),
                     new StatementBlock(
                         Factory.Code("    ").AsStatement(),
                         Factory.CodeTransition(),
-                        Factory.Code("foreach(var p in Products) {\r\n").AsStatement(),
+                        Factory.Code("foreach(var p in Products) {" + Environment.NewLine).AsStatement(),
                         new MarkupBlock(
                             Factory.Markup("        "),
                             new MarkupTagBlock(
@@ -241,8 +241,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                                        .Accepts(AcceptedCharacters.NonWhiteSpace)),
                             new MarkupTagBlock(
                                 Factory.Markup("</li>").Accepts(AcceptedCharacters.None)),
-                            Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
-                        Factory.Code("    }\r\n").AsStatement().Accepts(AcceptedCharacters.None)),
+                            Factory.Markup(Environment.NewLine).Accepts(AcceptedCharacters.None)),
+                        Factory.Code("    }" + Environment.NewLine).AsStatement().Accepts(AcceptedCharacters.None)),
                     Factory.Markup("    "),
                     new MarkupTagBlock(
                         Factory.Markup("</ul>").Accepts(AcceptedCharacters.None))));
@@ -260,11 +260,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     Factory.Markup("   "),
                     new MarkupTagBlock(
                         Factory.Markup("<ul>")),
-                    Factory.Markup("\r\n"),
+                    Factory.Markup(Environment.NewLine),
                     new StatementBlock(
                         Factory.Code("    ").AsStatement(),
                         Factory.CodeTransition(),
-                        Factory.Code("foreach(var p in Products) {\r\n").AsStatement(),
+                        Factory.Code("foreach(var p in Products) {" + Environment.NewLine).AsStatement(),
                         new MarkupBlock(
                             Factory.Markup("        "),
                             new MarkupTagBlock(
@@ -277,8 +277,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                                        .Accepts(AcceptedCharacters.NonWhiteSpace)),
                             new MarkupTagBlock(
                                 Factory.Markup("</li>").Accepts(AcceptedCharacters.None)),
-                            Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
-                        Factory.Code("    }\r\n").AsStatement().Accepts(AcceptedCharacters.None)),
+                            Factory.Markup(Environment.NewLine).Accepts(AcceptedCharacters.None)),
+                        Factory.Code("    }" + Environment.NewLine).AsStatement().Accepts(AcceptedCharacters.None)),
                     Factory.Markup("    "),
                     new MarkupTagBlock(
                         Factory.Markup("</ul>"))));
@@ -300,14 +300,14 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                         Factory.CodeTransition(),
                         Factory.MetaCode("section foo {").AutoCompleteWith(null, atEndOfSpan: true),
                         new MarkupBlock(
-                            Factory.Markup("\r\n    "),
+                            Factory.Markup(Environment.NewLine + "    "),
                             new MarkupTagBlock(
                                 Factory.Markup("<ul>")),
-                            Factory.Markup("\r\n"),
+                            Factory.Markup(Environment.NewLine),
                             new StatementBlock(
                                 Factory.Code("        ").AsStatement(),
                                 Factory.CodeTransition(),
-                                Factory.Code("foreach(var p in Products) {\r\n").AsStatement(),
+                                Factory.Code("foreach(var p in Products) {" + Environment.NewLine).AsStatement(),
                                 new MarkupBlock(
                                     Factory.Markup("            "),
                                     new MarkupTagBlock(
@@ -320,12 +320,12 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                                                .Accepts(AcceptedCharacters.NonWhiteSpace)),
                                     new MarkupTagBlock(
                                         Factory.Markup("</li>").Accepts(AcceptedCharacters.None)),
-                                    Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
-                                Factory.Code("        }\r\n").AsStatement().Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup(Environment.NewLine).Accepts(AcceptedCharacters.None)),
+                                Factory.Code("        }" + Environment.NewLine).AsStatement().Accepts(AcceptedCharacters.None)),
                             Factory.Markup("    "),
                             new MarkupTagBlock(
                                 Factory.Markup("</ul>")),
-                            Factory.Markup("\r\n")),
+                            Factory.Markup(Environment.NewLine)),
                         Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                     Factory.EmptyHtml()));
         }
@@ -342,10 +342,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     Factory.Markup("   "),
                     new MarkupTagBlock(
                         Factory.Markup("<ul>").Accepts(AcceptedCharacters.None)),
-                    Factory.Markup("\r\n    "),
+                    Factory.Markup(Environment.NewLine + "    "),
                     new StatementBlock(
                         Factory.CodeTransition(),
-                        Factory.Code("foreach(var p in Products) {\r\n        ").AsStatement(),
+                        Factory.Code($"foreach(var p in Products) {{{Environment.NewLine}        ").AsStatement(),
                         new MarkupBlock(
                             new MarkupTagBlock(
                                 Factory.Markup("<li>").Accepts(AcceptedCharacters.None)),
@@ -355,8 +355,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                                 Factory.Code("p.Name").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharacters.NonWhiteSpace)),
                             new MarkupTagBlock(
                                 Factory.Markup("</li>").Accepts(AcceptedCharacters.None))),
-                        Factory.Code("\r\n    }").AsStatement().Accepts(AcceptedCharacters.None)),
-                    Factory.Markup("\r\n    "),
+                        Factory.Code(Environment.NewLine + "    }").AsStatement().Accepts(AcceptedCharacters.None)),
+                    Factory.Markup(Environment.NewLine + "    "),
                     new MarkupTagBlock(
                         Factory.Markup("</ul>").Accepts(AcceptedCharacters.None))),
                 designTimeParser: true);

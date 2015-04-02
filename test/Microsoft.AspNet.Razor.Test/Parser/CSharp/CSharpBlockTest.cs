@@ -677,11 +677,11 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
                          + "            </div>" + Environment.NewLine
                          + "        }",
                 new StatementBlock(
-                    Factory.Code("foreach(var c in db.Categories) {\r\n").AsStatement(),
+                    Factory.Code("foreach(var c in db.Categories) {" + Environment.NewLine).AsStatement(),
                     new MarkupBlock(
                         Factory.Markup("            "),
                         BlockFactory.MarkupTagBlock("<div>", AcceptedCharacters.None),
-                        Factory.Markup("\r\n                "),
+                        Factory.Markup(Environment.NewLine + "                "),
                         BlockFactory.MarkupTagBlock("<h1>", AcceptedCharacters.None),
                         Factory.EmptyHtml(),
                         new ExpressionBlock(
@@ -690,21 +690,27 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                    .Accepts(AcceptedCharacters.NonWhiteSpace)),
                         BlockFactory.MarkupTagBlock("</h1>", AcceptedCharacters.None),
-                        Factory.Markup("\r\n                "),
+                        Factory.Markup(Environment.NewLine + "                "),
                         BlockFactory.MarkupTagBlock("<ul>", AcceptedCharacters.None),
-                        Factory.Markup("\r\n"),
+                        Factory.Markup(Environment.NewLine),
                         new StatementBlock(
                             Factory.Code(@"                    ").AsStatement(),
                             Factory.CodeTransition(),
-                            Factory.Code("foreach(var p in c.Products) {\r\n").AsStatement(),
+                            Factory.Code("foreach(var p in c.Products) {" + Environment.NewLine).AsStatement(),
                             new MarkupBlock(
                                 Factory.Markup("                        "),
                                 BlockFactory.MarkupTagBlock("<li>", AcceptedCharacters.None),
                                 new MarkupTagBlock(
                                     Factory.Markup("<a"),
-                                    new MarkupBlock(new AttributeBlockCodeGenerator("href", new LocationTagged<string>(" href=\"", 193, 5, 30), new LocationTagged<string>("\"", 256, 5, 93)),
+                                    new MarkupBlock(
+                                        new AttributeBlockCodeGenerator(
+                                            "href", 
+                                            new LocationTagged<string>(" href=\"", 183 + Environment.NewLine.Length * 5, 5, 30), 
+                                            new LocationTagged<string>("\"", 246 + Environment.NewLine.Length * 5, 5, 93)),
                                         Factory.Markup(" href=\"").With(SpanCodeGenerator.Null),
-                                        new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 200, 5, 37), 200, 5, 37),
+                                        new MarkupBlock(
+                                            new DynamicAttributeBlockCodeGenerator(
+                                                new LocationTagged<string>(string.Empty, 190 + Environment.NewLine.Length * 5, 5, 37), 190 + Environment.NewLine.Length * 5, 5, 37),
                                             new ExpressionBlock(
                                                 Factory.CodeTransition(),
                                                 Factory.Code("Html.ActionUrl(\"Products\", \"Detail\", new { id = p.Id })")
@@ -720,13 +726,13 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
                                            .Accepts(AcceptedCharacters.NonWhiteSpace)),
                                 BlockFactory.MarkupTagBlock("</a>", AcceptedCharacters.None),
                                 BlockFactory.MarkupTagBlock("</li>", AcceptedCharacters.None),
-                                Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
-                            Factory.Code("                    }\r\n").AsStatement().Accepts(AcceptedCharacters.None)),
+                                Factory.Markup(Environment.NewLine).Accepts(AcceptedCharacters.None)),
+                            Factory.Code("                    }" + Environment.NewLine).AsStatement().Accepts(AcceptedCharacters.None)),
                         Factory.Markup("                "),
                         BlockFactory.MarkupTagBlock("</ul>", AcceptedCharacters.None),
-                        Factory.Markup("\r\n            "),
+                        Factory.Markup(Environment.NewLine + "            "),
                         BlockFactory.MarkupTagBlock("</div>", AcceptedCharacters.None),
-                        Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
+                        Factory.Markup(Environment.NewLine).Accepts(AcceptedCharacters.None)),
                     Factory.Code("        }").AsStatement().Accepts(AcceptedCharacters.None)));
         }
 

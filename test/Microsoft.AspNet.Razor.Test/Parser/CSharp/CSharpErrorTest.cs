@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("using          " + Environment.NewLine
                          + Environment.NewLine,
                            new StatementBlock(
-                               Factory.Code("using          \r\n").AsStatement()
+                               Factory.Code("using          " + Environment.NewLine).AsStatement()
                                ));
         }
 
@@ -83,16 +83,16 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "}",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code("\r\n    ").AsStatement(),
+                               Factory.Code(Environment.NewLine + "    ").AsStatement(),
                                new ExpressionBlock(
                                    Factory.CodeTransition(),
                                    Factory.EmptyCSharp()
                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
                                        .Accepts(AcceptedCharacters.NonWhiteSpace)),
-                               Factory.Code("   {}\r\n").AsStatement(),
+                               Factory.Code("   {}" + Environment.NewLine).AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
                                ),
-                           new RazorError(RazorResources.ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS, 8, 1, 5));
+                           new RazorError(RazorResources.ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS, 6 + Environment.NewLine.Length, 1, 5));
         }
 
         [Fact]
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "    @",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code("\r\n    ").AsStatement(),
+                               Factory.Code(Environment.NewLine + "    ").AsStatement(),
                                new ExpressionBlock(
                                    Factory.CodeTransition(),
                                    Factory.EmptyCSharp()
@@ -110,7 +110,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                        .Accepts(AcceptedCharacters.NonWhiteSpace)),
                                Factory.EmptyCSharp().AsStatement()
                                ),
-                           new RazorError(RazorResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock, 8, 1, 5),
+                           new RazorError(
+                               RazorResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock, 6 + Environment.NewLine.Length, 1, 5),
                            new RazorError(
                                RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"),
                                SourceLocation.Zero));
@@ -137,7 +138,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "baz",
                            new ExpressionBlock(
                                Factory.MetaCode("(").Accepts(AcceptedCharacters.None),
-                               Factory.Code("foo bar\r\nbaz").AsExpression()
+                               Factory.Code($"foo bar{Environment.NewLine}baz").AsExpression()
                                ),
                            new RazorError(
                                RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_ExplicitExpression, ')', '('),
@@ -153,7 +154,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "</html",
                            new ExpressionBlock(
                                Factory.MetaCode("(").Accepts(AcceptedCharacters.None),
-                               Factory.Code("foo bar\r\n").AsExpression()
+                               Factory.Code($"foo bar{Environment.NewLine}").AsExpression()
                                ),
                            new RazorError(
                                RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_ExplicitExpression, ')', '('),
@@ -166,7 +167,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("Href(" + Environment.NewLine
                          + "<h1>@Html.Foo(Bar);</h1>" + Environment.NewLine,
                            new ExpressionBlock(
-                               Factory.Code("Href(\r\n")
+                               Factory.Code("Href(" + Environment.NewLine)
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                ),
                            new RazorError(
@@ -182,7 +183,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "Biz" + Environment.NewLine
                          + "Boz",
                            new ExpressionBlock(
-                               Factory.Code("Foo(Bar(Baz)\r\nBiz\r\nBoz")
+                               Factory.Code($"Foo(Bar(Baz){Environment.NewLine}Biz{Environment.NewLine}Boz")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                ),
                            new RazorError(RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
@@ -199,7 +200,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "Boz" + Environment.NewLine
                          + "</html>",
                            new ExpressionBlock(
-                               Factory.Code("Foo(Bar(Baz)\r\nBiz\r\n")
+                               Factory.Code($"Foo(Bar(Baz){Environment.NewLine}Biz{Environment.NewLine}")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                ),
                            new RazorError(RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
@@ -214,7 +215,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "Biz" + Environment.NewLine
                          + "Boz",
                            new ExpressionBlock(
-                               Factory.Code("Foo[Bar[Baz]\r\nBiz\r\nBoz")
+                               Factory.Code($"Foo[Bar[Baz]{Environment.NewLine}Biz{Environment.NewLine}Boz")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                ),
                            new RazorError(
@@ -232,7 +233,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "Boz" + Environment.NewLine
                          + "</b>",
                            new ExpressionBlock(
-                               Factory.Code("Foo[Bar[Baz]\r\nBiz\r\n")
+                               Factory.Code($"Foo[Bar[Baz]{Environment.NewLine}Biz{Environment.NewLine}")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                ),
                            new RazorError(
@@ -449,7 +450,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("if(foo bar" + Environment.NewLine
                          + "baz",
                            new StatementBlock(
-                               Factory.Code("if(foo bar\r\n").AsStatement()
+                               Factory.Code("if(foo bar" + Environment.NewLine).AsStatement()
                                ),
                            new RazorError(
                                RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
@@ -462,7 +463,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("foreach(foo bar" + Environment.NewLine
                          + "baz",
                            new StatementBlock(
-                               Factory.Code("foreach(foo bar\r\n").AsStatement()
+                               Factory.Code("foreach(foo bar" + Environment.NewLine).AsStatement()
                                ),
                            new RazorError(
                                RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
@@ -475,7 +476,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("do { } while(foo bar" + Environment.NewLine
                          + "baz",
                            new StatementBlock(
-                               Factory.Code("do { } while(foo bar\r\n").AsStatement()
+                               Factory.Code("do { } while(foo bar" + Environment.NewLine).AsStatement()
                                ),
                            new RazorError(
                                RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
@@ -488,7 +489,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("using(foo bar" + Environment.NewLine
                          + "baz",
                            new StatementBlock(
-                               Factory.Code("using(foo bar\r\n").AsStatement()
+                               Factory.Code("using(foo bar" + Environment.NewLine).AsStatement()
                                ),
                            new RazorError(
                                RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
@@ -501,7 +502,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("if(" + Environment.NewLine
                          + "else { <p>Foo</p> }",
                            new StatementBlock(
-                               Factory.Code("if(\r\nelse {").AsStatement(),
+                               Factory.Code($"if({Environment.NewLine}else {{").AsStatement(),
                                new MarkupBlock(
                                    Factory.Markup(" "),
                                     BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
@@ -523,7 +524,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                               + ";" + Environment.NewLine
                               + "}",
                                 BlockType.Statement, SpanKind.Code,
-                                new RazorError(RazorResources.ParseError_Unterminated_String_Literal, 23, 1, 12));
+                                new RazorError(
+                                    RazorResources.ParseError_Unterminated_String_Literal, 21 + Environment.NewLine.Length, 1, 12));
         }
 
         [Fact]
@@ -555,7 +557,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "    <p>Foo is @foo</p>" + Environment.NewLine
                          + "}",
                            new StatementBlock(
-                               Factory.Code("if(foo) {\r\n    var foo = \"foo bar baz\r\n    ").AsStatement(),
+                               Factory.Code($"if(foo) {{{Environment.NewLine}    var foo = \"foo bar baz{Environment.NewLine}    ").AsStatement(),
                                new MarkupBlock(
                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
                                    Factory.Markup("Foo is "),
@@ -565,12 +567,12 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                            .Accepts(AcceptedCharacters.NonWhiteSpace)),
                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
-                                   Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup(Environment.NewLine).Accepts(AcceptedCharacters.None)),
                                Factory.Code("}").AsStatement()
                                ),
                            new RazorError(
                                RazorResources.ParseError_Unterminated_String_Literal,
-                               25, 1, 14));
+                               23 + Environment.NewLine.Length, 1, 14));
         }
 
         [Fact]

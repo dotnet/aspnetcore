@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     new StatementBlock(
                         Factory.CodeTransition(),
                         Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                        Factory.Code("\r\n").AsStatement(),
+                        Factory.Code(Environment.NewLine).AsStatement(),
                         new MarkupBlock(
                             new MarkupTagBlock(
                                 Factory.Markup("<"))))),
@@ -56,10 +56,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     new StatementBlock(
                         Factory.CodeTransition(),
                         Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                        Factory.Code("\r\n").AsStatement(),
+                        Factory.Code(Environment.NewLine).AsStatement(),
                         new MarkupBlock(
                             new MarkupTagBlock(
-                                Factory.Markup("<\r\n"))
+                                Factory.Markup("<" + Environment.NewLine))
                         ),
                         new MarkupBlock(
                             new MarkupTagBlock(
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 designTimeParser: true,
                 expectedErrors: new[]
                 {
-                    new RazorError(RazorResources.FormatParseError_UnexpectedEndTag("html"), 7, 2, 0),
+                    new RazorError(RazorResources.FormatParseError_UnexpectedEndTag("html"), 3 + Environment.NewLine.Length * 2, 2, 0),
                     new RazorError(RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("code", "}", "{"), 1, 0, 1)
                 });
         }
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                          + "   ",
                 new MarkupBlock(
                     new MarkupTagBlock(
-                        Factory.Markup("<                      \r\n   "))),
+                        Factory.Markup($"<                      {Environment.NewLine}   "))),
                 designTimeParser: true,
                 expectedErrors: new RazorError(RazorResources.FormatParseError_UnfinishedTag(string.Empty), 0, 0, 0));
         }
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 new MarkupBlock(
                     Factory.MarkupTransition(),
                     Factory.MetaMarkup(":", HtmlSymbolType.Colon),
-                    Factory.Markup("<li>Foo Bar Baz\r\n")
+                    Factory.Markup("<li>Foo Bar Baz" + Environment.NewLine)
                            .With(new SingleLineMarkupEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString, AcceptedCharacters.None))
                 ));
         }

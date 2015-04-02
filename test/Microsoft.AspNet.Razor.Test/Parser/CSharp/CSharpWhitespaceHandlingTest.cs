@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    Factory.Code("if (true) { }")
                                        .AsStatement()
                                    ),
-                               Factory.Markup("\r\n")
+                               Factory.Markup(Environment.NewLine)
                                    .Accepts(AcceptedCharacters.None)));
         }
     }

@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                                        "");
             var expectedMappings = new LineMapping(
                                 new MappingLocation(location, 30),
-                                new MappingLocation(new SourceLocation(18, 1, 0), 11));
+                                new MappingLocation(new SourceLocation(16 + Environment.NewLine.Length, 1, 0), 11));
             var writer = new CSharpCodeWriter();
 
             // Act

@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-//#define GENERATE_BASELINES
-
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
@@ -26,19 +26,20 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
         protected RazorEngineHost CreateHost()
         {
-            return new RazorEngineHost(new TLanguage());
+            return new CodeGenTestHost(new TLanguage());
         }
 
-        protected void RunTest(string name,
-                               string baselineName = null,
-                               bool generatePragmas = true,
-                               bool designTimeMode = false,
-                               IList<LineMapping> expectedDesignTimePragmas = null,
-                               TestSpan[] spans = null,
-                               TabTest tabTest = TabTest.Both,
-                               Func<RazorEngineHost, RazorEngineHost> hostConfig = null,
-                               Func<RazorTemplateEngine, RazorTemplateEngine> templateEngineConfig = null,
-                               Action<GeneratorResults> onResults = null)
+        protected void RunTest(
+            string name,
+            string baselineName = null,
+            bool generatePragmas = true,
+            bool designTimeMode = false,
+            IList<LineMapping> expectedDesignTimePragmas = null,
+            TestSpan[] spans = null,
+            TabTest tabTest = TabTest.Both,
+            Func<RazorEngineHost, RazorEngineHost> hostConfig = null,
+            Func<RazorTemplateEngine, RazorTemplateEngine> templateEngineConfig = null,
+            Action<GeneratorResults> onResults = null)
         {
             var testRun = false;
 
@@ -85,16 +86,41 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             Assert.True(testRun, "No test was run because TabTest is not set correctly");
         }
 
-        private void RunTestInternal(string name,
-                                     string baselineName,
-                                     bool generatePragmas,
-                                     bool designTimeMode,
-                                     IList<LineMapping> expectedDesignTimePragmas,
-                                     TestSpan[] spans,
-                                     bool withTabs,
-                                     Func<RazorEngineHost, RazorEngineHost> hostConfig,
-                                     Func<RazorTemplateEngine, RazorTemplateEngine> templateEngineConfig,
-                                     Action<GeneratorResults> onResults = null)
+        private Stream NormalizeNewLines(Stream inputStream)
+        {
+            if (!inputStream.CanSeek)
+            {
+                var memoryStream = new MemoryStream();
+                inputStream.CopyTo(memoryStream);
+
+                // We don't have to dispose the input stream since it is owned externally.
+                inputStream = memoryStream;
+            }
+
+            inputStream.Position = 0;
+            var reader = new StreamReader(inputStream);
+
+            // Normalize newlines to be \r\n. This is to ensure when running tests cross plat the final test output 
+            // is compared against test files in a normalized fashion.
+            var fileContents = reader.ReadToEnd().Replace(Environment.NewLine, "\r\n");
+
+            // Since this is a test we can normalize to utf8.
+            inputStream = new MemoryStream(Encoding.UTF8.GetBytes(fileContents));
+
+            return inputStream;
+        }
+
+        private void RunTestInternal(
+            string name,
+            string baselineName,
+            bool generatePragmas,
+            bool designTimeMode,
+            IList<LineMapping> expectedDesignTimePragmas,
+            TestSpan[] spans,
+            bool withTabs,
+            Func<RazorEngineHost, RazorEngineHost> hostConfig,
+            Func<RazorTemplateEngine, RazorTemplateEngine> templateEngineConfig,
+            Action<GeneratorResults> onResults = null)
         {
             // Load the test files
             if (baselineName == null)
@@ -146,8 +172,9 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             GeneratorResults results = null;
             using (var source = TestFile.Create(sourceLocation).OpenRead())
             {
+                var sourceFile = NormalizeNewLines(source);
                 var sourceFileName = generatePragmas ? String.Format("{0}.{1}", name, FileExtension) : null;
-                results = engine.GenerateCode(source, className: name, rootNamespace: TestRootNamespaceName, sourceFileName: sourceFileName);
+                results = engine.GenerateCode(sourceFile, className: name, rootNamespace: TestRootNamespaceName, sourceFileName: sourceFileName);
             }
             // Only called if GENERATE_BASELINES is set, otherwise compiled out.
             BaselineWriter.WriteBaseline(String.Format(@"test\Microsoft.AspNet.Razor.Test\TestFiles\CodeGenerator\{0}\Output\{1}.{2}", LanguageName, baselineName, BaselineExtension), results.GeneratedCode);

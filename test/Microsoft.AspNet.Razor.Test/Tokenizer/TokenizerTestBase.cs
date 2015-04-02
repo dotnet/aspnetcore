@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
                     }
                 }
             }
-            Assert.True(success, "\r\n" + output.ToString());
+            Assert.True(success, Environment.NewLine + output.ToString());
             WriteTraceLine(output.Replace("{", "{{").Replace("}", "}}").ToString());
         }
 

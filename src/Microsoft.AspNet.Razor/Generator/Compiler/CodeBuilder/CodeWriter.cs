@@ -10,8 +10,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
     public class CodeWriter : IDisposable
     {
         private static readonly char[] NewLineCharacters = new char[] { '\r', '\n' };
-
-        private StringWriter _writer = new StringWriter();
+        private readonly StringWriter _writer = new StringWriter();
         private bool _newLine;
         private string _cache = string.Empty;
         private bool _dirty = false;
@@ -21,7 +20,20 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         private int _currentLineCharacterIndex;
 
         public string LastWrite { get; private set; }
+
         public int CurrentIndent { get; private set; }
+
+        public string NewLine 
+        { 
+            get
+            {
+                return _writer.NewLine;
+            } 
+            set
+            {
+                _writer.NewLine = value;
+            } 
+        }
 
         public CodeWriter ResetIndent()
         {

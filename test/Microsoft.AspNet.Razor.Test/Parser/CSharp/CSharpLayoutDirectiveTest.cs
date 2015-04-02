@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode("layout ").Accepts(AcceptedCharacters.None),
-                    Factory.MetaCode("Foo\r\n")
+                    Factory.MetaCode("Foo" + Environment.NewLine)
                            .With(new SetLayoutCodeGenerator("Foo"))
                            .Accepts(AcceptedCharacters.None)
                            .WithEditorHints(EditorHints.VirtualPath | EditorHints.LayoutPage)
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     new DirectiveBlock(
                         Factory.CodeTransition(),
                         Factory.MetaCode("layout ").Accepts(AcceptedCharacters.None),
-                        Factory.MetaCode("Foo\r\n")
+                        Factory.MetaCode("Foo" + Environment.NewLine)
                                .With(new SetLayoutCodeGenerator("Foo"))
                                .Accepts(AcceptedCharacters.None)
                                .WithEditorHints(EditorHints.VirtualPath | EditorHints.LayoutPage)

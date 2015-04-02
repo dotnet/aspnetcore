@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .Accepts(AcceptedCharacters.None),
                                Factory.MetaCode("functions{")
                                    .Accepts(AcceptedCharacters.None),
-                               Factory.Code("\r\nfoo")
+                               Factory.Code(Environment.NewLine + "foo")
                                    .AsFunctionsBody()
                                    .With(new AutoCompleteEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString)
                                    {
@@ -94,14 +94,14 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            .AutoCompleteWith("}", atEndOfSpan: true)
                            .Accepts(AcceptedCharacters.Any),
                     new MarkupBlock(
-                        Factory.Markup("\r\n"),
+                        Factory.Markup(Environment.NewLine),
                         new MarkupTagBlock(
                             Factory.Markup("<p>")),
                         Factory.Markup("Foo"),
                         new MarkupTagBlock(
                             Factory.Markup("</p>")))),
                 new RazorError(RazorResources.FormatParseError_Expected_X("}"),
-                                29, 1, 10));
+                                27 + Environment.NewLine.Length, 1, 10));
         }
 
         [Fact]
@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            new StatementBlock(
                                Factory.CodeTransition(),
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code("\r\n")
+                               Factory.Code(Environment.NewLine)
                                    .AsStatement()
                                    .With(new AutoCompleteEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString) { AutoCompleteString = "}" }),
                                new MarkupBlock(

@@ -76,15 +76,16 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "}",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code("\r\n    ").AsStatement(),
+                               Factory.Code(Environment.NewLine + "    ").AsStatement(),
                                new ExpressionBlock(
                                    Factory.CodeTransition(),
                                    Factory.EmptyCSharp().AsImplicitExpression(KeywordSet, acceptTrailingDot: true).Accepts(AcceptedCharacters.NonWhiteSpace)
                                    ),
-                               Factory.Code("\r\n").AsStatement(),
+                               Factory.Code(Environment.NewLine).AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                 /* designTimeParser */ true,
-                           new RazorError(RazorResources.ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS, 8, 1, 5));
+                           new RazorError(
+                               RazorResources.ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS, 6 + Environment.NewLine.Length, 1, 5));
         }
 
         [Fact]
@@ -98,7 +99,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                new ExpressionBlock(
                                    Factory.CodeTransition(),
                                    Factory.Code("foo.").AsImplicitExpression(KeywordSet, acceptTrailingDot: true).Accepts(AcceptedCharacters.NonWhiteSpace)),
-                               Factory.Code("\r\n").AsStatement(),
+                               Factory.Code(Environment.NewLine).AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)));
         }
 
@@ -113,7 +114,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                new ExpressionBlock(
                                    Factory.CodeTransition(),
                                    Factory.Code("foo.").AsImplicitExpression(KeywordSet, acceptTrailingDot: true).Accepts(AcceptedCharacters.NonWhiteSpace)),
-                               Factory.Code("\r\n").AsStatement(),
+                               Factory.Code(Environment.NewLine).AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                            designTimeParser: true);
         }

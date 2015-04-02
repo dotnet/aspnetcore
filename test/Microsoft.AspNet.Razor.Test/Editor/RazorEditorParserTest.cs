@@ -7,6 +7,7 @@ using System.Web.WebPages.TestUtils;
 using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Test.Framework;
+using Microsoft.AspNet.Razor.Test.Generator;
 using Microsoft.AspNet.Razor.Test.Utils;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Testing;
@@ -98,15 +99,19 @@ namespace Microsoft.AspNet.Razor.Test.Editor
             var parameterName = "change";
             var exception = Assert.Throws<ArgumentException>(
                 parameterName,
-                () => new RazorEditorParser(
-                    CreateHost(),
-                    "C:\\Foo.cshtml").CheckForStructureChanges(change));
+                () =>
+                {
+                    using (var parser = new RazorEditorParser(CreateHost(), "C:\\Foo.cshtml"))
+                    {
+                        parser.CheckForStructureChanges(change);
+                    }
+                });
             ExceptionHelpers.ValidateArgumentException(parameterName, RazorResources.FormatStructure_Member_CannotBeNull("Buffer", "TextChange"), exception);
         }
 
         private static RazorEngineHost CreateHost()
         {
-            return new RazorEngineHost(new CSharpRazorCodeLanguage()) { DesignTimeMode = true };
+            return new CodeGenTestHost(new CSharpRazorCodeLanguage()) { DesignTimeMode = true };
         }
 
         [Fact]
@@ -114,7 +119,7 @@ namespace Microsoft.AspNet.Razor.Test.Editor
         public void CheckForStructureChangesStartsReparseAndFiresDocumentParseCompletedEventIfNoAdditionalChangesQueued()
         {
             // Arrange
-            using (RazorEditorParser parser = CreateClientParser())
+            using (var parser = CreateClientParser())
             {
                 var input = new StringTextBuffer(SimpleCSHTMLDocument.ReadAllText());
 
@@ -143,30 +148,32 @@ namespace Microsoft.AspNet.Razor.Test.Editor
         public void CheckForStructureChangesStartsFullReparseIfChangeOverlapsMultipleSpans()
         {
             // Arrange
-            var parser = new RazorEditorParser(CreateHost(), TestLinePragmaFileName);
-            var original = new StringTextBuffer("Foo @bar Baz");
-            var changed = new StringTextBuffer("Foo @bap Daz");
-            var change = new TextChange(7, 3, original, 3, changed);
-
-            var parseComplete = new ManualResetEventSlim();
-            var parseCount = 0;
-            parser.DocumentParseComplete += (sender, args) =>
+            using (var parser = new RazorEditorParser(CreateHost(), TestLinePragmaFileName))
             {
-                Interlocked.Increment(ref parseCount);
-                parseComplete.Set();
-            };
+                var original = new StringTextBuffer("Foo @bar Baz");
+                var changed = new StringTextBuffer("Foo @bap Daz");
+                var change = new TextChange(7, 3, original, 3, changed);
 
-            Assert.Equal(PartialParseResult.Rejected, parser.CheckForStructureChanges(new TextChange(0, 0, new StringTextBuffer(String.Empty), 12, original)));
-            MiscUtils.DoWithTimeoutIfNotDebugging(parseComplete.Wait); // Wait for the parse to finish
-            parseComplete.Reset();
+                var parseComplete = new ManualResetEventSlim();
+                var parseCount = 0;
+                parser.DocumentParseComplete += (sender, args) =>
+                {
+                    Interlocked.Increment(ref parseCount);
+                    parseComplete.Set();
+                };
 
-            // Act
-            var result = parser.CheckForStructureChanges(change);
+                Assert.Equal(PartialParseResult.Rejected, parser.CheckForStructureChanges(new TextChange(0, 0, new StringTextBuffer(String.Empty), 12, original)));
+                MiscUtils.DoWithTimeoutIfNotDebugging(parseComplete.Wait); // Wait for the parse to finish
+                parseComplete.Reset();
 
-            // Assert
-            Assert.Equal(PartialParseResult.Rejected, result);
-            MiscUtils.DoWithTimeoutIfNotDebugging(parseComplete.Wait);
-            Assert.Equal(2, parseCount);
+                // Act
+                var result = parser.CheckForStructureChanges(change);
+
+                // Assert
+                Assert.Equal(PartialParseResult.Rejected, result);
+                MiscUtils.DoWithTimeoutIfNotDebugging(parseComplete.Wait);
+                Assert.Equal(2, parseCount);
+            }
         }
 
         private TextChange CreateDummyChange()

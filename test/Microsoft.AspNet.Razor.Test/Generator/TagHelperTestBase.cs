@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             }
         }
 
-        protected class TestCSharpCodeBuilder : CSharpCodeBuilder
+        protected class TestCSharpCodeBuilder : CodeGenTestCodeBuilder
         {
             public TestCSharpCodeBuilder(CodeBuilderContext context)
                 : base(context)

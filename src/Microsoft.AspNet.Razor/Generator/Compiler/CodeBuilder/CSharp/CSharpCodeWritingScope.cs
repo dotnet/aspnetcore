@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
 
         private void WriteEndScope()
         {
-            TryAutoSpace(Environment.NewLine);
+            TryAutoSpace(_writer.NewLine);
 
             // Ensure the scope hasn't been modified
             if (_writer.CurrentIndent == _startIndent)

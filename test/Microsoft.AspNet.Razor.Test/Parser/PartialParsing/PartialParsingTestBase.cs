@@ -21,30 +21,34 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         protected static void RunFullReparseTest(TextChange change, PartialParseResult additionalFlags = (PartialParseResult)0)
         {
             // Arrange
-            var manager = CreateParserManager();
-            manager.InitializeWithDocument(change.OldBuffer);
+            using (var manager = CreateParserManager())
+            {
+                manager.InitializeWithDocument(change.OldBuffer);
 
-            // Act
-            var result = manager.CheckForStructureChangesAndWait(change);
+                // Act
+                var result = manager.CheckForStructureChangesAndWait(change);
 
-            // Assert
-            Assert.Equal(PartialParseResult.Rejected | additionalFlags, result);
-            Assert.Equal(2, manager.ParseCount);
+                // Assert
+                Assert.Equal(PartialParseResult.Rejected | additionalFlags, result);
+                Assert.Equal(2, manager.ParseCount);
+            }
         }
 
         protected static void RunPartialParseTest(TextChange change, Block newTreeRoot, PartialParseResult additionalFlags = (PartialParseResult)0)
         {
             // Arrange
-            var manager = CreateParserManager();
-            manager.InitializeWithDocument(change.OldBuffer);
+            using (var manager = CreateParserManager())
+            {
+                manager.InitializeWithDocument(change.OldBuffer);
 
-            // Act
-            var result = manager.CheckForStructureChangesAndWait(change);
+                // Act
+                var result = manager.CheckForStructureChangesAndWait(change);
 
-            // Assert
-            Assert.Equal(PartialParseResult.Accepted | additionalFlags, result);
-            Assert.Equal(1, manager.ParseCount);
-            ParserTestBase.EvaluateParseTree(manager.Parser.CurrentParseTree, newTreeRoot);
+                // Assert
+                Assert.Equal(PartialParseResult.Accepted | additionalFlags, result);
+                Assert.Equal(1, manager.ParseCount);
+                ParserTestBase.EvaluateParseTree(manager.Parser.CurrentParseTree, newTreeRoot);
+            }
         }
 
         protected static TestParserManager CreateParserManager()
@@ -79,23 +83,25 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
             RunFullReparseTest(new TextChange(keyword.Length, 0, old, 1, changed), additionalFlags: PartialParseResult.SpanContextChanged);
         }
 
-        protected class TestParserManager
+        protected class TestParserManager : IDisposable
         {
-            public RazorEditorParser Parser;
-            public ManualResetEventSlim ParserComplete;
             public int ParseCount;
+
+            private readonly ManualResetEventSlim _parserComplete;
 
             public TestParserManager(RazorEditorParser parser)
             {
-                ParserComplete = new ManualResetEventSlim();
+                _parserComplete = new ManualResetEventSlim();
                 ParseCount = 0;
                 Parser = parser;
                 parser.DocumentParseComplete += (sender, args) =>
                 {
                     Interlocked.Increment(ref ParseCount);
-                    ParserComplete.Set();
+                    _parserComplete.Set();
                 };
             }
+
+            public RazorEditorParser Parser { get; }
 
             public void InitializeWithDocument(ITextBuffer startDocument)
             {
@@ -114,8 +120,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
 
             public void WaitForParse()
             {
-                MiscUtils.DoWithTimeoutIfNotDebugging(ParserComplete.Wait); // Wait for the parse to finish
-                ParserComplete.Reset();
+                MiscUtils.DoWithTimeoutIfNotDebugging(_parserComplete.Wait); // Wait for the parse to finish
+                _parserComplete.Reset();
+            }
+
+            public void Dispose()
+            {
+                Parser.Dispose();
             }
         }
     }

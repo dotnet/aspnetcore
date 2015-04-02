@@ -196,7 +196,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         public CSharpCodeWriter WriteLineNumberDirective(int lineNumber, string file)
         {
             if (!string.IsNullOrEmpty(LastWrite) &&
-                !LastWrite.EndsWith(Environment.NewLine, StringComparison.Ordinal))
+                !LastWrite.EndsWith(NewLine, StringComparison.Ordinal))
             {
                 WriteLine();
             }
@@ -455,7 +455,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     }
 
                     Write("\" +");
-                    Write(Environment.NewLine);
+                    Write(NewLine);
                     Write("\"");
                 }
             }

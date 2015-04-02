@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-//#define PARSER_TRACE
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -292,11 +290,11 @@ namespace Microsoft.AspNet.Razor.Test.Framework
                 EvaluateSyntaxTreeNode(collector, actualRoot, expectedRoot);
                 if (collector.Success)
                 {
-                    WriteTraceLine("Parse Tree Validation Succeeded:\r\n{0}", collector.Message);
+                    WriteTraceLine("Parse Tree Validation Succeeded:" + Environment.NewLine + collector.Message);
                 }
                 else
                 {
-                    Assert.True(false, String.Format("\r\n{0}", collector.Message));
+                    Assert.True(false, Environment.NewLine + collector.Message);
                 }
             }
         }
@@ -458,20 +456,20 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             // Evaluate the errors
             if (expectedErrors == null || expectedErrors.Count == 0)
             {
-                Assert.True(realCount == 0,
-                            String.Format("Expected that no errors would be raised, but the following errors were:\r\n{0}", FormatErrors(actualErrors)));
+                Assert.True(
+                    realCount == 0,
+                    "Expected that no errors would be raised, but the following errors were:" + Environment.NewLine + FormatErrors(actualErrors));
             }
             else
             {
-                Assert.True(expectedErrors.Count == realCount,
-                            String.Format("Expected that {0} errors would be raised, but {1} errors were.\r\nExpected Errors: \r\n{2}\r\nActual Errors: \r\n{3}",
-                                          expectedErrors.Count,
-                                          realCount,
-                                          FormatErrors(expectedErrors),
-                                          FormatErrors(actualErrors)));
+                Assert.True(
+                    expectedErrors.Count == realCount,
+                    $"Expected that {expectedErrors.Count} errors would be raised, but {realCount} errors were." +
+                    $"{Environment.NewLine}Expected Errors: {Environment.NewLine}{FormatErrors(expectedErrors)}" +
+                    $"{Environment.NewLine}Actual Errors: {Environment.NewLine}{FormatErrors(actualErrors)}");
                 Assert.Equal(expectedErrors, actualErrors);
             }
-            WriteTraceLine("Expected Errors were raised:\r\n{0}", FormatErrors(expectedErrors));
+            WriteTraceLine("Expected Errors were raised:" + Environment.NewLine + FormatErrors(expectedErrors));
         }
 
         public static string FormatErrors(IEnumerable<RazorError> errors)

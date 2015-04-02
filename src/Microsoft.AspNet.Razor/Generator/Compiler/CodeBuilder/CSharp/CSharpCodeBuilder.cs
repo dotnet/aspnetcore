@@ -21,9 +21,15 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         private CodeTree Tree { get { return Context.CodeTreeBuilder.CodeTree; } }
         public RazorEngineHost Host { get { return Context.Host; } }
 
+        // Internal for testing
+        internal virtual CSharpCodeWriter CreateCodeWriter()
+        {
+            return new CSharpCodeWriter();
+        }
+
         public override CodeBuilderResult Build()
         {
-            var writer = new CSharpCodeWriter();
+            var writer = CreateCodeWriter();
 
             if (!Host.DesignTimeMode && !string.IsNullOrEmpty(Context.Checksum))
             {

@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "foo",
                            new DirectiveBlock(
                                Factory.MetaCode("inherits ").Accepts(AcceptedCharacters.None),
-                               Factory.Code("               \r\n")
+                               Factory.Code("               " + Environment.NewLine)
                                    .AsBaseType(String.Empty)
                                ),
                            new RazorError(RazorResources.ParseError_InheritsKeyword_Must_Be_Followed_By_TypeName, 24, 0, 24));
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "}",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code("\r\n    List<dynamic> photos = gallery.Photo.ToList();\r\n").AsStatement(),
+                               Factory.Code($"{Environment.NewLine}    List<dynamic> photos = gallery.Photo.ToList();{Environment.NewLine}").AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
                                ));
         }
@@ -187,7 +187,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "\t<p>A real tag!</p>" + Environment.NewLine
                          + "}",
                            new StatementBlock(
-                               Factory.Code("if(!false) {\r\n    // Foo\r\n").AsStatement(),
+                               Factory.Code($"if(!false) {{{Environment.NewLine}    // Foo{Environment.NewLine}").AsStatement(),
                                new MarkupBlock(
                                    Factory.Markup("\t"),
                                    new MarkupTagBlock(
@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    Factory.Markup("A real tag!"),
                                    new MarkupTagBlock(
                                        Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
-                                   Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
+                                   Factory.Markup(Environment.NewLine).Accepts(AcceptedCharacters.None)),
                                Factory.Code("}").AsStatement()
                                ));
         }

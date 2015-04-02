@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 using Xunit;
 
@@ -189,13 +190,13 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
         [Fact]
         public void Character_Literal_Terminated_By_CRLF_Even_When_Last_Char_Is_Slash()
         {
-            TestTokenizer("'foo\\\r\n", new CSharpSymbol(0, 0, 0, "'foo\\", CSharpSymbolType.CharacterLiteral), IgnoreRemaining);
+            TestTokenizer("'foo\\" + Environment.NewLine, new CSharpSymbol(0, 0, 0, "'foo\\", CSharpSymbolType.CharacterLiteral), IgnoreRemaining);
         }
 
         [Fact]
         public void Character_Literal_Terminated_By_CRLF_Even_When_Last_Char_Is_Slash_And_Followed_By_Stuff()
         {
-            TestTokenizer("'foo\\\r\nflarg", new CSharpSymbol(0, 0, 0, "'foo\\", CSharpSymbolType.CharacterLiteral), IgnoreRemaining);
+            TestTokenizer($"'foo\\{Environment.NewLine}flarg", new CSharpSymbol(0, 0, 0, "'foo\\", CSharpSymbolType.CharacterLiteral), IgnoreRemaining);
         }
 
         [Fact]
@@ -243,13 +244,13 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
         [Fact]
         public void String_Literal_Terminated_By_CRLF_Even_When_Last_Char_Is_Slash()
         {
-            TestTokenizer("\"foo\\\r\n", new CSharpSymbol(0, 0, 0, "\"foo\\", CSharpSymbolType.StringLiteral), IgnoreRemaining);
+            TestTokenizer("\"foo\\" + Environment.NewLine, new CSharpSymbol(0, 0, 0, "\"foo\\", CSharpSymbolType.StringLiteral), IgnoreRemaining);
         }
 
         [Fact]
         public void String_Literal_Terminated_By_CRLF_Even_When_Last_Char_Is_Slash_And_Followed_By_Stuff()
         {
-            TestTokenizer("\"foo\\\r\nflarg", new CSharpSymbol(0, 0, 0, "\"foo\\", CSharpSymbolType.StringLiteral), IgnoreRemaining);
+            TestTokenizer($"\"foo\\{Environment.NewLine}flarg", new CSharpSymbol(0, 0, 0, "\"foo\\", CSharpSymbolType.StringLiteral), IgnoreRemaining);
         }
 
         [Fact]

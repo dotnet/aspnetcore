@@ -1,4 +1,4 @@
-#pragma checksum "BasicTagHelpers.RemoveTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "48dc91408dc7bf6406139461afa4867d176adaf7"
+#pragma checksum "BasicTagHelpers.RemoveTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "833fbb5056a48116b0fe6386da7b14bc18d3b330"
 namespace TestOutput
 {
     using System;
