@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Routing
     /// </summary>
     public class VirtualPathData
     {
-        private readonly IDictionary<string, object> _dataToken;
+        private readonly IDictionary<string, object> _dataTokens;
 
         /// <summary>
         ///  Initializes a new instance of the <see cref="VirtualPathData"/> class.
@@ -55,12 +55,12 @@ namespace Microsoft.AspNet.Routing
             Router = router;
             VirtualPath = virtualPath;
 
-            _dataToken = new RouteValueDictionary();
+            _dataTokens = new RouteValueDictionary();
             if (dataTokens != null)
             {
                 foreach (var dataToken in dataTokens)
                 {
-                    _dataToken.Add(dataToken.Key, dataToken.Value);
+                    _dataTokens.Add(dataToken.Key, dataToken.Value);
                 }
             }
         }
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Routing
         /// </summary>
         public IDictionary<string, object> DataTokens
         {
-            get { return _dataToken; }
+            get { return _dataTokens; }
         }
 
         /// <summary>
