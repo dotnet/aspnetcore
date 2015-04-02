@@ -194,7 +194,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // We don't care about order. Mono returns reflected attributes differently so we need to ensure order
             // doesn't matter by sorting.
-            descriptors = descriptors.OrderBy(descriptor => descriptor.TagName).ToArray();
+            descriptors = descriptors.OrderBy(
+                descriptor => CaseSensitiveTagHelperDescriptorComparer.Default.GetHashCode(descriptor)).ToArray();
+            expectedDescriptors = expectedDescriptors.OrderBy(
+                descriptor => CaseSensitiveTagHelperDescriptorComparer.Default.GetHashCode(descriptor)).ToArray();
 
             Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
