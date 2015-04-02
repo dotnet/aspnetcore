@@ -25,11 +25,7 @@
     </head>
     <body>
         <h1>@Resources.ErrorPageHtml_CompilationException</h1>
-        @if (Model.Options.ShowExceptionDetails)
-        {
-            <div class="titleerror">@errorDetail.Error.GetType().Name: @{ Output.Write(HtmlEncodeAndReplaceLineBreaks(errorDetail.Error.Message)); }</div>
-        }
-        else
+        @if (!Model.Options.ShowExceptionDetails)
         {
             <h2>@Resources.ErrorPageHtml_EnableShowExceptions</h2>
         }
@@ -37,6 +33,13 @@
         {
             <div id="stackpage" class="page">
                 @{ int tabIndex = 6; }
+                @{
+                    var fileName = errorDetail.StackFrames.FirstOrDefault()?.File;
+                    if (!string.IsNullOrEmpty(fileName))
+                    {
+                        <div class="titleerror">@fileName</div>
+                    }
+                }
                 <br />
                 <ul>
                 @foreach (var frame in errorDetail.StackFrames)
