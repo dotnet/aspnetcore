@@ -13,7 +13,7 @@
     "Moq": "4.2.1312.1622",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
-  "code": "**\\*.cs;..\\Shared\\*.cs",
+  "compile": "..\\Shared\\*.cs",
   "frameworks": {
     "dnx451": {
       "dependencies": {
