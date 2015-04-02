@@ -1,5 +1,8 @@
 ASP.NET DiagnosticsPages
 ================
+AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/5224cefq6y78aq21/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/Diagnostics/branch/dev)
+
+Travis:   [![Travis](https://travis-ci.org/aspnet/Diagnostics.svg?branch=dev)](https://travis-ci.org/aspnet/Diagnostics)
 
 Diagnostics middleware.
 
