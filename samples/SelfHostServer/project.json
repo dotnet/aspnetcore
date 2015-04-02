@@ -1,5 +1,4 @@
 {
-    "webroot": "wwwroot",
     "dependencies": {
         "Microsoft.AspNet.Hosting": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",

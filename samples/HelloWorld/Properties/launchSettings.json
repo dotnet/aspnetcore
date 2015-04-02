@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "sample": {
+      "commandName": "sample",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:8080"
+    }
+  }
+}

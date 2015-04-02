@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "web": {
+      "commandName": "web",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:8080"
+    }
+  }
+}

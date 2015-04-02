@@ -1,17 +1,9 @@
 {
-    "webroot": "wwwroot",
     "version": "1.0.0-*",
-    "exclude": [
-        "wwwroot"
-    ],
-    "publishExclude": [
-        "**.kproj",
-        "**.user",
-        "**.vspscc"
-    ],
     "dependencies": {
         "Microsoft.AspNet.Hosting": "1.0.0-*",
-        "Microsoft.AspNet.Server.WebListener": "1.0.0-*"
+        "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+        "Microsoft.Framework.Logging.Console": "1.0.0-*"
     },
     "commands": {
         "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:12345"

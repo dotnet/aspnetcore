@@ -2,6 +2,7 @@
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Server.WebListener;
+using Microsoft.Framework.Logging;
 
 namespace HotAddSample
 {
@@ -10,8 +11,10 @@ namespace HotAddSample
     // will be reset before the end of the request.
     public class Startup
     {
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
+            loggerfactory.AddConsole(LogLevel.Information);
+
             var server = (ServerInformation)app.Server;
             var listener = server.Listener;
             listener.UrlPrefixes.Add("http://localhost:12346/pathBase/");
@@ -34,7 +37,7 @@ namespace HotAddSample
                         await context.Response.WriteAsync("Error adding: " + toAdd + "<br>");
                         await context.Response.WriteAsync(ex.ToString().Replace(Environment.NewLine, "<br>"));
                     }
-                    await context.Response.WriteAsync("<br><a href=\"/\">back</a>");
+                    await context.Response.WriteAsync("<br><a href=\"" + context.Request.PathBase.ToUriComponent() + "\">back</a>");
                     await context.Response.WriteAsync("</body></html>");
                     return;
                 }
@@ -58,7 +61,7 @@ namespace HotAddSample
                     {
                         await context.Response.WriteAsync("Not found: " + toRemove);
                     }
-                    await context.Response.WriteAsync("<br><a href=\"/\">back</a>");
+                    await context.Response.WriteAsync("<br><a href=\"" + context.Request.PathBase.ToUriComponent() + "\">back</a>");
                     await context.Response.WriteAsync("</body></html>");
                     return;
                 }
@@ -75,7 +78,7 @@ namespace HotAddSample
                     await context.Response.WriteAsync("<a href=\"" + prefix + "\">" + prefix + "</a> <a href=\"?remove=" + prefix + "\">(remove)</a><br>");
                 }
 
-                await context.Response.WriteAsync("<form action=\"/\" method=\"GET\">");
+                await context.Response.WriteAsync("<form action=\"" + context.Request.PathBase.ToUriComponent() + "\" method=\"GET\">");
                 await context.Response.WriteAsync("<input type=\"text\" name=\"add\" value=\"http://localhost:12348\" >");
                 await context.Response.WriteAsync("<input type=\"submit\" value=\"Add\">");
                 await context.Response.WriteAsync("</form>");
