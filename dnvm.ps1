@@ -1,5 +1,12 @@
 #Requires -Version 3
 
+if (Test-Path env:WEBSITE_SITE_NAME)
+{
+    # This script is run in Azure Web Sites
+    # Disable progress indicator
+    $ProgressPreference = "SilentlyContinue"
+}
+
 $ScriptPath = $MyInvocation.MyCommand.Definition
 
 $Script:UseWriteHost = $true
@@ -59,7 +66,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta5-10353"
+$BuildVersion="beta5-10355"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
