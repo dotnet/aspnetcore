@@ -9,6 +9,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
@@ -136,8 +137,20 @@ namespace Microsoft.AspNet.Hosting
         [InlineData(@"\", @"\")]
         [InlineData("sub", "sub")]
         [InlineData("sub/sub2/sub3", @"sub/sub2/sub3")]
-        [InlineData(@"sub/sub2\sub3\", @"sub/sub2/sub3/")]
         public void MapPath_Facts(string virtualPath, string expectedSuffix)
+        {
+            RunMapPath(virtualPath, expectedSuffix);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Unix | OperatingSystems.MacOSX)]
+        [InlineData(@"sub/sub2\sub3\", @"sub/sub2/sub3/")]
+        public void MapPath_Windows_Facts(string virtualPath, string expectedSuffix)
+        {
+            RunMapPath(virtualPath, expectedSuffix);
+        }
+
+        private void RunMapPath(string virtualPath, string expectedSuffix)
         {
             var engine = WebHost.CreateEngine().UseServer(this);
 
