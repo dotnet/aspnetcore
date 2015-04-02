@@ -191,7 +191,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Empty(errorSink.Errors);
-            Assert.Equal(expectedDescriptors, descriptors.ToArray(), CaseSensitiveTagHelperDescriptorComparer.Default);
+
+            // We don't care about order. Mono returns reflected attributes differently so we need to ensure order
+            // doesn't matter by sorting.
+            descriptors = descriptors.OrderBy(descriptor => descriptor.TagName).ToArray();
+
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         public static TheoryData HtmlCaseData
@@ -328,7 +333,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Empty(errorSink.Errors);
-            Assert.Equal(expectedDescriptors, descriptors.ToArray(), CaseSensitiveTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -468,14 +473,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var validProp = typeof(MultiTagTagHelper).GetProperty(nameof(MultiTagTagHelper.ValidAttribute));
             var expectedDescriptors = new[] {
                 new TagHelperDescriptor(
-                    "p",
+                    "div",
                     typeof(MultiTagTagHelper).FullName,
                     AssemblyName,
                     new[] {
                         new TagHelperAttributeDescriptor("valid-attribute", validProp)
                     }),
                 new TagHelperDescriptor(
-                    "div",
+                    "p",
                     typeof(MultiTagTagHelper).FullName,
                     AssemblyName,
                     new[] {
@@ -491,7 +496,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Empty(errorSink.Errors);
-            Assert.Equal(expectedDescriptors, descriptors.ToArray(), CaseSensitiveTagHelperDescriptorComparer.Default);
+
+            // We don't care about order. Mono returns reflected attributes differently so we need to ensure order
+            // doesn't matter by sorting.
+            descriptors = descriptors.OrderBy(descriptor => descriptor.TagName).ToArray();
+
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -527,11 +537,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var errorSink = new ParserErrorSink();
             var expectedDescriptors = new[] {
                 new TagHelperDescriptor(
-                    "p",
+                    "div",
                     typeof(DuplicateTagNameTagHelper).FullName,
                     AssemblyName),
                 new TagHelperDescriptor(
-                    "div",
+                    "p",
                     typeof(DuplicateTagNameTagHelper).FullName,
                     AssemblyName)
             };
@@ -544,7 +554,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Empty(errorSink.Errors);
-            Assert.Equal(expectedDescriptors, descriptors.ToArray(), CaseSensitiveTagHelperDescriptorComparer.Default);
+
+            // We don't care about order. Mono returns reflected attributes differently so we need to ensure order
+            // doesn't matter by sorting.
+            descriptors = descriptors.OrderBy(descriptor => descriptor.TagName).ToArray();
+
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
