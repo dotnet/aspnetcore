@@ -12,7 +12,7 @@
     "commands": {
         "test": "xunit.runner.aspnet"
     },
-    "code": "**\\*.cs;..\\common\\**\\*.cs",
+    "compile": "..\\common\\**\\*.cs",
     "compilationOptions": {
         
     }
