@@ -19,6 +19,7 @@ functions
         static bool SKIP_NO_CREDENTIALS = Environment.GetEnvironmentVariable("UNIVERSE_SKIP_NO_CREDENTIALS") == "1";
         string[] repos = new[] {
             // The repos list is topologically sorted based on build order
+            "Common",
             "Configuration",
             "Caching",
             "DataProtection",
@@ -35,6 +36,7 @@ functions
             "Helios",
             "Identity",
             "Razor",
+            "RazorTooling",
             "Routing",
             "Mvc",
             "Scaffolding",
