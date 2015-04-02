@@ -142,6 +142,61 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("Foo", body);
         }
 
+        [Fact]
+        public async Task TempData_ValidTypes_RoundTripProperly()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+            var testGuid = Guid.NewGuid();
+            var nameValueCollection = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("value", "Foo"),
+                new KeyValuePair<string, string>("intValue", "10"),
+                new KeyValuePair<string, string>("listValues", "Foo1"),
+                new KeyValuePair<string, string>("listValues", "Foo2"),
+                new KeyValuePair<string, string>("listValues", "Foo3"),
+                new KeyValuePair<string, string>("datetimeValue", "10/10/2010"),
+                new KeyValuePair<string, string>("guidValue", testGuid.ToString()),
+            };
+            var content = new FormUrlEncodedContent(nameValueCollection);
+
+            // Act 1
+            var redirectResponse = await client.PostAsync("/Home/SetTempDataMultiple", content);
+
+            // Assert 1
+            Assert.Equal(HttpStatusCode.Redirect, redirectResponse.StatusCode);
+
+            // Act 2
+            var response = await client.SendAsync(GetRequest(redirectResponse.Headers.Location.ToString(), redirectResponse));
+
+            // Assert 2
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal($"Foo 10 3 10/10/2010 00:00:00 {testGuid.ToString()}", body);
+        }
+
+        [Fact]
+        public async Task TempData_InvalidType_Throws()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+            var nameValueCollection = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("value", "Foo"),
+            };
+            var content = new FormUrlEncodedContent(nameValueCollection);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                await client.PostAsync("/Home/SetTempDataInvalidType", content);
+            });
+            Assert.Equal("The '" + typeof(SessionStateTempDataProvider).FullName + "' cannot serialize an object of type '" +
+                typeof(TempDataWebSite.Controllers.HomeController.NonSerializableType).FullName + "' to session state.", exception.Message);
+        }
+
         private HttpRequestMessage GetRequest(string path, HttpResponseMessage response)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, path);

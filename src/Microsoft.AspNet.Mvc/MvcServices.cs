@@ -166,8 +166,9 @@ namespace Microsoft.AspNet.Mvc
             services.AddTransient<IApiDescriptionProvider, DefaultApiDescriptionProvider>();
 
             // Temp Data
-            services.AddSingleton<ITempDataProvider, SessionStateTempDataProvider>();
             services.AddScoped<ITempDataDictionary, TempDataDictionary>();
+            // This does caching so it should stay singleton
+            services.AddSingleton<ITempDataProvider, SessionStateTempDataProvider>();
 
             return services;
         }
