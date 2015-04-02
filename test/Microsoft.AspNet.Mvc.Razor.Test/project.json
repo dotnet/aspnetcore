@@ -1,6 +1,5 @@
 {
-    "code": [
-        "**/*.cs",
+    "compile": [
         "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileProvider.cs",
         "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileInfo.cs",
         "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileTrigger.cs"

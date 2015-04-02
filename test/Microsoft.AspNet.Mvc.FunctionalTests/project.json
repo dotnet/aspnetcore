@@ -1,6 +1,5 @@
 {
-    "code": [
-        "**/*.cs",
+    "compile": [
         "../Microsoft.AspNet.Mvc.Xml.Test/XmlAssert.cs"
     ],
     "compilationOptions": {
