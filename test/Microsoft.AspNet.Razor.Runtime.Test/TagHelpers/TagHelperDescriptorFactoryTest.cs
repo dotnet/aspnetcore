@@ -191,7 +191,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Empty(errorSink.Errors);
-            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptors, descriptors.ToArray(), CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         public static TheoryData HtmlCaseData
@@ -265,7 +265,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Empty(errorSink.Errors);
-            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptors, descriptors.ToArray(), CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -297,7 +297,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Empty(errorSink.Errors);
-            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptors, descriptors.ToArray(), CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -328,7 +328,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Empty(errorSink.Errors);
-            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptors, descriptors.ToArray(), CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -491,7 +491,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Empty(errorSink.Errors);
-            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptors, descriptors.ToArray(), CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -544,7 +544,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Empty(errorSink.Errors);
-            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptors, descriptors.ToArray(), CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -566,7 +566,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Empty(errorSink.Errors);
-            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptors, descriptors.ToArray(), CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         public static TheoryData InvalidNameData
