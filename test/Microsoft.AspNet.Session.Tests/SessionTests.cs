@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Session
             services => services.AddOptions()))
             {
                 var client = server.CreateClient();
-                var response = await client.GetAsync("/");
+                var response = await client.GetAsync(string.Empty);
                 response.EnsureSuccessStatusCode();
                 IEnumerable<string> values;
                 Assert.False(response.Headers.TryGetValues("Set-Cookie", out values));
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Session
             services => services.AddOptions()))
             {
                 var client = server.CreateClient();
-                var response = await client.GetAsync("/");
+                var response = await client.GetAsync(string.Empty);
                 response.EnsureSuccessStatusCode();
                 IEnumerable<string> values;
                 Assert.True(response.Headers.TryGetValues("Set-Cookie", out values));
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Session
             services => services.AddOptions()))
             {
                 var client = server.CreateClient();
-                var response = await client.GetAsync("/first");
+                var response = await client.GetAsync("first");
                 response.EnsureSuccessStatusCode();
                 Assert.Equal("0", await response.Content.ReadAsStringAsync());
 
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Session
             services => services.AddOptions()))
             {
                 var client = server.CreateClient();
-                var response = await client.GetAsync("/first");
+                var response = await client.GetAsync("first");
                 response.EnsureSuccessStatusCode();
                 Assert.Equal("0", await response.Content.ReadAsStringAsync());
 
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Session
             services => services.AddOptions()))
             {
                 var client = server.CreateClient();
-                var response = await client.GetAsync("/first");
+                var response = await client.GetAsync("first");
                 response.EnsureSuccessStatusCode();
                 Assert.Equal("0", await response.Content.ReadAsStringAsync());
 
@@ -207,7 +207,7 @@ namespace Microsoft.AspNet.Session
             }))
             {
                 var client = server.CreateClient();
-                var response = await client.GetAsync("/");
+                var response = await client.GetAsync(string.Empty);
                 response.EnsureSuccessStatusCode();
                 Assert.Single(sink.Writes);
                 Assert.True(((ILogValues)sink.Writes[0].State).Format().Contains("started"));
@@ -249,7 +249,7 @@ namespace Microsoft.AspNet.Session
             }))
             {
                 var client = server.CreateClient();
-                var response = await client.GetAsync("/first");
+                var response = await client.GetAsync("first");
                 response.EnsureSuccessStatusCode();
 
                 client = server.CreateClient();
