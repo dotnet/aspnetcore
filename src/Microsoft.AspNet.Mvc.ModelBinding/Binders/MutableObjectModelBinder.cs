@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public virtual async Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {
             ModelBindingHelper.ValidateBindingContext(bindingContext);
-            if (!CanBindType(bindingContext.ModelType))
+            if (!CanBindType(bindingContext.ModelMetadata))
             {
                 return null;
             }
@@ -188,20 +188,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return false;
         }
 
-        private static bool CanBindType(Type modelType)
+        private static bool CanBindType(ModelMetadata modelMetadata)
         {
             // Simple types cannot use this binder
-            var isComplexType = !TypeHelper.HasStringConverter(modelType);
-            if (!isComplexType)
+            if (!modelMetadata.IsComplexType)
             {
                 return false;
             }
 
-            if (modelType == typeof(ComplexModelDto))
+            if (modelMetadata.ModelType == typeof(ComplexModelDto))
             {
                 // forbidden type - will cause a stack overflow if we try binding this type
                 return false;
             }
+
             return true;
         }
 

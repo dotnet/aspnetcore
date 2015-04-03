@@ -13,6 +13,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// </summary>
     public abstract class ModelMetadata
     {
+        private bool? _isComplexType;
+
         /// <summary>
         /// The default value of <see cref="ModelMetadata.Order"/>.
         /// </summary>
@@ -254,7 +256,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </remarks>
         public bool IsComplexType
         {
-            get { return !TypeHelper.HasStringConverter(ModelType); }
+            get
+            {
+                if (_isComplexType == null)
+                {
+                    _isComplexType = !TypeHelper.HasStringConverter(ModelType);
+                }
+
+                return _isComplexType.Value;
+            }
         }
 
         /// <summary>
