@@ -51,8 +51,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 var model = await formatter.ReadAsync(formatterContext);
 
-                // key is empty to ensure that the model name is not used as a prefix for validation.
-                return new ModelBindingResult(model, key: string.Empty, isModelSet: true);
+                var isTopLevelObject = bindingContext.ModelMetadata.ContainerType == null;
+
+                // For compatibility with MVC 5.0 for top level object we want to consider an empty key instead of 
+                // the parameter name/a custom name. In all other cases (like when binding body to a property) we
+                // consider the entire ModelName as a prefix.
+                var modelBindingKey = isTopLevelObject ? string.Empty : bindingContext.ModelName;
+                return new ModelBindingResult(model, key: modelBindingKey, isModelSet: true);
             }
             catch (Exception ex)
             {

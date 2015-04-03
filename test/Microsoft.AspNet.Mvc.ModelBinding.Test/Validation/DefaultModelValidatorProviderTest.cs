@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var validatorProvider = TestModelValidatorProvider.CreateDefaultProvider();
 
             var metadata = metadataProvider.GetMetadataForProperty(
-                typeof(ModelValidatorAttributeOnProperty), 
+                typeof(ModelValidatorAttributeOnProperty),
                 nameof(ModelValidatorAttributeOnProperty.Property));
             var context = new ModelValidatorProviderContext(metadata);
 
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             Assert.IsType<RangeAttributeAdapter>(Assert.Single(validators));
         }
-        
+
         [Fact]
         public void GetValidators_DataAnnotationsAttribute_DefaultAdapter()
         {

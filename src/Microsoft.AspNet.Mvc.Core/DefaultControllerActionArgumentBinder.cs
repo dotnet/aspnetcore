@@ -63,6 +63,41 @@ namespace Microsoft.AspNet.Mvc
             return actionArguments;
         }
 
+        public async Task<ModelBindingResult> BindModelAsync(
+            ParameterDescriptor parameter,
+            ModelStateDictionary modelState,
+            OperationBindingContext operationContext)
+        {
+            var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterType);
+            var parameterType = parameter.ParameterType;
+            var modelBindingContext = GetModelBindingContext(
+                parameter.Name,
+                metadata,
+                parameter.BindingInfo,
+                modelState,
+                operationContext);
+
+            var modelBindingResult = await operationContext.ModelBinder.BindModelAsync(modelBindingContext);
+            if (modelBindingResult != null && modelBindingResult.IsModelSet)
+            {
+                var key = modelBindingResult.Key;
+                var modelExplorer = new ModelExplorer(
+                    _modelMetadataProvider,
+                    metadata,
+                    modelBindingResult.Model);
+
+                var validationContext = new ModelValidationContext(
+                    key,
+                    modelBindingContext.BindingSource,
+                    operationContext.ValidatorProvider,
+                    modelState,
+                    modelExplorer);
+                _validator.Validate(validationContext);
+            }
+
+            return modelBindingResult;
+        }
+
         private void ActivateProperties(object controller, Type containerType, Dictionary<string, object> properties)
         {
             var propertyHelpers = PropertyHelper.GetProperties(controller);
@@ -88,31 +123,10 @@ namespace Microsoft.AspNet.Mvc
         {
             foreach (var parameter in parameterMetadata)
             {
-                var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterType);
-                var parameterType = parameter.ParameterType;
-                var modelBindingContext = GetModelBindingContext(
-                    parameter.Name,
-                    metadata,
-                    parameter.BindingInfo,
-                    modelState,
-                    operationContext);
-
-                var modelBindingResult = await operationContext.ModelBinder.BindModelAsync(modelBindingContext);
+                var modelBindingResult = await BindModelAsync(parameter, modelState, operationContext);
                 if (modelBindingResult != null && modelBindingResult.IsModelSet)
                 {
-                    var modelExplorer = new ModelExplorer(
-                        _modelMetadataProvider,
-                        metadata,
-                        modelBindingResult.Model);
-
                     arguments[parameter.Name] = modelBindingResult.Model;
-                    var validationContext = new ModelValidationContext(
-                        modelBindingResult.Key,
-                        modelBindingContext.BindingSource,
-                        operationContext.ValidatorProvider,
-                        modelState,
-                        modelExplorer);
-                    _validator.Validate(validationContext);
                 }
             }
         }
