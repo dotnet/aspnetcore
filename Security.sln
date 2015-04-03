@@ -38,11 +38,11 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentica
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.OAuth", "src\Microsoft.AspNet.Authentication.OAuth\Microsoft.AspNet.Authentication.OAuth.xproj", "{1657C79E-7755-4AEE-9D61-571295B69A30}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.Tests", "test\Microsoft.AspNet.Authentication.Test\Microsoft.AspNet.Authentication.Tests.xproj", "{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.Test", "test\Microsoft.AspNet.Authentication.Test\Microsoft.AspNet.Authentication.Test.xproj", "{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.OAuthBearer", "src\Microsoft.AspNet.Authentication.OAuthBearer\Microsoft.AspNet.Authentication.OAuthBearer.xproj", "{2755BFE5-7421-4A31-A644-F817DF5CAA98}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authorization.Tests", "test\Microsoft.AspNet.Authorization.Test\Microsoft.AspNet.Authorization.Tests.xproj", "{7AF5AD96-EB6E-4D0E-8ABE-C0B543C0F4C2}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authorization.Test", "test\Microsoft.AspNet.Authorization.Test\Microsoft.AspNet.Authorization.Test.xproj", "{7AF5AD96-EB6E-4D0E-8ABE-C0B543C0F4C2}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authorization", "src\Microsoft.AspNet.Authorization\Microsoft.AspNet.Authorization.xproj", "{6AB3E514-5894-4131-9399-DC7D5284ADDB}"
 EndProject
