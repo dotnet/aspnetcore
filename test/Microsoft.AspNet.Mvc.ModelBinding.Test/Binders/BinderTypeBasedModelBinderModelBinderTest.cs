@@ -3,7 +3,6 @@
 
 #if DNX451
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
@@ -71,41 +70,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task BindModel_CallsBindAsync_OnProvidedModelBinderProvider()
-        {
-            // Arrange
-            var bindingContext = GetBindingContext(typeof(Person), binderType: typeof(ModelBinderProvider));
-
-            var model = new Person();
-            var provider = new ModelBinderProvider();
-
-            var serviceProvider = new ServiceCollection()
-                .AddSingleton(typeof(IModelBinderProvider))
-                .AddSingleton(typeof(IModelBinder))
-                .BuildServiceProvider();
-
-            bindingContext.OperationBindingContext.HttpContext.RequestServices = serviceProvider;
-            var binder = new BinderTypeBasedModelBinder();
-
-            // Act
-            var binderResult = await binder.BindModelAsync(bindingContext);
-
-            // Assert
-            var p = (Person)binderResult.Model;
-            Assert.Equal(model.Age, p.Age);
-            Assert.Equal(model.Name, p.Name);
-        }
-
-        [Fact]
-        public async Task BindModel_ForNonModelBinderAndModelBinderProviderTypes_Throws()
+        public async Task BindModel_ForNonModelBinder_Throws()
         {
             // Arrange
             var bindingContext = GetBindingContext(typeof(Person), binderType: typeof(Person));
             var binder = new BinderTypeBasedModelBinder();
 
-            var expected = "The type '" + typeof(Person).FullName + "' must implement either " +
-                "'Microsoft.AspNet.Mvc.ModelBinding.IModelBinder' or " +
-                "'Microsoft.AspNet.Mvc.ModelBinding.IModelBinderProvider' to be used as a model binder.";
+            var expected = $"The type '{typeof(Person).FullName}' must implement " +
+                $"'{typeof(IModelBinder).FullName}' to be used as a model binder.";
 
             // Act
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -167,25 +139,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
             {
                 return Task.FromResult(new ModelBindingResult(_model, bindingContext.ModelName, true));
-            }
-        }
-
-        private class ModelBinderProvider : IModelBinderProvider
-        {
-            private readonly IModelBinder _inner;
-
-            public ModelBinderProvider()
-            {
-                var innerModelBinder = new TrueModelBinder();
-                _inner = innerModelBinder;
-            }
-
-            public IReadOnlyList<IModelBinder> ModelBinders
-            {
-                get
-                {
-                    return new List<IModelBinder>() { _inner, };
-                }
             }
         }
     }

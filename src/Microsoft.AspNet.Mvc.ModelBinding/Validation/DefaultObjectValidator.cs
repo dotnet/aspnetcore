@@ -17,15 +17,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
     /// </summary>
     public class DefaultObjectValidator : IObjectModelValidator
     {
-        private readonly IValidationExcludeFiltersProvider _excludeFilterProvider;
+        private readonly IList<IExcludeTypeValidationFilter> _excludeFilters;
         private readonly IModelMetadataProvider _modelMetadataProvider;
-        
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="DefaultObjectValidator"/>.
+        /// </summary>
+        /// <param name="excludeFilters"><see cref="IExcludeTypeValidationFilter"/>s that determine
+        /// types to exclude from validation.</param>
+        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         public DefaultObjectValidator(
-            IValidationExcludeFiltersProvider excludeFilterProvider,
-            IModelMetadataProvider modelMetadataProvider)
+            [NotNull] IList<IExcludeTypeValidationFilter> excludeFilters,
+            [NotNull] IModelMetadataProvider modelMetadataProvider)
         {
-            _excludeFilterProvider = excludeFilterProvider;
             _modelMetadataProvider = modelMetadataProvider;
+            _excludeFilters = excludeFilters;
         }
 
         /// <inheritdoc />
@@ -39,13 +45,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             ValidateNonVisitedNodeAndChildren(
                 modelValidationContext.RootPrefix,
-                validationContext, 
+                validationContext,
                 validators: null);
         }
 
         private bool ValidateNonVisitedNodeAndChildren(
             string modelKey,
-            ValidationContext validationContext, 
+            ValidationContext validationContext,
             IList<IModelValidator> validators)
         {
             var modelValidationContext = validationContext.ModelValidationContext;
@@ -98,7 +104,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             // We don't need to recursively traverse the graph for types that shouldn't be validated
             var modelType = modelExplorer.Model.GetType();
-            if (IsTypeExcludedFromValidation(_excludeFilterProvider.ExcludeFilters, modelType))
+            if (IsTypeExcludedFromValidation(_excludeFilters, modelType))
             {
                 var result = ShallowValidate(modelKey, modelExplorer, validationContext, validators);
                 MarkPropertiesAsSkipped(modelKey, modelExplorer.Metadata, validationContext);
@@ -146,7 +152,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             if (fieldValidationState != ModelValidationState.Unvalidated)
             {
                 return;
-            }   
+            }
 
             foreach (var childMetadata in metadata.Properties)
             {
@@ -182,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 var propertyBindingName = propertyMetadata.BinderModelName ?? propertyMetadata.PropertyName;
                 var childKey = ModelBindingHelper.CreatePropertyModelName(currentModelKey, propertyBindingName);
                 if (!ValidateNonVisitedNodeAndChildren(
-                    childKey, 
+                    childKey,
                     propertyValidationContext,
                     validators: null))
                 {
@@ -300,14 +306,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             return isValid;
         }
 
-        private bool IsTypeExcludedFromValidation(IReadOnlyList<IExcludeTypeValidationFilter> filters, Type type)
+        private bool IsTypeExcludedFromValidation(IList<IExcludeTypeValidationFilter> filters, Type type)
         {
-            // This can be set to null in ModelBinding scenarios which does not flow through this path.
-            if (filters == null)
-            {
-                return false;
-            }
-
             return filters.Any(filter => filter.IsTypeExcluded(type));
         }
 

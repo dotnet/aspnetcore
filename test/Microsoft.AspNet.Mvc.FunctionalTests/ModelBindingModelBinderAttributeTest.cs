@@ -61,10 +61,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("somealias", employee.EmailAlias);
         }
 
-        [Theory]
-        [InlineData("GetBinderType_UseModelBinderOnType")]
-        [InlineData("GetBinderType_UseModelBinderProviderOnType")]
-        public async Task ModelBinderAttribute_WithPrefixOnParameter(string action)
+        [Fact]
+        public async Task ModelBinderAttribute_WithPrefixOnParameter()
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -72,8 +70,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // [ModelBinder(Name = "customPrefix")] is used to apply a prefix
             var url =
-                "http://localhost/ModelBinderAttribute_Product/" +
-                action +
+                "http://localhost/ModelBinderAttribute_Product/GetBinderType_UseModelBinderOnType" +
                 "?customPrefix.ProductId=5";
 
             // Act
@@ -86,18 +83,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 body);
         }
 
-        [Theory]
-        [InlineData("GetBinderType_UseModelBinder")]
-        [InlineData("GetBinderType_UseModelBinderProvider")]
-        public async Task ModelBinderAttribute_WithBinderOnParameter(string action)
+        [Fact]
+        public async Task ModelBinderAttribute_WithBinderOnParameter()
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var url =
-                "http://localhost/ModelBinderAttribute_Product/" +
-                action +
+                "http://localhost/ModelBinderAttribute_Product/GetBinderType_UseModelBinder/" +
                 "?model.productId=5";
 
             // Act

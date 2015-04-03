@@ -19,7 +19,7 @@ namespace ModelBindingWebSite
                     .Configure<MvcOptions>(m =>
                     {
                         m.MaxModelValidationErrors = 8;
-                        m.ModelBinders.Insert(0, typeof(TestBindingSourceModelBinder));
+                        m.ModelBinders.Insert(0, new TestBindingSourceModelBinder());
 
                         m.AddXmlDataContractSerializerFormatter();
                         m.ValidationExcludeFilters.Add(typeof(Address));

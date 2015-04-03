@@ -3,14 +3,14 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Mvc.Razor.OptionDescriptors;
-using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Http.Core;
+using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
-using Microsoft.AspNet.Mvc.Routing;
 
 namespace Microsoft.AspNet.Mvc.Razor.Test
 {
@@ -300,7 +300,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                        .Verifiable();
             var viewEngine = new OverloadedLocationViewEngine(pageFactory.Object,
                                                               viewFactory.Object,
-                                                              GetViewLocationExpanders(),
+                                                              GetOptionsAccessor(),
                                                               GetViewLocationCache());
             var context = GetActionContext(_controllerTestContext);
 
@@ -323,7 +323,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                        .Verifiable();
             var viewEngine = new OverloadedLocationViewEngine(pageFactory.Object,
                                                               viewFactory.Object,
-                                                              GetViewLocationExpanders(),
+                                                              GetOptionsAccessor(),
                                                               GetViewLocationCache());
             var context = GetActionContext(_areaTestContext);
 
@@ -1026,24 +1026,31 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             viewFactory = viewFactory ?? Mock.Of<IRazorViewFactory>();
 
             cache = cache ?? GetViewLocationCache();
-            var viewLocationExpanderProvider = GetViewLocationExpanders(expanders);
 
             var viewEngine = new RazorViewEngine(pageFactory,
                                                  viewFactory,
-                                                 viewLocationExpanderProvider,
+                                                 GetOptionsAccessor(expanders),
                                                  cache);
 
             return viewEngine;
         }
 
-        private static IViewLocationExpanderProvider GetViewLocationExpanders(
+        private static IOptions<RazorViewEngineOptions> GetOptionsAccessor(
             IEnumerable<IViewLocationExpander> expanders = null)
         {
-            expanders = expanders ?? Enumerable.Empty<IViewLocationExpander>();
-            var viewLocationExpander = new Mock<IViewLocationExpanderProvider>();
-            viewLocationExpander.Setup(v => v.ViewLocationExpanders)
-                                .Returns(expanders.ToList());
-            return viewLocationExpander.Object;
+            var options = new RazorViewEngineOptions();
+            if (expanders != null)
+            {
+                foreach (var expander in expanders)
+                {
+                    options.ViewLocationExpanders.Add(expander);
+                }
+            }
+            
+            var optionsAccessor = new Mock<IOptions<RazorViewEngineOptions>>();
+            optionsAccessor.SetupGet(v => v.Options)
+                .Returns(options);
+            return optionsAccessor.Object;
         }
 
         private static IViewLocationCache GetViewLocationCache()
@@ -1106,9 +1113,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             public OverloadedLocationViewEngine(IRazorPageFactory pageFactory,
                                                 IRazorViewFactory viewFactory,
-                                                IViewLocationExpanderProvider expanderProvider,
+                                                IOptions<RazorViewEngineOptions> optionsAccessor,
                                                 IViewLocationCache cache)
-                : base(pageFactory, viewFactory, expanderProvider, cache)
+                : base(pageFactory, viewFactory, optionsAccessor, cache)
             {
             }
 

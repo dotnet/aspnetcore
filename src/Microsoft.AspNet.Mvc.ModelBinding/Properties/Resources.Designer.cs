@@ -459,19 +459,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// The type '{0}' must implement either '{1}' or '{2}' to be used as a model binder.
+        /// The type '{0}' must implement '{1}' to be used as a model binder.
         /// </summary>
-        internal static string BinderType_MustBeIModelBinderOrIModelBinderProvider
+        internal static string BinderType_MustBeIModelBinder
         {
-            get { return GetString("BinderType_MustBeIModelBinderOrIModelBinderProvider"); }
+            get { return GetString("BinderType_MustBeIModelBinder"); }
         }
 
         /// <summary>
-        /// The type '{0}' must implement either '{1}' or '{2}' to be used as a model binder.
+        /// The type '{0}' must implement '{1}' to be used as a model binder.
         /// </summary>
-        internal static string FormatBinderType_MustBeIModelBinderOrIModelBinderProvider(object p0, object p1, object p2)
+        internal static string FormatBinderType_MustBeIModelBinder(object p0, object p1)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("BinderType_MustBeIModelBinderOrIModelBinderProvider"), p0, p1, p2);
+            return string.Format(CultureInfo.CurrentCulture, GetString("BinderType_MustBeIModelBinder"), p0, p1);
         }
 
         /// <summary>

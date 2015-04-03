@@ -19,20 +19,8 @@ namespace ModelBindingWebSite.Controllers
             return model.BinderType.FullName;
         }
 
-        public string GetBinderType_UseModelBinderProviderOnType(
-            [ModelBinder(Name = "customPrefix")] ProductWithBinderProviderOnType model)
-        {
-            return model.BinderType.FullName;
-        }
-
         public string GetBinderType_UseModelBinder(
             [ModelBinder(BinderType = typeof(ProductModelBinder))] Product model)
-        {
-            return model.BinderType.FullName;
-        }
-
-        public string GetBinderType_UseModelBinderProvider(
-            [ModelBinder(BinderType = typeof(ProductModelBinderProvider))] Product model)
         {
             return model.BinderType.FullName;
         }
@@ -57,11 +45,6 @@ namespace ModelBindingWebSite.Controllers
 
         [ModelBinder(BinderType = typeof(ProductModelBinder))]
         public class ProductWithBinderOnType :  Product
-        {
-        }
-
-        [ModelBinder(BinderType = typeof(ProductModelBinderProvider))]
-        public class ProductWithBinderProviderOnType : Product
         {
         }
 
@@ -120,17 +103,6 @@ namespace ModelBindingWebSite.Controllers
                 }
 
                 return null;
-            }
-        }
-
-        private class ProductModelBinderProvider : IModelBinderProvider
-        {
-            public IReadOnlyList<IModelBinder> ModelBinders
-            {
-                get
-                {
-                    return new[] { new ProductModelBinder() };
-                }
             }
         }
     }

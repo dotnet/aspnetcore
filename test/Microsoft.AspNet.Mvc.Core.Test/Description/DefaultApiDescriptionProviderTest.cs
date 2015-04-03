@@ -12,6 +12,7 @@ using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -911,14 +912,14 @@ namespace Microsoft.AspNet.Mvc.Description
             // Act
             var descriptions = GetApiDescriptions(action);
 
-               // Assert
+            // Assert
             var description = Assert.Single(descriptions);
             Assert.Equal(5, description.ParameterDescriptions.Count);
 
             var name = Assert.Single(description.ParameterDescriptions, p => p.Name == "name");
             Assert.Same(BindingSource.Query, name.Source);
             Assert.Equal(typeof(string), name.Type);
-        
+
             var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Id");
             Assert.Same(BindingSource.Path, id.Source);
             Assert.Equal(typeof(int), id.Type);
@@ -947,8 +948,15 @@ namespace Microsoft.AspNet.Mvc.Description
         {
             var context = new ApiDescriptionProviderContext(new ActionDescriptor[] { action });
 
-            var formattersProvider = new Mock<IOutputFormattersProvider>(MockBehavior.Strict);
-            formattersProvider.Setup(fp => fp.OutputFormatters).Returns(formatters);
+            var options = new MvcOptions();
+            foreach (var formatter in formatters)
+            {
+                options.OutputFormatters.Add(formatter);
+            }
+
+            var optionsAccessor = new Mock<IOptions<MvcOptions>>();
+            optionsAccessor.SetupGet(o => o.Options)
+                .Returns(options);
 
             var constraintResolver = new Mock<IInlineConstraintResolver>();
             constraintResolver.Setup(c => c.ResolveConstraint("int"))
@@ -957,7 +965,7 @@ namespace Microsoft.AspNet.Mvc.Description
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
 
             var provider = new DefaultApiDescriptionProvider(
-                formattersProvider.Object,
+                optionsAccessor.Object,
                 constraintResolver.Object,
                 modelMetadataProvider);
 
@@ -1118,7 +1126,7 @@ namespace Microsoft.AspNet.Mvc.Description
         {
         }
 
-        private void AcceptsFormatters_Services([FromServices] IOutputFormattersProvider formatters)
+        private void AcceptsFormatters_Services([FromServices] ITestService tempDataProvider)
         {
         }
 
@@ -1344,6 +1352,11 @@ namespace Microsoft.AspNet.Mvc.Description
                     contentTypes.Add(contentType);
                 }
             }
+        }
+
+        private interface ITestService
+        {
+
         }
     }
 }

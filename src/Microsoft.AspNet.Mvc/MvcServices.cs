@@ -10,11 +10,9 @@ using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Mvc.Razor.Directives;
-using Microsoft.AspNet.Mvc.Razor.OptionDescriptors;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewComponents;
@@ -63,7 +61,12 @@ namespace Microsoft.AspNet.Mvc
             services.AddSingleton<IActionSelectorDecisionTreeProvider, ActionSelectorDecisionTreeProvider>();
             services.AddSingleton<IActionSelector, DefaultActionSelector>();
             services.AddTransient<IControllerActionArgumentBinder, DefaultControllerActionArgumentBinder>();
-            services.AddTransient<IObjectModelValidator, DefaultObjectValidator>();
+            services.AddTransient<IObjectModelValidator>(serviceProvider =>
+            {
+                var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Options;
+                var modelMetadataProvider = serviceProvider.GetRequiredService<IModelMetadataProvider>();
+                return new DefaultObjectValidator(options.ValidationExcludeFilters, modelMetadataProvider);
+            });
 
             services.AddTransient<IActionDescriptorProvider, ControllerActionDescriptorProvider>();
 
@@ -90,24 +93,14 @@ namespace Microsoft.AspNet.Mvc
             });
 
             services.AddTransient<IInputFormatterSelector, DefaultInputFormatterSelector>();
-            services.AddScoped<IInputFormattersProvider, DefaultInputFormattersProvider>();
-
-            services.AddTransient<IModelBinderProvider, DefaultModelBindersProvider>();
-            services.AddTransient<IValueProviderFactoryProvider, DefaultValueProviderFactoryProvider>();
-            services.AddTransient<IOutputFormattersProvider, DefaultOutputFormattersProvider>();
             services.AddInstance(new JsonOutputFormatter());
-
-            services.AddTransient<IModelValidatorProviderProvider, DefaultModelValidatorProviderProvider>();
-            services.AddTransient<IValidationExcludeFiltersProvider, DefaultValidationExcludeFiltersProvider>();
 
             // Razor, Views and runtime compilation
 
             // The provider is inexpensive to initialize and provides ViewEngines that may require request
             // specific services.
             services.AddScoped<ICompositeViewEngine, CompositeViewEngine>();
-            services.AddTransient<IViewEngineProvider, DefaultViewEngineProvider>();
-            // Transient since the IViewLocationExpanders returned by the instance is cached by view engines.
-            services.AddTransient<IViewLocationExpanderProvider, DefaultViewLocationExpanderProvider>();
+
             // Caches view locations that are valid for the lifetime of the application.
             services.AddSingleton<IViewLocationCache, DefaultViewLocationCache>();
             services.AddSingleton<ICodeTreeCache>(serviceProvider =>

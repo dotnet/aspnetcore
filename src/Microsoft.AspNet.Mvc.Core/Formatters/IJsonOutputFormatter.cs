@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     /// <remarks>
     /// The <see cref="JsonResult"/> class filter the collection of
-    /// <see cref="IOutputFormattersProvider.OutputFormatters"/> and use only those which implement
+    /// <see cref="MvcOptions.OutputFormatters"/> and use only those which implement
     /// <see cref="IJsonOutputFormatter"/>.
     ///
     /// To create a custom formatter that can be used by <see cref="JsonResult"/>, derive from

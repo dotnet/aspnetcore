@@ -201,8 +201,8 @@
   <data name="ModelStateDictionary_MaxModelStateErrors" xml:space="preserve">
     <value>The maximum number of allowed model errors has been reached.</value>
   </data>
-  <data name="BinderType_MustBeIModelBinderOrIModelBinderProvider" xml:space="preserve">
-    <value>The type '{0}' must implement either '{1}' or '{2}' to be used as a model binder.</value>
+  <data name="BinderType_MustBeIModelBinder" xml:space="preserve">
+    <value>The type '{0}' must implement '{1}' to be used as a model binder.</value>
   </data>
   <data name="ModelBinderUtil_ValueInvalid" xml:space="preserve">
     <value>The value '{0}' is not valid for {1}.</value>

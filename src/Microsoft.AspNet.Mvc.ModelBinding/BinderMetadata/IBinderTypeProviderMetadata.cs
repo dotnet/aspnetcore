@@ -6,14 +6,12 @@ using System;
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// Provides a <see cref="Type"/> which implements <see cref="IModelBinder"/> or 
-    /// <see cref="IModelBinderProvider"/>.
+    /// Provides a <see cref="Type"/> which implements <see cref="IModelBinder"/>.
     /// </summary>
     public interface IBinderTypeProviderMetadata : IBindingSourceMetadata
     {
         /// <summary>
-        /// A <see cref="Type"/> which implements either <see cref="IModelBinder"/> or
-        /// <see cref="IModelBinderProvider"/>.
+        /// A <see cref="Type"/> which implements either <see cref="IModelBinder"/>.
         /// </summary>
         Type BinderType { get; }
     }

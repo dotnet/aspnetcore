@@ -71,7 +71,6 @@ namespace Microsoft.AspNet.Mvc
                                                              string requestAcceptCharsetHeader = "",
                                                              bool respectBrowserAcceptHeader = false)
         {
-            var formatters = new IOutputFormatter[] { new StringOutputFormatter(), new JsonOutputFormatter() };
             var httpContext = new Mock<HttpContext>();
             if (response != null)
             {
@@ -89,17 +88,12 @@ namespace Microsoft.AspNet.Mvc
 
             httpContext.Setup(o => o.Request).Returns(request);
             httpContext.Setup(o => o.RequestServices).Returns(GetServiceProvider());
-            httpContext.Setup(o => o.RequestServices.GetService(typeof(IOutputFormattersProvider)))
-                       .Returns(new TestOutputFormatterProvider(formatters));
-
-            var options = new Mock<IOptions<MvcOptions>>();
-            options.SetupGet(o => o.Options)
-                       .Returns(new MvcOptions()
-                       {
-                           RespectBrowserAcceptHeader = respectBrowserAcceptHeader
-                       });
+            var optionsAccessor = new MockMvcOptionsAccessor();
+            optionsAccessor.Options.OutputFormatters.Add(new StringOutputFormatter());
+            optionsAccessor.Options.OutputFormatters.Add(new JsonOutputFormatter());
+            optionsAccessor.Options.RespectBrowserAcceptHeader = respectBrowserAcceptHeader;
             httpContext.Setup(o => o.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
-                       .Returns(options.Object);
+                .Returns(optionsAccessor);
 
             return new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
         }
@@ -113,26 +107,8 @@ namespace Microsoft.AspNet.Mvc
             optionsAccessor.SetupGet(o => o.Options).Returns(options);
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IOptions<MvcOptions>>(optionsAccessor.Object);
+            serviceCollection.AddInstance(optionsAccessor.Object);
             return serviceCollection.BuildServiceProvider();
-        }
-
-        private class TestOutputFormatterProvider : IOutputFormattersProvider
-        {
-            private readonly IEnumerable<IOutputFormatter> _formatters;
-
-            public TestOutputFormatterProvider(IEnumerable<IOutputFormatter> formatters)
-            {
-                _formatters = formatters;
-            }
-
-            public IReadOnlyList<IOutputFormatter> OutputFormatters
-            {
-                get
-                {
-                    return _formatters.ToList();
-                }
-            }
         }
     }
 }

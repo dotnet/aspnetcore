@@ -866,17 +866,15 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
 
             httpContext.Setup(o => o.Request).Returns(request);
             httpContext.Setup(o => o.RequestServices).Returns(GetServiceProvider());
-            httpContext.Setup(o => o.RequestServices.GetService(typeof(IOutputFormattersProvider)))
-                       .Returns(new TestOutputFormatterProvider(outputFormatters));
 
-            var options = new Mock<IOptions<MvcOptions>>();
-            options.SetupGet(o => o.Options)
-                       .Returns(new MvcOptions()
-                       {
-                           RespectBrowserAcceptHeader = respectBrowserAcceptHeader
-                       });
+            var optionsAccessor = new MockMvcOptionsAccessor();
+            foreach (var formatter in outputFormatters)
+            {
+                optionsAccessor.Options.OutputFormatters.Add(formatter);
+            }
+            optionsAccessor.Options.RespectBrowserAcceptHeader = respectBrowserAcceptHeader;
             httpContext.Setup(o => o.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
-                       .Returns(options.Object);
+                .Returns(optionsAccessor);
 
             return new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
         }
@@ -912,7 +910,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             optionsAccessor.SetupGet(o => o.Options).Returns(options);
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IOptions<MvcOptions>>(optionsAccessor.Object);
+            serviceCollection.AddInstance(optionsAccessor.Object);
             return serviceCollection.BuildServiceProvider();
         }
 
@@ -926,24 +924,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             public virtual Task WriteAsync(OutputFormatterContext context)
             {
                 throw new NotImplementedException();
-            }
-        }
-
-        private class TestOutputFormatterProvider : IOutputFormattersProvider
-        {
-            private readonly IEnumerable<IOutputFormatter> _formatters;
-
-            public TestOutputFormatterProvider(IEnumerable<IOutputFormatter> formatters)
-            {
-                _formatters = formatters;
-            }
-
-            public IReadOnlyList<IOutputFormatter> OutputFormatters
-            {
-                get
-                {
-                    return _formatters.ToList();
-                }
             }
         }
 

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
@@ -115,7 +116,8 @@ namespace Microsoft.AspNet.Mvc
                     .ActionContext
                     .HttpContext
                     .RequestServices
-                    .GetRequiredService<IOutputFormattersProvider>()
+                    .GetRequiredService<IOptions<MvcOptions>>()
+                    .Options
                     .OutputFormatters
                     .OfType<IJsonOutputFormatter>()
                     .ToArray();

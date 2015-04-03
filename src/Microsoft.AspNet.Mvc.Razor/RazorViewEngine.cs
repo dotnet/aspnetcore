@@ -6,10 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Mvc.Razor.Internal;
-using Microsoft.AspNet.Mvc.Razor.OptionDescriptors;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -41,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private readonly IRazorPageFactory _pageFactory;
         private readonly IRazorViewFactory _viewFactory;
-        private readonly IReadOnlyList<IViewLocationExpander> _viewLocationExpanders;
+        private readonly IList<IViewLocationExpander> _viewLocationExpanders;
         private readonly IViewLocationCache _viewLocationCache;
 
         /// <summary>
@@ -50,12 +49,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="pageFactory">The page factory used for creating <see cref="IRazorPage"/> instances.</param>
         public RazorViewEngine(IRazorPageFactory pageFactory,
                                IRazorViewFactory viewFactory,
-                               IViewLocationExpanderProvider viewLocationExpanderProvider,
+                               IOptions<RazorViewEngineOptions> optionsAccessor,
                                IViewLocationCache viewLocationCache)
         {
             _pageFactory = pageFactory;
             _viewFactory = viewFactory;
-            _viewLocationExpanders = viewLocationExpanderProvider.ViewLocationExpanders;
+            _viewLocationExpanders = optionsAccessor.Options.ViewLocationExpanders;
             _viewLocationCache = viewLocationCache;
         }
 

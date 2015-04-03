@@ -79,21 +79,15 @@ namespace System.Web.Http
         {
             var services = new Mock<IServiceProvider>(MockBehavior.Strict);
 
-            var formatters = new Mock<IOutputFormattersProvider>(MockBehavior.Strict);
-            formatters
-                .SetupGet(f => f.OutputFormatters)
-                .Returns(new List<IOutputFormatter>() { new JsonOutputFormatter(), });
+            var options = new MvcOptions();
+            options.OutputFormatters.Add(new JsonOutputFormatter());
 
-            services
-                .Setup(s => s.GetService(typeof(IOutputFormattersProvider)))
-                .Returns(formatters.Object);
-
-            var options = new Mock<IOptions<MvcOptions>>();
-            options.SetupGet(o => o.Options)
-                       .Returns(new MvcOptions());
+            var optionsAccessor = new Mock<IOptions<MvcOptions>>();
+            optionsAccessor.SetupGet(o => o.Options)
+                .Returns(options);
 
             services.Setup(s => s.GetService(typeof(IOptions<MvcOptions>)))
-                       .Returns(options.Object);
+                .Returns(optionsAccessor.Object);
 
             return services.Object;
         }

@@ -1681,7 +1681,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 MetadataProvider = metadataProvider,
                 ViewData = viewData,
                 TempData = tempData,
-                ObjectValidator = new DefaultObjectValidator(Mock.Of<IValidationExcludeFiltersProvider>(), metadataProvider)
+                ObjectValidator = new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider)
             };
         }
 

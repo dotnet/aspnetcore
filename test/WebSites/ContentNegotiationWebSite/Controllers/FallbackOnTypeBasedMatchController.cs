@@ -3,6 +3,8 @@
 
 using Microsoft.AspNet.Mvc;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
+
 namespace ContentNegotiationWebSite
 {
     public class FallbackOnTypeBasedMatchController : Controller
@@ -49,9 +51,10 @@ namespace ContentNegotiationWebSite
         public IActionResult OverrideTheFallback_WithDefaultFormatters(int input)
         {
             var objectResult = new ObjectResult(input);
-            var formattersProvider = ActionContext.HttpContext.RequestServices.GetRequiredService<IOutputFormattersProvider>();
+            var optionsAccessor = ActionContext.HttpContext.RequestServices
+                .GetRequiredService<IOptions<MvcOptions>>();
             objectResult.Formatters.Add(new HttpNotAcceptableOutputFormatter());
-            foreach (var formatter in formattersProvider.OutputFormatters)
+            foreach (var formatter in optionsAccessor.Options.OutputFormatters)
             {
                 objectResult.Formatters.Add(formatter);
             }
@@ -61,7 +64,7 @@ namespace ContentNegotiationWebSite
 
         public IActionResult ReturnString(
             bool matchFormatterOnObjectType, 
-            [FromServices] IOutputFormattersProvider outputFormattersProvider)
+            [FromServices] IOptions<MvcOptions> optionsAccessor)
         {
             var objectResult = new ObjectResult("Hello World!");
             if (matchFormatterOnObjectType)
@@ -69,7 +72,7 @@ namespace ContentNegotiationWebSite
                 objectResult.Formatters.Add(new HttpNotAcceptableOutputFormatter());
             }
 
-            foreach (var formatter in outputFormattersProvider.OutputFormatters)
+            foreach (var formatter in optionsAccessor.Options.OutputFormatters)
             {
                 objectResult.Formatters.Add(formatter);
             }

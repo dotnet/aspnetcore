@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -27,13 +27,14 @@ namespace Microsoft.AspNet.Mvc
             mockInputFormatter.Setup(o => o.ReadAsync(It.IsAny<InputFormatterContext>()))
                               .Returns(Task.FromResult<object>(new Person()))
                               .Verifiable();
+            var inputFormatter = mockInputFormatter.Object;
 
             var provider = new TestModelMetadataProvider();
             provider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
 
-            var bindingContext = GetBindingContext(typeof(Person), metadataProvider: provider);
+            var bindingContext = GetBindingContext(typeof(Person), inputFormatter, metadataProvider: provider);
 
-            var binder = GetBodyBinder(mockInputFormatter.Object);
+            var binder = new BodyModelBinder();
 
             // Act
             var binderResult = await binder.BindModelAsync(bindingContext);
@@ -199,6 +200,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 httpContext = new DefaultHttpContext();
             }
+            UpdateServiceProvider(httpContext, inputFormatter);
 
             if (metadataProvider == null)
             {
@@ -207,7 +209,7 @@ namespace Microsoft.AspNet.Mvc
 
             var operationBindingContext = new OperationBindingContext
             {
-                ModelBinder = GetBodyBinder(httpContext, inputFormatter),
+                ModelBinder = new BodyModelBinder(),
                 MetadataProvider = metadataProvider,
                 HttpContext = httpContext,
             };
@@ -225,14 +227,9 @@ namespace Microsoft.AspNet.Mvc
             return bindingContext;
         }
 
-        private static BodyModelBinder GetBodyBinder(IInputFormatter inputFormatter)
+        private static void UpdateServiceProvider(HttpContext httpContext, IInputFormatter inputFormatter)
         {
-            return GetBodyBinder(new DefaultHttpContext(), inputFormatter);
-        }
-
-        private static BodyModelBinder GetBodyBinder(HttpContext httpContext, IInputFormatter inputFormatter)
-        {
-            var actionContext = CreateActionContext(httpContext);
+            var serviceProvider = new ServiceCollection();
             var inputFormatterSelector = new Mock<IInputFormatterSelector>();
             inputFormatterSelector
                 .Setup(o => o.SelectFormatter(
@@ -240,9 +237,7 @@ namespace Microsoft.AspNet.Mvc
                     It.IsAny<InputFormatterContext>()))
                 .Returns(inputFormatter);
 
-            var bodyValidationPredicatesProvider = new Mock<IValidationExcludeFiltersProvider>();
-            bodyValidationPredicatesProvider.SetupGet(o => o.ExcludeFilters)
-                                             .Returns(new List<IExcludeTypeValidationFilter>());
+            serviceProvider.AddInstance(inputFormatterSelector.Object);
 
             var bindingContext = new ActionBindingContext()
             {
@@ -253,14 +248,10 @@ namespace Microsoft.AspNet.Mvc
             {
                 Value = bindingContext,
             };
+            serviceProvider.AddInstance<IScopedInstance<ActionBindingContext>>(bindingContextAccessor);
+            serviceProvider.AddInstance(CreateActionContext(httpContext));
 
-            var binder = new BodyModelBinder(
-                actionContext,
-                bindingContextAccessor,
-                inputFormatterSelector.Object,
-                bodyValidationPredicatesProvider.Object);
-
-            return binder;
+            httpContext.RequestServices = serviceProvider.BuildServiceProvider();
         }
 
         private static IScopedInstance<ActionContext> CreateActionContext(HttpContext context)

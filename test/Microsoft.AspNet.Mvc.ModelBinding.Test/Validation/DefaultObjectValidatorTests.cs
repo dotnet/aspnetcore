@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             // Arrange
             var context = GetModelValidationContext(model, type);
 
-            var validator = new DefaultObjectValidator(context.ExcludeFiltersProvider, context.ModelMetadataProvider);
+            var validator = new DefaultObjectValidator(context.ExcludeFilters, context.ModelMetadataProvider);
 
             // Act
             validator.Validate(context.ModelValidationContext);
@@ -247,7 +247,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 () =>
                 {
                     new DefaultObjectValidator(
-                        testValidationContext.ExcludeFiltersProvider,
+                        testValidationContext.ExcludeFilters,
                         testValidationContext.ModelMetadataProvider)
                         .Validate(testValidationContext.ModelValidationContext);
                 });
@@ -280,7 +280,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             // Act & Assert (does not throw)
             new DefaultObjectValidator(
-                testValidationContext.ExcludeFiltersProvider,
+                testValidationContext.ExcludeFilters,
                 testValidationContext.ModelMetadataProvider)
                 .Validate(testValidationContext.ModelValidationContext);
             Assert.True(testValidationContext.ModelValidationContext.ModelState.IsValid);
@@ -300,7 +300,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 () =>
                 {
                     new DefaultObjectValidator(
-                        testValidationContext.ExcludeFiltersProvider,
+                        testValidationContext.ExcludeFilters,
                         testValidationContext.ModelMetadataProvider)
                         .Validate(validationContext);
                 });
@@ -318,7 +318,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             // Act (does not throw)
             new DefaultObjectValidator(
-                testValidationContext.ExcludeFiltersProvider,
+                testValidationContext.ExcludeFilters,
                 testValidationContext.ModelMetadataProvider)
                 .Validate(validationContext);
 
@@ -343,7 +343,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             // Act & Assert (does not throw)
             new DefaultObjectValidator(
-                testValidationContext.ExcludeFiltersProvider,
+                testValidationContext.ExcludeFilters,
                 testValidationContext.ModelMetadataProvider)
                 .Validate(testValidationContext.ModelValidationContext);
         }
@@ -368,7 +368,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             validationContext.ModelState.MaxAllowedErrors = 2;
             validationContext.ModelState.AddModelError("key1", "error1");
             var validator = new DefaultObjectValidator(
-                testValidationContext.ExcludeFiltersProvider,
+                testValidationContext.ExcludeFilters,
                 testValidationContext.ModelMetadataProvider);
 
             // Act
@@ -402,7 +402,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 new List<Type> { typeof(User) });
             var validationContext = testValidationContext.ModelValidationContext;
             var validator = new DefaultObjectValidator(
-                testValidationContext.ExcludeFiltersProvider,
+                testValidationContext.ExcludeFilters,
                 testValidationContext.ModelMetadataProvider);
 
             // Act
@@ -438,7 +438,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 "user.Password",
                 Mock.Of<ValueProviderResult>());
             var validator = new DefaultObjectValidator(
-                testValidationContext.ExcludeFiltersProvider,
+                testValidationContext.ExcludeFilters,
                 testValidationContext.ModelMetadataProvider);
 
             // Act
@@ -465,7 +465,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             var validationContext = testValidationContext.ModelValidationContext;
             var validator = new DefaultObjectValidator(
-                testValidationContext.ExcludeFiltersProvider, 
+                testValidationContext.ExcludeFilters, 
                 testValidationContext.ModelMetadataProvider);
 
             // Act
@@ -502,17 +502,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             var excludeTypeFilters = new List<IExcludeTypeValidationFilter>();
             excludeTypeFilters.Add(new SimpleTypesExcludeFilter());
-
-            var mockValidationExcludeFiltersProvider = new Mock<IValidationExcludeFiltersProvider>();
-            mockValidationExcludeFiltersProvider
-                .SetupGet(o => o.ExcludeFilters)
-                .Returns(excludeTypeFilters);
-            testValidationContext.ExcludeFiltersProvider = mockValidationExcludeFiltersProvider.Object;
+            testValidationContext.ExcludeFilters = excludeTypeFilters;
 
             var validationContext = testValidationContext.ModelValidationContext;
 
             var validator = new DefaultObjectValidator(
-                testValidationContext.ExcludeFiltersProvider,
+                testValidationContext.ExcludeFilters,
                 testValidationContext.ModelMetadataProvider);
 
             // Act
@@ -549,17 +544,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             var excludeTypeFilters = new List<IExcludeTypeValidationFilter>();
             excludeTypeFilters.Add(new SimpleTypesExcludeFilter());
-
-            var mockValidationExcludeFiltersProvider = new Mock<IValidationExcludeFiltersProvider>();
-            mockValidationExcludeFiltersProvider
-                .SetupGet(o => o.ExcludeFilters)
-                .Returns(excludeTypeFilters);
-            testValidationContext.ExcludeFiltersProvider = mockValidationExcludeFiltersProvider.Object;
+            testValidationContext.ExcludeFilters = excludeTypeFilters;
 
             var validationContext = testValidationContext.ModelValidationContext;
 
             var validator = new DefaultObjectValidator(
-                testValidationContext.ExcludeFiltersProvider,
+                testValidationContext.ExcludeFilters,
                 testValidationContext.ModelMetadataProvider);
 
             // Act
@@ -608,11 +598,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 excludedValidationTypesPredicate.Add(mockExcludeTypeFilter.Object);
             }
 
-            var mockValidationExcludeFiltersProvider = new Mock<IValidationExcludeFiltersProvider>();
-            mockValidationExcludeFiltersProvider
-                .SetupGet(o => o.ExcludeFilters)
-                .Returns(excludedValidationTypesPredicate);
-
             var modelExplorer = modelMetadataProvider.GetModelExplorerForType(type, model);
 
             return new TestModelValidationContext
@@ -624,7 +609,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                     modelStateDictionary,
                     modelExplorer),
                 ModelMetadataProvider = modelMetadataProvider,
-                ExcludeFiltersProvider = mockValidationExcludeFiltersProvider.Object
+                ExcludeFilters = excludedValidationTypesPredicate
             };
         }
 
@@ -762,7 +747,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             public IModelMetadataProvider ModelMetadataProvider { get; set; }
 
-            public IValidationExcludeFiltersProvider ExcludeFiltersProvider { get; set; }
+            public IList<IExcludeTypeValidationFilter> ExcludeFilters { get; set; }
         }
     }
 }

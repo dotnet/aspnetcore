@@ -16,10 +16,11 @@ namespace Microsoft.AspNet.Mvc.Core
     public abstract class FilterActionInvoker : IActionInvoker
     {
         private readonly IReadOnlyList<IFilterProvider> _filterProviders;
-        private readonly IInputFormattersProvider _inputFormatterProvider;
-        private readonly IModelBinderProvider _modelBinderProvider;
-        private readonly IModelValidatorProviderProvider _modelValidatorProviderProvider;
-        private readonly IValueProviderFactoryProvider _valueProviderFactoryProvider;
+        private readonly IReadOnlyList<IInputFormatter> _inputFormatters;
+        private readonly IReadOnlyList<IModelBinder> _modelBinders;
+        private readonly IReadOnlyList<IModelValidatorProvider> _modelValidatorProviders;
+        private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
+
         private readonly IScopedInstance<ActionBindingContext> _actionBindingContextAccessor;
 
         private IFilter[] _filters;
@@ -41,19 +42,19 @@ namespace Microsoft.AspNet.Mvc.Core
         public FilterActionInvoker(
             [NotNull] ActionContext actionContext,
             [NotNull] IReadOnlyList<IFilterProvider> filterProviders,
-            [NotNull] IInputFormattersProvider inputFormatterProvider,
-            [NotNull] IModelBinderProvider modelBinderProvider,
-            [NotNull] IModelValidatorProviderProvider modelValidatorProviderProvider,
-            [NotNull] IValueProviderFactoryProvider valueProviderFactoryProvider,
+            [NotNull] IReadOnlyList<IInputFormatter> inputFormatters,
+            [NotNull] IReadOnlyList<IModelBinder> modelBinders,
+            [NotNull] IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
+            [NotNull] IReadOnlyList<IValueProviderFactory> valueProviderFactories,
             [NotNull] IScopedInstance<ActionBindingContext> actionBindingContextAccessor)
         {
             ActionContext = actionContext;
 
             _filterProviders = filterProviders;
-            _inputFormatterProvider = inputFormatterProvider;
-            _modelBinderProvider = modelBinderProvider;
-            _modelValidatorProviderProvider = modelValidatorProviderProvider;
-            _valueProviderFactoryProvider = valueProviderFactoryProvider;
+            _inputFormatters = inputFormatters;
+            _modelBinders = modelBinders;
+            _modelValidatorProviders = modelValidatorProviders;
+            _valueProviderFactories = valueProviderFactories;
             _actionBindingContextAccessor = actionBindingContextAccessor;
         }
 
@@ -206,14 +207,10 @@ namespace Microsoft.AspNet.Mvc.Core
 
             var context = new ResourceExecutingContext(ActionContext, _filters);
 
-            context.InputFormatters = new List<IInputFormatter>(_inputFormatterProvider.InputFormatters);
-            context.ModelBinders = new List<IModelBinder>(_modelBinderProvider.ModelBinders);
-
-            context.ValidatorProviders = new List<IModelValidatorProvider>(
-                _modelValidatorProviderProvider.ModelValidatorProviders);
-
-            context.ValueProviderFactories = new List<IValueProviderFactory>(
-                _valueProviderFactoryProvider.ValueProviderFactories);
+            context.InputFormatters = new List<IInputFormatter>(_inputFormatters);
+            context.ModelBinders = new List<IModelBinder>(_modelBinders);
+            context.ValidatorProviders = new List<IModelValidatorProvider>(_modelValidatorProviders);
+            context.ValueProviderFactories = new List<IValueProviderFactory>(_valueProviderFactories);
 
             _resourceExecutingContext = context;
             await InvokeResourceFilterAsync();

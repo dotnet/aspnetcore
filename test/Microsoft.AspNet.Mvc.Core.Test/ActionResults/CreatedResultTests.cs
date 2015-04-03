@@ -87,29 +87,12 @@ namespace Microsoft.AspNet.Mvc
                        .Returns(request);
             httpContext.Setup(o => o.Response)
                        .Returns(response);
-            httpContext.Setup(o => o.RequestServices.GetService(typeof(IOutputFormattersProvider)))
-                       .Returns(new TestOutputFormatterProvider());
-            var options = new Mock<IOptions<MvcOptions>>();
-            options.SetupGet(o => o.Options)
-                       .Returns(new MvcOptions());
-            httpContext.Setup(o => o.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
-                                   .Returns(options.Object);
+            var optionsAccessor = new MockMvcOptionsAccessor();
+            optionsAccessor.Options.OutputFormatters.Add(new StringOutputFormatter());
+            optionsAccessor.Options.OutputFormatters.Add(new JsonOutputFormatter());
+            httpContext.Setup(p => p.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
+                .Returns(optionsAccessor);
             return httpContext.Object;
-        }
-
-        private class TestOutputFormatterProvider : IOutputFormattersProvider
-        {
-            public IReadOnlyList<IOutputFormatter> OutputFormatters
-            {
-                get
-                {
-                    return new List<IOutputFormatter>()
-                            {
-                                new StringOutputFormatter(),
-                                new JsonOutputFormatter()
-                            };
-                }
-            }
         }
     }
 }

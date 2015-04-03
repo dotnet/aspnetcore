@@ -15,9 +15,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var attribute = new ModelBinderAttribute();
 
             var expected =
-                "The type 'System.String' must implement either " +
-                "'Microsoft.AspNet.Mvc.ModelBinding.IModelBinder' or " +
-                "'Microsoft.AspNet.Mvc.ModelBinding.IModelBinderProvider' to be used as a model binder.";
+                $"The type 'System.String' must implement '{typeof(IModelBinder).FullName}' " +
+                "to be used as a model binder.";
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() => { attribute.BinderType = typeof(string); });

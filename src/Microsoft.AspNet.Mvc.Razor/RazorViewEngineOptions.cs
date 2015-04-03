@@ -4,23 +4,21 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.FileProviders;
-using Microsoft.AspNet.Mvc.Razor.OptionDescriptors;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
-    /// Provides programmatic configuration for the default <see cref="Rendering.IViewEngine"/>.
+    /// Provides programmatic configuration for the <see cref="RazorViewEngine"/>.
     /// </summary>
     public class RazorViewEngineOptions
     {
         private IFileProvider _fileProvider;
 
         /// <summary>
-        /// Get a <see cref="IList{T}"/> of descriptors for <see cref="IViewLocationExpander" />s used by this
-        /// application.
+        /// Get a <see cref="IList{IViewLocationExpander}"/> used by the <see cref="RazorViewEngine"/>.
         /// </summary>
-        public IList<ViewLocationExpanderDescriptor> ViewLocationExpanders { get; }
-            = new List<ViewLocationExpanderDescriptor>();
+        public IList<IViewLocationExpander> ViewLocationExpanders { get; }
+            = new List<IViewLocationExpander>();
 
         /// <summary>
         /// Gets or sets the <see cref="IFileProvider" /> used by <see cref="RazorViewEngine"/> to locate Razor files on

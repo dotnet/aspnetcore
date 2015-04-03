@@ -23,20 +23,20 @@ namespace Microsoft.AspNet.Mvc.Core
             [NotNull] IReadOnlyList<IFilterProvider> filterProviders,
             [NotNull] IControllerFactory controllerFactory,
             [NotNull] ControllerActionDescriptor descriptor,
-            [NotNull] IInputFormattersProvider inputFormatterProvider,
+            [NotNull] IReadOnlyList<IInputFormatter> inputFormatters,
             [NotNull] IControllerActionArgumentBinder controllerActionArgumentBinder,
-            [NotNull] IModelBinderProvider modelBinderProvider,
-            [NotNull] IModelValidatorProviderProvider modelValidatorProviderProvider,
-            [NotNull] IValueProviderFactoryProvider valueProviderFactoryProvider,
+            [NotNull] IReadOnlyList<IModelBinder> modelBinders,
+            [NotNull] IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
+            [NotNull] IReadOnlyList<IValueProviderFactory> valueProviderFactories,
             [NotNull] IScopedInstance<ActionBindingContext> actionBindingContextAccessor,
             [NotNull] ITempDataDictionary tempData)
             : base(
                   actionContext, 
                   filterProviders,
-                  inputFormatterProvider, 
-                  modelBinderProvider, 
-                  modelValidatorProviderProvider, 
-                  valueProviderFactoryProvider,
+                  inputFormatters, 
+                  modelBinders, 
+                  modelValidatorProviders, 
+                  valueProviderFactories,
                   actionBindingContextAccessor)
         {
             _descriptor = descriptor;

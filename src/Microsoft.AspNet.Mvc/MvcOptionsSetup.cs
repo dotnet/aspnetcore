@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc
             // Set up ModelBinding
             options.ModelBinders.Add(new BinderTypeBasedModelBinder());
             options.ModelBinders.Add(new ServicesModelBinder());
-            options.ModelBinders.Add(typeof(BodyModelBinder));
+            options.ModelBinders.Add(new BodyModelBinder());
             options.ModelBinders.Add(new HeaderModelBinder());
             options.ModelBinders.Add(new TypeConverterModelBinder());
             options.ModelBinders.Add(new TypeMatchModelBinder());

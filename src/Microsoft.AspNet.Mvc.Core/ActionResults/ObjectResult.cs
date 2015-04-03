@@ -273,10 +273,12 @@ namespace Microsoft.AspNet.Mvc
             IEnumerable<IOutputFormatter> formatters = null;
             if (Formatters == null || Formatters.Count == 0)
             {
-                formatters = context.HttpContext
-                                    .RequestServices
-                                    .GetRequiredService<IOutputFormattersProvider>()
-                                    .OutputFormatters;
+                formatters = context
+                    .HttpContext
+                    .RequestServices
+                    .GetRequiredService<IOptions<MvcOptions>>()
+                    .Options
+                    .OutputFormatters;
             }
             else
             {

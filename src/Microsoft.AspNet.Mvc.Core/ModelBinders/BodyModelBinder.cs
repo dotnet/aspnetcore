@@ -6,8 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
@@ -19,39 +17,25 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// </summary>
     public class BodyModelBinder : BindingSourceModelBinder
     {
-        private readonly ActionContext _actionContext;
-        private readonly IScopedInstance<ActionBindingContext> _bindingContext;
-        private readonly IInputFormatterSelector _formatterSelector;
-        private readonly IValidationExcludeFiltersProvider _bodyValidationExcludeFiltersProvider;
-
         /// <summary>
         /// Creates a new <see cref="BodyModelBinder"/>.
         /// </summary>
-        /// <param name="context">An accessor to the <see cref="ActionContext"/>.</param>
-        /// <param name="bindingContext">An accessor to the <see cref="ActionBindingContext"/>.</param>
-        /// <param name="selector">The <see cref="IInputFormatterSelector"/>.</param>
-        /// <param name="bodyValidationExcludeFiltersProvider">
-        /// The <see cref="IValidationExcludeFiltersProvider"/>.
-        /// </param>
-        public BodyModelBinder([NotNull] IScopedInstance<ActionContext> context,
-                               [NotNull] IScopedInstance<ActionBindingContext> bindingContext,
-                               [NotNull] IInputFormatterSelector selector,
-                               [NotNull] IValidationExcludeFiltersProvider bodyValidationExcludeFiltersProvider)
+        public BodyModelBinder()
             : base(BindingSource.Body)
         {
-            _actionContext = context.Value;
-            _bindingContext = bindingContext;
-            _formatterSelector = selector;
-            _bodyValidationExcludeFiltersProvider = bodyValidationExcludeFiltersProvider;
         }
 
         /// <inheritdoc />
         protected async override Task<ModelBindingResult> BindModelCoreAsync([NotNull] ModelBindingContext bindingContext)
         {
-            var formatters = _bindingContext.Value.InputFormatters;
+            var requestServices = bindingContext.OperationBindingContext.HttpContext.RequestServices;
 
-            var formatterContext = new InputFormatterContext(_actionContext, bindingContext.ModelType);
-            var formatter = _formatterSelector.SelectFormatter(formatters.ToList(), formatterContext);
+            var formatterSelector = requestServices.GetRequiredService<IInputFormatterSelector>();
+            var actionContext = requestServices.GetRequiredService<IScopedInstance<ActionContext>>().Value;
+            var formatters = requestServices.GetRequiredService<IScopedInstance<ActionBindingContext>>().Value.InputFormatters;
+
+            var formatterContext = new InputFormatterContext(actionContext, bindingContext.ModelType);
+            var formatter = formatterSelector.SelectFormatter(formatters.ToList(), formatterContext);
 
             if (formatter == null)
             {

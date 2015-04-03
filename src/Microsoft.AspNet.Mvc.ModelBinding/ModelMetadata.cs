@@ -76,8 +76,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public abstract string BinderModelName { get; }
 
         /// <summary>
-        /// Gets the <see cref="Type"/> of an <see cref="IModelBinder"/> or an
-        /// <see cref="IModelBinderProvider"/> of a model if specified explicitly using 
+        /// Gets the <see cref="Type"/> of an <see cref="IModelBinder"/> of a model if specified explicitly using 
         /// <see cref="IBinderTypeProviderMetadata"/>.
         /// </summary>
         public abstract Type BinderType { get; }

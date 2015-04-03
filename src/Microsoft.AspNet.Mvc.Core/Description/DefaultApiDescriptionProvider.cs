@@ -11,6 +11,7 @@ using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Description
@@ -21,21 +22,23 @@ namespace Microsoft.AspNet.Mvc.Description
     /// </summary>
     public class DefaultApiDescriptionProvider : IApiDescriptionProvider
     {
-        private readonly IOutputFormattersProvider _formattersProvider;
+        private readonly IList<IOutputFormatter> _outputFormatters;
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly IInlineConstraintResolver _constraintResolver;
 
         /// <summary>
         /// Creates a new instance of <see cref="DefaultApiDescriptionProvider"/>.
         /// </summary>
-        /// <param name="formattersProvider">The <see cref="IOutputFormattersProvider"/>.</param>
+        /// <param name="optionsAccessor">The accessor for <see cref="MvcOptions"/>.</param>
+        /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/> used for resolving inline
+        /// constraints.</param>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         public DefaultApiDescriptionProvider(
-            IOutputFormattersProvider formattersProvider,
+            IOptions<MvcOptions> optionsAccessor,
             IInlineConstraintResolver constraintResolver,
             IModelMetadataProvider modelMetadataProvider)
         {
-            _formattersProvider = formattersProvider;
+            _outputFormatters = optionsAccessor.Options.OutputFormatters;
             _constraintResolver = constraintResolver;
             _modelMetadataProvider = modelMetadataProvider;
         }
@@ -316,10 +319,9 @@ namespace Microsoft.AspNet.Mvc.Description
                 contentTypes.Add(null);
             }
 
-            var formatters = _formattersProvider.OutputFormatters;
             foreach (var contentType in contentTypes)
             {
-                foreach (var formatter in formatters)
+                foreach (var formatter in _outputFormatters)
                 {
                     var responseFormatMetadataProvider = formatter as IApiResponseFormatMetadataProvider;
                     if (responseFormatMetadataProvider != null)

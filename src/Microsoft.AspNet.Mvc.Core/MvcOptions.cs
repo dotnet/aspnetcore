@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.OptionDescriptors;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -22,16 +22,16 @@ namespace Microsoft.AspNet.Mvc
         public MvcOptions()
         {
             Conventions = new List<IApplicationModelConvention>();
-            ModelBinders = new List<ModelBinderDescriptor>();
+            ModelBinders = new List<IModelBinder>();
             ViewEngines = new List<ViewEngineDescriptor>();
-            ValueProviderFactories = new List<ValueProviderFactoryDescriptor>();
-            OutputFormatters = new List<OutputFormatterDescriptor>();
-            InputFormatters = new List<InputFormatterDescriptor>();
+            ValueProviderFactories = new List<IValueProviderFactory>();
+            OutputFormatters = new List<IOutputFormatter>();
+            InputFormatters = new List<IInputFormatter>();
             Filters = new List<IFilter>();
             FormatterMappings = new FormatterMappings();
-            ValidationExcludeFilters = new List<ExcludeValidationDescriptor>();
+            ValidationExcludeFilters = new List<IExcludeTypeValidationFilter>();
             ModelMetadataDetailsProviders = new List<IMetadataDetailsProvider>();
-            ModelValidatorProviders = new List<ModelValidatorProviderDescriptor>();
+            ModelValidatorProviders = new List<IModelValidatorProvider>();
             CacheProfiles = new Dictionary<string, CacheProfile>(StringComparer.OrdinalIgnoreCase);
         }
 
@@ -68,25 +68,23 @@ namespace Microsoft.AspNet.Mvc
         /// Gets a list of <see cref="IFilter"/> which are used to construct filters that
         /// apply to all actions.
         /// </summary>
-        public ICollection<IFilter> Filters { get; private set; }
+        public ICollection<IFilter> Filters { get; }
 
         /// <summary>
-        /// Gets a list of the <see cref="OutputFormatterDescriptor" /> which are used to construct
-        /// a list of <see cref="IOutputFormatter"/> by <see cref="IOutputFormattersProvider"/>.
+        /// Gets a list of <see cref="IOutputFormatter"/>s that are used by this application.
         /// </summary>
-        public IList<OutputFormatterDescriptor> OutputFormatters { get; }
+        public IList<IOutputFormatter> OutputFormatters { get; }
 
         /// <summary>
-        /// Gets a list of the <see cref="InputFormatterDescriptor" /> which are used to construct
-        /// a list of <see cref="IInputFormatter"/> by <see cref="IInputFormattersProvider"/>.
+        /// Gets a list of <see cref="IInputFormatter"/>s that are used by this application.
         /// </summary>
-        public IList<InputFormatterDescriptor> InputFormatters { get; }
+        public IList<IInputFormatter> InputFormatters { get; }
 
         /// <summary>
-        /// Gets a list of <see cref="ExcludeValidationDescriptor"/> which are used to construct a list
-        /// of exclude filters by <see cref="ModelBinding.Validation.IValidationExcludeFiltersProvider"/>.
+        /// Gets a list of <see cref="IExcludeTypeValidationFilter"/>s that are used by this application.
         /// </summary>
-        public IList<ExcludeValidationDescriptor> ValidationExcludeFilters { get; }
+        public IList<IExcludeTypeValidationFilter> ValidationExcludeFilters { get; }
+            = new List<IExcludeTypeValidationFilter>();
 
         /// <summary>
         /// Gets or sets the maximum number of validation errors that are allowed by this application before further
@@ -107,17 +105,14 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Get a list of the <see cref="ModelBinderDescriptor" /> used by the
-        /// Gets a list of the <see cref="ModelBinderDescriptor" /> used by the
-        /// <see cref="ModelBinding.CompositeModelBinder" />.
+        /// Gets a list of <see cref="IModelBinder"/>s used by this application.
         /// </summary>
-        public IList<ModelBinderDescriptor> ModelBinders { get; }
+        public IList<IModelBinder> ModelBinders { get; }
 
         /// <summary>
-        /// Gets a list of the <see cref="ModelValidatorProviderDescriptor" />s used by
-        /// <see cref="ModelBinding.Validation.CompositeModelValidatorProvider"/>.
+        /// Gets a list of <see cref="IModelValidatorProvider"/>s used by this application.
         /// </summary>
-        public IList<ModelValidatorProviderDescriptor> ModelValidatorProviders { get; }
+        public IList<IModelValidatorProvider> ModelValidatorProviders { get; }
 
         /// <summary>
         /// Gets a list of descriptors that represent <see cref="Rendering.IViewEngine"/> used
@@ -126,10 +121,9 @@ namespace Microsoft.AspNet.Mvc
         public IList<ViewEngineDescriptor> ViewEngines { get; }
 
         /// <summary>
-        /// Gets a list of descriptors that represent
-        /// <see cref="ModelBinding.IValueProviderFactory"/> used by this application.
+        /// Gets a list of <see cref="IValueProviderFactory"/> used by this application.
         /// </summary>
-        public IList<ValueProviderFactoryDescriptor> ValueProviderFactories { get; }
+        public IList<IValueProviderFactory> ValueProviderFactories { get; }
 
         /// <summary>
         /// Gets a list of <see cref="IApplicationModelConvention"/> instances that will be applied to

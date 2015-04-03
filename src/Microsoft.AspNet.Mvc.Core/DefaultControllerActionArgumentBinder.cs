@@ -4,11 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
@@ -37,7 +35,7 @@ namespace Microsoft.AspNet.Mvc
 
         public async Task<IDictionary<string, object>> BindActionArgumentsAsync(
             ActionContext actionContext,
-            ActionBindingContext actionBindingContext, 
+            ActionBindingContext actionBindingContext,
             object controller)
         {
             var actionDescriptor = actionContext.ActionDescriptor as ControllerActionDescriptor;
@@ -66,7 +64,7 @@ namespace Microsoft.AspNet.Mvc
                 actionArguments,
                 actionDescriptor.Parameters);
             return actionArguments;
-        }   
+        }
 
         private void ActivateProperties(object controller, Type containerType, Dictionary<string, object> properties)
         {

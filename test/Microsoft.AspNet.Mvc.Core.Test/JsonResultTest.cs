@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private HttpContext GetHttpContext(
-            IReadOnlyList<IOutputFormatter> optionsFormatters = null,
+            IReadOnlyList<IOutputFormatter> outputFormatters = null,
             bool enableFallback = false)
         {
             var httpContext = new DefaultHttpContext();
@@ -185,20 +185,21 @@ namespace Microsoft.AspNet.Mvc
             var services = new Mock<IServiceProvider>(MockBehavior.Strict);
             httpContext.RequestServices = services.Object;
 
-            var mockFormattersProvider = new Mock<IOutputFormattersProvider>();
-            mockFormattersProvider
-                .SetupGet(o => o.OutputFormatters)
-                .Returns(optionsFormatters ?? new List<IOutputFormatter>());
+            var options = new MvcOptions();
+            if (outputFormatters != null)
+            {
+                foreach (var formatter in outputFormatters)
+                {
+                    options.OutputFormatters.Add(formatter);
+                }
+            }
 
-            services
-                .Setup(s => s.GetService(typeof(IOutputFormattersProvider)))
-                .Returns(mockFormattersProvider.Object);
+            var optionsAccessor = new Mock<IOptions<MvcOptions>>();
+            optionsAccessor.SetupGet(o => o.Options)
+                .Returns(options);
 
-            var options = new Mock<IOptions<MvcOptions>>();
-            options.SetupGet(o => o.Options)
-                       .Returns(new MvcOptions());
             services.Setup(s => s.GetService(typeof(IOptions<MvcOptions>)))
-                       .Returns(options.Object);
+                .Returns(optionsAccessor.Object);
 
             // This is the ultimate fallback, it will be used if none of the formatters from options
             // work.

@@ -33,8 +33,8 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
             var descriptor = new ViewEngineDescriptor(type);
 
             // Assert
-            Assert.Equal(type, descriptor.OptionType);
-            Assert.Null(descriptor.Instance);
+            Assert.Equal(type, descriptor.ViewEngineType);
+            Assert.Null(descriptor.ViewEngine);
         }
 
         [Fact]
@@ -47,8 +47,8 @@ namespace Microsoft.AspNet.Mvc.OptionDescriptors
             var descriptor = new ViewEngineDescriptor(viewEngine);
 
             // Assert
-            Assert.Same(viewEngine, descriptor.Instance);
-            Assert.Equal(viewEngine.GetType(), descriptor.OptionType);
+            Assert.Same(viewEngine, descriptor.ViewEngine);
+            Assert.Equal(viewEngine.GetType(), descriptor.ViewEngineType);
         }
 
         private class TestViewEngine : IViewEngine

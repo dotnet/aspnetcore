@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// {0} has not been called for the page '{1}'.
+        /// {0} has not been called for the page at '{1}'.
         /// </summary>
         internal static string RenderBodyNotCalled
         {
@@ -227,7 +227,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// {0} has not been called for the page '{1}'.
+        /// {0} has not been called for the page at '{1}'.
         /// </summary>
         internal static string FormatRenderBodyNotCalled(object p0, object p1)
         {
@@ -283,7 +283,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// The following sections have been defined but have not been rendered for the page '{0}': '{1}'.
+        /// The following sections have been defined but have not been rendered by the page at '{0}': '{1}'.
         /// </summary>
         internal static string SectionsNotRendered
         {
@@ -291,7 +291,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// The following sections have been defined but have not been rendered for the page '{0}': '{1}'.
+        /// The following sections have been defined but have not been rendered by the page at '{0}': '{1}'.
         /// </summary>
         internal static string FormatSectionsNotRendered(object p0, object p1)
         {

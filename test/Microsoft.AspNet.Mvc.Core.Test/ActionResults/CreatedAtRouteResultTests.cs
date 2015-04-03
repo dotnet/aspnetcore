@@ -99,15 +99,13 @@ namespace Microsoft.AspNet.Mvc
 
             httpContext.Setup(o => o.Request)
                        .Returns(request);
-            var options = new Mock<IOptions<MvcOptions>>();
-            options.SetupGet(o => o.Options)
-                       .Returns(new MvcOptions());
+            var optionsAccessor = new MockMvcOptionsAccessor();
+            optionsAccessor.Options.OutputFormatters.Add(new StringOutputFormatter());
+            optionsAccessor.Options.OutputFormatters.Add(new JsonOutputFormatter());
             httpContext.Setup(o => o.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
-                       .Returns(options.Object);
+                .Returns(optionsAccessor);
             httpContext.Setup(o => o.Response)
                        .Returns(response);
-            httpContext.Setup(o => o.RequestServices.GetService(typeof(IOutputFormattersProvider)))
-                       .Returns(new TestOutputFormatterProvider());
 
             return httpContext.Object;
         }
@@ -118,21 +116,6 @@ namespace Microsoft.AspNet.Mvc
             urlHelper.Setup(o => o.Link(It.IsAny<string>(), It.IsAny<object>())).Returns(returnValue);
 
             return urlHelper.Object;
-        }
-
-        private class TestOutputFormatterProvider : IOutputFormattersProvider
-        {
-            public IReadOnlyList<IOutputFormatter> OutputFormatters
-            {
-                get
-                {
-                    return new List<IOutputFormatter>()
-                            {
-                                new StringOutputFormatter(),
-                                new JsonOutputFormatter()
-                            };
-                }
-            }
         }
     }
 }
