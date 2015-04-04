@@ -47,10 +47,5 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// Whether the action constraint is an <see cref="IActionConstraintFactory"/>.
         /// </summary>
         public bool IsFactory { get; }
-
-        public override string Format()
-        {
-            return LogFormatter.FormatLogValues(this);
-        }
     }
 }

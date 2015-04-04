@@ -37,10 +37,5 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// Whether or not the assembly is dynamic. See <see cref="Assembly.IsDynamic"/>.
         /// </summary>
         public bool IsDynamic { get; }
-
-        public override string Format()
-        {
-            return LogFormatter.FormatLogValues(this);
-        }
     }
 }

@@ -33,10 +33,5 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// The  <see cref="RouteKeyHandling"/>. See <see cref="RouteDataActionConstraint.KeyHandling"/>.
         /// </summary>
         public RouteKeyHandling KeyHandling { get; }
-
-        public override string Format()
-        {
-            return LogFormatter.FormatLogValues(this);
-        }
     }
 }

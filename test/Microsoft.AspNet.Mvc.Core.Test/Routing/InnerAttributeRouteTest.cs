@@ -926,13 +926,13 @@ namespace Microsoft.AspNet.Mvc.Routing
             Assert.Equal(1, sink.Scopes.Count);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(AttributeRoute).FullName, scope.LoggerName);
-            Assert.Equal("AttributeRoute.RouteAsync", scope.Scope);
+            Assert.Equal("AttributeRoute.RouteAsync", scope.Scope.ToString());
 
             Assert.Equal(1, sink.Writes.Count);
 
             var write = sink.Writes[0];
             Assert.Equal(typeof(AttributeRoute).FullName, write.LoggerName);
-            Assert.Equal("AttributeRoute.RouteAsync", write.Scope);
+            Assert.Equal("AttributeRoute.RouteAsync", write.Scope.ToString());
             var values = Assert.IsType<AttributeRouteRouteAsyncValues>(write.State);
             Assert.Equal("AttributeRoute.RouteAsync", values.Name);
             Assert.True(values.Handled);
@@ -957,13 +957,13 @@ namespace Microsoft.AspNet.Mvc.Routing
             Assert.Equal(1, sink.Scopes.Count);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(AttributeRoute).FullName, scope.LoggerName);
-            Assert.Equal("AttributeRoute.RouteAsync", scope.Scope);
+            Assert.Equal("AttributeRoute.RouteAsync", scope.Scope.ToString());
 
             Assert.Equal(1, sink.Writes.Count);
 
             var write = sink.Writes[0];
             Assert.Equal(typeof(AttributeRoute).FullName, write.LoggerName);
-            Assert.Equal("AttributeRoute.RouteAsync", write.Scope);
+            Assert.Equal("AttributeRoute.RouteAsync", write.Scope.ToString());
             var values = Assert.IsType<AttributeRouteRouteAsyncValues>(write.State);
             Assert.Equal("AttributeRoute.RouteAsync", values.Name);
             Assert.False(values.Handled);

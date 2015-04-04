@@ -91,10 +91,5 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// Gets the set of properties associated with the action <see cref="ActionModel.Properties"/>.
         /// </summary>
         public IDictionary<object, object> Properties { get; }
-
-        public override string Format()
-        {
-            return LogFormatter.FormatLogValues(this);
-        }
     }
 }

@@ -30,10 +30,5 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// The <see cref="Type"/> of the property.
         /// </summary>
         public Type PropertyType { get; }
-
-        public override string Format()
-        {
-            return LogFormatter.FormatLogValues(this);
-        }
     }
 }

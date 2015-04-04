@@ -28,10 +28,5 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// The <see cref="Type"/> of the parameter. See <see cref="ParameterDescriptor.ParameterType"/>.
         /// </summary>
         public Type ParameterType { get; }
-
-        public override string Format()
-        {
-            return LogFormatter.FormatLogValues(this);
-        }
     }
 }

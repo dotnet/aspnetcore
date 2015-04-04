@@ -75,6 +75,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 
+
             var logs = await GetLogsAsync(client, requestTraceId);
             var scopeNode = logs.FindScope(nameof(MvcRouteHandler) + ".RouteAsync");
 

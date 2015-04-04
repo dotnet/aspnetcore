@@ -34,11 +34,11 @@ namespace Microsoft.AspNet.Mvc
             // Assert
             var scope = Assert.Single(sink.Scopes);
             Assert.Equal(typeof(MvcRouteHandler).FullName, scope.LoggerName);
-            Assert.Equal("MvcRouteHandler.RouteAsync", scope.Scope);
+            Assert.Equal("MvcRouteHandler.RouteAsync", scope.Scope.ToString());
 
             var write = Assert.Single(sink.Writes);
             Assert.Equal(typeof(MvcRouteHandler).FullName, write.LoggerName);
-            Assert.Equal("MvcRouteHandler.RouteAsync", write.Scope);
+            Assert.Equal("MvcRouteHandler.RouteAsync", write.Scope.ToString());
             var values = Assert.IsType<MvcRouteHandlerRouteAsyncValues>(write.State);
             Assert.Equal("MvcRouteHandler.RouteAsync", values.Name);
             Assert.True(values.ActionSelected);
@@ -69,11 +69,11 @@ namespace Microsoft.AspNet.Mvc
             // Assert
             var scope = Assert.Single(sink.Scopes);
             Assert.Equal(typeof(MvcRouteHandler).FullName, scope.LoggerName);
-            Assert.Equal("MvcRouteHandler.RouteAsync", scope.Scope);
+            Assert.Equal("MvcRouteHandler.RouteAsync", scope.Scope.ToString());
 
             var write = Assert.Single(sink.Writes);
             Assert.Equal(typeof(MvcRouteHandler).FullName, write.LoggerName);
-            Assert.Equal("MvcRouteHandler.RouteAsync", write.Scope);
+            Assert.Equal("MvcRouteHandler.RouteAsync", write.Scope.ToString());
             var values = Assert.IsType<MvcRouteHandlerRouteAsyncValues>(write.State);
             Assert.Equal("MvcRouteHandler.RouteAsync", values.Name);
             Assert.False(values.ActionSelected);
@@ -105,13 +105,13 @@ namespace Microsoft.AspNet.Mvc
             // Assert
             var scope = Assert.Single(sink.Scopes);
             Assert.Equal(typeof(MvcRouteHandler).FullName, scope.LoggerName);
-            Assert.Equal("MvcRouteHandler.RouteAsync", scope.Scope);
+            Assert.Equal("MvcRouteHandler.RouteAsync", scope.Scope.ToString());
 
             Assert.Equal(1, sink.Writes.Count);
 
             var write = sink.Writes[0];
             Assert.Equal(typeof(MvcRouteHandler).FullName, write.LoggerName);
-            Assert.Equal("MvcRouteHandler.RouteAsync", write.Scope);
+            Assert.Equal("MvcRouteHandler.RouteAsync", write.Scope.ToString());
             var values = Assert.IsType<MvcRouteHandlerRouteAsyncValues>(write.State);
             Assert.Equal("MvcRouteHandler.RouteAsync", values.Name);
             Assert.True(values.ActionSelected);

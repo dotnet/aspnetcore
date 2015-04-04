@@ -117,10 +117,5 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// See <see cref="ControllerActionDescriptor.ControllerTypeInfo"/>.
         /// </summary>
         public TypeInfo ControllerTypeInfo { get; }
-
-        public override string Format()
-        {
-            return LogFormatter.FormatLogValues(this);
-        }
     }
 }

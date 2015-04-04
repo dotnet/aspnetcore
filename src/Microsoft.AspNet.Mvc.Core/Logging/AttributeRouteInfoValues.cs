@@ -33,10 +33,5 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// The name of the route. See <see cref="AttributeRouteInfo.Name"/>.
         /// </summary>
         public string Name { get; }
-
-        public override string Format()
-        {
-            return LogFormatter.FormatLogValues(this);
-        }
     }
 }

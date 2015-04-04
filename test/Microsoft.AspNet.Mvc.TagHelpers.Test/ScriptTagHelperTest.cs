@@ -367,7 +367,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(LogLevel.Verbose, logger.Logged[1].LogLevel);
             Assert.IsAssignableFrom<ILogValues>(logger.Logged[1].State);
             Assert.StartsWith("Skipping processing for Microsoft.AspNet.Mvc.TagHelpers.ScriptTagHelper",
-                ((ILogValues)logger.Logged[1].State).Format());
+                ((ILogValues)logger.Logged[1].State).ToString());
         }
 
         [Fact]
@@ -422,7 +422,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(LogLevel.Verbose, logger.Logged[0].LogLevel);
             Assert.IsAssignableFrom<ILogValues>(logger.Logged[0].State);
             Assert.StartsWith("Skipping processing for Microsoft.AspNet.Mvc.TagHelpers.ScriptTagHelper",
-                ((ILogValues)logger.Logged[0].State).Format());
+                ((ILogValues)logger.Logged[0].State).ToString());
         }
 
         [Fact]

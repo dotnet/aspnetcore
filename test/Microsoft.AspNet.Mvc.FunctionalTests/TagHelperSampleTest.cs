@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 return false;
             }
 
-            public IDisposable BeginScope(object scope)
+            public IDisposable BeginScopeImpl(object scope)
             {
                 return new TestDisposable();
             }

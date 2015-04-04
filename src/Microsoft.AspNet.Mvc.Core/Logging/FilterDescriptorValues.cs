@@ -34,10 +34,5 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// The filter scope. See <see cref="FilterDescriptor.Scope"/>.
         /// </summary>
         public int Scope { get; }
-
-        public override string Format()
-        {
-            return LogFormatter.FormatLogValues(this);
-        }
     }
 }

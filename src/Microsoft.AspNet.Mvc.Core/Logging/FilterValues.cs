@@ -60,10 +60,5 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// A list of interfaces the <see cref="IFilter"/> implements.
         /// </summary>
         public IList<Type> FilterInterfaces { get; }
-
-        public override string Format()
-        {
-            return LogFormatter.FormatLogValues(this);
-        }
     }
 }

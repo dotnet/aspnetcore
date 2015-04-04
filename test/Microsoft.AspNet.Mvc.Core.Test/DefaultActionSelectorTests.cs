@@ -44,13 +44,13 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(1, sink.Scopes.Count);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(DefaultActionSelector).FullName, scope.LoggerName);
-            Assert.Equal("DefaultActionSelector.SelectAsync", scope.Scope);
+            Assert.Equal("DefaultActionSelector.SelectAsync", scope.Scope.ToString());
 
             Assert.Equal(1, sink.Writes.Count);
 
             var write = sink.Writes[0];
             Assert.Equal(typeof(DefaultActionSelector).FullName, write.LoggerName);
-            Assert.Equal("DefaultActionSelector.SelectAsync", write.Scope);
+            Assert.Equal("DefaultActionSelector.SelectAsync", write.Scope.ToString());
             var values = Assert.IsType<DefaultActionSelectorSelectAsyncValues>(write.State);
             Assert.Equal("DefaultActionSelector.SelectAsync", values.Name);
             Assert.Empty(values.ActionsMatchingRouteConstraints);
@@ -95,13 +95,13 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(1, sink.Scopes.Count);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(DefaultActionSelector).FullName, scope.LoggerName);
-            Assert.Equal("DefaultActionSelector.SelectAsync", scope.Scope);
+            Assert.Equal("DefaultActionSelector.SelectAsync", scope.Scope.ToString());
 
             Assert.Equal(1, sink.Writes.Count);
 
             var write = sink.Writes[0];
             Assert.Equal(typeof(DefaultActionSelector).FullName, write.LoggerName);
-            Assert.Equal("DefaultActionSelector.SelectAsync", write.Scope);
+            Assert.Equal("DefaultActionSelector.SelectAsync", write.Scope.ToString());
             var values = Assert.IsType<DefaultActionSelectorSelectAsyncValues>(write.State);
             Assert.Equal("DefaultActionSelector.SelectAsync", values.Name);
             Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingRouteConstraints);
@@ -137,13 +137,13 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(1, sink.Scopes.Count);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(DefaultActionSelector).FullName, scope.LoggerName);
-            Assert.Equal("DefaultActionSelector.SelectAsync", scope.Scope);
+            Assert.Equal("DefaultActionSelector.SelectAsync", scope.Scope.ToString());
 
             Assert.Equal(1, sink.Writes.Count);
 
             var write = sink.Writes[0];
             Assert.Equal(typeof(DefaultActionSelector).FullName, write.LoggerName);
-            Assert.Equal("DefaultActionSelector.SelectAsync", write.Scope);
+            Assert.Equal("DefaultActionSelector.SelectAsync", write.Scope.ToString());
             var values = Assert.IsType<DefaultActionSelectorSelectAsyncValues>(write.State);
             Assert.Equal("DefaultActionSelector.SelectAsync", values.Name);
             Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingRouteConstraints);

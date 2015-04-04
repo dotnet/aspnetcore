@@ -29,10 +29,5 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// See <see cref="ApiExplorerModel.GroupName"/>.
         /// </summary>
         public string GroupName { get; }
-
-        public override string Format()
-        {
-            return LogFormatter.FormatLogValues(this);
-        }
     }
 }

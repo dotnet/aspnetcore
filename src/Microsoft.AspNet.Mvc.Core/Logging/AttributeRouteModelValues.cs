@@ -42,10 +42,5 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// Whether or not the template is absolute. See <see cref="AttributeRouteModel.IsAbsoluteTemplate"/>.
         /// </summary>
         public bool IsAbsoluteTemplate { get; }
-
-        public override string Format()
-        {
-            return LogFormatter.FormatLogValues(this);
-        }
     }
 }

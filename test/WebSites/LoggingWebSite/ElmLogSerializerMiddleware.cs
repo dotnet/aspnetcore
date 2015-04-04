@@ -97,7 +97,7 @@ namespace LoggingWebSite
         private void CopyScopeNodeTree(ScopeNode root, ScopeNodeDto rootDto)
         {
             rootDto.LoggerName = root.Name;
-            rootDto.State = root.State;
+            rootDto.State = root.State?.ToString();
             rootDto.StateType = root.State?.GetType();
 
             foreach (var logInfo in root.Messages)
