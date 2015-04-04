@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.DataProtection
                 _factory = factory;
             }
 
-            public IDisposable BeginScope(object state)
+            public IDisposable BeginScopeImpl(object state)
             {
                 return new DummyDisposable();
             }
