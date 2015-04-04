@@ -530,7 +530,7 @@ namespace Microsoft.Net.Http.Server
             public string Protocol { get { return "HTTP/" + _request.ProtocolVersion.ToString(2); } }
             public IEnumerable Headers { get { return new HeadersLogStructure(_request.Headers); } }
 
-            public override string Format()
+            public override string ToString()
             {
                 var requestBuilder = new StringBuilder("Received request: ");
 

@@ -897,7 +897,7 @@ namespace Microsoft.Net.Http.Server
             public string ReasonPhrase { get { return _response.ReasonPhrase ?? _response.GetReasonPhrase(_response.StatusCode); } }
             public IEnumerable Headers { get { return new HeadersLogStructure(_response.Headers); } }
 
-            public override string Format()
+            public override string ToString()
             {
                 // HTTP/1.1 200 OK
                 var responseBuilder = new StringBuilder("Sending Response: ");
