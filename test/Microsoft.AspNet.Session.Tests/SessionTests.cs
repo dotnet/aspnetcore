@@ -210,7 +210,7 @@ namespace Microsoft.AspNet.Session
                 var response = await client.GetAsync(string.Empty);
                 response.EnsureSuccessStatusCode();
                 Assert.Single(sink.Writes);
-                Assert.True(((ILogValues)sink.Writes[0].State).Format().Contains("started"));
+                Assert.Contains("started", sink.Writes[0].State.ToString());
                 Assert.Equal(LogLevel.Information, sink.Writes[0].LogLevel);
             }
         }
@@ -257,8 +257,8 @@ namespace Microsoft.AspNet.Session
                 Thread.Sleep(50);
                 Assert.Equal("2", await client.GetStringAsync("/second"));
                 Assert.Equal(2, sink.Writes.Count);
-                Assert.True(((ILogValues)sink.Writes[0].State).Format().Contains("started"));
-                Assert.True(((ILogValues)sink.Writes[1].State).Format().Contains("expired"));
+                Assert.Contains("started", sink.Writes[0].State.ToString());
+                Assert.Contains("expired", sink.Writes[1].State.ToString());
                 Assert.Equal(LogLevel.Information, sink.Writes[0].LogLevel);
                 Assert.Equal(LogLevel.Warning, sink.Writes[1].LogLevel);
             }
