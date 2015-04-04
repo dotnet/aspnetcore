@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Identity.Test
     {
         public IList<string> LogMessages { get; private set; } = new List<string>();
 
-        public IDisposable BeginScope(object state)
+        public IDisposable BeginScopeImpl(object state)
         {
             LogMessages.Add(state?.ToString());
             return null;
