@@ -43,13 +43,13 @@ namespace Microsoft.AspNet.Routing
             Assert.Single(sink.Scopes);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(RouterMiddleware).FullName, scope.LoggerName);
-            Assert.Equal("RouterMiddleware.Invoke", scope.Scope);
+            Assert.Equal("RouterMiddleware.Invoke", scope.Scope.ToString());
 
             Assert.Single(sink.Writes);
 
             var write = sink.Writes[0];
             Assert.Equal(typeof(RouterMiddleware).FullName, write.LoggerName);
-            Assert.Equal("RouterMiddleware.Invoke", write.Scope);
+            Assert.Equal("RouterMiddleware.Invoke", write.Scope.ToString());
             var values = Assert.IsType<RouterMiddlewareInvokeValues>(write.State);
             Assert.Equal("RouterMiddleware.Invoke", values.Name);
             Assert.Equal(false, values.Handled);
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Routing
             Assert.Single(sink.Scopes);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(RouterMiddleware).FullName, scope.LoggerName);
-            Assert.Equal("RouterMiddleware.Invoke", scope.Scope);
+            Assert.Equal("RouterMiddleware.Invoke", scope.Scope.ToString());
 
             Assert.Empty(sink.Writes);
         }
@@ -122,13 +122,13 @@ namespace Microsoft.AspNet.Routing
             Assert.Single(sink.Scopes);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(RouterMiddleware).FullName, scope.LoggerName);
-            Assert.Equal("RouterMiddleware.Invoke", scope.Scope);
+            Assert.Equal("RouterMiddleware.Invoke", scope.Scope.ToString());
 
             Assert.Single(sink.Writes);
 
             var write = sink.Writes[0];
             Assert.Equal(typeof(RouterMiddleware).FullName, write.LoggerName);
-            Assert.Equal("RouterMiddleware.Invoke", write.Scope);
+            Assert.Equal("RouterMiddleware.Invoke", write.Scope.ToString());
             Assert.Equal(typeof(RouterMiddlewareInvokeValues), write.State.GetType());
             var values = (RouterMiddlewareInvokeValues)write.State;
             Assert.Equal("RouterMiddleware.Invoke", values.Name);
@@ -166,7 +166,7 @@ namespace Microsoft.AspNet.Routing
             Assert.Single(sink.Scopes);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(RouterMiddleware).FullName, scope.LoggerName);
-            Assert.Equal("RouterMiddleware.Invoke", scope.Scope);
+            Assert.Equal("RouterMiddleware.Invoke", scope.Scope.ToString());
 
             Assert.Empty(sink.Writes);
         }
