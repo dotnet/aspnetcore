@@ -193,4 +193,23 @@
     <File Name="xunit.execution.AspNet.dll" Ignore="yes" />
     <File Name="xunit.runner.utility.AspNet.dll" Ignore="yes" />
     <File Name="xunit.runner.aspnet.dll" Ignore="yes" />
+
+    <File Name="Microsoft.CSharp.dll" Ignore="yes" />
+    <File Name="Microsoft.VisualBasic.dll" Ignore="yes" />
+    <File Name="Microsoft.Win32.Registry.dll" Ignore="yes" />
+    <File Name="ModuleCore.dll" Ignore="yes" />
+    <File Name="System.ComponentModel.Annotations.dll" Ignore="yes" />
+    <File Name="System.ComponentModel.Primitives.dll" Ignore="yes" />
+    <File Name="System.ComponentModel.TypeConverter.dll" Ignore="yes" />
+    <File Name="System.Diagnostics.FileVersionInfo.dll" Ignore="yes" />
+    <File Name="System.Diagnostics.FileVersionInfo.TestAssembly.dll" Ignore="yes" />
+    <File Name="System.IO.FileSystem.DriveInfo.dll" Ignore="yes" />
+    <File Name="System.IO.MemoryMappedFiles.dll" Ignore="yes" />
+    <File Name="System.IO.UnmanagedMemoryStream.dll" Ignore="yes" />
+    <File Name="System.Numerics.Vectors.dll" Ignore="yes" />
+    <File Name="System.Private.DataContractSerialization.dll" Ignore="yes" />
+    <File Name="System.ServiceProcess.ServiceController.dll" Ignore="yes" />
+    <File Name="System.Text.Encoding.CodePages.dll" Ignore="yes" />
+    <File Name="System.Threading.Tasks.Dataflow.dll" Ignore="yes" />
+    <File Name="System.Xml.RW.XmlReaderLib.dll" Ignore="yes" />
 </Files>
