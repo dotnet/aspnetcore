@@ -2,13 +2,14 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_DNVM_BUILDNUMBER="beta5-10358"
+_DNVM_BUILDNUMBER="beta5-10359"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
 _DNVM_RUNTIME_PACKAGE_NAME="dnx"
 _DNVM_RUNTIME_FRIENDLY_NAME=".NET Execution Environment"
 _DNVM_RUNTIME_SHORT_NAME="DNX"
 _DNVM_RUNTIME_FOLDER_NAME=".dnx"
 _DNVM_COMMAND_NAME="dnvm"
+_DNVM_PACKAGE_MANAGER_NAME="dnu"
 _DNVM_VERSION_MANAGER_NAME=".NET Version Manager"
 _DNVM_DEFAULT_FEED="https://www.myget.org/F/aspnetvnext/api/v2"
 _DNVM_UPDATE_LOCATION="https://raw.githubusercontent.com/aspnet/Home/dev/dnvm.sh"
@@ -243,6 +244,20 @@ __dnvm_help() {
     echo "  none                        remove $_DNVM_RUNTIME_SHORT_NAME bin from path of current command line"
     echo "  -p|-persistent              set selected version as default"
     echo ""
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME run <semver>|<alias> <args...> ${RCol}"
+    echo "  <semver>|<alias>            the version or alias to run"
+    echo "  <args...>                   arguments to be passed to $_DNVM_RUNTIME_SHORT_NAME"
+    echo ""
+    echo "  runs the $_DNVM_RUNTIME_SHORT_NAME command from the specified version of the runtime without affecting the current PATH"
+    echo ""
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME exec <semver>|<alias> <command> <args...> ${RCol}"
+    echo "  <semver>|<alias>            the version or alias to execute in"
+    echo "  <command>                   the command to run"
+    echo "  <args...>                   arguments to be passed to the command"
+    echo ""
+    echo "  runs the specified command in the context of the specified version of the runtime without affecting the current PATH"
+    echo "  example: $_DNVM_COMMAND_NAME exec 1.0.0-beta4 $_DNVM_PACKAGE_MANAGER_NAME build"
+    echo ""
    printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME list ${RCol}"
     echo "  list $_DNVM_RUNTIME_SHORT_NAME versions installed "
     echo ""
@@ -347,23 +362,29 @@ dnvm()
             fi
         ;;
 
-        "use" )
-            [ $# -gt 3 ] && __dnvm_help && return
-            [ $# -lt 2 ] && __dnvm_help && return
+        "use"|"run"|"exec" )
+            [[ $1 == "use" && $# -gt 3 ]] && __dnvm_help && return
+            [[ $1 == "use" && $# -lt 2 ]] && __dnvm_help && return
+            local cmd=$1
+            local persistent=
 
             shift
-            local persistent=
-            while [ $# -ne 0 ]
-            do
-                if [[ $1 == "-p" || $1 == "-persistent" ]]; then
-                    local persistent="true"
-                elif [[ -n $1 ]]; then
-                    local versionOrAlias=$1
-                fi
+            if [ $cmd == "use" ]; then
+                while [ $# -ne 0 ]
+                do
+                    if [[ $1 == "-p" || $1 == "-persistent" ]]; then
+                        local persistent="true"
+                    elif [[ -n $1 ]]; then
+                        local versionOrAlias=$1
+                    fi
+                    shift
+                done
+            else
+                local versionOrAlias=$1
                 shift
-            done
+            fi
 
-            if [[ $versionOrAlias == "none" ]]; then
+            if [[ $cmd == "use" && $versionOrAlias == "none" ]]; then
                 echo "Removing $_DNVM_RUNTIME_SHORT_NAME from process PATH"
                 # Strip other version from PATH
                 PATH=$(__dnvm_strip_path "$PATH" "/bin")
@@ -383,15 +404,34 @@ dnvm()
                 return 1
             fi
 
-            echo "Adding" $runtimeBin "to process PATH"
+            case $cmd in
+                "run")
+                    local hostpath="$runtimeBin/dnx"
+                    if [[ -e $hostpath ]]; then
+                        $hostpath $@
+                    else
+                        echo "Cannot find $_DNVM_RUNTIME_SHORT_NAME in $runtimeBin. It may have been corrupted. Use '$_DNVM_COMMAND_NAME install $versionOrAlias -f' to attempt to reinstall it"
+                    fi
+                ;;
+                "exec") 
+                    (
+                        PATH=$(__dnvm_strip_path "$PATH" "/bin")
+                        PATH=$(__dnvm_prepend_path "$PATH" "$runtimeBin")
+                        $@
+                    )
+                ;;
+                "use") 
+                    echo "Adding" $runtimeBin "to process PATH"
 
-            PATH=$(__dnvm_strip_path "$PATH" "/bin")
-            PATH=$(__dnvm_prepend_path "$PATH" "$runtimeBin")
+                    PATH=$(__dnvm_strip_path "$PATH" "/bin")
+                    PATH=$(__dnvm_prepend_path "$PATH" "$runtimeBin")
 
-            if [[ -n $persistent ]]; then
-                local runtimeVersion=$(__dnvm_package_version "$runtimeFullName")
-                $_DNVM_COMMAND_NAME alias default "$runtimeVersion"
-            fi
+                    if [[ -n $persistent ]]; then
+                        local runtimeVersion=$(__dnvm_package_version "$runtimeFullName")
+                        $_DNVM_COMMAND_NAME alias default "$runtimeVersion"
+                    fi
+                ;;
+            esac
         ;;
 
         "alias" )

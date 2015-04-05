@@ -28,6 +28,16 @@ function _WriteOut {
         [Parameter(Mandatory=$false)][ConsoleColor]$BackgroundColor,
         [Parameter(Mandatory=$false)][switch]$NoNewLine)
 
+    if($__TestWriteTo) {
+        $cur = Get-Variable -Name $__TestWriteTo -ValueOnly -Scope Global -ErrorAction SilentlyContinue
+        $val = $cur + "$msg"
+        if(!$NoNewLine) {
+            $val += [Environment]::NewLine
+        }
+        Set-Variable -Name $__TestWriteTo -Value $val -Scope Global -Force
+        return
+    }
+
     if(!$Script:UseWriteHost) {
         if(!$msg) {
             $msg = ""
@@ -53,20 +63,11 @@ function _WriteOut {
             _WriteOut $msg
         }
     }
-
-    if($__TeeTo) {
-        $cur = Get-Variable -Name $__TeeTo -ValueOnly -Scope Global -ErrorAction SilentlyContinue
-        $val = $cur + "$msg"
-        if(!$NoNewLine) {
-            $val += [Environment]::NewLine
-        }
-        Set-Variable -Name $__TeeTo -Value $val -Scope Global -Force
-    }
 }
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta5-10358"
+$BuildVersion="beta5-10359"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -131,6 +132,7 @@ if(!$ColorScheme) {
 }
 
 Set-Variable -Option Constant "OptionPadding" 20
+Set-Variable -Option Constant "CommandPadding" 15
 
 # Test Control Variables
 if($__TeeTo) {
@@ -216,6 +218,39 @@ $RuntimesDir = Join-Path $UserHome "runtimes"
 $Aliases = $null
 
 ### Helper Functions
+# Checks if a specified file exists in the destination folder and if not, copies the file
+# to the destination folder. 
+function Safe-Filecopy {
+    param(
+        [Parameter(Mandatory=$true, Position=0)] $Filename, 
+        [Parameter(Mandatory=$true, Position=1)] $SourceFolder,
+        [Parameter(Mandatory=$true, Position=2)] $DestinationFolder)
+
+    # Make sure the destination folder is created if it doesn't already exist.
+    if(!(Test-Path $DestinationFolder)) {
+        _WriteOut "Creating destination folder '$DestinationFolder' ... "
+        
+        New-Item -Type Directory $Destination | Out-Null
+    }
+
+    $sourceFilePath = Join-Path $SourceFolder $Filename
+    $destFilePath = Join-Path $DestinationFolder $Filename
+
+    if(Test-Path $sourceFilePath) {
+        _WriteOut "Installing '$Filename' to '$DestinationFolder' ... "
+
+        if (Test-Path $destFilePath) {
+            _WriteOut "  Skipping: file already exists" -ForegroundColor Yellow
+        }
+        else {
+            Copy-Item $sourceFilePath $destFilePath -Force
+        }
+    }
+    else {
+        _WriteOut "WARNING: Unable to install: Could not find '$Filename' in '$SourceFolder'. " 
+    }
+}
+
 function GetArch($Architecture, $FallBackArch = $DefaultArchitecture) {
     if(![String]::IsNullOrWhiteSpace($Architecture)) {
         $Architecture
@@ -695,7 +730,7 @@ function dnvm-help {
         if($PassThru) {
             $help
         } else {
-            _WriteOut -ForegroundColor $ColorScheme.Help_Header "$CommandName-$Command"
+            _WriteOut -ForegroundColor $ColorScheme.Help_Header "$CommandName $Command"
             _WriteOut "  $($help.Synopsis.Trim())"
             _WriteOut
             _WriteOut -ForegroundColor $ColorScheme.Help_Header "usage:"
@@ -776,7 +811,7 @@ function dnvm-help {
                 $name = $_.Name.Substring($CommandPrefix.Length)
                 if($DeprecatedCommands -notcontains $name) {
                     _WriteOut -NoNewLine "    "
-                    _WriteOut -NoNewLine -ForegroundColor $ColorScheme.Help_Command $name.PadRight(10)
+                    _WriteOut -NoNewLine -ForegroundColor $ColorScheme.Help_Command $name.PadRight($CommandPadding)
                     _WriteOut " $($h.Synopsis.Trim())"
                 }
             }
@@ -1124,7 +1159,7 @@ function dnvm-install {
 #>
 function dnvm-use {
     param(
-        [Parameter(Mandatory=$false, Position=0)]
+        [Parameter(Mandatory=$true, Position=0)]
         [string]$VersionOrAlias,
 
         [Alias("arch")]
@@ -1140,13 +1175,6 @@ function dnvm-use {
         [Alias("p")]
         [Parameter(Mandatory=$false)]
         [switch]$Persistent)
-
-    if([String]::IsNullOrWhiteSpace($VersionOrAlias)) {
-        _WriteOut "Missing version or alias to add to path"
-        dnvm-help use
-        $Script:ExitCode = $ExitCodes.InvalidArguments
-        return
-    }
 
     if ($versionOrAlias -eq "none") {
         _WriteOut "Removing all runtimes from process PATH"
@@ -1180,63 +1208,61 @@ function dnvm-use {
 
 <#
 .SYNOPSIS
-    Gets the full name of a runtime
+    Locates the dnx.exe for the specified version or alias and executes it, providing the remaining arguments to dnx.exe
 .PARAMETER VersionOrAlias
-    The version or alias of the runtime to place on the PATH
-.PARAMETER Architecture
-    The processor architecture of the runtime to place on the PATH (default: x86, or whatever the alias specifies in the case of use-ing an alias)
-.PARAMETER Runtime
-    The runtime flavor of the runtime to place on the PATH (default: clr, or whatever the alias specifies in the case of use-ing an alias)
+    The version of alias of the runtime to execute
+.PARAMETER DnxArguments
+    The arguments to pass to dnx.exe
 #>
-function dnvm-name {
+function dnvm-run {
     param(
-        [Parameter(Mandatory=$false, Position=0)]
+        [Parameter(Mandatory=$true, Position=0)]
         [string]$VersionOrAlias,
+        [Parameter(Mandatory=$false, Position=1, ValueFromRemainingArguments=$true)]
+        [object[]]$DnxArguments)
 
-        [Alias("arch")]
-        [ValidateSet("x86","x64")]
-        [Parameter(Mandatory=$false)]
-        [string]$Architecture = "",
-
-        [Alias("r")]
-        [ValidateSet("clr","coreclr")]
-        [Parameter(Mandatory=$false)]
-        [string]$Runtime = "")
-
-    Get-RuntimeName $VersionOrAlias $Architecture $Runtime
+    $runtimeFullName = Get-RuntimeName $VersionOrAlias $Architecture $Runtime
+    $runtimeBin = Get-RuntimePath $runtimeFullName
+    if ($runtimeBin -eq $null) {
+        throw "Cannot find $runtimeFullName, do you need to run '$CommandName install $versionOrAlias'?"
+    }
+    $dnxExe = Join-Path $runtimeBin "dnx.exe"
+    if(!(Test-Path $dnxExe)) {
+        throw "Cannot find a dnx.exe in $runtimeBin, the installation may be corrupt. Try running 'dnvm install $VersionOrAlias -f' to reinstall it"
+    }
+    _WriteDebug "> $dnxExe $DnxArguments"
+    & $dnxExe @DnxArguments
 }
 
-
-# Checks if a specified file exists in the destination folder and if not, copies the file
-# to the destination folder. 
-function Safe-Filecopy {
+<#
+.SYNOPSIS
+    Executes the specified command in a sub-shell where the PATH has been augmented to include the specified DNX
+.PARAMETER VersionOrAlias
+    The version of alias of the runtime to make active in the sub-shell
+.PARAMETER Command
+    The command to execute in the sub-shell
+#>
+function dnvm-exec {
     param(
-        [Parameter(Mandatory=$true, Position=0)] $Filename, 
-        [Parameter(Mandatory=$true, Position=1)] $SourceFolder,
-        [Parameter(Mandatory=$true, Position=2)] $DestinationFolder)
+        [Parameter(Mandatory=$true, Position=0)]
+        [string]$VersionOrAlias,
+        [Parameter(Mandatory=$false, Position=1)]
+        [string]$Command,
+        [Parameter(Mandatory=$false, Position=2, ValueFromRemainingArguments=$true)]
+        [object[]]$Arguments)
 
-    # Make sure the destination folder is created if it doesn't already exist.
-    if(!(Test-Path $DestinationFolder)) {
-        _WriteOut "Creating destination folder '$DestinationFolder' ... "
-        
-        New-Item -Type Directory $Destination | Out-Null
+    $runtimeFullName = Get-RuntimeName $VersionOrAlias $Architecture $Runtime
+    $runtimeBin = Get-RuntimePath $runtimeFullName
+    if ($runtimeBin -eq $null) {
+        throw "Cannot find $runtimeFullName, do you need to run '$CommandName install $versionOrAlias'?"
     }
 
-    $sourceFilePath = Join-Path $SourceFolder $Filename
-    $destFilePath = Join-Path $DestinationFolder $Filename
-
-    if(Test-Path $sourceFilePath) {
-        _WriteOut "Installing '$Filename' to '$DestinationFolder' ... "
-
-        if (Test-Path $destFilePath) {
-            _WriteOut "  Skipping: file already exists" -ForegroundColor Yellow
-        }
-        else {
-            Copy-Item $sourceFilePath $destFilePath -Force
-        }
-    }
-    else {
-        _WriteOut "WARNING: Unable to install: Could not find '$Filename' in '$SourceFolder'. " 
+    $oldPath = $env:PATH
+    try {
+        $env:PATH = "$runtimeBin;$($env:PATH)"
+        & $Command @Arguments
+    } finally {
+        $env:PATH = $oldPath
     }
 }
 
