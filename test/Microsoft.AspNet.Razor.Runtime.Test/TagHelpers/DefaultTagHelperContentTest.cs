@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
+using System.Globalization;
 using System.Linq;
+using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
@@ -81,6 +82,200 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Act
             tagHelperContent.Append(expected);
+
+            // Assert
+            Assert.Equal(expected, tagHelperContent.GetContent());
+        }
+
+        // Overload with args array is called.
+        [Fact]
+        public void CanAppendFormatContent()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+
+            // Act
+            tagHelperContent.AppendFormat("{0} {1} {2} {3}!", "First", "Second", "Third", "Fourth");
+
+            // Assert
+            Assert.Equal("First Second Third Fourth!", tagHelperContent.GetContent());
+        }
+
+        [Fact]
+        public void CanAppendFormatContent_With1Argument()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+
+            // Act
+            tagHelperContent.AppendFormat("0x{0, -5:X} - hex equivalent for 50.", 50);
+
+            // Assert
+            Assert.Equal("0x32    - hex equivalent for 50.", tagHelperContent.GetContent());
+        }
+
+        [Fact]
+        public void CanAppendFormatContent_With2Arguments()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+
+            // Act
+            tagHelperContent.AppendFormat("0x{0, -5:X} - hex equivalent for {1}.", 50, 50);
+
+            // Assert
+            Assert.Equal("0x32    - hex equivalent for 50.", tagHelperContent.GetContent());
+        }
+
+        [Fact]
+        public void CanAppendFormatContent_With3Arguments()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+
+            // Act
+            tagHelperContent.AppendFormat("0x{0, -5:X} - {1} equivalent for {2}.", 50, "hex", 50);
+
+            // Assert
+            Assert.Equal("0x32    - hex equivalent for 50.", tagHelperContent.GetContent());
+        }
+
+        [Fact]
+        public void CanAppendFormat_WithAlignmentComponent()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+
+            // Act
+            tagHelperContent.AppendFormat("{0, -10} World!", "Hello");
+
+            // Assert
+            Assert.Equal("Hello      World!", tagHelperContent.GetContent());
+        }
+
+        [Fact]
+        public void CanAppendFormat_WithFormatStringComponent()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+
+            // Act
+            tagHelperContent.AppendFormat("0x{0:X}", 50);
+
+            // Assert
+            Assert.Equal("0x32", tagHelperContent.GetContent());
+        }
+
+        // Overload with args array is called.
+        [Fact]
+        public void CanAppendFormat_WithCulture()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+
+            // Act
+            tagHelperContent.AppendFormat(
+                CultureInfo.InvariantCulture,
+                "Numbers in InvariantCulture - {0, -5:N} {1} {2} {3}!",
+                1.1,
+                2.98,
+                145.82,
+                32.86);
+
+            // Assert
+            Assert.Equal("Numbers in InvariantCulture - 1.10  2.98 145.82 32.86!", tagHelperContent.GetContent());
+        }
+
+        [Fact]
+        public void CanAppendFormat_WithCulture_1Argument()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+
+            // Act
+            tagHelperContent.AppendFormat(
+                CultureInfo.InvariantCulture,
+                "Numbers in InvariantCulture - {0, -5:N}!",
+                1.1);
+
+            // Assert
+            Assert.Equal("Numbers in InvariantCulture - 1.10 !", tagHelperContent.GetContent());
+        }
+
+        [Fact]
+        public void CanAppendFormat_WithCulture_2Arguments()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+
+            // Act
+            tagHelperContent.AppendFormat(
+                CultureInfo.InvariantCulture,
+                "Numbers in InvariantCulture - {0, -5:N} {1}!",
+                1.1,
+                2.98);
+
+            // Assert
+            Assert.Equal("Numbers in InvariantCulture - 1.10  2.98!", tagHelperContent.GetContent());
+        }
+
+        [Fact]
+        public void CanAppendFormat_WithCulture_3Arguments()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+
+            // Act
+            tagHelperContent.AppendFormat(
+                CultureInfo.InvariantCulture,
+                "Numbers in InvariantCulture - {0, -5:N} {1} {2}!",
+                1.1,
+                2.98,
+                3.12);
+
+            // Assert
+            Assert.Equal("Numbers in InvariantCulture - 1.10  2.98 3.12!", tagHelperContent.GetContent());
+        }
+
+        [Fact]
+        public void CanAppendFormat_WithDifferentCulture()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+            var culture = new CultureInfo("fr-FR");
+
+            // Act
+            tagHelperContent.AppendFormat(culture, "{0} in french!", 1.21);
+
+            // Assert
+            Assert.Equal("1,21 in french!", tagHelperContent.GetContent());
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void CanAppendFormat_WithDifferentCurrentCulture()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+
+            // Act
+            tagHelperContent.AppendFormat(CultureInfo.CurrentCulture, "{0:D}", DateTime.Parse("01/02/2015"));
+
+            // Assert
+            Assert.Equal("01 February 2015", tagHelperContent.GetContent());
+        }
+
+        [Fact]
+        public void CanAppendDefaultTagHelperContent()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+            var helloWorldContent = new DefaultTagHelperContent();
+            helloWorldContent.SetContent("HelloWorld");
+            var expected = "Content was HelloWorld";
+
+            // Act
+            tagHelperContent.AppendFormat("Content was {0}", helloWorldContent);
 
             // Assert
             Assert.Equal(expected, tagHelperContent.GetContent());
@@ -357,6 +552,45 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Equal(expected, tagHelperContent.GetContent());
+        }
+
+        [Fact]
+        public void Fluent_SetContent_AppendFormat_WritesExpectedContent()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+            var expected = new[] { "First ", "Second Third" };
+            var i = 0;
+
+            // Act
+            tagHelperContent.SetContent("First ").AppendFormat("{0} Third", "Second");
+
+            // Assert
+            foreach (var value in tagHelperContent)
+            {
+                Assert.Equal(expected[i++], value);
+            }
+        }
+
+        [Fact]
+        public void Fluent_SetContent_AppendFormat_Append_WritesExpectedContent()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+            var expected = new[] { "First ", "Second Third ", "Fourth" };
+            var i = 0;
+
+            // Act
+            tagHelperContent
+                .SetContent("First ")
+                .AppendFormat("{0} Third ", "Second")
+                .Append("Fourth");
+
+            // Assert
+            foreach (var value in tagHelperContent)
+            {
+                Assert.Equal(expected[i++], value);
+            }
         }
 
         [Fact]
