@@ -229,6 +229,30 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task CacheTagHelper_Activated_BasedOnEnabledParameter()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+            client.BaseAddress = new Uri("http://localhost");
+
+            // Act
+            // This is cached for 1s.
+            var response1 = await client.GetStringAsync("/catalog/31");
+            var response2 = await client.GetStringAsync("/catalog/32");
+
+            // This request is made before the cache expires with enabled set to false.
+            client.DefaultRequestHeaders.Remove("IsCacheEnabled");
+            client.DefaultRequestHeaders.Add("IsCacheEnabled", "false");
+            var response3 = await client.GetStringAsync("/catalog/156");
+
+            // Assert
+            Assert.Equal("Cached content for 31", response1.Trim());
+            Assert.Equal("Cached content for 31", response2.Trim());
+            Assert.Equal("Cached content for 156", response3.Trim());
+        }
+
+        [Fact]
         public async Task CacheTagHelper_UsesVaryByCookie_ToVaryContent()
         {
             // Arrange

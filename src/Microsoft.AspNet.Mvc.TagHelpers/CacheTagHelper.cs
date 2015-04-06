@@ -33,6 +33,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string ExpiresSlidingAttributeName = "expires-sliding";
         private const string CachePriorityAttributeName = "priority";
         private const string CacheKeyTokenSeparator = "||";
+        private const string EnabledAttributeName = "enabled";
         private static readonly char[] AttributeSeparator = new[] { ',' };
 
         /// <summary>
@@ -108,31 +109,48 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [HtmlAttributeName(CachePriorityAttributeName)]
         public CachePreservationPriority? Priority { get; set; }
 
+        /// <summary>
+        /// Gets or sets the value which determines if the tag helper is enabled or not.
+        /// </summary>
+        [HtmlAttributeName(EnabledAttributeName)]
+        public bool Enabled { get; set; } = true;
+
         /// <inheritdoc />
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
-            var key = GenerateKey(context);
-            TagHelperContent result;
-            if (!MemoryCache.TryGetValue(key, out result))
+            TagHelperContent result = null;
+            if (Enabled)
             {
-                // Create an EntryLink and flow it so that it is accessible via the ambient EntryLinkHelpers.ContentLink
-                // for user code.
-                var entryLink = new EntryLink();
-                using (entryLink.FlowContext())
+                var key = GenerateKey(context);
+                if (!MemoryCache.TryGetValue(key, out result))
                 {
-                    result = await context.GetChildContentAsync();
-                }
+                    // Create an EntryLink and flow it so that it is accessible via the ambient
+                    // EntryLinkHelpers.ContextLink for user code.
+                    var entryLink = new EntryLink();
+                    using (entryLink.FlowContext())
+                    {
+                        result = await context.GetChildContentAsync();
+                    }
 
-                MemoryCache.Set(key, cacheSetContext =>
-                {
-                    UpdateCacheContext(cacheSetContext, entryLink);
-                    return result;
-                });
+                    MemoryCache.Set(key, cacheSetContext =>
+                    {
+                        UpdateCacheContext(cacheSetContext, entryLink);
+                        return result;
+                    });
+                }
             }
 
             // Clear the contents of the "cache" element since we don't want to render it.
             output.SuppressOutput();
-            output.Content.SetContent(result);
+            if (Enabled)
+            {
+                output.Content.SetContent(result);
+            }
+            else
+            {
+                result = await context.GetChildContentAsync();
+                output.Content.SetContent(result);
+            }
         }
 
         // Internal for unit testing

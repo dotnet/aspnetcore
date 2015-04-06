@@ -12,7 +12,7 @@ namespace MvcTagHelpersWebSite.Controllers
         public ProductsService ProductsService { get; set; }
 
         [HttpGet("/catalog")]
-        public ViewResult Splash(int categoryId, int correlationId, [FromHeader]string locale)
+        public ViewResult Splash(int categoryId, int correlationId, [FromHeader] string locale)
         {
             var category = categoryId == 1 ? "Laptops" : "Phones";
             ViewData["Category"] = category;
@@ -23,8 +23,15 @@ namespace MvcTagHelpersWebSite.Controllers
         }
 
         [HttpGet("/catalog/{id:int}")]
-        public ViewResult Details(int id)
+        public ViewResult Details(int id, [FromHeader] string isCacheEnabled)
         {
+            bool cacheEnabledHeader = true;
+            if (!string.IsNullOrEmpty(isCacheEnabled))
+            {
+                bool.TryParse(isCacheEnabled, out cacheEnabledHeader);
+            }
+
+            ViewBag.IsCacheEnabled = cacheEnabledHeader;
             ViewData["ProductId"] = id;
             return View();
         }

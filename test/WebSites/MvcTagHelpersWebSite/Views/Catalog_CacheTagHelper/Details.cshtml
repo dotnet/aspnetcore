@@ -1,4 +1,4 @@
 ﻿@using Microsoft.Framework.Caching.Memory
-<cache expires-after="TimeSpan.FromSeconds(1)" priority="CachePreservationPriority.Low">
+<cache expires-after="TimeSpan.FromSeconds(1)" priority="CachePreservationPriority.Low" enabled="ViewBag.IsCacheEnabled">
 Cached content for @ViewBag.ProductId
 </cache>

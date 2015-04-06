@@ -237,6 +237,89 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         [Fact]
+        public async Task ProcessAsync_DoesNotCache_IfDisabled()
+        {
+            // Arrange
+            var id = "unique-id";
+            var childContent = "original-child-content";
+            var cache = new Mock<IMemoryCache>();
+            cache.CallBase = true;
+            cache.Setup(c => c.Set(
+                /*key*/ It.IsAny<string>(),
+                /*link*/ It.IsAny<IEntryLink>(),
+                /*state*/ It.IsAny<object>(),
+                /*create*/ It.IsAny<Func<ICacheSetContext, object>>()))
+                .Returns(new DefaultTagHelperContent().SetContent("ok"))
+                .Verifiable();
+            object cacheResult;
+            cache.Setup(c => c.TryGetValue(It.IsAny<string>(), It.IsAny<IEntryLink>(), out cacheResult))
+                .Returns(false);
+            var tagHelperContext = GetTagHelperContext(id, childContent);
+            var tagHelperOutput = new TagHelperOutput("cache", new Dictionary<string, object>());
+            var cacheTagHelper = new CacheTagHelper
+            {
+                ViewContext = GetViewContext(),
+                MemoryCache = cache.Object,
+                Enabled = false
+            };
+
+            // Act
+            await cacheTagHelper.ProcessAsync(tagHelperContext, tagHelperOutput);
+
+            // Assert
+            Assert.Equal(childContent, tagHelperOutput.Content.GetContent());
+            cache.Verify(c => c.Set(
+                /*key*/ It.IsAny<string>(),
+                /*link*/ It.IsAny<IEntryLink>(),
+                /*state*/ It.IsAny<object>(),
+                /*create*/ It.IsAny<Func<ICacheSetContext, object>>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task ProcessAsync_ReturnsCachedValue_IfEnabled()
+        {
+            // Arrange
+            var id = "unique-id";
+            var childContent = "original-child-content";
+            var cache = new Mock<IMemoryCache>();
+            cache.CallBase = true;
+            cache.Setup(c => c.Set(
+                /*key*/ It.IsAny<string>(),
+                /*link*/ It.IsAny<IEntryLink>(),
+                /*state*/ It.IsAny<object>(),
+                /*create*/ It.IsAny<Func<ICacheSetContext, object>>()))
+                .Returns(new DefaultTagHelperContent().SetContent("ok"))
+                .Verifiable();
+            object cacheResult;
+            cache.Setup(c => c.TryGetValue(It.IsAny<string>(), It.IsAny<IEntryLink>(), out cacheResult))
+                .Returns(false);
+            var tagHelperContext = GetTagHelperContext(id, childContent);
+            var tagHelperOutput = new TagHelperOutput("cache", new Dictionary<string, object>());
+            var cacheTagHelper = new CacheTagHelper
+            {
+                ViewContext = GetViewContext(),
+                MemoryCache = cache.Object,
+                Enabled = true
+            };
+
+            // Act
+            await cacheTagHelper.ProcessAsync(tagHelperContext, tagHelperOutput);
+
+            // Assert
+            Assert.Empty(tagHelperOutput.PreContent.GetContent());
+            Assert.Empty(tagHelperOutput.PostContent.GetContent());
+            Assert.True(tagHelperOutput.IsContentModified);
+            Assert.Equal(childContent, tagHelperOutput.Content.GetContent());
+            cache.Verify(c => c.Set(
+                /*key*/ It.IsAny<string>(),
+                /*link*/ It.IsAny<IEntryLink>(),
+                /*state*/ It.IsAny<object>(),
+                /*create*/ It.IsAny<Func<ICacheSetContext, object>>()),
+                Times.Once);
+        }
+
+        [Fact]
         public async Task ProcessAsync_ReturnsCachedValue_IfVaryByParamIsUnchanged()
         {
             // Arrange - 1
