@@ -46,6 +46,7 @@
         <ItemGroup>
             <UnsignedPackages
                 Include="$(DropSource)**\EntityFramework*.nupkg;
+                         $(DropSource)**\Microsoft.Data.Sqlite*.nupkg;
                          $(DropSource)**\Kestrel*.nupkg;
                          $(DropSource)**\dnx*.nupkg;
                          $(DropSource)**\KoreBuild*.nupkg;
@@ -58,6 +59,7 @@
             />
             <SymbolPackages
                 Include="$(SymbolPackagePath)**\EntityFramework*.nupkg;
+                         $(SymbolPackagePath)**\Microsoft.Data.Sqlite*.nupkg;
                          $(SymbolPackagePath)**\Kestrel*.nupkg;
                          $(SymbolPackagePath)**\KoreBuild*.nupkg;
                          $(SymbolPackagePath)**\dnx*.nupkg;
@@ -91,6 +93,7 @@
                          $(UnsignedPackagesPath)**\EntityFramework.psm1;
                          $(UnsignedPackagesPath)**\EntityFramework*\**\init.ps1;
                          $(UnsignedPackagesPath)**\EntityFramework*\**\install.ps1;
+                         $(UnsignedPackagesPath)**\Microsoft.Data.Sqlite*.dll;
                          $(UnsignedPackagesPath)**\Kestrel*.dll;
                          $(UnsignedPackagesPath)**\dnx*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.AspNet*.dll;
@@ -164,6 +167,7 @@
     <Target Name="UpdateLicenseURLs" DependsOnTargets="SignFiles">
         <ItemGroup>
             <NuSpecEULA Include="$(UnsignedPackagesPath)**\EntityFramework*.nuspec;
+                                 $(UnsignedPackagesPath)**\Microsoft.Data.Sqlite*.nuspec;
                                  $(UnsignedPackagesPath)**\Kestrel*.nuspec;
                                  $(UnsignedPackagesPath)**\dnvm.*.nuspec;
                                  $(UnsignedPackagesPath)**\KoreBuild*.nuspec;
@@ -237,6 +241,7 @@
     <Target Name="PoliCheck" DependsOnTargets="FindLatestDropShare">
         <ItemGroup>
             <PoliCheckPackages Include="$(SymbolPackagePath)EntityFramework.*.symbols.nupkg;
+                                        $(SymbolPackagePath)Microsoft.Data.Sqlite.*.symbols.nupkg;
                                         $(SymbolPackagePath)Kestrel*.symbols.nupkg;
                                         $(SymbolPackagePath)dnx*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.AspNet*.symbols.nupkg;
