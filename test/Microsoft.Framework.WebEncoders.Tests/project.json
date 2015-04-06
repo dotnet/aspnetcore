@@ -10,7 +10,7 @@
         "test": "xunit.runner.aspnet"
     },
     "compilationOptions": {
-        "allowUnsafe": true
+        "allowUnsafe": "true"
     },
     "frameworks": {
         "dnx451": { }
