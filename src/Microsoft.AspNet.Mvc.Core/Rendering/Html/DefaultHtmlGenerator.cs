@@ -14,6 +14,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -25,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             typeof(DefaultHtmlGenerator).GetTypeInfo().GetDeclaredMethod(nameof(ConvertEnumFromString));
 
         private readonly AntiForgery _antiForgery;
-        private readonly IScopedInstance<ActionBindingContext> _bindingContextAccessor;
+        private readonly IClientModelValidatorProvider _clientModelValidatorProvider;
         private readonly IModelMetadataProvider _metadataProvider;
         private readonly IUrlHelper _urlHelper;
         private readonly IHtmlEncoder _htmlEncoder;
@@ -33,15 +34,22 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultHtmlGenerator"/> class.
         /// </summary>
+        /// <param name="antiForgery">The <see cref="AntiForgery"/> instance which is used to generate anti-forgery 
+        /// tokens.</param>
+        /// <param name="optionsAccessor">The accessor for <see cref="MvcOptions"/>.</param>
+        /// <param name="metadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
+        /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
+        /// <param name="htmlEncoder">The <see cref="IHtmlEncoder"/>.</param>
         public DefaultHtmlGenerator(
             [NotNull] AntiForgery antiForgery,
-            [NotNull] IScopedInstance<ActionBindingContext> bindingContextAccessor,
+            [NotNull] IOptions<MvcOptions> optionsAccessor,
             [NotNull] IModelMetadataProvider metadataProvider,
             [NotNull] IUrlHelper urlHelper,
             [NotNull] IHtmlEncoder htmlEncoder)
         {
             _antiForgery = antiForgery;
-            _bindingContextAccessor = bindingContextAccessor;
+            var clientValidatorProviders = optionsAccessor.Options.ClientModelValidatorProviders;
+            _clientModelValidatorProvider = new CompositeClientModelValidatorProvider(clientValidatorProviders);
             _metadataProvider = metadataProvider;
             _urlHelper = urlHelper;
             _htmlEncoder = htmlEncoder;
@@ -715,7 +723,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             ModelExplorer modelExplorer,
             string expression)
         {
-            var validatorProvider = _bindingContextAccessor.Value.ValidatorProvider;
             modelExplorer = modelExplorer ??
                 ExpressionMetadataProvider.FromStringExpression(expression, viewContext.ViewData, _metadataProvider);
             var validationContext = new ClientModelValidationContext(
@@ -723,15 +730,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 _metadataProvider,
                 viewContext.HttpContext.RequestServices);
 
-            var validatorProviderContext = new ModelValidatorProviderContext(modelExplorer.Metadata);
-            validatorProvider.GetValidators(validatorProviderContext);
+            var validatorProviderContext = new ClientValidatorProviderContext(modelExplorer.Metadata);
+            _clientModelValidatorProvider.GetValidators(validatorProviderContext);
 
             var validators = validatorProviderContext.Validators;
-
-            return
-                validators
-                .OfType<IClientModelValidator>()
-                .SelectMany(v => v.GetClientValidationRules(validationContext));
+            return validators.SelectMany(v => v.GetClientValidationRules(validationContext));
         }
 
         /// <inheritdoc />

@@ -213,7 +213,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         {
             foreach (var attribute in context.Attributes.OfType<ValidationAttribute>())
             {
-                context.ValidationMetadata.ValiatorMetadata.Add(attribute);
+                // If another provider has already added this attribute, do not repeat it. 
+                // This will prevent attributes like RemoteAttribute (which implement ValidationAttribute and 
+                // IClientModelValidator) to be added to the ValidationMetadata twice.
+                // This is to ensure we do not end up with duplication validation rules on the client side.
+                if (!context.ValidationMetadata.ValidatorMetadata.Contains(attribute))
+                {
+                    context.ValidationMetadata.ValidatorMetadata.Add(attribute);
+                }
             }
         }
 

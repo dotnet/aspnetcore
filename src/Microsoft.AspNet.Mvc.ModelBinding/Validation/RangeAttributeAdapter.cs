@@ -7,7 +7,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
-    public class RangeAttributeAdapter : DataAnnotationsModelValidator<RangeAttribute>
+    public class RangeAttributeAdapter : DataAnnotationsClientModelValidator<RangeAttribute>
     {
         public RangeAttributeAdapter(RangeAttribute attribute)
             : base(attribute)

@@ -7,7 +7,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
-    public class RequiredAttributeAdapter : DataAnnotationsModelValidator<RequiredAttribute>
+    public class RequiredAttributeAdapter : DataAnnotationsClientModelValidator<RequiredAttribute>
     {
         public RequiredAttributeAdapter(RequiredAttribute attribute)
             : base(attribute)

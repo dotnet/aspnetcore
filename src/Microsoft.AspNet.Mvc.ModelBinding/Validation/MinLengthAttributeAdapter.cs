@@ -7,7 +7,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
-    public class MinLengthAttributeAdapter : DataAnnotationsModelValidator<MinLengthAttribute>
+    public class MinLengthAttributeAdapter : DataAnnotationsClientModelValidator<MinLengthAttribute>
     {
         public MinLengthAttributeAdapter(MinLengthAttribute attribute)
             : base(attribute)

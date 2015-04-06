@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
     /// A validation adapter that is used to map <see cref="DataTypeAttribute"/>'s to a single client side validation
     /// rule.
     /// </summary>
-    public class DataTypeAttributeAdapter : DataAnnotationsModelValidator
+    public class DataTypeAttributeAdapter : DataAnnotationsClientModelValidator<DataTypeAttribute>
     {
         public DataTypeAttributeAdapter(DataTypeAttribute attribute,
                                         [NotNull] string ruleName)

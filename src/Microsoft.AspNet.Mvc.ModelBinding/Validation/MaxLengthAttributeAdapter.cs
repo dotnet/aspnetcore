@@ -7,7 +7,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
-    public class MaxLengthAttributeAdapter : DataAnnotationsModelValidator<MaxLengthAttribute>
+    public class MaxLengthAttributeAdapter : DataAnnotationsClientModelValidator<MaxLengthAttribute>
     {
         public MaxLengthAttributeAdapter(MaxLengthAttribute attribute)
             : base(attribute)

@@ -7,7 +7,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
-    public class StringLengthAttributeAdapter : DataAnnotationsModelValidator<StringLengthAttribute>
+    public class StringLengthAttributeAdapter : DataAnnotationsClientModelValidator<StringLengthAttribute>
     {
         public StringLengthAttributeAdapter(StringLengthAttribute attribute)
             : base(attribute)

@@ -9,7 +9,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
-    public class DataAnnotationsModelValidator : IModelValidator, IClientModelValidator
+    public class DataAnnotationsModelValidator : IModelValidator
     {
         public DataAnnotationsModelValidator([NotNull] ValidationAttribute attribute)
         {
@@ -60,23 +60,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             }
 
             return Enumerable.Empty<ModelValidationResult>();
-        }
-
-        public virtual IEnumerable<ModelClientValidationRule> GetClientValidationRules(
-            [NotNull] ClientModelValidationContext context)
-        {
-            var customValidator = Attribute as IClientModelValidator;
-            if (customValidator != null)
-            {
-                return customValidator.GetClientValidationRules(context);
-            }
-
-            return Enumerable.Empty<ModelClientValidationRule>();
-        }
-
-        protected virtual string GetErrorMessage([NotNull] ModelMetadata modelMetadata)
-        {
-            return Attribute.FormatErrorMessage(modelMetadata.GetDisplayName());
         }
     }
 }

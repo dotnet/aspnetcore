@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
@@ -617,6 +618,53 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             // Assert
             Assert.Equal(initialValue, context.BindingMetadata.IsReadOnly);
+        }
+
+        [Fact]
+        public void GetValidationDetails_ValidatableObject_ReturnsObject()
+        {
+            // Arrange
+            var provider = new DataAnnotationsMetadataProvider();
+
+            var attribute = new TestValidationAttribute();
+            var attributes = new Attribute[] { attribute };
+            var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
+            var context = new ValidationMetadataProviderContext(key, attributes);
+
+            // Act
+            provider.GetValidationMetadata(context);
+
+            // Assert
+            var validatorMetadata = Assert.Single(context.ValidationMetadata.ValidatorMetadata);
+            Assert.Same(attribute, validatorMetadata);
+        }
+
+        [Fact]
+        public void GetValidationDetails_ValidatableObject_AlreadyInContext_Ignores()
+        {
+            // Arrange
+            var provider = new DataAnnotationsMetadataProvider();
+
+            var attribute = new TestValidationAttribute();
+            var attributes = new Attribute[] { attribute };
+            var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
+            var context = new ValidationMetadataProviderContext(key, attributes);
+            context.ValidationMetadata.ValidatorMetadata.Add(attribute);
+
+            // Act
+            provider.GetValidationMetadata(context);
+
+            // Assert
+            var validatorMetadata = Assert.Single(context.ValidationMetadata.ValidatorMetadata);
+            Assert.Same(attribute, validatorMetadata);
+        }
+
+        private class TestValidationAttribute : ValidationAttribute, IClientModelValidator
+        {
+            public IEnumerable<ModelClientValidationRule> GetClientValidationRules(ClientModelValidationContext context)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class EmptyClass

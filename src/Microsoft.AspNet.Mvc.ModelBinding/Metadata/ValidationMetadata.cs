@@ -17,6 +17,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// <see cref="IValidationMetadataProvider"/> implementations should store metadata items
         /// in this list, to be consumed later by an <see cref="Validation.IModelValidatorProvider"/>.
         /// </remarks>
-        public IList<object> ValiatorMetadata { get; } = new List<object>();
+        public IList<object> ValidatorMetadata { get; } = new List<object>();
     }
 }

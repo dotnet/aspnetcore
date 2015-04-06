@@ -405,7 +405,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             {
                 if (_validatorMetadata == null)
                 {
-                    _validatorMetadata = new ReadOnlyCollection<object>(ValidationMetadata.ValiatorMetadata);
+                    _validatorMetadata = new ReadOnlyCollection<object>(ValidationMetadata.ValidatorMetadata);
                 }
 
                 return _validatorMetadata;

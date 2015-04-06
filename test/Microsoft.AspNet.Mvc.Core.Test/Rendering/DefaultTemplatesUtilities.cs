@@ -167,13 +167,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var httpContext = new DefaultHttpContext();
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
-            var bindingContext = new ActionBindingContext()
-            {
-                ValidatorProvider = new DataAnnotationsModelValidatorProvider(),
-            };
-
-            var bindingContextAccessor = new MockScopedInstance<ActionBindingContext>();
-            bindingContextAccessor.Value = bindingContext;
+            var options = new MvcOptions();
+            options.ClientModelValidatorProviders.Add(new DataAnnotationsClientModelValidatorProvider());
+            var optionsAccessor = new Mock<IOptions<MvcOptions>>();
+            optionsAccessor
+                .SetupGet(o => o.Options)
+                .Returns(options);
 
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider
@@ -191,7 +190,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 htmlGenerator = new DefaultHtmlGenerator(
                     GetAntiForgeryInstance(),
-                    bindingContextAccessor,
+                    optionsAccessor.Object,
                     provider,
                     urlHelper,
                     new HtmlEncoder());

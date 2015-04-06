@@ -8,7 +8,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
-    public class CompareAttributeAdapter : DataAnnotationsModelValidator<CompareAttribute>
+    public class CompareAttributeAdapter : DataAnnotationsClientModelValidator<CompareAttribute>
     {
         public CompareAttributeAdapter([NotNull] CompareAttribute attribute)
             : base(new CompareAttributeWrapper(attribute))

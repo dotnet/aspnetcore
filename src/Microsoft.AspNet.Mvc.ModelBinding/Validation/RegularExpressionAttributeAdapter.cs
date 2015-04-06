@@ -7,7 +7,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
-    public class RegularExpressionAttributeAdapter : DataAnnotationsModelValidator<RegularExpressionAttribute>
+    public class RegularExpressionAttributeAdapter : DataAnnotationsClientModelValidator<RegularExpressionAttribute>
     {
         public RegularExpressionAttributeAdapter(RegularExpressionAttribute attribute)
             : base(attribute)

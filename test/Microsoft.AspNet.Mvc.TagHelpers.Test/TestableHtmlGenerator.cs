@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public TestableHtmlGenerator(IModelMetadataProvider metadataProvider, IUrlHelper urlHelper)
             : this(
                   metadataProvider,
-                  Mock.Of<IScopedInstance<ActionBindingContext>>(),
+                  GetOptions(),
                   urlHelper,
                   validationAttributes: new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase))
         {
@@ -36,10 +36,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         public TestableHtmlGenerator(
             IModelMetadataProvider metadataProvider,
-            IScopedInstance<ActionBindingContext> bindingContextAccessor,
+            IOptions<MvcOptions> options,
             IUrlHelper urlHelper,
             IDictionary<string, object> validationAttributes)
-            : base(GetAntiForgery(), bindingContextAccessor, metadataProvider, urlHelper, new HtmlEncoder())
+            : base(GetAntiForgery(), options, metadataProvider, urlHelper, new HtmlEncoder())
         {
             _validationAttributes = validationAttributes;
         }
@@ -90,6 +90,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             return ValidationAttributes;
         }
 
+        private static IOptions<MvcOptions> GetOptions()
+        {
+            var mockOptions = new Mock<IOptions<MvcOptions>>();
+            mockOptions
+                .SetupGet(options => options.Options)
+                .Returns(new MvcOptions());
+
+            return mockOptions.Object;
+        }
         private static AntiForgery GetAntiForgery()
         {
             // AntiForgery must be passed to TestableHtmlGenerator constructor but will never be called.

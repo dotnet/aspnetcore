@@ -125,6 +125,22 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
+        public void Setup_SetsUpClientModelValidatorProviders()
+        {
+            // Arrange
+            var mvcOptions = new MvcOptions();
+            var setup = new MvcOptionsSetup();
+
+            // Act
+            setup.Configure(mvcOptions);
+
+            // Assert
+            Assert.Equal(2, mvcOptions.ClientModelValidatorProviders.Count);
+            Assert.IsType<DefaultClientModelValidatorProvider>(mvcOptions.ClientModelValidatorProviders[0]);
+            Assert.IsType<DataAnnotationsClientModelValidatorProvider>(mvcOptions.ClientModelValidatorProviders[1]);
+        }
+
+        [Fact]
         public void Setup_IgnoresAcceptHeaderHavingWildCardMediaAndSubMediaTypes()
         {
             // Arrange
