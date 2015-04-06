@@ -188,7 +188,14 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 {
                     services.AddEntityFramework().AddSqlServer();
                     var optionsBuilder = new DbContextOptionsBuilder();
-                    optionsBuilder.UseSqlServer(database.ConnectionString);
+                    if (!PlatformHelper.IsMono)
+                    {
+                        optionsBuilder.UseSqlServer(database.ConnectionString);
+                    }
+                    else
+                    {
+                        optionsBuilder.UseInMemoryStore();
+                    }
                     services.AddInstance<DbContextOptions>(optionsBuilder.Options);
                 });
 
@@ -309,7 +316,14 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     services.AddScoped<TContext>();
 
                     var optionsBuilder = new DbContextOptionsBuilder();
-                    optionsBuilder.UseSqlServer(database.ConnectionString);
+                    if (!PlatformHelper.IsMono)
+                    {
+                        optionsBuilder.UseSqlServer(database.ConnectionString);
+                    }
+                    else
+                    {
+                        optionsBuilder.UseInMemoryStore();
+                    }
                     services.AddInstance(optionsBuilder.Options);
                 });
             }

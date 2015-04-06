@@ -4,8 +4,8 @@
 using System;
 using System.Data.SqlClient;
 using System.Threading;
+using Microsoft.AspNet.Diagnostics.Entity.FunctionalTests.Helpers;
 using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Infrastructure;
 
 namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 {
@@ -17,7 +17,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         {
             var name = "Microsoft.AspNet.Diagnostics.Entity.FunctionalTests.Scratch_" + Interlocked.Increment(ref _scratchCount);
             var db = new SqlServerTestStore(name);
-            db.EnsureDeleted();
             return db;
         }
 
@@ -31,7 +30,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 InitialCatalog = name,
                 IntegratedSecurity = true,
                 ConnectTimeout = 30
-            }.ConnectionString; ;
+            }.ConnectionString;
         }
 
         public string ConnectionString
@@ -41,12 +40,15 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
         private void EnsureDeleted()
         {
-            var optionsBuilder = new DbContextOptionsBuilder();
-            optionsBuilder.UseSqlServer(_connectionString);
-
-            using (var db = new DbContext(optionsBuilder.Options))
+            if (!PlatformHelper.IsMono)
             {
-                db.Database.EnsureDeleted();
+                var optionsBuilder = new DbContextOptionsBuilder();
+                optionsBuilder.UseSqlServer(_connectionString);
+
+                using (var db = new DbContext(optionsBuilder.Options))
+                {
+                    db.Database.EnsureDeleted();
+                }
             }
         }
 
