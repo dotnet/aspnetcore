@@ -41,6 +41,12 @@ namespace Microsoft.AspNet.WebUtilities
         {
             ValidateParameters(input.Length, offset, count);
 
+            // Special-case empty input
+            if (count == 0)
+            {
+                return new byte[0];
+            }
+
             // Assumption: input is base64url encoded without padding and contains no whitespace.
 
             // First, we need to add the padding characters back.
