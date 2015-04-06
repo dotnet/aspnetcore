@@ -2,6 +2,9 @@
     "dependencies": {
 
     },
+    "commands": {
+        "ConsoleApp": "ConsoleApp"
+    },
     "frameworks": {
         "dnx451": { },
         "dnxcore50": {
