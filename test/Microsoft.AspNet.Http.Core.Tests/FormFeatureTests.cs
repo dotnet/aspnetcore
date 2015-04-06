@@ -96,31 +96,32 @@ namespace Microsoft.AspNet.Http.Core
 
         private const string MultipartContentType = "multipart/form-data; boundary=WebKitFormBoundary5pDRpGheQXaM8k3T";
         private const string EmptyMultipartForm =
-@"--WebKitFormBoundary5pDRpGheQXaM8k3T--";
+"--WebKitFormBoundary5pDRpGheQXaM8k3T--";
+        // Note that CRLF (\r\n) is required. You can't use multi-line C# strings here because the line breaks on Linux are just LF.
         private const string MultipartFormWithField =
-@"--WebKitFormBoundary5pDRpGheQXaM8k3T
-Content-Disposition: form-data; name=""description""
-
-Foo
---WebKitFormBoundary5pDRpGheQXaM8k3T--";
+"--WebKitFormBoundary5pDRpGheQXaM8k3T\r\n" +
+"Content-Disposition: form-data; name=\"description\"\r\n" +
+"\r\n" +
+"Foo\r\n" +
+"--WebKitFormBoundary5pDRpGheQXaM8k3T--";
         private const string MultipartFormWithFile =
-@"--WebKitFormBoundary5pDRpGheQXaM8k3T
-Content-Disposition: form-data; name=""myfile1""; filename=""temp.html""
-Content-Type: text/html
-
-<html><body>Hello World</body></html>
---WebKitFormBoundary5pDRpGheQXaM8k3T--";
+"--WebKitFormBoundary5pDRpGheQXaM8k3T\r\n" +
+"Content-Disposition: form-data; name=\"myfile1\"; filename=\"temp.html\"\r\n" +
+"Content-Type: text/html\r\n" +
+"\r\n" +
+"<html><body>Hello World</body></html>\r\n" +
+"--WebKitFormBoundary5pDRpGheQXaM8k3T--";
         private const string MultipartFormWithFieldAndFile =
-@"--WebKitFormBoundary5pDRpGheQXaM8k3T
-Content-Disposition: form-data; name=""description""
-
-Foo
---WebKitFormBoundary5pDRpGheQXaM8k3T
-Content-Disposition: form-data; name=""myfile1""; filename=""temp.html""
-Content-Type: text/html
-
-<html><body>Hello World</body></html>
---WebKitFormBoundary5pDRpGheQXaM8k3T--";
+"--WebKitFormBoundary5pDRpGheQXaM8k3T\r\n" +
+"Content-Disposition: form-data; name=\"description\"\r\n" +
+"\r\n" +
+"Foo\r\n" +
+"--WebKitFormBoundary5pDRpGheQXaM8k3T\r\n" +
+"Content-Disposition: form-data; name=\"myfile1\"; filename=\"temp.html\"\r\n" +
+"Content-Type: text/html\r\n" +
+"\r\n" +
+"<html><body>Hello World</body></html>\r\n" +
+"--WebKitFormBoundary5pDRpGheQXaM8k3T--";
 
         [Fact]
         public async Task ReadForm_EmptyMultipart_ReturnsParsedFormCollection()

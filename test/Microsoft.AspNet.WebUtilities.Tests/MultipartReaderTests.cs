@@ -11,72 +11,68 @@ namespace Microsoft.AspNet.WebUtilities
     public class MultipartReaderTests
     {
         private const string Boundary = "9051914041544843365972754266";
+        // Note that CRLF (\r\n) is required. You can't use multi-line C# strings here because the line breaks on Linux are just LF.
         private const string OnePartBody =
-@"--9051914041544843365972754266
-Content-Disposition: form-data; name=""text""
-
-text default
---9051914041544843365972754266--
-";
+"--9051914041544843365972754266\r\n" +
+"Content-Disposition: form-data; name=\"text\"\r\n" +
+"\r\n" +
+"text default\r\n" +
+"--9051914041544843365972754266--\r\n";
         private const string OnePartBodyWithTrailingWhitespace =
-@"--9051914041544843365972754266             
-Content-Disposition: form-data; name=""text""
-
-text default
---9051914041544843365972754266--
-";
+"--9051914041544843365972754266             \r\n" +
+"Content-Disposition: form-data; name=\"text\"\r\n" +
+"\r\n" +
+"text default\r\n" +
+"--9051914041544843365972754266--\r\n";
         // It's non-compliant but common to leave off the last CRLF.
         private const string OnePartBodyWithoutFinalCRLF =
-@"--9051914041544843365972754266
-Content-Disposition: form-data; name=""text""
-
-text default
---9051914041544843365972754266--";
+"--9051914041544843365972754266\r\n" +
+"Content-Disposition: form-data; name=\"text\"\r\n" +
+"\r\n" +
+"text default\r\n" +
+"--9051914041544843365972754266--";
         private const string TwoPartBody =
-@"--9051914041544843365972754266
-Content-Disposition: form-data; name=""text""
-
-text default
---9051914041544843365972754266
-Content-Disposition: form-data; name=""file1""; filename=""a.txt""
-Content-Type: text/plain
-
-Content of a.txt.
-
---9051914041544843365972754266--
-";
+"--9051914041544843365972754266\r\n" +
+"Content-Disposition: form-data; name=\"text\"\r\n" +
+"\r\n" +
+"text default\r\n" +
+"--9051914041544843365972754266\r\n" +
+"Content-Disposition: form-data; name=\"file1\"; filename=\"a.txt\"\r\n" +
+"Content-Type: text/plain\r\n" +
+"\r\n" +
+"Content of a.txt.\r\n" +
+"\r\n" +
+"--9051914041544843365972754266--\r\n";
         private const string TwoPartBodyWithUnicodeFileName =
-@"--9051914041544843365972754266
-Content-Disposition: form-data; name=""text""
-
-text default
---9051914041544843365972754266
-Content-Disposition: form-data; name=""file1""; filename=""a色.txt""
-Content-Type: text/plain
-
-Content of a.txt.
-
---9051914041544843365972754266--
-";
+"--9051914041544843365972754266\r\n" +
+"Content-Disposition: form-data; name=\"text\"\r\n" +
+"\r\n" +
+"text default\r\n" +
+"--9051914041544843365972754266\r\n" +
+"Content-Disposition: form-data; name=\"file1\"; filename=\"a色.txt\"\r\n" +
+"Content-Type: text/plain\r\n" +
+"\r\n" +
+"Content of a.txt.\r\n" +
+"\r\n" +
+"--9051914041544843365972754266--\r\n";
         private const string ThreePartBody =
-@"--9051914041544843365972754266
-Content-Disposition: form-data; name=""text""
-
-text default
---9051914041544843365972754266
-Content-Disposition: form-data; name=""file1""; filename=""a.txt""
-Content-Type: text/plain
-
-Content of a.txt.
-
---9051914041544843365972754266
-Content-Disposition: form-data; name=""file2""; filename=""a.html""
-Content-Type: text/html
-
-<!DOCTYPE html><title>Content of a.html.</title>
-
---9051914041544843365972754266--
-";
+"--9051914041544843365972754266\r\n" +
+"Content-Disposition: form-data; name=\"text\"\r\n" +
+"\r\n" +
+"text default\r\n" +
+"--9051914041544843365972754266\r\n" +
+"Content-Disposition: form-data; name=\"file1\"; filename=\"a.txt\"\r\n" +
+"Content-Type: text/plain\r\n" +
+"\r\n" +
+"Content of a.txt.\r\n" +
+"\r\n" +
+"--9051914041544843365972754266\r\n" +
+"Content-Disposition: form-data; name=\"file2\"; filename=\"a.html\"\r\n" +
+"Content-Type: text/html\r\n" +
+"\r\n" +
+"<!DOCTYPE html><title>Content of a.html.</title>\r\n" +
+"\r\n" +
+"--9051914041544843365972754266--\r\n";
 
         private static MemoryStream MakeStream(string text)
         {
@@ -225,15 +221,14 @@ Content-Type: text/html
         public async Task MutipartReader_ReadInvalidUtf8Header_ReplacementCharacters()
         {
             var body1 =
-@"--9051914041544843365972754266
-Content-Disposition: form-data; name=""text"" filename=""a";
+"--9051914041544843365972754266\r\n" +
+"Content-Disposition: form-data; name=\"text\" filename=\"a";
 
             var body2 =
-@".txt""
-
-text default
---9051914041544843365972754266--
-";
+".txt\"\r\n" +
+"\r\n" +
+"text default\r\n" +
+"--9051914041544843365972754266--\r\n";
             var stream = new MemoryStream();
             var bytes = Encoding.UTF8.GetBytes(body1);
             stream.Write(bytes, 0, bytes.Length);
@@ -261,15 +256,14 @@ text default
         public async Task MutipartReader_ReadInvalidUtf8SurrogateHeader_ReplacementCharacters()
         {
             var body1 =
-@"--9051914041544843365972754266
-Content-Disposition: form-data; name=""text"" filename=""a";
+"--9051914041544843365972754266\r\n" +
+"Content-Disposition: form-data; name=\"text\" filename=\"a";
 
             var body2 =
-@".txt""
-
-text default
---9051914041544843365972754266--
-";
+".txt\"\r\n" +
+"\r\n" +
+"text default\r\n" +
+"--9051914041544843365972754266--\r\n";
             var stream = new MemoryStream();
             var bytes = Encoding.UTF8.GetBytes(body1);
             stream.Write(bytes, 0, bytes.Length);
