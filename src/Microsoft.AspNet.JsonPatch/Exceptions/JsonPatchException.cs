@@ -26,15 +26,15 @@ namespace Microsoft.AspNet.JsonPatch.Exceptions
 
         }
 
-        public JsonPatchException(Operation<T> operation, string message, T affectedObject)
+        public JsonPatchException(JsonPatchError<T> jsonPatchError)
         {
-            FailedOperation = operation;
-            _message = message;
-            AffectedObject = affectedObject;
+            FailedOperation = jsonPatchError.Operation;
+            _message = jsonPatchError.ErrorMessage;
+            AffectedObject = jsonPatchError.AffectedObject;
         }
 
-        public JsonPatchException(Operation<T> operation, string message, T affectedObject, Exception innerException)
-            : this(operation, message, affectedObject)
+        public JsonPatchException(JsonPatchError<T> jsonPatchError, Exception innerException)
+            : this(jsonPatchError)
         {
             InnerException = innerException;
         }

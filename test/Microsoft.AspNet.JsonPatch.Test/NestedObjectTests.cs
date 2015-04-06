@@ -282,8 +282,10 @@ namespace Microsoft.AspNet.JsonPatch.Test
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException<SimpleDTOWithNestedDTO>>(() => { patchDoc.ApplyTo(doc); });
-            Assert.Equal("For operation 'add' on array property at path '/simpledto/integerlist/4', the index is " +
-                "larger than the array size.", exception.Message);
+            Assert.Equal(
+                "For operation 'add' on array property at path '/simpledto/integerlist/4', the index is " +
+                    "larger than the array size.", 
+                exception.Message);
 
         }
 
@@ -311,8 +313,39 @@ namespace Microsoft.AspNet.JsonPatch.Test
                 {
                     deserialized.ApplyTo(doc);
                 });
-            Assert.Equal("For operation 'add' on array property at path '/simpledto/integerlist/4', the index is " +
-                "larger than the array size.", exception.Message);
+            Assert.Equal(
+                "For operation 'add' on array property at path '/simpledto/integerlist/4', the index is " +
+                    "larger than the array size.",
+                exception.Message);
+        }
+
+        [Fact]
+        public void AddToListInvalidPositionTooLarge_LogsError()
+        {
+            // Arrange
+            var doc = new SimpleDTOWithNestedDTO()
+            {
+                SimpleDTO = new SimpleDTO()
+                {
+                    IntegerList = new List<int>() { 1, 2, 3 }
+                }
+            };
+
+            // create patch
+            var patchDoc = new JsonPatchDocument<SimpleDTOWithNestedDTO>();
+            patchDoc.Add<int>(o => o.SimpleDTO.IntegerList, 4, 4);
+
+            var logger = new TestErrorLogger<SimpleDTOWithNestedDTO>();
+
+            // Act
+            patchDoc.ApplyTo(doc, logger.LogErrorMessage);
+
+            //Assert
+            Assert.Equal(
+                "For operation 'add' on array property at path '/simpledto/integerlist/4', the index is larger than " +
+                    "the array size.",
+                logger.ErrorMessage);
+
         }
 
         [Fact]
@@ -361,6 +394,31 @@ namespace Microsoft.AspNet.JsonPatch.Test
                     deserialized.ApplyTo(doc);
                 });
             Assert.Equal("Property does not exist at path '/simpledto/integerlist/-1'.", exception.Message);
+        }
+
+        [Fact]
+        public void AddToListInvalidPositionTooSmall_LogsError()
+        {
+            // Arrange
+            var doc = new SimpleDTOWithNestedDTO()
+            {
+                SimpleDTO = new SimpleDTO()
+                {
+                    IntegerList = new List<int>() { 1, 2, 3 }
+                }
+            };
+
+            // create patch
+            var patchDoc = new JsonPatchDocument<SimpleDTOWithNestedDTO>();
+            patchDoc.Add<int>(o => o.SimpleDTO.IntegerList, 4, -1);
+
+            var logger = new TestErrorLogger<SimpleDTOWithNestedDTO>();
+
+            // Act
+            patchDoc.ApplyTo(doc, logger.LogErrorMessage);
+
+            //Assert
+            Assert.Equal("Property does not exist at path '/simpledto/integerlist/-1'.", logger.ErrorMessage);
         }
 
         [Fact]
@@ -528,8 +586,10 @@ namespace Microsoft.AspNet.JsonPatch.Test
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException<SimpleDTOWithNestedDTO>>(() => { patchDoc.ApplyTo(doc); });
-            Assert.Equal("For operation 'remove' on array property at path '/simpledto/integerlist/3', the index is " +
-                "larger than the array size.", exception.Message);
+            Assert.Equal(
+                "For operation 'remove' on array property at path '/simpledto/integerlist/3', the index is " +
+                    "larger than the array size.",
+                exception.Message);
         }
 
         [Fact]
@@ -556,8 +616,38 @@ namespace Microsoft.AspNet.JsonPatch.Test
                 {
                     deserialized.ApplyTo(doc);
                 });
-            Assert.Equal("For operation 'remove' on array property at path '/simpledto/integerlist/3', the index is " +
-                "larger than the array size.", exception.Message);
+            Assert.Equal(
+                "For operation 'remove' on array property at path '/simpledto/integerlist/3', the index is " +
+                    "larger than the array size.",
+                exception.Message);
+        }
+
+        [Fact]
+        public void RemoveFromListInvalidPositionTooLarge_LogsError()
+        {
+            // Arrange
+            var doc = new SimpleDTOWithNestedDTO()
+            {
+                SimpleDTO = new SimpleDTO()
+                {
+                    IntegerList = new List<int>() { 1, 2, 3 }
+                }
+            };
+
+            // create patch
+            var patchDoc = new JsonPatchDocument<SimpleDTOWithNestedDTO>();
+            patchDoc.Remove<int>(o => o.SimpleDTO.IntegerList, 3);
+
+            var logger = new TestErrorLogger<SimpleDTOWithNestedDTO>();
+
+            // Act
+            patchDoc.ApplyTo(doc, logger.LogErrorMessage);
+
+            // Assert
+            Assert.Equal(
+                "For operation 'remove' on array property at path '/simpledto/integerlist/3', the index is " +
+                    "larger than the array size.",
+                logger.ErrorMessage);
         }
 
         [Fact]
@@ -606,6 +696,31 @@ namespace Microsoft.AspNet.JsonPatch.Test
                     deserialized.ApplyTo(doc);
                 });
             Assert.Equal("Property does not exist at path '/simpledto/integerlist/-1'.", exception.Message);
+        }
+
+        [Fact]
+        public void RemoveFromListInvalidPositionTooSmall_LogsError()
+        {
+            // Arrange
+            var doc = new SimpleDTOWithNestedDTO()
+            {
+                SimpleDTO = new SimpleDTO()
+                {
+                    IntegerList = new List<int>() { 1, 2, 3 }
+                }
+            };
+
+            // create patch
+            var patchDoc = new JsonPatchDocument<SimpleDTOWithNestedDTO>();
+            patchDoc.Remove<int>(o => o.SimpleDTO.IntegerList, -1);
+
+            var logger = new TestErrorLogger<SimpleDTOWithNestedDTO>();
+
+            // Act
+            patchDoc.ApplyTo(doc, logger.LogErrorMessage);
+
+            // Assert
+            Assert.Equal("Property does not exist at path '/simpledto/integerlist/-1'.", logger.ErrorMessage);
         }
 
         [Fact]
@@ -1014,8 +1129,10 @@ namespace Microsoft.AspNet.JsonPatch.Test
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException<SimpleDTOWithNestedDTO>>(() => { patchDoc.ApplyTo(doc); });
-            Assert.Equal("For operation 'replace' on array property at path '/simpledto/integerlist/3', the index is " +
-                "larger than the array size.", exception.Message);
+            Assert.Equal(
+                "For operation 'replace' on array property at path '/simpledto/integerlist/3', the index is " +
+                    "larger than the array size.",
+                exception.Message);
         }
 
         [Fact]
@@ -1042,8 +1159,38 @@ namespace Microsoft.AspNet.JsonPatch.Test
                 {
                     deserialized.ApplyTo(doc);
                 });
-            Assert.Equal("For operation 'replace' on array property at path '/simpledto/integerlist/3', the index is " +
-                "larger than the array size.", exception.Message);
+            Assert.Equal(
+                "For operation 'replace' on array property at path '/simpledto/integerlist/3', the index is " +
+                    "larger than the array size.",
+                exception.Message);
+        }
+
+        [Fact]
+        public void ReplaceInListInvalid_PositionTooLarge_LogsError()
+        {
+            // Arrange
+            var doc = new SimpleDTOWithNestedDTO()
+            {
+                SimpleDTO = new SimpleDTO()
+                {
+                    IntegerList = new List<int>() { 1, 2, 3 }
+                }
+            };
+
+            // create patch
+            var patchDoc = new JsonPatchDocument<SimpleDTOWithNestedDTO>();
+            patchDoc.Replace<int>(o => o.SimpleDTO.IntegerList, 5, 3);
+
+            var logger = new TestErrorLogger<SimpleDTOWithNestedDTO>();
+
+            // Act
+            patchDoc.ApplyTo(doc, logger.LogErrorMessage);
+
+            // Assert
+            Assert.Equal(
+                "For operation 'replace' on array property at path '/simpledto/integerlist/3', the index is " +
+                    "larger than the array size.",
+                logger.ErrorMessage);
         }
 
         [Fact]
@@ -1089,6 +1236,31 @@ namespace Microsoft.AspNet.JsonPatch.Test
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException<SimpleDTOWithNestedDTO>>(() => { deserialized.ApplyTo(doc); });
             Assert.Equal("Property does not exist at path '/simpledto/integerlist/-1'.", exception.Message);
+        }
+
+        [Fact]
+        public void ReplaceInListInvalidPositionTooSmall_LogsError()
+        {
+            // Arrange
+            var doc = new SimpleDTOWithNestedDTO()
+            {
+                SimpleDTO = new SimpleDTO()
+                {
+                    IntegerList = new List<int>() { 1, 2, 3 }
+                }
+            };
+
+            // create patch
+            var patchDoc = new JsonPatchDocument<SimpleDTOWithNestedDTO>();
+            patchDoc.Replace<int>(o => o.SimpleDTO.IntegerList, 5, -1);
+
+            var logger = new TestErrorLogger<SimpleDTOWithNestedDTO>();
+
+            // Act
+            patchDoc.ApplyTo(doc, logger.LogErrorMessage);
+
+            // Assert
+            Assert.Equal("Property does not exist at path '/simpledto/integerlist/-1'.", logger.ErrorMessage);
         }
 
         [Fact]

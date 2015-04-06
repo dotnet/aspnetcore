@@ -7,9 +7,9 @@
                 "Orders": [{"OrderName": "Order1"},
                          {"OrderName": "Order2"}]
                 };
-            $('#currentlabel').text(JSON.stringify(currentObj))
+            $('#currentLabel').text(JSON.stringify(currentObj))
 
-            $('#addorder').on("click", function () {
+            $('#addOrder').on("click", function () {
                 var obj = [{
                     "op": "Add",
                     "path": "Customer/Orders/2",
@@ -22,12 +22,34 @@
                     dataType: 'json',
                     contentType: 'application/json-patch+json',
                     success: function (data) {
-                        $('#addlabel').text(JSON.stringify(data))
+                        $('#addLabel').text(JSON.stringify(data))
                     }
                 });
             });
 
-            $('#removeorder').on("click", function () {
+            $('#invalidAddOrder').on("click", function () {
+                var obj = [{
+                    "op": "Add",
+                    "path": "Customer/Orders/5",
+                    "value": { "OrderName": "Name5" }
+                }]
+                $.ajax({
+                    url: 'jsonpatch',
+                    type: 'PATCH',
+                    data: JSON.stringify(obj),
+                    dataType: 'json',
+                    contentType: 'application/json-patch+json',
+                    success: function (data) {
+                        $('#invalidAddLabel').text(data)
+                    },
+                    error: function (request, status, error) {
+                        $('#invalidAddLabel').text(error)
+                    }
+                });
+            });
+
+
+            $('#removeOrder').on("click", function () {
                 var obj = [{
                     "op": "Remove",
                     "path": "Customer/Name"
@@ -39,12 +61,12 @@
                     dataType: 'json',
                     contentType: 'application/json-patch+json',
                     success: function (data) {
-                        $('#removelabel').text(JSON.stringify(data))
+                        $('#removeLabel').text(JSON.stringify(data))
                     }
                 });
             });
 
-            $('#moveorder').on("click", function () {
+            $('#moveOrder').on("click", function () {
                 var obj = [{
                     "op": "Move",
                     "from": "Customer/Orders/0",
@@ -57,12 +79,12 @@
                     dataType: 'json',
                     contentType: 'application/json-patch+json',
                     success: function (data) {
-                        $('#movelabel').text(JSON.stringify(data))
+                        $('#moveLabel').text(JSON.stringify(data))
                     }
                 });
             });
 
-            $('#replaceorder').on("click", function () {
+            $('#replaceOrder').on("click", function () {
                 var obj = [{
                     "op": "Replace",
                     "path": "Customer/Name",
@@ -75,7 +97,7 @@
                     dataType: 'json',
                     contentType: 'application/json-patch+json',
                     success: function (data) {
-                        $('#replacelabel').text(JSON.stringify(data))
+                        $('#replaceLabel').text(JSON.stringify(data))
                     }
                 });
             });
@@ -86,29 +108,35 @@
     <div>
         <label>Current Customer</label>
         <br />
-        <label id="currentlabel" name="currentlabel"></label>
+        <label id="currentLabel" name="currentLabel"></label>
         <br />
     </div>
     <div>
-        <button id="addorder" type="submit" class="btn btn-primary"> Add </button>
+        <button id="addOrder" type="submit" class="btn btn-primary"> Add </button>
         <br />
-        <label id="addlabel" name="addlabel"></label>
-        <br />
-    </div>
-    <div>
-        <button id="removeorder" type="submit" class="btn btn-primary"> Remove </button>
-        <br />
-        <label id="removelabel" name="removelabel"></label>
-    </div>
-    <div>
-        <button id="moveorder" type="submit" class="btn btn-primary"> Move </button>
-        <br />
-        <label id="movelabel" name="movelabel"></label>
+        <label id="addLabel" name="addLabel"></label>
         <br />
     </div>
     <div>
-        <button id="replaceorder" type="submit" class="btn btn-primary"> Replace </button>
+        <button id="invalidAddOrder" type="submit" class="btn btn-primary"> Invalid Add </button>
         <br />
-        <label id="replacelabel" name="replacelabel"></label>
+        <label id="invalidAddLabel" name="invalidAddLabel"></label>
+        <br />
+    </div>
+    <div>
+        <button id="removeOrder" type="submit" class="btn btn-primary"> Remove </button>
+        <br />
+        <label id="removeLabel" name="removeLabel"></label>
+    </div>
+    <div>
+        <button id="moveOrder" type="submit" class="btn btn-primary"> Move </button>
+        <br />
+        <label id="moveLabel" name="moveLabel"></label>
+        <br />
+    </div>
+    <div>
+        <button id="replaceOrder" type="submit" class="btn btn-primary"> Replace </button>
+        <br />
+        <label id="replaceLabel" name="replaceLabel"></label>
     </div>
 </body>
