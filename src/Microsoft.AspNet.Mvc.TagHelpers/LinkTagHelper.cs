@@ -292,22 +292,22 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 builder.Append(Environment.NewLine);
 
                 // Build the <meta /> tag that's used to test for the presence of the stylesheet
-                builder.Append(string.Format(
+                builder.AppendFormat(
                     CultureInfo.InvariantCulture,
                     "<meta name=\"x-stylesheet-fallback-test\" class=\"{0}\" />",
-                    HtmlEncoder.HtmlEncode(FallbackTestClass)));
+                    HtmlEncoder.HtmlEncode(FallbackTestClass));
 
                 // Build the <script /> tag that checks the effective style of <meta /> tag above and renders the extra
                 // <link /> tag to load the fallback stylesheet if the test CSS property value is found to be false,
                 // indicating that the primary stylesheet failed to load.
                 builder
                     .Append("<script>")
-                    .Append(string.Format(
+                    .AppendFormat(
                         CultureInfo.InvariantCulture,
                         JavaScriptResources.GetEmbeddedJavaScript(FallbackJavaScriptResourceName),
                         JavaScriptEncoder.JavaScriptStringEncode(FallbackTestProperty),
                         JavaScriptEncoder.JavaScriptStringEncode(FallbackTestValue),
-                        JavaScriptStringArrayEncoder.Encode(JavaScriptEncoder, fallbackHrefs)))
+                        JavaScriptStringArrayEncoder.Encode(JavaScriptEncoder, fallbackHrefs))
                     .Append("</script>");
             }
         }
