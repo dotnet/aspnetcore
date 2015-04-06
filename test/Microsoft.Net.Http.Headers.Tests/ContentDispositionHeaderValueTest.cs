@@ -324,7 +324,7 @@ namespace Microsoft.Net.Http.Headers
             contentDisposition.FileName = "my File Name";
             Assert.Equal("inline; name=myname; filename=\"my File Name\"", contentDisposition.ToString());
 
-            contentDisposition.CreationDate = new DateTimeOffset(new DateTime(2011, 2, 15));
+            contentDisposition.CreationDate = new DateTimeOffset(new DateTime(2011, 2, 15), new TimeSpan(-8, 0, 0));
             Assert.Equal("inline; name=myname; filename=\"my File Name\"; creation-date="
                 + "\"Tue, 15 Feb 2011 08:00:00 GMT\"", contentDisposition.ToString());
 

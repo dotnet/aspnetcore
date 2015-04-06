@@ -9,10 +9,6 @@
     },
     "frameworks": {
         "dnx451": { },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Diagnostics.Debug": "4.0.10-beta-*"
-            }
-        }
+        "dnxcore50": { }
     }
 }
