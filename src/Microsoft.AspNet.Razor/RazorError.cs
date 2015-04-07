@@ -3,9 +3,8 @@
 
 using System;
 using System.Globalization;
-using Microsoft.AspNet.Razor.Text;
 
-namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
+namespace Microsoft.AspNet.Razor
 {
     public class RazorError : IEquatable<RazorError>
     {
@@ -48,7 +47,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         public override bool Equals(object obj)
         {
             var err = obj as RazorError;
-            return (err != null) && (Equals(err));
+            return (err != null) && Equals(err);
         }
 
         public override int GetHashCode()

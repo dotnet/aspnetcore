@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Razor.Test
                 "different-ns",
                 string.Empty,
                 shouldGenerateLinePragmas: true,
-                errorSink: new ParserErrorSink());
+                errorSink: new ErrorSink());
 
             var expected = new CSharpCodeBuilder(codeBuilderContext);
 

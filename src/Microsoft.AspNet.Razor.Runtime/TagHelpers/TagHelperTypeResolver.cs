@@ -33,13 +33,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="documentLocation">The <see cref="SourceLocation"/> of the associated
         /// <see cref="Parser.SyntaxTree.SyntaxTreeNode"/> responsible for the current <see cref="Resolve"/> call.
         /// </param>
-        /// <param name="errorSink">The <see cref="ParserErrorSink"/> used to record errors found when resolving 
+        /// <param name="errorSink">The <see cref="ErrorSink"/> used to record errors found when resolving
         /// <see cref="ITagHelper"/> <see cref="Type"/>s.</param>
         /// <returns>An <see cref="IEnumerable{Type}"/> of valid <see cref="ITagHelper"/> <see cref="Type"/>s.
-        /// </returns>        
+        /// </returns>
         public IEnumerable<Type> Resolve(string name, 
                                          SourceLocation documentLocation, 
-                                         [NotNull] ParserErrorSink errorSink)
+                                         [NotNull] ErrorSink errorSink)
         {
             if (string.IsNullOrEmpty(name))
             {

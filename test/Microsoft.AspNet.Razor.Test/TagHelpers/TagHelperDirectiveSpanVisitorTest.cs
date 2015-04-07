@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                     .Returns(Enumerable.Empty<TagHelperDescriptor>());
             var tagHelperDirectiveSpanVisitor = new TagHelperDirectiveSpanVisitor(
                 resolver.Object, 
-                new ParserErrorSink());
+                new ErrorSink());
             var document = new MarkupBlock(
                 Factory.Code("\"one\"").AsAddTagHelper("one"),
                 Factory.Code("\"two\"").AsRemoveTagHelper("two"),
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         {
             // Arrange
             var resolver = new TestTagHelperDescriptorResolver();
-            var tagHelperDirectiveSpanVisitor = new TagHelperDirectiveSpanVisitor(resolver, new ParserErrorSink());
+            var tagHelperDirectiveSpanVisitor = new TagHelperDirectiveSpanVisitor(resolver, new ErrorSink());
             var document = new MarkupBlock(
                 Factory.Code("\"one\"").AsAddTagHelper("one"),
                 Factory.Code("\"two\"").AsRemoveTagHelper("two"),
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         {
             // Arrange
             var resolver = new TestTagHelperDescriptorResolver();
-            var tagHelperDirectiveSpanVisitor = new TagHelperDirectiveSpanVisitor(resolver, new ParserErrorSink());
+            var tagHelperDirectiveSpanVisitor = new TagHelperDirectiveSpanVisitor(resolver, new ErrorSink());
             var document = new MarkupBlock(
                 new DirectiveBlock(
                     Factory.CodeTransition(),
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         {
             // Arrange
             var resolver = new TestTagHelperDescriptorResolver();
-            var tagHelperDirectiveSpanVisitor = new TagHelperDirectiveSpanVisitor(resolver, new ParserErrorSink());
+            var tagHelperDirectiveSpanVisitor = new TagHelperDirectiveSpanVisitor(resolver, new ErrorSink());
             var document = new MarkupBlock(
                 new DirectiveBlock(
                     Factory.CodeTransition(),
@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         {
             // Arrange
             var resolver = new TestTagHelperDescriptorResolver();
-            var tagHelperDirectiveSpanVisitor = new TagHelperDirectiveSpanVisitor(resolver, new ParserErrorSink());
+            var tagHelperDirectiveSpanVisitor = new TagHelperDirectiveSpanVisitor(resolver, new ErrorSink());
             var document = new MarkupBlock(
                 new DirectiveBlock(
                     Factory.CodeTransition(),
@@ -199,7 +199,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var tagHelperDirectiveSpanVisitor =
                 new TagHelperDirectiveSpanVisitor(
                     new TestTagHelperDescriptorResolver(),
-                    new ParserErrorSink());
+                    new ErrorSink());
             var document = new MarkupBlock(Factory.Markup("Hello World"));
 
             // Act
@@ -256,22 +256,22 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         private class CustomTagHelperDirectiveSpanVisitor : TagHelperDirectiveSpanVisitor
         {
             private Func<IEnumerable<TagHelperDirectiveDescriptor>, 
-                         ParserErrorSink,
+                         ErrorSink,
                          TagHelperDescriptorResolutionContext> _replacer;
 
             public CustomTagHelperDirectiveSpanVisitor(
                 ITagHelperDescriptorResolver descriptorResolver,
                 Func<IEnumerable<TagHelperDirectiveDescriptor>, 
-                     ParserErrorSink, 
+                     ErrorSink, 
                      TagHelperDescriptorResolutionContext> replacer)
-                : base(descriptorResolver, new ParserErrorSink())
+                : base(descriptorResolver, new ErrorSink())
             {
                 _replacer = replacer;
             }
 
             protected override TagHelperDescriptorResolutionContext GetTagHelperDescriptorResolutionContext(
                 IEnumerable<TagHelperDirectiveDescriptor> descriptors,
-                ParserErrorSink errorSink)
+                ErrorSink errorSink)
             {
                 return _replacer(descriptors, errorSink);
             }

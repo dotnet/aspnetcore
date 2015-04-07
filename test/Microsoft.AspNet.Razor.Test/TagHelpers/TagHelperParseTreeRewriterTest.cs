@@ -4894,7 +4894,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
         public override ParserContext CreateParserContext(ITextDocument input,
                                                           ParserBase codeParser,
                                                           ParserBase markupParser,
-                                                          ParserErrorSink errorSink)
+                                                          ErrorSink errorSink)
         {
             return base.CreateParserContext(input, codeParser, markupParser, errorSink);
         }
@@ -4904,7 +4904,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                   MarkupBlock expectedOutput,
                                   IEnumerable<RazorError> expectedErrors)
         {
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var results = ParseDocument(documentContent, errorSink);
             var rewritingContext = new RewritingContext(results.Document, errorSink);
             new TagHelperParseTreeRewriter(provider).Rewrite(rewritingContext);

@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         protected virtual IEnumerable<TagHelperDescriptor> ResolveDescriptorsInAssembly(
             string assemblyName,
             SourceLocation documentLocation,
-            ParserErrorSink errorSink)
+            ErrorSink errorSink)
         {
             // Resolve valid tag helper types from the assembly.
             var tagHelperTypes = _typeResolver.Resolve(assemblyName, documentLocation, errorSink);
@@ -191,7 +191,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         private static bool EnsureValidPrefix(
             string prefix,
             SourceLocation directiveLocation,
-            ParserErrorSink errorSink)
+            ErrorSink errorSink)
         {
             foreach (var character in prefix)
             {
@@ -233,7 +233,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         private static LookupInfo GetLookupInfo(TagHelperDirectiveDescriptor directiveDescriptor,
-                                                ParserErrorSink errorSink)
+                                                ErrorSink errorSink)
         {
             var lookupText = directiveDescriptor.DirectiveText;
             var lookupStrings = lookupText?.Split(new[] { ',' });

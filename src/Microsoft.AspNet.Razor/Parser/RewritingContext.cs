@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Razor.Parser
         /// <summary>
         /// Instantiates a new <see cref="RewritingContext"/>.
         /// </summary>
-        public RewritingContext(Block syntaxTree, ParserErrorSink errorSink)
+        public RewritingContext(Block syntaxTree, ErrorSink errorSink)
         {
             _errors = new List<RazorError>();
             SyntaxTree = syntaxTree;
@@ -29,6 +29,6 @@ namespace Microsoft.AspNet.Razor.Parser
         /// </summary>
         public Block SyntaxTree { get; set; }
 
-        public ParserErrorSink ErrorSink { get; }
+        public ErrorSink ErrorSink { get; }
     }
 }

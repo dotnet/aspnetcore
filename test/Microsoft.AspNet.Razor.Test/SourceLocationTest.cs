@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Razor.Text;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Test.Text
+namespace Microsoft.AspNet.Razor
 {
     public class SourceLocationTest
     {

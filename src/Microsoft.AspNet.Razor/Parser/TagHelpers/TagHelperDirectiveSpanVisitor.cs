@@ -15,18 +15,18 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
     public class TagHelperDirectiveSpanVisitor : ParserVisitor
     {
         private readonly ITagHelperDescriptorResolver _descriptorResolver;
-        private readonly ParserErrorSink _errorSink;
+        private readonly ErrorSink _errorSink;
 
         private List<TagHelperDirectiveDescriptor> _directiveDescriptors;
 
         // Internal for testing use
         internal TagHelperDirectiveSpanVisitor(ITagHelperDescriptorResolver descriptorResolver)
-            : this(descriptorResolver, new ParserErrorSink())
+            : this(descriptorResolver, new ErrorSink())
         {
         }
 
         public TagHelperDirectiveSpanVisitor([NotNull] ITagHelperDescriptorResolver descriptorResolver,
-                                               [NotNull] ParserErrorSink errorSink)
+                                               [NotNull] ErrorSink errorSink)
         {
             _descriptorResolver = descriptorResolver;
             _errorSink = errorSink;
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         // Allows MVC a chance to override the TagHelperDescriptorResolutionContext
         protected virtual TagHelperDescriptorResolutionContext GetTagHelperDescriptorResolutionContext(
             [NotNull] IEnumerable<TagHelperDirectiveDescriptor> descriptors,
-            [NotNull] ParserErrorSink errorSink)
+            [NotNull] ErrorSink errorSink)
         {
             return new TagHelperDescriptorResolutionContext(descriptors, errorSink);
         }

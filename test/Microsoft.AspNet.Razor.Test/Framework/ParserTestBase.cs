@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         public virtual ParserContext CreateParserContext(ITextDocument input,
                                                          ParserBase codeParser,
                                                          ParserBase markupParser,
-                                                         ParserErrorSink errorSink)
+                                                         ErrorSink errorSink)
         {
             return new ParserContext(input,
                                      codeParser,
@@ -161,14 +161,14 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             return ParseDocument(document, designTimeParser: false, errorSink: null);
         }
 
-        protected virtual ParserResults ParseDocument(string document, ParserErrorSink errorSink)
+        protected virtual ParserResults ParseDocument(string document, ErrorSink errorSink)
         {
             return ParseDocument(document, designTimeParser: false, errorSink: errorSink);
         }
 
         protected virtual ParserResults ParseDocument(string document,
                                                       bool designTimeParser,
-                                                      ParserErrorSink errorSink)
+                                                      ErrorSink errorSink)
         {
             return RunParse(document,
                             parser => parser.ParseDocument,
@@ -191,10 +191,10 @@ namespace Microsoft.AspNet.Razor.Test.Framework
                                                  Func<ParserBase, Action> parserActionSelector,
                                                  bool designTimeParser,
                                                  Func<ParserContext, ParserBase> parserSelector = null,
-                                                 ParserErrorSink errorSink = null)
+                                                 ErrorSink errorSink = null)
         {
             parserSelector = parserSelector ?? (c => c.ActiveParser);
-            errorSink = errorSink ?? new ParserErrorSink();
+            errorSink = errorSink ?? new ErrorSink();
 
             // Create the source
             ParserResults results = null;

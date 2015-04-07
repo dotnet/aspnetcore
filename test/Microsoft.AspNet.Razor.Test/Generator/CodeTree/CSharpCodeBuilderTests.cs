@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator.CodeTree
                 "TestNamespace",
                 "Foo.cs",
                 shouldGenerateLinePragmas: false,
-                errorSink: new ParserErrorSink());
+                errorSink: new ErrorSink());
             codeBuilderContext.CodeTreeBuilder.AddUsingChunk("FakeNamespace1", syntaxTreeNode.Object);
             codeBuilderContext.CodeTreeBuilder.AddUsingChunk("FakeNamespace2.SubNamespace", syntaxTreeNode.Object);
             var codeBuilder = new CodeGenTestCodeBuilder(codeBuilderContext);

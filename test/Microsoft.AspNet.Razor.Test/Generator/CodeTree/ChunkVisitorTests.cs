@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Razor
                 "myns",
                 string.Empty,
                 shouldGenerateLinePragmas: false,
-                errorSink: new ParserErrorSink());
+                errorSink: new ErrorSink());
             var writer = Mock.Of<CodeWriter>();
             return new Mock<ChunkVisitor<CodeWriter>>(writer, codeBuilderContext);
         }

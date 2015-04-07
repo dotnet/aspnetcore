@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
                                                                  codeParser: new CSharpCodeParser(),
                                                                  markupParser: new HtmlMarkupParser(),
                                                                  activeParser: new CSharpCodeParser(),
-                                                                 errorSink: new ParserErrorSink()));
+                                                                 errorSink: new ErrorSink()));
             ExceptionHelpers.ValidateArgumentException(parameterName, RazorResources.ActiveParser_Must_Be_Code_Or_Markup_Parser, exception);
         }
 
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         {
             var codeParser = new CSharpCodeParser();
             var markupParser = new HtmlMarkupParser();
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             new ParserContext(
                 new SeekableTextReader(TextReader.Null), codeParser, markupParser, codeParser, errorSink);
             new ParserContext(
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
                                             expectedCodeParser,
                                             expectedMarkupParser,
                                             expectedCodeParser,
-                                            new ParserErrorSink());
+                                            new ErrorSink());
 
             // Assert
             Assert.NotNull(context.Source);
@@ -233,7 +233,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
                 codeParser,
                 markupParser,
                 activeParser,
-                new ParserErrorSink());
+                new ErrorSink());
 
             positioningAction(context.Source);
             return context;

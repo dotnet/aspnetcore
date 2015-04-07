@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     "MyNamespace",
                     string.Empty,
                     shouldGenerateLinePragmas: true),
-                new ParserErrorSink());
+                new ErrorSink());
         }
 
         private class TrackingUniqueIdsTagHelperCodeRenderer : CSharpTagHelperCodeRenderer

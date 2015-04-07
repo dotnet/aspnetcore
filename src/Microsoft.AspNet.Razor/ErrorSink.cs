@@ -2,22 +2,20 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Text;
 
-namespace Microsoft.AspNet.Razor.Parser
+namespace Microsoft.AspNet.Razor
 {
     /// <summary>
     /// Used to manage <see cref="RazorError"/>s encountered during the Razor parsing phase.
     /// </summary>
-    public class ParserErrorSink
+    public class ErrorSink
     {
         private readonly List<RazorError> _errors;
 
         /// <summary>
-        /// Instantiates a new instance of <see cref="ParserErrorSink"/>.
+        /// Instantiates a new instance of <see cref="ErrorSink"/>.
         /// </summary>
-        public ParserErrorSink()
+        public ErrorSink()
         {
             _errors = new List<RazorError>();
         }

@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var tagHelperTypeResolver = new TagHelperTypeResolver();
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var documentLocation = new SourceLocation(1, 2, 3);
             var expectedErrorMessage = "Cannot resolve TagHelper containing assembly 'abcd'. Error: " +
                 "Could not load file or assembly '" +
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var tagHelperTypeResolver = new TestTagHelperTypeResolver(TestableTagHelpers);
 
             // Act
-            var types = tagHelperTypeResolver.Resolve("Foo", SourceLocation.Zero, new ParserErrorSink());
+            var types = tagHelperTypeResolver.Resolve("Foo", SourceLocation.Zero, new ErrorSink());
 
             // Assert
             Assert.Equal(ValidTestableTagHelpers, types);
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var tagHelperTypeResolver = new TestTagHelperTypeResolver(InvalidTestableTagHelpers);
 
             // Act
-            var types = tagHelperTypeResolver.Resolve("Foo", SourceLocation.Zero, new ParserErrorSink());
+            var types = tagHelperTypeResolver.Resolve("Foo", SourceLocation.Zero, new ErrorSink());
 
             // Assert
             Assert.Empty(types);
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var tagHelperTypeResolver = new TestTagHelperTypeResolver(InvalidTestableTagHelpers);
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var documentLocation = new SourceLocation(1, 2, 3);
             var expectedErrorMessage = "Tag helper directive assembly name cannot be null or empty.";
 

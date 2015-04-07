@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             parser.Protected()
                   .Setup<IEnumerable<TagHelperDescriptor>>("GetTagHelperDescriptors", 
                                                            ItExpr.IsAny<Block>(), 
-                                                           ItExpr.IsAny<ParserErrorSink>())
+                                                           ItExpr.IsAny<ErrorSink>())
                   .Returns(Enumerable.Empty<TagHelperDescriptor>())
                   .Verifiable();
 
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
                 get { return Context.CodeParser; }
             }
 
-            public override void BuildSpan(SpanBuilder span, Razor.Text.SourceLocation start, string content)
+            public override void BuildSpan(SpanBuilder span, SourceLocation start, string content)
             {
                 throw new NotImplementedException();
             }

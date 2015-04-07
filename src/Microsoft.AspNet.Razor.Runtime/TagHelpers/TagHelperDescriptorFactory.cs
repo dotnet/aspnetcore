@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public static IEnumerable<TagHelperDescriptor> CreateDescriptors(
             string assemblyName,
             [NotNull] Type type,
-            [NotNull] ParserErrorSink errorSink)
+            [NotNull] ErrorSink errorSink)
         {
             var typeInfo = type.GetTypeInfo();
             var attributeDescriptors = GetAttributeDescriptors(type);
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         private static IEnumerable<TargetElementAttribute> GetValidTargetElementAttributes(
             TypeInfo typeInfo,
-            ParserErrorSink errorSink)
+            ErrorSink errorSink)
         {
             var targetElementAttributes = typeInfo.GetCustomAttributes<TargetElementAttribute>(inherit: false);
 
@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </summary>
         internal static bool ValidTargetElementAttributeNames(
             TargetElementAttribute attribute,
-            ParserErrorSink errorSink)
+            ErrorSink errorSink)
         {
             var validTagName = ValidateName(attribute.Tag, targetingAttributes: false, errorSink: errorSink);
             var validAttributeNames = true;
@@ -166,7 +166,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         private static bool ValidateName(
             string name,
             bool targetingAttributes,
-            ParserErrorSink errorSink)
+            ErrorSink errorSink)
         {
             var targetName = targetingAttributes ?
                 Resources.TagHelperDescriptorFactory_Attribute :

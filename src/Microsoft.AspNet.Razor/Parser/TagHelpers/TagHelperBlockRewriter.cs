@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             bool validStructure,
             Block tag,
             IEnumerable<TagHelperDescriptor> descriptors,
-            ParserErrorSink errorSink)
+            ErrorSink errorSink)
         {
             // There will always be at least one child for the '<'.
             var start = tag.Children.First().Start;
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             bool validStructure,
             Block tagBlock,
             IEnumerable<TagHelperDescriptor> descriptors,
-            ParserErrorSink errorSink)
+            ErrorSink errorSink)
         {
             var attributes = new Dictionary<string, SyntaxTreeNode>(StringComparer.OrdinalIgnoreCase);
 
@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
         private static bool TryParseSpan(
             Span span,
             IReadOnlyDictionary<string, string> attributeValueTypes,
-            ParserErrorSink errorSink,
+            ErrorSink errorSink,
             out KeyValuePair<string, SyntaxTreeNode> attribute)
         {
             var afterEquals = false;
@@ -249,7 +249,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             string tagName,
             Block block,
             IReadOnlyDictionary<string, string> attributeValueTypes,
-            ParserErrorSink errorSink,
+            ErrorSink errorSink,
             out KeyValuePair<string, SyntaxTreeNode> attribute)
         {
             // TODO: Accept more than just spans: https://github.com/aspnet/Razor/issues/96.

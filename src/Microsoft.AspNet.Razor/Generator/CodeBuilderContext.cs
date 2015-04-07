@@ -15,10 +15,10 @@ namespace Microsoft.AspNet.Razor.Generator
         /// </summary>
         /// <param name="generatorContext">A <see cref="CodeGeneratorContext"/> to copy information from.</param>
         /// <param name="errorSink">
-        /// The <see cref="ParserErrorSink"/> used to collect <see cref="Parser.SyntaxTree.RazorError"/>s encountered
+        /// The <see cref="ErrorSink"/> used to collect <see cref="RazorError"/>s encountered
         /// when parsing the current Razor document.
         /// </param>
-        public CodeBuilderContext(CodeGeneratorContext generatorContext, ParserErrorSink errorSink)
+        public CodeBuilderContext(CodeGeneratorContext generatorContext, ErrorSink errorSink)
             : base(generatorContext)
         {
             ErrorSink = errorSink;
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Razor.Generator
                                     string rootNamespace,
                                     string sourceFile,
                                     bool shouldGenerateLinePragmas,
-                                    ParserErrorSink errorSink)
+                                    ErrorSink errorSink)
             : base(host, className, rootNamespace, sourceFile, shouldGenerateLinePragmas)
         {
             ErrorSink = errorSink;
@@ -67,8 +67,8 @@ namespace Microsoft.AspNet.Razor.Generator
         public string Checksum { get; set; }
 
         /// <summary>
-        /// Used to aggregate <see cref="Parser.SyntaxTree.RazorError"/>s.
+        /// Used to aggregate <see cref="RazorError"/>s.
         /// </summary>
-        public ParserErrorSink ErrorSink { get; }
+        public ErrorSink ErrorSink { get; }
     }
 }

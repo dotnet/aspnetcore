@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             // Act
             var results = ParseDocument("<a href='~/Foo/Bar' />");
-            var rewritingContext = new RewritingContext(results.Document, new ParserErrorSink());
+            var rewritingContext = new RewritingContext(results.Document, new ErrorSink());
             new ConditionalAttributeCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(rewritingContext);
             new MarkupCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(rewritingContext);
             var rewritten = rewritingContext.SyntaxTree;
@@ -271,7 +271,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
 
             // Act
             var results = ParseDocument(code);
-            var rewritingContext = new RewritingContext(results.Document, new ParserErrorSink());
+            var rewritingContext = new RewritingContext(results.Document, new ErrorSink());
             new ConditionalAttributeCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(rewritingContext);
             new MarkupCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(rewritingContext);
             var rewritten = rewritingContext.SyntaxTree;

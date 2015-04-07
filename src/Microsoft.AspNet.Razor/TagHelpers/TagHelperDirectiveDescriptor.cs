@@ -20,12 +20,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <summary>
         /// Instantiates a new instance of <see cref="TagHelperDirectiveDescriptor"/>.
         /// </summary>
-        /// <param name="directiveText">A <see cref="string"/> used to understand tag helper 
+        /// <param name="directiveText">A <see cref="string"/> used to understand tag helper
         /// <see cref="System.Type"/>s.</param>
         /// <param name="location">The <see cref="SourceLocation"/> of the directive.</param>
         /// <param name="directiveType">The <see cref="TagHelperDirectiveType"/> of this directive.</param>
-        public TagHelperDirectiveDescriptor([NotNull] string directiveText, 
-                                            SourceLocation location, 
+        public TagHelperDirectiveDescriptor([NotNull] string directiveText,
+                                            SourceLocation location,
                                             TagHelperDirectiveType directiveType)
         {
             DirectiveText = directiveText;

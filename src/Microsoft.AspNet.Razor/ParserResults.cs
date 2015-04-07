@@ -22,12 +22,12 @@ namespace Microsoft.AspNet.Razor
         /// The <see cref="TagHelperDescriptor"/>s that apply to the current Razor document.
         /// </param>
         /// <param name="errorSink">
-        /// The <see cref="ParserErrorSink"/> used to collect <see cref="RazorError"/>s encountered when parsing the
+        /// The <see cref="ErrorSink"/> used to collect <see cref="RazorError"/>s encountered when parsing the
         /// current Razor document.
         /// </param>
         public ParserResults([NotNull] Block document,
                              [NotNull] IEnumerable<TagHelperDescriptor> tagHelperDescriptors,
-                             [NotNull] ParserErrorSink errorSink)
+                             [NotNull] ErrorSink errorSink)
             : this(!errorSink.Errors.Any(), document, tagHelperDescriptors, errorSink)
         {
         }
@@ -41,13 +41,13 @@ namespace Microsoft.AspNet.Razor
         /// The <see cref="TagHelperDescriptor"/>s that apply to the current Razor document.
         /// </param>
         /// <param name="errorSink">
-        /// The <see cref="ParserErrorSink"/> used to collect <see cref="RazorError"/>s encountered when parsing the
+        /// The <see cref="ErrorSink"/> used to collect <see cref="RazorError"/>s encountered when parsing the
         /// current Razor document.
         /// </param>
         protected ParserResults(bool success,
                                 [NotNull] Block document,
                                 [NotNull] IEnumerable<TagHelperDescriptor> tagHelperDescriptors,
-                                [NotNull] ParserErrorSink errorSink)
+                                [NotNull] ErrorSink errorSink)
         {
             Success = success;
             Document = document;
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Razor
         /// <summary>
         /// Used to aggregate <see cref="RazorError"/>s.
         /// </summary>
-        public ParserErrorSink ErrorSink { get; }
+        public ErrorSink ErrorSink { get; }
 
         /// <summary>
         /// The list of errors which occurred during parsing.

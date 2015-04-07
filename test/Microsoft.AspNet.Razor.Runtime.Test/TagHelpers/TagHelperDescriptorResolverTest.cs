@@ -326,7 +326,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var tagHelperDescriptorResolver =
                 new TestTagHelperDescriptorResolver(
                     new LookupBasedTagHelperTypeResolver(descriptorAssemblyLookups));
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var resolutionContext = new TagHelperDescriptorResolutionContext(
                 directiveDescriptors,
                 errorSink);
@@ -513,7 +513,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     new LookupBasedTagHelperTypeResolver(descriptorAssemblyLookups));
             var resolutionContext = new TagHelperDescriptorResolutionContext(
                 directiveDescriptors,
-                new ParserErrorSink());
+                new ErrorSink());
 
             // Act
             var descriptors = tagHelperDescriptorResolver.Resolve(resolutionContext);
@@ -536,7 +536,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var tagHelperDescriptorResolver = new AssemblyCheckingTagHelperDescriptorResolver();
             var context = new TagHelperDescriptorResolutionContext(
                 new[] { new TagHelperDirectiveDescriptor(lookupText, TagHelperDirectiveType.AddTagHelper) },
-                new ParserErrorSink());
+                new ErrorSink());
 
             // Act
             tagHelperDescriptorResolver.Resolve(context);
@@ -964,7 +964,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     new LookupBasedTagHelperTypeResolver(descriptorAssemblyLookups));
             var resolutionContext = new TagHelperDescriptorResolutionContext(
                 directiveDescriptors,
-                new ParserErrorSink());
+                new ErrorSink());
 
             // Act
             var descriptors = tagHelperDescriptorResolver.Resolve(resolutionContext);
@@ -1144,7 +1144,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     new LookupBasedTagHelperTypeResolver(descriptorAssemblyLookups));
             var resolutionContext = new TagHelperDescriptorResolutionContext(
                 directiveDescriptors,
-                new ParserErrorSink());
+                new ErrorSink());
 
             // Act
             var descriptors = tagHelperDescriptorResolver.Resolve(resolutionContext);
@@ -1307,7 +1307,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void DescriptorResolver_CreatesErrorIfInvalidLookupText_DoesNotThrow(string lookupText)
         {
             // Arrange
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var tagHelperDescriptorResolver =
                 new TestTagHelperDescriptorResolver(
                     new TestTagHelperTypeResolver(InvalidTestableTagHelpers));
@@ -1340,7 +1340,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                        "custom exception";
             var documentLocation = new SourceLocation(1, 2, 3);
             var directiveType = TagHelperDirectiveType.AddTagHelper;
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var expectedError = new Exception("A custom exception");
             var tagHelperDescriptorResolver = new ThrowingTagHelperDescriptorResolver(expectedError);
             var resolutionContext = new TagHelperDescriptorResolutionContext(
@@ -1416,7 +1416,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         lookupTexts.Select(
                             lookupText =>
                                 new TagHelperDirectiveDescriptor(lookupText, TagHelperDirectiveType.AddTagHelper)),
-                    new ParserErrorSink()));
+                    new ErrorSink()));
             }
         }
 
@@ -1451,7 +1451,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             protected override IEnumerable<TagHelperDescriptor> ResolveDescriptorsInAssembly(
                 string assemblyName,
                 SourceLocation documentLocation,
-                ParserErrorSink errorSink)
+                ErrorSink errorSink)
             {
                 CalledWithAssemblyName = assemblyName;
 
@@ -1471,7 +1471,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             protected override IEnumerable<TagHelperDescriptor> ResolveDescriptorsInAssembly(
                 string assemblyName,
                 SourceLocation documentLocation,
-                ParserErrorSink errorSink)
+                ErrorSink errorSink)
             {
                 throw _error;
             }

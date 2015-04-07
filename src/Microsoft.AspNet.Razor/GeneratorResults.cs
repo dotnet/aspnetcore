@@ -39,14 +39,14 @@ namespace Microsoft.AspNet.Razor
         /// The <see cref="TagHelperDescriptor"/>s that apply to the current Razor document.
         /// </param>
         /// <param name="errorSink">
-        /// The <see cref="ParserErrorSink"/> used to collect <see cref="RazorError"/>s encountered when parsing the
+        /// The <see cref="ErrorSink"/> used to collect <see cref="RazorError"/>s encountered when parsing the
         /// current Razor document.
         /// </param>
         /// <param name="codeBuilderResult">The results of generating code for the document.</param>
         /// <param name="codeTree">A <see cref="CodeTree"/> for the document.</param>
         public GeneratorResults([NotNull] Block document,
                                 [NotNull] IEnumerable<TagHelperDescriptor> tagHelperDescriptors,
-                                [NotNull] ParserErrorSink errorSink,
+                                [NotNull] ErrorSink errorSink,
                                 [NotNull] CodeBuilderResult codeBuilderResult,
                                 [NotNull] CodeTree codeTree)
             : base(document, tagHelperDescriptors, errorSink)

@@ -181,7 +181,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             IEnumerable<TagHelperDescriptor> expectedDescriptors)
         {
             // Arrange
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
 
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
@@ -229,7 +229,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             string expectedAttributeName)
         {
             // Arrange
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
 
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
@@ -249,7 +249,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void CreateDescriptor_OverridesAttributeNameFromAttribute()
         {
             // Arrange
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var validProperty1 = typeof(OverriddenAttributeTagHelper).GetProperty(
                 nameof(OverriddenAttributeTagHelper.ValidAttribute1));
             var validProperty2 = typeof(OverriddenAttributeTagHelper).GetProperty(
@@ -280,7 +280,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void CreateDescriptor_DoesNotInheritOverridenAttributeName()
         {
             // Arrange
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var validProperty1 = typeof(InheritedOverriddenAttributeTagHelper).GetProperty(
                 nameof(InheritedOverriddenAttributeTagHelper.ValidAttribute1));
             var validProperty2 = typeof(InheritedOverriddenAttributeTagHelper).GetProperty(
@@ -312,7 +312,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void CreateDescriptor_AllowsOverridenAttributeNameOnUnimplementedVirtual()
         {
             // Arrange
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var validProperty1 = typeof(InheritedNotOverriddenAttributeTagHelper).GetProperty(
                 nameof(InheritedNotOverriddenAttributeTagHelper.ValidAttribute1));
             var validProperty2 = typeof(InheritedNotOverriddenAttributeTagHelper).GetProperty(
@@ -343,7 +343,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void CreateDescriptor_BuildsDescriptorsFromSimpleTypes()
         {
             // Arrange
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var objectAssemblyName = typeof(object).GetTypeInfo().Assembly.GetName().Name;
             var expectedDescriptor =
                 new TagHelperDescriptor("object", "System.Object", objectAssemblyName);
@@ -364,7 +364,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void CreateDescriptor_BuildsDescriptorsWithInheritedProperties()
         {
             // Arrange
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var intProperty = typeof(InheritedSingleAttributeTagHelper).GetProperty(
                 nameof(InheritedSingleAttributeTagHelper.IntAttribute));
             var expectedDescriptor = new TagHelperDescriptor(
@@ -391,7 +391,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void CreateDescriptor_BuildsDescriptorsWithConventionNames()
         {
             // Arrange
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var intProperty = typeof(SingleAttributeTagHelper).GetProperty(nameof(SingleAttributeTagHelper.IntAttribute));
             var expectedDescriptor = new TagHelperDescriptor(
                 "single-attribute",
@@ -405,7 +405,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
                 typeof(SingleAttributeTagHelper),
-                new ParserErrorSink());
+                new ErrorSink());
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -417,7 +417,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void CreateDescriptor_OnlyAcceptsPropertiesWithGetAndSet()
         {
             // Arrange
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var validProperty = typeof(MissingAccessorTagHelper).GetProperty(
                 nameof(MissingAccessorTagHelper.ValidAttribute));
             var expectedDescriptor = new TagHelperDescriptor(
@@ -444,7 +444,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void CreateDescriptor_OnlyAcceptsPropertiesWithPublicGetAndSet()
         {
             // Arrange
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var validProperty = typeof(PrivateAccessorTagHelper).GetProperty(
                 nameof(PrivateAccessorTagHelper.ValidAttribute));
             var expectedDescriptor = new TagHelperDescriptor(
@@ -472,7 +472,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void CreateDescriptor_ResolvesMultipleTagHelperDescriptorsFromSingleType()
         {
             // Arrange
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var validProp = typeof(MultiTagTagHelper).GetProperty(nameof(MultiTagTagHelper.ValidAttribute));
             var expectedDescriptors = new[] {
                 new TagHelperDescriptor(
@@ -511,7 +511,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void CreateDescriptor_DoesntResolveInheritedTagNames()
         {
             // Arrange
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var validProp = typeof(InheritedMultiTagTagHelper).GetProperty(nameof(InheritedMultiTagTagHelper.ValidAttribute));
             var expectedDescriptor = new TagHelperDescriptor(
                     "inherited-multi-tag",
@@ -537,7 +537,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void CreateDescriptor_IgnoresDuplicateTagNamesFromAttribute()
         {
             // Arrange
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var expectedDescriptors = new[] {
                 new TagHelperDescriptor(
                     "div",
@@ -569,7 +569,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void CreateDescriptor_OverridesTagNameFromAttribute()
         {
             // Arrange
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var expectedDescriptors = new[] {
                 new TagHelperDescriptor("data-condition",
                                         typeof(OverrideNameTagHelper).FullName,
@@ -801,7 +801,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             string name, string[] expectedErrorMessages)
         {
             // Arrange
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var attribute = new TargetElementAttribute(name);
 
             // Act

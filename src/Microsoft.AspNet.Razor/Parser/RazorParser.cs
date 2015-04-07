@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.Razor.Parser
         private ParserResults ParseCore(ITextDocument input)
         {
             // Setup the parser context
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var context = new ParserContext(input, CodeParser, MarkupParser, MarkupParser, errorSink)
             {
                 DesignTimeMode = DesignTimeMode
@@ -210,7 +210,7 @@ namespace Microsoft.AspNet.Razor.Parser
         /// <returns><see cref="TagHelperDescriptor"/>s that are applicable to the <paramref name="documentRoot"/>
         /// </returns>
         protected virtual IEnumerable<TagHelperDescriptor> GetTagHelperDescriptors([NotNull] Block documentRoot,
-                                                                                   [NotNull] ParserErrorSink errorSink)
+                                                                                   [NotNull] ErrorSink errorSink)
         {
             var addOrRemoveTagHelperSpanVisitor = 
                 new TagHelperDirectiveSpanVisitor(TagHelperDescriptorResolver, errorSink);

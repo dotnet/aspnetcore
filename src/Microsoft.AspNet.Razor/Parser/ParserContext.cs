@@ -22,13 +22,13 @@ namespace Microsoft.AspNet.Razor.Parser
         private bool _terminated = false;
 
         private Stack<BlockBuilder> _blockStack = new Stack<BlockBuilder>();
-        private readonly ParserErrorSink _errorSink;
+        private readonly ErrorSink _errorSink;
 
         public ParserContext([NotNull] ITextDocument source,
                              [NotNull] ParserBase codeParser,
                              [NotNull] ParserBase markupParser,
                              [NotNull] ParserBase activeParser,
-                             [NotNull] ParserErrorSink errorSink)
+                             [NotNull] ErrorSink errorSink)
         {
             if (activeParser != codeParser && activeParser != markupParser)
             {

@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         public void VisitThrowsOnNullVisitor()
         {
             ParserVisitor target = null;
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var results = new ParserResults(new BlockBuilder() { Type = BlockType.Comment }.Build(),
                                             Enumerable.Empty<TagHelperDescriptor>(),
                                             errorSink);
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             // Arrange
             Mock<ParserVisitor> targetMock = new Mock<ParserVisitor>();
             var root = new BlockBuilder() { Type = BlockType.Comment }.Build();
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var results = new ParserResults(root,
                                             Enumerable.Empty<TagHelperDescriptor>(),
                                             errorSink);
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             // Arrange
             Mock<ParserVisitor> targetMock = new Mock<ParserVisitor>();
             var root = new BlockBuilder() { Type = BlockType.Comment }.Build();
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             List<RazorError> errors = new List<RazorError>
             {
                 new RazorError("Foo", 1, 0, 1),
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             // Arrange
             Mock<ParserVisitor> targetMock = new Mock<ParserVisitor>();
             var root = new BlockBuilder() { Type = BlockType.Comment }.Build();
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             errorSink.OnError(new RazorError("Foo", 1, 0, 1));
             errorSink.OnError(new RazorError("Bar", 2, 0, 2));
             var results = new ParserResults(root, Enumerable.Empty<TagHelperDescriptor>(), errorSink);

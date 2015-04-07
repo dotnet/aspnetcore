@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     {
         // Internal for testing purposes
         internal TagHelperDescriptorResolutionContext(IEnumerable<TagHelperDirectiveDescriptor> directiveDescriptors)
-            : this(directiveDescriptors, new ParserErrorSink())
+            : this(directiveDescriptors, new ErrorSink())
         {
         }
 
@@ -22,10 +22,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// </summary>
         /// <param name="directiveDescriptors"><see cref="TagHelperDirectiveDescriptor"/>s used to resolve
         /// <see cref="TagHelperDescriptor"/>s.</param>
-        /// <param name="errorSink">Used to aggregate <see cref="Parser.SyntaxTree.RazorError"/>s.</param>
+        /// <param name="errorSink">Used to aggregate <see cref="RazorError"/>s.</param>
         public TagHelperDescriptorResolutionContext(
             [NotNull] IEnumerable<TagHelperDirectiveDescriptor> directiveDescriptors,
-            [NotNull] ParserErrorSink errorSink)
+            [NotNull] ErrorSink errorSink)
         {
             DirectiveDescriptors = new List<TagHelperDirectiveDescriptor>(directiveDescriptors);
             ErrorSink = errorSink;
@@ -37,8 +37,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         public IList<TagHelperDirectiveDescriptor> DirectiveDescriptors { get; private set; }
 
         /// <summary>
-        /// Used to aggregate <see cref="Parser.SyntaxTree.RazorError"/>s.
+        /// Used to aggregate <see cref="RazorError"/>s.
         /// </summary>
-        public ParserErrorSink ErrorSink { get; private set; }
+        public ErrorSink ErrorSink { get; private set; }
     }
 }
