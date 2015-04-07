@@ -530,15 +530,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
 
         [Theory]
         [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "application/json; charset=utf-8")] //Chrome
+            "application/json; charset=utf-8")] // Chrome & Opera
         [InlineData("text/html, application/xhtml+xml, */*",
             "application/json; charset=utf-8")] //IE
         [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "application/json; charset=utf-8")] //Firefox
-        [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "application/json; charset=utf-8")] //Safari
-        [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "application/json; charset=utf-8")] //Opera
+            "application/json; charset=utf-8")] // Firefox & Safari
         [InlineData("*/*", @"application/json; charset=utf-8")]
         [InlineData("text/html,*/*;q=0.8,application/xml;q=0.9",
             "application/json; charset=utf-8")]
@@ -570,15 +566,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
 
         [Theory]
         [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "application/xml; charset=utf-8")] //Chrome
+            "application/xml; charset=utf-8")] // Chrome & Opera
         [InlineData("text/html, application/xhtml+xml, */*",
             "application/json; charset=utf-8")] //IE
         [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "application/xml; charset=utf-8")] //Firefox
-        [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "application/xml; charset=utf-8")] //Safari
-        [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "application/xml; charset=utf-8")] //Opera
+            "application/xml; charset=utf-8")] // Firefox & Safari
         [InlineData("*/*",
             "application/json; charset=utf-8")]
         [InlineData("text/html,*/*;q=0.8,application/xml;q=0.9",

@@ -265,8 +265,6 @@ namespace Microsoft.AspNet.Mvc
         [Theory]
         [InlineData("", FormatSource.RouteData)]
         [InlineData(null, FormatSource.QueryData)]
-        [InlineData("", FormatSource.RouteData)]
-        [InlineData(null, FormatSource.QueryData)]
         public void FormatFilter_ContextContainsFormat_Invalid(
             string format,
             FormatSource place)

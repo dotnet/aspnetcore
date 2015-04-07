@@ -130,7 +130,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         [Theory]
         [InlineData("/hello/world", "/hello/world", null)]
         [InlineData("/testApp/hello/world", "/hello/world", "/testApp")]
-        [InlineData("/hello/world", "/hello/world", null)]
         public void SetsValueInCache(string filePath, string watchPath, string requestPathBase)
         {
             // Arrange

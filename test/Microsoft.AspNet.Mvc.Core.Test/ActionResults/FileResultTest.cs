@@ -130,7 +130,6 @@ namespace Microsoft.AspNet.Mvc
                     { "&", "attachment; filename=&; filename*=UTF-8''&" },
                     { "+", "attachment; filename=+; filename*=UTF-8''+" },
                     { "!", "attachment; filename=!; filename*=UTF-8''!" },
-                    { "#", "attachment; filename=#; filename*=UTF-8''#" },
                     { "^", "attachment; filename=^; filename*=UTF-8''^" },
                     { "`", "attachment; filename=`; filename*=UTF-8''`" },
                     { "|", "attachment; filename=|; filename*=UTF-8''|" },
