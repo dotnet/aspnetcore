@@ -36,10 +36,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "Time", "time" },
                 { nameof(Byte), "number" },
                 { nameof(SByte), "number" },
+                { nameof(Int16), "number" },
+                { nameof(UInt16), "number" },
                 { nameof(Int32), "number" },
                 { nameof(UInt32), "number" },
                 { nameof(Int64), "number" },
                 { nameof(UInt64), "number" },
+                { nameof(Single), "number" },
+                { nameof(Double), "number" },
                 { nameof(Boolean), InputType.CheckBox.ToString().ToLowerInvariant() },
                 { nameof(Decimal), InputType.Text.ToString().ToLowerInvariant() },
                 { nameof(String), InputType.Text.ToString().ToLowerInvariant() },
@@ -191,7 +195,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             if (tagBuilder != null)
             {
                 // This TagBuilder contains the one <input/> element of interest. Since this is not the "checkbox"
-                // special-case, output is a self-closing element no longer guarunteed.
+                // special-case, output is a self-closing element no longer guaranteed.
                 output.MergeAttributes(tagBuilder);
                 output.Content.Append(tagBuilder.InnerHtml);
             }
@@ -272,7 +276,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 modelExplorer,
                 For.Name,
                 value: modelExplorer.Model,
-                format: Format,
+                format: format,
                 htmlAttributes: null);
         }
 

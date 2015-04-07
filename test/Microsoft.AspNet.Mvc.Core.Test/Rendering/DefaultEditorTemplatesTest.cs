@@ -28,48 +28,56 @@ namespace Microsoft.AspNet.Mvc.Core
             {
                 return new TheoryData<string, string>
                 {
-                    { null, "__TextBox__" },
-                    { string.Empty, "__TextBox__" },
-                    { "EmailAddress", "__TextBox__" },
-                    { "emailaddress", "__TextBox__" },
+                    { null, "__TextBox__ class='text-box single-line'" },
+                    { string.Empty, "__TextBox__ class='text-box single-line'" },
+                    { "EmailAddress", "__TextBox__ class='text-box single-line' type='email'" },
+                    { "emailaddress", "__TextBox__ class='text-box single-line' type='email'" },
                     { "HiddenInput", "True__Hidden__" }, // Hidden also generates value by default.
                     { "HIDDENINPUT", "True__Hidden__" },
-                    { "MultilineText", "__TextArea__" },
-                    { "multilinetext", "__TextArea__" },
-                    { "Password", "__Password__" },
-                    { "PASSWORD", "__Password__" },
-                    { "PhoneNumber", "__TextBox__" },
-                    { "phonenumber", "__TextBox__" },
-                    { "Text", "__TextBox__" },
-                    { "TEXT", "__TextBox__" },
-                    { "Url", "__TextBox__" },
-                    { "url", "__TextBox__" },
-                    { "Date", "__TextBox__" },
-                    { "DATE", "__TextBox__" },
-                    { "DateTime", "__TextBox__" },
-                    { "datetime", "__TextBox__" },
-                    { "DateTime-local", "__TextBox__" },
-                    { "DATETIME-LOCAL", "__TextBox__" },
-                    { "Time", "__TextBox__" },
-                    { "time", "__TextBox__" },
-                    { "Byte", "__TextBox__" },
-                    { "BYTE", "__TextBox__" },
-                    { "SByte", "__TextBox__" },
-                    { "sbyte", "__TextBox__" },
-                    { "Int32", "__TextBox__" },
-                    { "INT32", "__TextBox__" },
-                    { "UInt32", "__TextBox__" },
-                    { "uint32", "__TextBox__" },
-                    { "Int64", "__TextBox__" },
-                    { "INT64", "__TextBox__" },
-                    { "UInt64", "__TextBox__" },
-                    { "uint64", "__TextBox__" },
-                    { "Boolean", "__CheckBox__" }, // String is not a Nullable type.
-                    { "BOOLEAN", "__CheckBox__" },
-                    { "Decimal", "__TextBox__" },
-                    { "decimal", "__TextBox__" },
-                    { "String", "__TextBox__" },
-                    { "STRING", "__TextBox__" },
+                    { "MultilineText", "__TextArea__ class='text-box multi-line'" },
+                    { "multilinetext", "__TextArea__ class='text-box multi-line'" },
+                    { "Password", "__Password__ class='text-box single-line password'" },
+                    { "PASSWORD", "__Password__ class='text-box single-line password'" },
+                    { "PhoneNumber", "__TextBox__ class='text-box single-line' type='tel'" },
+                    { "phonenumber", "__TextBox__ class='text-box single-line' type='tel'" },
+                    { "Text", "__TextBox__ class='text-box single-line'" },
+                    { "TEXT", "__TextBox__ class='text-box single-line'" },
+                    { "Url", "__TextBox__ class='text-box single-line' type='url'" },
+                    { "url", "__TextBox__ class='text-box single-line' type='url'" },
+                    { "Date", "__TextBox__ class='text-box single-line' type='date'" },
+                    { "DATE", "__TextBox__ class='text-box single-line' type='date'" },
+                    { "DateTime", "__TextBox__ class='text-box single-line' type='datetime'" },
+                    { "datetime", "__TextBox__ class='text-box single-line' type='datetime'" },
+                    { "DateTime-local", "__TextBox__ class='text-box single-line' type='datetime-local'" },
+                    { "DATETIME-LOCAL", "__TextBox__ class='text-box single-line' type='datetime-local'" },
+                    { "Time", "__TextBox__ class='text-box single-line' type='time'" },
+                    { "time", "__TextBox__ class='text-box single-line' type='time'" },
+                    { "Byte", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "BYTE", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "SByte", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "sbyte", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "Int16", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "INT16", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "UInt16", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "uint16", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "Int32", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "INT32", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "UInt32", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "uint32", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "Int64", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "INT64", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "UInt64", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "uint64", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "Single", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "SINGLE", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "Double", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "double", "__TextBox__ class='text-box single-line' type='number'" },
+                    { "Boolean", "__CheckBox__ class='check-box'" }, // Not tri-state b/c string is not a Nullable type.
+                    { "BOOLEAN", "__CheckBox__ class='check-box'" },
+                    { "Decimal", "__TextBox__ class='text-box single-line'" },
+                    { "decimal", "__TextBox__ class='text-box single-line'" },
+                    { "String", "__TextBox__ class='text-box single-line'" },
+                    { "STRING", "__TextBox__ class='text-box single-line'" },
                 };
             }
         }
@@ -946,7 +954,7 @@ Environment.NewLine;
 
             public HtmlString CheckBox(string name, bool? isChecked, object htmlAttributes)
             {
-                return new HtmlString("__CheckBox__");
+                return HelperName("__CheckBox__", htmlAttributes);
             }
 
             public HtmlString Display(
@@ -974,7 +982,7 @@ Environment.NewLine;
                 string optionLabel,
                 object htmlAttributes)
             {
-                return new HtmlString("__DropDownList__");
+                return HelperName("__DropDownList__", htmlAttributes);
             }
 
             public HtmlString Editor(
@@ -1030,7 +1038,7 @@ Environment.NewLine;
 
             public HtmlString Hidden(string name, object value, object htmlAttributes)
             {
-                return new HtmlString("__Hidden__");
+                return HelperName("__Hidden__", htmlAttributes);
             }
 
             public string Id(string name)
@@ -1040,7 +1048,7 @@ Environment.NewLine;
 
             public HtmlString Label(string expression, string labelText, object htmlAttributes)
             {
-                return new HtmlString("__Label__");
+                return HelperName("__Label__", htmlAttributes);
             }
 
             public HtmlString ListBox(string name, IEnumerable<SelectListItem> selectList, object htmlAttributes)
@@ -1063,12 +1071,12 @@ Environment.NewLine;
 
             public HtmlString Password(string name, object value, object htmlAttributes)
             {
-                return new HtmlString("__Password__");
+                return HelperName("__Password__", htmlAttributes);
             }
 
             public HtmlString RadioButton(string name, object value, bool? isChecked, object htmlAttributes)
             {
-                return new HtmlString("__RadioButton__");
+                return HelperName("__RadioButton__", htmlAttributes);
             }
 
             public HtmlString Raw(object value)
@@ -1100,17 +1108,17 @@ Environment.NewLine;
 
             public HtmlString TextArea(string name, string value, int rows, int columns, object htmlAttributes)
             {
-                return new HtmlString("__TextArea__");
+                return HelperName("__TextArea__", htmlAttributes);
             }
 
             public HtmlString TextBox(string name, object value, string format, object htmlAttributes)
             {
-                return new HtmlString("__TextBox__");
+                return HelperName("__TextBox__", htmlAttributes);
             }
 
             public HtmlString ValidationMessage(string modelName, string message, object htmlAttributes, string tag)
             {
-                return new HtmlString("__ValidationMessage__");
+                return HelperName("__ValidationMessage__", htmlAttributes);
             }
 
             public HtmlString ValidationSummary(
@@ -1125,6 +1133,16 @@ Environment.NewLine;
             public string Value(string name, string format)
             {
                 throw new NotImplementedException();
+            }
+
+            private HtmlString HelperName(string name, object htmlAttributes)
+            {
+                var htmlAttributesDictionary = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
+                var htmlAttributesString =
+                    string.Join(" ", htmlAttributesDictionary.Select(entry => $"{ entry.Key }='{ entry.Value }'"));
+                var helperName = $"{ name } { htmlAttributesString }";
+
+                return new HtmlString(helperName.TrimEnd());
             }
         }
     }
