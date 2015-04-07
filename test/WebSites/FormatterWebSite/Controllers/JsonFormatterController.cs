@@ -38,5 +38,16 @@ namespace FormatterWebSite.Controllers
             }
             return Content(dummyObject.SampleInt.ToString());
         }
+
+        [HttpPost]
+        public IActionResult ValueTypeAsBody([FromBody] int value)
+        {
+            if (!ModelState.IsValid)
+            {
+                Response.StatusCode = StatusCodes.Status400BadRequest;
+            }
+
+            return Content(value.ToString());
+        }
     }
 }

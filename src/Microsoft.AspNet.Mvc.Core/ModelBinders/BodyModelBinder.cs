@@ -30,12 +30,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             var requestServices = bindingContext.OperationBindingContext.HttpContext.RequestServices;
 
-            var formatterSelector = requestServices.GetRequiredService<IInputFormatterSelector>();
             var actionContext = requestServices.GetRequiredService<IScopedInstance<ActionContext>>().Value;
             var formatters = requestServices.GetRequiredService<IScopedInstance<ActionBindingContext>>().Value.InputFormatters;
 
             var formatterContext = new InputFormatterContext(actionContext, bindingContext.ModelType);
-            var formatter = formatterSelector.SelectFormatter(formatters.ToList(), formatterContext);
+            var formatter = formatters.FirstOrDefault(f => f.CanRead(formatterContext));
 
             if (formatter == null)
             {
@@ -48,34 +47,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
             }
 
-            object model = null;
             try
             {
-                model = await formatter.ReadAsync(formatterContext);
+                var model = await formatter.ReadAsync(formatterContext);
+
+                // key is empty to ensure that the model name is not used as a prefix for validation.
+                return new ModelBindingResult(model, key: string.Empty, isModelSet: true);
             }
             catch (Exception ex)
             {
-                model = GetDefaultValueForType(bindingContext.ModelType);
                 bindingContext.ModelState.AddModelError(bindingContext.ModelName, ex);
 
                 // This model binder is the only handler for the Body binding source.
                 // Always tell the model binding system to skip other model binders i.e. return non-null.
                 return new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
             }
-
-            // Success
-            // key is empty to ensure that the model name is not used as a prefix for validation.
-            return new ModelBindingResult(model, key: string.Empty, isModelSet: true);
-        }
-
-        private object GetDefaultValueForType(Type modelType)
-        {
-            if (modelType.GetTypeInfo().IsValueType)
-            {
-                return Activator.CreateInstance(modelType);
-            }
-
-            return null;
         }
     }
 }

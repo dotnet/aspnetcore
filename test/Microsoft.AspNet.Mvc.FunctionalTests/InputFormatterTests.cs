@@ -127,6 +127,44 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Theory]
+        [InlineData("\"I'm a JSON string!\"")]
+        [InlineData("true")]
+        [InlineData("\"\"")] // Empty string
+        public async Task JsonInputFormatter_ReturnsDefaultValue_ForValueTypes(string input)
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+            var content = new StringContent(input, Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await client.PostAsync("http://localhost/JsonFormatter/ValueTypeAsBody/", content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            //Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal("0", responseBody);
+        }
+
+        [Fact]
+        public async Task JsonInputFormatter_ReadsPrimitiveTypes()
+        {
+            // Arrange
+            var expected = "1773";
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+            var content = new StringContent(expected, Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await client.PostAsync("http://localhost/JsonFormatter/ValueTypeAsBody/", content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expected, responseBody);
+        }
+
+        [Theory]
         [InlineData("{\"SampleInt\":10}")]
         [InlineData("{}")]
         [InlineData("")]

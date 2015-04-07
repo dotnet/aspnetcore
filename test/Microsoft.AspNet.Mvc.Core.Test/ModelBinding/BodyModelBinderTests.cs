@@ -4,18 +4,18 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
-using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class BodyModelBinderTests
     {
@@ -24,6 +24,9 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var mockInputFormatter = new Mock<IInputFormatter>();
+            mockInputFormatter.Setup(f => f.CanRead(It.IsAny<InputFormatterContext>()))
+                .Returns(true)
+                .Verifiable();
             mockInputFormatter.Setup(o => o.ReadAsync(It.IsAny<InputFormatterContext>()))
                               .Returns(Task.FromResult<object>(new Person()))
                               .Verifiable();
@@ -32,7 +35,10 @@ namespace Microsoft.AspNet.Mvc
             var provider = new TestModelMetadataProvider();
             provider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
 
-            var bindingContext = GetBindingContext(typeof(Person), inputFormatter, metadataProvider: provider);
+            var bindingContext = GetBindingContext(
+                typeof(Person),
+                new[] { inputFormatter },
+                metadataProvider: provider);
 
             var binder = new BodyModelBinder();
 
@@ -40,6 +46,7 @@ namespace Microsoft.AspNet.Mvc
             var binderResult = await binder.BindModelAsync(bindingContext);
 
             // Assert
+            mockInputFormatter.Verify(v => v.CanRead(It.IsAny<InputFormatterContext>()), Times.Once);
             mockInputFormatter.Verify(v => v.ReadAsync(It.IsAny<InputFormatterContext>()), Times.Once);
             Assert.NotNull(binderResult);
             Assert.True(binderResult.IsModelSet);
@@ -138,7 +145,7 @@ namespace Microsoft.AspNet.Mvc
 
             var bindingContext = GetBindingContext(
                 typeof(Person),
-                inputFormatter: new XyzFormatter(),
+                inputFormatters: new[] { new XyzFormatter() },
                 httpContext: httpContext,
                 metadataProvider: provider);
 
@@ -170,7 +177,7 @@ namespace Microsoft.AspNet.Mvc
 
             var bindingContext = GetBindingContext(
                 typeof(Person),
-                inputFormatter: null,
+                inputFormatters: null,
                 httpContext: httpContext,
                 metadataProvider: provider);
 
@@ -190,9 +197,35 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal("Unsupported content type 'text/xyz'.", errorMessage);
         }
 
+        [Fact]
+        public async Task BindModelCoreAsync_UsesFirstFormatterWhichCanRead()
+        {
+            // Arrange
+            var canReadFormatter1 = new TestInputFormatter(canRead: true);
+            var canReadFormatter2 = new TestInputFormatter(canRead: true);
+            var inputFormatters = new List<IInputFormatter>()
+            {
+                new TestInputFormatter(canRead: false),
+                new TestInputFormatter(canRead: false),
+                canReadFormatter1,
+                canReadFormatter2
+            };
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
+            var bindingContext = GetBindingContext(typeof(Person), inputFormatters, metadataProvider: provider);
+            var binder = bindingContext.OperationBindingContext.ModelBinder;
+
+            // Act
+            var binderResult = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.True(binderResult.IsModelSet);
+            Assert.Same(canReadFormatter1, binderResult.Model);
+        }
+
         private static ModelBindingContext GetBindingContext(
             Type modelType,
-            IInputFormatter inputFormatter = null,
+            IEnumerable<IInputFormatter> inputFormatters = null,
             HttpContext httpContext = null,
             IModelMetadataProvider metadataProvider = null)
         {
@@ -200,7 +233,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 httpContext = new DefaultHttpContext();
             }
-            UpdateServiceProvider(httpContext, inputFormatter);
+
+            UpdateServiceProvider(httpContext, inputFormatters ?? Enumerable.Empty<IInputFormatter>());
 
             if (metadataProvider == null)
             {
@@ -227,21 +261,14 @@ namespace Microsoft.AspNet.Mvc
             return bindingContext;
         }
 
-        private static void UpdateServiceProvider(HttpContext httpContext, IInputFormatter inputFormatter)
+        private static void UpdateServiceProvider(
+            HttpContext httpContext,
+            IEnumerable<IInputFormatter> inputFormatters)
         {
             var serviceProvider = new ServiceCollection();
-            var inputFormatterSelector = new Mock<IInputFormatterSelector>();
-            inputFormatterSelector
-                .Setup(o => o.SelectFormatter(
-                    It.IsAny<IReadOnlyList<IInputFormatter>>(),
-                    It.IsAny<InputFormatterContext>()))
-                .Returns(inputFormatter);
-
-            serviceProvider.AddInstance(inputFormatterSelector.Object);
-
             var bindingContext = new ActionBindingContext()
             {
-                InputFormatters = new List<IInputFormatter>(),
+                InputFormatters = inputFormatters.ToArray(),
             };
 
             var bindingContextAccessor = new MockScopedInstance<ActionBindingContext>()
@@ -294,6 +321,26 @@ namespace Microsoft.AspNet.Mvc
             public override Task<object> ReadRequestBodyAsync(InputFormatterContext context)
             {
                 throw new InvalidOperationException("Your input is bad!");
+            }
+        }
+
+        private class TestInputFormatter : IInputFormatter
+        {
+            private readonly bool _canRead;
+
+            public TestInputFormatter(bool canRead)
+            {
+                _canRead = canRead;
+            }
+
+            public bool CanRead(InputFormatterContext context)
+            {
+                return _canRead;
+            }
+
+            public Task<object> ReadAsync(InputFormatterContext context)
+            {
+                return Task.FromResult<object>(this);
             }
         }
     }

@@ -92,7 +92,6 @@ namespace Microsoft.AspNet.Mvc
                 return new DefaultCompositeMetadataDetailsProvider(options.ModelMetadataDetailsProviders);
             });
 
-            services.AddTransient<IInputFormatterSelector, DefaultInputFormatterSelector>();
             services.AddInstance(new JsonOutputFormatter());
 
             // Razor, Views and runtime compilation
