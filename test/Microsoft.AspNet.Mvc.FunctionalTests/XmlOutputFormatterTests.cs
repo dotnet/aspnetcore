@@ -6,7 +6,9 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using FormatterWebSite;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Mvc.Xml;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
@@ -15,8 +17,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class XmlOutputFormatterTests
     {
         private const string SiteName = nameof(FormatterWebSite);
-        private readonly Action<IApplicationBuilder> _app = new FormatterWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new FormatterWebSite.Startup().ConfigureServices;
+        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
         [Fact]
         public async Task XmlDataContractSerializerOutputFormatterIsCalled()
@@ -24,7 +26,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Home/GetDummyClass?sampleInput=10");
+            var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                "http://localhost/Home/GetDummyClass?sampleInput=10");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
 
             // Act
@@ -32,7 +36,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             //Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("<DummyClass xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+            XmlAssert.Equal(
+                "<DummyClass xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " +
                 "xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite\">" +
                 "<SampleInt>10</SampleInt></DummyClass>",
                 await response.Content.ReadAsStringAsync());
@@ -44,7 +49,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/XmlSerializer/GetDummyClass?sampleInput=10");
+            var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                "http://localhost/XmlSerializer/GetDummyClass?sampleInput=10");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
 
             // Act
@@ -52,7 +59,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             //Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("<DummyClass xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+            XmlAssert.Equal(
+                "<DummyClass xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
                 "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"><SampleInt>10</SampleInt></DummyClass>",
                 await response.Content.ReadAsStringAsync());
         }
@@ -63,8 +71,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
-            var request = new HttpRequestMessage(HttpMethod.Post,
-                                                 "http://localhost/DataContractSerializer/GetPerson?name=HelloWorld");
+            var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                "http://localhost/DataContractSerializer/GetPerson?name=HelloWorld");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
 
             // Act
@@ -72,7 +81,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             //Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("<Person xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+            XmlAssert.Equal(
+                "<Person xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " +
                 "xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite\">" +
                 "<Name>HelloWorld</Name></Person>",
                 await response.Content.ReadAsStringAsync());
@@ -85,7 +95,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(
-                HttpMethod.Post, "http://localhost/XmlSerializer/GetDerivedDummyClass?sampleInput=10");
+                HttpMethod.Post,
+                "http://localhost/XmlSerializer/GetDerivedDummyClass?sampleInput=10");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
 
             // Act
@@ -93,7 +104,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             //Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("<DummyClass xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+            XmlAssert.Equal(
+                "<DummyClass xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
                 "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xsi:type=\"DerivedDummyClass\">" +
                 "<SampleInt>10</SampleInt><SampleIntInDerived>50</SampleIntInDerived></DummyClass>",
                 await response.Content.ReadAsStringAsync());
@@ -106,7 +118,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(
-                HttpMethod.Post, "http://localhost/Home/GetDerivedDummyClass?sampleInput=10");
+                HttpMethod.Post,
+                "http://localhost/Home/GetDerivedDummyClass?sampleInput=10");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
 
             // Act
@@ -114,7 +127,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             //Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("<DummyClass xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+            XmlAssert.Equal(
+                "<DummyClass xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " +
                 "i:type=\"DerivedDummyClass\" xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite\"" +
                 "><SampleInt>10</SampleInt><SampleIntInDerived>50</SampleIntInDerived></DummyClass>",
                 await response.Content.ReadAsStringAsync());
@@ -127,7 +141,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(
-                HttpMethod.Post, "http://localhost/XmlSerializer/GetDictionary");
+                HttpMethod.Post,
+                "http://localhost/XmlSerializer/GetDictionary");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
 
             // Act
