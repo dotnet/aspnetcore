@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Routing
     public class AttributeRoutingTest
     {
         [Fact]
-        public void AttributeRouting_SyntaxErrorInTemplate()
+        public async Task AttributeRouting_SyntaxErrorInTemplate()
         {
             // Arrange
             var action = CreateAction("InvalidTemplate", "{a/dkfk}");
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 Environment.NewLine +
                 "For action: 'InvalidTemplate'" + Environment.NewLine +
                 "Error: The route parameter name 'a/dkfk' is invalid. Route parameter names must be non-empty and " +
-                "cannot contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, " + 
+                "cannot contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, " +
                 "and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all, " +
                 "and can occur only at the start of the parameter." + Environment.NewLine +
                 "Parameter name: routeTemplate";
@@ -35,17 +35,19 @@ namespace Microsoft.AspNet.Mvc.Routing
             var handler = CreateRouter();
             var services = CreateServices(action);
 
+            var route = AttributeRouting.CreateAttributeMegaRoute(handler, services);
+
             // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() =>
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
-				AttributeRouting.CreateAttributeMegaRoute(handler, services);
+                await route.RouteAsync(new RouteContext(new DefaultHttpContext()));
             });
 
             Assert.Equal(expectedMessage, ex.Message);
         }
 
         [Fact]
-        public void AttributeRouting_DisallowedParameter()
+        public async Task AttributeRouting_DisallowedParameter()
         {
             // Arrange
             var action = CreateAction("DisallowedParameter", "{foo}/{action}");
@@ -61,17 +63,19 @@ namespace Microsoft.AspNet.Mvc.Routing
             var handler = CreateRouter();
             var services = CreateServices(action);
 
+            var route = AttributeRouting.CreateAttributeMegaRoute(handler, services);
+
             // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() =>
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
-				AttributeRouting.CreateAttributeMegaRoute(handler, services);
+                await route.RouteAsync(new RouteContext(new DefaultHttpContext()));
             });
 
             Assert.Equal(expectedMessage, ex.Message);
         }
 
         [Fact]
-        public void AttributeRouting_MultipleErrors()
+        public async Task AttributeRouting_MultipleErrors()
         {
             // Arrange
             var action1 = CreateAction("DisallowedParameter1", "{foo}/{action}");
@@ -94,17 +98,19 @@ namespace Microsoft.AspNet.Mvc.Routing
             var handler = CreateRouter();
             var services = CreateServices(action1, action2);
 
+            var route = AttributeRouting.CreateAttributeMegaRoute(handler, services);
+
             // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() =>
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
-				AttributeRouting.CreateAttributeMegaRoute(handler, services);
-			});
+                await route.RouteAsync(new RouteContext(new DefaultHttpContext()));
+            });
 
             Assert.Equal(expectedMessage, ex.Message);
         }
 
         [Fact]
-        public void AttributeRouting_WithControllerActionDescriptor()
+        public async Task AttributeRouting_WithControllerActionDescriptor()
         {
             // Arrange
             var controllerType = typeof(HomeController);
@@ -133,11 +139,13 @@ namespace Microsoft.AspNet.Mvc.Routing
             var handler = CreateRouter();
             var services = CreateServices(action);
 
+            var route = AttributeRouting.CreateAttributeMegaRoute(handler, services);
+
             // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() =>
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
-				AttributeRouting.CreateAttributeMegaRoute(handler, services);
-			});
+                await route.RouteAsync(new RouteContext(new DefaultHttpContext()));
+            });
 
             Assert.Equal(expectedMessage, ex.Message);
         }

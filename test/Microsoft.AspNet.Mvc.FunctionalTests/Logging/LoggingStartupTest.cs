@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using LoggingWebSite;
 using LoggingWebSite.Controllers;
@@ -92,13 +93,20 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
-            var response = await client.GetStringAsync("http://localhost/logs");
+            var requestTraceId = Guid.NewGuid().ToString();
 
-            var activityDtos = JsonConvert.DeserializeObject<List<ActivityContextDto>>(response);
+            var response = await client.GetAsync(string.Format(
+                "http://localhost/home/index?{0}={1}",
+                LoggingExtensions.RequestTraceIdQueryKey,
+                requestTraceId));
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var logs = activityDtos.FilterByStartup().GetLogsByDataType<T>();
+            response = await client.GetAsync("http://localhost/logs");
 
-            return logs;
+            var body = await response.Content.ReadAsStringAsync();
+            var activityDtos = JsonConvert.DeserializeObject<List<ActivityContextDto>>(body);
+
+            return activityDtos.GetLogsByDataType<T>();
         }
     }
 }
