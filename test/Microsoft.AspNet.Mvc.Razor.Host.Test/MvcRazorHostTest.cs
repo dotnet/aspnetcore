@@ -294,6 +294,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private static Stream GetResourceStream(string resourceName)
         {
+            resourceName = "Microsoft.AspNet.Mvc.Razor.Host.Test." + resourceName.Replace('/', '.');
+
             var assembly = typeof(MvcRazorHostTest).Assembly;
             return assembly.GetManifestResourceStream(resourceName);
         }

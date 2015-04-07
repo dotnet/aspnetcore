@@ -13,7 +13,7 @@ namespace FilesWebSite
         {
             return new FilePathResult("/Greetings.txt", "text/plain")
             {
-                FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "EmbeddedResources"),
+                FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "FilesWebSite.EmbeddedResources"),
                 FileDownloadName = "downloadName.txt"
             };
         }

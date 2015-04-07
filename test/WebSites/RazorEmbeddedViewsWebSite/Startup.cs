@@ -19,7 +19,7 @@ namespace RazorEmbeddedViewsWebSite
 
             services.Configure<RazorViewEngineOptions>(options =>
             {
-                options.FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "EmbeddedResources");
+                options.FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "RazorEmbeddedViewsWebSite.EmbeddedResources");
             });
         }
 

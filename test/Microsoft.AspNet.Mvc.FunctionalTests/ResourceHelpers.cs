@@ -14,6 +14,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         public static async Task<string> ReadResourceAsStringAsync(this Assembly assembly, string resourceName)
         {
+            resourceName = assembly.GetName().Name + "." + resourceName.Replace('/', '.');
+
             using (var resourceStream = assembly.GetManifestResourceStream(resourceName))
             {
                 using (var streamReader = new StreamReader(resourceStream))

@@ -32,6 +32,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     [TargetElement("link", Attributes = FileVersionAttributeName)]
     public class LinkTagHelper : TagHelper
     {
+        private static readonly string Namespace = typeof(LinkTagHelper).Namespace;
+
         private const string HrefIncludeAttributeName = "asp-href-include";
         private const string HrefExcludeAttributeName = "asp-href-exclude";
         private const string FallbackHrefAttributeName = "asp-fallback-href";
@@ -40,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string FallbackTestClassAttributeName = "asp-fallback-test-class";
         private const string FallbackTestPropertyAttributeName = "asp-fallback-test-property";
         private const string FallbackTestValueAttributeName = "asp-fallback-test-value";
-        private const string FallbackJavaScriptResourceName = "compiler/resources/LinkTagHelper_FallbackJavaScript.js";
+        private readonly string FallbackJavaScriptResourceName = Namespace + ".compiler.resources.LinkTagHelper_FallbackJavaScript.js";
         private const string FileVersionAttributeName = "asp-file-version";
         private const string HrefAttributeName = "href";
 
