@@ -2,7 +2,7 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_DNVM_BUILDNUMBER="beta5-10359"
+_DNVM_BUILDNUMBER="beta5-10360"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
 _DNVM_RUNTIME_PACKAGE_NAME="dnx"
 _DNVM_RUNTIME_FRIENDLY_NAME=".NET Execution Environment"
@@ -54,6 +54,16 @@ if [ -z "$DNX_FEED" ]; then
     DNX_FEED="$_DNVM_DEFAULT_FEED"
 fi
 
+__dnvm_current_os()
+{
+    local uname=$(uname)
+    if [[ $uname == "Darwin" ]]; then
+        echo "darwin"
+    else
+        echo "linux"
+    fi
+}
+
 __dnvm_find_latest() {
     local platform="mono"
 
@@ -94,6 +104,14 @@ __dnvm_package_name() {
 __dnvm_package_runtime() {
     local runtimeFullName="$1"
     echo "$runtimeFullName" | sed "s/$_DNVM_RUNTIME_PACKAGE_NAME-\([^.-]*\).*/\1/"
+}
+
+__dnvm_package_arch() {
+    local runtimeFullName="$1"
+    if [[ "$runtimeFullName" =~ $_DNVM_RUNTIME_PACKAGE_NAME-[^-.]*-[^-.]*-[^-.]*\..* ]];
+    then
+        echo "$runtimeFullName" | sed "s/$_DNVM_RUNTIME_PACKAGE_NAME-[^-.]*-[^-.]*-\([^-.]*\)\..*/\1/"
+    fi
 }
 
 __dnvm_update_self() {
@@ -180,23 +198,33 @@ __dnvm_unpack() {
 
 __dnvm_requested_version_or_alias() {
     local versionOrAlias="$1"
+    local runtime="$2"
+    local arch="$3"
     local runtimeBin=$(__dnvm_locate_runtime_bin_from_full_name "$versionOrAlias")
 
     # If the name specified is an existing package, just use it as is
     if [ -n "$runtimeBin" ]; then
         echo "$versionOrAlias"
     else
-       if [ -e "$_DNVM_ALIAS_DIR/$versionOrAlias.alias" ]; then
-           local runtimeFullName=$(cat "$_DNVM_ALIAS_DIR/$versionOrAlias.alias")
-           local pkgName=$(echo $runtimeFullName | sed "s/\([^.]*\).*/\1/")
-           local pkgVersion=$(echo $runtimeFullName | sed "s/[^.]*.\(.*\)/\1/")
-           local pkgPlatform=$(echo "$pkgName" | sed "s/$_DNVM_RUNTIME_PACKAGE_NAME-\([^.-]*\).*/\1/")
+        if [ -e "$_DNVM_ALIAS_DIR/$versionOrAlias.alias" ]; then
+            local runtimeFullName=$(cat "$_DNVM_ALIAS_DIR/$versionOrAlias.alias")
+            echo "$runtimeFullName"
         else
             local pkgVersion=$versionOrAlias
-            local pkgPlatform="mono"
-        fi
 
-        echo "$_DNVM_RUNTIME_PACKAGE_NAME-$pkgPlatform.$pkgVersion"
+            if [[ -z $runtime || "$runtime" == "mono" ]]; then
+                echo "$_DNVM_RUNTIME_PACKAGE_NAME-mono.$pkgVersion"
+            elif [[ "$runtime" == "coreclr" ]]; then
+                local pkgArchitecture="x64"
+                local pkgSystem=$(__dnvm_current_os)
+
+                if [ "$arch" != "" ]; then
+                    local pkgArchitecture="$arch"
+                fi
+
+                echo "$_DNVM_RUNTIME_PACKAGE_NAME-coreclr-$pkgSystem-$pkgArchitecture.$pkgVersion"
+            fi
+        fi
     fi
 }
 
@@ -239,10 +267,12 @@ __dnvm_help() {
     echo ""
     echo "  adds $_DNVM_RUNTIME_SHORT_NAME bin to path of current command line"
     echo ""
-   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME use <semver>|<alias>|<package>|none [-p -persistent] ${RCol}"
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME use <semver>|<alias>|<package>|none [-p|-persistent] [-r|-runtime <runtime>] [-a|-arch <architecture>] ${RCol}"
     echo "  <semver>|<alias>|<package>  add $_DNVM_RUNTIME_SHORT_NAME bin to path of current command line   "
     echo "  none                        remove $_DNVM_RUNTIME_SHORT_NAME bin from path of current command line"
     echo "  -p|-persistent              set selected version as default"
+    echo "  -r|-runtime                 runtime to use (mono, coreclr)"
+    echo "  -a|-arch                    architecture to use (x64)"
     echo ""
    printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME run <semver>|<alias> <args...> ${RCol}"
     echo "  <semver>|<alias>            the version or alias to run"
@@ -363,18 +393,30 @@ dnvm()
         ;;
 
         "use"|"run"|"exec" )
-            [[ $1 == "use" && $# -gt 3 ]] && __dnvm_help && return
             [[ $1 == "use" && $# -lt 2 ]] && __dnvm_help && return
+
             local cmd=$1
             local persistent=
+            local arch=
+            local runtime=
 
             shift
             if [ $cmd == "use" ]; then
+                local versionOrAlias=
                 while [ $# -ne 0 ]
                 do
                     if [[ $1 == "-p" || $1 == "-persistent" ]]; then
                         local persistent="true"
+                    elif [[ $1 == "-a" || $1 == "-arch" ]]; then
+                        local arch=$2
+                        shift
+                    elif [[ $1 == "-r" || $1 == "-runtime" ]]; then
+                        local runtime=$2
+                        shift
+                    elif [[ $1 == -* ]]; then
+                        echo "Invalid option $1" && __dnvm_help && return 1
                     elif [[ -n $1 ]]; then
+                        [[ -n $versionOrAlias ]] && echo "Invalid option $1" && __dnvm_help && return 1
                         local versionOrAlias=$1
                     fi
                     shift
@@ -396,7 +438,7 @@ dnvm()
                 return 0
             fi
 
-            local runtimeFullName=$(__dnvm_requested_version_or_alias "$versionOrAlias")
+            local runtimeFullName=$(__dnvm_requested_version_or_alias "$versionOrAlias" "$runtime" "$arch")
             local runtimeBin=$(__dnvm_locate_runtime_bin_from_full_name "$runtimeFullName")
 
             if [[ -z $runtimeBin ]]; then
@@ -441,7 +483,7 @@ dnvm()
 
             if [[ $# == 1 ]]; then
                 echo ""
-                local format="%-20s %s\n"
+                local format="%-25s %s\n"
                 printf "$format" "Alias" "Name"
                 printf "$format" "-----" "----"
                 if [ -d "$_DNVM_ALIAS_DIR" ]; then
@@ -511,29 +553,29 @@ dnvm()
                 done
             fi
 
-            local formatString="%-6s %-20s %-7s %-20s %s\n"
-            printf "$formatString" "Active" "Version" "Runtime" "Location" "Alias"
-            printf "$formatString" "------" "-------" "-------" "--------" "-----"
+            local formatString="%-6s %-20s %-7s %-4s %-20s %s\n"
+            printf "$formatString" "Active" "Version" "Runtime" "Arch" "Location" "Alias"
+            printf "$formatString" "------" "-------" "-------" "----" "--------" "-----"
 
             local formattedHome=`(echo $_DNVM_USER_PACKAGES | sed s=$HOME=~=g)`
             for f in $(find $_DNVM_USER_PACKAGES -name "$searchGlob" \( -type d -or -type l \) -prune -exec basename {} \;); do
                 local active=""
                 [[ $PATH == *"$_DNVM_USER_PACKAGES/$f/bin"* ]] && local active="  *"
-                local pkgName=$(__dnvm_package_runtime "$f")
+                local pkgRuntime=$(__dnvm_package_runtime "$f")
+                local pkgName=$(__dnvm_package_name "$f")
                 local pkgVersion=$(__dnvm_package_version "$f")
+                local pkgArch=$(__dnvm_package_arch "$f")
 
                 local alias=""
                 local delim=""
                 for i in "${arr[@]}"; do
-                    temp="$_DNVM_RUNTIME_PACKAGE_NAME-$pkgName.$pkgVersion"
-                    temp2="$_DNVM_RUNTIME_PACKAGE_NAME-$pkgName-x86.$pkgVersion"
-                    if [[ ${i#*/} == $temp || ${i#*/} == $temp2 ]]; then
+                    if [[ ${i#*/} == "$pkgName.$pkgVersion" ]]; then
                         alias+="$delim${i%/*}"
                         delim=", "
                     fi
                 done
 
-                printf "$formatString" "$active" "$pkgVersion" "$pkgName" "$formattedHome" "$alias"
+                printf "$formatString" "$active" "$pkgVersion" "$pkgRuntime" "$pkgArch" "$formattedHome" "$alias"
                 [[ $# == 2 ]] && echo "" &&  return 0
             done
 
