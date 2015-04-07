@@ -3,7 +3,9 @@
 
 using System;
 using System.Diagnostics;
+#if NET45
 using System.Globalization;
+#endif
 
 namespace Microsoft.AspNet.Razor.Editor
 {

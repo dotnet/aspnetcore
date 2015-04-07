@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.Text;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler

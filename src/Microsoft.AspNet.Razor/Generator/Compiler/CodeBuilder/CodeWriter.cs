@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNet.Razor.Text;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler
 {

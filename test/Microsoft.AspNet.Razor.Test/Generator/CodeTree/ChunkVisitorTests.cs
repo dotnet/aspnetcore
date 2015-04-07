@@ -4,7 +4,6 @@
 #if !DNXCORE50
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
-using Microsoft.AspNet.Razor.Parser;
 using Moq;
 using Moq.Protected;
 using Xunit;

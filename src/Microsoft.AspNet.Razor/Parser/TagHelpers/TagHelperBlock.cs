@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.AspNet.Razor.Text;
 using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Parser.TagHelpers

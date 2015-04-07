@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {

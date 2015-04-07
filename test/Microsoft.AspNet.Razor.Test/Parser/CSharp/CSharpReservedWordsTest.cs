@@ -4,7 +4,6 @@
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
-using Microsoft.AspNet.Razor.Text;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser.CSharp

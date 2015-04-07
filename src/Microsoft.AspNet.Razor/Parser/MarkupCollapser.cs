@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Text;
 
 namespace Microsoft.AspNet.Razor.Parser
 {

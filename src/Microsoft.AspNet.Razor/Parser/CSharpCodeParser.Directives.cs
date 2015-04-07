@@ -5,11 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
 namespace Microsoft.AspNet.Razor.Parser

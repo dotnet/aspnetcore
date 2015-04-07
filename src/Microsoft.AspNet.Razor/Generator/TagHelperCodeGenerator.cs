@@ -8,7 +8,6 @@ using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Parser.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.AspNet.Razor.Text;
 
 namespace Microsoft.AspNet.Razor.Generator
 {

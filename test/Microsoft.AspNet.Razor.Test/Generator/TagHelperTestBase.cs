@@ -3,14 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Generator
 {

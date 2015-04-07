@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 

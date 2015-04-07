@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Razor.Parser;
-using Microsoft.AspNet.Razor.Text;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers

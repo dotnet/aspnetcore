@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers

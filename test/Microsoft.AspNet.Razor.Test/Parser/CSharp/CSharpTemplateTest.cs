@@ -6,7 +6,6 @@ using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
-using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 using Xunit;
 
