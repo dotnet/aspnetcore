@@ -85,7 +85,11 @@ namespace Microsoft.AspNet.Razor.Text
 
         private void RecalculateSourceLocation()
         {
-            _currentLocation = new SourceLocation(_absoluteIndex, _lineIndex, _characterIndex);
+            _currentLocation = new SourceLocation(
+                _currentLocation.FilePath,
+                _absoluteIndex,
+                _lineIndex,
+                _characterIndex);
         }
 
         public static SourceLocation CalculateNewLocation(SourceLocation lastPosition, string newContent)

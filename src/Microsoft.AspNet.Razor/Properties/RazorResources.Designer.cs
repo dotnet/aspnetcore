@@ -1466,6 +1466,22 @@ namespace Microsoft.AspNet.Razor
             return string.Format(CultureInfo.CurrentCulture, GetString("RewriterError_EmptyTagHelperBoundAttribute"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// Cannot perform '{1}' operations on '{0}' instances with different file paths.
+        /// </summary>
+        internal static string SourceLocationFilePathDoesNotMatch
+        {
+            get { return GetString("SourceLocationFilePathDoesNotMatch"); }
+        }
+
+        /// <summary>
+        /// Cannot perform '{1}' operations on '{0}' instances with different file paths.
+        /// </summary>
+        internal static string FormatSourceLocationFilePathDoesNotMatch(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("SourceLocationFilePathDoesNotMatch"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

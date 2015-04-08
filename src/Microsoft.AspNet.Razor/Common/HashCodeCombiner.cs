@@ -49,7 +49,8 @@ namespace Microsoft.Internal.Web.Utils
 
         public HashCodeCombiner Add<TValue>(TValue value, IEqualityComparer<TValue> comparer)
         {
-            return Add(comparer.GetHashCode(value));
+            var hashCode = value != null ? comparer.GetHashCode(value) : 0;
+            return Add(hashCode);
         }
 
         public static HashCodeCombiner Start()

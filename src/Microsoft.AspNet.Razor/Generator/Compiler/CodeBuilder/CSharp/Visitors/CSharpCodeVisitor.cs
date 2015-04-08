@@ -371,7 +371,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
                 var documentLocation = firstChild.Association.Start;
                 // This is only here to enable accurate formatting by the C# editor.
-                Writer.WriteLineNumberDirective(documentLocation.LineIndex + 1, Context.SourceFile);
+                Writer.WriteLineNumberDirective(documentLocation, Context.SourceFile);
 
                 // We build the padding with an offset of the design time assignment statement.
                 Writer.Write(_paddingBuilder.BuildExpressionPadding((Span)firstChild.Association, designTimeAssignment.Length))

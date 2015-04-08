@@ -190,18 +190,18 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         /// <returns>The current instance of <see cref="CSharpCodeWriter"/>.</returns>
         public CSharpCodeWriter WriteLineNumberDirective(SourceLocation location, string file)
         {
-            return WriteLineNumberDirective(location.LineIndex + 1, file);
-        }
+            if (location.FilePath != null)
+            {
+                file = location.FilePath;
+            }
 
-        public CSharpCodeWriter WriteLineNumberDirective(int lineNumber, string file)
-        {
             if (!string.IsNullOrEmpty(LastWrite) &&
                 !LastWrite.EndsWith(NewLine, StringComparison.Ordinal))
             {
                 WriteLine();
             }
 
-            var lineNumberAsString = lineNumber.ToString(CultureInfo.InvariantCulture);
+            var lineNumberAsString = (location.LineIndex + 1).ToString(CultureInfo.InvariantCulture);
             return Write("#line ").Write(lineNumberAsString).Write(" \"").Write(file).WriteLine("\"");
         }
 

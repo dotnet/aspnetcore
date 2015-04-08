@@ -410,4 +410,7 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="RewriterError_EmptyTagHelperBoundAttribute" xml:space="preserve">
     <value>Attribute '{0}' on tag helper element '{1}' requires a value. Tag helper bound attributes of type '{2}' cannot be empty or contain only whitespace.</value>
   </data>
+  <data name="SourceLocationFilePathDoesNotMatch" xml:space="preserve">
+    <value>Cannot perform '{1}' operations on '{0}' instances with different file paths.</value>
+  </data>
 </root>

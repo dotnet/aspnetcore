@@ -19,8 +19,30 @@ namespace Microsoft.AspNet.Razor
                 length: 456);
             var expectedSerializedError =
                 $"{{\"{nameof(RazorError.Message)}\":\"Testing\",\"{nameof(RazorError.Location)}\":{{\"" +
+                $"{nameof(SourceLocation.FilePath)}\":null,\"" +
                 $"{nameof(SourceLocation.AbsoluteIndex)}\":1,\"{nameof(SourceLocation.LineIndex)}\":2,\"" +
                 $"{nameof(SourceLocation.CharacterIndex)}\":3}},\"{nameof(RazorError.Length)}\":456}}";
+
+            // Act
+            var serializedError = JsonConvert.SerializeObject(error);
+
+            // Assert
+            Assert.Equal(expectedSerializedError, serializedError, StringComparer.Ordinal);
+        }
+
+        [Fact]
+        public void RazorError_WithFilePath_CanBeSerialized()
+        {
+            // Arrange
+            var error = new RazorError(
+                message: "Testing",
+                location: new SourceLocation("some-path", absoluteIndex: 1, lineIndex: 2, characterIndex: 56),
+                length: 3);
+            var expectedSerializedError =
+                $"{{\"{nameof(RazorError.Message)}\":\"Testing\",\"{nameof(RazorError.Location)}\":{{\"" +
+                $"{nameof(SourceLocation.FilePath)}\":\"some-path\",\"" +
+                $"{nameof(SourceLocation.AbsoluteIndex)}\":1,\"{nameof(SourceLocation.LineIndex)}\":2,\"" +
+                $"{nameof(SourceLocation.CharacterIndex)}\":56}},\"{nameof(RazorError.Length)}\":3}}";
 
             // Act
             var serializedError = JsonConvert.SerializeObject(error);
@@ -35,7 +57,7 @@ namespace Microsoft.AspNet.Razor
             // Arrange
             var error = new RazorError(
                 message: "Testing",
-                location: new SourceLocation(absoluteIndex: 1, lineIndex: 2, characterIndex: 3),
+                location: new SourceLocation("somepath", absoluteIndex: 1, lineIndex: 2, characterIndex: 3),
                 length: 456);
             var serializedError = JsonConvert.SerializeObject(error);
 
