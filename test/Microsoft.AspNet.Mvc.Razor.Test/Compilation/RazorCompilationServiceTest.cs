@@ -6,7 +6,6 @@ using System.Linq;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator.Compiler;
-using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Moq;
@@ -50,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         public void Compile_ReturnsFailedResultIfParseFails()
         {
             // Arrange
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             errorSink.OnError(new RazorError("some message", 1, 1, 1, 1));
             var generatorResult = new GeneratorResults(
                     new Block(new BlockBuilder { Type = BlockType.Comment }),
@@ -89,7 +88,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var generatorResult = new GeneratorResults(
                     new Block(new BlockBuilder { Type = BlockType.Comment }),
                     Enumerable.Empty<TagHelperDescriptor>(),
-                    new ParserErrorSink(),
+                    new ErrorSink(),
                     new CodeBuilderResult(code, new LineMapping[0]),
                     new CodeTree());
             var host = new Mock<IMvcRazorHost>();
@@ -121,7 +120,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             return new GeneratorResults(
                     new Block(new BlockBuilder { Type = BlockType.Comment }),
                     Enumerable.Empty<TagHelperDescriptor>(),
-                    new ParserErrorSink(),
+                    new ErrorSink(),
                     new CodeBuilderResult("", new LineMapping[0]),
                     new CodeTree());
         }

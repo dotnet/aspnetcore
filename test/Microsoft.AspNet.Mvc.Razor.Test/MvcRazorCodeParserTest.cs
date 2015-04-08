@@ -269,7 +269,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 codeParser,
                 markupParser,
                 markupParser,
-                new ParserErrorSink());
+                new ErrorSink());
             codeParser.Context = context;
             markupParser.Context = context;
             markupParser.ParseDocument();

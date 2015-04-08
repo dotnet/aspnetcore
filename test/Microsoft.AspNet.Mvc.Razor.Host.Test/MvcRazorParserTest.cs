@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.AspNet.Razor.Text;
 using Moq;
 using Xunit;
 
@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var parser = new TestableMvcRazorParser(baseParser, codeTrees, defaultInheritedChunks: new Chunk[0]);
 
             // Act
-            parser.GetTagHelperDescriptorsPublic(block, errorSink: new ParserErrorSink()).ToArray();
+            parser.GetTagHelperDescriptorsPublic(block, errorSink: new ErrorSink()).ToArray();
 
             // Assert
             Assert.NotNull(descriptors);
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             public IEnumerable<TagHelperDescriptor> GetTagHelperDescriptorsPublic(
                 Block documentRoot,
-                ParserErrorSink errorSink)
+                ErrorSink errorSink)
             {
                 return GetTagHelperDescriptors(documentRoot, errorSink);
             }

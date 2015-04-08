@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser;
@@ -491,7 +492,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 codeParser,
                 markupParser,
                 markupParser,
-                new ParserErrorSink());
+                new ErrorSink());
             codeParser.Context = context;
             markupParser.Context = context;
             markupParser.ParseDocument();

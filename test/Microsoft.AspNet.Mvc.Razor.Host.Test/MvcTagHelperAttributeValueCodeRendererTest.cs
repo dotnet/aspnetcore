@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
-using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Xunit;
 
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                                             rootNamespace: string.Empty,
                                                             sourceFile: string.Empty,
                                                             shouldGenerateLinePragmas: true);
-            var errorSink = new ParserErrorSink();
+            var errorSink = new ErrorSink();
             var context = new CodeBuilderContext(generatorContext, errorSink);
 
             // Act

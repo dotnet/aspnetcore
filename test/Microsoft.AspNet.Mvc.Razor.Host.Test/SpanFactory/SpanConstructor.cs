@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
 namespace Microsoft.AspNet.Mvc.Razor

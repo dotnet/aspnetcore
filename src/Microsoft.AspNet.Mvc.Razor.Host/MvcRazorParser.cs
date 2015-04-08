@@ -1,15 +1,14 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Parser.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.AspNet.Razor.Text;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -45,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         protected override IEnumerable<TagHelperDescriptor> GetTagHelperDescriptors(
             [NotNull] Block documentRoot,
-            [NotNull] ParserErrorSink errorSink)
+            [NotNull] ErrorSink errorSink)
         {
             var visitor = new GlobalImportTagHelperDirectiveSpanVisitor(
                 TagHelperDescriptorResolver,
@@ -120,7 +119,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             public GlobalImportTagHelperDirectiveSpanVisitor(
                 ITagHelperDescriptorResolver descriptorResolver,
                 IEnumerable<TagHelperDirectiveDescriptor> globalImportDirectiveDescriptors,
-                ParserErrorSink errorSink)
+                ErrorSink errorSink)
                 : base(descriptorResolver, errorSink)
             {
                 _globalImportDirectiveDescriptors = globalImportDirectiveDescriptors;
@@ -128,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             protected override TagHelperDescriptorResolutionContext GetTagHelperDescriptorResolutionContext(
                 IEnumerable<TagHelperDirectiveDescriptor> descriptors,
-                ParserErrorSink errorSink)
+                ErrorSink errorSink)
             {
                 var directivesToImport = MergeDirectiveDescriptors(descriptors, _globalImportDirectiveDescriptors);
 

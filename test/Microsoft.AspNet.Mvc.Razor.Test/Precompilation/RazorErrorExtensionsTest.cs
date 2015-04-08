@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Text;
+using Microsoft.AspNet.Razor;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor.Precompilation
