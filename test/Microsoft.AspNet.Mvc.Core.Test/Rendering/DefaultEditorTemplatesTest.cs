@@ -8,9 +8,11 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.Rendering.Internal;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
@@ -78,6 +80,9 @@ namespace Microsoft.AspNet.Mvc.Core
                     { "decimal", "__TextBox__ class='text-box single-line'" },
                     { "String", "__TextBox__ class='text-box single-line'" },
                     { "STRING", "__TextBox__ class='text-box single-line'" },
+                    { typeof(IFormFile).Name, "__TextBox__ class='text-box single-line' type='file'" },
+                    { TemplateRenderer.IEnumerableOfIFormFileName,
+                        "__TextBox__ class='text-box single-line' type='file' multiple='multiple'" },
                 };
             }
         }

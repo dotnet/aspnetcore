@@ -171,5 +171,10 @@ namespace MvcTagHelpersWebSite.Controllers
         {
             return View();
         }
+
+        public IActionResult Input()
+        {
+            return View();
+        }
     }
 }

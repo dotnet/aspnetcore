@@ -11,6 +11,7 @@ using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
+using Microsoft.AspNet.Mvc.Rendering.Internal;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 

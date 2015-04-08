@@ -5,9 +5,9 @@ using System.Globalization;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNet.Mvc.Rendering.Internal
 {
-    internal class TemplateBuilder
+    public class TemplateBuilder
     {
         private IViewEngine _viewEngine;
         private ViewContext _viewContext;

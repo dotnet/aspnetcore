@@ -47,6 +47,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("Link", null)]
         // Testing the ScriptTagHelper
         [InlineData("Script", null)]
+        // Testing InputTagHelper with File
+        [InlineData("Input", null)]
         public async Task MvcTagHelpers_GeneratesExpectedResults(string action, string antiForgeryPath)
         {
             // Arrange

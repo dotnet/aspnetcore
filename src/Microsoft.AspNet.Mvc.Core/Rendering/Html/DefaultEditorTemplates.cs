@@ -5,11 +5,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.Rendering.Internal;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -374,6 +375,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return GenerateTextBox(htmlHelper, inputType: "number");
         }
 
+        public static string FileInputTemplate([NotNull] IHtmlHelper htmlHelper)
+        {
+            return GenerateTextBox(htmlHelper, inputType: "file");
+        }
+
+        public static string FileCollectionInputTemplate([NotNull] IHtmlHelper htmlHelper)
+        {
+            var htmlAttributes =
+                CreateHtmlAttributes(htmlHelper, className: "text-box single-line", inputType: "file");
+            htmlAttributes["multiple"] = "multiple";
+
+            return GenerateTextBox(htmlHelper, htmlHelper.ViewData.TemplateInfo.FormattedModelValue, htmlAttributes);
+        }
+
         private static void ApplyRfc3339DateFormattingIfNeeded(IHtmlHelper htmlHelper, string format)
         {
             if (htmlHelper.Html5DateRenderingMode != Html5DateRenderingMode.Rfc3339)
@@ -405,6 +420,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var htmlAttributes =
                 CreateHtmlAttributes(htmlHelper, className: "text-box single-line", inputType: inputType);
 
+            return GenerateTextBox(htmlHelper, value, htmlAttributes);
+        }
+
+        private static string GenerateTextBox(IHtmlHelper htmlHelper, object value, object htmlAttributes)
+        {
             return htmlHelper.TextBox(
                 current: null,
                 value: value,

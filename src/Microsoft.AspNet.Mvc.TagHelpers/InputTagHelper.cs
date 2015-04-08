@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.Rendering.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
@@ -47,6 +48,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { nameof(Boolean), InputType.CheckBox.ToString().ToLowerInvariant() },
                 { nameof(Decimal), InputType.Text.ToString().ToLowerInvariant() },
                 { nameof(String), InputType.Text.ToString().ToLowerInvariant() },
+                { nameof(IFormFile), "file" },
+                { TemplateRenderer.IEnumerableOfIFormFileName, "file" },
             };
 
         // Mapping from <input/> element's type to RFC 3339 date and time formats.
@@ -271,13 +274,22 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 format = GetFormat(modelExplorer, inputTypeHint, inputType);
             }
 
+            object htmlAttributes = null;
+            if (string.Equals(inputType, "file") && string.Equals(inputTypeHint, TemplateRenderer.IEnumerableOfIFormFileName))
+            {
+                htmlAttributes = new Dictionary<string, object>
+                {
+                    { "multiple", "multiple" }
+                };
+            }
+
             return Generator.GenerateTextBox(
                 ViewContext,
                 modelExplorer,
                 For.Name,
                 value: modelExplorer.Model,
                 format: format,
-                htmlAttributes: null);
+                htmlAttributes: htmlAttributes);
         }
 
         // Get a fall-back format based on the metadata.
@@ -353,55 +365,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 }
             }
 
-            yield return fieldType.Name;
-
-            if (fieldType == typeof(string))
+            foreach (string typeName in TemplateRenderer.GetTypeNames(modelExplorer.Metadata, fieldType))
             {
-                // Nothing more to provide
-                yield break;
-            }
-            else if (!modelExplorer.Metadata.IsComplexType)
-            {
-                // IsEnum is false for the Enum class itself
-                if (fieldType.IsEnum())
-                {
-                    // Same as fieldType.BaseType.Name in this case
-                    yield return "Enum";
-                }
-                else if (fieldType == typeof(DateTimeOffset))
-                {
-                    yield return "DateTime";
-                }
-
-                yield return "String";
-            }
-            else if (fieldType.IsInterface())
-            {
-                if (typeof(IEnumerable).IsAssignableFrom(fieldType))
-                {
-                    yield return "Collection";
-                }
-
-                yield return "Object";
-            }
-            else
-            {
-                var isEnumerable = typeof(IEnumerable).IsAssignableFrom(fieldType);
-                while (true)
-                {
-                    fieldType = fieldType.BaseType();
-                    if (fieldType == null)
-                    {
-                        break;
-                    }
-
-                    if (isEnumerable && fieldType == typeof(Object))
-                    {
-                        yield return "Collection";
-                    }
-
-                    yield return fieldType.Name;
-                }
+                yield return typeName;
             }
         }
     }

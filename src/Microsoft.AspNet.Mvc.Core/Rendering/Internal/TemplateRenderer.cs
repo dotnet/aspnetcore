@@ -7,16 +7,19 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNet.Mvc.Rendering.Internal
 {
-    internal class TemplateRenderer
+    public class TemplateRenderer
     {
-        private static readonly string DisplayTemplateViewPath = "DisplayTemplates";
-        private static readonly string EditorTemplateViewPath = "EditorTemplates";
+        private const string DisplayTemplateViewPath = "DisplayTemplates";
+        private const string EditorTemplateViewPath = "EditorTemplates";
+        public const string IEnumerableOfIFormFileName = "IEnumerable`" + nameof(IFormFile);
 
         private static readonly Dictionary<string, Func<IHtmlHelper, string>> _defaultDisplayActions =
             new Dictionary<string, Func<IHtmlHelper, string>>(StringComparer.OrdinalIgnoreCase)
@@ -62,6 +65,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 { typeof(decimal).Name, DefaultEditorTemplates.DecimalTemplate },
                 { typeof(string).Name, DefaultEditorTemplates.StringTemplate },
                 { typeof(object).Name, DefaultEditorTemplates.ObjectTemplate },
+                { typeof(IFormFile).Name, DefaultEditorTemplates.FileInputTemplate },
+                { IEnumerableOfIFormFileName, DefaultEditorTemplates.FileCollectionInputTemplate },
             };
 
         private ViewContext _viewContext;
@@ -136,7 +141,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 metadata.DataTypeName
             };
 
-            foreach (string templateHint in templateHints.Where(s => !string.IsNullOrEmpty(s)))
+            foreach (var templateHint in templateHints.Where(s => !string.IsNullOrEmpty(s)))
             {
                 yield return templateHint;
             }
@@ -146,14 +151,27 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var modelType = _viewData.ModelExplorer.ModelType;
             var fieldType = Nullable.GetUnderlyingType(modelType) ?? modelType;
 
-            yield return fieldType.Name;
+            foreach (var typeName in GetTypeNames(_viewData.ModelExplorer.Metadata, fieldType))
+            {
+                yield return typeName;
+            }
+        }
+
+        public static IEnumerable<string> GetTypeNames(ModelMetadata modelMetadata, Type fieldType)
+        {
+            // Not returning type name here for IEnumerable<IFormFile> since we will be returning
+            // a more specific name, IEnumerableOfIFormFileName.
+            if (typeof(IEnumerable<IFormFile>) != fieldType)
+            {
+                yield return fieldType.Name;
+            }
 
             if (fieldType == typeof(string))
             {
                 // Nothing more to provide
                 yield break;
             }
-            else if (!metadata.IsComplexType)
+            else if (!modelMetadata.IsComplexType)
             {
                 // IsEnum is false for the Enum class itself
                 if (fieldType.IsEnum())
@@ -167,36 +185,44 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 }
 
                 yield return "String";
+                yield break;
             }
-            else if (fieldType.IsInterface())
+            else if (!fieldType.IsInterface())
             {
-                if (typeof(IEnumerable).IsAssignableFrom(fieldType))
-                {
-                    yield return "Collection";
-                }
-
-                yield return "Object";
-            }
-            else
-            {
-                var isEnumerable = typeof(IEnumerable).IsAssignableFrom(fieldType);
-
+                var type = fieldType;
                 while (true)
                 {
-                    fieldType = fieldType.BaseType();
-                    if (fieldType == null)
+                    type = type.BaseType();
+                    if (type == null || type == typeof(object))
                     {
                         break;
                     }
 
-                    if (isEnumerable && fieldType == typeof(Object))
-                    {
-                        yield return "Collection";
-                    }
-
-                    yield return fieldType.Name;
+                    yield return type.Name;
                 }
             }
+
+            if (typeof(IEnumerable).IsAssignableFrom(fieldType))
+            {
+                if (typeof(IEnumerable<IFormFile>).IsAssignableFrom(fieldType))
+                {
+                    yield return IEnumerableOfIFormFileName;
+
+                    // Specific name has already been returned, now return the generic name.
+                    if (typeof(IEnumerable<IFormFile>) == fieldType)
+                    {
+                        yield return fieldType.Name;
+                    }
+                }
+
+                yield return "Collection";
+            }
+            else if (typeof(IFormFile) != fieldType && typeof(IFormFile).IsAssignableFrom(fieldType))
+            {
+                yield return nameof(IFormFile);
+            }
+
+            yield return "Object";
         }
 
         private static IHtmlHelper MakeHtmlHelper(ViewContext viewContext, ViewDataDictionary viewData)
