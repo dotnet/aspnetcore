@@ -4,6 +4,7 @@
     },
     "dependencies": {
         "Microsoft.AspNet.Diagnostics.Elm": "1.0.0-*",
+        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
 
