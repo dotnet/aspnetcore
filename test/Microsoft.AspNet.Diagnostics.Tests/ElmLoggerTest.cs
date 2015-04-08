@@ -179,9 +179,15 @@ namespace Microsoft.AspNet.Diagnostics.Tests
 
             // Assert
             // get the root of the activity for scope "test2"
-            var root1 = (store.GetActivities()).Where(a => a.Root.State.Equals("test2"))?.FirstOrDefault()?.Root;
+            var root1 = (store.GetActivities())
+                .Where(a => string.Equals(a.Root.State?.ToString(), "test2"))?
+                .FirstOrDefault()?
+                .Root;
             Assert.NotNull(root1);
-            var root2 = (store.GetActivities()).Where(a => a.Root.State.Equals("test12"))?.FirstOrDefault()?.Root;
+            var root2 = (store.GetActivities())
+                .Where(a => string.Equals(a.Root.State?.ToString(), "test12"))?
+                .FirstOrDefault()?
+                .Root;
             Assert.NotNull(root2);
 
             Assert.Equal(0, root1.Children.Count);
@@ -269,7 +275,9 @@ namespace Microsoft.AspNet.Diagnostics.Tests
 
             // Assert
             Assert.Single(store.GetActivities());
-            var context = store.GetActivities().Where(a => a.Root.State.Equals("test8")).First();
+            var context = store.GetActivities()
+                .Where(a => string.Equals(a.Root.State?.ToString(), "test8"))
+                .First();
             Assert.Empty(context.Root.Children);
         }
 

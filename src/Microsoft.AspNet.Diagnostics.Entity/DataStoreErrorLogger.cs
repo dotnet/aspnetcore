@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
             return true;
         }
 
-        public virtual IDisposable BeginScope(object state)
+        public virtual IDisposable BeginScopeImpl(object state)
         {
             return NullScope.Instance;
         }

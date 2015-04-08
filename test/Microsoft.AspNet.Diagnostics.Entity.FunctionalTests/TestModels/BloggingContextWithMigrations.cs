@@ -73,10 +73,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 migrationBuilder.CreateTable("Blog",
                 c => new
                 {
-                    BlogId = c.Column("int", annotations: new Dictionary<string, string> { { "SqlServer:ValueGeneration", "Identity" } }),
+                    BlogId = c.Column("int").Annotation("SqlServer:ValueGeneration", "Identity"),
                     Name = c.Column("nvarchar(max)", nullable: true),
                 })
-                .PrimaryKey(t => t.BlogId, name: "PK_Blog");
+                .PrimaryKey("PK_Blog", t => t.BlogId);
             }
 
             public override void Down(MigrationBuilder migrationBuilder)

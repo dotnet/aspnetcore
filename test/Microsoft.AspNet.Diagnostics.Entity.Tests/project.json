@@ -5,7 +5,7 @@
         "Moq": "4.2.1312.1622",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
-    "code": [ "**\\*.cs", "..\\Shared\\ApiConsistencyTestBase.cs", "..\\Shared\\TestHelpers.cs" ],
+    "compile": [ "..\\Shared\\ApiConsistencyTestBase.cs", "..\\Shared\\TestHelpers.cs" ],
     "commands": {
         "test": "xunit.runner.aspnet"
     },
