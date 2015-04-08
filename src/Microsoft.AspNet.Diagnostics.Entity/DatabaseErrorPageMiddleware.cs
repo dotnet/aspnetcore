@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                             {
                                 var databaseExists = dbContext.Database.AsRelational().Exists();
 
-                                var migrator = ((IAccessor<Migrator>)dbContext.Database).Service;
+                                var migrator = ((IAccessor<IMigrator>)dbContext.Database).Service;
 
                                 var pendingMigrations = migrator.GetUnappliedMigrations().Select(m => m.Id);
 
