@@ -18,6 +18,7 @@ namespace Microsoft.AspNet.Mvc.Core
         private readonly IReadOnlyList<IFilterProvider> _filterProviders;
         private readonly IReadOnlyList<IInputFormatter> _inputFormatters;
         private readonly IReadOnlyList<IModelBinder> _modelBinders;
+        private readonly IReadOnlyList<IOutputFormatter> _outputFormatters;
         private readonly IReadOnlyList<IModelValidatorProvider> _modelValidatorProviders;
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
 
@@ -43,6 +44,7 @@ namespace Microsoft.AspNet.Mvc.Core
             [NotNull] ActionContext actionContext,
             [NotNull] IReadOnlyList<IFilterProvider> filterProviders,
             [NotNull] IReadOnlyList<IInputFormatter> inputFormatters,
+            [NotNull] IReadOnlyList<IOutputFormatter> outputFormatters,
             [NotNull] IReadOnlyList<IModelBinder> modelBinders,
             [NotNull] IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
             [NotNull] IReadOnlyList<IValueProviderFactory> valueProviderFactories,
@@ -52,6 +54,7 @@ namespace Microsoft.AspNet.Mvc.Core
 
             _filterProviders = filterProviders;
             _inputFormatters = inputFormatters;
+            _outputFormatters = outputFormatters;
             _modelBinders = modelBinders;
             _modelValidatorProviders = modelValidatorProviders;
             _valueProviderFactories = valueProviderFactories;
@@ -208,6 +211,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var context = new ResourceExecutingContext(ActionContext, _filters);
 
             context.InputFormatters = new List<IInputFormatter>(_inputFormatters);
+            context.OutputFormatters = new List<IOutputFormatter>(_outputFormatters);
             context.ModelBinders = new List<IModelBinder>(_modelBinders);
             context.ValidatorProviders = new List<IModelValidatorProvider>(_modelValidatorProviders);
             context.ValueProviderFactories = new List<IValueProviderFactory>(_valueProviderFactories);
@@ -417,6 +421,7 @@ namespace Microsoft.AspNet.Mvc.Core
 
             ActionBindingContext = new ActionBindingContext();
             ActionBindingContext.InputFormatters = _resourceExecutingContext.InputFormatters;
+            ActionBindingContext.OutputFormatters = _resourceExecutingContext.OutputFormatters;
             ActionBindingContext.ModelBinder = new CompositeModelBinder(_resourceExecutingContext.ModelBinders);
             ActionBindingContext.ValidatorProvider = new CompositeModelValidatorProvider(
                 _resourceExecutingContext.ValidatorProviders);

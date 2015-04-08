@@ -32,6 +32,11 @@ namespace FiltersWebSite.Controllers
 
                 context.InputFormatters.Clear();
                 context.InputFormatters.Add(jsonFormatter);
+
+                // Update the output formatter collection to only return JSON. 
+                var jsonOutputFormatter = context.OutputFormatters.OfType<JsonOutputFormatter>().Single();
+                context.OutputFormatters.Clear();
+                context.OutputFormatters.Add(jsonOutputFormatter);
             }
         }
     }

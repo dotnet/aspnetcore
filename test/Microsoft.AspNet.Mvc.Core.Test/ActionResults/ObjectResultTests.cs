@@ -163,6 +163,25 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
         }
 
         [Fact]
+        public async Task ObjectResult_FallsBackOn_FormattersInOptions()
+        {
+            // Arrange
+            var formatter = GetMockFormatter();
+            var actionContext = CreateMockActionContext(
+                new[] { formatter.Object },
+                setupActionBindingContext: false);
+            
+            // Set the content type property explicitly to a single value.
+            var result = new ObjectResult("someValue");
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            formatter.Verify(o => o.WriteAsync(It.IsAny<OutputFormatterContext>()));
+        }
+
+        [Fact]
         public async Task ObjectResult_WithSingleContentType_TheContentTypeIsIgnoredIfTheTypeIsString()
         {
             // Arrange
@@ -824,11 +843,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
         }
 
         private static ActionContext CreateMockActionContext(
-                                                             HttpResponse response = null,
-                                                             string requestAcceptHeader = "application/*",
-                                                             string requestContentType = "application/json",
-                                                             string requestAcceptCharsetHeader = "",
-                                                             bool respectBrowserAcceptHeader = false)
+            HttpResponse response = null,
+            string requestAcceptHeader = "application/*",
+            string requestContentType = "application/json",
+            string requestAcceptCharsetHeader = "",
+            bool respectBrowserAcceptHeader = false)
         {
             var formatters = new IOutputFormatter[] { new StringOutputFormatter(), new JsonOutputFormatter() };
 
@@ -842,12 +861,13 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
         }
 
         private static ActionContext CreateMockActionContext(
-                                                             IEnumerable<IOutputFormatter> outputFormatters,
-                                                             HttpResponse response = null,
-                                                             string requestAcceptHeader = "application/*",
-                                                             string requestContentType = "application/json",
-                                                             string requestAcceptCharsetHeader = "",
-                                                             bool respectBrowserAcceptHeader = false)
+            IEnumerable<IOutputFormatter> outputFormatters,
+            HttpResponse response = null,
+            string requestAcceptHeader = "application/*",
+            string requestContentType = "application/json",
+            string requestAcceptCharsetHeader = "",
+            bool respectBrowserAcceptHeader = false,
+            bool setupActionBindingContext = true)
         {
             var httpContext = new Mock<HttpContext>();
             if (response != null)
@@ -872,9 +892,25 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             {
                 optionsAccessor.Options.OutputFormatters.Add(formatter);
             }
+
             optionsAccessor.Options.RespectBrowserAcceptHeader = respectBrowserAcceptHeader;
             httpContext.Setup(o => o.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
                 .Returns(optionsAccessor);
+
+            var mockActionBindingContext = new Mock<IScopedInstance<ActionBindingContext>>();
+
+            ActionBindingContext bindingContext = null;
+            if (setupActionBindingContext)
+            {
+                bindingContext = new ActionBindingContext { OutputFormatters = outputFormatters.ToList() };
+            }
+
+            mockActionBindingContext
+                .SetupGet(o => o.Value)
+                .Returns(bindingContext);
+
+            httpContext.Setup(o => o.RequestServices.GetService(typeof(IScopedInstance<ActionBindingContext>)))
+                       .Returns(mockActionBindingContext.Object);
 
             return new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
         }

@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
@@ -90,8 +91,18 @@ namespace Microsoft.AspNet.Mvc
             var optionsAccessor = new MockMvcOptionsAccessor();
             optionsAccessor.Options.OutputFormatters.Add(new StringOutputFormatter());
             optionsAccessor.Options.OutputFormatters.Add(new JsonOutputFormatter());
-            httpContext.Setup(p => p.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
+            httpContext
+                .Setup(p => p.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
                 .Returns(optionsAccessor);
+
+            var mockActionBindingContext = new Mock<IScopedInstance<ActionBindingContext>>();
+            mockActionBindingContext
+                .SetupGet(o=> o.Value)
+                .Returns(new ActionBindingContext() { OutputFormatters = optionsAccessor.Options.OutputFormatters });
+            httpContext
+                .Setup(o => o.RequestServices.GetService(typeof(IScopedInstance<ActionBindingContext>)))
+                .Returns(mockActionBindingContext.Object);
+
             return httpContext.Object;
         }
     }

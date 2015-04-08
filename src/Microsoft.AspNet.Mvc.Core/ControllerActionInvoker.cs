@@ -24,6 +24,7 @@ namespace Microsoft.AspNet.Mvc.Core
             [NotNull] IControllerFactory controllerFactory,
             [NotNull] ControllerActionDescriptor descriptor,
             [NotNull] IReadOnlyList<IInputFormatter> inputFormatters,
+            [NotNull] IReadOnlyList<IOutputFormatter> outputFormatters,
             [NotNull] IControllerActionArgumentBinder controllerActionArgumentBinder,
             [NotNull] IReadOnlyList<IModelBinder> modelBinders,
             [NotNull] IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
@@ -31,9 +32,10 @@ namespace Microsoft.AspNet.Mvc.Core
             [NotNull] IScopedInstance<ActionBindingContext> actionBindingContextAccessor,
             [NotNull] ITempDataDictionary tempData)
             : base(
-                  actionContext, 
+                  actionContext,
                   filterProviders,
-                  inputFormatters, 
+                  inputFormatters,
+                  outputFormatters,
                   modelBinders, 
                   modelValidatorProviders, 
                   valueProviderFactories,

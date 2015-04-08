@@ -273,12 +273,27 @@ namespace Microsoft.AspNet.Mvc
             IEnumerable<IOutputFormatter> formatters = null;
             if (Formatters == null || Formatters.Count == 0)
             {
-                formatters = context
+                var actionBindingContext = context
                     .HttpContext
                     .RequestServices
-                    .GetRequiredService<IOptions<MvcOptions>>()
-                    .Options
-                    .OutputFormatters;
+                    .GetRequiredService<IScopedInstance<ActionBindingContext>>()
+                    .Value;
+
+                // In scenarios where there is a resource filter which directly shortcircuits using an ObjectResult.
+                // actionBindingContext is not setup yet and is null.
+                if (actionBindingContext == null)
+                {
+                    var options = context
+                        .HttpContext
+                        .RequestServices
+                        .GetRequiredService<IOptions<MvcOptions>>()
+                        .Options;
+                    formatters = options.OutputFormatters;
+                }
+                else
+                {
+                    formatters = actionBindingContext.OutputFormatters ?? new List<IOutputFormatter>();
+                }
             }
             else
             {

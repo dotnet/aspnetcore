@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -73,6 +74,15 @@ namespace System.Web.Http
             var optionsAccessor = new Mock<IOptions<MvcOptions>>();
             optionsAccessor.SetupGet(o => o.Options)
                 .Returns(options);
+
+            var mockActionBindingContext = new Mock<IScopedInstance<ActionBindingContext>>();
+            var bindingContext = new ActionBindingContext { OutputFormatters = options.OutputFormatters };
+            mockActionBindingContext
+                .SetupGet(o => o.Value)
+                .Returns(bindingContext);
+    
+            services.Setup(o => o.GetService(typeof(IScopedInstance<ActionBindingContext>)))
+                    .Returns(mockActionBindingContext.Object);
 
             services.Setup(s => s.GetService(typeof(IOptions<MvcOptions>)))
                 .Returns(optionsAccessor.Object);

@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.Mvc.Core
         private readonly IFilterProvider[] _filterProviders;
         private readonly IReadOnlyList<IInputFormatter> _inputFormatters;
         private readonly IReadOnlyList<IModelBinder> _modelBinders;
+        private readonly IReadOnlyList<IOutputFormatter> _outputFormatters;
         private readonly IReadOnlyList<IModelValidatorProvider> _modelValidatorProviders;
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
         private readonly IScopedInstance<ActionBindingContext> _actionBindingContextAccessor;
@@ -34,6 +35,7 @@ namespace Microsoft.AspNet.Mvc.Core
             _filterProviders = filterProviders.OrderBy(item => item.Order).ToArray();
             _argumentBinder = argumentBinder;
             _inputFormatters = optionsAccessor.Options.InputFormatters.ToArray();
+            _outputFormatters = optionsAccessor.Options.OutputFormatters.ToArray();
             _modelBinders = optionsAccessor.Options.ModelBinders.ToArray();
             _modelValidatorProviders = optionsAccessor.Options.ModelValidatorProviders.ToArray();
             _valueProviderFactories = optionsAccessor.Options.ValueProviderFactories.ToArray();
@@ -59,6 +61,7 @@ namespace Microsoft.AspNet.Mvc.Core
                                     _controllerFactory,
                                     actionDescriptor,
                                     _inputFormatters,
+                                    _outputFormatters,
                                     _argumentBinder,
                                     _modelBinders,
                                     _modelValidatorProviders,

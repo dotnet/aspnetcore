@@ -92,6 +92,16 @@ namespace Microsoft.AspNet.Mvc
             optionsAccessor.Options.OutputFormatters.Add(new StringOutputFormatter());
             optionsAccessor.Options.OutputFormatters.Add(new JsonOutputFormatter());
             optionsAccessor.Options.RespectBrowserAcceptHeader = respectBrowserAcceptHeader;
+            var mockContextAccessor = new Mock<IScopedInstance<ActionBindingContext>>();
+            mockContextAccessor
+                .SetupGet(o => o.Value)
+                .Returns(new ActionBindingContext()
+                {
+                    OutputFormatters = optionsAccessor.Options.OutputFormatters
+                });
+
+            httpContext.Setup(o => o.RequestServices.GetService(typeof(IScopedInstance<ActionBindingContext>)))
+                       .Returns(mockContextAccessor.Object);
             httpContext.Setup(o => o.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
                 .Returns(optionsAccessor);
 

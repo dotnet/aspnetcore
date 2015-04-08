@@ -11,7 +11,6 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
@@ -2030,13 +2029,13 @@ namespace Microsoft.AspNet.Mvc
             filterProvider.SetupGet(fp => fp.Order)
                           .Returns(DefaultOrder.DefaultFrameworkSortOrder);
 
-
             var invoker = new TestControllerActionInvoker(
                 actionContext,
                 new[] { filterProvider.Object },
                 new MockControllerFactory(this),
                 actionDescriptor,
                 new InputFormatter[0],
+                new IOutputFormatter[0],
                 Mock.Of<IControllerActionArgumentBinder>(),
                 new IModelBinder[0],
                 new IModelValidatorProvider[0],
@@ -2085,6 +2084,7 @@ namespace Microsoft.AspNet.Mvc
             var controllerFactory = new Mock<IControllerFactory>();
             controllerFactory.Setup(c => c.CreateController(It.IsAny<ActionContext>()))
                              .Returns(new TestController());
+
             var metadataProvider = new EmptyModelMetadataProvider();
             var invoker = new ControllerActionInvoker(
                 actionContext,
@@ -2092,6 +2092,7 @@ namespace Microsoft.AspNet.Mvc
                 controllerFactory.Object,
                 actionDescriptor,
                 new IInputFormatter[0],
+                new IOutputFormatter[0],
                 new DefaultControllerActionArgumentBinder(
                     metadataProvider,
                     new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider),
@@ -2193,6 +2194,7 @@ namespace Microsoft.AspNet.Mvc
                 MockControllerFactory controllerFactory,
                 ControllerActionDescriptor descriptor,
                 IReadOnlyList<IInputFormatter> inputFormatters,
+                IReadOnlyList<IOutputFormatter> outputFormatters,
                 IControllerActionArgumentBinder controllerActionArgumentBinder,
                 IReadOnlyList<IModelBinder> modelBinders,
                 IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
@@ -2205,6 +2207,7 @@ namespace Microsoft.AspNet.Mvc
                       controllerFactory,
                       descriptor,
                       inputFormatters,
+                      outputFormatters,
                       controllerActionArgumentBinder,
                       modelBinders,
                       modelValidatorProviders,

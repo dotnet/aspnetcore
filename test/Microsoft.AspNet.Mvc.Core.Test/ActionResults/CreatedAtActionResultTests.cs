@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
@@ -91,6 +92,7 @@ namespace Microsoft.AspNet.Mvc
             var httpContext = new DefaultHttpContext();
             httpContext.Request.PathBase = new PathString("");
             httpContext.Response.Body = new MemoryStream();
+
             var services = new Mock<IServiceProvider>();
             httpContext.RequestServices = services.Object;
 
@@ -99,6 +101,14 @@ namespace Microsoft.AspNet.Mvc
             optionsAccessor.Options.OutputFormatters.Add(new JsonOutputFormatter());
             services.Setup(p => p.GetService(typeof(IOptions<MvcOptions>)))
                 .Returns(optionsAccessor);
+
+            var mockContextAccessor = new Mock<IScopedInstance<ActionBindingContext>>();
+            mockContextAccessor
+                .SetupGet(o => o.Value)
+                .Returns(new ActionBindingContext() { OutputFormatters = optionsAccessor.Options.OutputFormatters });
+
+            services.Setup(o => o.GetService(typeof(IScopedInstance<ActionBindingContext>)))
+                       .Returns(mockContextAccessor.Object);
 
             return httpContext;
         }
