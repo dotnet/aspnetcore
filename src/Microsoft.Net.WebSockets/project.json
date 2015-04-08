@@ -2,7 +2,6 @@
     "version": "1.0.0-*",
     "description": "Implementation of WebSocket abstract base class. Used by WebListener.",
     "dependencies": {
-        "Microsoft.Net.WebSocketAbstractions": "1.0.0-*"
     },
     "compilationOptions": { "allowUnsafe": true },
     "frameworks": {
@@ -15,6 +14,7 @@
                 "System.IO": "4.0.10-beta-*",
                 "System.Linq": "4.0.0-beta-*",
                 "System.Net.Primitives": "4.0.10-beta-*",
+                "System.Net.WebSockets": "4.0.0-beta-*",
                 "System.Resources.ResourceManager": "4.0.0-beta-*",
                 "System.Runtime.Extensions": "4.0.10-beta-*",
                 "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*",

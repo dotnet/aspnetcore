@@ -8,8 +8,7 @@
         "Microsoft.AspNet.Hosting.Server.Interfaces": "1.0.0-*",
         "Microsoft.Framework.ConfigurationModel.Interfaces": "1.0.0-*",
         "Microsoft.Framework.Logging": "1.0.0-*",
-        "Microsoft.Net.Http.Server": "1.0.0-*",
-        "Microsoft.Net.WebSocketAbstractions": "1.0.0-*"
+        "Microsoft.Net.Http.Server": "1.0.0-*"
     },
     "compilationOptions": {
         "allowUnsafe": true
