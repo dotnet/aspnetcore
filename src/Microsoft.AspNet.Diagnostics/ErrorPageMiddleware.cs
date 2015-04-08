@@ -112,18 +112,16 @@ namespace Microsoft.AspNet.Diagnostics
 
                 foreach (var item in failedCompilationFile.Messages)
                 {
-                    // Convert 0-based line indexes to 1-based index that the StackFrame expects
-                    var lineIndex = item.StartLine + 1;
                     var frame = new StackFrame
                     {
                         File = failedCompilationFile.SourceFilePath,
-                        Line = lineIndex,
+                        Line = item.StartLine,
                         Function = string.Empty
                     };
 
                     if (_options.ShowSourceCode)
                     {
-                        ReadFrameContent(frame, fileContent, lineIndex, item.EndLine + 1);
+                        ReadFrameContent(frame, fileContent, item.StartLine, item.EndLine);
                         frame.ErrorDetails = item.Message;
                     }
 
