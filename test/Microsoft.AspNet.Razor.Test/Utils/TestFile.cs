@@ -11,13 +11,13 @@ namespace Microsoft.AspNet.Razor.Test
     {
         public const string ResourceNameFormat = "{0}.TestFiles.{1}";
 
-        public string ResourceName { get; set; }
+        public string ResourceName { get; }
         public Assembly Assembly { get; set; }
 
         public TestFile(string resName, Assembly asm)
         {
-            ResourceName = resName;
             Assembly = asm;
+            ResourceName = Assembly.GetName().Name + "." + resName.Replace('/', '.');
         }
 
         public static TestFile Create(string localResourceName)
