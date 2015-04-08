@@ -36,6 +36,12 @@ namespace ResponseCacheWebSite
                         Duration = 0,
                         Location = ResponseCacheLocation.None
                     });
+
+                options.Filters.Add(new ResponseCacheFilter(new CacheProfile
+                {
+                    NoStore = true,
+                    VaryByHeader = "TestDefault",
+                }));
             });
         }
 

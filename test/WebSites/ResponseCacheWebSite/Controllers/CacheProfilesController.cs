@@ -41,5 +41,11 @@ namespace ResponseCacheWebSite.Controllers
         {
             return "Hello World!";
         }
+
+        [HttpGet("/CacheProfiles/FallbackToFilter")]
+        public string FallbackToFilter()
+        {
+            return "Hello World!";
+        }
     }
 }

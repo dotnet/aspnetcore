@@ -245,6 +245,23 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task ResponseCache_FallbackToFilter_IfNoAttribute()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/CacheProfiles/FallbackToFilter");
+
+            // Assert
+            var data = Assert.Single(response.Headers.GetValues("Cache-control"));
+            Assert.Equal("no-store", data);
+            data = Assert.Single(response.Headers.GetValues("Vary"));
+            Assert.Equal("TestDefault", data);
+        }
+
+        [Fact]
         public async Task ResponseCacheAttribute_OnAction_OverridesTheValuesOnClass()
         {
             // Arrange
