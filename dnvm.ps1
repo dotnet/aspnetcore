@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta5-10361"
+$BuildVersion="beta5-10362"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
