@@ -29,9 +29,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                 $"{sourceFilePath} ({location.LineIndex},{location.CharacterIndex}) {razorError.Message}";
 
             StartColumn = location.CharacterIndex;
-            StartLine = location.LineIndex;
+            StartLine = location.LineIndex + 1;
             EndColumn = location.CharacterIndex + razorError.Length;
-            EndLine = location.LineIndex;
+            EndLine = location.LineIndex + 1;
         }
 
         /// <summary>
