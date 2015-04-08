@@ -157,7 +157,10 @@ namespace Microsoft.Framework.WebEncoders
             HashSet<string> seenCategories = new HashSet<string>();
 
             bool[] retVal = new bool[0x10000];
-            string[] allLines = new StreamReader(typeof(UnicodeHelpersTests).GetTypeInfo().Assembly.GetManifestResourceStream("../../unicode/UnicodeData.txt")).ReadAllLines();
+
+            var assembly = typeof(UnicodeHelpersTests).GetTypeInfo().Assembly;
+            var resourceName = assembly.GetName().Name + ".UnicodeData.txt";
+            string[] allLines = new StreamReader(assembly.GetManifestResourceStream(resourceName)).ReadAllLines();
 
             foreach (string line in allLines)
             {
