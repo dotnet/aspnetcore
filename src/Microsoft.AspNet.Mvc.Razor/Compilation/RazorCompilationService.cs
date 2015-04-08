@@ -1,11 +1,14 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Razor;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
@@ -16,12 +19,15 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
     {
         private readonly ICompilationService _compilationService;
         private readonly IMvcRazorHost _razorHost;
+        private readonly IFileProvider _fileProvider;
 
         public RazorCompilationService(ICompilationService compilationService,
-                                       IMvcRazorHost razorHost)
+                                       IMvcRazorHost razorHost,
+                                       IOptions<RazorViewEngineOptions> viewEngineOptions)
         {
             _compilationService = compilationService;
             _razorHost = razorHost;
+            _fileProvider = viewEngineOptions.Options.FileProvider;
         }
 
         /// <inheritdoc />
@@ -30,39 +36,61 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             GeneratorResults results;
             using (var inputStream = file.FileInfo.CreateReadStream())
             {
-                results = _razorHost.GenerateCode(
-                    file.RelativePath, inputStream);
+                results = _razorHost.GenerateCode(file.RelativePath, inputStream);
             }
 
             if (!results.Success)
             {
-                var messages = results.ParserErrors
-                                      .Select(parseError => new RazorCompilationMessage(parseError, file.RelativePath));
-                var failure = new RazorCompilationFailure(
-                    file.RelativePath,
-                    ReadFileContentsSafely(file.FileInfo),
-                    messages);
-
-                return CompilationResult.Failed(failure);
+                return GetCompilationFailedResult(file, results.ParserErrors);
             }
 
             return _compilationService.Compile(file, results.GeneratedCode);
         }
 
-        private static string ReadFileContentsSafely(IFileInfo fileInfo)
+        // Internal for unit testing
+        internal CompilationResult GetCompilationFailedResult(RelativeFileInfo file, IEnumerable<RazorError> errors)
         {
-            try
+            // If a SourceLocation does not specify a file path, assume it is produced
+            // from parsing the current file.
+            var messageGroups = errors
+                .GroupBy(razorError =>
+                razorError.Location.FilePath ?? file.RelativePath,
+                StringComparer.Ordinal);
+
+            var failures = new List<RazorCompilationFailure>();
+            foreach (var group in messageGroups)
             {
-                using (var reader = new StreamReader(fileInfo.CreateReadStream()))
+                var filePath = group.Key;
+                var fileContent = ReadFileContentsSafely(filePath);
+                var compilationFailure = new RazorCompilationFailure(
+                    filePath,
+                    fileContent,
+                    group.Select(parserError => new RazorCompilationMessage(parserError, filePath)));
+                failures.Add(compilationFailure);
+            }
+
+            return CompilationResult.Failed(failures);
+        }
+
+        private string ReadFileContentsSafely(string relativePath)
+        {
+            var fileInfo = _fileProvider.GetFileInfo(relativePath);
+            if (fileInfo.Exists)
+            {
+                try
                 {
-                    return reader.ReadToEnd();
+                    using (var reader = new StreamReader(fileInfo.CreateReadStream()))
+                    {
+                        return reader.ReadToEnd();
+                    }
+                }
+                catch
+                {
+                    // Ignore any failures
                 }
             }
-            catch
-            {
-                // Ignore any failures
-                return null;
-            }
+
+            return null;
         }
     }
 }

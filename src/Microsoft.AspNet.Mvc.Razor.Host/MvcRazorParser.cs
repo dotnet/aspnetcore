@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 {
                     var descriptor = new TagHelperDirectiveDescriptor(
                         addTagHelperChunk.LookupText,
-                        SourceLocation.Undefined,
+                        chunk.Start,
                         TagHelperDirectiveType.AddTagHelper);
 
                     descriptors.Add(descriptor);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 {
                     var descriptor = new TagHelperDirectiveDescriptor(
                         removeTagHelperChunk.LookupText,
-                        SourceLocation.Undefined,
+                        chunk.Start,
                         TagHelperDirectiveType.RemoveTagHelper);
 
                     descriptors.Add(descriptor);
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 {
                     var descriptor = new TagHelperDirectiveDescriptor(
                         tagHelperPrefixDirectiveChunk.Prefix,
-                        SourceLocation.Undefined,
+                        chunk.Start,
                         TagHelperDirectiveType.TagHelperPrefix);
 
                     descriptors.Add(descriptor);

@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Runtime;
+using System.Collections.Generic;
+using System.IO;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
@@ -31,10 +33,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         public string CompiledContent { get; protected set; }
 
         /// <summary>
-        /// Gets the <see cref="ICompilationFailure"/> produced from parsing or compiling the Razor file.
+        /// Gets the <see cref="ICompilationFailure"/>s produced from parsing or compiling the Razor file.
         /// </summary>
-        /// <remarks>This property is <c>null</c> when compilation succeeded.</remarks>
-        public ICompilationFailure CompilationFailure { get; private set; }
+        /// <remarks>This property is <c>null</c> when compilation succeeded. An empty sequence
+        /// indicates a failed compilation.</remarks>
+        public IEnumerable<ICompilationFailure> CompilationFailures { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="CompilationResult"/>.
@@ -43,9 +46,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// <exception cref="CompilationFailedException">Thrown if compilation failed.</exception>
         public CompilationResult EnsureSuccessful()
         {
-            if (CompilationFailure != null)
+            if (CompilationFailures != null)
             {
-                throw new CompilationFailedException(CompilationFailure);
+                throw new CompilationFailedException(CompilationFailures);
             }
 
             return this;
@@ -54,14 +57,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// <summary>
         /// Creates a <see cref="CompilationResult"/> for a failed compilation.
         /// </summary>
-        /// <param name="compilationFailure">The <see cref="ICompilationFailure"/> produced from parsing or
+        /// <param name="compilationFailures"><see cref="ICompilationFailure"/>s produced from parsing or
         /// compiling the Razor file.</param>
         /// <returns>A <see cref="CompilationResult"/> instance for a failed compilation.</returns>
-        public static CompilationResult Failed([NotNull] ICompilationFailure compilationFailure)
+        public static CompilationResult Failed([NotNull] IEnumerable<ICompilationFailure> compilationFailures)
         {
             return new CompilationResult
             {
-                CompilationFailure = compilationFailure
+                CompilationFailures = compilationFailures
             };
         }
 

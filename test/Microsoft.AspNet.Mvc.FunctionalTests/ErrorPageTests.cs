@@ -47,5 +47,26 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Contains($"/Views/ErrorPageMiddleware/{action}.cshtml", content);
             Assert.Contains(expected, content);
         }
+
+        [Fact]
+        public async Task CompilationFailuresFromGlobalImportAreListed()
+        {
+            // Arrange
+            var expectedMessage = "The type or namespace name &#x27;NamespaceDoesNotExist&#x27; could not be found ("
+                + "are you missing a using directive or an assembly reference?)";
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html");
+
+            // Act
+            var response = await client.GetAsync("http://localhost/ErrorFromGlobalImport");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Contains(@"Views\ErrorFromGlobalImport\_GlobalImport.cshtml", content);
+            Assert.Contains(expectedMessage, content);
+        }
     }
 }

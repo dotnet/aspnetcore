@@ -17,24 +17,24 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// <summary>
         /// Instantiates a new instance of <see cref="CompilationFailedException"/>.
         /// </summary>
-        /// <param name="compilationFailure">The <see cref="ICompilationFailure"/> instance containing
+        /// <param name="compilationFailures"><see cref="ICompilationFailure"/>s containing
         /// details of the compilation failure.</param>
         public CompilationFailedException(
-                [NotNull] ICompilationFailure compilationFailure)
-            : base(FormatMessage(compilationFailure))
+                [NotNull] IEnumerable<ICompilationFailure> compilationFailures)
+            : base(FormatMessage(compilationFailures))
         {
-            CompilationFailures = new[] { compilationFailure };
+            CompilationFailures = compilationFailures;
         }
 
         /// <inheritdoc />
         public IEnumerable<ICompilationFailure> CompilationFailures { get; }
 
-        private static string FormatMessage(ICompilationFailure compilationFailure)
+        private static string FormatMessage(IEnumerable<ICompilationFailure> compilationFailures)
         {
             return Resources.CompilationFailed + Environment.NewLine +
                 string.Join(
                     Environment.NewLine,
-                    compilationFailure.Messages.Select(message => message.FormattedMessage));
+                    compilationFailures.SelectMany(f => f.Messages).Select(message => message.FormattedMessage));
         }
     }
 }

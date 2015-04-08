@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             throw new NotSupportedException();
         }
 
-        public void AddFile(string path, string contents)
+        public TestFileInfo AddFile(string path, string contents)
         {
             var fileInfo = new TestFileInfo
             {
@@ -32,6 +32,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             };
 
             AddFile(path, fileInfo);
+
+            return fileInfo;
         }
 
         public void AddFile(string path, IFileInfo contents)

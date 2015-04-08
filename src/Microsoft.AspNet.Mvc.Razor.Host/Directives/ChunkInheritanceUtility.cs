@@ -126,22 +126,33 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
 
         private static CodeTree ParseViewFile(RazorTemplateEngine engine,
                                               IFileInfo fileInfo,
-                                              string viewStartPath)
+                                              string globalImportPath)
         {
             using (var stream = fileInfo.CreateReadStream())
             {
                 using (var streamReader = new StreamReader(stream))
                 {
-                    var parseResults = engine.ParseTemplate(streamReader, viewStartPath);
+                    var parseResults = engine.ParseTemplate(streamReader, globalImportPath);
                     var className = ParserHelpers.SanitizeClassName(fileInfo.Name);
                     var language = engine.Host.CodeLanguage;
                     var codeGenerator = language.CreateCodeGenerator(className,
                                                                      engine.Host.DefaultNamespace,
-                                                                     viewStartPath,
+                                                                     globalImportPath,
                                                                      engine.Host);
                     codeGenerator.Visit(parseResults);
 
-                    return codeGenerator.Context.CodeTreeBuilder.CodeTree;
+                    // Rewrite the location of inherited chunks so they point to the global import file.
+                    var codeTree = codeGenerator.Context.CodeTreeBuilder.CodeTree;
+                    foreach (var chunk in codeTree.Chunks)
+                    {
+                        chunk.Start = new SourceLocation(
+                            globalImportPath,
+                            chunk.Start.AbsoluteIndex,
+                            chunk.Start.LineIndex,
+                            chunk.Start.CharacterIndex);
+                    }
+
+                    return codeTree;
                 }
             }
         }

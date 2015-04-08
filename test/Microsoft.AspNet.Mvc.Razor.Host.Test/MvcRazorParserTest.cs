@@ -172,7 +172,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 var actual = descriptors[i];
 
                 Assert.Equal(expected.DirectiveText, actual.DirectiveText, StringComparer.Ordinal);
-                Assert.Equal(expected.Location, actual.Location);
+                Assert.Equal(SourceLocation.Zero, actual.Location);
                 Assert.Equal(expected.DirectiveType, actual.DirectiveType);
             }
         }

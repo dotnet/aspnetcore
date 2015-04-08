@@ -15,6 +15,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Compilation;
 using Microsoft.Framework.Runtime.Roslyn;
@@ -34,9 +35,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private readonly IApplicationEnvironment _environment;
         private readonly IAssemblyLoadContext _loader;
         private readonly ICompilerOptionsProvider _compilerOptionsProvider;
-
+        private readonly IFileProvider _fileProvider;
         private readonly Lazy<List<MetadataReference>> _applicationReferences;
-
         private readonly string _classPrefix;
 
         /// <summary>
@@ -50,30 +50,28 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                                         IAssemblyLoadContextAccessor loaderAccessor,
                                         ILibraryManager libraryManager,
                                         ICompilerOptionsProvider compilerOptionsProvider,
-                                        IMvcRazorHost host)
+                                        IMvcRazorHost host,
+                                        IOptions<RazorViewEngineOptions> optionsAccessor)
         {
             _environment = environment;
             _loader = loaderAccessor.GetLoadContext(typeof(RoslynCompilationService).GetTypeInfo().Assembly);
             _libraryManager = libraryManager;
             _applicationReferences = new Lazy<List<MetadataReference>>(GetApplicationReferences);
             _compilerOptionsProvider = compilerOptionsProvider;
+            _fileProvider = optionsAccessor.Options.FileProvider;
             _classPrefix = host.MainClassNamePrefix;
         }
 
         /// <inheritdoc />
         public CompilationResult Compile([NotNull] RelativeFileInfo fileInfo, [NotNull] string compilationContent)
         {
-            // The path passed to SyntaxTreeGenerator.Generate is used by the compiler to generate symbols (pdb) that
-            // map to the source file. If a file does not exist on a physical file system, PhysicalPath will be null.
-            // This prevents files that exist in a non-physical file system from being debugged.
-            var path = fileInfo.FileInfo.PhysicalPath ?? fileInfo.RelativePath;
+            var assemblyName = Path.GetRandomFileName();
             var compilationSettings = _compilerOptionsProvider.GetCompilationSettings(_environment);
             var syntaxTree = SyntaxTreeGenerator.Generate(compilationContent,
-                                                          path,
+                                                          assemblyName,
                                                           compilationSettings);
             var references = _applicationReferences.Value;
 
-            var assemblyName = Path.GetRandomFileName();
             var compilationOptions = compilationSettings.CompilationOptions
                                                         .WithOutputKind(OutputKind.DynamicallyLinkedLibrary);
 
@@ -99,15 +97,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
                     if (!result.Success)
                     {
-                        var failures = result.Diagnostics.Where(IsError);
-                        var compilationFailure = new RoslynCompilationFailure(failures)
-                        {
-                            CompiledContent = compilationContent,
-                            SourceFileContent = ReadFileContentsSafely(fileInfo.FileInfo),
-                            SourceFilePath = fileInfo.RelativePath
-                        };
-
-                        return CompilationResult.Failed(compilationFailure);
+                        return GetCompilationFailedResult(
+                            fileInfo.RelativePath,
+                            compilationContent,
+                            assemblyName,
+                            result.Diagnostics);
                     }
 
                     Assembly assembly;
@@ -129,6 +123,56 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     return UncachedCompilationResult.Successful(type, compilationContent);
                 }
             }
+        }
+
+        // Internal for unit testing
+        internal CompilationResult GetCompilationFailedResult(
+            string relativePath,
+            string compilationContent,
+            string assemblyName,
+            IEnumerable<Diagnostic> diagnostics)
+        {
+            var diagnosticGroups = diagnostics
+                .Where(IsError)
+                .GroupBy(diagnostic => GetFilePath(relativePath, diagnostic), StringComparer.Ordinal);
+
+            var failures = new List<ICompilationFailure>();
+            foreach (var group in diagnosticGroups)
+            {
+                var sourceFilePath = group.Key;
+                string sourceFileContent;
+                if (string.Equals(assemblyName, sourceFilePath, StringComparison.Ordinal))
+                {
+                    // The error is in the generated code and does not have a mapping line pragma
+                    sourceFileContent = compilationContent;
+                    sourceFilePath = Resources.GeneratedCodeFileName;
+                }
+                else
+                {
+                    sourceFileContent = ReadFileContentsSafely(_fileProvider, sourceFilePath);
+                }
+
+                var compilationFailure = new RoslynCompilationFailure(group)
+                {
+                    CompiledContent = compilationContent,
+                    SourceFileContent = sourceFileContent,
+                    SourceFilePath = sourceFilePath
+                };
+
+                failures.Add(compilationFailure);
+            }
+
+            return CompilationResult.Failed(failures);
+        }
+
+        private static string GetFilePath(string relativePath, Diagnostic diagnostic)
+        {
+            if (diagnostic.Location == Location.None)
+            {
+                return relativePath;
+            }
+
+            return diagnostic.Location.GetMappedLineSpan().Path;
         }
 
         private List<MetadataReference> GetApplicationReferences()
@@ -222,20 +266,25 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             return diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error;
         }
 
-        private static string ReadFileContentsSafely(IFileInfo fileInfo)
+        private static string ReadFileContentsSafely(IFileProvider fileProvider, string filePath)
         {
-            try
+            var fileInfo = fileProvider.GetFileInfo(filePath);
+            if (fileInfo.Exists)
             {
-                using (var reader = new StreamReader(fileInfo.CreateReadStream()))
+                try
                 {
-                    return reader.ReadToEnd();
+                    using (var reader = new StreamReader(fileInfo.CreateReadStream()))
+                    {
+                        return reader.ReadToEnd();
+                    }
+                }
+                catch
+                {
+                    // Ignore any failures
                 }
             }
-            catch
-            {
-                // Ignore any failures
-                return null;
-            }
+
+            return null;
         }
     }
 }

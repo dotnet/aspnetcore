@@ -394,6 +394,22 @@ namespace Microsoft.AspNet.Mvc.Razor
             return string.Format(CultureInfo.CurrentCulture, GetString("RazorFileInfoCollection_ResourceCouldNotBeFound"), p0, p1);
         }
 
+        /// <summary>
+        /// Generated Code
+        /// </summary>
+        internal static string GeneratedCodeFileName
+        {
+            get { return GetString("GeneratedCodeFileName"); }
+        }
+
+        /// <summary>
+        /// Generated Code
+        /// </summary>
+        internal static string FormatGeneratedCodeFileName()
+        {
+            return GetString("GeneratedCodeFileName");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

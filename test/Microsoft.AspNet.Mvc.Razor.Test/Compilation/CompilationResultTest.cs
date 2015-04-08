@@ -14,14 +14,15 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         {
             // Arrange
             var compilationFailure = Mock.Of<ICompilationFailure>();
-            var result = CompilationResult.Failed(compilationFailure);
+            var failures = new[] { compilationFailure };
+            var result = CompilationResult.Failed(failures);
 
             // Act and Assert
             Assert.Null(result.CompiledType);
-            Assert.Same(compilationFailure, result.CompilationFailure);
+            Assert.Same(failures, result.CompilationFailures);
             var exception = Assert.Throws<CompilationFailedException>(() => result.EnsureSuccessful());
-            Assert.Collection(exception.CompilationFailures,
-                failure => Assert.Same(compilationFailure, failure));
+            var failure = Assert.Single(exception.CompilationFailures);
+            Assert.Same(compilationFailure, failure);
         }
     }
 }

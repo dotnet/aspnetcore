@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
                 isEnabledByDefault: true);
 
             var location = error.Location;
-            if (location == SourceLocation.Undefined)
+            if (location.Equals(SourceLocation.Undefined))
             {
                 location = SourceLocation.Zero;
             }

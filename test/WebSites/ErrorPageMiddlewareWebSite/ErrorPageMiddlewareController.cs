@@ -18,5 +18,11 @@ namespace ErrorPageMiddlewareWebSite
         {
             return View();
         }
+
+        [HttpGet("/ErrorFromGlobalImport")]
+        public IActionResult GlobalImportError()
+        {
+            return View("~/Views/ErrorFromGlobalImport/Index");
+        }
     }
 }

@@ -6,6 +6,9 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.Versioning;
 using Microsoft.AspNet.FileProviders;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
+using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Compilation;
 using Moq;
@@ -38,7 +41,8 @@ public class MyTestType  {}";
                                                                   accessor,
                                                                   libraryManager,
                                                                   compilerOptionsProvider.Object,
-                                                                  mvcRazorHost.Object);
+                                                                  mvcRazorHost.Object,
+                                                                  GetOptions());
             var relativeFileInfo = new RelativeFileInfo(new TestFileInfo { PhysicalPath = "SomePath" },
                 "some-relative-path");
 
@@ -52,11 +56,14 @@ public class MyTestType  {}";
         }
 
         [Fact]
-        public void Compile_ReturnsCompilationFailureWithRelativePath()
+        public void Compile_ReturnsCompilationFailureWithPathsFromLinePragmas()
         {
             // Arrange
+            var viewPath = "some-relative-path";
             var fileContent = "test file content";
-            var content = @"this should fail";
+            var content = $@"
+#line 1 ""{viewPath}""
+this should fail";
             var applicationEnvironment = GetApplicationEnvironment();
             var accessor = GetLoadContextAccessor();
             var libraryManager = GetLibraryManager();
@@ -67,17 +74,15 @@ public class MyTestType  {}";
                                                                     applicationEnvironment.Configuration))
                                    .Returns(new CompilerOptions());
             var mvcRazorHost = Mock.Of<IMvcRazorHost>();
+            var fileProvider = new TestFileProvider();
+            var fileInfo = fileProvider.AddFile(viewPath, fileContent);
 
             var compilationService = new RoslynCompilationService(applicationEnvironment,
                                                                   accessor,
                                                                   libraryManager,
                                                                   compilerOptionsProvider.Object,
-                                                                  mvcRazorHost);
-            var fileInfo = new TestFileInfo
-            {
-                Content = fileContent,
-                PhysicalPath = "physical path"
-            };
+                                                                  mvcRazorHost,
+                                                                  GetOptions(fileProvider));
             var relativeFileInfo = new RelativeFileInfo(fileInfo, "some-relative-path");
 
             // Act
@@ -86,12 +91,13 @@ public class MyTestType  {}";
             // Assert
             Assert.IsType<CompilationResult>(result);
             Assert.Null(result.CompiledType);
-            Assert.Equal(relativeFileInfo.RelativePath, result.CompilationFailure.SourceFilePath);
-            Assert.Equal(fileContent, result.CompilationFailure.SourceFileContent);
+            var compilationFailure = Assert.Single(result.CompilationFailures);
+            Assert.Equal(relativeFileInfo.RelativePath, compilationFailure.SourceFilePath);
+            Assert.Equal(fileContent, compilationFailure.SourceFileContent);
         }
 
         [Fact]
-        public void Compile_ReturnsApplicationRelativePath_IfPhyicalPathIsNotSpecified()
+        public void Compile_ReturnsGeneratedCodePath_IfLinePragmaIsNotAvailable()
         {
             // Arrange
             var fileContent = "file content";
@@ -111,7 +117,8 @@ public class MyTestType  {}";
                                                                   accessor,
                                                                   libraryManager,
                                                                   compilerOptionsProvider.Object,
-                                                                  mvcRazorHost);
+                                                                  mvcRazorHost,
+                                                                  GetOptions());
             var relativeFileInfo = new RelativeFileInfo(new TestFileInfo { Content = fileContent },
                 "some-relative-path");
 
@@ -121,15 +128,20 @@ public class MyTestType  {}";
             // Assert
             Assert.IsType<CompilationResult>(result);
             Assert.Null(result.CompiledType);
-            Assert.Equal("some-relative-path", result.CompilationFailure.SourceFilePath);
-            Assert.Equal(fileContent, result.CompilationFailure.SourceFileContent);
+
+            var compilationFailure = Assert.Single(result.CompilationFailures);
+            Assert.Equal("Generated Code", compilationFailure.SourceFilePath);
+            Assert.Equal(content, compilationFailure.SourceFileContent);
         }
 
         [Fact]
         public void Compile_DoesNotThrow_IfFileCannotBeRead()
         {
             // Arrange
-            var content = @"this should fail";
+            var path = "some-relative-path";
+            var content = $@"
+#line 1 ""{path}""
+this should fail";
             var applicationEnvironment = GetApplicationEnvironment();
             var accessor = GetLoadContextAccessor();
             var libraryManager = GetLibraryManager();
@@ -141,15 +153,20 @@ public class MyTestType  {}";
                                    .Returns(new CompilerOptions());
             var mvcRazorHost = Mock.Of<IMvcRazorHost>();
 
+            var mockFileInfo = new Mock<IFileInfo>();
+            mockFileInfo.Setup(f => f.CreateReadStream())
+                        .Throws(new Exception());
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile(path, mockFileInfo.Object);
+
             var compilationService = new RoslynCompilationService(applicationEnvironment,
                                                                   accessor,
                                                                   libraryManager,
                                                                   compilerOptionsProvider.Object,
-                                                                  mvcRazorHost);
-            var mockFileInfo = new Mock<IFileInfo>();
-            mockFileInfo.Setup(f => f.CreateReadStream())
-                        .Throws(new Exception());
-            var relativeFileInfo = new RelativeFileInfo(mockFileInfo.Object, "some-relative-path");
+                                                                  mvcRazorHost,
+                                                                  GetOptions(fileProvider));
+            
+            var relativeFileInfo = new RelativeFileInfo(mockFileInfo.Object, path);
 
             // Act
             var result = compilationService.Compile(relativeFileInfo, content);
@@ -157,8 +174,9 @@ public class MyTestType  {}";
             // Assert
             Assert.IsType<CompilationResult>(result);
             Assert.Null(result.CompiledType);
-            Assert.Equal("some-relative-path", result.CompilationFailure.SourceFilePath);
-            Assert.Null(result.CompilationFailure.SourceFileContent);
+            var compilationFailure = Assert.Single(result.CompilationFailures);
+            Assert.Equal(path, compilationFailure.SourceFilePath);
+            Assert.Null(compilationFailure.SourceFileContent);
         }
 
         [Fact]
@@ -189,7 +207,8 @@ public class MyNonCustomDefinedClass {}
                                                                   accessor,
                                                                   libraryManager,
                                                                   compilerOptionsProvider.Object,
-                                                                  mvcRazorHost.Object);
+                                                                  mvcRazorHost.Object,
+                                                                  GetOptions());
             var relativeFileInfo = new RelativeFileInfo(new TestFileInfo { PhysicalPath = "SomePath" },
                 "some-relative-path");
 
@@ -225,7 +244,8 @@ public class NotRazorPrefixType {}";
                                                                   accessor,
                                                                   libraryManager,
                                                                   compilerOptionsProvider.Object,
-                                                                  mvcRazorHost.Object);
+                                                                  mvcRazorHost.Object,
+                                                                  GetOptions());
 
             var relativeFileInfo = new RelativeFileInfo(new TestFileInfo { PhysicalPath = "SomePath" },
                 "some-relative-path");
@@ -236,6 +256,113 @@ public class NotRazorPrefixType {}";
             // Assert
             Assert.NotNull(result.CompiledType);
             Assert.Equal("RazorPrefixType", result.CompiledType.Name);
+        }
+
+        [Fact]
+        public void GetCompilationFailedResult_ReturnsCompilationResult_WithGroupedMessages()
+        {
+            // Arrange
+            var viewPath = "Views/Home/Index";
+            var generatedCodeFileName = "Generated Code";
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile(viewPath, "view-content");
+            var options = new Mock<IOptions<RazorViewEngineOptions>>();
+            options.SetupGet(o => o.Options)
+                .Returns(new RazorViewEngineOptions
+                {
+                    FileProvider = fileProvider
+                });
+            var compilationService = new RoslynCompilationService(
+                GetApplicationEnvironment(),
+                GetLoadContextAccessor(),
+                GetLibraryManager(),
+                Mock.Of<ICompilerOptionsProvider>(),
+                Mock.Of<IMvcRazorHost>(),
+                options.Object);
+
+            var assemblyName = "random-assembly-name";
+
+            var diagnostics = new[]
+            {
+                Diagnostic.Create(
+                    GetDiagnosticDescriptor("message-1"),
+                    Location.Create(
+                        viewPath,
+                        new TextSpan(10, 5),
+                        new LinePositionSpan(new LinePosition(10, 1), new LinePosition(10, 2)))),
+                Diagnostic.Create(
+                    GetDiagnosticDescriptor("message-2"),
+                    Location.Create(
+                        assemblyName,
+                        new TextSpan(1, 6),
+                        new LinePositionSpan(new LinePosition(1, 2), new LinePosition(3, 4)))),
+                Diagnostic.Create(
+                    GetDiagnosticDescriptor("message-3"),
+                    Location.Create(
+                        viewPath,
+                        new TextSpan(40, 50),
+                        new LinePositionSpan(new LinePosition(30, 5), new LinePosition(40, 12)))),
+            };
+
+            // Act
+            var compilationResult = compilationService.GetCompilationFailedResult(
+                viewPath,
+                "compilation-content",
+                assemblyName,
+                diagnostics);
+
+            // Assert
+            Assert.Collection(compilationResult.CompilationFailures,
+                failure =>
+                {
+                    Assert.Equal(viewPath, failure.SourceFilePath);
+                    Assert.Equal("view-content", failure.SourceFileContent);
+                    Assert.Collection(failure.Messages,
+                        message =>
+                        {
+                            Assert.Equal("message-1", message.Message);
+                            Assert.Equal(viewPath, message.SourceFilePath);
+                            Assert.Equal(11, message.StartLine);
+                            Assert.Equal(2, message.StartColumn);
+                            Assert.Equal(11, message.EndLine);
+                            Assert.Equal(3, message.EndColumn);
+                        },
+                        message =>
+                        {
+                            Assert.Equal("message-3", message.Message);
+                            Assert.Equal(viewPath, message.SourceFilePath);
+                            Assert.Equal(31, message.StartLine);
+                            Assert.Equal(6, message.StartColumn);
+                            Assert.Equal(41, message.EndLine);
+                            Assert.Equal(13, message.EndColumn);
+                        });
+                },
+                failure =>
+                {
+                    Assert.Equal(generatedCodeFileName, failure.SourceFilePath);
+                    Assert.Equal("compilation-content", failure.SourceFileContent);
+                    Assert.Collection(failure.Messages,
+                        message =>
+                        {
+                            Assert.Equal("message-2", message.Message);
+                            Assert.Equal(assemblyName, message.SourceFilePath);
+                            Assert.Equal(2, message.StartLine);
+                            Assert.Equal(3, message.StartColumn);
+                            Assert.Equal(4, message.EndLine);
+                            Assert.Equal(5, message.EndColumn);
+                        });
+                });
+        }
+
+        private static DiagnosticDescriptor GetDiagnosticDescriptor(string messageFormat)
+        {
+            return new DiagnosticDescriptor(
+                id: "someid",
+                title: "sometitle",
+                messageFormat: messageFormat,
+                category: "some-category",
+                defaultSeverity: DiagnosticSeverity.Error,
+                isEnabledByDefault: true);
         }
 
         private static ILibraryManager GetLibraryManager()
@@ -284,6 +411,19 @@ public class NotRazorPrefixType {}";
                                   .Returns("MyBasePath");
 
             return applicationEnvironment.Object;
+        }
+
+        private static IOptions<RazorViewEngineOptions> GetOptions(IFileProvider fileProvider = null)
+        {
+            var razorViewEngineOptions = new RazorViewEngineOptions
+            {
+                FileProvider = fileProvider ?? new TestFileProvider()
+            };
+            var options = new Mock<IOptions<RazorViewEngineOptions>>();
+            options.SetupGet(o => o.Options)
+                .Returns(razorViewEngineOptions);
+
+            return options.Object;
         }
     }
 }
