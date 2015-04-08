@@ -105,14 +105,20 @@ namespace Microsoft.AspNet.TestHost
                 });
         }
 
-        public static TestServerBuilder CreateBuilder(IServiceProvider fallbackServices, IConfiguration config, Action<IApplicationBuilder> configureApp, ConfigureServicesDelegate configureServices)
+        public static TestServerBuilder CreateBuilder(IServiceProvider fallbackServices, IConfiguration config)
         {
             return new TestServerBuilder
             {
                 FallbackServices = fallbackServices,
-                Startup = new StartupMethods(configureApp, configureServices),
                 Config = config
             };
+        }
+
+        public static TestServerBuilder CreateBuilder(IServiceProvider fallbackServices, IConfiguration config, Action<IApplicationBuilder> configureApp, ConfigureServicesDelegate configureServices)
+        {
+            var builder = CreateBuilder(fallbackServices, config);
+            builder.Startup = new StartupMethods(configureApp, configureServices);
+            return builder;
         }
 
         public HttpMessageHandler CreateHandler()
