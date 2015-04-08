@@ -13,7 +13,7 @@ Please log a new issue in the appropriate GitHub repo. Here are some of the most
 * [DependencyInjection](https://github.com/aspnet/DependencyInjection)
 * [EntityFramework](https://github.com/aspnet/EntityFramework)
 * [Identity](https://github.com/aspnet/Identity)
-* [KRuntime](https://github.com/aspnet/KRuntime)
+* [DNX](https://github.com/aspnet/dnx)
 * [MVC](https://github.com/aspnet/Mvc)
 * [SignalR-Server](https://github.com/aspnet/SignalR-Server)
 

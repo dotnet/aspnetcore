@@ -142,7 +142,7 @@ These are some of the most common repos:
 * [DependencyInjection](https://github.com/aspnet/DependencyInjection) - basic dependency injection infrastructure and default implementation
 * [EntityFramework](https://github.com/aspnet/EntityFramework) - data access technology
 * [Identity](https://github.com/aspnet/Identity) - users and membership system
-* [KRuntime](https://github.com/aspnet/KRuntime) - core runtime, project system, loader
+* [DNX](https://github.com/aspnet/dnx) - core runtime, project system, loader
 * [MVC](https://github.com/aspnet/Mvc) - MVC framework for web apps and services
 * [SignalR-Server](https://github.com/aspnet/SignalR-Server) - real-time 
 
