@@ -11,8 +11,8 @@ using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Core.Authentication;
 using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Http.Core.Infrastructure;
-using Microsoft.AspNet.Http.Infrastructure;
 using Microsoft.Framework.Internal;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Core
 {
@@ -80,18 +80,18 @@ namespace Microsoft.AspNet.Http.Core
         {
             get
             {
-                var contentType = Headers[Constants.Headers.ContentType];
+                var contentType = Headers[HeaderNames.ContentType];
                 return contentType;
             }
             set
             {
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    HttpResponseFeature.Headers.Remove(Constants.Headers.ContentType);
+                    HttpResponseFeature.Headers.Remove(HeaderNames.ContentType);
                 }
                 else
                 {
-                    HttpResponseFeature.Headers[Constants.Headers.ContentType] = new[] { value };
+                    HttpResponseFeature.Headers[HeaderNames.ContentType] = new[] { value };
                 }
             }
         }
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Http.Core
                 HttpResponseFeature.StatusCode = 302;
             }
 
-            Headers.Set(Constants.Headers.Location, location);
+            Headers.Set(HeaderNames.Location, location);
         }
 
         public override void Challenge(AuthenticationProperties properties, [NotNull] IEnumerable<string> authenticationSchemes)

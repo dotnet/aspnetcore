@@ -6,8 +6,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Http.Infrastructure;
 using Microsoft.Framework.Internal;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Core.Infrastructure
 {
@@ -775,7 +775,7 @@ namespace Microsoft.AspNet.Http.Core.Infrastructure
         {
             const NumberStyles styles = NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite;
             long value;
-            string rawValue = headers.Get(Constants.Headers.ContentLength);
+            string rawValue = headers.Get(HeaderNames.ContentLength);
             if (!string.IsNullOrWhiteSpace(rawValue) &&
                 long.TryParse(rawValue, styles, CultureInfo.InvariantCulture, out value))
             {
@@ -789,11 +789,11 @@ namespace Microsoft.AspNet.Http.Core.Infrastructure
         {
             if (value.HasValue)
             {
-                headers[Constants.Headers.ContentLength] = value.Value.ToString(CultureInfo.InvariantCulture);
+                headers[HeaderNames.ContentLength] = value.Value.ToString(CultureInfo.InvariantCulture);
             }
             else
             {
-                headers.Remove(Constants.Headers.ContentLength);
+                headers.Remove(HeaderNames.ContentLength);
             }
         }
     }

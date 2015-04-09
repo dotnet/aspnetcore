@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Http.Core.Infrastructure;
-using Microsoft.AspNet.Http.Infrastructure;
 using Microsoft.Framework.Internal;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Core
 {
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Http.Core
                 }
 
                 var headers = _request.Fetch(_features).Headers;
-                string cookiesHeader = ParsingHelpers.GetHeader(headers, Constants.Headers.Cookie) ?? string.Empty;
+                string cookiesHeader = ParsingHelpers.GetHeader(headers, HeaderNames.Cookie) ?? string.Empty;
 
                 if (_cookiesCollection == null)
                 {

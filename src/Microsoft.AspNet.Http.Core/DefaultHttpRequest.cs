@@ -6,10 +6,10 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Infrastructure;
 using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Http.Core.Infrastructure;
+using Microsoft.AspNet.Http.Infrastructure;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Core
 {
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Http.Core
 
         public override bool IsHttps
         {
-            get { return string.Equals("https", Scheme, StringComparison.OrdinalIgnoreCase); }
+            get { return string.Equals(Constants.Https, Scheme, StringComparison.OrdinalIgnoreCase); }
         }
 
         public override HostString Host
@@ -145,8 +145,8 @@ namespace Microsoft.AspNet.Http.Core
 
         public override string ContentType
         {
-            get { return Headers[Constants.Headers.ContentType]; }
-            set { Headers[Constants.Headers.ContentType] = value; }
+            get { return Headers[HeaderNames.ContentType]; }
+            set { Headers[HeaderNames.ContentType] = value; }
         }
 
         public override bool HasFormContentType

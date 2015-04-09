@@ -7,25 +7,6 @@ namespace Microsoft.AspNet.Http.Infrastructure
     {
         internal const string Https = "HTTPS";
 
-        internal const string HttpDateFormat = "r";
-
-        internal static class Headers
-        {
-            internal const string ContentType = "Content-Type";
-            internal const string CacheControl = "Cache-Control";
-            internal const string MediaType = "Media-Type";
-            internal const string Accept = "Accept";
-            internal const string AcceptCharset = "Accept-Charset";
-            internal const string Host = "Host";
-            internal const string ETag = "ETag";
-            internal const string Location = "Location";
-            internal const string ContentLength = "Content-Length";
-            internal const string Cookie = "Cookie";
-            internal const string SetCookie = "Set-Cookie";
-            internal const string Expires = "Expires";
-            internal const string WebSocketSubProtocols = "Sec-WebSocket-Protocol";
-        }
-
         internal static class BuilderProperties
         {
             internal static string ServerInformation = "server.Information";

@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Http.Infrastructure;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Core.Collections
 {
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Http.Core.Collections
         /// <param name="value"></param>
         public void Append(string key, string value)
         {
-            Headers.AppendValues(Constants.Headers.SetCookie, UrlEncoder.Default.UrlEncode(key) + "=" + UrlEncoder.Default.UrlEncode(value) + "; path=/");
+            Headers.AppendValues(HeaderNames.SetCookie, UrlEncoder.Default.UrlEncode(key) + "=" + UrlEncoder.Default.UrlEncode(value) + "; path=/");
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Http.Core.Collections
                 !expiresHasValue ? null : options.Expires.Value.ToString("ddd, dd-MMM-yyyy HH:mm:ss ", CultureInfo.InvariantCulture) + "GMT",
                 !options.Secure ? null : "; secure",
                 !options.HttpOnly ? null : "; HttpOnly");
-            Headers.AppendValues("Set-Cookie", setCookieValue);
+            Headers.AppendValues(HeaderNames.SetCookie, setCookieValue);
         }
 
         /// <summary>
@@ -73,14 +73,14 @@ namespace Microsoft.AspNet.Http.Core.Collections
             Func<string, bool> predicate = value => value.StartsWith(key + "=", StringComparison.OrdinalIgnoreCase);
 
             var deleteCookies = new[] { UrlEncoder.Default.UrlEncode(key) + "=; expires=Thu, 01-Jan-1970 00:00:00 GMT" };
-            IList<string> existingValues = Headers.GetValues(Constants.Headers.SetCookie);
+            IList<string> existingValues = Headers.GetValues(HeaderNames.SetCookie);
             if (existingValues == null || existingValues.Count == 0)
             {
-                Headers.SetValues(Constants.Headers.SetCookie, deleteCookies);
+                Headers.SetValues(HeaderNames.SetCookie, deleteCookies);
             }
             else
             {
-                Headers.SetValues(Constants.Headers.SetCookie, existingValues.Where(value => !predicate(value)).Concat(deleteCookies).ToArray());
+                Headers.SetValues(HeaderNames.SetCookie, existingValues.Where(value => !predicate(value)).Concat(deleteCookies).ToArray());
             }
         }
 
@@ -112,10 +112,10 @@ namespace Microsoft.AspNet.Http.Core.Collections
                 rejectPredicate = value => value.StartsWith(key + "=", StringComparison.OrdinalIgnoreCase);
             }
 
-            IList<string> existingValues = Headers.GetValues(Constants.Headers.SetCookie);
+            IList<string> existingValues = Headers.GetValues(HeaderNames.SetCookie);
             if (existingValues != null)
             {
-                Headers.SetValues(Constants.Headers.SetCookie, existingValues.Where(value => !rejectPredicate(value)).ToArray());
+                Headers.SetValues(HeaderNames.SetCookie, existingValues.Where(value => !rejectPredicate(value)).ToArray());
             }
 
             Append(key, string.Empty, new CookieOptions

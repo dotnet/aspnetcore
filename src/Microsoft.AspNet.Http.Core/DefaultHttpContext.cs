@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.WebSockets;
 using System.Security.Claims;
 using System.Threading;
@@ -13,8 +12,8 @@ using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Core.Authentication;
 using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Http.Core.Infrastructure;
-using Microsoft.AspNet.Http.Infrastructure;
 using Microsoft.Framework.Internal;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Core
 {
@@ -169,7 +168,7 @@ namespace Microsoft.AspNet.Http.Core
         {
             get
             {
-                return Request.Headers.GetValues(Constants.Headers.WebSocketSubProtocols) ?? EmptyList;
+                return Request.Headers.GetValues(HeaderNames.WebSocketSubProtocols) ?? EmptyList;
             }
         }
 

@@ -54,6 +54,7 @@ namespace Microsoft.Net.Http.Headers
         public const string Vary = "Vary";
         public const string Via = "Via";
         public const string Warning = "Warning";
+        public const string WebSocketSubProtocols = "Sec-WebSocket-Protocol";
         public const string WWWAuthenticate = "WWW-Authenticate";
     }
 }
