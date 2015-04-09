@@ -246,37 +246,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
-        public async Task GetActionArgumentsAsync_SetsMaxModelErrors()
-        {
-            // Arrange
-            Func<object, int> method = foo => 1;
-            var actionDescriptor = GetActionDescriptor();
-            actionDescriptor.Parameters.Add(
-                new ParameterDescriptor
-                {
-                    Name = "foo",
-                    ParameterType = typeof(object),
-                        BindingInfo = new BindingInfo(),
-                });
-
-            var actionContext = new ActionContext(
-                new DefaultHttpContext(),
-                new RouteData(),
-                actionDescriptor);
-
-            var actionBindingContext = GetActionBindingContext();
-
-            var argumentBinder = GetArgumentBinder();
-
-            // Act
-            var result = await argumentBinder
-                .BindActionArgumentsAsync(actionContext, actionBindingContext, new TestController());
-
-            // Assert
-            Assert.Equal(5, actionContext.ModelState.MaxAllowedErrors);
-        }
-
-        [Fact]
         public async Task GetActionArgumentsAsync_CallsValidator_ForControllerProperties_IfModelBinderSucceeds()
         {
             // Arrange
@@ -409,9 +378,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
         private static DefaultControllerActionArgumentBinder GetArgumentBinder(IObjectModelValidator validator = null)
         {
-            var options = new MockMvcOptionsAccessor();
-            options.Options.MaxModelValidationErrors = 5;
-
             if (validator == null)
             {
                 var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
@@ -421,8 +387,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             return new DefaultControllerActionArgumentBinder(
                 TestModelMetadataProvider.CreateDefaultProvider(),
-                validator,
-                options);
+                validator);
         }
 
         private class TestController

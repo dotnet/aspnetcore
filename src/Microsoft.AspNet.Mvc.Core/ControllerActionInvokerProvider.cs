@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.Mvc.Core
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
         private readonly IScopedInstance<ActionBindingContext> _actionBindingContextAccessor;
         private readonly ITempDataDictionary _tempData;
+        private readonly int _maxModelValidationErrors;
 
         public ControllerActionInvokerProvider(
             IControllerFactory controllerFactory,
@@ -41,6 +42,7 @@ namespace Microsoft.AspNet.Mvc.Core
             _valueProviderFactories = optionsAccessor.Options.ValueProviderFactories.ToArray();
             _actionBindingContextAccessor = actionBindingContextAccessor;
             _tempData = tempData;
+            _maxModelValidationErrors = optionsAccessor.Options.MaxModelValidationErrors;
         }
 
         public int Order
@@ -67,7 +69,8 @@ namespace Microsoft.AspNet.Mvc.Core
                                     _modelValidatorProviders,
                                     _valueProviderFactories,
                                     _actionBindingContextAccessor,
-                                    _tempData);
+                                    _tempData,
+                                    _maxModelValidationErrors);
             }
         }
 

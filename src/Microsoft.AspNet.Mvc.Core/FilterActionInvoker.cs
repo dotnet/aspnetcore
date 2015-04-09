@@ -21,8 +21,8 @@ namespace Microsoft.AspNet.Mvc.Core
         private readonly IReadOnlyList<IOutputFormatter> _outputFormatters;
         private readonly IReadOnlyList<IModelValidatorProvider> _modelValidatorProviders;
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
-
         private readonly IScopedInstance<ActionBindingContext> _actionBindingContextAccessor;
+        private readonly int _maxModelValidationErrors;
 
         private IFilter[] _filters;
         private FilterCursor _cursor;
@@ -48,7 +48,8 @@ namespace Microsoft.AspNet.Mvc.Core
             [NotNull] IReadOnlyList<IModelBinder> modelBinders,
             [NotNull] IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
             [NotNull] IReadOnlyList<IValueProviderFactory> valueProviderFactories,
-            [NotNull] IScopedInstance<ActionBindingContext> actionBindingContextAccessor)
+            [NotNull] IScopedInstance<ActionBindingContext> actionBindingContextAccessor,
+            int maxModelValidationErrors)
         {
             ActionContext = actionContext;
 
@@ -59,6 +60,7 @@ namespace Microsoft.AspNet.Mvc.Core
             _modelValidatorProviders = modelValidatorProviders;
             _valueProviderFactories = valueProviderFactories;
             _actionBindingContextAccessor = actionBindingContextAccessor;
+            _maxModelValidationErrors = maxModelValidationErrors;
         }
 
         protected ActionContext ActionContext { get; private set; }
@@ -100,6 +102,8 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             _filters = GetFilters();
             _cursor = new FilterCursor(_filters);
+
+            ActionContext.ModelState.MaxAllowedErrors = _maxModelValidationErrors;
 
             await InvokeAllAuthorizationFiltersAsync();
 

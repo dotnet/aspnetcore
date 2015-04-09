@@ -20,16 +20,13 @@ namespace Microsoft.AspNet.Mvc
     public class DefaultControllerActionArgumentBinder : IControllerActionArgumentBinder
     {
         private readonly IModelMetadataProvider _modelMetadataProvider;
-        private readonly MvcOptions _options;
         private readonly IObjectModelValidator _validator;
 
         public DefaultControllerActionArgumentBinder(
             IModelMetadataProvider modelMetadataProvider,
-            IObjectModelValidator validator,
-            IOptions<MvcOptions> optionsAccessor)
+            IObjectModelValidator validator)
         {
             _modelMetadataProvider = modelMetadataProvider;
-            _options = optionsAccessor.Options;
             _validator = validator;
         }
 
@@ -89,7 +86,6 @@ namespace Microsoft.AspNet.Mvc
             IDictionary<string, object> arguments,
             IEnumerable<ParameterDescriptor> parameterMetadata)
         {
-            modelState.MaxAllowedErrors = _options.MaxModelValidationErrors;
             foreach (var parameter in parameterMetadata)
             {
                 var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterType);

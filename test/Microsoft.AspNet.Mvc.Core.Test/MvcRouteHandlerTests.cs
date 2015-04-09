@@ -68,42 +68,6 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public async Task RouteAsync_SetsMaxErrorCountOnModelStateDictionary()
-        {
-            // Arrange
-            var expected = 199;
-            var optionsAccessor = new Mock<IOptions<MvcOptions>>();
-            var options = new MvcOptions
-            {
-                MaxModelValidationErrors = expected
-            };
-            optionsAccessor.SetupGet(o => o.Options)
-                           .Returns(options);
-
-            var invoked = false;
-            var mockInvokerFactory = new Mock<IActionInvokerFactory>();
-            mockInvokerFactory.Setup(f => f.CreateInvoker(It.IsAny<ActionContext>()))
-                              .Callback<ActionContext>(c =>
-                              {
-                                  Assert.Equal(expected, c.ModelState.MaxAllowedErrors);
-                                  invoked = true;
-                              })
-                              .Returns(Mock.Of<IActionInvoker>());
-
-            var context = CreateRouteContext(
-                invokerFactory: mockInvokerFactory.Object,
-                optionsAccessor: optionsAccessor.Object);
-
-            var handler = new MvcRouteHandler();
-
-            // Act
-            await handler.RouteAsync(context);
-
-            // Assert
-            Assert.True(invoked);
-        }
-
-        [Fact]
         public async Task RouteAsync_CreatesNewRouteData()
         {
             // Arrange

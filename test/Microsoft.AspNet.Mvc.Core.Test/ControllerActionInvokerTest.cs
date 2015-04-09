@@ -13,6 +13,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Logging.Testing;
 using Microsoft.Framework.OptionsModel;
@@ -1959,18 +1960,37 @@ namespace Microsoft.AspNet.Mvc
             Assert.Same(input, contentResult.Value);
         }
 
+        [Fact]
+        public async Task MaxAllowedErrorsIsSet_BeforeCallingAuthorizationFilter()
+        {
+            // Arrange
+            var expected = 147;
+            var filter = new MockAuthorizationFilter(expected);
+            var invoker = CreateInvoker(
+                filter,
+                actionThrows: false,
+                tempData: null,
+                maxAllowedErrorsInModelState: expected);
+
+            // Act & Assert
+            // The authorization filter asserts if MaxAllowedErrors was set to the right value.
+            await invoker.InvokeAsync();
+        }
+
         private TestControllerActionInvoker CreateInvoker(
             IFilter filter,
             bool actionThrows = false,
-            ITempDataDictionary tempData = null)
+            ITempDataDictionary tempData = null,
+            int maxAllowedErrorsInModelState = 200)
         {
-            return CreateInvoker(new[] { filter }, actionThrows, tempData);
+            return CreateInvoker(new[] { filter }, actionThrows, tempData, maxAllowedErrorsInModelState);
         }
 
         private TestControllerActionInvoker CreateInvoker(
             IFilter[] filters,
             bool actionThrows = false,
-            ITempDataDictionary tempData = null)
+            ITempDataDictionary tempData = null,
+            int maxAllowedErrorsInModelState = 200)
         {
             var actionDescriptor = new ControllerActionDescriptor()
             {
@@ -2044,7 +2064,8 @@ namespace Microsoft.AspNet.Mvc
                 new IModelValidatorProvider[0],
                 new IValueProviderFactory[0],
                 new MockScopedInstance<ActionBindingContext>(),
-                tempData);
+                tempData,
+                maxAllowedErrorsInModelState);
 
             return invoker;
         }
@@ -2100,13 +2121,13 @@ namespace Microsoft.AspNet.Mvc
                 new IOutputFormatter[0],
                 new DefaultControllerActionArgumentBinder(
                     metadataProvider,
-                    new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider),
-                    new MockMvcOptionsAccessor()),
+                    new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider)),
                 new IModelBinder[] { binder.Object },
                 new IModelValidatorProvider[0],
                 new IValueProviderFactory[0],
                 new MockScopedInstance<ActionBindingContext>(),
-                Mock.Of<ITempDataDictionary>());
+                Mock.Of<ITempDataDictionary>(),
+                200);
 
             // Act
             await invoker.InvokeAsync();
@@ -2205,7 +2226,8 @@ namespace Microsoft.AspNet.Mvc
                 IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
                 IReadOnlyList<IValueProviderFactory> valueProviderFactories,
                 IScopedInstance<ActionBindingContext> actionBindingContext,
-                ITempDataDictionary tempData)
+                ITempDataDictionary tempData,
+                int maxAllowedErrorsInModelState)
                 : base(
                       actionContext,
                       filterProvider,
@@ -2218,7 +2240,8 @@ namespace Microsoft.AspNet.Mvc
                       modelValidatorProviders,
                       valueProviderFactories,
                       actionBindingContext,
-                      tempData)
+                      tempData,
+                      maxAllowedErrorsInModelState)
             {
                 ControllerFactory = controllerFactory;
             }
@@ -2231,6 +2254,22 @@ namespace Microsoft.AspNet.Mvc
 
                 // Make sure that the controller was disposed in every test that creates ones.
                 ControllerFactory.Verify();
+            }
+        }
+
+        private class MockAuthorizationFilter : IAuthorizationFilter
+        {
+            int _expectedMaxAllowedErrors;
+
+            public MockAuthorizationFilter(int maxAllowedErrors)
+            {
+                _expectedMaxAllowedErrors = maxAllowedErrors;
+            }
+
+            public void OnAuthorization([NotNull]AuthorizationContext context)
+            {
+                Assert.NotNull(context.ModelState.MaxAllowedErrors);
+                Assert.Equal(_expectedMaxAllowedErrors, context.ModelState.MaxAllowedErrors);
             }
         }
     }
