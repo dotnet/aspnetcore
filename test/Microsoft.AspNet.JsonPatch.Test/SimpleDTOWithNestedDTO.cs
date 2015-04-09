@@ -15,6 +15,8 @@ namespace Microsoft.AspNet.JsonPatch.Test
 
         public List<SimpleDTO> SimpleDTOList { get; set; }
 
+        public IList<SimpleDTO> SimpleDTOIList { get; set; }
+
         public SimpleDTOWithNestedDTO()
         {
             this.NestedDTO = new NestedDTO();

@@ -3,10 +3,13 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNet.JsonPatch.Exceptions;
 using Microsoft.AspNet.JsonPatch.Helpers;
 using Microsoft.AspNet.JsonPatch.Operations;
+using Microsoft.Framework.Internal;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNet.JsonPatch.Adapters
@@ -124,17 +127,16 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             }
             else
             {
-                positionAsInteger = PropertyHelpers.GetNumericEnd(path);
+                positionAsInteger = GetNumericEnd(path);
 
                 if (positionAsInteger > -1)
                 {
                     actualPathToProperty = path.Substring(0,
-                        path.IndexOf('/' + positionAsInteger.ToString()));
+                        path.LastIndexOf('/' + positionAsInteger.ToString()));
                 }
             }
 
-            var patchProperty = PropertyHelpers
-                .FindPropertyAndParent(objectToApplyTo, actualPathToProperty, ContractResolver);
+            var patchProperty = FindPropertyAndParent(objectToApplyTo, actualPathToProperty);
 
             // does property at path exist?
             if (!CheckIfPropertyExists(patchProperty, objectToApplyTo, operationToReport, path))
@@ -148,13 +150,12 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             if (appendList || positionAsInteger > -1)
             {
                 // what if it's an array but there's no position??
-                if (IsNonStringArray(patchProperty))
+                if (IsNonStringArray(patchProperty.Property.PropertyType))
                 {
-                    // now, get the generic type of the enumerable
-                    var genericTypeOfArray = PropertyHelpers.GetEnumerableType(
-                        patchProperty.Property.PropertyType);
+                    // now, get the generic type of the IList<> from Property type.
+                    var genericTypeOfArray = GetIListType(patchProperty.Property.PropertyType);
 
-                    var conversionResult = PropertyHelpers.ConvertToActualType(genericTypeOfArray, value);
+                    var conversionResult = ConvertToActualType(genericTypeOfArray, value);
 
                     if (!CheckIfPropertyCanBeSet(conversionResult, objectToApplyTo, operationToReport, path))
                     {
@@ -198,7 +199,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             }
             else
             {
-                var conversionResultTuple = PropertyHelpers.ConvertToActualType(
+                var conversionResultTuple = ConvertToActualType(
                     patchProperty.Property.PropertyType,
                     value);
 
@@ -244,7 +245,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             var positionAsInteger = -1;
             var actualFromProperty = operation.from;
 
-            positionAsInteger = PropertyHelpers.GetNumericEnd(operation.from);
+            positionAsInteger = GetNumericEnd(operation.from);
 
             if (positionAsInteger > -1)
             {
@@ -252,8 +253,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                     operation.from.IndexOf('/' + positionAsInteger.ToString()));
             }
 
-            var patchProperty = PropertyHelpers
-                .FindPropertyAndParent(objectToApplyTo, actualFromProperty, ContractResolver);
+            var patchProperty = FindPropertyAndParent(objectToApplyTo, actualFromProperty);
 
             // does property at from exist?
             if (!CheckIfPropertyExists(patchProperty, objectToApplyTo, operation, operation.from))
@@ -265,10 +265,10 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             // the path must end with "/position" or "/-", which we already determined before.
             if (positionAsInteger > -1)
             {
-                if (IsNonStringArray(patchProperty))
+                if (IsNonStringArray(patchProperty.Property.PropertyType))
                 {
-                    // now, get the generic type of the enumerable
-                    var genericTypeOfArray = PropertyHelpers.GetEnumerableType(patchProperty.Property.PropertyType);
+                    // now, get the generic type of the IList<> from Property type.
+                    var genericTypeOfArray = GetIListType(patchProperty.Property.PropertyType);
 
                     // get value (it can be cast, we just checked that)
                     var array = (IList)patchProperty.Property.ValueProvider.GetValue(patchProperty.Parent);
@@ -345,7 +345,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             }
             else
             {
-                positionAsInteger = PropertyHelpers.GetNumericEnd(path);
+                positionAsInteger = GetNumericEnd(path);
 
                 if (positionAsInteger > -1)
                 {
@@ -354,8 +354,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                 }
             }
 
-            var patchProperty = PropertyHelpers
-                .FindPropertyAndParent(objectToApplyTo, actualPathToProperty, ContractResolver);
+            var patchProperty = FindPropertyAndParent(objectToApplyTo, actualPathToProperty);
 
             // does the target location exist?
             if (!CheckIfPropertyExists(patchProperty, objectToApplyTo, operationToReport, path))
@@ -369,10 +368,10 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             if (removeFromList || positionAsInteger > -1)
             {
                 // what if it's an array but there's no position??
-                if (IsNonStringArray(patchProperty))
+                if (IsNonStringArray(patchProperty.Property.PropertyType))
                 {
-                    // now, get the generic type of the enumerable
-                    var genericTypeOfArray = PropertyHelpers.GetEnumerableType(patchProperty.Property.PropertyType);
+                    // now, get the generic type of the IList<> from Property type.
+                    var genericTypeOfArray = GetIListType(patchProperty.Property.PropertyType);
 
                     // get value (it can be cast, we just checked that)
                     var array = (IList)patchProperty.Property.ValueProvider.GetValue(patchProperty.Parent);
@@ -480,7 +479,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             var positionInPathAsInteger = -1;
             var actualPathProperty = operation.path;
 
-            positionInPathAsInteger = PropertyHelpers.GetNumericEnd(operation.path);
+            positionInPathAsInteger = GetNumericEnd(operation.path);
 
             if (positionInPathAsInteger > -1)
             {
@@ -488,8 +487,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                     operation.path.IndexOf('/' + positionInPathAsInteger.ToString()));
             }
 
-            var patchProperty = PropertyHelpers
-                .FindPropertyAndParent(objectToApplyTo, actualPathProperty, ContractResolver);
+            var patchProperty = FindPropertyAndParent(objectToApplyTo, actualPathProperty);
 
             // does property at path exist?
             if (!CheckIfPropertyExists(patchProperty, objectToApplyTo, operation, operation.path))
@@ -504,11 +502,10 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             // the path must end with "/position" or "/-", which we already determined before.
             if (positionInPathAsInteger > -1)
             {
-                if (IsNonStringArray(patchProperty))
+                if (IsNonStringArray(patchProperty.Property.PropertyType))
                 {
-                    // now, get the generic type of the enumerable
-                    typeOfFinalPropertyAtPathLocation = PropertyHelpers
-                        .GetEnumerableType(patchProperty.Property.PropertyType);
+                    // now, get the generic type of the IList<> from Property type.
+                    typeOfFinalPropertyAtPathLocation = GetIListType(patchProperty.Property.PropertyType);
 
                     // get value (it can be cast, we just checked that)
                     var array = (IList)patchProperty.Property.ValueProvider.GetValue(patchProperty.Parent);
@@ -542,9 +539,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                 typeOfFinalPropertyAtPathLocation = patchProperty.Property.PropertyType;
             }
 
-            var conversionResultTuple = PropertyHelpers.ConvertToActualType(
-                typeOfFinalPropertyAtPathLocation,
-                operation.value);
+            var conversionResultTuple = ConvertToActualType(typeOfFinalPropertyAtPathLocation, operation.value);
 
             // Is conversion successful
             if (!CheckIfPropertyCanBeSet(conversionResultTuple, objectToApplyTo, operation, operation.path))
@@ -610,7 +605,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             var positionAsInteger = -1;
             var actualFromProperty = operation.from;
 
-            positionAsInteger = PropertyHelpers.GetNumericEnd(operation.from);
+            positionAsInteger = GetNumericEnd(operation.from);
 
             if (positionAsInteger > -1)
             {
@@ -618,8 +613,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                     operation.from.IndexOf('/' + positionAsInteger.ToString()));
             }
 
-            var patchProperty = PropertyHelpers
-                .FindPropertyAndParent(objectToApplyTo, actualFromProperty, ContractResolver);
+            var patchProperty = FindPropertyAndParent(objectToApplyTo, actualFromProperty);
 
             // does property at from exist?
             if (!CheckIfPropertyExists(patchProperty, objectToApplyTo, operation, operation.from))
@@ -632,10 +626,10 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             // the path must end with "/position" or "/-", which we already determined before.
             if (positionAsInteger > -1)
             {
-                if (IsNonStringArray(patchProperty))
+                if (IsNonStringArray(patchProperty.Property.PropertyType))
                 {
-                    // now, get the generic type of the enumerable
-                    var genericTypeOfArray = PropertyHelpers.GetEnumerableType(patchProperty.Property.PropertyType);
+                    // now, get the generic type of the IList<> from Property type.
+                    var genericTypeOfArray = GetIListType(patchProperty.Property.PropertyType);
 
                     // get value (it can be cast, we just checked that)
                     var array = (IList)patchProperty.Property.ValueProvider.GetValue(patchProperty.Parent);
@@ -702,11 +696,14 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             return true;
         }
 
-        private bool IsNonStringArray(JsonPatchProperty patchProperty)
+        private bool IsNonStringArray(Type type)
         {
-            return !(patchProperty.Property.PropertyType == typeof(string))
-                    && typeof(IList).GetTypeInfo().IsAssignableFrom(
-                        patchProperty.Property.PropertyType.GetTypeInfo());
+            if (GetIListType(type) != null)
+            {
+                return true;
+            }
+
+            return (!(type == typeof(string)) && typeof(IList).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()));
         }
 
         private bool CheckIfPropertyCanBeSet(
@@ -738,6 +735,112 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             {
                 throw new JsonPatchException<T>(jsonPatchError);
             }
+        }
+
+        private JsonPatchProperty FindPropertyAndParent(
+            object targetObject,
+            string propertyPath)
+        {
+            try
+            {
+                var splitPath = propertyPath.Split('/');
+
+                // skip the first one if it's empty
+                var startIndex = (string.IsNullOrWhiteSpace(splitPath[0]) ? 1 : 0);
+
+                for (int i = startIndex; i < splitPath.Length; i++)
+                {
+                    var jsonContract = (JsonObjectContract)ContractResolver.ResolveContract(targetObject.GetType());
+
+                    foreach (var property in jsonContract.Properties)
+                    {
+                        if (string.Equals(property.PropertyName, splitPath[i], StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (i == (splitPath.Length - 1))
+                            {
+                                return new JsonPatchProperty(property, targetObject);
+                            }
+                            else
+                            {
+                                targetObject = property.ValueProvider.GetValue(targetObject);
+
+                                // if property is of IList type then get the array index from splitPath and get the
+                                // object at the indexed position from the list.
+                               if (GetIListType(property.PropertyType) != null)
+                                {
+                                    var index = int.Parse(splitPath[++i]);
+                                    targetObject = ((IList)targetObject)[index];
+                                }
+                            }
+
+                            break;
+                        }
+                    }
+                }
+
+                return null;
+            }
+            catch (Exception)
+            {
+                // will result in JsonPatchException in calling class, as expected
+                return null;
+            }
+        }
+
+        private ConversionResult ConvertToActualType(Type propertyType, object value)
+        {
+            try
+            {
+                var o = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(value), propertyType);
+
+                return new ConversionResult(true, o);
+            }
+            catch (Exception)
+            {
+                return new ConversionResult(false, null);
+            }
+        }
+
+        private Type GetIListType([NotNull] Type type)
+        {
+            if (IsGenericListType(type))
+            {
+                return type.GetGenericArguments()[0];
+            }
+
+            foreach (Type interfaceType in type.GetTypeInfo().ImplementedInterfaces)
+            {
+                if (IsGenericListType(interfaceType))
+                {
+                    return interfaceType.GetGenericArguments()[0];
+                }
+            }
+
+            return null;
+        }
+
+        private bool IsGenericListType([NotNull] Type type)
+        {
+            if (type.GetTypeInfo().IsGenericType &&
+                    type.GetGenericTypeDefinition() == typeof(IList<>))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private int GetNumericEnd(string path)
+        {
+            var possibleIndex = path.Substring(path.LastIndexOf("/") + 1);
+            var castedIndex = -1;
+
+            if (int.TryParse(possibleIndex, out castedIndex))
+            {
+                return castedIndex;
+            }
+
+            return -1;
         }
     }
 }

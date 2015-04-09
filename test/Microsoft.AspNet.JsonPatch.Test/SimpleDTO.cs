@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Microsoft.AspNet.JsonPatch.Test
@@ -9,6 +10,7 @@ namespace Microsoft.AspNet.JsonPatch.Test
     public class SimpleDTO
     {
         public List<int> IntegerList { get; set; }
+        public IList<int> IntegerIList { get; set; }
         public int IntegerValue { get; set; }
         public string StringProperty { get; set; }
         public string AnotherStringProperty { get; set; }

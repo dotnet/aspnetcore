@@ -99,6 +99,49 @@ namespace Microsoft.AspNet.JsonPatch.Test
         }
 
         [Fact]
+        public void AddToIntegerIList()
+        {
+            // Arrange
+            var doc = new SimpleDTO()
+            {
+                IntegerIList = new List<int>() { 1, 2, 3 }
+            };
+
+            // create patch
+            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            patchDoc.Add<int>(o => o.IntegerIList, 4, 0);
+
+            // Act
+            patchDoc.ApplyTo(doc);
+
+            // Assert
+            Assert.Equal(new List<int>() { 4, 1, 2, 3 }, doc.IntegerIList);
+        }
+
+        [Fact]
+        public void AddToIntegerIListWithSerialization()
+        {
+            // Arrange
+            var doc = new SimpleDTO()
+            {
+                IntegerIList = new List<int>() { 1, 2, 3 }
+            };
+
+            // create patch
+            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            patchDoc.Add<int>(o => o.IntegerIList, 4, 0);
+
+            var serialized = JsonConvert.SerializeObject(patchDoc);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+
+            // Act
+            deserialized.ApplyTo(doc);
+
+            // Assert
+            Assert.Equal(new List<int>() { 4, 1, 2, 3 }, doc.IntegerIList);
+        }
+
+        [Fact]
         public void AddToListInvalidPositionTooLarge()
         {
             // Arrange
