@@ -383,6 +383,25 @@ Products: Laptops (3)";
             Assert.Equal(expected3, response4.Trim());
         }
 
+        [Fact]
+        public async Task CacheTagHelper_DoesNotCacheIfDisabled()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+            client.BaseAddress = new Uri("http://localhost");
+
+            // Act
+            var response1 = await client.GetStringAsync("/catalog/GetDealPercentage/20?isEnabled=true");
+            var response2 = await client.GetStringAsync("/catalog/GetDealPercentage/40?isEnabled=true");
+            var response3 = await client.GetStringAsync("/catalog/GetDealPercentage/30?isEnabled=false");
+
+            // Assert
+            Assert.Equal("Deal percentage is 20", response1.Trim());
+            Assert.Equal("Deal percentage is 20", response2.Trim());
+            Assert.Equal("Deal percentage is 30", response3.Trim());
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData(true)]

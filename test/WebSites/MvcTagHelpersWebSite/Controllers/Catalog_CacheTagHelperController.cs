@@ -80,5 +80,13 @@ namespace MvcTagHelpersWebSite.Controllers
             ProductsService.UpdateProducts();
             return new EmptyResult();
         }
+
+        [HttpGet("/catalog/GetDealPercentage/{dealPercentage}")]
+        public IActionResult Deals(int dealPercentage, bool isEnabled)
+        {
+            ViewBag.ProductDealPercentage = dealPercentage;
+            ViewBag.IsEnabled = isEnabled;
+            return View();
+        }
     }
 }
