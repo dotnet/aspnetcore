@@ -883,7 +883,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        private class SendResponseLogContext : ReflectionBasedLogValues
+        private class SendResponseLogContext : ILogValues
         {
             private readonly Response _response;
 
@@ -896,6 +896,17 @@ namespace Microsoft.Net.Http.Server
             public string StatusCode { get { return _response.StatusCode.ToString(CultureInfo.InvariantCulture); } }
             public string ReasonPhrase { get { return _response.ReasonPhrase ?? _response.GetReasonPhrase(_response.StatusCode); } }
             public IEnumerable Headers { get { return new HeadersLogStructure(_response.Headers); } }
+
+            public IEnumerable<KeyValuePair<string, object>> GetValues()
+            {
+                return new[]
+                {
+                    new KeyValuePair<string, object>("Protocol", Protocol),
+                    new KeyValuePair<string, object>("StatusCode", StatusCode),
+                    new KeyValuePair<string, object>("ReasonPhrase", ReasonPhrase),
+                    new KeyValuePair<string, object>("Headers", Headers),
+                };
+            }
 
             public override string ToString()
             {

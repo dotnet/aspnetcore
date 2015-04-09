@@ -23,7 +23,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.Net.Http.Server
@@ -34,7 +33,7 @@ namespace Microsoft.Net.Http.Server
         {
             if (factory == null)
             {
-                factory = new LoggerFactory();
+                return new NullLogger();
             }
 
             return factory.CreateLogger(type.FullName);
@@ -85,6 +84,30 @@ namespace Microsoft.Net.Http.Server
             else
             {
                 logger.LogError(location + "; " + message);
+            }
+        }
+
+        private class NullLogger : ILogger
+        {
+            public IDisposable BeginScopeImpl(object state)
+            {
+                return new NullDispose();
+            }
+
+            public bool IsEnabled(LogLevel logLevel)
+            {
+                return false;
+            }
+
+            public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+            {
+            }
+
+            private class NullDispose : IDisposable
+            {
+                public void Dispose()
+                {
+                }
             }
         }
     }

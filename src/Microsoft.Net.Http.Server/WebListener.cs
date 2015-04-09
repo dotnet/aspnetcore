@@ -91,7 +91,7 @@ namespace Microsoft.Net.Http.Server
         private long? _requestQueueLength;
 
         public WebListener()
-            : this(new LoggerFactory())
+            : this(null)
         {
         }
 

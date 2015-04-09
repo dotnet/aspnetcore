@@ -514,7 +514,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        private class ReceiveRequestLogContext : ReflectionBasedLogValues
+        private class ReceiveRequestLogContext : ILogValues
         {
             private readonly Request _request;
 
@@ -529,6 +529,19 @@ namespace Microsoft.Net.Http.Server
             public string Query { get { return _request.QueryString; } }
             public string Protocol { get { return "HTTP/" + _request.ProtocolVersion.ToString(2); } }
             public IEnumerable Headers { get { return new HeadersLogStructure(_request.Headers); } }
+
+            public IEnumerable<KeyValuePair<string, object>> GetValues()
+            {
+                return new[]
+                {
+                    new KeyValuePair<string, object>("Method", Method),
+                    new KeyValuePair<string, object>("PathBase", PathBase),
+                    new KeyValuePair<string, object>("Path", Path),
+                    new KeyValuePair<string, object>("Query", Query),
+                    new KeyValuePair<string, object>("Protocol", Protocol),
+                    new KeyValuePair<string, object>("Headers", Headers),
+                };
+            }
 
             public override string ToString()
             {
