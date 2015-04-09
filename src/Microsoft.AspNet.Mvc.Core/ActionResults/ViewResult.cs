@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -50,10 +51,21 @@ namespace Microsoft.AspNet.Mvc
             var viewEngine = ViewEngine ??
                              context.HttpContext.RequestServices.GetRequiredService<ICompositeViewEngine>();
 
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<ViewResult>>();
+
             var viewName = ViewName ?? context.ActionDescriptor.Name;
-            var view = viewEngine.FindView(context, viewName)
-                                 .EnsureSuccessful()
-                                 .View;
+            var viewEngineResult = viewEngine.FindView(context, viewName);
+            if(!viewEngineResult.Success)
+            {
+                logger.LogError(
+                    "The view '{ViewName}' was not found. Searched locations: {SearchedViewLocations}", 
+                    viewName,
+                    viewEngineResult.SearchedLocations);
+            }
+
+            var view = viewEngineResult.EnsureSuccessful().View;
+
+            logger.LogVerbose("The view '{ViewName}' was found.", viewName);
 
             if (StatusCode != null)
             {
