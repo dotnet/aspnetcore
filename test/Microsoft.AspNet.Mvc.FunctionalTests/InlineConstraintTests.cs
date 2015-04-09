@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Act
-            var response = 
+            var response =
                 await client.GetAsync(@"http://localhost/products/GetProductByManufacturingDate/2014-10-11T13:45:30");
 
             // Assert
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
-            
+
             // Act
             var response = await client.GetAsync("http://localhost/products/GetProductByCategoryName/Sports");
 
@@ -196,7 +196,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Act
-            var response = 
+            var response =
                 await client.GetAsync("http://localhost/products/GetProductByCategoryName/SportsSportsSportsSports");
 
             // Assert
@@ -226,7 +226,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
-            
+
             // Act
             var response = await client.GetAsync("http://localhost/products/GetProductByCategoryId/40");
 
@@ -478,10 +478,30 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
+        [Theory]
+        // Testing custom inline constraint updated in ConstraintMap
+        [InlineData("1234567890128", "13 Digit ISBN Number")]
+        // Testing custom inline constraint configured via MapRoute
+        [InlineData("1-234-56789-X", "10 Digit ISBN Number")]
+        public async Task CustomInlineConstraint_Add_Update(string isbn, string expectedBody)
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/book/index/" + isbn);
+            var body = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains(expectedBody, body);
+        }
+
         public static IEnumerable<object[]> QueryParameters
         {
             // The first four parameters are controller name, action name, parameters in the query and their values.   
-            // These are used to generate a link, the last parameter is expected generated link 
+            // These are used to generate a link, the last parameter is expected generated link
             get
             {
                 // Attribute Route, id:int? constraint
@@ -495,7 +515,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     };
 
                 // Attribute Route, id:int? constraint
-                yield return new object[] 
+                yield return new object[]
                     {
                         "InlineConstraints_Products",
                         "GetProductById",
@@ -514,7 +534,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     };
 
                 // Attribute Route, name:length(1,20)? constraint
-                yield return new object[] 
+                yield return new object[]
                     {
                         "InlineConstraints_Products",
                         "GetProductByCategoryName",
@@ -524,7 +544,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     };
 
                 // Attribute Route, name:length(1,20)? constraint
-                yield return new object[] 
+                yield return new object[]
                     {
                         "InlineConstraints_Products",
                         "GetProductByCategoryName",
@@ -534,7 +554,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     };
 
                 // Attribute Route, catId:int:range(10, 100) constraint
-                yield return new object[] 
+                yield return new object[]
                     {
                         "InlineConstraints_Products",
                         "GetProductByCategoryId",
@@ -544,7 +564,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     };
 
                 // Attribute Route, catId:int:range(10, 100) constraint
-                yield return new object[] 
+                yield return new object[]
                     {
                         "InlineConstraints_Products",
                         "GetProductByCategoryId",
@@ -554,7 +574,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     };
 
                 // Attribute Route, name:length(1,20)? constraint
-                yield return new object[] 
+                yield return new object[]
                     {
                         "InlineConstraints_Products",
                         "GetProductByPrice",
@@ -564,7 +584,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     };
 
                 // Attribute Route, price:float? constraint
-                yield return new object[] 
+                yield return new object[]
                     {
                         "InlineConstraints_Products",
                         "GetProductByManufacturerId",
@@ -574,7 +594,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     };
 
                 // Attribute Route, manId:int:min(10)? constraint
-                yield return new object[] 
+                yield return new object[]
                     {
                         "InlineConstraints_Products",
                         "GetProductByManufacturerId",
@@ -584,7 +604,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     };
 
                 // Attribute Route, manId:int:min(10)? constraint
-                yield return new object[] 
+                yield return new object[]
                     {
                         "InlineConstraints_Products",
                         "GetProductByManufacturerId",
@@ -594,7 +614,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     };
 
                 // Attribute Route, dateTime:datetime constraint
-                yield return new object[] 
+                yield return new object[]
                     {
                         "InlineConstraints_Products",
                         "GetProductByManufacturingDate",
@@ -604,7 +624,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     };
 
                 // Conventional Route, id:guid? constraint
-                yield return new object[] 
+                yield return new object[]
                     {
                         "InlineConstraints_Store",
                         "GetStoreById",
@@ -618,10 +638,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Theory]
         [MemberData(nameof(QueryParameters))]
         public async Task GetGeneratedLink(
-            string controller, 
-            string action, 
-            string parameterName, 
-            string parameterValue, 
+            string controller,
+            string action,
+            string parameterName,
+            string parameterValue,
             string expectedLink)
         {
             // Arrange
@@ -647,12 +667,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     controller,
                     action,
                     parameterName,
-                    parameterValue);                
+                    parameterValue);
             }
 
             var response = await client.GetAsync(url);
 
-            // Assert            
+            // Assert
             var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedLink, body);
         }
