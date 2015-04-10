@@ -2,7 +2,7 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_DNVM_BUILDNUMBER="beta5-10364"
+_DNVM_BUILDNUMBER="beta5-10365"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
 _DNVM_RUNTIME_PACKAGE_NAME="dnx"
 _DNVM_RUNTIME_FRIENDLY_NAME=".NET Execution Environment"
@@ -374,6 +374,12 @@ dnvm()
                 local runtimeVersion=$(__dnvm_package_version "$runtimeFullName")
                 local runtimeFolder="$_DNVM_USER_PACKAGES/$runtimeFullName"
                 local runtimeFile="$runtimeFolder/$runtimeFullName.nupkg"
+                local runtimeClr=$(__dnvm_package_runtime "$runtimeFullName")
+
+                if [ -n "$force" ]; then
+                   printf "%b\n" "${Yel}Forcing download by deleting $runtimeFolder directory ${RCol}"
+                   rm -rf "$runtimeFolder"
+                fi
 
                 if [ -e "$runtimeFolder" ]; then
                   echo "$runtimeFullName already installed"
@@ -383,7 +389,7 @@ dnvm()
                   __dnvm_unpack "$runtimeFile" "$runtimeFolder"
                   [[ $? == 1 ]] && return 1
                 fi
-                $_DNVM_COMMAND_NAME use "$runtimeVersion" "$persistent"
+                $_DNVM_COMMAND_NAME use "$runtimeVersion" "$persistent" -r "$runtimeClr"
                 [[ -n $alias ]] && $_DNVM_COMMAND_NAME alias "$alias" "$runtimeVersion"
             else
                 local runtimeFullName="$(__dnvm_requested_version_or_alias $versionOrAlias)"
