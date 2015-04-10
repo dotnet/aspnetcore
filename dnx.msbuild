@@ -328,22 +328,23 @@
                 <Justification>refers to race condition</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Colors.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Program.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Building\BuildContext.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Colors.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\RestoreCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\KpmPackageFolder.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\PackageFeed.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\NuGetv2Feed.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Shims\ConsoleColor.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Building\BuildManager.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\AddCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\WrapCommand.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\InstallCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Publish\PublishManager.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\WrapCommand.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Install\InstallBuilder.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Install\InstallGlobalCommand.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Install\UninstallCommand.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\List\LibraryDependencyFlatRenderer.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Publish\PublishManager.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\RestoreCommand.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\KpmPackageFolder.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\NuGetv2Feed.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\PackageFeed.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Shims\ConsoleColor.cs;
                                     $(PoliCheckPath)**\Microsoft.Framework.PackageManager.dll">
                 <term>Red</term>
                 <Justification>Color constant name</Justification>
