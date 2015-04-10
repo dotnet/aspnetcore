@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Builder
     {
         IServiceProvider ApplicationServices { get; set; }
 
-        IServerInformation Server { get; set; }
+        object Server { get; set; }
 
         IDictionary<string, object> Properties { get; set; }
 
