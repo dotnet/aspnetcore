@@ -8,6 +8,7 @@ using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.SqlServer;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Runtime;
 
 namespace MusicStore.Models
 {
@@ -86,7 +87,9 @@ namespace MusicStore.Models
         /// <returns></returns>
         private static async Task CreateAdminUser(IServiceProvider serviceProvider)
         {
-            var configuration = new Configuration()
+            var appEnv = serviceProvider.GetService<IApplicationEnvironment>();
+
+            var configuration = new Configuration(appEnv.ApplicationBasePath)
                         .AddJsonFile("config.json")
                         .AddEnvironmentVariables();
 

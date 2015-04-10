@@ -5,17 +5,17 @@ using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Runtime;
 using MusicStore.Apis;
 using MusicStore.Models;
-
 
 namespace MusicStore.Spa
 {
     public class Startup
     {
-        public Startup()
+        public Startup(IApplicationEnvironment env)
         {
-            Configuration = new Configuration()
+            Configuration = new Configuration(env.ApplicationBasePath)
                         .AddJsonFile("Config.json")
                         .AddEnvironmentVariables();
         }
