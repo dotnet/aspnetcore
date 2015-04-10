@@ -194,23 +194,56 @@
     <File Name="xunit.runner.utility.AspNet.dll" Ignore="yes" />
     <File Name="xunit.runner.aspnet.dll" Ignore="yes" />
 
+    <!-- Temporary exclusions for xplat: the Darwin/Linux builds of these files aren't signed -->
+    <File Name="Internal.Uri.dll" Ignore="yes" />
     <File Name="mscorlib.dll" Ignore="yes" />
     <File Name="Microsoft.CSharp.dll" Ignore="yes" />
     <File Name="Microsoft.VisualBasic.dll" Ignore="yes" />
     <File Name="Microsoft.Win32.Registry.dll" Ignore="yes" />
+    <File Name="Microsoft.Win32.Registry.AccessControl.dll" Ignore="yes" />
     <File Name="ModuleCore.dll" Ignore="yes" />
+    <File Name="System.AppContext.dll" Ignore="yes" />
     <File Name="System.ComponentModel.Annotations.dll" Ignore="yes" />
     <File Name="System.ComponentModel.Primitives.dll" Ignore="yes" />
     <File Name="System.ComponentModel.TypeConverter.dll" Ignore="yes" />
     <File Name="System.Diagnostics.FileVersionInfo.dll" Ignore="yes" />
     <File Name="System.Diagnostics.FileVersionInfo.TestAssembly.dll" Ignore="yes" />
+    <File Name="System.IO.Compression.ZipFile.dll" Ignore="yes" />
+    <File Name="System.IO.FileSystem.AccessControl.dll" Ignore="yes" />
     <File Name="System.IO.FileSystem.DriveInfo.dll" Ignore="yes" />
     <File Name="System.IO.MemoryMappedFiles.dll" Ignore="yes" />
     <File Name="System.IO.UnmanagedMemoryStream.dll" Ignore="yes" />
+    <File Name="System.Net.Http.dll" Ignore="yes" />
+    <File Name="System.Net.Http.WinHttpHandler.dll" Ignore="yes" />
+    <File Name="System.Net.NameResolution.dll" Ignore="yes" />
+    <File Name="System.Net.Security.dll" Ignore="yes" />
+    <File Name="System.Net.Utilities.dll" Ignore="yes" />
+    <File Name="System.Net.WebHeaderCollection.dll" Ignore="yes" />
+    <File Name="System.Net.WebSockets.Client.dll" Ignore="yes" />
+    <File Name="System.Net.WebSockets.dll" Ignore="yes" />
     <File Name="System.Numerics.Vectors.dll" Ignore="yes" />
     <File Name="System.Private.DataContractSerialization.dll" Ignore="yes" />
+    <File Name="System.Private.Networking.dll" Ignore="yes" />
+    <File Name="System.Private.ServiceModel.dll" Ignore="yes" />
+    <File Name="System.Reflection.DispatchProxy.dll" Ignore="yes" />
+    <File Name="System.Runtime.CompilerServices.VisualC.dll" Ignore="yes" />
+    <File Name="System.Runtime.InteropServices.WindowsRuntime.dll" Ignore="yes" />
+    <File Name="System.Runtime.Serialization.Json.dll" Ignore="yes" />
+    <File Name="System.Runtime.Serialization.Xml.dll" Ignore="yes" />
+    <File Name="System.Security.AccessControl.dll" Ignore="yes" />
+    <File Name="System.Security.Cryptography.Encryption.dll" Ignore="yes" />
+    <File Name="System.Security.Cryptography.Hashing.Algorithms.dll" Ignore="yes" />
+    <File Name="System.Security.Cryptography.Hashing.dll" Ignore="yes" />
+    <File Name="System.Security.Cryptography.RSA.dll" Ignore="yes" />
+    <File Name="System.Security.Principal.Windows.dll" Ignore="yes" />
+    <File Name="System.ServiceModel.Duplex.dll" Ignore="yes" />
+    <File Name="System.ServiceModel.Http.dll" Ignore="yes" />
+    <File Name="System.ServiceModel.NetTcp.dll" Ignore="yes" />
+    <File Name="System.ServiceModel.Primitives.dll" Ignore="yes" />
+    <File Name="System.ServiceModel.Security.dll" Ignore="yes" />
     <File Name="System.ServiceProcess.ServiceController.dll" Ignore="yes" />
     <File Name="System.Text.Encoding.CodePages.dll" Ignore="yes" />
+    <File Name="System.Threading.AccessControl.dll" Ignore="yes" />
     <File Name="System.Threading.Tasks.Dataflow.dll" Ignore="yes" />
     <File Name="System.Xml.RW.XmlReaderLib.dll" Ignore="yes" />
 </Files>
