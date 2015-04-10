@@ -48,8 +48,8 @@ namespace Microsoft.AspNet.Http.Core
                     return true;
                 }
 
-                var conentType = ContentType;
-                return HasApplicationFormContentType(conentType) || HasMultipartFormContentType(conentType);
+                var contentType = ContentType;
+                return HasApplicationFormContentType(contentType) || HasMultipartFormContentType(contentType);
             }
         }
 
