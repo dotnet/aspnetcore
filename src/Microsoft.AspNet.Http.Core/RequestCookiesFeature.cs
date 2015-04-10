@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Http.Core.Infrastructure;
@@ -15,7 +16,7 @@ namespace Microsoft.AspNet.Http.Core
     {
         private readonly IFeatureCollection _features;
         private readonly FeatureReference<IHttpRequestFeature> _request = FeatureReference<IHttpRequestFeature>.Default;
-        private string _cookiesHeader;
+        private string[] _cookieHeaders;
         private RequestCookiesCollection _cookiesCollection;
         private IReadableStringCollection _cookies;
 
@@ -44,18 +45,22 @@ namespace Microsoft.AspNet.Http.Core
                 }
 
                 var headers = _request.Fetch(_features).Headers;
-                string cookiesHeader = ParsingHelpers.GetHeader(headers, HeaderNames.Cookie) ?? string.Empty;
+                string[] values;
+                if (!headers.TryGetValue(HeaderNames.Cookie, out values))
+                {
+                    values = new string[0];
+                }
 
                 if (_cookiesCollection == null)
                 {
+                    _cookieHeaders = values;
                     _cookiesCollection = new RequestCookiesCollection();
-                    _cookiesCollection.Reparse(cookiesHeader);
-                    _cookiesHeader = cookiesHeader;
+                    _cookiesCollection.Reparse(values);
                 }
-                else if (!string.Equals(_cookiesHeader, cookiesHeader, StringComparison.Ordinal))
+                else if (!Enumerable.SequenceEqual(_cookieHeaders, values, StringComparer.Ordinal))
                 {
-                    _cookiesCollection.Reparse(cookiesHeader);
-                    _cookiesHeader = cookiesHeader;
+                    _cookieHeaders = values;
+                    _cookiesCollection.Reparse(values);
                 }
 
                 return _cookiesCollection;

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
@@ -34,7 +33,11 @@ namespace Microsoft.AspNet.Http.Core.Collections
         /// <param name="value"></param>
         public void Append(string key, string value)
         {
-            Headers.AppendValues(HeaderNames.SetCookie, UrlEncoder.Default.UrlEncode(key) + "=" + UrlEncoder.Default.UrlEncode(value) + "; path=/");
+            Headers.AppendValues(HeaderNames.SetCookie,
+                new SetCookieHeaderValue(
+                    UrlEncoder.Default.UrlEncode(key),
+                    UrlEncoder.Default.UrlEncode(value))
+                    { Path = "/" }.ToString());
         }
 
         /// <summary>
@@ -45,23 +48,17 @@ namespace Microsoft.AspNet.Http.Core.Collections
         /// <param name="options"></param>
         public void Append(string key, string value, [NotNull] CookieOptions options)
         {
-            bool domainHasValue = !string.IsNullOrEmpty(options.Domain);
-            bool pathHasValue = !string.IsNullOrEmpty(options.Path);
-            bool expiresHasValue = options.Expires.HasValue;
-
-            string setCookieValue = string.Concat(
-                UrlEncoder.Default.UrlEncode(key),
-                "=",
-                UrlEncoder.Default.UrlEncode(value ?? string.Empty),
-                !domainHasValue ? null : "; domain=",
-                !domainHasValue ? null : options.Domain,
-                !pathHasValue ? null : "; path=",
-                !pathHasValue ? null : options.Path,
-                !expiresHasValue ? null : "; expires=",
-                !expiresHasValue ? null : options.Expires.Value.ToString("ddd, dd-MMM-yyyy HH:mm:ss ", CultureInfo.InvariantCulture) + "GMT",
-                !options.Secure ? null : "; secure",
-                !options.HttpOnly ? null : "; HttpOnly");
-            Headers.AppendValues(HeaderNames.SetCookie, setCookieValue);
+            Headers.AppendValues(HeaderNames.SetCookie,
+                new SetCookieHeaderValue(
+                    UrlEncoder.Default.UrlEncode(key),
+                    UrlEncoder.Default.UrlEncode(value))
+                {
+                    Domain = options.Domain,
+                    Path = options.Path,
+                    Expires = options.Expires,
+                    Secure = options.Secure,
+                    HttpOnly = options.HttpOnly,
+                }.ToString());
         }
 
         /// <summary>
@@ -70,9 +67,10 @@ namespace Microsoft.AspNet.Http.Core.Collections
         /// <param name="key"></param>
         public void Delete(string key)
         {
-            Func<string, bool> predicate = value => value.StartsWith(key + "=", StringComparison.OrdinalIgnoreCase);
+            var encodedKeyPlusEquals = UrlEncoder.Default.UrlEncode(key) + "=";
+            Func<string, bool> predicate = value => value.StartsWith(encodedKeyPlusEquals, StringComparison.OrdinalIgnoreCase);
 
-            var deleteCookies = new[] { UrlEncoder.Default.UrlEncode(key) + "=; expires=Thu, 01-Jan-1970 00:00:00 GMT" };
+            var deleteCookies = new[] { encodedKeyPlusEquals + "; expires=Thu, 01-Jan-1970 00:00:00 GMT" };
             IList<string> existingValues = Headers.GetValues(HeaderNames.SetCookie);
             if (existingValues == null || existingValues.Count == 0)
             {
@@ -91,6 +89,7 @@ namespace Microsoft.AspNet.Http.Core.Collections
         /// <param name="options"></param>
         public void Delete(string key, [NotNull] CookieOptions options)
         {
+            var encodedKeyPlusEquals = UrlEncoder.Default.UrlEncode(key) + "=";
             bool domainHasValue = !string.IsNullOrEmpty(options.Domain);
             bool pathHasValue = !string.IsNullOrEmpty(options.Path);
 
@@ -98,18 +97,18 @@ namespace Microsoft.AspNet.Http.Core.Collections
             if (domainHasValue)
             {
                 rejectPredicate = value =>
-                    value.StartsWith(key + "=", StringComparison.OrdinalIgnoreCase) &&
+                    value.StartsWith(encodedKeyPlusEquals, StringComparison.OrdinalIgnoreCase) &&
                         value.IndexOf("domain=" + options.Domain, StringComparison.OrdinalIgnoreCase) != -1;
             }
             else if (pathHasValue)
             {
                 rejectPredicate = value =>
-                    value.StartsWith(key + "=", StringComparison.OrdinalIgnoreCase) &&
+                    value.StartsWith(encodedKeyPlusEquals, StringComparison.OrdinalIgnoreCase) &&
                         value.IndexOf("path=" + options.Path, StringComparison.OrdinalIgnoreCase) != -1;
             }
             else
             {
-                rejectPredicate = value => value.StartsWith(key + "=", StringComparison.OrdinalIgnoreCase);
+                rejectPredicate = value => value.StartsWith(encodedKeyPlusEquals, StringComparison.OrdinalIgnoreCase);
             }
 
             IList<string> existingValues = Headers.GetValues(HeaderNames.SetCookie);

@@ -4,8 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Core.Infrastructure;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Core.Collections
 {
@@ -73,12 +72,20 @@ namespace Microsoft.AspNet.Http.Core.Collections
             return _dictionary.TryGetValue(key, out value) ? new[] { value } : null;
         }
 
-        private static readonly char[] SemicolonAndComma = { ';', ',' };
-
-        public void Reparse(string cookiesHeader)
+        public void Reparse(IList<string> values)
         {
             _dictionary.Clear();
-            ParsingHelpers.ParseDelimited(cookiesHeader, SemicolonAndComma, AddCookieCallback, _dictionary);
+
+            IList<CookieHeaderValue> cookies;
+            if (CookieHeaderValue.TryParseList(values, out cookies))
+            {
+                foreach (var cookie in cookies)
+                {
+                    var name = Uri.UnescapeDataString(cookie.Name.Replace('+', ' '));
+                    var value = Uri.UnescapeDataString(cookie.Value.Replace('+', ' '));
+                    _dictionary[name] = value;
+                }
+            }
         }
 
         public IEnumerator<KeyValuePair<string, string[]>> GetEnumerator()
@@ -93,14 +100,5 @@ namespace Microsoft.AspNet.Http.Core.Collections
         {
             return GetEnumerator();
         }
-
-        private static readonly Action<string, string, object> AddCookieCallback = (name, value, state) =>
-        {
-            var dictionary = (IDictionary<string, string>)state;
-            if (!dictionary.ContainsKey(name))
-            {
-                dictionary.Add(name, value);
-            }
-        };
     }
 }
