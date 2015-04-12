@@ -588,10 +588,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         [Fact]
         public void ParseBlockCorrectlyRecoversFromMissingCloseParenInExpressionWithinCode()
         {
-            ParseBlockTest(@"{String.Format(<html></html>}",
+            ParseBlockTest(@"{string.Format(<html></html>}",
                 new StatementBlock(
                     Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                    Factory.Code("String.Format(")
+                    Factory.Code("string.Format(")
                            .AsStatement(),
                     new MarkupBlock(
                         BlockFactory.MarkupTagBlock("<html>", AcceptedCharacters.None),

@@ -90,14 +90,14 @@ namespace Microsoft.AspNet.Razor.Parser
         private bool AtEnd(string[] nestingSequenceComponents)
         {
             EnsureCurrent();
-            if (String.Equals(CurrentSymbol.Content, nestingSequenceComponents[0], Comparison))
+            if (string.Equals(CurrentSymbol.Content, nestingSequenceComponents[0], Comparison))
             {
                 var bookmark = CurrentSymbol.Start.AbsoluteIndex;
                 try
                 {
                     foreach (string component in nestingSequenceComponents)
                     {
-                        if (!EndOfFile && !String.Equals(CurrentSymbol.Content, component, Comparison))
+                        if (!EndOfFile && !string.Equals(CurrentSymbol.Content, component, Comparison))
                         {
                             return false;
                         }
@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 position + sequence.Length <= CurrentSymbol.Content.Length)
             {
                 var possibleStart = CurrentSymbol.Content.Substring(position, sequence.Length);
-                if (String.Equals(possibleStart, sequence, Comparison))
+                if (string.Equals(possibleStart, sequence, Comparison))
                 {
                     // Capture the current symbol and "put it back" (really we just want to clear CurrentSymbol)
                     var bookmark = Context.Source.Position;
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Razor.Parser
                     var postSequence = pair.Item2;
 
                     // Accept the first chunk (up to the nesting sequence we just saw)
-                    if (!String.IsNullOrEmpty(preSequence.Content))
+                    if (!string.IsNullOrEmpty(preSequence.Content))
                     {
                         Accept(preSequence);
                     }

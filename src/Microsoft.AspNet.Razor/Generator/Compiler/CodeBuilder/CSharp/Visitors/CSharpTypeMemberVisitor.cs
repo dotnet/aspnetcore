@@ -19,9 +19,9 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         protected override void Visit(TypeMemberChunk chunk)
         {
-            if (!String.IsNullOrEmpty(chunk.Code))
+            if (!string.IsNullOrEmpty(chunk.Code))
             {
-                _csharpCodeVisitor.CreateCodeMapping(String.Empty, chunk.Code, chunk);
+                _csharpCodeVisitor.CreateCodeMapping(string.Empty, chunk.Code, chunk);
             }
         }
     }

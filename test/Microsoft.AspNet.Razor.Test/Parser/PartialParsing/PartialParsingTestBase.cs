@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
 
             public void InitializeWithDocument(ITextBuffer startDocument)
             {
-                CheckForStructureChangesAndWait(new TextChange(0, 0, new StringTextBuffer(String.Empty), startDocument.Length, startDocument));
+                CheckForStructureChangesAndWait(new TextChange(0, 0, new StringTextBuffer(string.Empty), startDocument.Length, startDocument));
             }
 
             public PartialParseResult CheckForStructureChangesAndWait(TextChange change)

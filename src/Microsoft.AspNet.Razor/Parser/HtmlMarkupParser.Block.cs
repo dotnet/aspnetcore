@@ -265,7 +265,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         private bool CData()
         {
-            if (CurrentSymbol.Type == HtmlSymbolType.Text && String.Equals(CurrentSymbol.Content, "cdata", StringComparison.OrdinalIgnoreCase))
+            if (CurrentSymbol.Type == HtmlSymbolType.Text && string.Equals(CurrentSymbol.Content, "cdata", StringComparison.OrdinalIgnoreCase))
             {
                 if (AcceptAndMoveNext())
                 {
@@ -521,7 +521,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 }
 
                 // Capture the suffix
-                LocationTagged<string> suffix = new LocationTagged<string>(String.Empty, CurrentLocation);
+                LocationTagged<string> suffix = new LocationTagged<string>(string.Empty, CurrentLocation);
                 if (quote != HtmlSymbolType.Unknown && At(quote))
                 {
                     suffix = CurrentSymbol.GetContent();
@@ -967,7 +967,7 @@ namespace Microsoft.AspNet.Razor.Parser
             while (tags.Count > 0)
             {
                 currentTag = tags.Pop();
-                if (String.Equals(tagName, currentTag.Item1.Content, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(tagName, currentTag.Item1.Content, StringComparison.OrdinalIgnoreCase))
                 {
                     // Matched the tag
                     return true;

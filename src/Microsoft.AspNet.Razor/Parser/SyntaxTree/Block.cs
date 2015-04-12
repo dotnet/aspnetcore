@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
         public override string ToString()
         {
-            return String.Format(CultureInfo.CurrentCulture, "{0} Block at {1}::{2} (Gen:{3})", Type, Start, Length, CodeGenerator);
+            return string.Format(CultureInfo.CurrentCulture, "{0} Block at {1}::{2} (Gen:{3})", Type, Start, Length, CodeGenerator);
         }
 
         public override bool Equals(object obj)

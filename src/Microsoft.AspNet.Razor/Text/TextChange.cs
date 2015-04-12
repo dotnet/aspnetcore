@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.Razor.Text
 
         public override string ToString()
         {
-            return String.Format(CultureInfo.CurrentCulture, "({0}:{1}) \"{3}\" -> ({0}:{2}) \"{4}\"", OldPosition, OldLength, NewLength, OldText, NewText);
+            return string.Format(CultureInfo.CurrentCulture, "({0}:{1}) \"{3}\" -> ({0}:{2}) \"{4}\"", OldPosition, OldLength, NewLength, OldText, NewText);
         }
 
         /// <summary>
@@ -181,7 +181,7 @@ namespace Microsoft.AspNet.Razor.Text
             // Optimization for the common case of one char inserts, in this case we don't even need to seek the buffer.
             if (length == 0)
             {
-                return String.Empty;
+                return string.Empty;
             }
 
             var oldPosition = buffer.Position;

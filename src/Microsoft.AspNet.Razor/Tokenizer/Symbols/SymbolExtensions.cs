@@ -27,11 +27,11 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
         {
             if (symbols.Any())
             {
-                return new LocationTagged<string>(String.Concat(symbols.Select(s => s.Content)), spanStart + symbols.First().Start);
+                return new LocationTagged<string>(string.Concat(symbols.Select(s => s.Content)), spanStart + symbols.First().Start);
             }
             else
             {
-                return new LocationTagged<string>(String.Empty, spanStart);
+                return new LocationTagged<string>(string.Empty, spanStart);
             }
         }
 

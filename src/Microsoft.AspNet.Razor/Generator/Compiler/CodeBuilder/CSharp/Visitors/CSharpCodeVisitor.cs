@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         protected override void Visit(SetLayoutChunk chunk)
         {
-            if (!Context.Host.DesignTimeMode && !String.IsNullOrEmpty(Context.Host.GeneratedClassContext.LayoutPropertyName))
+            if (!Context.Host.DesignTimeMode && !string.IsNullOrEmpty(Context.Host.GeneratedClassContext.LayoutPropertyName))
             {
                 Writer.Write(Context.Host.GeneratedClassContext.LayoutPropertyName)
                        .Write(" = ")
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         protected override void Visit(ResolveUrlChunk chunk)
         {
-            if (!Context.Host.DesignTimeMode && String.IsNullOrEmpty(chunk.Url))
+            if (!Context.Host.DesignTimeMode && string.IsNullOrEmpty(chunk.Url))
             {
                 return;
             }
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 Writer.WriteStartInstrumentationContext(Context, chunk.Association, isLiteral: false);
             }
 
-            if (!String.IsNullOrEmpty(chunk.Url) && !Context.Host.DesignTimeMode)
+            if (!string.IsNullOrEmpty(chunk.Url) && !Context.Host.DesignTimeMode)
             {
                 if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
                 {
@@ -320,7 +320,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 return;
             }
 
-            if (!String.IsNullOrEmpty(Context.TargetWriterName))
+            if (!string.IsNullOrEmpty(Context.TargetWriterName))
             {
                 Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteAttributeToMethodName)
                        .Write(Context.TargetWriterName)

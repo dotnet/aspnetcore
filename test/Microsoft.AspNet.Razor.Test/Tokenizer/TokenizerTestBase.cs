@@ -34,23 +34,23 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
                     {
                         if (counter >= expectedSymbols.Length)
                         {
-                            output.AppendLine(String.Format("F: Expected: << Nothing >>; Actual: {0}", current));
+                            output.AppendLine(string.Format("F: Expected: << Nothing >>; Actual: {0}", current));
                             success = false;
                         }
                         else if (ReferenceEquals(expectedSymbols[counter], IgnoreRemaining))
                         {
-                            output.AppendLine(String.Format("P: Ignored {0}", current));
+                            output.AppendLine(string.Format("P: Ignored {0}", current));
                         }
                         else
                         {
                             if (!Equals(expectedSymbols[counter], current))
                             {
-                                output.AppendLine(String.Format("F: Expected: {0}; Actual: {1}", expectedSymbols[counter], current));
+                                output.AppendLine(string.Format("F: Expected: {0}; Actual: {1}", expectedSymbols[counter], current));
                                 success = false;
                             }
                             else
                             {
-                                output.AppendLine(String.Format("P: Expected: {0}", expectedSymbols[counter]));
+                                output.AppendLine(string.Format("P: Expected: {0}", expectedSymbols[counter]));
                             }
                             counter++;
                         }
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
                         success = false;
                         for (; counter < expectedSymbols.Length; counter++)
                         {
-                            output.AppendLine(String.Format("F: Expected: {0}; Actual: << None >>", expectedSymbols[counter]));
+                            output.AppendLine(string.Format("F: Expected: {0}; Actual: << None >>", expectedSymbols[counter]));
                         }
                     }
                 }
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
         [Conditional("PARSER_TRACE")]
         private static void WriteTraceLine(string format, params object[] args)
         {
-            Trace.WriteLine(String.Format(format, args));
+            Trace.WriteLine(string.Format(format, args));
         }
     }
 }

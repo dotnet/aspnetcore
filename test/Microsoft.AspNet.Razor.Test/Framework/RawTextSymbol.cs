@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         public override string ToString()
         {
-            return String.Format(CultureInfo.InvariantCulture, "{0} RAW - [{1}]", Start, Content);
+            return string.Format(CultureInfo.InvariantCulture, "{0} RAW - [{1}]", Start, Content);
         }
 
         internal void CalculateStart(Span prev)

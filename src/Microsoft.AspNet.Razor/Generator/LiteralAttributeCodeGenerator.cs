@@ -50,11 +50,11 @@ namespace Microsoft.AspNet.Razor.Generator
         {
             if (ValueGenerator == null)
             {
-                return String.Format(CultureInfo.CurrentCulture, "LitAttr:{0:F},{1:F}", Prefix, Value);
+                return string.Format(CultureInfo.CurrentCulture, "LitAttr:{0:F},{1:F}", Prefix, Value);
             }
             else
             {
-                return String.Format(CultureInfo.CurrentCulture, "LitAttr:{0:F},<Sub:{1:F}>", Prefix, ValueGenerator);
+                return string.Format(CultureInfo.CurrentCulture, "LitAttr:{0:F},<Sub:{1:F}>", Prefix, ValueGenerator);
             }
         }
 

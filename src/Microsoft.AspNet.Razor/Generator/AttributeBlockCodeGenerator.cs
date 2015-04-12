@@ -39,14 +39,14 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override string ToString()
         {
-            return String.Format(CultureInfo.CurrentCulture, "Attr:{0},{1:F},{2:F}", Name, Prefix, Suffix);
+            return string.Format(CultureInfo.CurrentCulture, "Attr:{0},{1:F},{2:F}", Name, Prefix, Suffix);
         }
 
         public override bool Equals(object obj)
         {
             var other = obj as AttributeBlockCodeGenerator;
             return other != null &&
-                   String.Equals(other.Name, Name, StringComparison.Ordinal) &&
+                   string.Equals(other.Name, Name, StringComparison.Ordinal) &&
                    Equals(other.Prefix, Prefix) &&
                    Equals(other.Suffix, Suffix);
         }

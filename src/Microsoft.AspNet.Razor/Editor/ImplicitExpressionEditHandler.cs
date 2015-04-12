@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Razor.Editor
 
         public override string ToString()
         {
-            return String.Format(CultureInfo.InvariantCulture, "{0};ImplicitExpression[{1}];K{2}", base.ToString(), AcceptTrailingDot ? "ATD" : "RTD", Keywords.Count);
+            return string.Format(CultureInfo.InvariantCulture, "{0};ImplicitExpression[{1}];K{2}", base.ToString(), AcceptTrailingDot ? "ATD" : "RTD", Keywords.Count);
         }
 
         public override bool Equals(object obj)
@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.Razor.Editor
         {
             // Do not need to worry about other punctuation, just looking for double '.' (after change)
             return change.NewLength == 1 &&
-                   !String.IsNullOrEmpty(target.Content) &&
+                   !string.IsNullOrEmpty(target.Content) &&
                    target.Content.Last() == '.' &&
                    change.NewText == "." &&
                    change.OldLength == 0;
@@ -187,7 +187,7 @@ namespace Microsoft.AspNet.Razor.Editor
         private static bool RemainingIsWhitespace(Span target, TextChange change)
         {
             var offset = (change.OldPosition - target.Start.AbsoluteIndex) + change.OldLength;
-            return String.IsNullOrWhiteSpace(target.Content.Substring(offset));
+            return string.IsNullOrWhiteSpace(target.Content.Substring(offset));
         }
 
         private PartialParseResult HandleDotlessCommitInsertion(Span target)

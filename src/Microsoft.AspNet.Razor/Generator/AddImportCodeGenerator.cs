@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Razor.Generator
         {
             var ns = Namespace;
 
-            if (!String.IsNullOrEmpty(ns) && Char.IsWhiteSpace(ns[0]))
+            if (!string.IsNullOrEmpty(ns) && Char.IsWhiteSpace(ns[0]))
             {
                 ns = ns.Substring(1);
             }
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Razor.Generator
         {
             var other = obj as AddImportCodeGenerator;
             return other != null &&
-                   String.Equals(Namespace, other.Namespace, StringComparison.Ordinal) &&
+                   string.Equals(Namespace, other.Namespace, StringComparison.Ordinal) &&
                    NamespaceKeywordLength == other.NamespaceKeywordLength;
         }
 

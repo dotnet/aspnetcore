@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Razor
 
         public override string ToString()
         {
-            return String.Format(CultureInfo.CurrentCulture, "Error @ {0}({2}) - [{1}]", Location, Message, Length);
+            return string.Format(CultureInfo.CurrentCulture, "Error @ {0}({2}) - [{1}]", Location, Message, Length);
         }
 
         public override bool Equals(object obj)
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Razor
 
         public bool Equals(RazorError other)
         {
-            return String.Equals(other.Message, Message, StringComparison.Ordinal) &&
+            return string.Equals(other.Message, Message, StringComparison.Ordinal) &&
                    Location.Equals(other.Location);
         }
     }

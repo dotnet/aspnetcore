@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         [Fact]
         public void ConstructorAllowsEmptyRootNamespaceName()
         {
-            new CSharpRazorCodeGenerator("Foo", String.Empty, TestPhysicalPath, CreateHost());
+            new CSharpRazorCodeGenerator("Foo", string.Empty, TestPhysicalPath, CreateHost());
         }
 
         [Fact]

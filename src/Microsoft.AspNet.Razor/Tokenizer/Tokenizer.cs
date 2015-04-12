@@ -327,7 +327,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
 
             Debug.Assert(CurrentCharacter == current, "CurrentCharacter Assumption violated", "Assumed that the current character would be {0}, but it is actually {1}", current, CurrentCharacter);
 #else
-            Debug.Assert(CurrentCharacter == current, String.Format("CurrentCharacter Assumption violated.  Assumed that the current character would be {0}, but it is actually {1}", current, CurrentCharacter));
+            Debug.Assert(CurrentCharacter == current, string.Format("CurrentCharacter Assumption violated.  Assumed that the current character would be {0}, but it is actually {1}", current, CurrentCharacter));
 #endif
         }
 
@@ -345,7 +345,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
 
         public string DebugDisplay
         {
-            get { return String.Format(CultureInfo.InvariantCulture, "[{0}] [{1}] [{2}]", _read.ToString(), CurrentCharacter, Remaining); }
+            get { return string.Format(CultureInfo.InvariantCulture, "[{0}] [{1}] [{2}]", _read.ToString(), CurrentCharacter, Remaining); }
         }
 
         public string Remaining

@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override string ToString()
         {
-            return String.Format(CultureInfo.CurrentCulture, "DynAttr:{0:F}", Prefix);
+            return string.Format(CultureInfo.CurrentCulture, "DynAttr:{0:F}", Prefix);
         }
 
         public override bool Equals(object obj)

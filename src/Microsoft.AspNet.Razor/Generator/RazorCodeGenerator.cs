@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Razor.Generator
 
         protected RazorCodeGenerator(string className, string rootNamespaceName, string sourceFileName, RazorEngineHost host)
         {
-            if (String.IsNullOrEmpty(className))
+            if (string.IsNullOrEmpty(className))
             {
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "className");
             }
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Razor.Generator
             ClassName = className;
             RootNamespaceName = rootNamespaceName;
             SourceFileName = sourceFileName;
-            GenerateLinePragmas = String.IsNullOrEmpty(SourceFileName) ? false : true;
+            GenerateLinePragmas = string.IsNullOrEmpty(SourceFileName) ? false : true;
             Host = host;
         }
 

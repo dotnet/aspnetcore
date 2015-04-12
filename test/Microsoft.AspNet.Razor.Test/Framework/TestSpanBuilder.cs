@@ -19,12 +19,12 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         public static UnclassifiedCodeSpanConstructor EmptyCSharp(this SpanFactory self)
         {
             return new UnclassifiedCodeSpanConstructor(
-                self.Span(SpanKind.Code, new CSharpSymbol(self.LocationTracker.CurrentLocation, String.Empty, CSharpSymbolType.Unknown)));
+                self.Span(SpanKind.Code, new CSharpSymbol(self.LocationTracker.CurrentLocation, string.Empty, CSharpSymbolType.Unknown)));
         }
 
         public static SpanConstructor EmptyHtml(this SpanFactory self)
         {
-            return self.Span(SpanKind.Markup, new HtmlSymbol(self.LocationTracker.CurrentLocation, String.Empty, HtmlSymbolType.Unknown))
+            return self.Span(SpanKind.Markup, new HtmlSymbol(self.LocationTracker.CurrentLocation, string.Empty, HtmlSymbolType.Unknown))
                 .With(new MarkupCodeGenerator());
         }
 

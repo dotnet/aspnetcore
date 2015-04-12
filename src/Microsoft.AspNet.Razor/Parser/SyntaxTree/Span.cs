@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             builder.Append(" Gen: <");
             builder.Append(CodeGenerator.ToString());
             builder.Append("> {");
-            builder.Append(String.Join(";", Symbols.GroupBy(sym => sym.GetType()).Select(grp => String.Concat(grp.Key.Name, ":", grp.Count()))));
+            builder.Append(string.Join(";", Symbols.GroupBy(sym => sym.GetType()).Select(grp => string.Concat(grp.Key.Name, ":", grp.Count()))));
             builder.Append("}");
             return builder.ToString();
         }
@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
                    Kind.Equals(other.Kind) &&
                    Start.Equals(other.Start) &&
                    EditHandler.Equals(other.EditHandler) &&
-                   String.Equals(other.Content, Content, StringComparison.Ordinal);
+                   string.Equals(other.Content, Content, StringComparison.Ordinal);
         }
 
         public override bool Equals(object obj)

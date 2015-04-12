@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                .Accepts(AcceptedCharacters.None),
                         Factory.Span(SpanKind.Comment, new HtmlSymbol(
                             Factory.LocationTracker.CurrentLocation,
-                            String.Empty,
+                            string.Empty,
                             HtmlSymbolType.Unknown))
                                .Accepts(AcceptedCharacters.Any))),
                 new RazorError(RazorResources.ParseError_RazorComment_Not_Terminated, 0, 0, 0));
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                .Accepts(AcceptedCharacters.None),
                         Factory.Span(SpanKind.Comment, new HtmlSymbol(
                             Factory.LocationTracker.CurrentLocation,
-                            String.Empty,
+                            string.Empty,
                             HtmlSymbolType.Unknown))
                                .Accepts(AcceptedCharacters.Any),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .Accepts(AcceptedCharacters.None),
                             Factory.Span(SpanKind.Comment, new CSharpSymbol(
                                 Factory.LocationTracker.CurrentLocation,
-                                String.Empty,
+                                string.Empty,
                                 CSharpSymbolType.Unknown))
                                    .Accepts(AcceptedCharacters.Any),
                             Factory.MetaCode("*", CSharpSymbolType.RazorCommentStar)
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .Accepts(AcceptedCharacters.None),
                             Factory.Span(SpanKind.Comment, new CSharpSymbol(
                                 Factory.LocationTracker.CurrentLocation,
-                                String.Empty,
+                                string.Empty,
                                 CSharpSymbolType.Unknown))
                                     .Accepts(AcceptedCharacters.Any)))),
                 new RazorError(RazorResources.ParseError_RazorComment_Not_Terminated, 5, 0, 5),
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                        .Accepts(AcceptedCharacters.None),
                                 Factory.Span(SpanKind.Comment, new HtmlSymbol(
                                     Factory.LocationTracker.CurrentLocation,
-                                    String.Empty,
+                                    string.Empty,
                                     HtmlSymbolType.Unknown))
                                        .Accepts(AcceptedCharacters.Any),
                                 Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
@@ -165,7 +165,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                             Factory.MetaCode("*", CSharpSymbolType.RazorCommentStar)
                                    .Accepts(AcceptedCharacters.None),
                             Factory.Span(SpanKind.Comment, new CSharpSymbol(Factory.LocationTracker.CurrentLocation,
-                                                                        String.Empty,
+                                                                        string.Empty,
                                                                         CSharpSymbolType.Unknown))
                                    .Accepts(AcceptedCharacters.Any)))),
                 new RazorError(RazorResources.ParseError_RazorComment_Not_Terminated, 2, 0, 2),

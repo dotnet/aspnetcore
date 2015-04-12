@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Razor.Editor
                 // No Trace in CoreCLR
 
                 Trace.WriteLine(RazorResources.FormatTrace_Format(
-                    String.Format(CultureInfo.CurrentCulture, format, args)));
+                    string.Format(CultureInfo.CurrentCulture, format, args)));
 #endif
             }
         }

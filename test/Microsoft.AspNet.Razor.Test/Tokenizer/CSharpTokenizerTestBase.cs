@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
 {
     public abstract class CSharpTokenizerTestBase : TokenizerTestBase<CSharpSymbol, CSharpSymbolType>
     {
-        private static CSharpSymbol _ignoreRemaining = new CSharpSymbol(0, 0, 0, String.Empty, CSharpSymbolType.Unknown);
+        private static CSharpSymbol _ignoreRemaining = new CSharpSymbol(0, 0, 0, string.Empty, CSharpSymbolType.Unknown);
 
         protected override CSharpSymbol IgnoreRemaining
         {

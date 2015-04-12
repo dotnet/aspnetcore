@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             Factory.Markup("~/Foo/Bar/Baz")
                                    .WithEditorHints(EditorHints.VirtualPath)
                                    .With(new LiteralAttributeCodeGenerator(
-                                       new LocationTagged<string>(String.Empty, 9, 0, 9),
+                                       new LocationTagged<string>(string.Empty, 9, 0, 9),
                                        new LocationTagged<SpanCodeGenerator>(new ResolveUrlCodeGenerator(), 9, 0, 9))),
                             Factory.Markup("'").With(SpanCodeGenerator.Null)),
                         Factory.Markup(" />").Accepts(AcceptedCharacters.None))));
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             Factory.Markup("~/Foo/Bar/Baz")
                                    .WithEditorHints(EditorHints.VirtualPath)
                                    .With(new LiteralAttributeCodeGenerator(
-                                       new LocationTagged<string>(String.Empty, 9, 0, 9),
+                                       new LocationTagged<string>(string.Empty, 9, 0, 9),
                                        new LocationTagged<SpanCodeGenerator>(new ResolveUrlCodeGenerator(), 9, 0, 9))),
                             Factory.Markup("'").With(SpanCodeGenerator.Null)),
                         Factory.Markup(" />"))));
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                                     Factory.Markup("~/Foo/Bar/Baz")
                                            .WithEditorHints(EditorHints.VirtualPath)
                                            .With(new LiteralAttributeCodeGenerator(
-                                               new LocationTagged<string>(String.Empty, 24, 0, 24),
+                                               new LocationTagged<string>(string.Empty, 24, 0, 24),
                                                new LocationTagged<SpanCodeGenerator>(new ResolveUrlCodeGenerator(), 24, 0, 24))),
                                     Factory.Markup("'").With(SpanCodeGenerator.Null)),
                                 Factory.Markup(" />")),
@@ -92,16 +92,16 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                                 Factory.Markup("~/Foo/")
                                         .WithEditorHints(EditorHints.VirtualPath)
                                         .With(new LiteralAttributeCodeGenerator(
-                                            new LocationTagged<string>(String.Empty, 9, 0, 9),
+                                            new LocationTagged<string>(string.Empty, 9, 0, 9),
                                             new LocationTagged<SpanCodeGenerator>(new ResolveUrlCodeGenerator(), 9, 0, 9))),
-                                new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(String.Empty, 15, 0, 15), 15, 0, 15),
+                                new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 15, 0, 15), 15, 0, 15),
                                     new ExpressionBlock(
                                         Factory.CodeTransition().Accepts(AcceptedCharacters.None),
                                         Factory.Code("id")
                                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                                .Accepts(AcceptedCharacters.NonWhiteSpace))),
                                 Factory.Markup("/Baz")
-                                       .With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(String.Empty, 18, 0, 18), new LocationTagged<string>("/Baz", 18, 0, 18))),
+                                       .With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 18, 0, 18), new LocationTagged<string>("/Baz", 18, 0, 18))),
                                 Factory.Markup("'").With(SpanCodeGenerator.Null)),
                             Factory.Markup(" />").Accepts(AcceptedCharacters.None))));
         }
@@ -118,16 +118,16 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             Factory.Markup("~/Foo/")
                                    .WithEditorHints(EditorHints.VirtualPath)
                                    .With(new LiteralAttributeCodeGenerator(
-                                       new LocationTagged<string>(String.Empty, 9, 0, 9),
+                                       new LocationTagged<string>(string.Empty, 9, 0, 9),
                                        new LocationTagged<SpanCodeGenerator>(new ResolveUrlCodeGenerator(), 9, 0, 9))),
-                            new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(String.Empty, 15, 0, 15), 15, 0, 15),
+                            new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 15, 0, 15), 15, 0, 15),
                                 new ExpressionBlock(
                                     Factory.CodeTransition().Accepts(AcceptedCharacters.None),
                                     Factory.Code("id")
                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                            .Accepts(AcceptedCharacters.NonWhiteSpace))),
                             Factory.Markup("/Baz")
-                                   .With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(String.Empty, 18, 0, 18), new LocationTagged<string>("/Baz", 18, 0, 18))),
+                                   .With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 18, 0, 18), new LocationTagged<string>("/Baz", 18, 0, 18))),
                             Factory.Markup("'").With(SpanCodeGenerator.Null)),
                         Factory.Markup(" />"))));
         }
@@ -151,16 +151,16 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                                     Factory.Markup("~/Foo/")
                                            .WithEditorHints(EditorHints.VirtualPath)
                                            .With(new LiteralAttributeCodeGenerator(
-                                               new LocationTagged<string>(String.Empty, 24, 0, 24),
+                                               new LocationTagged<string>(string.Empty, 24, 0, 24),
                                                new LocationTagged<SpanCodeGenerator>(new ResolveUrlCodeGenerator(), 24, 0, 24))),
-                                    new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(String.Empty, 30, 0, 30), 30, 0, 30),
+                                    new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 30, 0, 30), 30, 0, 30),
                                         new ExpressionBlock(
                                             Factory.CodeTransition().Accepts(AcceptedCharacters.None),
                                             Factory.Code("id")
                                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                                    .Accepts(AcceptedCharacters.NonWhiteSpace))),
                                     Factory.Markup("/Baz")
-                                           .With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(String.Empty, 33, 0, 33), new LocationTagged<string>("/Baz", 33, 0, 33))),
+                                           .With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 33, 0, 33), new LocationTagged<string>("/Baz", 33, 0, 33))),
                                     Factory.Markup("'").With(SpanCodeGenerator.Null)),
                                 Factory.Markup(" />")),
                             Factory.Markup(" ")
@@ -181,7 +181,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             Factory.Markup("~/Foo+Bar:Baz(Biz),Boz")
                                    .WithEditorHints(EditorHints.VirtualPath)
                                    .With(new LiteralAttributeCodeGenerator(
-                                       new LocationTagged<string>(String.Empty, 9, 0, 9),
+                                       new LocationTagged<string>(string.Empty, 9, 0, 9),
                                        new LocationTagged<SpanCodeGenerator>(new ResolveUrlCodeGenerator(), 9, 0, 9))),
                             Factory.Markup("'").With(SpanCodeGenerator.Null)),
                         Factory.Markup(" />").Accepts(AcceptedCharacters.None))));
@@ -199,7 +199,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             Factory.Markup("~/Foo+Bar:Baz(Biz),Boz")
                                    .WithEditorHints(EditorHints.VirtualPath)
                                    .With(new LiteralAttributeCodeGenerator(
-                                       new LocationTagged<string>(String.Empty, 9, 0, 9),
+                                       new LocationTagged<string>(string.Empty, 9, 0, 9),
                                        new LocationTagged<SpanCodeGenerator>(new ResolveUrlCodeGenerator(), 9, 0, 9))),
                             Factory.Markup("'").With(SpanCodeGenerator.Null)),
                         Factory.Markup(" />"))));
@@ -212,21 +212,21 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 new MarkupBlock(
                     new MarkupTagBlock(
                         Factory.Markup("<a"),
-                        new MarkupBlock(new AttributeBlockCodeGenerator("href", new LocationTagged<string>(" href=", 2, 0, 2), new LocationTagged<string>(String.Empty, 38, 0, 38)),
+                        new MarkupBlock(new AttributeBlockCodeGenerator("href", new LocationTagged<string>(" href=", 2, 0, 2), new LocationTagged<string>(string.Empty, 38, 0, 38)),
                             Factory.Markup(" href=").With(SpanCodeGenerator.Null),
                             Factory.Markup("~/Foo+Bar:Baz(Biz),Boz/")
                                    .WithEditorHints(EditorHints.VirtualPath)
                                    .With(new LiteralAttributeCodeGenerator(
-                                       new LocationTagged<string>(String.Empty, 8, 0, 8),
+                                       new LocationTagged<string>(string.Empty, 8, 0, 8),
                                        new LocationTagged<SpanCodeGenerator>(new ResolveUrlCodeGenerator(), 8, 0, 8))),
-                            new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(String.Empty, 31, 0, 31), 31, 0, 31),
+                            new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 31, 0, 31), 31, 0, 31),
                                 new ExpressionBlock(
                                     Factory.CodeTransition()
                                            .Accepts(AcceptedCharacters.None),
                                     Factory.Code("id")
                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                 .Accepts(AcceptedCharacters.NonWhiteSpace))),
-                            Factory.Markup("/Boz").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(String.Empty, 34, 0, 34), new LocationTagged<string>("/Boz", 34, 0, 34)))),
+                            Factory.Markup("/Boz").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 34, 0, 34), new LocationTagged<string>("/Boz", 34, 0, 34)))),
                         Factory.Markup(" />").Accepts(AcceptedCharacters.None))));
         }
 
@@ -237,21 +237,21 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 new MarkupBlock(
                     new MarkupTagBlock(
                         Factory.Markup("<a"),
-                        new MarkupBlock(new AttributeBlockCodeGenerator("href", new LocationTagged<string>(" href=", 2, 0, 2), new LocationTagged<string>(String.Empty, 38, 0, 38)),
+                        new MarkupBlock(new AttributeBlockCodeGenerator("href", new LocationTagged<string>(" href=", 2, 0, 2), new LocationTagged<string>(string.Empty, 38, 0, 38)),
                             Factory.Markup(" href=").With(SpanCodeGenerator.Null),
                             Factory.Markup("~/Foo+Bar:Baz(Biz),Boz/")
                                    .WithEditorHints(EditorHints.VirtualPath)
                                    .With(new LiteralAttributeCodeGenerator(
-                                       new LocationTagged<string>(String.Empty, 8, 0, 8),
+                                       new LocationTagged<string>(string.Empty, 8, 0, 8),
                                        new LocationTagged<SpanCodeGenerator>(new ResolveUrlCodeGenerator(), 8, 0, 8))),
-                            new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(String.Empty, 31, 0, 31), 31, 0, 31),
+                            new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 31, 0, 31), 31, 0, 31),
                                 new ExpressionBlock(
                                     Factory.CodeTransition()
                                            .Accepts(AcceptedCharacters.None),
                                     Factory.Code("id")
                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                 .Accepts(AcceptedCharacters.NonWhiteSpace))),
-                            Factory.Markup("/Boz").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(String.Empty, 34, 0, 34), new LocationTagged<string>("/Boz", 34, 0, 34)))),
+                            Factory.Markup("/Boz").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 34, 0, 34), new LocationTagged<string>("/Boz", 34, 0, 34)))),
                         Factory.Markup(" />"))));
         }
 
@@ -269,21 +269,21 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             Factory.Markup(" "),
                             new MarkupTagBlock(
                                 Factory.Markup("<a"),
-                                new MarkupBlock(new AttributeBlockCodeGenerator("href", new LocationTagged<string>(" href=", 17, 0, 17), new LocationTagged<string>(String.Empty, 53, 0, 53)),
+                                new MarkupBlock(new AttributeBlockCodeGenerator("href", new LocationTagged<string>(" href=", 17, 0, 17), new LocationTagged<string>(string.Empty, 53, 0, 53)),
                                     Factory.Markup(" href=").With(SpanCodeGenerator.Null),
                                     Factory.Markup("~/Foo+Bar:Baz(Biz),Boz/")
                                             .WithEditorHints(EditorHints.VirtualPath)
                                             .With(new LiteralAttributeCodeGenerator(
-                                                new LocationTagged<string>(String.Empty, 23, 0, 23),
+                                                new LocationTagged<string>(string.Empty, 23, 0, 23),
                                                 new LocationTagged<SpanCodeGenerator>(new ResolveUrlCodeGenerator(), 23, 0, 23))),
-                                    new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(String.Empty, 46, 0, 46), 46, 0, 46),
+                                    new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 46, 0, 46), 46, 0, 46),
                                         new ExpressionBlock(
                                             Factory.CodeTransition()
                                                    .Accepts(AcceptedCharacters.None),
                                             Factory.Code("id")
                                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                         .Accepts(AcceptedCharacters.NonWhiteSpace))),
-                                    Factory.Markup("/Boz").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(String.Empty, 49, 0, 49), new LocationTagged<string>("/Boz", 49, 0, 49)))),
+                                    Factory.Markup("/Boz").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 49, 0, 49), new LocationTagged<string>("/Boz", 49, 0, 49)))),
                                 Factory.Markup(" />")),
                                 Factory.Markup(" ")
                             ),

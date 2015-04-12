@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             if (_host.DesignTimeMode &&
                 padding > 0 &&
                 target.Previous.Kind == SpanKind.Transition && // target.Previous is guaranteed to not be null if you have padding.
-                String.Equals(target.Previous.Content, SyntaxConstants.TransitionString, StringComparison.Ordinal))
+                string.Equals(target.Previous.Content, SyntaxConstants.TransitionString, StringComparison.Ordinal))
             {
                 padding--;
             }
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 // When scanning previous spans we need to be break down the spans with spaces. The parser combines
                 // whitespace into existing spans so you'll see tabs, newlines etc. within spans.  We only care about
                 // the \t in existing spans.
-                var previousContent = firstSpanInLine.Previous.Content ?? String.Empty;
+                var previousContent = firstSpanInLine.Previous.Content ?? string.Empty;
 
                 var lastNewLineIndex = previousContent.LastIndexOfAny(_newLineChars);
 

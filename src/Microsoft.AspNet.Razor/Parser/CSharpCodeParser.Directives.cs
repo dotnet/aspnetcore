@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Razor.Parser
             IEnumerable<CSharpSymbol> ws = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: false));
 
             // Get the section name
-            var sectionName = String.Empty;
+            var sectionName = string.Empty;
             if (!Required(CSharpSymbolType.Identifier,
                           errorIfNotFound: true,
                           errorBase: RazorResources.FormatParseError_Unexpected_Character_At_Section_Name_Start))
@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.Razor.Parser
         protected void AssertDirective(string directive)
         {
             Assert(CSharpSymbolType.Identifier);
-            Debug.Assert(String.Equals(CurrentSymbol.Content, directive, StringComparison.Ordinal));
+            Debug.Assert(string.Equals(CurrentSymbol.Content, directive, StringComparison.Ordinal));
         }
 
         protected void InheritsDirectiveCore()

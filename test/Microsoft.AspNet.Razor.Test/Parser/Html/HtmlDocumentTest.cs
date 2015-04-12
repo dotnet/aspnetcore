@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         [Fact]
         public void ParseDocumentOutputsEmptyBlockWithEmptyMarkupSpanIfContentIsEmptyString()
         {
-            ParseDocumentTest(String.Empty, new MarkupBlock(Factory.EmptyHtml()));
+            ParseDocumentTest(string.Empty, new MarkupBlock(Factory.EmptyHtml()));
         }
 
         [Fact]
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                         new MarkupBlock(new AttributeBlockCodeGenerator("href", new LocationTagged<string>(" href=\"", 2, 0, 2), new LocationTagged<string>("\"", 36, 0, 36)),
                             Factory.Markup(" href=\"").With(SpanCodeGenerator.Null),
                             Factory.Markup("mailto:anurse@microsoft.com")
-                                   .With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(String.Empty, 9, 0, 9), new LocationTagged<string>("mailto:anurse@microsoft.com", 9, 0, 9))),
+                                   .With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 9, 0, 9), new LocationTagged<string>("mailto:anurse@microsoft.com", 9, 0, 9))),
                             Factory.Markup("\"").With(SpanCodeGenerator.Null)),
                         Factory.Markup(">")),
                     Factory.Markup("Email me"),

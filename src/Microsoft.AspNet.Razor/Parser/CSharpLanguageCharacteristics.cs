@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         public override CSharpSymbol CreateMarkerSymbol(SourceLocation location)
         {
-            return new CSharpSymbol(location, String.Empty, CSharpSymbolType.Unknown);
+            return new CSharpSymbol(location, string.Empty, CSharpSymbolType.Unknown);
         }
 
         public override CSharpSymbolType GetKnownSymbolType(KnownSymbolType type)

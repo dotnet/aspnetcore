@@ -508,7 +508,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 // If necessary, put an empty-content marker symbol here
                 if (Span.Symbols.Count == 0)
                 {
-                    Accept(new CSharpSymbol(CurrentLocation, String.Empty, CSharpSymbolType.Unknown));
+                    Accept(new CSharpSymbol(CurrentLocation, string.Empty, CSharpSymbolType.Unknown));
                 }
 
                 // Output the content span and then capture the ")"

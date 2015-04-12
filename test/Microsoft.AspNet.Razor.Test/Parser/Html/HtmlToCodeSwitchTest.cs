@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                         Factory.Markup("<foo"),
                         new MarkupBlock(new AttributeBlockCodeGenerator("bar", new LocationTagged<string>(" bar=\"", 4, 0, 4), new LocationTagged<string>("\"", 14, 0, 14)),
                             Factory.Markup(" bar=\"").With(SpanCodeGenerator.Null),
-                            new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(String.Empty, 10, 0, 10), 10, 0, 10),
+                            new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 10, 0, 10), 10, 0, 10),
                                 new ExpressionBlock(
                                     Factory.CodeTransition(),
                                     Factory.Code("baz")
@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                         new MarkupBlock(new AttributeBlockCodeGenerator("href", new LocationTagged<string>(" href=\"", 2, 0, 2), new LocationTagged<string>("\"", 36, 0, 36)),
                             Factory.Markup(" href=\"").With(SpanCodeGenerator.Null),
                             Factory.Markup("mailto:anurse@microsoft.com")
-                                   .With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(String.Empty, 9, 0, 9), new LocationTagged<string>("mailto:anurse@microsoft.com", 9, 0, 9))),
+                                   .With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 9, 0, 9), new LocationTagged<string>("mailto:anurse@microsoft.com", 9, 0, 9))),
                             Factory.Markup("\"").With(SpanCodeGenerator.Null)),
                         Factory.Markup(">").Accepts(AcceptedCharacters.None)),
                     Factory.Markup("Email me"),

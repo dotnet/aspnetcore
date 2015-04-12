@@ -375,7 +375,7 @@ namespace Microsoft.AspNet.Razor.Parser
             AcceptWhile(sym => Equals(type, sym.Type));
         }
 
-        // We want to avoid array allocations and enumeration where possible, so we use the same technique as String.Format
+        // We want to avoid array allocations and enumeration where possible, so we use the same technique as string.Format
         protected internal void AcceptWhile(TSymbolType type1, TSymbolType type2)
         {
             AcceptWhile(sym => Equals(type1, sym.Type) || Equals(type2, sym.Type));
@@ -396,7 +396,7 @@ namespace Microsoft.AspNet.Razor.Parser
             AcceptWhile(sym => !Equals(type, sym.Type));
         }
 
-        // We want to avoid array allocations and enumeration where possible, so we use the same technique as String.Format
+        // We want to avoid array allocations and enumeration where possible, so we use the same technique as string.Format
         protected internal void AcceptUntil(TSymbolType type1, TSymbolType type2)
         {
             AcceptWhile(sym => !Equals(type1, sym.Type) && !Equals(type2, sym.Type));

@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
             SymbolBase<TType> other = obj as SymbolBase<TType>;
             return other != null &&
                    Start.Equals(other.Start) &&
-                   String.Equals(Content, other.Content, StringComparison.Ordinal) &&
+                   string.Equals(Content, other.Content, StringComparison.Ordinal) &&
                    Type.Equals(other.Type);
         }
 
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
 
         public override string ToString()
         {
-            return String.Format(CultureInfo.InvariantCulture, "{0} {1} - [{2}]", Start, Type, Content);
+            return string.Format(CultureInfo.InvariantCulture, "{0} {1} - [{2}]", Start, Type, Content);
         }
 
         public void OffsetStart(SourceLocation documentStart)

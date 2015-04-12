@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
         public override string ToString()
         {
-            return String.Format("{0}: {1}-{2}", Kind, Start, End);
+            return string.Format("{0}: {1}-{2}", Kind, Start, End);
         }
 
         public override bool Equals(object obj)

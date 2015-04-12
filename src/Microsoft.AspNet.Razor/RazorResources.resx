@@ -198,7 +198,7 @@ Instead, wrap the contents of the block in "{{}}":
   </data>
   <data name="ParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS" xml:space="preserve">
     <value>"{0}" is not valid at the start of a code block.  Only identifiers, keywords, comments, "(" and "{{" are valid.</value>
-    <comment>"{{" is an escape sequence for String.Format, when outputted to the user it will be displayed as "{"</comment>
+    <comment>"{{" is an escape sequence for string.Format, when outputted to the user it will be displayed as "{"</comment>
   </data>
   <data name="ParseError_UnfinishedTag" xml:space="preserve">
     <value>End of file or an unexpected character was reached before the "{0}" tag could be parsed.  Elements inside markup blocks must be complete. They must either be self-closing ("&lt;br /&gt;") or have matching end tags ("&lt;p&gt;Hello&lt;/p&gt;").  If you intended to display a "&lt;" character, use the "&amp;lt;" HTML entity.</value>

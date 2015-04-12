@@ -772,7 +772,7 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         private void NamespaceImportTest(string content, string expectedNS, AcceptedCharacters acceptedCharacters = AcceptedCharacters.None, string errorMessage = null, SourceLocation? location = null)
         {
             var errors = new RazorError[0];
-            if (!String.IsNullOrEmpty(errorMessage) && location.HasValue)
+            if (!string.IsNullOrEmpty(errorMessage) && location.HasValue)
             {
                 errors = new RazorError[]
                 {

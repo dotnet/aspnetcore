@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.Razor.Editor
 
         public override string ToString()
         {
-            return GetType().Name + ";Accepts:" + AcceptedCharacters + ((EditorHints == EditorHints.None) ? String.Empty : (";Hints: " + EditorHints.ToString()));
+            return GetType().Name + ";Accepts:" + AcceptedCharacters + ((EditorHints == EditorHints.None) ? string.Empty : (";Hints: " + EditorHints.ToString()));
         }
 
         public override bool Equals(object obj)

@@ -173,11 +173,11 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             using (var source = TestFile.Create(sourceLocation).OpenRead())
             {
                 var sourceFile = NormalizeNewLines(source);
-                var sourceFileName = generatePragmas ? String.Format("{0}.{1}", name, FileExtension) : null;
+                var sourceFileName = generatePragmas ? string.Format("{0}.{1}", name, FileExtension) : null;
                 results = engine.GenerateCode(sourceFile, className: name, rootNamespace: TestRootNamespaceName, sourceFileName: sourceFileName);
             }
             // Only called if GENERATE_BASELINES is set, otherwise compiled out.
-            BaselineWriter.WriteBaseline(String.Format(@"test\Microsoft.AspNet.Razor.Test\TestFiles\CodeGenerator\{0}\Output\{1}.{2}", LanguageName, baselineName, BaselineExtension), results.GeneratedCode);
+            BaselineWriter.WriteBaseline(string.Format(@"test\Microsoft.AspNet.Razor.Test\TestFiles\CodeGenerator\{0}\Output\{1}.{2}", LanguageName, baselineName, BaselineExtension), results.GeneratedCode);
 
 #if !GENERATE_BASELINES
             var textOutput = results.GeneratedCode;

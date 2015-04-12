@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Razor
 
         public override string ToString()
         {
-            return String.Format(
+            return string.Format(
                 CultureInfo.CurrentCulture,
                 "({0}:{1},{2})",
                 AbsoluteIndex,
@@ -58,9 +58,10 @@ namespace Microsoft.AspNet.Razor
 
         public bool Equals(SourceLocation other)
         {
-            return AbsoluteIndex == other.AbsoluteIndex &&
-                   LineIndex == other.LineIndex &&
-                   CharacterIndex == other.CharacterIndex;
+            return 
+                AbsoluteIndex == other.AbsoluteIndex &&
+                LineIndex == other.LineIndex &&
+                CharacterIndex == other.CharacterIndex;
         }
 
         public int CompareTo(SourceLocation other)

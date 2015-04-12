@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Razor
     {
         private const int BufferSize = 1024;
         public static readonly string DefaultClassName = "Template";
-        public static readonly string DefaultNamespace = String.Empty;
+        public static readonly string DefaultNamespace = string.Empty;
 
         /// <summary>
         /// Constructs a new RazorTemplateEngine with the specified host
@@ -41,11 +41,11 @@ namespace Microsoft.AspNet.Razor
         /// <summary>
         /// The RazorEngineHost which defines the environment in which the generated template code will live
         /// </summary>
-        public RazorEngineHost Host { get; private set; }
+        public RazorEngineHost Host { get; }
 
         public ParserResults ParseTemplate(ITextBuffer input)
         {
-            return ParseTemplate(input, null);
+            return ParseTemplate(input, cancelToken: null);
         }
 
         /// <summary>
@@ -63,7 +63,10 @@ namespace Microsoft.AspNet.Razor
         /// <param name="input">The input text to parse</param>
         /// <param name="cancelToken">A token used to cancel the parser</param>
         /// <returns>The resulting parse tree</returns>
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Input object would be disposed if we dispose the wrapper.  We don't own the input so we don't want to dispose it")]
+        [SuppressMessage(
+            "Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
+            Justification = "Input object would be disposed if we dispose the wrapper.  We don't own the input so " +
+            "we don't want to dispose it")]
         public ParserResults ParseTemplate(ITextBuffer input, CancellationToken? cancelToken)
         {
             return ParseTemplateCore(input.ToDocument(), sourceFileName: null, cancelToken: cancelToken);
@@ -76,15 +79,20 @@ namespace Microsoft.AspNet.Razor
             return ParseTemplateCore(new SeekableTextReader(input), sourceFileName, cancelToken: null);
         }
 
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Input object would be disposed if we dispose the wrapper.  We don't own the input so we don't want to dispose it")]
+        [SuppressMessage(
+            "Microsoft.Reliability",
+            "CA2000:Dispose objects before losing scope",
+            Justification = "Input object would be disposed if we dispose the wrapper. We don't own the input so " +
+            "we don't want to dispose it")]
         public ParserResults ParseTemplate(TextReader input, CancellationToken? cancelToken)
         {
             return ParseTemplateCore(new SeekableTextReader(input), sourceFileName: null, cancelToken: cancelToken);
         }
 
-        protected internal virtual ParserResults ParseTemplateCore(ITextDocument input,
-                                                                   string sourceFileName,
-                                                                   CancellationToken? cancelToken)
+        protected internal virtual ParserResults ParseTemplateCore(
+            ITextDocument input,
+            string sourceFileName,
+            CancellationToken? cancelToken)
         {
             // Construct the parser
             var parser = CreateParser(sourceFileName);
@@ -94,17 +102,22 @@ namespace Microsoft.AspNet.Razor
 
         public GeneratorResults GenerateCode(ITextBuffer input)
         {
-            return GenerateCode(input, null, null, null, null);
+            return GenerateCode(input, className: null, rootNamespace: null, sourceFileName: null, cancelToken: null);
         }
 
         public GeneratorResults GenerateCode(ITextBuffer input, CancellationToken? cancelToken)
         {
-            return GenerateCode(input, null, null, null, cancelToken);
+            return GenerateCode(
+                input,
+                className: null,
+                rootNamespace: null,
+                sourceFileName: null,
+                cancelToken: cancelToken);
         }
 
         public GeneratorResults GenerateCode(ITextBuffer input, string className, string rootNamespace, string sourceFileName)
         {
-            return GenerateCode(input, className, rootNamespace, sourceFileName, null);
+            return GenerateCode(input, className, rootNamespace, sourceFileName, cancelToken: null);
         }
 
         /// <summary>
@@ -128,31 +141,50 @@ namespace Microsoft.AspNet.Razor
         /// <param name="rootNamespace">The namespace in which the generated class will reside, overriding whatever is specified in the Host.  The default value (defined in the Host) can be used by providing null for this argument</param>
         /// <param name="sourceFileName">The file name to use in line pragmas, usually the original Razor file, overriding whatever is specified in the Host.  The default value (defined in the Host) can be used by providing null for this argument</param>
         /// <returns>The resulting parse tree AND generated code.</returns>
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Input object would be disposed if we dispose the wrapper.  We don't own the input so we don't want to dispose it")]
-        public GeneratorResults GenerateCode(ITextBuffer input, string className, string rootNamespace, string sourceFileName, CancellationToken? cancelToken)
+        [SuppressMessage(
+            "Microsoft.Reliability",
+            "CA2000:Dispose objects before losing scope",
+            Justification = "Input object would be disposed if we dispose the wrapper. We don't own the input so " +
+            "we don't want to dispose it")]
+        public GeneratorResults GenerateCode(
+            ITextBuffer input,
+            string className,
+            string rootNamespace,
+            string sourceFileName,
+            CancellationToken? cancelToken)
         {
-            return GenerateCodeCore(input.ToDocument(),
-                                    className,
-                                    rootNamespace,
-                                    sourceFileName,
-                                    checksum: null,
-                                    cancelToken: cancelToken);
+            return GenerateCodeCore(
+                input.ToDocument(),
+                className,
+                rootNamespace,
+                sourceFileName,
+                checksum: null,
+                cancelToken: cancelToken);
         }
 
         // See GenerateCode override which takes ITextBuffer, and BufferingTextReader for details.
         public GeneratorResults GenerateCode(TextReader input)
         {
-            return GenerateCode(input, null, null, null, null);
+            return GenerateCode(input, className: null, rootNamespace: null, sourceFileName: null, cancelToken: null);
         }
 
         public GeneratorResults GenerateCode(TextReader input, CancellationToken? cancelToken)
         {
-            return GenerateCode(input, null, null, null, cancelToken);
+            return GenerateCode(
+                input,
+                className: null,
+                rootNamespace: null,
+                sourceFileName: null,
+                cancelToken: cancelToken);
         }
 
-        public GeneratorResults GenerateCode(TextReader input, string className, string rootNamespace, string sourceFileName)
+        public GeneratorResults GenerateCode(
+            TextReader input,
+            string className,
+
+            string rootNamespace, string sourceFileName)
         {
-            return GenerateCode(input, className, rootNamespace, sourceFileName, null);
+            return GenerateCode(input, className, rootNamespace, sourceFileName, cancelToken: null);
         }
 
         /// <summary>
@@ -170,10 +202,11 @@ namespace Microsoft.AspNet.Razor
         /// generation. The checksum is used for producing the <c>#pragma checksum</c> line pragma required for
         /// debugging.
         /// </remarks>
-        public GeneratorResults GenerateCode([NotNull] Stream inputStream,
-                                             string className,
-                                             string rootNamespace,
-                                             string sourceFileName)
+        public GeneratorResults GenerateCode(
+            [NotNull] Stream inputStream,
+            string className,
+            string rootNamespace,
+            string sourceFileName)
         {
             MemoryStream memoryStream = null;
             string checksum = null;
@@ -197,19 +230,22 @@ namespace Microsoft.AspNet.Razor
                     inputStream.Position = 0;
                 }
 
-                using (var reader = new StreamReader(inputStream,
-                                                     Encoding.UTF8,
-                                                     detectEncodingFromByteOrderMarks: true,
-                                                     bufferSize: BufferSize,
-                                                     leaveOpen: true))
+                using (var reader =
+                    new StreamReader(
+                        inputStream,
+                        Encoding.UTF8,
+                        detectEncodingFromByteOrderMarks: true,
+                        bufferSize: BufferSize,
+                        leaveOpen: true))
                 {
                     var seekableStream = new SeekableTextReader(reader);
-                    return GenerateCodeCore(seekableStream,
-                                            className,
-                                            rootNamespace,
-                                            sourceFileName,
-                                            checksum,
-                                            cancelToken: null);
+                    return GenerateCodeCore(
+                        seekableStream,
+                        className,
+                        rootNamespace,
+                        sourceFileName,
+                        checksum,
+                        cancelToken: null);
                 }
             }
             finally
@@ -221,23 +257,34 @@ namespace Microsoft.AspNet.Razor
             }
         }
 
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Input object would be disposed if we dispose the wrapper.  We don't own the input so we don't want to dispose it")]
-        public GeneratorResults GenerateCode(TextReader input, string className, string rootNamespace, string sourceFileName, CancellationToken? cancelToken)
+        [SuppressMessage(
+            "Microsoft.Reliability",
+            "CA2000:Dispose objects before losing scope",
+            Justification = "Input object would be disposed if we dispose the wrapper. We don't own the input so " +
+            "we don't want to dispose it")]
+        public GeneratorResults GenerateCode(
+            TextReader input,
+            string className,
+            string rootNamespace,
+            string sourceFileName,
+            CancellationToken? cancelToken)
         {
-            return GenerateCodeCore(new SeekableTextReader(input),
-                                    className,
-                                    rootNamespace,
-                                    sourceFileName,
-                                    checksum: null,
-                                    cancelToken: cancelToken);
+            return GenerateCodeCore(
+                new SeekableTextReader(input),
+                className,
+                rootNamespace,
+                sourceFileName,
+                checksum: null,
+                cancelToken: cancelToken);
         }
 
-        protected internal virtual GeneratorResults GenerateCodeCore(ITextDocument input,
-                                                                     string className,
-                                                                     string rootNamespace,
-                                                                     string sourceFileName,
-                                                                     string checksum,
-                                                                     CancellationToken? cancelToken)
+        protected internal virtual GeneratorResults GenerateCodeCore(
+            ITextDocument input,
+            string className,
+            string rootNamespace,
+            string sourceFileName,
+            string checksum,
+            CancellationToken? cancelToken)
         {
             className = (className ?? Host.DefaultClassName) ?? DefaultClassName;
             rootNamespace = (rootNamespace ?? Host.DefaultNamespace) ?? DefaultNamespace;
@@ -261,7 +308,10 @@ namespace Microsoft.AspNet.Razor
             return new GeneratorResults(results, builderResult, codeBuilderContext.CodeTreeBuilder.CodeTree);
         }
 
-        protected internal virtual RazorCodeGenerator CreateCodeGenerator(string className, string rootNamespace, string sourceFileName)
+        protected internal virtual RazorCodeGenerator CreateCodeGenerator(
+            string className,
+            string rootNamespace,
+            string sourceFileName)
         {
             return Host.DecorateCodeGenerator(
                 Host.CodeLanguage.CreateCodeGenerator(className, rootNamespace, sourceFileName, Host));
@@ -272,9 +322,10 @@ namespace Microsoft.AspNet.Razor
             var codeParser = Host.CodeLanguage.CreateCodeParser();
             var markupParser = Host.CreateMarkupParser();
 
-            var parser = new RazorParser(Host.DecorateCodeParser(codeParser),
-                                         Host.DecorateMarkupParser(markupParser),
-                                         Host.TagHelperDescriptorResolver)
+            var parser = new RazorParser(
+                Host.DecorateCodeParser(codeParser),
+                Host.DecorateMarkupParser(markupParser),
+                Host.TagHelperDescriptorResolver)
             {
                 DesignTimeMode = Host.DesignTimeMode
             };
@@ -284,8 +335,7 @@ namespace Microsoft.AspNet.Razor
 
         protected internal virtual CodeBuilder CreateCodeBuilder(CodeBuilderContext context)
         {
-            return Host.DecorateCodeBuilder(Host.CodeLanguage.CreateCodeBuilder(context),
-                                            context);
+            return Host.DecorateCodeBuilder(Host.CodeLanguage.CreateCodeBuilder(context), context);
         }
 
         private static string ComputeChecksum(Stream inputStream)

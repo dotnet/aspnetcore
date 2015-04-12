@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Razor
             {
                 throw new ArgumentNullException("host");
             }
-            if (String.IsNullOrEmpty(sourceFileName))
+            if (string.IsNullOrEmpty(sourceFileName))
             {
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "sourceFileName");
             }
@@ -141,7 +141,7 @@ namespace Microsoft.AspNet.Razor
             var result = PartialParseResult.Rejected;
 
             // If there isn't already a parse underway, try partial-parsing
-            var changeString = String.Empty;
+            var changeString = string.Empty;
             using (_parser.SynchronizeMainThreadState())
             {
                 // Capture the string value of the change while we're synchronized

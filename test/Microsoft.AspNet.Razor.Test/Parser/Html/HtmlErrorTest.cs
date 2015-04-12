@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 new MarkupBlock(
                     new MarkupTagBlock(
                     Factory.Markup("<foo"),
-                        new MarkupBlock(new AttributeBlockCodeGenerator("bar", new LocationTagged<string>(" bar=", 4, 0, 4), new LocationTagged<string>(String.Empty, 12, 0, 12)),
+                        new MarkupBlock(new AttributeBlockCodeGenerator("bar", new LocationTagged<string>(" bar=", 4, 0, 4), new LocationTagged<string>(string.Empty, 12, 0, 12)),
                             Factory.Markup(" bar=").With(SpanCodeGenerator.Null),
                             Factory.Markup("baz").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 9, 0, 9), new LocationTagged<string>("baz", 9, 0, 9)))))),
                 new RazorError(RazorResources.FormatParseError_UnfinishedTag("foo"), new SourceLocation(0, 0, 0)));

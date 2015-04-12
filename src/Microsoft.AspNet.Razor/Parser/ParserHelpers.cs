@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Razor.Parser
         public static bool IsNewLine(string value)
         {
             return (value.Length == 1 && (IsNewLine(value[0]))) ||
-                   (String.Equals(value, "\r\n", StringComparison.Ordinal));
+                   (string.Equals(value, "\r\n", StringComparison.Ordinal));
         }
 
         // Returns true if the character is Whitespace and NOT a newline

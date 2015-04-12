@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Razor.Text
 
         public string ToString(string format, IFormatProvider formatProvider)
         {
-            if (String.IsNullOrEmpty(format))
+            if (string.IsNullOrEmpty(format))
             {
                 format = "P";
             }
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Razor.Text
             switch (format.ToUpperInvariant())
             {
                 case "F":
-                    return String.Format(formatProvider, "{0}@{1}", Value, Location);
+                    return string.Format(formatProvider, "{0}@{1}", Value, Location);
                 default:
                     return Value.ToString();
             }

@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseDocumentTest("@section" + Environment.NewLine,
                 new MarkupBlock(
                     Factory.EmptyHtml(),
-                    new SectionBlock(new SectionCodeGenerator(String.Empty),
+                    new SectionBlock(new SectionCodeGenerator(string.Empty),
                         Factory.CodeTransition(),
                         Factory.MetaCode("section" + Environment.NewLine))),
                 new RazorError(

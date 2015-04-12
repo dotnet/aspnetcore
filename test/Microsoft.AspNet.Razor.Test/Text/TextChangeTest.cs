@@ -222,7 +222,7 @@ namespace Microsoft.AspNet.Razor.Test.Text
             var text = textChange.NewText;
 
             // Assert
-            Assert.Equal(String.Empty, text);
+            Assert.Equal(string.Empty, text);
         }
 
         [Fact]

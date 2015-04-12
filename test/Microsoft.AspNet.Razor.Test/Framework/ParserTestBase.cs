@@ -218,7 +218,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
                 {
                     if (results != null && results.Document != null)
                     {
-                        WriteTraceLine(String.Empty);
+                        WriteTraceLine(string.Empty);
                         WriteTraceLine("Actual Parse Tree:");
                         WriteNode(0, results.Document);
                     }
@@ -491,7 +491,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         [Conditional("PARSER_TRACE")]
         private static void WriteTraceLine(string format, params object[] args)
         {
-            Trace.WriteLine(String.Format(format, args));
+            Trace.WriteLine(string.Format(format, args));
         }
 
         protected virtual Block CreateSimpleBlockAndSpan(string spanContent, BlockType blockType, SpanKind spanType, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)

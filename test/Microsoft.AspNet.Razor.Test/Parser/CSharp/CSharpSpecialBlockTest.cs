@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            new DirectiveBlock(
                                Factory.MetaCode("inherits ").Accepts(AcceptedCharacters.None),
                                Factory.Code("               " + Environment.NewLine)
-                                   .AsBaseType(String.Empty)
+                                   .AsBaseType(string.Empty)
                                ),
                            new RazorError(RazorResources.ParseError_InheritsKeyword_Must_Be_Followed_By_TypeName, 24, 0, 24));
         }
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         public void ParseBlockBalancesBracesOutsideStringsIfFirstCharacterIsBraceAndReturnsSpanOfTypeCode()
         {
             // Arrange
-            const string code = "foo\"b}ar\" if(condition) { String.Format(\"{0}\"); } ";
+            const string code = "foo\"b}ar\" if(condition) { string.Format(\"{0}\"); } ";
 
             // Act/Assert
             ParseBlockTest("{" + code + "}",
@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         public void ParseBlockBalancesParensOutsideStringsIfFirstCharacterIsParenAndReturnsSpanOfTypeExpression()
         {
             // Arrange
-            const string code = "foo\"b)ar\" if(condition) { String.Format(\"{0}\"); } ";
+            const string code = "foo\"b)ar\" if(condition) { string.Format(\"{0}\"); } ";
 
             // Act/Assert
             ParseBlockTest("(" + code + ")",

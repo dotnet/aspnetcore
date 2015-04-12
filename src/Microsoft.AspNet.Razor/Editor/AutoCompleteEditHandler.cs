@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             var other = obj as AutoCompleteEditHandler;
             return base.Equals(obj) &&
                    other != null &&
-                   String.Equals(other.AutoCompleteString, AutoCompleteString, StringComparison.Ordinal) &&
+                   string.Equals(other.AutoCompleteString, AutoCompleteString, StringComparison.Ordinal) &&
                    AutoCompleteAtEndOfSpan == other.AutoCompleteAtEndOfSpan;
         }
 

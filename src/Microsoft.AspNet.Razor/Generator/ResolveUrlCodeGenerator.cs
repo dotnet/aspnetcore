@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Razor.Generator
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
             // Check if the host supports it
-            if (String.IsNullOrEmpty(context.Host.GeneratedClassContext.ResolveUrlMethodName))
+            if (string.IsNullOrEmpty(context.Host.GeneratedClassContext.ResolveUrlMethodName))
             {
                 // Nope, just use the default MarkupCodeGenerator behavior
                 new MarkupCodeGenerator().GenerateCode(target, context);

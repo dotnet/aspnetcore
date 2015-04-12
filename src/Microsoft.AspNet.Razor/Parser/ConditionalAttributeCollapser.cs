@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Razor.Parser
         protected override SyntaxTreeNode RewriteBlock(BlockBuilder parent, Block block)
         {
             // Collect the content of this node
-            var content = String.Concat(block.Children.Cast<Span>().Select(s => s.Content));
+            var content = string.Concat(block.Children.Cast<Span>().Select(s => s.Content));
 
             // Create a new span containing this content
             var span = new SpanBuilder();

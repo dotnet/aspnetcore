@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         public CSharpCodeWriter WriteVariableDeclaration(string type, string name, string value)
         {
             Write(type).Write(" ").Write(name);
-            if (!String.IsNullOrEmpty(value))
+            if (!string.IsNullOrEmpty(value))
             {
                 Write(" = ").Write(value);
             }
@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         public CSharpCodeWriter WriteUsing(string name, bool endLine)
         {
-            Write(String.Format("using {0}", name));
+            Write(string.Format("using {0}", name));
 
             if (endLine)
             {

@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Razor.Test.Editor
                 };
 
                 // Act
-                parser.CheckForStructureChanges(new TextChange(0, 0, new StringTextBuffer(String.Empty), input.Length, input));
+                parser.CheckForStructureChanges(new TextChange(0, 0, new StringTextBuffer(string.Empty), input.Length, input));
 
                 // Assert
                 MiscUtils.DoWithTimeoutIfNotDebugging(parseComplete.Wait);
@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.Razor.Test.Editor
                     parseComplete.Set();
                 };
 
-                Assert.Equal(PartialParseResult.Rejected, parser.CheckForStructureChanges(new TextChange(0, 0, new StringTextBuffer(String.Empty), 12, original)));
+                Assert.Equal(PartialParseResult.Rejected, parser.CheckForStructureChanges(new TextChange(0, 0, new StringTextBuffer(string.Empty), 12, original)));
                 MiscUtils.DoWithTimeoutIfNotDebugging(parseComplete.Wait); // Wait for the parse to finish
                 parseComplete.Reset();
 
@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.Razor.Test.Editor
 
         private TextChange CreateDummyChange()
         {
-            return new TextChange(0, 0, new StringTextBuffer(String.Empty), 3, new StringTextBuffer("foo"));
+            return new TextChange(0, 0, new StringTextBuffer(string.Empty), 3, new StringTextBuffer("foo"));
         }
 
         private static RazorEditorParser CreateClientParser()

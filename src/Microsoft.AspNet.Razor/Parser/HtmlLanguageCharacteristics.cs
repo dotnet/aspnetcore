@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         public override HtmlSymbol CreateMarkerSymbol(SourceLocation location)
         {
-            return new HtmlSymbol(location, String.Empty, HtmlSymbolType.Unknown);
+            return new HtmlSymbol(location, string.Empty, HtmlSymbolType.Unknown);
         }
 
         public override HtmlSymbolType GetKnownSymbolType(KnownSymbolType type)

@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.MetaCode("layout ").Accepts(AcceptedCharacters.None),
                     Factory.EmptyCSharp()
                            .AsMetaCode()
-                           .With(new SetLayoutCodeGenerator(String.Empty))
+                           .With(new SetLayoutCodeGenerator(string.Empty))
                            .WithEditorHints(EditorHints.VirtualPath | EditorHints.LayoutPage)
                 )
             );
