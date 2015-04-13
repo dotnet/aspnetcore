@@ -10,6 +10,7 @@ namespace CookieSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddWebEncoders();
             services.AddDataProtection();
         }
 

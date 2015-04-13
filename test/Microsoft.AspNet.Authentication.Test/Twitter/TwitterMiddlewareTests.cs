@@ -123,6 +123,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             },
             services =>
             {
+                services.AddWebEncoders();
                 services.AddDataProtection();
                 services.Configure<ExternalAuthenticationOptions>(options =>
                 {

@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
             HttpContext context = new DefaultHttpContext();
 
             string testString = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            new ChunkingCookieManager() { ChunkSize = null }.AppendResponseCookie(context, "TestCookie", testString, new CookieOptions());
+            new ChunkingCookieManager(null) { ChunkSize = null }.AppendResponseCookie(context, "TestCookie", testString, new CookieOptions());
             IList<string> values = context.Response.Headers.GetValues("Set-Cookie");
             Assert.Equal(1, values.Count);
             Assert.Equal("TestCookie=" + testString + "; path=/", values[0]);
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
             HttpContext context = new DefaultHttpContext();
 
             string testString = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            new ChunkingCookieManager() { ChunkSize = 30 }.AppendResponseCookie(context, "TestCookie", testString, new CookieOptions());
+            new ChunkingCookieManager(null) { ChunkSize = 30 }.AppendResponseCookie(context, "TestCookie", testString, new CookieOptions());
             IList<string> values = context.Response.Headers.GetValues("Set-Cookie");
             Assert.Equal(9, values.Count);
             Assert.Equal(new[]
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
             HttpContext context = new DefaultHttpContext();
 
             string testString = "\"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ\"";
-            new ChunkingCookieManager() { ChunkSize = 32 }.AppendResponseCookie(context, "TestCookie", testString, new CookieOptions());
+            new ChunkingCookieManager(null) { ChunkSize = 32 }.AppendResponseCookie(context, "TestCookie", testString, new CookieOptions());
             IList<string> values = context.Response.Headers.GetValues("Set-Cookie");
             Assert.Equal(9, values.Count);
             Assert.Equal(new[]
@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
                 "TestCookieC6=JKLMNOPQR",
                 "TestCookieC7=STUVWXYZ");
 
-            string result = new ChunkingCookieManager().GetRequestCookie(context, "TestCookie");
+            string result = new ChunkingCookieManager(null).GetRequestCookie(context, "TestCookie");
             string testString = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             Assert.Equal(testString, result);
         }
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
                 "TestCookieC6=\"JKLMNOPQR\"",
                 "TestCookieC7=\"STUVWXYZ\"");
 
-            string result = new ChunkingCookieManager().GetRequestCookie(context, "TestCookie");
+            string result = new ChunkingCookieManager(null).GetRequestCookie(context, "TestCookie");
             string testString = "\"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ\"";
             Assert.Equal(testString, result);
         }
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
                 "TestCookieC6=JKLMNOPQR",
                 "TestCookieC7=STUVWXYZ");
 
-            Assert.Throws<FormatException>(() => new ChunkingCookieManager().GetRequestCookie(context, "TestCookie"));
+            Assert.Throws<FormatException>(() => new ChunkingCookieManager(null).GetRequestCookie(context, "TestCookie"));
         }
 
         [Fact]
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
                 "TestCookieC6=JKLMNOPQR",
                 "TestCookieC7=STUVWXYZ");
 
-            string result = new ChunkingCookieManager() { ThrowForPartialCookies = false }.GetRequestCookie(context, "TestCookie");
+            string result = new ChunkingCookieManager(null) { ThrowForPartialCookies = false }.GetRequestCookie(context, "TestCookie");
             string testString = "chunks:7";
             Assert.Equal(testString, result);
         }
@@ -148,19 +148,19 @@ namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
             HttpContext context = new DefaultHttpContext();
             context.Request.Headers.AppendValues("Cookie", "TestCookie=chunks:7");
 
-            new ChunkingCookieManager().DeleteCookie(context, "TestCookie", new CookieOptions() { Domain = "foo.com" });
+            new ChunkingCookieManager(null).DeleteCookie(context, "TestCookie", new CookieOptions() { Domain = "foo.com" });
             var cookies = context.Response.Headers.GetValues("Set-Cookie");
             Assert.Equal(8, cookies.Count);
             Assert.Equal(new[]
             {
-                "TestCookie=; domain=foo.com; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT",
-                "TestCookieC1=; domain=foo.com; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT",
-                "TestCookieC2=; domain=foo.com; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT",
-                "TestCookieC3=; domain=foo.com; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT",
-                "TestCookieC4=; domain=foo.com; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT",
-                "TestCookieC5=; domain=foo.com; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT",
-                "TestCookieC6=; domain=foo.com; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT",
-                "TestCookieC7=; domain=foo.com; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT",
+                "TestCookie=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/",
+                "TestCookieC1=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/",
+                "TestCookieC2=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/",
+                "TestCookieC3=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/",
+                "TestCookieC4=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/",
+                "TestCookieC5=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/",
+                "TestCookieC6=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/",
+                "TestCookieC7=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/",
             }, cookies);
         }
     }

@@ -530,6 +530,7 @@ namespace Microsoft.AspNet.Authentication.Google
             },
             services =>
             {
+                services.AddWebEncoders();
                 services.AddDataProtection();
                 services.Configure<ExternalAuthenticationOptions>(options =>
                 {

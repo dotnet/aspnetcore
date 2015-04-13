@@ -7,6 +7,8 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.WebEncoders;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
 {
@@ -16,12 +18,13 @@ namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
     /// </summary>
     public class ChunkingCookieManager : ICookieManager
     {
-        public ChunkingCookieManager()
+        public ChunkingCookieManager(IUrlEncoder urlEncoder)
         {
             // Lowest common denominator. Safari has the lowest known limit (4093), and we leave little extra just in case.
             // See http://browsercookielimits.x64.me/.
             ChunkSize = 4090;
             ThrowForPartialCookies = true;
+            Encoder = urlEncoder ?? UrlEncoder.Default;
         }
 
         /// <summary>
@@ -37,6 +40,8 @@ namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
         /// Throw if not all chunks of a cookie are available on a request for re-assembly.
         /// </summary>
         public bool ThrowForPartialCookies { get; set; }
+
+        private IUrlEncoder Encoder { get; set; }
 
         // Parse the "chunks:XX" to determine how many chunks there should be.
         private static int ParseChunksCount(string value)
@@ -119,22 +124,18 @@ namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
         /// <param name="options"></param>
         public void AppendResponseCookie([NotNull] HttpContext context, [NotNull] string key, string value, [NotNull] CookieOptions options)
         {
-            var domainHasValue = !string.IsNullOrEmpty(options.Domain);
-            var pathHasValue = !string.IsNullOrEmpty(options.Path);
-            var expiresHasValue = options.Expires.HasValue;
+            var escapedKey = Encoder.UrlEncode(key);
 
-            var escapedKey = Uri.EscapeDataString(key);
-            var prefix = escapedKey + "=";
+            var template = new SetCookieHeaderValue(escapedKey)
+            {
+                Domain = options.Domain,
+                Expires = options.Expires,
+                HttpOnly = options.HttpOnly,
+                Path = options.Path,
+                Secure = options.Secure,
+            };
 
-            var suffix = string.Concat(
-                !domainHasValue ? null : "; domain=",
-                !domainHasValue ? null : options.Domain,
-                !pathHasValue ? null : "; path=",
-                !pathHasValue ? null : options.Path,
-                !expiresHasValue ? null : "; expires=",
-                !expiresHasValue ? null : options.Expires.Value.ToString("ddd, dd-MMM-yyyy HH:mm:ss ", CultureInfo.InvariantCulture) + "GMT",
-                !options.Secure ? null : "; secure",
-                !options.HttpOnly ? null : "; HttpOnly");
+            var templateLength = template.ToString().Length;
 
             value = value ?? string.Empty;
             var quoted = false;
@@ -143,19 +144,16 @@ namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
                 quoted = true;
                 value = RemoveQuotes(value);
             }
-            var escapedValue = Uri.EscapeDataString(value);
+            var escapedValue = Encoder.UrlEncode(value);
 
             // Normal cookie
             var responseHeaders = context.Response.Headers;
-            if (!ChunkSize.HasValue || ChunkSize.Value > prefix.Length + escapedValue.Length + suffix.Length + (quoted ? 2 : 0))
+            if (!ChunkSize.HasValue || ChunkSize.Value > templateLength + escapedValue.Length + (quoted ? 2 : 0))
             {
-                var setCookieValue = string.Concat(
-                    prefix,
-                    quoted ? Quote(escapedValue) : escapedValue,
-                    suffix);
-                responseHeaders.AppendValues(Constants.Headers.SetCookie, setCookieValue);
+                template.Value = quoted ? Quote(escapedValue) : escapedValue;
+                responseHeaders.AppendValues(Constants.Headers.SetCookie, template.ToString());
             }
-            else if (ChunkSize.Value < prefix.Length + suffix.Length + (quoted ? 2 : 0) + 10)
+            else if (ChunkSize.Value < templateLength + (quoted ? 2 : 0) + 10)
             {
                 // 10 is the minimum data we want to put in an individual cookie, including the cookie chunk identifier "CXX".
                 // No room for data, we can't chunk the options and name
@@ -169,10 +167,11 @@ namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
                 // Set-Cookie: CookieNameC1="Segment1"; path=/
                 // Set-Cookie: CookieNameC2="Segment2"; path=/
                 // Set-Cookie: CookieNameC3="Segment3"; path=/
-                var dataSizePerCookie = ChunkSize.Value - prefix.Length - suffix.Length - (quoted ? 2 : 0) - 3; // Budget 3 chars for the chunkid.
+                var dataSizePerCookie = ChunkSize.Value - templateLength - (quoted ? 2 : 0) - 3; // Budget 3 chars for the chunkid.
                 var cookieChunkCount = (int)Math.Ceiling(escapedValue.Length * 1.0 / dataSizePerCookie);
 
-                responseHeaders.AppendValues(Constants.Headers.SetCookie, prefix + "chunks:" + cookieChunkCount.ToString(CultureInfo.InvariantCulture) + suffix);
+                template.Value = "chunks:" + cookieChunkCount.ToString(CultureInfo.InvariantCulture);
+                responseHeaders.AppendValues(Constants.Headers.SetCookie, template.ToString());
 
                 var chunks = new string[cookieChunkCount];
                 var offset = 0;
@@ -183,15 +182,9 @@ namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
                     var segment = escapedValue.Substring(offset, length);
                     offset += length;
 
-                    chunks[chunkId - 1] = string.Concat(
-                                            escapedKey,
-                                            "C",
-                                            chunkId.ToString(CultureInfo.InvariantCulture),
-                                            "=",
-                                            quoted ? "\"" : string.Empty,
-                                            segment,
-                                            quoted ? "\"" : string.Empty,
-                                            suffix);
+                    template.Name = escapedKey + "C" + chunkId.ToString(CultureInfo.InvariantCulture);
+                    template.Value = quoted ? Quote(segment) : segment;
+                    chunks[chunkId - 1] = template.ToString();
                 }
                 responseHeaders.AppendValues(Constants.Headers.SetCookie, chunks);
             }
@@ -206,7 +199,7 @@ namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
         /// <param name="options"></param>
         public void DeleteCookie([NotNull] HttpContext context, [NotNull] string key, [NotNull] CookieOptions options)
         {
-            var escapedKey = Uri.EscapeDataString(key);
+            var escapedKey = Encoder.UrlEncode(key);
             var keys = new List<string>();
             keys.Add(escapedKey + "=");
 
@@ -260,7 +253,7 @@ namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
             for (int i = 1; i <= chunks; i++)
             {
                 AppendResponseCookie(
-                    context, 
+                    context,
                     key + "C" + i.ToString(CultureInfo.InvariantCulture),
                     string.Empty,
                     new CookieOptions()

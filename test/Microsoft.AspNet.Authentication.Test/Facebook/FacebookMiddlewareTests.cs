@@ -29,6 +29,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 },
                 services =>
                 {
+                    services.AddWebEncoders();
                     services.AddDataProtection();
                     services.ConfigureFacebookAuthentication(options =>
                     {
@@ -74,6 +75,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 },
                 services =>
                 {
+                    services.AddWebEncoders();
                     services.AddDataProtection();
                     services.ConfigureFacebookAuthentication(options =>
                     {

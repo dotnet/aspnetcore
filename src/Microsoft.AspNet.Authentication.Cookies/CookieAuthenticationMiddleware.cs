@@ -9,6 +9,7 @@ using Microsoft.AspNet.DataProtection;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Authentication.Cookies
 {
@@ -20,6 +21,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             [NotNull] RequestDelegate next,
             [NotNull] IDataProtectionProvider dataProtectionProvider,
             [NotNull] ILoggerFactory loggerFactory,
+            [NotNull] IUrlEncoder urlEncoder,
             [NotNull] IOptions<CookieAuthenticationOptions> options,
             ConfigureOptions<CookieAuthenticationOptions> configureOptions)
             : base(next, options, configureOptions)
@@ -40,7 +42,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             }
             if (Options.CookieManager == null)
             {
-                Options.CookieManager = new ChunkingCookieManager();
+                Options.CookieManager = new ChunkingCookieManager(urlEncoder);
             }
 
             _logger = loggerFactory.CreateLogger(typeof(CookieAuthenticationMiddleware).FullName);

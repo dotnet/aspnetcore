@@ -436,6 +436,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 },
                 services =>
                 {
+                    services.AddWebEncoders();
                     services.AddDataProtection();
                 }
             );
@@ -454,6 +455,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 },
                 services =>
                 {
+                    services.AddWebEncoders();
                     services.AddDataProtection();
                 }
             );

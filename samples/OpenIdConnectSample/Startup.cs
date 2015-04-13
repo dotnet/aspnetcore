@@ -12,6 +12,7 @@ namespace OpenIdConnectSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddWebEncoders();
             services.AddDataProtection();
             services.Configure<ExternalAuthenticationOptions>(options =>
             {
