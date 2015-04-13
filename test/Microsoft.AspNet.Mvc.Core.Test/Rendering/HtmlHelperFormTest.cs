@@ -158,6 +158,55 @@ namespace Microsoft.AspNet.Mvc.Rendering
             Assert.Equal("</form>", builder.ToString());
         }
 
+        [Fact]
+        public void BeginForm_RendersExpectedValues_WithDefaultArgumentsAndHtmlAttributes()
+        {
+            // Arrange
+            var pathBase = "/Base";
+            var path = "/Path";
+            var queryString = "?query=string";
+            var expectedAction = pathBase + path + queryString;
+            var htmlAttributes = new { p1_name = "p1-value" };
+            var expectedStartTag = string.Format("<form action=\"{0}\" method=\"post\"{1}>",
+                expectedAction,
+                GetHtmlAttributesAsString(htmlAttributes));
+
+            // IUrlHelper should not be used in this scenario.
+            var urlHelper = new Mock<IUrlHelper>(MockBehavior.Strict);
+            var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(urlHelper.Object);
+
+            // Guards
+            Assert.NotNull(htmlHelper.ViewContext);
+            var writer = Assert.IsAssignableFrom<StringWriter>(htmlHelper.ViewContext.Writer);
+            var builder = writer.GetStringBuilder();
+            Assert.NotNull(builder);
+            Assert.NotNull(htmlHelper.ViewContext.HttpContext);
+            var request = htmlHelper.ViewContext.HttpContext.Request;
+            Assert.NotNull(request);
+
+            // Set properties the IHtmlGenerator implementation should use in this scenario.
+            request.PathBase = new PathString(pathBase);
+            request.Path = new PathString(path);
+            request.QueryString = new QueryString(queryString);
+
+            // Act
+            var mvcForm = htmlHelper.BeginForm(
+                actionName: null,
+                controllerName: null,
+                routeValues: null,
+                method: FormMethod.Post,
+                htmlAttributes: htmlAttributes);
+
+            // Assert
+            Assert.NotNull(mvcForm);
+            Assert.Equal(expectedStartTag, builder.ToString());
+            urlHelper.Verify();
+
+            builder.Clear();
+            mvcForm.Dispose();
+            Assert.Equal("</form>", builder.ToString());
+        }
+
         [Theory]
         [MemberData(nameof(BeginFormDataSet))]
         public void BeginForm_RendersExpectedValues(

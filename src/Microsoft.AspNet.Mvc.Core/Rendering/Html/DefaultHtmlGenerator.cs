@@ -182,12 +182,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             string action;
-            if (actionName == null && controllerName == null && routeValues == null && defaultMethod &&
-                htmlAttributes == null)
+            if (actionName == null && controllerName == null && routeValues == null && defaultMethod)
             {
                 // Submit to the original URL in the special case that user called the BeginForm() overload without
-                // parameters. Also reachable in the even-more-unusual case that user called another BeginForm()
-                // overload with default argument values.
+                // parameters (except for the htmlAttributes parameter). Also reachable in the even-more-unusual case
+                // that user called another BeginForm() overload with default argument values.
                 var request = viewContext.HttpContext.Request;
                 action = request.PathBase + request.Path + request.QueryString;
             }
