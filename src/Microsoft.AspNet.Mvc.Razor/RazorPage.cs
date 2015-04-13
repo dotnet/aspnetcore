@@ -278,6 +278,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             var tagHelperOutput = tagHelperExecutionContext.Output;
             var isTagNameNullOrWhitespace = string.IsNullOrWhiteSpace(tagHelperOutput.TagName);
 
+            WriteTagHelperContentTo(writer, tagHelperOutput.PreElement);
+
             if (!isTagNameNullOrWhitespace)
             {
                 writer.Write('<');
@@ -324,6 +326,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 writer.Write(string.Format(CultureInfo.InvariantCulture, "</{0}>", tagHelperOutput.TagName));
             }
+
+            WriteTagHelperContentTo(writer, tagHelperOutput.PostElement);
         }
 
         private void WriteTagHelperContentTo(TextWriter writer, TagHelperContent content)

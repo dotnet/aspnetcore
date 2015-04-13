@@ -17,16 +17,16 @@
 }
 
 <div condition="!Model.Approved">
-    <p>This website has <strong>not</strong> been approved yet. Visit www.contoso.com for <strong make-pretty="false">more</strong> information.</p>
+    <p>This website has <strong surround="em">not</strong> been approved yet. Visit www.contoso.com for <strong make-pretty="false">more</strong> information.</p>
 </div>
 
 <div>
     <h3>Current Tag Cloud from Tag Helper</h3>
-    <section><tag-cloud count="Model.TagsToShow" /></section>
+    <tag-cloud count="Model.TagsToShow" surround="div" />
     <h3>Current Tag Cloud from ViewComponentHelper:</h3>
     <section>@await Component.InvokeAsync("Tags", 15)</section>
 </div>
 
 @section footerContent {
-    <p condition="Model.Approved">&copy; @Model.CopyrightYear - My ASP.NET Application</p>
+    <p condition="Model.Approved" surround="section">&copy; @Model.CopyrightYear - My ASP.NET Application</p>
 }

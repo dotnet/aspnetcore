@@ -722,85 +722,365 @@ namespace Microsoft.AspNet.Mvc.Razor
                 {
                     {
                         // parameters: TagName, Attributes, SelfClosing, PreContent, Content, PostContent
-                        GetTagHelperOutput("div", new Dictionary<string, object>(), false, null, "Hello World!", null),
+                        GetTagHelperOutput(
+                            tagName:     "div",
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: false,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     "Hello World!",
+                            postContent: null,
+                            postElement: null),
                         "<div>Hello World!</div>"
                     },
                     {
-                        GetTagHelperOutput(null, new Dictionary<string, object>(), false, null, "Hello World!", null),
-                        "Hello World!"
-                    },
-                    {
-                        GetTagHelperOutput("  ", new Dictionary<string, object>(), false, null, "Hello World!", null),
+                        GetTagHelperOutput(
+                            tagName:     null,
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: false,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     "Hello World!",
+                            postContent: null,
+                            postElement: null),
                         "Hello World!"
                     },
                     {
                         GetTagHelperOutput(
-                            "p",
-                            new Dictionary<string, object>() { { "test", "testVal" } },
-                            false,
-                            null,
-                            "Hello World!",
-                            null),
+                            tagName:     "  ",
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: false,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     "Hello World!",
+                            postContent: null,
+                            postElement: null),
+                        "Hello World!"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "p",
+                            attributes:  new Dictionary<string, object>() { { "test", "testVal" } },
+                            selfClosing: false,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     "Hello World!",
+                            postContent: null,
+                            postElement: null),
                         "<p test=\"testVal\">Hello World!</p>"
                     },
                     {
                         GetTagHelperOutput(
-                            "p",
-                            new Dictionary<string, object>() { { "test", "testVal" }, { "something", "  spaced  " } },
-                            false,
-                            null,
-                            "Hello World!",
-                            null),
+                            tagName:     "p",
+                            attributes:  new Dictionary<string, object>() { { "test", "testVal" }, { "something", "  spaced  " } },
+                            selfClosing: false,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     "Hello World!",
+                            postContent: null,
+                            postElement: null),
                         "<p test=\"testVal\" something=\"  spaced  \">Hello World!</p>"
                     },
                     {
                         GetTagHelperOutput(
-                            "p",
-                            new Dictionary<string, object>() { { "test", "testVal" } },
-                            true,
-                            null,
-                            "Hello World!",
-                            null),
+                            tagName:     "p",
+                            attributes:  new Dictionary<string, object>() { { "test", "testVal" } },
+                            selfClosing: true,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     "Hello World!",
+                            postContent: null,
+                            postElement: null),
                         "<p test=\"testVal\" />"
                     },
                     {
                         GetTagHelperOutput(
-                            "p",
-                            new Dictionary<string, object>() { { "test", "testVal" }, { "something", "  spaced  " } },
-                            true,
-                            null,
-                            "Hello World!",
-                            null),
+                            tagName:     "p",
+                            attributes:  new Dictionary<string, object>() { { "test", "testVal" }, { "something", "  spaced  " } },
+                            selfClosing: true,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     "Hello World!",
+                            postContent: null,
+                            postElement: null),
                         "<p test=\"testVal\" something=\"  spaced  \" />"
                     },
                     {
-                        GetTagHelperOutput("p", new Dictionary<string, object>(), false, "Hello World!", null, null),
+                        GetTagHelperOutput(
+                            tagName:     "p",
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: false,
+                            preElement:  null,
+                            preContent:  "Hello World!",
+                            content:     null,
+                            postContent: null,
+                            postElement: null),
                         "<p>Hello World!</p>"
                     },
                     {
-                        GetTagHelperOutput("p", new Dictionary<string, object>(), false, null, "Hello World!", null),
+                        GetTagHelperOutput(
+                            tagName:     "p",
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: false,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     "Hello World!",
+                            postContent: null,
+                            postElement: null),
                         "<p>Hello World!</p>"
                     },
                     {
-                        GetTagHelperOutput("p", new Dictionary<string, object>(), false, null, null, "Hello World!"),
+                        GetTagHelperOutput(
+                            tagName:     "p",
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: false,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     null,
+                            postContent: "Hello World!",
+                            postElement: null),
                         "<p>Hello World!</p>"
                     },
                     {
-                        GetTagHelperOutput("p", new Dictionary<string, object>(), false, "Hello", "Test", "World!"),
+                        GetTagHelperOutput(
+                            tagName:     "p",
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: false,
+                            preElement:  null,
+                            preContent:  "Hello",
+                            content:     "Test",
+                            postContent: "World!",
+                            postElement: null),
                         "<p>HelloTestWorld!</p>"
                     },
                     {
-                        GetTagHelperOutput("p", new Dictionary<string, object>(), true, "Hello", "Test", "World!"),
+                        GetTagHelperOutput(
+                            tagName:     "p",
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: true,
+                            preElement:  null,
+                            preContent:  "Hello",
+                            content:     "Test",
+                            postContent: "World!",
+                            postElement: null),
                         "<p />"
                     },
                     {
-                        GetTagHelperOutput("custom", new Dictionary<string, object>(), false, "Hello", "Test", "World!"),
+                        GetTagHelperOutput(
+                            tagName:     "custom",
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: false,
+                            preElement:  null,
+                            preContent:  "Hello",
+                            content:     "Test",
+                            postContent: "World!",
+                            postElement: null),
                         "<custom>HelloTestWorld!</custom>"
                     },
                     {
-                        GetTagHelperOutput("random", new Dictionary<string, object>(), true, "Hello", "Test", "World!"),
+                        GetTagHelperOutput(
+                            tagName:     "random",
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: true,
+                            preElement:  null,
+                            preContent:  "Hello",
+                            content:     "Test",
+                            postContent: "World!",
+                            postElement: null),
                         "<random />"
-                    }
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "custom",
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: false,
+                            preElement:  "Before",
+                            preContent:  null,
+                            content:     null,
+                            postContent: null,
+                            postElement: null),
+                        "Before<custom></custom>"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     null,
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: false,
+                            preElement:  "Before",
+                            preContent:  null,
+                            content:     null,
+                            postContent: null,
+                            postElement: null),
+                        "Before"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     null,
+                            attributes:  new Dictionary<string, object> { { "test", "testVal" } },
+                            selfClosing: true,
+                            preElement:  "Before",
+                            preContent:  null,
+                            content:     null,
+                            postContent: null,
+                            postElement: null),
+                        "Before"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "custom",
+                            attributes:  new Dictionary<string, object> { { "test", "testVal" } },
+                            selfClosing: true,
+                            preElement:  "Before",
+                            preContent:  null,
+                            content:     null,
+                            postContent: null,
+                            postElement: null),
+                        "Before<custom test=\"testVal\" />"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "custom",
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: true,
+                            preElement:  "Before",
+                            preContent:  null,
+                            content:     null,
+                            postContent: null,
+                            postElement: null),
+                        "Before<custom />"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "custom",
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: false,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     null,
+                            postContent: null,
+                            postElement: "After"),
+                        "<custom></custom>After"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     null,
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: false,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     null,
+                            postContent: null,
+                            postElement: "After"),
+                        "After"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     null,
+                            attributes:  new Dictionary<string, object> { { "test", "testVal" } },
+                            selfClosing: true,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     null,
+                            postContent: null,
+                            postElement: "After"),
+                        "After"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "custom",
+                            attributes:  new Dictionary<string, object> { { "test", "testVal" } },
+                            selfClosing: true,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     null,
+                            postContent: null,
+                            postElement: "After"),
+                        "<custom test=\"testVal\" />After"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "custom",
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: true,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     null,
+                            postContent: null,
+                            postElement: "After"),
+                        "<custom />After"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "custom",
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: false,
+                            preElement:  "Before",
+                            preContent:  "Hello",
+                            content:     "Test",
+                            postContent: "World!",
+                            postElement: "After"),
+                        "Before<custom>HelloTestWorld!</custom>After"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "custom",
+                            attributes:  new Dictionary<string, object> { { "test", "testVal" } },
+                            selfClosing: false,
+                            preElement:  "Before",
+                            preContent:  "Hello",
+                            content:     "Test",
+                            postContent: "World!",
+                            postElement: "After"),
+                        "Before<custom test=\"testVal\">HelloTestWorld!</custom>After"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "custom",
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: true,
+                            preElement:  "Before",
+                            preContent:  "Hello",
+                            content:     "Test",
+                            postContent: "World!",
+                            postElement: "After"),
+                        "Before<custom />After"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     null,
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: true,
+                            preElement:  "Before",
+                            preContent:  "Hello",
+                            content:     "Test",
+                            postContent: "World!",
+                            postElement: "After"),
+                        "BeforeHelloTestWorld!After"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     null,
+                            attributes:  new Dictionary<string, object>(),
+                            selfClosing: false,
+                            preElement:  "Before",
+                            preContent:  "Hello",
+                            content:     "Test",
+                            postContent: "World!",
+                            postElement: "After"),
+                        "BeforeHelloTestWorld!After"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     null,
+                            attributes:  new Dictionary<string, object> { { "test", "testVal" } },
+                            selfClosing: false,
+                            preElement:  "Before",
+                            preContent:  "Hello",
+                            content:     "Test",
+                            postContent: "World!",
+                            postElement: "After"),
+                        "BeforeHelloTestWorld!After"
+                    },
                 };
             }
         }
@@ -937,18 +1217,22 @@ namespace Microsoft.AspNet.Mvc.Razor
             string tagName,
             IDictionary<string, object> attributes,
             bool selfClosing,
+            string preElement,
             string preContent,
             string content,
-            string postContent)
+            string postContent,
+            string postElement)
         {
             var output = new TagHelperOutput(tagName, attributes)
             {
                 SelfClosing = selfClosing
             };
 
+            output.PreElement.SetContent(preElement);
             output.PreContent.SetContent(preContent);
             output.Content.SetContent(content);
             output.PostContent.SetContent(postContent);
+            output.PostElement.SetContent(postElement);
 
             return output;
         }
