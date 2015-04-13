@@ -1,18 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
+using DeploymentHelpers;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Logging;
 using Xunit;
 
 namespace E2ETests
 {
-    public partial class SmokeTests
+    // Uses ports ranging 5040 - 5049.
+    public class OpenIdConnectTests
     {
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.DesktopClr, RuntimeArchitecture.x86, "http://localhost:5001/")]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.amd64, "http://localhost:5001/")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.clr, RuntimeArchitecture.x86, "http://localhost:5040/")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.coreclr, RuntimeArchitecture.x64, "http://localhost:5041/")]
         public void OpenIdConnect_OnX86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             OpenIdConnectTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
@@ -20,80 +23,80 @@ namespace E2ETests
 
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.DotNet)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5004/")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.mono, RuntimeArchitecture.x86, "http://localhost:5042/")]
         public void OpenIdConnect_OnMono(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             OpenIdConnectTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
-        private void OpenIdConnectTestSuite(ServerType serverType, RuntimeFlavor donetFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        private void OpenIdConnectTestSuite(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
-            using (_logger.BeginScope("OpenIdConnectTestSuite"))
-            {
-                _logger.LogInformation("Variation Details : HostType = {hostType}, DonetFlavor = {flavor}, Architecture = {arch}, applicationBaseUrl = {appBase}",
-                    serverType, donetFlavor, architecture, applicationBaseUrl);
+            var logger = new LoggerFactory()
+                            .AddConsole()
+                            .CreateLogger(string.Format("OpenId:{0}:{1}:{2}", serverType, runtimeFlavor, architecture));
 
-                _startParameters = new StartParameters
+            using (logger.BeginScope("OpenIdConnectTestSuite"))
+            {
+                var stopwatch = Stopwatch.StartNew();
+
+                logger.LogInformation("Variation Details : HostType = {hostType}, DonetFlavor = {flavor}, Architecture = {arch}, applicationBaseUrl = {appBase}",
+                    serverType, runtimeFlavor, architecture, applicationBaseUrl);
+
+                var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
+                var connectionString = string.Format(DbUtils.CONNECTION_STRING_FORMAT, musicStoreDbName);
+                logger.LogInformation("Pointing MusicStore DB to '{connString}'", connectionString);
+
+                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
                 {
-                    ServerType = serverType,
-                    RuntimeFlavor = donetFlavor,
-                    RuntimeArchitecture = architecture,
-                    EnvironmentName = "OpenIdConnectTesting"
+                    ApplicationBaseUriHint = applicationBaseUrl,
+                    EnvironmentName = "OpenIdConnectTesting",
+                    UserAdditionalCleanup = parameters =>
+                    {
+                        if (!Helpers.RunningOnMono)
+                        {
+                            // Mono uses InMemoryStore
+                            DbUtils.DropDatabase(musicStoreDbName, logger);
+                        }
+                    }
                 };
 
-                var stopwatch = Stopwatch.StartNew();
-                var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
+                // Override the connection strings using environment based configuration
+                deploymentParameters.EnvironmentVariables
+                    .Add(new KeyValuePair<string, string>("SQLAZURECONNSTR_DefaultConnection", connectionString));
 
-                _logger.LogInformation("Pointing MusicStore DB to '{connString}'", string.Format(DbUtils.CONNECTION_STRING_FORMAT, musicStoreDbName));
-
-                //Override the connection strings using environment based configuration
-                Environment.SetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection", string.Format(DbUtils.CONNECTION_STRING_FORMAT, musicStoreDbName));
-
-                _applicationBaseUrl = applicationBaseUrl;
-                Process hostProcess = null;
                 bool testSuccessful = false;
 
-                try
+                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
                 {
-                    hostProcess = DeploymentUtility.StartApplication(_startParameters, _logger);
-#if DNX451
-                    if (serverType == ServerType.IISNativeModule || serverType == ServerType.IIS)
-                    {
-                        // Accomodate the vdir name.
-                        _applicationBaseUrl += _startParameters.IISApplication.VirtualDirectoryName + "/";
-                    }
-#endif
-                    _httpClientHandler = new HttpClientHandler();
-                    _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_applicationBaseUrl) };
+                    var deploymentResult = deployer.Deploy();
+                    var httpClientHandler = new HttpClientHandler();
+                    var httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
 
                     HttpResponseMessage response = null;
-                    string responseContent = null;
 
-                    //Request to base address and check if various parts of the body are rendered & measure the cold startup time.
-                    Helpers.Retry(() =>
+                    // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
+                    RetryHelper.RetryRequest(() =>
                     {
-                        response = _httpClient.GetAsync(string.Empty).Result;
-                        responseContent = response.Content.ReadAsStringAsync().Result;
-                        _logger.LogInformation("[Time]: Approximate time taken for application initialization : '{t}' seconds", stopwatch.Elapsed.TotalSeconds);
-                    }, logger: _logger);
+                        response = httpClient.GetAsync(string.Empty).Result;
+                        return response;
+                    }, logger: logger);
 
-                    VerifyHomePage(response, responseContent);
+                    logger.LogInformation("[Time]: Approximate time taken for application initialization : '{t}' seconds", stopwatch.Elapsed.TotalSeconds);
+
+                    var validator = new Validator(httpClient, httpClientHandler, logger, deploymentResult);
+                    validator.VerifyHomePage(response);
 
                     // OpenIdConnect login.
-                    LoginWithOpenIdConnect();
+                    validator.LoginWithOpenIdConnect();
 
                     stopwatch.Stop();
-                    _logger.LogInformation("[Time]: Total time taken for this test variation '{t}' seconds", stopwatch.Elapsed.TotalSeconds);
+                    logger.LogInformation("[Time]: Total time taken for this test variation '{t}' seconds", stopwatch.Elapsed.TotalSeconds);
                     testSuccessful = true;
                 }
-                finally
-                {
-                    if (!testSuccessful)
-                    {
-                        _logger.LogError("Some tests failed. Proceeding with cleanup.");
-                    }
 
-                    DeploymentUtility.CleanUpApplication(_startParameters, hostProcess, musicStoreDbName, _logger);
+                if (!testSuccessful)
+                {
+                    logger.LogError("Some tests failed.");
                 }
             }
         }

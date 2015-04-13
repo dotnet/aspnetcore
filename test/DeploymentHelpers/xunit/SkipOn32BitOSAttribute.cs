@@ -2,7 +2,7 @@
 using System.IO;
 using Microsoft.AspNet.Testing.xunit;
 
-namespace E2ETests
+namespace DeploymentHelpers
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class SkipOn32BitOSAttribute : Attribute, ITestCondition

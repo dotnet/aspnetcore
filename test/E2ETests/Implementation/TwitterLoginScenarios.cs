@@ -12,15 +12,15 @@ namespace E2ETests
     /// <summary>
     /// Summary description for TwitterLoginScenarios
     /// </summary>
-    public partial class SmokeTests
+    public partial class Validator
     {
-        private void LoginWithTwitter()
+        public void LoginWithTwitter()
         {
             _httpClientHandler = new HttpClientHandler() { AllowAutoRedirect = false };
-            _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_applicationBaseUrl) };
+            _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
 
             var response = _httpClient.GetAsync("Account/Login").Result;
-            ThrowIfResponseStatusNotOk(response);
+            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             _logger.LogInformation("Signing in with Twitter account");
             var formParameters = new List<KeyValuePair<string, string>>
@@ -37,11 +37,11 @@ namespace E2ETests
             Assert.Equal<string>("custom", queryItems["custom_redirect_uri"]);
             Assert.Equal<string>("valid_oauth_token", queryItems["oauth_token"]);
             //Check for the correlation cookie
-            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl))["__TwitterState"]);
+            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri))["__TwitterState"]);
 
             //This is just to generate a correlation cookie. Previous step would generate this cookie, but we have reset the handler now.
             _httpClientHandler = new HttpClientHandler() { AllowAutoRedirect = true };
-            _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_applicationBaseUrl) };
+            _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
 
             response = _httpClient.GetAsync("Account/Login").Result;
             responseContent = response.Content.ReadAsStringAsync().Result;
@@ -57,15 +57,15 @@ namespace E2ETests
 
             //Post a message to the Facebook middleware
             response = _httpClient.GetAsync("signin-twitter?oauth_token=valid_oauth_token&oauth_verifier=valid_oauth_verifier").Result;
-            ThrowIfResponseStatusNotOk(response);
+            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
             responseContent = response.Content.ReadAsStringAsync().Result;
 
             //Check correlation cookie not getting cleared after successful signin
             if (!Helpers.RunningOnMono)
             {
-                Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl))["__TwitterState"]);
+                Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri))["__TwitterState"]);
             }
-            Assert.Equal(_applicationBaseUrl + "Account/ExternalLoginCallback?ReturnUrl=%2F", response.RequestMessage.RequestUri.AbsoluteUri);
+            Assert.Equal(_deploymentResult.ApplicationBaseUri + "Account/ExternalLoginCallback?ReturnUrl=%2F", response.RequestMessage.RequestUri.AbsoluteUri);
             //Twitter does not give back the email claim for some reason. 
             //Assert.Contains("AspnetvnextTest@gmail.com", responseContent, StringComparison.OrdinalIgnoreCase);
 
@@ -77,14 +77,14 @@ namespace E2ETests
 
             content = new FormUrlEncodedContent(formParameters.ToArray());
             response = _httpClient.PostAsync("Account/ExternalLoginConfirmation", content).Result;
-            ThrowIfResponseStatusNotOk(response);
+            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
             responseContent = response.Content.ReadAsStringAsync().Result;
 
             Assert.Contains(string.Format("Hello {0}!", "twitter@test.com"), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
             //Verify cookie sent
-            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
-            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.ExternalLogin"));
+            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
+            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.ExternalLogin"));
             _logger.LogInformation("Successfully signed in with user '{email}'", "twitter@test.com");
 
             _logger.LogInformation("Verifying if the middleware notifications were fired");

@@ -9,15 +9,15 @@ using Xunit;
 
 namespace E2ETests
 {
-    public partial class SmokeTests
+    public partial class Validator
     {
-        private void LoginWithOpenIdConnect()
+        public void LoginWithOpenIdConnect()
         {
             _httpClientHandler = new HttpClientHandler() { AllowAutoRedirect = false };
-            _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_applicationBaseUrl) };
+            _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
 
             var response = _httpClient.GetAsync("Account/Login").Result;
-            ThrowIfResponseStatusNotOk(response);
+            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             _logger.LogInformation("Signing in with OpenIdConnect account");
             var formParameters = new List<KeyValuePair<string, string>>
@@ -37,12 +37,12 @@ namespace E2ETests
             Assert.Equal<string>("openid profile", queryItems["scope"]);
             Assert.Equal<string>("OpenIdConnect.AuthenticationProperties=ValidStateData", queryItems["state"]);
             Assert.NotNull(queryItems["nonce"]);
-            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.OpenIdConnect.Nonce.protectedString"));
+            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNet.OpenIdConnect.Nonce.protectedString"));
 
             // This is just enable the auto-redirect.
             _httpClientHandler = new HttpClientHandler() { AllowAutoRedirect = true };
-            _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_applicationBaseUrl) };
-            _httpClientHandler.CookieContainer.Add(new Uri(_applicationBaseUrl), new Cookie(".AspNet.OpenIdConnect.Nonce.protectedString", "N"));
+            _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
+            _httpClientHandler.CookieContainer.Add(new Uri(_deploymentResult.ApplicationBaseUri), new Cookie(".AspNet.OpenIdConnect.Nonce.protectedString", "N"));
 
             //Post a message to the OpenIdConnect middleware
             var token = new List<KeyValuePair<string, string>>
@@ -54,9 +54,9 @@ namespace E2ETests
             };
 
             response = _httpClient.PostAsync(string.Empty, new FormUrlEncodedContent(token.ToArray())).Result;
-            ThrowIfResponseStatusNotOk(response);
+            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
             responseContent = response.Content.ReadAsStringAsync().Result;
-            Assert.Equal(_applicationBaseUrl + "Account/ExternalLoginCallback?ReturnUrl=%2F", response.RequestMessage.RequestUri.AbsoluteUri);
+            Assert.Equal(_deploymentResult.ApplicationBaseUri + "Account/ExternalLoginCallback?ReturnUrl=%2F", response.RequestMessage.RequestUri.AbsoluteUri);
 
             formParameters = new List<KeyValuePair<string, string>>
             {
@@ -66,14 +66,14 @@ namespace E2ETests
 
             content = new FormUrlEncodedContent(formParameters.ToArray());
             response = _httpClient.PostAsync("Account/ExternalLoginConfirmation", content).Result;
-            ThrowIfResponseStatusNotOk(response);
+            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
             responseContent = response.Content.ReadAsStringAsync().Result;
 
             Assert.Contains(string.Format("Hello {0}!", "User3@aspnettest.onmicrosoft.com"), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
             //Verify cookie sent
-            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
-            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.ExternalLogin"));
+            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
+            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.ExternalLogin"));
             _logger.LogInformation("Successfully signed in with user '{email}'", "User3@aspnettest.onmicrosoft.com");
 
             _logger.LogInformation("Verifying if the middleware notifications were fired");
@@ -85,7 +85,7 @@ namespace E2ETests
 
             _logger.LogInformation("Verifying the OpenIdConnect logout flow..");
             response = _httpClient.GetAsync(string.Empty).Result;
-            ThrowIfResponseStatusNotOk(response);
+            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
             responseContent = response.Content.ReadAsStringAsync().Result;
             ValidateLayoutPage(responseContent);
             formParameters = new List<KeyValuePair<string, string>>
@@ -96,16 +96,16 @@ namespace E2ETests
             content = new FormUrlEncodedContent(formParameters.ToArray());
             // Need a non-redirecting handler
             var handler = new HttpClientHandler() { AllowAutoRedirect = false };
-            handler.CookieContainer.Add(new Uri(_applicationBaseUrl), _httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)));
-            _httpClient = new HttpClient(handler) { BaseAddress = new Uri(_applicationBaseUrl) };
+            handler.CookieContainer.Add(new Uri(_deploymentResult.ApplicationBaseUri), _httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)));
+            _httpClient = new HttpClient(handler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
 
             response = _httpClient.PostAsync("Account/LogOff", content).Result;
-            Assert.Null(handler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
+            Assert.Null(handler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
             Assert.Equal<string>(
                 "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/oauth2/logout",
                 response.Headers.Location.AbsoluteUri.Replace(response.Headers.Location.Query, string.Empty));
             queryItems = new ReadableStringCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
-            Assert.Equal<string>(_applicationBaseUrl + "Account/Login", queryItems["post_logout_redirect_uri"]);
+            Assert.Equal<string>(_deploymentResult.ApplicationBaseUri + "Account/Login", queryItems["post_logout_redirect_uri"]);
         }
     }
 }

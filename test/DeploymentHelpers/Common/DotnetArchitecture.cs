@@ -1,8 +1,8 @@
-﻿namespace E2ETests
+﻿namespace DeploymentHelpers
 {
     public enum RuntimeArchitecture
     {
-        amd64,
+        x64,
         x86
     }
 }

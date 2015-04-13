@@ -1,7 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
+using DeploymentHelpers;
 using Microsoft.Framework.Logging;
 
 namespace E2ETests
@@ -16,29 +17,44 @@ namespace E2ETests
             }
         }
 
-        public static void Retry(Action retryBlock, ILogger logger, int retryCount = 7)
+        public static string GetApplicationPath()
         {
-            for (int retry = 0; retry < retryCount; retry++)
+            return Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "src", "MusicStore"));
+        }
+
+        public static void SetInMemoryStoreForIIS(DeploymentParameters startParameters, ILogger logger)
+        {
+            if (startParameters.ServerType == ServerType.IIS
+                || startParameters.ServerType == ServerType.IISNativeModule)
             {
-                try
-                {
-                    logger.LogWarning("Retry count {retryCount}..", retry + 1);
-                    retryBlock();
-                    break; //Went through successfully
-                }
-                catch (AggregateException exception)
-                {
-                    if (exception.InnerException is HttpRequestException
-#if DNX451
-                        || exception.InnerException is WebException
-#endif
-                        )
-                    {
-                        logger.LogWarning("Failed to complete the request : {0}.", exception.Message);
-                        Thread.Sleep(7 * 1000); //Wait for a while before retry.
-                    }
-                }
+                // Can't use localdb with IIS. Setting an override to use InMemoryStore.
+                logger.LogInformation("Creating configoverride.json file to override default config.");
+                var overrideConfig = Path.Combine(startParameters.ApplicationPath, "..", "approot", "src", "MusicStore", "configoverride.json");
+                overrideConfig = Path.GetFullPath(overrideConfig);
+                File.WriteAllText(overrideConfig, "{\"UseInMemoryStore\": \"true\"}");
             }
+        }
+
+        public static void ThrowIfResponseStatusNotOk(HttpResponseMessage response, ILogger _logger)
+        {
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                _logger.LogError(response.Content.ReadAsStringAsync().Result);
+                throw new Exception(string.Format("Received the above response with status code : {0}", response.StatusCode));
+            }
+        }
+
+        public static string PrefixBaseAddress(string url, ServerType serverType, string vDirName = null)
+        {
+#if DNX451
+            url = (serverType == ServerType.IISNativeModule || serverType == ServerType.IIS) ?
+                string.Format(url, vDirName) :
+                string.Format(url, string.Empty);
+#else
+            url = string.Format(url, string.Empty);
+#endif
+
+            return url.Replace("//", "/").Replace("%2F%2F", "%2F").Replace("%2F/", "%2F");
         }
     }
 }

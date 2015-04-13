@@ -9,15 +9,15 @@ using Xunit;
 
 namespace E2ETests
 {
-    public partial class SmokeTests
+    public partial class Validator
     {
-        private void LoginWithFacebook()
+        public void LoginWithFacebook()
         {
             _httpClientHandler = new HttpClientHandler() { AllowAutoRedirect = false };
-            _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_applicationBaseUrl) };
+            _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
 
             var response = _httpClient.GetAsync("Account/Login").Result;
-            ThrowIfResponseStatusNotOk(response);
+            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             _logger.LogInformation("Signing in with Facebook account");
             var formParameters = new List<KeyValuePair<string, string>>
@@ -33,16 +33,16 @@ namespace E2ETests
             var queryItems = new ReadableStringCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
             Assert.Equal<string>("code", queryItems["response_type"]);
             Assert.Equal<string>("[AppId]", queryItems["client_id"]);
-            Assert.Equal<string>(_applicationBaseUrl + "signin-facebook", queryItems["redirect_uri"]);
+            Assert.Equal<string>(_deploymentResult.ApplicationBaseUri + "signin-facebook", queryItems["redirect_uri"]);
             Assert.Equal<string>("email,read_friendlists,user_checkins", queryItems["scope"]);
             Assert.Equal<string>("ValidStateData", queryItems["state"]);
             Assert.Equal<string>("custom", queryItems["custom_redirect_uri"]);
             //Check for the correlation cookie
-            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Correlation.Facebook"));
+            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNet.Correlation.Facebook"));
 
             //This is just to generate a correlation cookie. Previous step would generate this cookie, but we have reset the handler now.
             _httpClientHandler = new HttpClientHandler() { AllowAutoRedirect = true };
-            _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_applicationBaseUrl) };
+            _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
 
             response = _httpClient.GetAsync("Account/Login").Result;
             responseContent = response.Content.ReadAsStringAsync().Result;
@@ -58,15 +58,15 @@ namespace E2ETests
 
             //Post a message to the Facebook middleware
             response = _httpClient.GetAsync("signin-facebook?code=ValidCode&state=ValidStateData").Result;
-            ThrowIfResponseStatusNotOk(response);
+            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
             responseContent = response.Content.ReadAsStringAsync().Result;
 
             //Correlation cookie not getting cleared after successful signin?
             if (!Helpers.RunningOnMono)
             {
-                Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Correlation.Facebook"));
+                Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNet.Correlation.Facebook"));
             }
-            Assert.Equal(_applicationBaseUrl + "Account/ExternalLoginCallback?ReturnUrl=%2F", response.RequestMessage.RequestUri.AbsoluteUri);
+            Assert.Equal(_deploymentResult.ApplicationBaseUri + "Account/ExternalLoginCallback?ReturnUrl=%2F", response.RequestMessage.RequestUri.AbsoluteUri);
             Assert.Contains("AspnetvnextTest@test.com", responseContent, StringComparison.OrdinalIgnoreCase);
 
             formParameters = new List<KeyValuePair<string, string>>
@@ -77,14 +77,14 @@ namespace E2ETests
 
             content = new FormUrlEncodedContent(formParameters.ToArray());
             response = _httpClient.PostAsync("Account/ExternalLoginConfirmation", content).Result;
-            ThrowIfResponseStatusNotOk(response);
+            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
             responseContent = response.Content.ReadAsStringAsync().Result;
 
             Assert.Contains(string.Format("Hello {0}!", "AspnetvnextTest@test.com"), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
             //Verify cookie sent
-            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
-            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_applicationBaseUrl)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.ExternalLogin"));
+            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.Application"));
+            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.ExternalLogin"));
             _logger.LogInformation("Successfully signed in with user '{email}'", "AspnetvnextTest@test.com");
 
             _logger.LogInformation("Verifying if the middleware notifications were fired");

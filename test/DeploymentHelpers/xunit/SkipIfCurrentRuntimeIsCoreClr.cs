@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using Microsoft.AspNet.Testing.xunit;
 
-namespace E2ETests
+namespace DeploymentHelpers
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class SkipIfCurrentRuntimeIsCoreClrAttribute : Attribute, ITestCondition

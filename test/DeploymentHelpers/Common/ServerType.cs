@@ -1,4 +1,4 @@
-﻿namespace E2ETests
+﻿namespace DeploymentHelpers
 {
     public enum ServerType
     {

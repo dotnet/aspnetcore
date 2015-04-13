@@ -103,7 +103,7 @@ namespace MusicStore
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole();
+            loggerFactory.AddConsole(minLevel: LogLevel.Warning);
 
             app.UseStatusCodePagesWithRedirects("~/Home/StatusCodePage");
 
