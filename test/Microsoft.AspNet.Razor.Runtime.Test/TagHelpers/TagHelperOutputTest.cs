@@ -9,6 +9,38 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     public class TagHelperOutputTest
     {
         [Fact]
+        public void PreElement_SetContent_ChangesValue()
+        {
+            // Arrange
+            var tagHelperOutput = new TagHelperOutput("p");
+            tagHelperOutput.PreElement.SetContent("Hello World");
+
+            // Act & Assert
+            Assert.NotNull(tagHelperOutput.PreElement);
+            Assert.NotNull(tagHelperOutput.PreContent);
+            Assert.NotNull(tagHelperOutput.Content);
+            Assert.NotNull(tagHelperOutput.PostContent);
+            Assert.NotNull(tagHelperOutput.PostElement);
+            Assert.Equal("Hello World", tagHelperOutput.PreElement.GetContent());
+        }
+
+        [Fact]
+        public void PostElement_SetContent_ChangesValue()
+        {
+            // Arrange
+            var tagHelperOutput = new TagHelperOutput("p");
+            tagHelperOutput.PostElement.SetContent("Hello World");
+
+            // Act & Assert
+            Assert.NotNull(tagHelperOutput.PreElement);
+            Assert.NotNull(tagHelperOutput.PreContent);
+            Assert.NotNull(tagHelperOutput.Content);
+            Assert.NotNull(tagHelperOutput.PostContent);
+            Assert.NotNull(tagHelperOutput.PostElement);
+            Assert.Equal("Hello World", tagHelperOutput.PostElement.GetContent());
+        }
+
+        [Fact]
         public void TagName_CanSetToNullInCtor()
         {
             // Arrange & Act
@@ -39,9 +71,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             tagHelperOutput.PreContent.SetContent("Hello World");
 
             // Act & Assert
+            Assert.NotNull(tagHelperOutput.PreElement);
             Assert.NotNull(tagHelperOutput.PreContent);
             Assert.NotNull(tagHelperOutput.Content);
             Assert.NotNull(tagHelperOutput.PostContent);
+            Assert.NotNull(tagHelperOutput.PostElement);
             Assert.Equal("Hello World", tagHelperOutput.PreContent.GetContent());
         }
 
@@ -53,9 +87,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             tagHelperOutput.Content.SetContent("Hello World");
 
             // Act & Assert
+            Assert.NotNull(tagHelperOutput.PreElement);
             Assert.NotNull(tagHelperOutput.PreContent);
             Assert.NotNull(tagHelperOutput.Content);
             Assert.NotNull(tagHelperOutput.PostContent);
+            Assert.NotNull(tagHelperOutput.PostElement);
             Assert.Equal("Hello World", tagHelperOutput.Content.GetContent());
         }
 
@@ -67,14 +103,16 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             tagHelperOutput.PostContent.SetContent("Hello World");
 
             // Act & Assert
+            Assert.NotNull(tagHelperOutput.PreElement);
             Assert.NotNull(tagHelperOutput.PreContent);
             Assert.NotNull(tagHelperOutput.Content);
             Assert.NotNull(tagHelperOutput.PostContent);
+            Assert.NotNull(tagHelperOutput.PostElement);
             Assert.Equal("Hello World", tagHelperOutput.PostContent.GetContent());
         }
 
         [Fact]
-        public void SuppressOutput_Sets_TagName_Content_PreContent_PostContent_ToNull()
+        public void SuppressOutput_Sets_AllContent_ToNullOrEmpty()
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput("p");
@@ -87,12 +125,16 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Null(tagHelperOutput.TagName);
+            Assert.NotNull(tagHelperOutput.PreElement);
+            Assert.Empty(tagHelperOutput.PreElement.GetContent());
             Assert.NotNull(tagHelperOutput.PreContent);
             Assert.Empty(tagHelperOutput.PreContent.GetContent());
             Assert.NotNull(tagHelperOutput.Content);
             Assert.Empty(tagHelperOutput.Content.GetContent());
             Assert.NotNull(tagHelperOutput.PostContent);
             Assert.Empty(tagHelperOutput.PostContent.GetContent());
+            Assert.NotNull(tagHelperOutput.PostElement);
+            Assert.Empty(tagHelperOutput.PostElement.GetContent());
         }
 
         [Fact]
@@ -113,12 +155,16 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             tagHelperOutput.SuppressOutput();
 
             // Assert
+            Assert.NotNull(tagHelperOutput.PreElement);
+            Assert.Empty(tagHelperOutput.PreElement.GetContent());
             Assert.NotNull(tagHelperOutput.PreContent);
             Assert.Empty(tagHelperOutput.PreContent.GetContent());
             Assert.NotNull(tagHelperOutput.Content);
             Assert.Empty(tagHelperOutput.Content.GetContent());
             Assert.NotNull(tagHelperOutput.PostContent);
             Assert.Empty(tagHelperOutput.PostContent.GetContent());
+            Assert.NotNull(tagHelperOutput.PostElement);
+            Assert.Empty(tagHelperOutput.PostElement.GetContent());
         }
 
         [Theory]

@@ -12,10 +12,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// </summary>
     public class TagHelperOutput
     {
-        private readonly DefaultTagHelperContent _preContent;
-        private readonly DefaultTagHelperContent _content;
-        private readonly DefaultTagHelperContent _postContent;
-
         // Internal for testing
         internal TagHelperOutput(string tagName)
             : this(tagName, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase))
@@ -33,9 +29,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             TagName = tagName;
             Attributes = new Dictionary<string, object>(attributes, StringComparer.OrdinalIgnoreCase);
-            _preContent = new DefaultTagHelperContent();
-            _content = new DefaultTagHelperContent();
-            _postContent = new DefaultTagHelperContent();
         }
 
         /// <summary>
@@ -47,41 +40,35 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public string TagName { get; set; }
 
         /// <summary>
+        /// Content that precedes the HTML element.
+        /// </summary>
+        /// <remarks>Value is rendered before the HTML element.</remarks>
+        public TagHelperContent PreElement { get; } = new DefaultTagHelperContent();
+
+        /// <summary>
         /// The HTML element's pre content.
         /// </summary>
         /// <remarks>Value is prepended to the <see cref="ITagHelper"/>'s final output.</remarks>
-        public TagHelperContent PreContent
-        {
-            get
-            {
-                return _preContent;
-            }
-        }
+        public TagHelperContent PreContent { get; } = new DefaultTagHelperContent();
 
         /// <summary>
         /// The HTML element's main content.
         /// </summary>
         /// <remarks>Value occurs in the <see cref="ITagHelper"/>'s final output after <see cref="PreContent"/> and
         /// before <see cref="PostContent"/></remarks>
-        public TagHelperContent Content
-        {
-            get
-            {
-                return _content;
-            }
-        }
+        public TagHelperContent Content { get; } = new DefaultTagHelperContent();
 
         /// <summary>
         /// The HTML element's post content.
         /// </summary>
         /// <remarks>Value is appended to the <see cref="ITagHelper"/>'s final output.</remarks>
-        public TagHelperContent PostContent
-        {
-            get
-            {
-                return _postContent;
-            }
-        }
+        public TagHelperContent PostContent { get; } = new DefaultTagHelperContent();
+
+        /// <summary>
+        /// Content that follows the HTML element.
+        /// </summary>
+        /// <remarks>Value is rendered after the HTML element.</remarks>
+        public TagHelperContent PostElement { get; } = new DefaultTagHelperContent();
 
         /// <summary>
         /// <c>true</c> if <see cref="Content"/> has been set, <c>false</c> otherwise.
@@ -113,15 +100,17 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// Changes <see cref="TagHelperOutput"/> to generate nothing.
         /// </summary>
         /// <remarks>
-        /// Sets <see cref="TagName"/> to <c>null</c>, and clears <see cref="PreContent"/>, <see cref="Content"/>,
-        /// and <see cref="PostContent"/> to suppress output.
+        /// Sets <see cref="TagName"/> to <c>null</c>, and clears <see cref="PreElement"/>, <see cref="PreContent"/>, 
+        /// <see cref="Content"/>, <see cref="PostContent"/>, and <see cref="PostElement"/> to suppress output.
         /// </remarks>
         public void SuppressOutput()
         {
             TagName = null;
+            PreElement.Clear();
             PreContent.Clear();
             Content.Clear();
             PostContent.Clear();
+            PostElement.Clear();
         }
     }
 }
