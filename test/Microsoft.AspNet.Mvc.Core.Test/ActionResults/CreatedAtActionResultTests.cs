@@ -12,6 +12,7 @@ using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Microsoft.AspNet.WebUtilities;
+using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -101,6 +102,8 @@ namespace Microsoft.AspNet.Mvc
             optionsAccessor.Options.OutputFormatters.Add(new JsonOutputFormatter());
             services.Setup(p => p.GetService(typeof(IOptions<MvcOptions>)))
                 .Returns(optionsAccessor);
+            services.Setup(s => s.GetService(typeof(ILogger<ObjectResult>)))
+                       .Returns(new Mock<ILogger<ObjectResult>>().Object);
 
             var mockContextAccessor = new Mock<IScopedInstance<ActionBindingContext>>();
             mockContextAccessor

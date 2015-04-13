@@ -15,6 +15,7 @@ using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -200,6 +201,8 @@ namespace Microsoft.AspNet.Mvc
 
             services.Setup(s => s.GetService(typeof(IOptions<MvcOptions>)))
                 .Returns(optionsAccessor.Object);
+            services.Setup(s => s.GetService(typeof(ILogger<ObjectResult>)))
+                .Returns(new Mock<ILogger<ObjectResult>>().Object);
 
             // This is the ultimate fallback, it will be used if none of the formatters from options
             // work.

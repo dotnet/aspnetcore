@@ -12,6 +12,7 @@ using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -104,6 +105,8 @@ namespace Microsoft.AspNet.Mvc
                        .Returns(mockContextAccessor.Object);
             httpContext.Setup(o => o.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
                 .Returns(optionsAccessor);
+            httpContext.Setup(o => o.RequestServices.GetService(typeof(ILogger<ObjectResult>)))
+                .Returns(new Mock<ILogger<ObjectResult>>().Object);
 
             return new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
         }

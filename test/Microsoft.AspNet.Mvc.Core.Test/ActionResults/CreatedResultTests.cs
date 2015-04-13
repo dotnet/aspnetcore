@@ -9,6 +9,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.WebUtilities;
+using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -94,6 +95,9 @@ namespace Microsoft.AspNet.Mvc
             httpContext
                 .Setup(p => p.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
                 .Returns(optionsAccessor);
+            httpContext
+                .Setup(p => p.RequestServices.GetService(typeof(ILogger<ObjectResult>)))
+                .Returns(new Mock<ILogger<ObjectResult>>().Object);
 
             var mockActionBindingContext = new Mock<IScopedInstance<ActionBindingContext>>();
             mockActionBindingContext

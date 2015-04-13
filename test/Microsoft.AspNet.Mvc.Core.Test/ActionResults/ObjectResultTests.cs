@@ -13,10 +13,10 @@ using Microsoft.AspNet.Mvc.Xml;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
 using Moq;
-using Newtonsoft.Json.Utilities;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
@@ -671,10 +671,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             var objectResult = new ObjectResult(new Person() { Name = "John" });
             objectResult.ContentTypes = contentTypes.Select(contentType => MediaTypeHeaderValue.Parse(contentType))
                                                     .ToList();
+            var actionContext = CreateMockActionContext();
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => objectResult.ExecuteResultAsync(null));
+                () => objectResult.ExecuteResultAsync(actionContext));
 
             var expectedMessage = string.Format("The content-type '{0}' added in the 'ContentTypes' property is " +
               "invalid. Media types which match all types or match all subtypes are not supported.",
@@ -896,6 +897,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             optionsAccessor.Options.RespectBrowserAcceptHeader = respectBrowserAcceptHeader;
             httpContext.Setup(o => o.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
                 .Returns(optionsAccessor);
+            httpContext.Setup(o => o.RequestServices.GetService(typeof(ILogger<ObjectResult>)))
+                .Returns(new Mock<ILogger<ObjectResult>>().Object);
 
             var mockActionBindingContext = new Mock<IScopedInstance<ActionBindingContext>>();
 

@@ -14,6 +14,8 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.Logging;
+using Microsoft.Framework.Logging.Testing;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -1995,6 +1997,8 @@ namespace Microsoft.AspNet.Mvc
             httpContext.SetupGet(c => c.Response).Returns(httpResponse);
             httpContext.Setup(o => o.RequestServices.GetService(typeof(ITempDataDictionary)))
                        .Returns(tempData);
+            httpContext.Setup(o => o.RequestServices.GetService(typeof(ILogger<ObjectResult>)))
+                       .Returns(new Mock<ILogger<ObjectResult>>().Object);
             httpResponse.Body = new MemoryStream();
 
             var options = new MvcOptions();
@@ -2078,6 +2082,8 @@ namespace Microsoft.AspNet.Mvc
                    .Returns(new Dictionary<object, object>());
             context.Setup(c => c.RequestServices.GetService(typeof(ITempDataDictionary)))
                        .Returns(new Mock<ITempDataDictionary>().Object);
+            context.Setup(c => c.RequestServices.GetService(typeof(ILoggerFactory)))
+                       .Returns(new NullLoggerFactory());
 
             var actionContext = new ActionContext(context.Object, new RouteData(), actionDescriptor);
 
