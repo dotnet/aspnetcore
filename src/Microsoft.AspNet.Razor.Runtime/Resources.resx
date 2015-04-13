@@ -153,4 +153,7 @@
   <data name="TagHelperDescriptorFactory_Tag" xml:space="preserve">
     <value>Tag</value>
   </data>
+  <data name="TagHelperDescriptorFactory_InvalidBoundAttributeName" xml:space="preserve">
+    <value>Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes beginning with '{2}'.</value>
+  </data>
 </root>

@@ -202,6 +202,22 @@ namespace Microsoft.AspNet.Razor.Runtime
             return GetString("TagHelperDescriptorFactory_Tag");
         }
 
+        /// <summary>
+        /// Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes beginning with '{2}'.
+        /// </summary>
+        internal static string TagHelperDescriptorFactory_InvalidBoundAttributeName
+        {
+            get { return GetString("TagHelperDescriptorFactory_InvalidBoundAttributeName"); }
+        }
+
+        /// <summary>
+        /// Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes beginning with '{2}'.
+        /// </summary>
+        internal static string FormatTagHelperDescriptorFactory_InvalidBoundAttributeName(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidBoundAttributeName"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

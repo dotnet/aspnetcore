@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// </summary>
     public static class TagHelperDescriptorFactory
     {
+        private const string DataDashPrefix = "data-";
         private const string TagHelperNameEnding = "TagHelper";
         private const string HtmlCaseRegexReplacement = "-$1$2";
 
@@ -44,7 +45,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             [NotNull] ErrorSink errorSink)
         {
             var typeInfo = type.GetTypeInfo();
-            var attributeDescriptors = GetAttributeDescriptors(type);
+            var attributeDescriptors = GetAttributeDescriptors(type, errorSink);
             var targetElementAttributes = GetValidTargetElementAttributes(typeInfo, errorSink);
             var tagHelperDescriptors =
                 BuildTagHelperDescriptors(
@@ -201,12 +202,45 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             return validName;
         }
 
-        private static IEnumerable<TagHelperAttributeDescriptor> GetAttributeDescriptors(Type type)
+        private static IEnumerable<TagHelperAttributeDescriptor> GetAttributeDescriptors(
+            Type type, 
+            ErrorSink errorSink)
         {
-            var properties = type.GetRuntimeProperties().Where(IsAccessibleProperty);
-            var attributeDescriptors = properties.Select(ToAttributeDescriptor);
+            var accessibleProperties = type.GetRuntimeProperties().Where(IsAccessibleProperty);
+            var attributeDescriptors = new List<TagHelperAttributeDescriptor>();
+
+            foreach (var property in accessibleProperties)
+            {
+                var descriptor = ToAttributeDescriptor(property);
+                if (ValidateTagHelperAttributeDescriptor(descriptor, type, errorSink))
+                {
+                    attributeDescriptors.Add(descriptor);
+                }
+            }
 
             return attributeDescriptors;
+        }
+
+        private static bool ValidateTagHelperAttributeDescriptor(
+            TagHelperAttributeDescriptor attributeDescriptor,
+            Type parentType,
+            ErrorSink errorSink)
+        {
+            // data-* attributes are explicitly not implemented by user agents and are not intended for use on 
+            // the server; therefore it's invalid for TagHelpers to bind to them.
+            if (attributeDescriptor.Name.StartsWith(DataDashPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                errorSink.OnError(
+                    SourceLocation.Zero, 
+                    Resources.FormatTagHelperDescriptorFactory_InvalidBoundAttributeName(
+                        attributeDescriptor.PropertyName,
+                        parentType.FullName,
+                        DataDashPrefix));
+
+                return false;
+            }
+
+            return true;
         }
 
         private static TagHelperAttributeDescriptor ToAttributeDescriptor(PropertyInfo property)

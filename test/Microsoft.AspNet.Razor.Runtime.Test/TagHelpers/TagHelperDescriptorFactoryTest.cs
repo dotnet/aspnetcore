@@ -861,6 +861,107 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.Empty(result);
         }
 
+        public static TheoryData InvalidTagHelperAttributeDescriptorData
+        {
+            get
+            {
+                var errorFormat = "Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML " +
+                    "attributes beginning with 'data-'.";
+                
+                // type, expectedAttributeDescriptors, expectedErrors
+                return new TheoryData<Type, IEnumerable<TagHelperAttributeDescriptor>, string[]>
+                {
+                    {
+                        typeof(InvalidBoundAttribute),
+                        Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                        new[] {
+                            string.Format(
+                                errorFormat,
+                                nameof(InvalidBoundAttribute.DataSomething),
+                                typeof(InvalidBoundAttribute).FullName)
+                        }
+                    },
+                    {
+                        typeof(InvalidBoundAttributeWithValid),
+                        new[] {
+                            new TagHelperAttributeDescriptor(
+                                "int-attribute",
+                                typeof(InvalidBoundAttributeWithValid)
+                                    .GetProperty(nameof(InvalidBoundAttributeWithValid.IntAttribute)))
+                        },
+                        new[] {
+                            string.Format(
+                                errorFormat,
+                                nameof(InvalidBoundAttributeWithValid.DataSomething),
+                                typeof(InvalidBoundAttributeWithValid).FullName)
+                        }
+                    },
+                    {
+                        typeof(OverriddenInvalidBoundAttributeWithValid),
+                        new[] {
+                            new TagHelperAttributeDescriptor(
+                                "valid-something",
+                                typeof(OverriddenInvalidBoundAttributeWithValid)
+                                    .GetProperty(nameof(OverriddenInvalidBoundAttributeWithValid.DataSomething)))
+                        },
+                        new string[0]
+                    },
+                    {
+                        typeof(OverriddenValidBoundAttributeWithInvalid),
+                        Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                        new[] {
+                            string.Format(
+                                errorFormat,
+                                nameof(OverriddenValidBoundAttributeWithInvalid.ValidSomething),
+                                typeof(OverriddenValidBoundAttributeWithInvalid).FullName)
+                        }
+                    },
+                    {
+                        typeof(OverriddenValidBoundAttributeWithInvalidUpperCase),
+                        Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                        new[] {
+                            string.Format(
+                                errorFormat,
+                                nameof(OverriddenValidBoundAttributeWithInvalidUpperCase.ValidSomething),
+                                typeof(OverriddenValidBoundAttributeWithInvalidUpperCase).FullName)
+                        }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidTagHelperAttributeDescriptorData))]
+        public void CreateDescriptor_DoesNotAllowDataDashAttributes(
+            Type type,
+            IEnumerable<TagHelperAttributeDescriptor> expectedAttributeDescriptors,
+            string[] expectedErrors)
+        {
+            // Arrange
+            var errorSink = new ErrorSink();
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(AssemblyName, type, errorSink);
+
+            // Assert
+            var actualErrors = errorSink.Errors.ToArray();
+            Assert.Equal(expectedErrors.Length, actualErrors.Length);
+
+            for (var i = 0; i < actualErrors.Length; i++)
+            {
+                var actualError = actualErrors[i];
+                Assert.Equal(1, actualError.Length);
+                Assert.Equal(SourceLocation.Zero, actualError.Location);
+                Assert.Equal(expectedErrors[i], actualError.Message);
+            }
+
+            var actualDescriptor = Assert.Single(descriptors);
+            Assert.Equal(
+                expectedAttributeDescriptors,
+                actualDescriptor.Attributes,
+                CaseSensitiveTagHelperAttributeDescriptorComparer.Default);
+        }
+
         [TargetElement(Attributes = "class")]
         private class AttributeTargetingTagHelper : TagHelper
         {
@@ -999,7 +1100,34 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         private class UNSuffixedCLASS : TagHelper
         {
             public int UNSuffixedATTRIBUTE { get; set; }
+        }
 
+        private class InvalidBoundAttribute : TagHelper
+        {
+            public string DataSomething { get; set; }
+        }
+
+        private class InvalidBoundAttributeWithValid : SingleAttributeTagHelper
+        {
+            public string DataSomething { get; set; }
+        }
+
+        private class OverriddenInvalidBoundAttributeWithValid : TagHelper
+        {
+            [HtmlAttributeName("valid-something")]
+            public string DataSomething { get; set; }
+        }
+
+        private class OverriddenValidBoundAttributeWithInvalid : TagHelper
+        {
+            [HtmlAttributeName("data-something")]
+            public string ValidSomething { get; set; }
+        }
+
+        private class OverriddenValidBoundAttributeWithInvalidUpperCase : TagHelper
+        {
+            [HtmlAttributeName("DATA-SOMETHING")]
+            public string ValidSomething { get; set; }
         }
     }
 }
