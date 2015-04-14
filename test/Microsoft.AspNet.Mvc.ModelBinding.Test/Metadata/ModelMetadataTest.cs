@@ -309,6 +309,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
 
+            public override bool IsBindingRequired
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
             public override bool IsEnum
             {
                 get

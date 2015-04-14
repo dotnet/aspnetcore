@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
         [Theory]
         [MemberData(nameof(DisplayDetailsData))]
-        public void GetDisplayDetails_SimpleAttributes(
+        public void GetDisplayMetadata_SimpleAttributes(
             object attribute,
             Func<DisplayMetadata, object> accessor,
             object expected)
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         }
 
         [Fact]
-        public void GetDisplayDetails_FindsDisplayFormat_FromDataType()
+        public void GetDisplayMetadata_FindsDisplayFormat_FromDataType()
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider();
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         }
 
         [Fact]
-        public void GetDisplayDetails_FindsDisplayFormat_OverridingDataType()
+        public void GetDisplayMetadata_FindsDisplayFormat_OverridingDataType()
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider();
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         }
 
         [Fact]
-        public void GetDisplayDetails_EditableAttributeFalse_SetsReadOnlyTrue()
+        public void GetBindingMetadata_EditableAttributeFalse_SetsReadOnlyTrue()
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider();
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         }
 
         [Fact]
-        public void GetDisplayDetails_EditableAttributeTrue_SetsReadOnlyFalse()
+        public void GetBindingMetadata_EditableAttributeTrue_SetsReadOnlyFalse()
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider();
@@ -148,28 +148,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             Assert.False(context.BindingMetadata.IsReadOnly);
         }
 
-        [Fact]
-        public void GetDisplayDetails_RequiredAttribute_SetsRequired()
-        {
-            // Arrange
-            var provider = new DataAnnotationsMetadataProvider();
-
-            var required = new RequiredAttribute();
-
-            var attributes = new Attribute[] { required };
-            var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new BindingMetadataProviderContext(key, attributes);
-
-            // Act
-            provider.GetBindingMetadata(context);
-
-            // Assert
-            Assert.Equal(true, context.BindingMetadata.IsRequired);
-        }
 
         // This is IMPORTANT. Product code needs to use GetName() instead of .Name. It's easy to regress.
         [Fact]
-        public void GetDisplayDetails_DisplayAttribute_NameFromResources()
+        public void GetDisplayMetadata_DisplayAttribute_NameFromResources()
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider();
@@ -198,7 +180,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
         // This is IMPORTANT. Product code needs to use GetDescription() instead of .Description. It's easy to regress.
         [Fact]
-        public void GetDisplayDetails_DisplayAttribute_DescriptionFromResources()
+        public void GetDisplayMetadata_DisplayAttribute_DescriptionFromResources()
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider();
@@ -243,7 +225,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         [InlineData(typeof(StructWithFields), false)]
         [InlineData(typeof(StructWithFields?), false)]
         [InlineData(typeof(StructWithProperties), false)]
-        public void GetDisplayDetails_IsEnum_ReflectsModelType(Type type, bool expectedIsEnum)
+        public void GetDisplayMetadata_IsEnum_ReflectsModelType(Type type, bool expectedIsEnum)
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider();
@@ -277,7 +259,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         [InlineData(typeof(StructWithFields), false)]
         [InlineData(typeof(StructWithFields?), false)]
         [InlineData(typeof(StructWithProperties), false)]
-        public void GetDisplayDetails_IsFlagsEnum_ReflectsModelType(Type type, bool expectedIsFlagsEnum)
+        public void GetDisplayMetadata_IsFlagsEnum_ReflectsModelType(Type type, bool expectedIsFlagsEnum)
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider();
@@ -407,7 +389,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
         [Theory]
         [MemberData(nameof(EnumNamesData))]
-        public void GetDisplayDetails_EnumNamesAndValues_ReflectsModelType(
+        public void GetDisplayMetadata_EnumNamesAndValues_ReflectsModelType(
             Type type,
             IReadOnlyDictionary<string, string> expectedDictionary)
         {
@@ -541,7 +523,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
         [Theory]
         [MemberData(nameof(EnumDisplayNamesData))]
-        public void GetDisplayDetails_EnumDisplayNamesAndValues_ReflectsModelType(
+        public void GetDisplayMetadata_EnumDisplayNamesAndValues_ReflectsModelType(
             Type type,
             IEnumerable<KeyValuePair<string, string>> expectedKeyValuePairs)
         {
@@ -560,7 +542,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         }
 
         [Fact]
-        public void GetBindingDetails_RequiredAttribute_SetsIsRequiredToTrue()
+        public void GetValidationMetadata_RequiredAttribute_SetsIsRequiredToTrue()
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider();
@@ -569,34 +551,55 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var attributes = new Attribute[] { required };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new BindingMetadataProviderContext(key, attributes);
+            var context = new ValidationMetadataProviderContext(key, attributes);
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.GetValidationMetadata(context);
 
             // Assert
-            Assert.True(context.BindingMetadata.IsRequired);
+            Assert.True(context.ValidationMetadata.IsRequired);
         }
 
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
         [InlineData(null)]
-        public void GetBindingDetails_NoRequiredAttribute_IsRequiredLeftAlone(bool? initialValue)
+        public void GetValidationMetadata_NoRequiredAttribute_IsRequiredLeftAlone(bool? initialValue)
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider();
 
             var attributes = new Attribute[] { };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
+            var context = new ValidationMetadataProviderContext(key, attributes);
+            context.ValidationMetadata.IsRequired = initialValue;
+
+            // Act
+            provider.GetValidationMetadata(context);
+
+            // Assert
+            Assert.Equal(initialValue, context.ValidationMetadata.IsRequired);
+        }
+
+        // [Required] has no effect on IsBindingRequired
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetBindingMetadata_RequiredAttribute_IsBindingRequiredLeftAlone(bool initialValue)
+        {
+            // Arrange
+            var provider = new DataAnnotationsMetadataProvider();
+
+            var attributes = new Attribute[] { new RequiredAttribute() };
+            var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
             var context = new BindingMetadataProviderContext(key, attributes);
-            context.BindingMetadata.IsRequired = initialValue;
+            context.BindingMetadata.IsBindingRequired = initialValue;
 
             // Act
             provider.GetBindingMetadata(context);
 
             // Assert
-            Assert.Equal(initialValue, context.BindingMetadata.IsRequired);
+            Assert.Equal(initialValue, context.BindingMetadata.IsBindingRequired);
         }
 
         [Theory]

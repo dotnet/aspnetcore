@@ -256,6 +256,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
+        public override bool IsBindingRequired
+        {
+            get
+            {
+                return BindingMetadata.IsBindingRequired;
+            }
+        }
+
+        /// <inheritdoc />
         public override bool IsEnum
         {
             get
@@ -305,9 +314,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             {
                 if (!_isRequired.HasValue)
                 {
-                    if (BindingMetadata.IsRequired.HasValue)
+                    if (ValidationMetadata.IsRequired.HasValue)
                     {
-                        _isRequired = BindingMetadata.IsRequired;
+                        _isRequired = ValidationMetadata.IsRequired;
                     }
                     else
                     {

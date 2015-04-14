@@ -637,7 +637,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         }
 
         [Fact]
-        public void IsRequired_DataMemberIsRequiredTrue_SetsIsRequiredToTrue()
+        public void IsBindingRequired_DataMemberIsRequiredTrue_SetsIsBindingRequiredToTrue()
         {
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -648,11 +648,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 nameof(ClassWithDataMemberIsRequiredTrue.StringProperty));
 
             // Assert
-            Assert.True(metadata.IsRequired);
+            Assert.True(metadata.IsBindingRequired);
         }
 
         [Fact]
-        public void IsRequired_DataMemberIsRequiredFalse_FalseForReferenceType()
+        public void IsBindingRequired_DataMemberIsRequiredFalse_False()
         {
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -663,26 +663,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 nameof(ClassWithDataMemberIsRequiredFalse.StringProperty));
 
             // Assert
-            Assert.False(metadata.IsRequired);
+            Assert.False(metadata.IsBindingRequired);
         }
 
         [Fact]
-        public void IsRequired_DataMemberIsRequiredFalse_TrueForValueType()
-        {
-            // Arrange
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-
-            // Act
-            var metadata = metadataProvider.GetMetadataForProperty(
-                typeof(ClassWithDataMemberIsRequiredFalse),
-                nameof(ClassWithDataMemberIsRequiredFalse.IntProperty));
-
-            // Assert
-            Assert.True(metadata.IsRequired);
-        }
-
-        [Fact]
-        public void IsRequired_DataMemberIsRequiredTrueWithoutDataContract_False()
+        public void IsBindingRequiredDataMemberIsRequiredTrueWithoutDataContract_False()
         {
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -693,7 +678,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 nameof(ClassWithDataMemberIsRequiredTrueWithoutDataContract.StringProperty));
 
             // Assert
-            Assert.False(metadata.IsRequired);
+            Assert.False(metadata.IsBindingRequired);
         }
 
         [Fact]

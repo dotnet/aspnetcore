@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 return;
             }
 
-            if (context.BindingMetadata.IsRequired == true)
+            if (context.BindingMetadata.IsBindingRequired)
             {
                 // This value is already required, no need to look at attributes.
                 return;
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             {
                 // We don't need to add a validator, just to set IsRequired = true. The validation
                 // system will do the right thing.
-                context.BindingMetadata.IsRequired = true;
+                context.BindingMetadata.IsBindingRequired = true;
             }
         }
     }

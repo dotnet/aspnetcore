@@ -22,12 +22,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// <inheritdoc />
         public void GetBindingMetadata([NotNull] BindingMetadataProviderContext context)
         {
-            var requiredAttribute = context.Attributes.OfType<RequiredAttribute>().FirstOrDefault();
-            if (requiredAttribute != null)
-            {
-                context.BindingMetadata.IsRequired = true;
-            }
-
             var editableAttribute = context.Attributes.OfType<EditableAttribute>().FirstOrDefault();
             if (editableAttribute != null)
             {
@@ -211,6 +205,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// <inheritdoc />
         public void GetValidationMetadata([NotNull] ValidationMetadataProviderContext context)
         {
+            // RequiredAttribute marks a property as required by validation - this means that it
+            // must have a non-null value on the model during validation.
+            var requiredAttribute = context.Attributes.OfType<RequiredAttribute>().FirstOrDefault();
+            if (requiredAttribute != null)
+            {
+                context.ValidationMetadata.IsRequired = true;
+            }
+
             foreach (var attribute in context.Attributes.OfType<ValidationAttribute>())
             {
                 // If another provider has already added this attribute, do not repeat it. 

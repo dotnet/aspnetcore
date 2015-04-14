@@ -36,6 +36,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             Assert.False(metadata.HasNonDefaultEditFormat);
             Assert.False(metadata.HideSurroundingHtml);
             Assert.True(metadata.HtmlEncode);
+            Assert.False(metadata.IsBindingRequired);
             Assert.False(metadata.IsComplexType);
             Assert.False(metadata.IsCollectionType);
             Assert.False(metadata.IsEnum);

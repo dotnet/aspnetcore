@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
@@ -777,6 +778,56 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var model = new ModelWithBindRequired
+            {
+                Name = "original value",
+                Age = -20
+            };
+
+            var containerMetadata = GetMetadataForType(model.GetType());
+            var bindingContext = new ModelBindingContext
+            {
+                Model = model,
+                ModelMetadata = containerMetadata,
+                ModelName = "theModel",
+                OperationBindingContext = new OperationBindingContext
+                {
+                    MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
+                    ValidatorProvider = Mock.Of<IModelValidatorProvider>()
+                }
+            };
+            var dto = new ComplexModelDto(containerMetadata, containerMetadata.Properties);
+
+            var nameProperty = dto.PropertyMetadata.Single(o => o.PropertyName == "Name");
+            dto.Results[nameProperty] = new ModelBindingResult(
+                "John Doe",
+                isModelSet: true,
+                key: "");
+
+            var testableBinder = new TestableMutableObjectModelBinder();
+
+            // Act
+            testableBinder.ProcessDto(bindingContext, dto);
+
+            // Assert
+            var modelStateDictionary = bindingContext.ModelState;
+            Assert.False(modelStateDictionary.IsValid);
+            Assert.Single(modelStateDictionary);
+
+            // Check Age error.
+            ModelState modelState;
+            Assert.True(modelStateDictionary.TryGetValue("theModel.Age", out modelState));
+            var modelError = Assert.Single(modelState.Errors);
+            Assert.Null(modelError.Exception);
+            Assert.NotNull(modelError.ErrorMessage);
+            Assert.Equal("The 'Age' property is required.", modelError.ErrorMessage);
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void ProcessDto_DataMemberIsRequiredFieldMissing_RaisesModelError()
+        {
+            // Arrange
+            var model = new ModelWithDataMemberIsRequired
             {
                 Name = "original value",
                 Age = -20
@@ -1635,6 +1686,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             public string Name { get; set; }
 
             [BindRequired]
+            public int Age { get; set; }
+        }
+
+        [DataContract]
+        private class ModelWithDataMemberIsRequired
+        {
+            public string Name { get; set; }
+
+            [DataMember(IsRequired = true)]
             public int Age { get; set; }
         }
 

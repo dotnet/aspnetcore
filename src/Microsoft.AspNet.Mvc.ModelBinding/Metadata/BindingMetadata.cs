@@ -29,20 +29,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         public Type BinderType { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether or not the request must contain a value for the model.
+        /// Will be ignored if the model metadata being created is not a property.
+        /// See <see cref="ModelMetadata.IsBindingRequired"/>.
+        /// </summary>
+        public bool IsBindingRequired { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether or not the model is read-only. Will be ignored
         /// if the model metadata being created is not a property. If <c>null</c> then
         /// <see cref="ModelMetadata.IsReadOnly"/> will be  computed based on the accessibility
         /// of the property accessor and model <see cref="Type"/>. See <see cref="ModelMetadata.IsReadOnly"/>.
         /// </summary>
         public bool? IsReadOnly { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether or not the model is a required value. Will be ignored
-        /// if the model metadata being created is not a property. If <c>null</c> then
-        /// <see cref="ModelMetadata.IsRequired"/> will be computed based on the model <see cref="Type"/>.
-        /// See <see cref="ModelMetadata.IsRequired"/>.
-        /// </summary>
-        public bool? IsRequired { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="ModelBinding.IPropertyBindingPredicateProvider"/>.

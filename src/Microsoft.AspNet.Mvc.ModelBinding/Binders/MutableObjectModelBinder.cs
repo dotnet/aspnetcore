@@ -355,6 +355,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     validationInfo.RequiredProperties.Add(propertyName);
                 }
+                else if (propertyMetadata.IsBindingRequired)
+                {
+                    validationInfo.RequiredProperties.Add(propertyName);
+                }
             }
 
             return validationInfo;
