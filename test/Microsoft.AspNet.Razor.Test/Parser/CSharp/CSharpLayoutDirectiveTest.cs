@@ -37,6 +37,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.MetaCode("layout ").Accepts(AcceptedCharacters.None),
                     Factory.MetaCode("Foo Bar Baz")
                            .With(new SetLayoutCodeGenerator("Foo Bar Baz"))
+                           .Accepts(AcceptedCharacters.AnyExceptNewline)
                            .WithEditorHints(EditorHints.VirtualPath | EditorHints.LayoutPage)
                 )
             );
@@ -63,6 +64,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.EmptyCSharp()
                            .AsMetaCode()
                            .With(new SetLayoutCodeGenerator(string.Empty))
+                           .Accepts(AcceptedCharacters.AnyExceptNewline)
                            .WithEditorHints(EditorHints.VirtualPath | EditorHints.LayoutPage)
                 )
             );

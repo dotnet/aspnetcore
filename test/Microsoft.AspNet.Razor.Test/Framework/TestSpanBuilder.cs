@@ -305,24 +305,31 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         public SpanConstructor AsBaseType(string baseType)
         {
-            return _self.With(new SetBaseTypeCodeGenerator(baseType));
+            return _self
+                .With(new SetBaseTypeCodeGenerator(baseType))
+                .Accepts(AcceptedCharacters.AnyExceptNewline);
         }
 
         public SpanConstructor AsAddTagHelper(string lookupText)
         {
-            return _self.With(
-                new AddOrRemoveTagHelperCodeGenerator(removeTagHelperDescriptors: false, lookupText: lookupText));
+            return _self
+                .With(
+                    new AddOrRemoveTagHelperCodeGenerator(removeTagHelperDescriptors: false, lookupText: lookupText))
+                .Accepts(AcceptedCharacters.AnyExceptNewline);
         }
 
         public SpanConstructor AsRemoveTagHelper(string lookupText)
         {
-            return _self.With(
-                new AddOrRemoveTagHelperCodeGenerator(removeTagHelperDescriptors: true, lookupText: lookupText));
+            return _self
+                .With(new AddOrRemoveTagHelperCodeGenerator(removeTagHelperDescriptors: true, lookupText: lookupText))
+                .Accepts(AcceptedCharacters.AnyExceptNewline);
         }
 
         public SpanConstructor AsTagHelperPrefixDirective(string prefix)
         {
-            return _self.With(new TagHelperPrefixDirectiveCodeGenerator(prefix));
+            return _self
+                .With(new TagHelperPrefixDirectiveCodeGenerator(prefix))
+                .Accepts(AcceptedCharacters.AnyExceptNewline);
         }
 
         public SpanConstructor As(ISpanCodeGenerator codeGenerator)

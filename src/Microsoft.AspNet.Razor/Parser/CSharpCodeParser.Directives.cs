@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Span.EditHandler.EditorHints = EditorHints.LayoutPage | EditorHints.VirtualPath;
             var foundNewline = Optional(CSharpSymbolType.NewLine);
             AddMarkerSymbolIfNecessary();
-            Output(SpanKind.MetaCode, foundNewline ? AcceptedCharacters.None : AcceptedCharacters.Any);
+            Output(SpanKind.MetaCode, foundNewline ? AcceptedCharacters.None : AcceptedCharacters.AnyExceptNewline);
         }
 
         protected virtual void SectionDirective()
@@ -286,7 +286,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
             // Output the span and finish the block
             CompleteBlock();
-            Output(SpanKind.Code);
+            Output(SpanKind.Code, AcceptedCharacters.AnyExceptNewline);
         }
 
         private void TagHelperDirective(string keyword, Func<string, ISpanCodeGenerator> buildCodeGenerator)
@@ -304,7 +304,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
             // If we found whitespace then any content placed within the whitespace MAY cause a destructive change
             // to the document.  We can't accept it.
-            Output(SpanKind.MetaCode, foundWhitespace ? AcceptedCharacters.None : AcceptedCharacters.Any);
+            Output(SpanKind.MetaCode, foundWhitespace ? AcceptedCharacters.None : AcceptedCharacters.AnyExceptNewline);
 
             if (EndOfFile || At(CSharpSymbolType.NewLine))
             {
@@ -346,7 +346,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
             // Output the span and finish the block
             CompleteBlock();
-            Output(SpanKind.Code);
+            Output(SpanKind.Code, AcceptedCharacters.AnyExceptNewline);
         }
     }
 }
