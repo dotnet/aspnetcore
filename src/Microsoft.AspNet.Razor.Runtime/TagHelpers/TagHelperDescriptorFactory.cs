@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         private static IEnumerable<TagHelperAttributeDescriptor> GetAttributeDescriptors(Type type)
         {
-            var properties = type.GetRuntimeProperties().Where(IsValidProperty);
+            var properties = type.GetRuntimeProperties().Where(IsAccessibleProperty);
             var attributeDescriptors = properties.Select(ToAttributeDescriptor);
 
             return attributeDescriptors;
@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             return new TagHelperAttributeDescriptor(attributeName, property.Name, property.PropertyType.FullName);
         }
 
-        private static bool IsValidProperty(PropertyInfo property)
+        private static bool IsAccessibleProperty(PropertyInfo property)
         {
             return property.GetMethod != null &&
                    property.GetMethod.IsPublic &&
