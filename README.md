@@ -156,6 +156,11 @@ The community standup is held every week and streamed live to YouTube. You can v
 
 If you have questions you can also jump online during the next standup and have them answered live.
 
+### [Official Documentation](http://aspnet.readthedocs.org/)
+Official documentation is available on http://aspnet.readthedocs.org/.
+
+If you see errors, or want some extra content, please log an issue on https://github.com/aspnet/Docs/issues.
+
 ### [Wiki Documentation](https://github.com/aspnet/Home/wiki)
 We have some useful documentation on the wiki of this Repo. This wiki is a central spot for docs from any part of the stack.
 
@@ -171,7 +176,7 @@ These are some of the most common repos:
 * [DependencyInjection](https://github.com/aspnet/DependencyInjection) - basic dependency injection infrastructure and default implementation
 * [EntityFramework](https://github.com/aspnet/EntityFramework) - data access technology
 * [Identity](https://github.com/aspnet/Identity) - users and membership system
-* [KRuntime](https://github.com/aspnet/KRuntime) - core runtime, project system, loader
+* [DNX](https://github.com/aspnet/DNX) - core runtime, project system, loader
 * [MVC](https://github.com/aspnet/Mvc) - MVC framework for web apps and services
 * [SignalR-Server](https://github.com/aspnet/SignalR-Server) - real-time 
 
