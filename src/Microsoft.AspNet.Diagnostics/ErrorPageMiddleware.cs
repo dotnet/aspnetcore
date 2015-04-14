@@ -92,30 +92,26 @@ namespace Microsoft.AspNet.Diagnostics
                                                  Exception ex,
                                                  ICompilationException compilationException)
         {
-            var stackFrames = new List<StackFrame>();
             var model = new CompilationErrorPageModel()
             {
                 Options = _options,
-                ErrorDetails = new ErrorDetails
-                {
-                    Error = ex,
-                    StackFrames = stackFrames
-                }
             };
 
-            // For view compilation, the most common case is to stop at the first failing file compiled as part of
-            // rendering a view. Consequently we'll limit ourselves to displaying errors from the first failure.
-            var failedCompilationFile = compilationException.CompilationFailures.FirstOrDefault();
-            if (failedCompilationFile != null)
+            foreach (var compilationFailure in compilationException.CompilationFailures)
             {
-                var fileContent = failedCompilationFile.SourceFileContent
+                var stackFrames = new List<StackFrame>();
+                var errorDetails = new ErrorDetails
+                {
+                    StackFrames = stackFrames
+                };
+                var fileContent = compilationFailure.SourceFileContent
                                                        .Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
-                foreach (var item in failedCompilationFile.Messages)
+                foreach (var item in compilationFailure.Messages)
                 {
                     var frame = new StackFrame
                     {
-                        File = failedCompilationFile.SourceFilePath,
+                        File = compilationFailure.SourceFilePath,
                         Line = item.StartLine,
                         Function = string.Empty
                     };
@@ -128,6 +124,8 @@ namespace Microsoft.AspNet.Diagnostics
 
                     stackFrames.Add(frame);
                 }
+
+                model.ErrorDetails.Add(errorDetails);
             }
 
             var errorPage = new CompilationErrorPage

@@ -18,6 +18,6 @@ namespace Microsoft.AspNet.Diagnostics.Views
         /// <summary>
         /// Detailed information about each parse or compilation error.
         /// </summary>
-        public ErrorDetails ErrorDetails { get; set; }
+        public IList<ErrorDetails> ErrorDetails { get; } = new List<ErrorDetails>();
     }
 }
