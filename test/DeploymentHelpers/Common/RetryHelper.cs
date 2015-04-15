@@ -40,7 +40,7 @@ namespace DeploymentHelpers
 #endif
                         )
                         {
-                            logger.LogWarning("Failed to complete the request : {0}.", exception.Message);
+                            logger.LogWarning("Failed to complete the request : {0}.", exception.InnerException.Message);
                             Thread.Sleep(7 * 1000); //Wait for a while before retry.
                         }
                     }

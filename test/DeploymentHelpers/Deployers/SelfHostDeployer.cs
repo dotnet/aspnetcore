@@ -53,26 +53,15 @@ namespace DeploymentHelpers
             };
 
             AddEnvironmentVariablesToProcess(startInfo);
+
             var hostProcess = Process.Start(startInfo);
-
-            //Sometimes reading MainModule returns null if called immediately after starting process.
-            Thread.Sleep(1 * 1000);
-
             if (hostProcess.HasExited)
             {
                 Logger.LogError("Host process {processName} exited with code {exitCode} or failed to start.", startInfo.FileName, hostProcess.ExitCode);
                 throw new Exception("Failed to start host");
             }
 
-            try
-            {
-                Logger.LogInformation("Started {fileName}. Process Id : {processId}", hostProcess.MainModule.FileName, hostProcess.Id);
-            }
-            catch (Win32Exception)
-            {
-                // Ignore.
-            }
-
+            Logger.LogInformation("Started {fileName}. Process Id : {processId}", startInfo.FileName, hostProcess.Id);
             return hostProcess;
         }
 

@@ -94,7 +94,13 @@ namespace DeploymentHelpers
             startInfo.Environment["PATH"] = ChosenRuntimePath + ";" + startInfo.Environment["PATH"];
 #endif
 
-            Process hostProcess = Process.Start(startInfo);
+            var hostProcess = Process.Start(startInfo);
+            if (hostProcess.HasExited)
+            {
+                Logger.LogError("Host process {processName} exited with code {exitCode} or failed to start.", startInfo.FileName, hostProcess.ExitCode);
+                throw new Exception("Failed to start host");
+            }
+
             Logger.LogInformation("Started iisexpress. Process Id : {processId}", hostProcess.Id);
 
             return hostProcess;
