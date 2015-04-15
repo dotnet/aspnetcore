@@ -222,9 +222,12 @@
     <File Name="System.Net.WebSockets.Client.dll" Ignore="yes" />
     <File Name="System.Net.WebSockets.dll" Ignore="yes" />
     <File Name="System.Numerics.Vectors.dll" Ignore="yes" />
+    <File Name="System.Private.CoreLib.InteropServices.dll" Ignore="yes" />
     <File Name="System.Private.DataContractSerialization.dll" Ignore="yes" />
+    <File Name="System.Private.Interop.dll" Ignore="yes" />
     <File Name="System.Private.Networking.dll" Ignore="yes" />
     <File Name="System.Private.ServiceModel.dll" Ignore="yes" />
+    <File Name="System.Resources.ReaderWriter.dll" Ignore="yes" />
     <File Name="System.Reflection.DispatchProxy.dll" Ignore="yes" />
     <File Name="System.Runtime.CompilerServices.VisualC.dll" Ignore="yes" />
     <File Name="System.Runtime.InteropServices.WindowsRuntime.dll" Ignore="yes" />
