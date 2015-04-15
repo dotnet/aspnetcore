@@ -4,33 +4,34 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Core.Authentication
 {
     public class ChallengeContext : IChallengeContext
     {
-        private List<string> _accepted;
+        private bool _accepted;
 
-        public ChallengeContext([NotNull] IEnumerable<string> authenticationSchemes, IDictionary<string, string> properties)
+        public ChallengeContext(string authenticationScheme, IDictionary<string, string> properties)
         {
-            AuthenticationSchemes = authenticationSchemes;
+            AuthenticationScheme = authenticationScheme;
             Properties = properties ?? new Dictionary<string, string>(StringComparer.Ordinal);
-            _accepted = new List<string>();
+
+            // The default Challenge with no scheme is always accepted
+            _accepted = string.IsNullOrEmpty(authenticationScheme);
         }
 
-        public IEnumerable<string> AuthenticationSchemes { get; private set; }
+        public string AuthenticationScheme { get; private set; }
 
         public IDictionary<string, string> Properties { get; private set; }
 
-        public IEnumerable<string> Accepted
+        public bool Accepted
         {
             get { return _accepted; }
         }
 
-        public void Accept(string authenticationType, IDictionary<string, object> description)
+        public void Accept()
         {
-            _accepted.Add(authenticationType);
+            _accepted = true;
         }
     }
 }

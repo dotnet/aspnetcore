@@ -38,40 +38,20 @@ namespace Microsoft.AspNet.Http
 
         public virtual void Challenge()
         {
-            Challenge(new string[0]);
+            Challenge(properties: null, authenticationScheme: null);
         }
 
         public virtual void Challenge(AuthenticationProperties properties)
         {
-            Challenge(properties, new string[0]);
+            Challenge(properties, "");
         }
 
         public virtual void Challenge(string authenticationScheme)
         {
-            Challenge(new[] { authenticationScheme });
+            Challenge(properties: null, authenticationScheme: authenticationScheme);
         }
 
-        public virtual void Challenge(AuthenticationProperties properties, string authenticationScheme)
-        {
-            Challenge(properties, new[] { authenticationScheme });
-        }
-
-        public virtual void Challenge(params string[] authenticationSchemes)
-        {
-            Challenge((IEnumerable<string>)authenticationSchemes);
-        }
-
-        public virtual void Challenge(IEnumerable<string> authenticationSchemes)
-        {
-            Challenge(properties: null, authenticationSchemes: authenticationSchemes);
-        }
-
-        public virtual void Challenge(AuthenticationProperties properties, params string[] authenticationSchemes)
-        {
-            Challenge(properties, (IEnumerable<string>)authenticationSchemes);
-        }
-
-        public abstract void Challenge(AuthenticationProperties properties, IEnumerable<string> authenticationSchemes);
+        public abstract void Challenge(AuthenticationProperties properties, string authenticationScheme);
 
         public abstract void SignIn(string authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties properties = null);
 

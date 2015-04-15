@@ -130,22 +130,20 @@ namespace Microsoft.AspNet.Http.Core
             Headers.Set(HeaderNames.Location, location);
         }
 
-        public override void Challenge(AuthenticationProperties properties, [NotNull] IEnumerable<string> authenticationSchemes)
+        public override void Challenge(AuthenticationProperties properties, string authenticationScheme)
         {
             HttpResponseFeature.StatusCode = 401;
             var handler = HttpAuthenticationFeature.Handler;
 
-            var challengeContext = new ChallengeContext(authenticationSchemes, properties == null ? null : properties.Dictionary);
+            var challengeContext = new ChallengeContext(authenticationScheme, properties == null ? null : properties.Dictionary);
             if (handler != null)
             {
                 handler.Challenge(challengeContext);
             }
 
-            // Verify all types ack'd
-            IEnumerable<string> leftovers = authenticationSchemes.Except(challengeContext.Accepted);
-            if (leftovers.Any())
+            if (!challengeContext.Accepted)
             {
-                throw new InvalidOperationException("The following authentication types were not accepted: " + string.Join(", ", leftovers));
+                throw new InvalidOperationException("The following authentication type was not accepted: " + authenticationScheme);
             }
         }
 

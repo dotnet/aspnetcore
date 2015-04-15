@@ -7,9 +7,9 @@ namespace Microsoft.AspNet.Http.Authentication
 {
     public interface IChallengeContext
     {
-        IEnumerable<string> AuthenticationSchemes {get;}
-        IDictionary<string,string> Properties {get;}
+        string AuthenticationScheme { get; }
+        IDictionary<string, string> Properties { get; }
 
-        void Accept(string authenticationType, IDictionary<string,object> description);
+        void Accept();
     }
 }
