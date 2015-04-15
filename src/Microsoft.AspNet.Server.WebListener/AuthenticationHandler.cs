@@ -79,11 +79,11 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 var authScheme = scheme.ToString();
                 // Not including any auth types means it's a blanket challenge for any auth type.
-                if (context.AuthenticationSchemes == null || !context.AuthenticationSchemes.Any()
-                    || context.AuthenticationSchemes.Contains(authScheme, StringComparer.Ordinal))
+                if (context.AuthenticationScheme == null ||
+                    string.Equals(context.AuthenticationScheme, authScheme, StringComparison.Ordinal))
                 {
                     _customChallenges |= scheme;
-                    context.Accept(authScheme, GetDescription(authScheme));
+                    context.Accept();
                 }
             }
             // A challenge was issued, it overrides any pre-set auth types.

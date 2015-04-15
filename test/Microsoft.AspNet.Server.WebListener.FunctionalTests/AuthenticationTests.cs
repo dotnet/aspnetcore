@@ -353,7 +353,10 @@ namespace Microsoft.AspNet.Server.WebListener
                 var context = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.NotNull(context.User);
                 Assert.False(context.User.Identity.IsAuthenticated);
-                context.Response.Challenge(authTypeList);
+                foreach (var scheme in authTypeList)
+                {
+                    context.Response.Challenge(scheme);
+                }
                 return Task.FromResult(0);
             }))
             {
