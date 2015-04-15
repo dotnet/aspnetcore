@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         }
 
         /// <summary>
-        /// Gets a list of <see cref="IClientModelValidatorProvider"/>.
+        /// Gets a list of <see cref="IClientModelValidatorProvider"/> instances.
         /// </summary>
         public IReadOnlyList<IClientModelValidatorProvider> ValidatorProviders { get; }
 

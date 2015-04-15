@@ -4,12 +4,12 @@
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     /// <summary>
-    /// Provides a collection of <see cref="IClientModelValidator"/>.
+    /// Provides a collection of <see cref="IClientModelValidator"/>s.
     /// </summary>
     public interface IClientModelValidatorProvider
     {
         /// <summary>
-        /// Gets set of <see cref="IClientModelValidator"/>s 
+        /// Gets set of <see cref="IClientModelValidator"/>s
         /// by updating <see cref="ClientValidatorProviderContext.Validators"/>.
         /// </summary>
         /// <param name="context">The <see cref="ClientModelValidationContext"/> associated with this call.</param>

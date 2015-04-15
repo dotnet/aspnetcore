@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         }
 
         /// <summary>
-        /// Gets the type of the <typeparamref name="TAttribute"/> associated with this instance.
+        /// Gets the <typeparamref name="TAttribute"/> instance.
         /// </summary>
         public TAttribute Attribute
         {
