@@ -46,11 +46,12 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             config.Add(new MemoryConfigurationSource());
             config.Set("server.urls", "http://localhost:54321");
 
-            var engine = WebHost.CreateEngine(config)
+            var host = new WebHostBuilder(CallContextServiceLocator.Locator.ServiceProvider, config)
                 .UseServer("Kestrel")
-                .UseStartup(startup);
+                .UseStartup(startup)
+                .Build();
 
-            return engine.Start();
+            return host.Start();
         }
     }
 }
