@@ -961,9 +961,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderAsync_ThrowsIfLayoutIsSpecifiedWhenNotBuffered()
         {
             // Arrange
-            var expected = @"A layout page cannot be rendered after 'FlushAsync' has been invoked.";
+            var expected = "Layout page '/Views/TestPath/Test.cshtml' cannot be rendered" +
+                " after 'FlushAsync' has been invoked.";
             var page = new TestableRazorPage(v =>
             {
+                v.Path = "/Views/TestPath/Test.cshtml";
                 v.WriteLiteral("before-flush" + Environment.NewLine);
                 v.FlushAsync().Wait();
                 v.Layout = "test-layout";
@@ -986,9 +988,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderAsync_ThrowsIfFlushWasInvokedInsideRenderedSectionAndLayoutWasSet()
         {
             // Arrange
-            var expected = @"A layout page cannot be rendered after 'FlushAsync' has been invoked.";
+            var expected = "Layout page '/Views/TestPath/Test.cshtml' cannot be rendered" +
+                " after 'FlushAsync' has been invoked.";
             var page = new TestableRazorPage(v =>
             {
+                v.Path = "/Views/TestPath/Test.cshtml";
                 v.HtmlEncoder = new HtmlEncoder();
                 v.DefineSection("foo", async writer =>
                 {

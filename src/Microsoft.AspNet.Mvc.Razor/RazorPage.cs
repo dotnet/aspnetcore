@@ -608,7 +608,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             if (RenderBodyDelegate == null)
             {
-                var message = Resources.FormatRazorPage_MethodCannotBeCalled(nameof(RenderBody));
+                var message = Resources.FormatRazorPage_MethodCannotBeCalled(nameof(RenderBody), Path);
                 throw new InvalidOperationException(message);
             }
 
@@ -704,7 +704,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             if (_renderedSections.Contains(sectionName))
             {
-                var message = Resources.FormatSectionAlreadyRendered(sectionName);
+                var message = Resources.FormatSectionAlreadyRendered(nameof(RenderSectionAsync), Path, sectionName);
                 throw new InvalidOperationException(message);
             }
 
@@ -721,7 +721,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             else if (required)
             {
                 // If the section is not found, and it is not optional, throw an error.
-                throw new InvalidOperationException(Resources.FormatSectionNotDefined(sectionName));
+                throw new InvalidOperationException(Resources.FormatSectionNotDefined(sectionName, Path));
             }
             else
             {
@@ -748,14 +748,15 @@ namespace Microsoft.AspNet.Mvc.Razor
             // change.
             if (_writerScopes.Count > 0)
             {
-                throw new InvalidOperationException(Resources.RazorPage_YouCannotFlushWhileInAWritingScope);
+                throw new InvalidOperationException(
+                    Resources.FormatRazorPage_CannotFlushWhileInAWritingScope(nameof(FlushAsync), Path));
             }
 
             // Calls to Flush are allowed if the page does not specify a Layout or if it is executing a section in the
             // Layout.
             if (!IsLayoutBeingRendered && !string.IsNullOrEmpty(Layout))
             {
-                var message = Resources.FormatLayoutCannotBeRendered(nameof(FlushAsync));
+                var message = Resources.FormatLayoutCannotBeRendered(Path, nameof(FlushAsync));
                 throw new InvalidOperationException(message);
             }
 
@@ -817,7 +818,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             if (PreviousSectionWriters == null)
             {
-                throw new InvalidOperationException(Resources.FormatRazorPage_MethodCannotBeCalled(methodName));
+                throw new InvalidOperationException(Resources.FormatRazorPage_MethodCannotBeCalled(methodName, Path));
             }
         }
     }

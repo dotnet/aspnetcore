@@ -133,7 +133,7 @@
     <value>The layout view '{0}' could not be located. The following locations were searched:{1}</value>
   </data>
   <data name="LayoutCannotBeRendered" xml:space="preserve">
-    <value>A layout page cannot be rendered after '{0}' has been invoked.</value>
+    <value>Layout page '{0}' cannot be rendered after '{1}' has been invoked.</value>
   </data>
   <data name="MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword" xml:space="preserve">
     <value>The 'inherits' keyword is not allowed when a '{0}' keyword is used.</value>
@@ -147,14 +147,14 @@
   <data name="RazorPage_ThereIsNoActiveWritingScopeToEnd" xml:space="preserve">
     <value>There is no active writing scope to end.</value>
   </data>
-  <data name="RazorPage_YouCannotFlushWhileInAWritingScope" xml:space="preserve">
-    <value>You cannot flush while inside a writing scope.</value>
+  <data name="RazorPage_CannotFlushWhileInAWritingScope" xml:space="preserve">
+    <value>The {0} operation cannot be performed while inside a writing scope in '{1}'.</value>
   </data>
   <data name="RazorPage_NullModelMetadata" xml:space="preserve">
     <value>The {0} was unable to provide metadata for expression '{1}'.</value>
   </data>
   <data name="RazorPage_MethodCannotBeCalled" xml:space="preserve">
-    <value>{0} can only be called from a layout page.</value>
+    <value>{0} invocation in '{1}' is invalid. {0} can only be called from a layout page.</value>
   </data>
   <data name="RenderBodyNotCalled" xml:space="preserve">
     <value>{0} has not been called for the page at '{1}'.</value>
@@ -163,10 +163,10 @@
     <value>Section '{0}' is already defined.</value>
   </data>
   <data name="SectionAlreadyRendered" xml:space="preserve">
-    <value>The section named '{0}' has already been rendered.</value>
+    <value>{0} invocation in '{1}' is invalid. The section '{2}' has already been rendered.</value>
   </data>
   <data name="SectionNotDefined" xml:space="preserve">
-    <value>Section '{0}' is not defined.</value>
+    <value>Section '{0}' is not defined in path '{1}'.</value>
   </data>
   <data name="SectionsNotRendered" xml:space="preserve">
     <value>The following sections have been defined but have not been rendered by the page at '{0}': '{1}'.</value>

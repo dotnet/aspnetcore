@@ -179,7 +179,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     // the body content. Throwing this exception wouldn't return a 500 (since content has already been
                     // written), but a diagnostic component should be able to capture it.
 
-                    var message = Resources.FormatLayoutCannotBeRendered("FlushAsync");
+                    var message = Resources.FormatLayoutCannotBeRendered(Path, nameof(Razor.RazorPage.FlushAsync));
                     throw new InvalidOperationException(message);
                 }
 
