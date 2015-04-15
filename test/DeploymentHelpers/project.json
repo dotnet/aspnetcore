@@ -18,7 +18,6 @@
         },
         "dnxcore50": {
             "dependencies": {
-                "Microsoft.Win32.Primitives": "4.0.0-beta-*",
                 "System.Diagnostics.Process": "4.0.0-beta-*",
                 "System.IO.FileSystem": "4.0.0-*",
                 "System.Net.Http": "4.0.0-beta-*",
