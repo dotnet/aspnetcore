@@ -9,23 +9,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class ModelBinderAttributeTest
     {
         [Fact]
-        public void InvalidBinderType_Throws()
-        {
-            // Arrange
-            var attribute = new ModelBinderAttribute();
-
-            var expected =
-                $"The type 'System.String' must implement '{typeof(IModelBinder).FullName}' " +
-                "to be used as a model binder.";
-
-            // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => { attribute.BinderType = typeof(string); });
-
-            // Assert
-            Assert.Equal(expected, ex.Message);
-        }
-
-        [Fact]
         public void NoBinderType_NoBindingSource()
         {
             // Arrange

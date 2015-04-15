@@ -26,39 +26,17 @@ namespace Microsoft.AspNet.Mvc
         Inherited = true)]
     public class ModelBinderAttribute : Attribute, IModelNameProvider, IBinderTypeProviderMetadata
     {
-        private Type _binderType;
         private BindingSource _bindingSource;
 
         /// <inheritdoc />
-        public Type BinderType
-        {
-            get
-            {
-                return _binderType;
-            }
-            set
-            {
-                if (value != null)
-                {
-                    if (!typeof(IModelBinder).IsAssignableFrom(value))
-                    {
-                        throw new InvalidOperationException(
-                            Resources.FormatBinderType_MustBeIModelBinder(
-                                value.FullName,
-                                typeof(IModelBinder).FullName));
-                    }
-                }
-
-                _binderType = value;
-            }
-        }
+        public Type BinderType { get; set; }
 
         /// <inheritdoc />
         public BindingSource BindingSource
         {
             get
             {
-                if (_bindingSource == null && _binderType != null)
+                if (_bindingSource == null && BinderType != null)
                 {
                     return BindingSource.Custom;
                 }
