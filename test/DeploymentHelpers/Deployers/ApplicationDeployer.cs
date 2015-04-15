@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -143,7 +142,7 @@ namespace DeploymentHelpers
             environment["ASPNET_ENV"] = DeploymentParameters.EnvironmentName;
 
             // Work around for https://github.com/aspnet/dnx/issues/1515
-            environment.Remove("DNX_PACKAGES");
+            // environment.Remove("DNX_PACKAGES");
             environment.Remove("DNX_DEFAULT_LIB");
 
             foreach (var environmentVariable in DeploymentParameters.EnvironmentVariables)
