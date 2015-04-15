@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Xml;
 using Microsoft.Framework.Logging;
 using Microsoft.Web.Administration;
@@ -14,6 +15,7 @@ namespace DeploymentHelpers
     public class IISDeployer : ApplicationDeployer
     {
         private IISApplication _application;
+        private CancellationTokenSource _hostShutdownToken = new CancellationTokenSource();
 
         public IISDeployer(DeploymentParameters startParameters, ILogger logger)
             : base(startParameters, logger)
@@ -49,7 +51,8 @@ namespace DeploymentHelpers
                 WebRootLocation = DeploymentParameters.ApplicationPath,
                 DeploymentParameters = DeploymentParameters,
                 // Accomodate the vdir name.
-                ApplicationBaseUri = new UriBuilder(Uri.UriSchemeHttp, "localhost", _application.Port, _application.VirtualDirectoryName).Uri.AbsoluteUri + "/"
+                ApplicationBaseUri = new UriBuilder(Uri.UriSchemeHttp, "localhost", _application.Port, _application.VirtualDirectoryName).Uri.AbsoluteUri + "/",
+                HostShutdownToken = _hostShutdownToken.Token
             };
         }
 
@@ -84,6 +87,8 @@ namespace DeploymentHelpers
             if (_application != null)
             {
                 _application.StopAndDeleteAppPool();
+                Logger.LogError("Application pool was shutdown successfully.");
+                TriggerHostShutdown(_hostShutdownToken);
             }
 
             CleanPublishedOutput();

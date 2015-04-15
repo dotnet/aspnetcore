@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Infrastructure;
@@ -29,18 +30,19 @@ namespace DeploymentHelpers
             }
 
             // Launch the host process.
-            _hostProcess = StartHeliosHost();
+            var hostExitToken = StartHeliosHost();
 
             return new DeploymentResult
             {
                 WebRootLocation = DeploymentParameters.ApplicationPath,
                 DeploymentParameters = DeploymentParameters,
                 // Right now this works only for urls like http://localhost:5001/. Does not work for http://localhost:5001/subpath.
-                ApplicationBaseUri = DeploymentParameters.ApplicationBaseUriHint
+                ApplicationBaseUri = DeploymentParameters.ApplicationBaseUriHint,
+                HostShutdownToken = hostExitToken
             };
         }
 
-        private Process StartHeliosHost()
+        private CancellationToken StartHeliosHost()
         {
             if (!string.IsNullOrWhiteSpace(DeploymentParameters.ApplicationHostConfigTemplateContent))
             {
@@ -96,16 +98,21 @@ namespace DeploymentHelpers
             startInfo.Environment["DNX_APPBASE"] = DeploymentParameters.ApplicationPath;
 #endif
 
-            var hostProcess = Process.Start(startInfo);
-            if (hostProcess.HasExited)
+            _hostProcess = Process.Start(startInfo);
+            var hostExitTokenSource = new CancellationTokenSource();
+            _hostProcess.Exited += (sender, e) =>
             {
-                Logger.LogError("Host process {processName} exited with code {exitCode} or failed to start.", startInfo.FileName, hostProcess.ExitCode);
+                TriggerHostShutdown(hostExitTokenSource);
+            };
+
+            if (_hostProcess.HasExited)
+            {
+                Logger.LogError("Host process {processName} exited with code {exitCode} or failed to start.", startInfo.FileName, _hostProcess.ExitCode);
                 throw new Exception("Failed to start host");
             }
 
-            Logger.LogInformation("Started iisexpress. Process Id : {processId}", hostProcess.Id);
-
-            return hostProcess;
+            Logger.LogInformation("Started iisexpress. Process Id : {processId}", _hostProcess.Id);
+            return hostExitTokenSource.Token;
         }
 
         private void CopyAspNetLoader()

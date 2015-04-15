@@ -79,7 +79,7 @@ namespace E2ETests
                     {
                         response = httpClient.GetAsync(string.Empty).Result;
                         return response;
-                    }, logger: logger);
+                    }, logger: logger, cancellationToken: deploymentResult.HostShutdownToken);
 
                     logger.LogInformation("[Time]: Approximate time taken for application initialization : '{t}' seconds", stopwatch.Elapsed.TotalSeconds);
 

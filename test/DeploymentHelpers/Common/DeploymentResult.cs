@@ -1,4 +1,6 @@
-﻿namespace DeploymentHelpers
+﻿using System.Threading;
+
+namespace DeploymentHelpers
 {
     /// <summary>
     /// Result of a deployment.
@@ -20,5 +22,10 @@
         /// Original deployment parameters used for this deployment.
         /// </summary>
         public DeploymentParameters DeploymentParameters { get; set; }
+
+        /// <summary>
+        /// Triggered when the host process dies or pulled down.
+        /// </summary>
+        public CancellationToken HostShutdownToken { get; set; }
     }
 }

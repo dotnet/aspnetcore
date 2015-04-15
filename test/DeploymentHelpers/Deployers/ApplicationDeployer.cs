@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Microsoft.Framework.Logging;
 
 namespace DeploymentHelpers
@@ -168,6 +169,18 @@ namespace DeploymentHelpers
                 {
                     Logger.LogWarning("User cleanup code failed with exception : {exception}", exception.Message);
                 }
+            }
+        }
+
+        protected void TriggerHostShutdown(CancellationTokenSource hostShutdownSource)
+        {
+            try
+            {
+                hostShutdownSource.Cancel();
+            }
+            catch (Exception)
+            {
+                // Suppress errors.
             }
         }
 

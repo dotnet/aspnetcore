@@ -8,12 +8,28 @@ namespace DeploymentHelpers
 {
     public class RetryHelper
     {
-        public static void RetryRequest(Func<HttpResponseMessage> retryBlock, ILogger logger, int retryCount = 12)
+        /// <summary>
+        /// Retries every 1 sec for 60 times by default.
+        /// </summary>
+        /// <param name="retryBlock"></param>
+        /// <param name="logger"></param>
+        /// <param name="cancellationToken"></param>
+        /// <param name="retryCount"></param>
+        public static void RetryRequest(
+            Func<HttpResponseMessage> retryBlock,
+            ILogger logger,
+            CancellationToken cancellationToken = default(CancellationToken),
+            int retryCount = 60)
         {
             for (int retry = 0; retry < retryCount; retry++)
             {
                 try
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
                     logger.LogWarning("Retry count {retryCount}..", retry + 1);
                     var response = retryBlock();
 
@@ -41,7 +57,7 @@ namespace DeploymentHelpers
                         )
                         {
                             logger.LogWarning("Failed to complete the request : {0}.", exception.InnerException.Message);
-                            Thread.Sleep(7 * 1000); //Wait for a while before retry.
+                            Thread.Sleep(1 * 1000); //Wait for a while before retry.
                         }
                     }
                 }

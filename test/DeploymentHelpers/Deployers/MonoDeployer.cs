@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Microsoft.Framework.Logging;
 
 namespace DeploymentHelpers
@@ -37,17 +38,18 @@ namespace DeploymentHelpers
             }
 
             // Launch the host process.
-            _hostProcess = StartMonoHost();
+            var hostExitToken = StartMonoHost();
 
             return new DeploymentResult
             {
                 WebRootLocation = DeploymentParameters.ApplicationPath,
                 DeploymentParameters = DeploymentParameters,
-                ApplicationBaseUri = DeploymentParameters.ApplicationBaseUriHint
+                ApplicationBaseUri = DeploymentParameters.ApplicationBaseUriHint,
+                HostShutdownToken = hostExitToken
             };
         }
 
-        private Process StartMonoHost()
+        private CancellationToken StartMonoHost()
         {
             if (DeploymentParameters.ServerType != ServerType.Kestrel)
             {
@@ -66,16 +68,23 @@ namespace DeploymentHelpers
                 RedirectStandardInput = true
             };
 
-            var hostProcess = Process.Start(startInfo);
-            Logger.LogInformation("Started {0}. Process Id : {1}", hostProcess.MainModule.FileName, hostProcess.Id);
-
-            if (hostProcess.HasExited)
+            _hostProcess = Process.Start(startInfo);
+            var hostExitTokenSource = new CancellationTokenSource();
+            _hostProcess.Exited += (sender, e) =>
             {
-                Logger.LogError("Host process {processName} exited with code {exitCode} or failed to start.", startInfo.FileName, hostProcess.ExitCode);
+                Logger.LogError("Host process {processName} exited with code {exitCode}.", startInfo.FileName, _hostProcess.ExitCode);
+                TriggerHostShutdown(hostExitTokenSource);
+            };
+
+            Logger.LogInformation("Started {0}. Process Id : {1}", _hostProcess.MainModule.FileName, _hostProcess.Id);
+
+            if (_hostProcess.HasExited)
+            {
+                Logger.LogError("Host process {processName} exited with code {exitCode} or failed to start.", startInfo.FileName, _hostProcess.ExitCode);
                 throw new Exception("Failed to start host");
             }
 
-            return hostProcess;
+            return hostExitTokenSource.Token;
         }
 
         public override void Dispose()
