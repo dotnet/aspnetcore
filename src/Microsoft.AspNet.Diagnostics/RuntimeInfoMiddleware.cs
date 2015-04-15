@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Reflection;
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Runtime;
+using System.Linq;
+using System.Reflection;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Diagnostics
 {
@@ -62,11 +64,10 @@ namespace Microsoft.AspNet.Diagnostics
             return model;
         }
 
-        private string GetRuntimeVersion()
+        private static string GetRuntimeVersion()
         {
-            var version = _libraryManager
-                .GetType().GetTypeInfo().Assembly
-                .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+            var klr = Assembly.Load(new AssemblyName("dnx.host"));
+            var version = klr.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
             return version?.InformationalVersion;
         }
     }
