@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.DependencyInjection;
@@ -279,6 +280,26 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
+        public async Task Invoke_CanFilterToOnlyBearerScheme()
+        {
+            // Arrange
+            var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder("Bearer")
+                .RequireClaim("Permission", "CanViewPage")
+                .Build());
+            var authorizationContext = GetAuthorizationContext(services =>
+            {
+                services.AddAuthorization();
+                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
+            });
+
+            // Act
+            await authorizeFilter.OnAuthorizationAsync(authorizationContext);
+
+            // Assert
+            Assert.NotNull(authorizationContext.Result);
+        }
+
+        [Fact]
         public async Task Invoke_EmptyPolicyWillFail()
         {
             // Arrange
@@ -298,7 +319,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
         private AuthorizationContext GetAuthorizationContext(Action<ServiceCollection> registerServices, bool anonymous = false)
         {
-            var validUser = new ClaimsPrincipal(
+            var basicPrincipal = new ClaimsPrincipal(
                 new ClaimsIdentity(
                     new Claim[] {
                         new Claim("Permission", "CanViewPage"),
@@ -307,13 +328,18 @@ namespace Microsoft.AspNet.Mvc.Test
                         new Claim(ClaimTypes.NameIdentifier, "John")},
                         "Basic"));
 
-            validUser.AddIdentity(
-                new ClaimsIdentity(
+            var validUser = basicPrincipal;
+
+            var bearerIdentity = new ClaimsIdentity(
                     new Claim[] {
                         new Claim("Permission", "CupBearer"),
                         new Claim(ClaimTypes.Role, "Token"),
                         new Claim(ClaimTypes.NameIdentifier, "John Bear")},
-                        "Bearer"));
+                        "Bearer");
+
+            var bearerPrincipal = new ClaimsPrincipal(bearerIdentity);
+
+            validUser.AddIdentity(bearerIdentity);
 
             // ServiceProvider
             var serviceCollection = new ServiceCollection();
@@ -332,6 +358,8 @@ namespace Microsoft.AspNet.Mvc.Test
                 httpContext.Object.User = validUser;
             }
             httpContext.SetupGet(c => c.RequestServices).Returns(serviceProvider);
+            httpContext.Setup(c => c.AuthenticateAsync("Bearer")).ReturnsAsync(new AuthenticationResult(bearerPrincipal, new AuthenticationProperties(), new AuthenticationDescription()));
+            httpContext.Setup(c => c.AuthenticateAsync("Basic")).ReturnsAsync(new AuthenticationResult(basicPrincipal, new AuthenticationProperties(), new AuthenticationDescription()));
 
             // AuthorizationContext
             var actionContext = new ActionContext(
