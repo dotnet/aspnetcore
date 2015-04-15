@@ -90,8 +90,10 @@ namespace DeploymentHelpers
             // IIS express figures out the DNX from %PATH%.
 #if DNX451
             startInfo.EnvironmentVariables["PATH"] = ChosenRuntimePath + ";" + startInfo.EnvironmentVariables["PATH"];
+            startInfo.EnvironmentVariables["DNX_APPBASE"] = DeploymentParameters.ApplicationPath;
 #elif DNXCORE50
             startInfo.Environment["PATH"] = ChosenRuntimePath + ";" + startInfo.Environment["PATH"];
+            startInfo.Environment["DNX_APPBASE"] = DeploymentParameters.ApplicationPath;
 #endif
 
             var hostProcess = Process.Start(startInfo);
