@@ -65,10 +65,10 @@ namespace E2ETests
         }
     }
 
-    public class SmokeTests_OnIIS
+    public class SmokeTests_OnIIS_NativeModule
     {
-        [ConditionalTheory(Skip = "IIS based tests not enabled"), Trait("E2Etests", "E2Etests")]
-        [SkipIfNativeModuleNotInstalled]
+        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
+        [SkipIfIISNativeVariationsNotEnabled]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
         [SkipIfCurrentRuntimeIsCoreClr]
@@ -79,8 +79,8 @@ namespace E2ETests
             smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
-        [ConditionalTheory(Skip = "IIS based tests not enabled"), Trait("E2Etests", "E2Etests")]
-        [SkipIfNativeModuleNotInstalled]
+        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
+        [SkipIfIISNativeVariationsNotEnabled]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
         [SkipOn32BitOS]
@@ -91,22 +91,32 @@ namespace E2ETests
             var smokeTestRunner = new SmokeTests();
             smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
+    }
 
-        [ConditionalTheory(Skip = "IIS based tests not enabled"), Trait("E2Etests", "E2Etests")]
+    public class SmokeTests_OnIIS
+    {
+        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Unix)]
         [SkipIfCurrentRuntimeIsCoreClr]
-        [InlineData(ServerType.IIS, RuntimeFlavor.coreclr, RuntimeArchitecture.x86, "http://localhost:5013/")]
+        [SkipIfIISVariationsNotEnabled]
+        [InlineData(ServerType.IIS, RuntimeFlavor.clr, RuntimeArchitecture.x86, "http://localhost:5013/")]
+        [InlineData(ServerType.IIS, RuntimeFlavor.coreclr, RuntimeArchitecture.x64, "http://localhost:5013/")]
         public void SmokeTestSuite_On_IIS_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             var smokeTestRunner = new SmokeTests();
-            smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
+            smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource: true);
         }
     }
 
     public class SmokeTests
     {
-        public void SmokeTestSuite(ServerType serverType, RuntimeFlavor donetFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        public void SmokeTestSuite(
+            ServerType serverType,
+            RuntimeFlavor donetFlavor,
+            RuntimeArchitecture architecture,
+            string applicationBaseUrl,
+            bool noSource = false)
         {
             var logger = new LoggerFactory()
                            .AddConsole()
@@ -127,9 +137,12 @@ namespace E2ETests
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "SocialTesting",
+                    PublishWithNoSource = noSource,
                     UserAdditionalCleanup = parameters =>
                     {
-                        if (!Helpers.RunningOnMono)
+                        if (!Helpers.RunningOnMono
+                            && parameters.ServerType != ServerType.IIS
+                            && parameters.ServerType != ServerType.IISNativeModule)
                         {
                             // Mono uses InMemoryStore
                             DbUtils.DropDatabase(musicStoreDbName, logger);
