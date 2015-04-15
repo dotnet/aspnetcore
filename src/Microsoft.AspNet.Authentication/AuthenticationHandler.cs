@@ -353,10 +353,10 @@ namespace Microsoft.AspNet.Authentication
 
         public virtual void Challenge(IChallengeContext context)
         {
-            if (ShouldHandleScheme(context.AuthenticationSchemes))
+            if (ShouldHandleScheme(context.AuthenticationScheme))
             {
                 ChallengeContext = context;
-                context.Accept(BaseOptions.AuthenticationScheme, BaseOptions.Description.Dictionary);
+                context.Accept();
             }
 
             if (PriorHandler != null)
@@ -366,14 +366,6 @@ namespace Microsoft.AspNet.Authentication
         }
 
         protected abstract void ApplyResponseChallenge();
-
-        public virtual bool ShouldHandleScheme(IEnumerable<string> authenticationSchemes)
-        {
-            // If there are any schemes asked for, need to match, otherwise automatic authentication matches
-            return authenticationSchemes != null && authenticationSchemes.Any()
-                ? authenticationSchemes.Contains(BaseOptions.AuthenticationScheme, StringComparer.Ordinal)
-                : BaseOptions.AutomaticAuthentication;
-        }
 
         public virtual bool ShouldHandleScheme(string authenticationScheme)
         {
@@ -388,7 +380,7 @@ namespace Microsoft.AspNet.Authentication
             return Response.StatusCode == 401 &&
                 AuthenticateCalled &&
                 ChallengeContext != null &&
-                ShouldHandleScheme(ChallengeContext.AuthenticationSchemes);
+                ShouldHandleScheme(ChallengeContext.AuthenticationScheme);
         }
 
         /// <summary>

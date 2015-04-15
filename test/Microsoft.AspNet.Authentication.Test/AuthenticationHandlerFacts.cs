@@ -14,11 +14,11 @@ namespace Microsoft.AspNet.Authentication
         {
             var handler = new TestHandler("Alpha");
 
-            bool passiveNoMatch = handler.ShouldHandleScheme(new[] { "Beta", "Gamma" });
+            bool passiveNoMatch = handler.ShouldHandleScheme("Beta");
 
             handler = new TestHandler("Alpha");
 
-            bool passiveWithMatch = handler.ShouldHandleScheme(new[] { "Beta", "Alpha" });
+            bool passiveWithMatch = handler.ShouldHandleScheme("Alpha");
 
             Assert.False(passiveNoMatch);
             Assert.True(passiveWithMatch);
@@ -28,28 +28,28 @@ namespace Microsoft.AspNet.Authentication
         public void AutomaticHandlerInAutomaticModeHandlesEmptyChallenges()
         {
             var handler = new TestAutoHandler("ignored", true);
-            Assert.True(handler.ShouldHandleScheme(new string[0]));
+            Assert.True(handler.ShouldHandleScheme(""));
         }
 
         [Fact]
         public void AutomaticHandlerShouldHandleSchemeWhenSchemeMatches()
         {
             var handler = new TestAutoHandler("Alpha", true);
-            Assert.True(handler.ShouldHandleScheme(new string[] { "Alpha" }));
+            Assert.True(handler.ShouldHandleScheme("Alpha"));
         }
 
         [Fact]
         public void AutomaticHandlerShouldNotHandleChallengeWhenSchemeDoesNotMatches()
         {
             var handler = new TestAutoHandler("Dog", true);
-            Assert.False(handler.ShouldHandleScheme(new string[] { "Alpha" }));
+            Assert.False(handler.ShouldHandleScheme("Alpha"));
         }
 
         [Fact]
         public void AutomaticHandlerShouldNotHandleChallengeWhenSchemesNotEmpty()
         {
             var handler = new TestAutoHandler(null, true);
-            Assert.False(handler.ShouldHandleScheme(new string[] { "Alpha" }));
+            Assert.False(handler.ShouldHandleScheme("Alpha"));
         }
 
         private class TestHandler : AuthenticationHandler<AuthenticationOptions>
@@ -110,6 +110,5 @@ namespace Microsoft.AspNet.Authentication
                 throw new NotImplementedException();
             }
         }
-
     }
 }

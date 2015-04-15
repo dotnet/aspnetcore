@@ -347,40 +347,6 @@ namespace Microsoft.AspNet.Authorization.Test
             Assert.True(allowed);
         }
 
-        [Fact(Skip = "Filtering TBD")]
-        public async Task Authorize_PolicyWillFilterAuthenticationScheme()
-        {
-            // Arrange
-            var policy = new AuthorizationPolicyBuilder("Bogus").RequireClaim(ClaimTypes.Name);
-            var authorizationService = BuildAuthorizationService();
-            var user = new ClaimsPrincipal(
-                new ClaimsIdentity(new Claim[] { new Claim(ClaimTypes.Name, "Name") }, "AuthType")
-                );
-
-            // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, policy.Build());
-
-            // Assert
-            Assert.False(allowed);
-        }
-
-        [Fact(Skip = "Filtering TBD")]
-        public async Task Authorize_PolicyCanFilterMultipleAuthenticationScheme()
-        {
-            // Arrange
-            var policy = new AuthorizationPolicyBuilder("One", "Two").RequireClaim(ClaimTypes.Name, "one").RequireClaim(ClaimTypes.Name, "two");
-            var authorizationService = BuildAuthorizationService();
-            var user = new ClaimsPrincipal();
-            user.AddIdentity(new ClaimsIdentity(new Claim[] { new Claim(ClaimTypes.Name, "one") }, "One"));
-            user.AddIdentity(new ClaimsIdentity(new Claim[] { new Claim(ClaimTypes.Name, "two") }, "Two"));
-
-            // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, policy.Build());
-
-            // Assert
-            Assert.True(allowed);
-        }
-
         [Fact]
         public async Task RolePolicyCanRequireSingleRole()
         {
