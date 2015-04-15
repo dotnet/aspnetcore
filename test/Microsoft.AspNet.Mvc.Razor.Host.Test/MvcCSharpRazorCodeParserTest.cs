@@ -47,6 +47,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("   Foo")
                     .As(new ModelCodeGenerator("RazorView", "Foo"))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml()
             };
 
             // Act
@@ -76,7 +78,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code(modelName + "\r\n")
-                    .As(new ModelCodeGenerator("RazorView", expectedModel)),
+                    .As(new ModelCodeGenerator("RazorView", expectedModel))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.Markup("Bar")
                     .With(new MarkupCodeGenerator())
             };
@@ -107,7 +110,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("  ")
-                    .As(new ModelCodeGenerator("RazorView", string.Empty)),
+                    .As(new ModelCodeGenerator("RazorView", string.Empty))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml(),
             };
             var expectedErrors = new[]
             {
@@ -136,13 +141,17 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo\r\n")
-                    .As(new ModelCodeGenerator("RazorView", "Foo")),
+                    .As(new ModelCodeGenerator("RazorView", "Foo"))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml(),
                 factory.CodeTransition(SyntaxConstants.TransitionString)
                     .Accepts(AcceptedCharacters.None),
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Bar")
                     .As(new ModelCodeGenerator("RazorView", "Bar"))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml()
             };
 
             var expectedErrors = new[]
@@ -177,13 +186,17 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo\r\n")
-                    .As(new ModelCodeGenerator("RazorView", "Foo")),
+                    .As(new ModelCodeGenerator("RazorView", "Foo"))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml(),
                 factory.CodeTransition(SyntaxConstants.TransitionString)
                     .Accepts(AcceptedCharacters.None),
                 factory.MetaCode("inherits ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Bar")
                     .As(new SetBaseTypeCodeGenerator("Bar"))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml()
             };
 
             var expectedErrors = new[]
@@ -218,13 +231,17 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("inherits ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Bar" + Environment.NewLine)
-                    .As(new SetBaseTypeCodeGenerator("Bar")),
+                    .As(new SetBaseTypeCodeGenerator("Bar"))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml(),
                 factory.CodeTransition(SyntaxConstants.TransitionString)
                     .Accepts(AcceptedCharacters.None),
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo")
                     .As(new ModelCodeGenerator("RazorView", "Foo"))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml()
             };
 
             var expectedErrors = new[]
@@ -263,6 +280,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                     .Accepts(AcceptedCharacters.None),
                 factory.Code(injectStatement)
                     .As(new InjectParameterGenerator(expectedService, expectedPropertyName))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml()
             };
 
             // Act
@@ -307,6 +326,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                     .Accepts(AcceptedCharacters.None),
                 factory.Code(injectStatement)
                     .As(new InjectParameterGenerator(expectedService, expectedPropertyName))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml()
             };
 
             // Act
@@ -336,7 +357,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("inject ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code(injectStatement + "\r\n")
-                    .As(new InjectParameterGenerator(expectedService, expectedPropertyName)),
+                    .As(new InjectParameterGenerator(expectedService, expectedPropertyName))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.Markup("Bar")
                     .With(new MarkupCodeGenerator())
             };
@@ -364,7 +386,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("inject ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("   \r\n")
-                    .As(new InjectParameterGenerator(string.Empty, string.Empty)),
+                    .As(new InjectParameterGenerator(string.Empty, string.Empty))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.Markup("Bar")
                     .With(new MarkupCodeGenerator())
             };
@@ -397,7 +420,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("inject ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("   ")
-                    .As(new InjectParameterGenerator(string.Empty, string.Empty)),
+                    .As(new InjectParameterGenerator(string.Empty, string.Empty))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml()
             };
             var expectedErrors = new[]
             {
@@ -428,7 +453,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("inject ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("  IMyService  \r\n")
-                    .As(new InjectParameterGenerator("IMyService", string.Empty)),
+                    .As(new InjectParameterGenerator("IMyService", string.Empty))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.Markup("Bar")
                     .With(new MarkupCodeGenerator())
             };
@@ -462,7 +488,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("inject ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("   IMyServi")
-                    .As(new InjectParameterGenerator("IMyServi", string.Empty)),
+                    .As(new InjectParameterGenerator("IMyServi", string.Empty))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml()
             };
             var expectedErrors = new[]
             {

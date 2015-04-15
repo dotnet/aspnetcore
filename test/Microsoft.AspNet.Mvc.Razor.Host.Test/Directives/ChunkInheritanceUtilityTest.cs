@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             Assert.IsType<LiteralChunk>(viewStartChunks[2]);
 
             viewStartChunks = codeTrees[1].Chunks;
-            Assert.Equal(5, viewStartChunks.Count);
+            Assert.Equal(7, viewStartChunks.Count);
 
             Assert.IsType<LiteralChunk>(viewStartChunks[0]);
 
@@ -56,11 +56,15 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             Assert.Equal("MyHelper<TModel>", injectChunk.TypeName);
             Assert.Equal("Helper", injectChunk.MemberName);
 
-            var setBaseTypeChunk = Assert.IsType<SetBaseTypeChunk>(viewStartChunks[2]);
+            Assert.IsType<LiteralChunk>(viewStartChunks[2]);
+
+            var setBaseTypeChunk = Assert.IsType<SetBaseTypeChunk>(viewStartChunks[3]);
             Assert.Equal("MyBaseType", setBaseTypeChunk.TypeName);
 
-            Assert.IsType<StatementChunk>(viewStartChunks[3]);
             Assert.IsType<LiteralChunk>(viewStartChunks[4]);
+
+            Assert.IsType<StatementChunk>(viewStartChunks[5]);
+            Assert.IsType<LiteralChunk>(viewStartChunks[6]);
         }
 
         [Fact]

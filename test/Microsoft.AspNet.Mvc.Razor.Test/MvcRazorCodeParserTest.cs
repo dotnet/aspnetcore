@@ -43,6 +43,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("   Foo")
                     .As(new ModelCodeGenerator(DefaultBaseType, "Foo"))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml()
             };
             Assert.Equal(expectedSpans, spans.ToArray());
         }
@@ -64,7 +66,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo?\r\n")
-                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo?")),
+                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo?"))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.Markup("Bar")
                     .With(new MarkupCodeGenerator())
             };
@@ -88,7 +91,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo[[]][]\r\n")
-                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo[[]][]")),
+                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo[[]][]"))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.Markup("Bar")
                     .With(new MarkupCodeGenerator())
             };
@@ -113,6 +117,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("$rootnamespace$.MyModel")
                     .As(new ModelCodeGenerator(DefaultBaseType, "$rootnamespace$.MyModel"))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml()
             };
             Assert.Equal(expectedSpans, spans.ToArray());
         }
@@ -135,7 +141,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("  ")
-                    .As(new ModelCodeGenerator(DefaultBaseType, string.Empty)),
+                    .As(new ModelCodeGenerator(DefaultBaseType, string.Empty))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml()
             };
             var expectedErrors = new[]
             {
@@ -165,13 +173,17 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo\r\n")
-                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo")),
+                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo"))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml(),
                 factory.CodeTransition(SyntaxConstants.TransitionString)
                     .Accepts(AcceptedCharacters.None),
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Bar")
                     .As(new ModelCodeGenerator(DefaultBaseType, "Bar"))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml()
             };
 
             var expectedErrors = new[]
@@ -203,13 +215,17 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo\r\n")
-                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo")),
+                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo"))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml(),
                 factory.CodeTransition(SyntaxConstants.TransitionString)
                     .Accepts(AcceptedCharacters.None),
                 factory.MetaCode("inherits ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Bar")
                     .As(new SetBaseTypeCodeGenerator("Bar"))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml()
             };
 
             var expectedErrors = new[]
@@ -241,13 +257,17 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("inherits ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Bar" + Environment.NewLine)
-                    .As(new SetBaseTypeCodeGenerator("Bar")),
+                    .As(new SetBaseTypeCodeGenerator("Bar"))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml(),
                 factory.CodeTransition(SyntaxConstants.TransitionString)
                     .Accepts(AcceptedCharacters.None),
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo")
                     .As(new ModelCodeGenerator(DefaultBaseType, "Foo"))
+                    .Accepts(AcceptedCharacters.AnyExceptNewline),
+                factory.EmptyHtml()
             };
 
             var expectedErrors = new[]

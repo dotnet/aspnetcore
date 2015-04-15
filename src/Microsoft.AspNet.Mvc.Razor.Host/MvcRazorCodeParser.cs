@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Output the span and finish the block
             CompleteBlock();
-            Output(SpanKind.Code);
+            Output(SpanKind.Code, AcceptedCharacters.AnyExceptNewline);
         }
 
         private SpanCodeGenerator CreateModelCodeGenerator(string model)
