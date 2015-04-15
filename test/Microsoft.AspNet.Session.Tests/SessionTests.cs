@@ -9,9 +9,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.Logging.Testing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Logging.Testing;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNet.Session
@@ -93,7 +94,8 @@ namespace Microsoft.AspNet.Session
                 Assert.Equal("0", await response.Content.ReadAsStringAsync());
 
                 client = server.CreateClient();
-                client.DefaultRequestHeaders.Add("Cookie", response.Headers.GetValues("Set-Cookie"));
+                var cookie = SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()).First();
+                client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue(cookie.Name, cookie.Value).ToString());
                 Assert.Equal("1", await client.GetStringAsync("/"));
                 Assert.Equal("2", await client.GetStringAsync("/"));
                 Assert.Equal("3", await client.GetStringAsync("/"));
@@ -137,7 +139,8 @@ namespace Microsoft.AspNet.Session
                 Assert.Equal("0", await response.Content.ReadAsStringAsync());
 
                 client = server.CreateClient();
-                client.DefaultRequestHeaders.Add("Cookie", response.Headers.GetValues("Set-Cookie"));
+                var cookie = SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()).First();
+                client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue(cookie.Name, cookie.Value).ToString());
                 Assert.Equal("1", await client.GetStringAsync("/second"));
                 Assert.Equal("2", await client.GetStringAsync("/third"));
             }
@@ -180,7 +183,8 @@ namespace Microsoft.AspNet.Session
                 Assert.Equal("0", await response.Content.ReadAsStringAsync());
 
                 client = server.CreateClient();
-                client.DefaultRequestHeaders.Add("Cookie", response.Headers.GetValues("Set-Cookie"));
+                var cookie = SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()).First();
+                client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue(cookie.Name, cookie.Value).ToString());
                 Assert.Equal("1", await client.GetStringAsync("/second"));
                 Assert.Equal("2", await client.GetStringAsync("/third"));
             }
@@ -253,7 +257,8 @@ namespace Microsoft.AspNet.Session
                 response.EnsureSuccessStatusCode();
 
                 client = server.CreateClient();
-                client.DefaultRequestHeaders.Add("Cookie", response.Headers.GetValues("Set-Cookie"));
+                var cookie = SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()).First();
+                client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue(cookie.Name, cookie.Value).ToString());
                 Thread.Sleep(50);
                 Assert.Equal("2", await client.GetStringAsync("/second"));
                 Assert.Equal(2, sink.Writes.Count);
