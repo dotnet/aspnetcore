@@ -43,7 +43,7 @@ namespace E2ETests
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             ValidateLayoutPage(responseContent);
-            Assert.Contains(Helpers.PrefixBaseAddress("<a href=\"/{0}/Store/Details/", _deploymentResult.DeploymentParameters.ServerType), responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(PrefixBaseAddress("<a href=\"/{0}/Store/Details/"), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("<title>Home Page – ASP.NET MVC Music Store</title>", responseContent, StringComparison.OrdinalIgnoreCase);
 
             if (!useNtlmAuthentication)
@@ -85,8 +85,8 @@ namespace E2ETests
         public void ValidateLayoutPage(string responseContent)
         {
             Assert.Contains("ASP.NET MVC Music Store", responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains(Helpers.PrefixBaseAddress("<li><a href=\"/{0}\">Home</a></li>", _deploymentResult.DeploymentParameters.ServerType), responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains(Helpers.PrefixBaseAddress("<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"/{0}/Store\">Store <b class=\"caret\"></b></a>", _deploymentResult.DeploymentParameters.ServerType), responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(PrefixBaseAddress("<li><a href=\"/{0}\">Home</a></li>"), responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(PrefixBaseAddress("<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"/{0}/Store\">Store <b class=\"caret\"></b></a>"), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("<ul class=\"dropdown-menu\">", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("<li class=\"divider\"></li>", responseContent, StringComparison.OrdinalIgnoreCase);
         }
@@ -96,7 +96,7 @@ namespace E2ETests
             _logger.LogInformation("Validating if static contents are served..");
             _logger.LogInformation("Fetching favicon.ico..");
             var response = _httpClient.GetAsync("favicon.ico").Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             _logger.LogInformation("Etag received: {etag}", response.Headers.ETag.Tag);
 
             //Check if you receive a NotModified on sending an etag
@@ -109,7 +109,7 @@ namespace E2ETests
 
             _logger.LogInformation("Fetching /Content/bootstrap.css..");
             response = _httpClient.GetAsync("Content/bootstrap.css").Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             _logger.LogInformation("Verified static contents are served successfully");
         }
 
@@ -117,7 +117,7 @@ namespace E2ETests
         {
             _logger.LogInformation("Trying to access the store inventory..");
             var response = _httpClient.GetAsync("Admin/StoreManager/").Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Equal<string>(_deploymentResult.ApplicationBaseUri + "Admin/StoreManager/", response.RequestMessage.RequestUri.AbsoluteUri);
             _logger.LogInformation("Successfully acccessed the store inventory");
@@ -141,7 +141,7 @@ namespace E2ETests
         {
             _logger.LogInformation("Trying to access StoreManager that needs ManageStore claim with the current user : {email}", email ?? "Anonymous");
             var response = _httpClient.GetAsync("Admin/StoreManager/").Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             ValidateLayoutPage(responseContent);
             Assert.Contains("<title>Log in – ASP.NET MVC Music Store</title>", responseContent, StringComparison.OrdinalIgnoreCase);
@@ -154,7 +154,7 @@ namespace E2ETests
         {
             _logger.LogInformation("Trying to create user with not matching password and confirm password");
             var response = _httpClient.GetAsync("Account/Register").Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             ValidateLayoutPage(responseContent);
 
@@ -179,7 +179,7 @@ namespace E2ETests
         public string RegisterValidUser()
         {
             var response = _httpClient.GetAsync("Account/Register").Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             ValidateLayoutPage(responseContent);
 
@@ -205,7 +205,7 @@ namespace E2ETests
             var confirmUrl = responseContent.Substring(startIndex, endIndex - startIndex);
             confirmUrl = WebUtility.HtmlDecode(confirmUrl);
             response = _httpClient.GetAsync(confirmUrl).Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Contains("Thank you for confirming your email.", responseContent, StringComparison.OrdinalIgnoreCase);
             return generatedEmail;
@@ -215,7 +215,7 @@ namespace E2ETests
         {
             _logger.LogInformation("Trying to register a user with name '{email}' again", email);
             var response = _httpClient.GetAsync("Account/Register").Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             _logger.LogInformation("Creating a new user with name '{email}'", email);
             var formParameters = new List<KeyValuePair<string, string>>
@@ -237,7 +237,7 @@ namespace E2ETests
         {
             _logger.LogInformation("Signing out from '{email}''s session", email);
             var response = _httpClient.GetAsync(string.Empty).Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             ValidateLayoutPage(responseContent);
             var formParameters = new List<KeyValuePair<string, string>>
@@ -271,7 +271,7 @@ namespace E2ETests
         public void SignInWithInvalidPassword(string email, string invalidPassword)
         {
             var response = _httpClient.GetAsync("Account/Login").Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             _logger.LogInformation("Signing in with user '{email}'", email);
             var formParameters = new List<KeyValuePair<string, string>>
@@ -293,7 +293,7 @@ namespace E2ETests
         public void SignInWithUser(string email, string password)
         {
             var response = _httpClient.GetAsync("Account/Login").Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             _logger.LogInformation("Signing in with user '{email}'", email);
             var formParameters = new List<KeyValuePair<string, string>>
@@ -316,7 +316,7 @@ namespace E2ETests
         public void ChangePassword(string email)
         {
             var response = _httpClient.GetAsync("Manage/ChangePassword").Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             var formParameters = new List<KeyValuePair<string, string>>
                 {
@@ -353,7 +353,7 @@ namespace E2ETests
 #endif
             _logger.LogInformation("Trying to create an album with name '{album}'", albumName);
             var response = _httpClient.GetAsync("Admin/StoreManager/create").Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             var formParameters = new List<KeyValuePair<string, string>>
                 {
@@ -386,14 +386,14 @@ namespace E2ETests
             _logger.LogInformation("Fetching the album id of '{album}'", albumName);
             _httpClient.DefaultRequestHeaders.Add("Origin", "http://notpermitteddomain.com");
             var response = _httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", albumName)).Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             IEnumerable<string> values;
             Assert.False(response.Headers.TryGetValues("Access-Control-Allow-Origin", out values));
 
             _httpClient.DefaultRequestHeaders.Remove("Origin");
             _httpClient.DefaultRequestHeaders.Add("Origin", "http://example.com");
             response = _httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", albumName)).Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             Assert.Equal("http://example.com", response.Headers.GetValues("Access-Control-Allow-Origin").First());
             _httpClient.DefaultRequestHeaders.Remove("Origin");
 
@@ -406,7 +406,7 @@ namespace E2ETests
         {
             _logger.LogInformation("Getting details of album with Id '{id}'", albumId);
             var response = _httpClient.GetAsync(string.Format("Admin/StoreManager/Details?id={0}", albumId)).Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Contains(albumName, responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("http://myapp/testurl", responseContent, StringComparison.OrdinalIgnoreCase);
@@ -418,7 +418,7 @@ namespace E2ETests
         {
             _logger.LogInformation("Getting details of a non-existing album with Id '-1'");
             var response = _httpClient.GetAsync("Admin/StoreManager/Details?id=-1").Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Contains("Item not found.", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Equal(PrefixBaseAddress("/{0}/Home/StatusCodePage"), response.RequestMessage.RequestUri.AbsolutePath);
@@ -429,7 +429,7 @@ namespace E2ETests
         {
             _logger.LogInformation("Getting details of album with Id '{id}'", albumId);
             var response = _httpClient.GetAsync(string.Format("Store/Details/{0}", albumId)).Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Contains(albumName, responseContent, StringComparison.OrdinalIgnoreCase);
         }
@@ -438,7 +438,7 @@ namespace E2ETests
         {
             _logger.LogInformation("Adding album id '{albumId}' to the cart", albumId);
             var response = _httpClient.GetAsync(string.Format("ShoppingCart/AddToCart?id={0}", albumId)).Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Contains(albumName, responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("<span class=\"glyphicon glyphicon glyphicon-shopping-cart\"></span>", responseContent, StringComparison.OrdinalIgnoreCase);
@@ -449,7 +449,7 @@ namespace E2ETests
         {
             _logger.LogInformation("Checking out the cart contents...");
             var response = _httpClient.GetAsync("Checkout/AddressAndPayment").Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
 
             var formParameters = new List<KeyValuePair<string, string>>
@@ -485,12 +485,21 @@ namespace E2ETests
 
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             var response = _httpClient.PostAsync("Admin/StoreManager/RemoveAlbum", content).Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
 
             _logger.LogInformation("Verifying if the album '{album}' is deleted from store", albumName);
             response = _httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", albumName)).Result;
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             _logger.LogInformation("Album '{album}' with id '{Id}' is successfully deleted from the store.", albumName, albumId);
+        }
+
+        private void ThrowIfResponseStatusNotOk(HttpResponseMessage response)
+        {
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                _logger.LogError(response.Content.ReadAsStringAsync().Result);
+                throw new Exception(string.Format("Received the above response with status code : {0}", response.StatusCode));
+            }
         }
     }
 }

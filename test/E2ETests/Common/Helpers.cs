@@ -34,27 +34,5 @@ namespace E2ETests
                 File.WriteAllText(overrideConfig, "{\"UseInMemoryStore\": \"true\"}");
             }
         }
-
-        public static void ThrowIfResponseStatusNotOk(HttpResponseMessage response, ILogger _logger)
-        {
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                _logger.LogError(response.Content.ReadAsStringAsync().Result);
-                throw new Exception(string.Format("Received the above response with status code : {0}", response.StatusCode));
-            }
-        }
-
-        public static string PrefixBaseAddress(string url, ServerType serverType, string vDirName = null)
-        {
-#if DNX451
-            url = (serverType == ServerType.IISNativeModule || serverType == ServerType.IIS) ?
-                string.Format(url, vDirName) :
-                string.Format(url, string.Empty);
-#else
-            url = string.Format(url, string.Empty);
-#endif
-
-            return url.Replace("//", "/").Replace("%2F%2F", "%2F").Replace("%2F/", "%2F");
-        }
     }
 }

@@ -49,7 +49,7 @@ namespace DeploymentHelpers
                 FileName = Path.Combine(ChosenRuntimePath, "dnx.exe"),
                 Arguments = string.Format("\"{0}\" {1} --server.urls {2}", DeploymentParameters.ApplicationPath, commandName, DeploymentParameters.ApplicationBaseUriHint),
                 UseShellExecute = false,
-                CreateNoWindow = true
+                CreateNoWindow = false
             };
 
             AddEnvironmentVariablesToProcess(startInfo);

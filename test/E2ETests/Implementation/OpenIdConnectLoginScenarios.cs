@@ -17,7 +17,7 @@ namespace E2ETests
             _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
 
             var response = _httpClient.GetAsync("Account/Login").Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             _logger.LogInformation("Signing in with OpenIdConnect account");
             var formParameters = new List<KeyValuePair<string, string>>
@@ -54,7 +54,7 @@ namespace E2ETests
             };
 
             response = _httpClient.PostAsync(string.Empty, new FormUrlEncodedContent(token.ToArray())).Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             responseContent = response.Content.ReadAsStringAsync().Result;
             Assert.Equal(_deploymentResult.ApplicationBaseUri + "Account/ExternalLoginCallback?ReturnUrl=%2F", response.RequestMessage.RequestUri.AbsoluteUri);
 
@@ -66,7 +66,7 @@ namespace E2ETests
 
             content = new FormUrlEncodedContent(formParameters.ToArray());
             response = _httpClient.PostAsync("Account/ExternalLoginConfirmation", content).Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             responseContent = response.Content.ReadAsStringAsync().Result;
 
             Assert.Contains(string.Format("Hello {0}!", "User3@aspnettest.onmicrosoft.com"), responseContent, StringComparison.OrdinalIgnoreCase);
@@ -85,7 +85,7 @@ namespace E2ETests
 
             _logger.LogInformation("Verifying the OpenIdConnect logout flow..");
             response = _httpClient.GetAsync(string.Empty).Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             responseContent = response.Content.ReadAsStringAsync().Result;
             ValidateLayoutPage(responseContent);
             formParameters = new List<KeyValuePair<string, string>>

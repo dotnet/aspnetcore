@@ -2,7 +2,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Xml;
 using Microsoft.Framework.Logging;
 using Microsoft.Web.Administration;
@@ -44,8 +43,6 @@ namespace DeploymentHelpers
 
             _application.Deploy();
             Logger.LogInformation("Successfully finished IIS application directory setup.");
-
-            Thread.Sleep(1 * 1000);
 
             return new DeploymentResult
             {

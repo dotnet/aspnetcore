@@ -20,7 +20,7 @@ namespace E2ETests
             _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
 
             var response = _httpClient.GetAsync("Account/Login").Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             var responseContent = response.Content.ReadAsStringAsync().Result;
             _logger.LogInformation("Signing in with Twitter account");
             var formParameters = new List<KeyValuePair<string, string>>
@@ -57,7 +57,7 @@ namespace E2ETests
 
             //Post a message to the Facebook middleware
             response = _httpClient.GetAsync("signin-twitter?oauth_token=valid_oauth_token&oauth_verifier=valid_oauth_verifier").Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             responseContent = response.Content.ReadAsStringAsync().Result;
 
             //Check correlation cookie not getting cleared after successful signin
@@ -77,7 +77,7 @@ namespace E2ETests
 
             content = new FormUrlEncodedContent(formParameters.ToArray());
             response = _httpClient.PostAsync("Account/ExternalLoginConfirmation", content).Result;
-            Helpers.ThrowIfResponseStatusNotOk(response, _logger);
+            ThrowIfResponseStatusNotOk(response);
             responseContent = response.Content.ReadAsStringAsync().Result;
 
             Assert.Contains(string.Format("Hello {0}!", "twitter@test.com"), responseContent, StringComparison.OrdinalIgnoreCase);
