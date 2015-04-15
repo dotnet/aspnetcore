@@ -3,11 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -146,7 +148,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             IEnumerable<string> values;
             if (response.Headers.TryGetValues("Set-Cookie", out values))
             {
-                request.Headers.Add("Cookie", values);
+                var cookie = SetCookieHeaderValue.ParseList(values.ToList()).First();
+                request.Headers.Add("Cookie", new CookieHeaderValue(cookie.Name, cookie.Value).ToString());
             }
 
             return request;
