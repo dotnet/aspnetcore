@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
@@ -212,7 +213,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             {
                 return default(TKey);
             }
-            return (TKey)Convert.ChangeType(id, typeof(TKey));
+            return (TKey)TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(id);
         }
 
         public virtual string ConvertIdToString(TKey id)

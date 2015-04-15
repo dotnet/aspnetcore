@@ -12,6 +12,7 @@
       "dependencies": {
         "System.Collections": "4.0.10-beta-*",
         "System.ComponentModel": "4.0.0-beta-*",
+        "System.ComponentModel.TypeConverter": "4.0.0-beta-*",
         "System.Diagnostics.Debug": "4.0.10-beta-*",
         "System.Diagnostics.Tools": "4.0.0-beta-*",
         "System.Globalization": "4.0.10-beta-*",

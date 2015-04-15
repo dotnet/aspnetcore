@@ -43,21 +43,11 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         public class ApplicationUserStore : UserStore<GuidUser, GuidRole, TestDbContext, Guid>
         {
             public ApplicationUserStore(TestDbContext context) : base(context) { }
-
-            public override Guid ConvertIdFromString(string userId)
-            {
-                return new Guid(userId);
-            }
         }
 
         public class ApplicationRoleStore : RoleStore<GuidRole, TestDbContext, Guid>
         {
             public ApplicationRoleStore(TestDbContext context) : base(context) { }
-
-            public override Guid ConvertIdFromString(string id)
-            {
-                return new Guid(id);
-            }
         }
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
