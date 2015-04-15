@@ -70,8 +70,8 @@ namespace DeploymentHelpers
             }
 
             var parameters = string.IsNullOrWhiteSpace(DeploymentParameters.ApplicationHostConfigLocation) ?
-                            string.Format("/port:{0} /path:\"{1}\"", new Uri(DeploymentParameters.ApplicationBaseUriHint).Port, webroot) :
-                            string.Format("/site:{0} /config:{1}", DeploymentParameters.SiteName, DeploymentParameters.ApplicationHostConfigLocation);
+                            string.Format("/port:{0} /path:\"{1}\" /trace:error", new Uri(DeploymentParameters.ApplicationBaseUriHint).Port, webroot) :
+                            string.Format("/site:{0} /config:{1} /trace:error", DeploymentParameters.SiteName, DeploymentParameters.ApplicationHostConfigLocation);
 
             var iisExpressPath = GetIISExpressPath();
 
