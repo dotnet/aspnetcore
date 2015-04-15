@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Http;
+﻿using System.Collections.Generic;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Http.Core.Collections;
 using Xunit;
@@ -14,7 +15,7 @@ namespace MusicStore.Models
             var cartId = "cartId_A";
 
             var httpContext = new DefaultHttpContext();
-            httpContext.SetFeature<IRequestCookiesFeature>(new CookiesFeature("Session=" + cartId));
+            httpContext.SetFeature<IRequestCookiesFeature>(new CookiesFeature("Session", cartId));
 
             var cart = new ShoppingCart(new MusicStoreContext());
 
@@ -28,12 +29,14 @@ namespace MusicStore.Models
 
         private class CookiesFeature : IRequestCookiesFeature
         {
-            private readonly RequestCookiesCollection _cookies;
+            private readonly IReadableStringCollection _cookies;
 
-            public CookiesFeature(string cookiesHeader)
+            public CookiesFeature(string key, string value)
             {
-                _cookies = new RequestCookiesCollection();
-                _cookies.Reparse(cookiesHeader);
+                _cookies = new ReadableStringCollection(new Dictionary<string, string[]>()
+                {
+                    { key, new[] { value } }
+                });
             }
 
             public IReadableStringCollection Cookies
