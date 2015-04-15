@@ -1,5 +1,6 @@
 {
     "version": "1.0.0-*",
+    "description": "ASP.NET 5 Hosting interfaces.",
     "dependencies": {
         "Microsoft.AspNet.Http": "1.0.0-*",
         "Microsoft.AspNet.FileProviders.Interfaces": "1.0.0-*",
