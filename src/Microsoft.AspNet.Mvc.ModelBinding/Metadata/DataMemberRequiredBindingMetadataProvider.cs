@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             }
 
             var dataMemberAttribute = context
-                .Attributes
+                .PropertyAttributes
                 .OfType<DataMemberAttribute>()
                 .FirstOrDefault();
             if (dataMemberAttribute == null || !dataMemberAttribute.IsRequired)

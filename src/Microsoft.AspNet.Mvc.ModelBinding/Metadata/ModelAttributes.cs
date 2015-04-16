@@ -10,26 +10,52 @@ using Microsoft.Framework.Internal;
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// Provides static methods which can be used to get a combined list of attributes associated
-    /// with a parameter or property.
+    /// Provides access to the  combined list of attributes associated a <see cref="Type"/> or property.
     /// </summary>
-    public static class ModelAttributes
+    public class ModelAttributes
     {
         /// <summary>
-        /// Gets the attributes for the given <paramref name="parameter"/>.
+        /// Creates a new <see cref="ModelAttributes"/> for a <see cref="Type"/>.
         /// </summary>
-        /// <param name="parameter">A <see cref="ParameterInfo"/> for which attributes need to be resolved.
-        /// </param>
-        /// <returns>An <see cref="IEnumerable{object}"/> containing the attributes on the
-        /// <paramref name="parameter"/> before the attributes on the <paramref name="parameter"/> type.</returns>
-        public static IEnumerable<object> GetAttributesForParameter(ParameterInfo parameter)
+        /// <param name="typeAttributes">The set of attributes for the <see cref="Type"/>.</param>
+        public ModelAttributes([NotNull] IEnumerable<object> typeAttributes)
         {
-            // Return the parameter attributes first.
-            var parameterAttributes = parameter.GetCustomAttributes();
-            var typeAttributes = parameter.ParameterType.GetTypeInfo().GetCustomAttributes();
-
-            return parameterAttributes.Concat(typeAttributes);
+            Attributes = typeAttributes.ToArray();
+            TypeAttributes = Attributes;
         }
+
+        /// <summary>
+        /// Creates a new <see cref="ModelAttributes"/> for a property.
+        /// </summary>
+        /// <param name="propertyAttributes">The set of attributes for the property.</param>
+        /// <param name="typeAttributes">
+        /// The set of attributes for the property's <see cref="Type"/>. See <see cref="PropertyInfo.PropertyType"/>.
+        /// </param>
+        public ModelAttributes([NotNull] IEnumerable<object> propertyAttributes, [NotNull] IEnumerable<object> typeAttributes)
+        {
+            PropertyAttributes = propertyAttributes.ToArray();
+            TypeAttributes = typeAttributes.ToArray();
+            Attributes = PropertyAttributes.Concat(TypeAttributes).ToArray();
+        }
+
+        /// <summary>
+        /// Gets the set of all attributes. If this instance represents the attributes for a property, the attributes
+        /// on the property definition are before those on the property's <see cref="Type"/>.
+        /// </summary>
+        public IReadOnlyList<object> Attributes { get; }
+
+        /// <summary>
+        /// Gets the set of attributes on the property, or <c>null</c> if this instance represents the attributes
+        /// for a <see cref="Type"/>.
+        /// </summary>
+        public IReadOnlyList<object> PropertyAttributes { get; }
+
+        /// <summary>
+        /// Gets the set of attributes on the <see cref="Type"/>. If this instance represents a property,
+        /// then <see cref="TypeAttributes"/> contains attributes retrieved from
+        /// <see cref="PropertyInfo.PropertyType"/>.
+        /// </summary>
+        public IReadOnlyList<object> TypeAttributes { get; }
 
         /// <summary>
         /// Gets the attributes for the given <paramref name="property"/>.
@@ -38,32 +64,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </param>
         /// <param name="property">A <see cref="PropertyInfo"/> for which attributes need to be resolved.
         /// </param>
-        /// <returns>An <see cref="IEnumerable{object}"/> containing the attributes on the
-        /// <paramref name="property"/> before the attributes on the <paramref name="property"/> type.</returns>
-        public static IEnumerable<object> GetAttributesForProperty([NotNull] Type type, [NotNull] PropertyInfo property)
+        /// <returns>A <see cref="ModelAttributes"/> instance with the attributes of the property.</returns>
+        public static ModelAttributes GetAttributesForProperty([NotNull] Type type, [NotNull] PropertyInfo property)
         {
-            // Return the property attributes first.
             var propertyAttributes = property.GetCustomAttributes();
             var typeAttributes = property.PropertyType.GetTypeInfo().GetCustomAttributes();
 
-            propertyAttributes = propertyAttributes.Concat(typeAttributes);
-
-            var modelMedatadataType = type.GetTypeInfo().GetCustomAttribute<ModelMetadataTypeAttribute>();
-            if (modelMedatadataType != null)
+            var metadataType = GetMetadataType(type);
+            if (metadataType != null)
             {
-                var modelMedatadataProperty = modelMedatadataType.MetadataType.GetRuntimeProperty(property.Name);
-                if (modelMedatadataProperty != null)
+                var metadataProperty = metadataType.GetRuntimeProperty(property.Name);
+                if (metadataProperty != null)
                 {
-                    var modelMedatadataAttributes = modelMedatadataProperty.GetCustomAttributes();
-                    propertyAttributes = propertyAttributes.Concat(modelMedatadataAttributes);
+                    propertyAttributes = propertyAttributes.Concat(metadataProperty.GetCustomAttributes());
 
-                    var modelMetadataTypeAttributes =
-                        modelMedatadataProperty.PropertyType.GetTypeInfo().GetCustomAttributes();
-                    propertyAttributes = propertyAttributes.Concat(modelMetadataTypeAttributes);
+                    var propertyMetadataType = metadataProperty.PropertyType;
+                    typeAttributes = typeAttributes.Concat(propertyMetadataType.GetTypeInfo().GetCustomAttributes());
                 }
             }
 
-            return propertyAttributes;
+            return new ModelAttributes(propertyAttributes, typeAttributes);
         }
 
         /// <summary>
@@ -71,20 +91,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         /// <param name="type">The <see cref="Type"/> for which attributes need to be resolved.
         /// </param>
-        /// <returns>An <see cref="IEnumerable{object}"/> containing the attributes on the
-        /// <paramref name="type"/>.</returns>
-        public static IEnumerable<object> GetAttributesForType([NotNull] Type type)
+        /// <returns>A <see cref="ModelAttributes"/> instance with the attributes of the <see cref="Type"/>.</returns>
+        public static ModelAttributes GetAttributesForType([NotNull] Type type)
         {
             var attributes = type.GetTypeInfo().GetCustomAttributes();
 
-            var modelMedatadataType = type.GetTypeInfo().GetCustomAttribute<ModelMetadataTypeAttribute>();
-            if (modelMedatadataType != null)
+            var metadataType = GetMetadataType(type);
+            if (metadataType != null)
             {
-                var modelMedatadataAttributes = modelMedatadataType.MetadataType.GetTypeInfo().GetCustomAttributes();
-                attributes = attributes.Concat(modelMedatadataAttributes);
+                attributes = attributes.Concat(metadataType.GetTypeInfo().GetCustomAttributes());
             }
 
-            return attributes;
+            return new ModelAttributes(attributes);
+        }
+
+        private static Type GetMetadataType(Type type)
+        {
+            return type.GetTypeInfo().GetCustomAttribute<ModelMetadataTypeAttribute>()?.MetadataType;
         }
     }
 }

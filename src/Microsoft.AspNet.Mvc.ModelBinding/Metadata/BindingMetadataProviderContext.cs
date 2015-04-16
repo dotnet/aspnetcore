@@ -18,10 +18,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// <param name="attributes">The attributes for the <see cref="ModelMetadata"/>.</param>
         public BindingMetadataProviderContext(
             [NotNull] ModelMetadataIdentity key, 
-            [NotNull] IReadOnlyList<object> attributes)
+            [NotNull] ModelAttributes attributes)
         {
             Key = key;
-            Attributes = attributes;
+            Attributes = attributes.Attributes;
+            PropertyAttributes = attributes.PropertyAttributes;
+            TypeAttributes = attributes.TypeAttributes;
+
             BindingMetadata = new BindingMetadata();
         }
 
@@ -34,6 +37,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// Gets the <see cref="ModelMetadataIdentity"/>.
         /// </summary>
         public ModelMetadataIdentity Key { get; }
+
+        /// <summary>
+        /// Gets the property attributes.
+        /// </summary>
+        public IReadOnlyList<object> PropertyAttributes { get; }
+
+        /// <summary>
+        /// Gets the type attributes.
+        /// </summary>
+        public IReadOnlyList<object> TypeAttributes { get; }
 
         /// <summary>
         /// Gets the <see cref="Metadata.BindingMetadata"/>.

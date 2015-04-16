@@ -44,11 +44,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// <summary>
         /// Gets the set of attributes for the current instance.
         /// </summary>
-        public IReadOnlyList<object> Attributes
+        public ModelAttributes Attributes
         {
             get
             {
-                return _details.Attributes;
+                return _details.ModelAttributes;
             }
         }
 
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             {
                 if (_details.BindingMetadata == null)
                 {
-                    var context = new BindingMetadataProviderContext(Identity, _details.Attributes);
+                    var context = new BindingMetadataProviderContext(Identity, _details.ModelAttributes);
                     _detailsProvider.GetBindingMetadata(context);
                     _details.BindingMetadata = context.BindingMetadata;
                 }
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             {
                 if (_details.DisplayMetadata == null)
                 {
-                    var context = new DisplayMetadataProviderContext(Identity, _details.Attributes);
+                    var context = new DisplayMetadataProviderContext(Identity, _details.ModelAttributes);
                     _detailsProvider.GetDisplayMetadata(context);
                     _details.DisplayMetadata = context.DisplayMetadata;
                 }
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             {
                 if (_details.ValidationMetadata == null)
                 {
-                    var context = new ValidationMetadataProviderContext(Identity, _details.Attributes);
+                    var context = new ValidationMetadataProviderContext(Identity, _details.ModelAttributes);
                     _detailsProvider.GetValidationMetadata(context);
                     _details.ValidationMetadata = context.ValidationMetadata;
                 }

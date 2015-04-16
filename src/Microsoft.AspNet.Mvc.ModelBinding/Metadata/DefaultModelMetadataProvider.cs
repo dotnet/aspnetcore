@@ -114,9 +114,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                     propertyHelper.Name,
                     key.ModelType);
 
-                var attributes = new List<object>(ModelAttributes.GetAttributesForProperty(
+                var attributes = ModelAttributes.GetAttributesForProperty(
                     key.ModelType,
-                    propertyHelper.Property));
+                    propertyHelper.Property);
 
                 var propertyEntry = new DefaultMetadataDetails(propertyKey, attributes);
                 if (propertyHelper.Property.CanRead && propertyHelper.Property.GetMethod?.IsPublic == true)
@@ -151,8 +151,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// </remarks>
         protected virtual DefaultMetadataDetails CreateTypeDetails([NotNull] ModelMetadataIdentity key)
         {
-            var attributes = new List<object>(ModelAttributes.GetAttributesForType(key.ModelType));
-            return new DefaultMetadataDetails(key, attributes);
+            return new DefaultMetadataDetails(key, ModelAttributes.GetAttributesForType(key.ModelType));
         }
 
         private class TypeCache : ConcurrentDictionary<ModelMetadataIdentity, ModelMetadataCacheEntry>

@@ -20,7 +20,7 @@ namespace ModelBindingWebSite
         protected override Task<ModelBindingResult> BindModelCoreAsync(ModelBindingContext bindingContext)
         {
             var attributes = ((DefaultModelMetadata)bindingContext.ModelMetadata).Attributes;
-            var metadata = attributes.OfType<FromTestAttribute>().First();
+            var metadata = attributes.Attributes.OfType<FromTestAttribute>().First();
             var model = metadata.Value;
             if (!IsSimpleType(bindingContext.ModelType))
             {

@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             // Assert
             var defaultMetadata = Assert.IsType<DefaultModelMetadata>(metadata);
 
-            var attribute = Assert.IsType<ModelAttribute>(Assert.Single(defaultMetadata.Attributes));
+            var attribute = Assert.IsType<ModelAttribute>(Assert.Single(defaultMetadata.Attributes.Attributes));
             Assert.Equal("OnType", attribute.Value);
         }
 
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             // Assert
             var defaultMetadata = Assert.IsType<DefaultModelMetadata>(metadata);
 
-            var attributes = defaultMetadata.Attributes.ToArray();
+            var attributes = defaultMetadata.Attributes.Attributes.ToArray();
             Assert.Equal("OnProperty", Assert.IsType<ModelAttribute>(attributes[0]).Value);
             Assert.Equal("OnPropertyType", Assert.IsType<ModelAttribute>(attributes[1]).Value);
         }

@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 typeof(string),
                 nameof(ClassWithDataMemberIsRequiredTrue.StringProperty),
                 typeof(ClassWithDataMemberIsRequiredTrue));
-            var context = new BindingMetadataProviderContext(key, attributes);
+            var context = new BindingMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
 
             // Act
             provider.GetBindingMetadata(context);
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 typeof(string),
                 nameof(ClassWithDataMemberIsRequiredFalse.StringProperty),
                 typeof(ClassWithDataMemberIsRequiredFalse));
-            var context = new BindingMetadataProviderContext(key, attributes);
+            var context = new BindingMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
 
             context.BindingMetadata.IsBindingRequired = initialValue;
 
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             };
 
             var key = ModelMetadataIdentity.ForType(typeof(ClassWithDataMemberIsRequiredTrue));
-            var context = new BindingMetadataProviderContext(key, attributes);
+            var context = new BindingMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
 
             context.BindingMetadata.IsBindingRequired = initialValue;
 
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 typeof(string),
                 nameof(ClassWithoutAttributes.StringProperty),
                 typeof(ClassWithoutAttributes));
-            var context = new BindingMetadataProviderContext(key, attributes: new object[0]);
+            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], new object[0]));
 
             context.BindingMetadata.IsBindingRequired = initialValue;
 
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 typeof(string),
                 nameof(ClassWithDataMemberIsRequiredTrueWithoutDataContract.StringProperty),
                 typeof(ClassWithDataMemberIsRequiredTrueWithoutDataContract));
-            var context = new BindingMetadataProviderContext(key, attributes);
+            var context = new BindingMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
 
             context.BindingMetadata.IsBindingRequired = initialValue;
 

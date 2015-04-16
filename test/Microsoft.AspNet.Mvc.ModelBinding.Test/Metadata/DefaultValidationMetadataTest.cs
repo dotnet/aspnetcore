@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             var attribute = new TestClientModelValidationAttribute();
             var attributes = new Attribute[] { attribute };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new ValidationMetadataProviderContext(key, attributes);
+            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
 
             // Act
             provider.GetValidationMetadata(context);
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             var attribute = new TestModelValidationAttribute();
             var attributes = new Attribute[] { attribute };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new ValidationMetadataProviderContext(key, attributes);
+            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
 
             // Act
             provider.GetValidationMetadata(context);
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             var attribute = new TestValidationAttribute();
             var attributes = new Attribute[] { attribute };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new ValidationMetadataProviderContext(key, attributes);
+            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
             context.ValidationMetadata.ValidatorMetadata.Add(attribute);
 
             // Act

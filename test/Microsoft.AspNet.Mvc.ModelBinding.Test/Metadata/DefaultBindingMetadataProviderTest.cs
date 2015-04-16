@@ -18,8 +18,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             };
 
             var context = new BindingMetadataProviderContext(
-                ModelMetadataIdentity.ForType(typeof(string)), 
-                attributes);
+                ModelMetadataIdentity.ForType(typeof(string)),
+                new ModelAttributes(attributes));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForType(typeof(string)),
-                attributes);
+                new ModelAttributes(attributes));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForType(typeof(string)),
-                attributes);
+                new ModelAttributes(attributes));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForType(typeof(string)),
-                attributes);
+                new ModelAttributes(attributes));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForType(typeof(string)),
-                attributes);
+                new ModelAttributes(attributes));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForType(typeof(string)),
-                attributes);
+                new ModelAttributes(attributes));
 
             var provider = new DefaultBindingMetadataProvider();
 

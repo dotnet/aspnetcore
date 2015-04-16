@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             var provider = new DataAnnotationsMetadataProvider();
 
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, new object[] { attribute });
+            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(new object[] { attribute }));
 
             // Act
             provider.GetDisplayMetadata(context);
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var attributes = new[] { dataType, };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, attributes);
+            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes));
 
             // Act
             provider.GetDisplayMetadata(context);
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var attributes = new Attribute[] { dataType, displayFormat, };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, attributes);
+            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes));
 
             // Act
             provider.GetDisplayMetadata(context);
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var attributes = new Attribute[] { editable };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new BindingMetadataProviderContext(key, attributes);
+            var context = new BindingMetadataProviderContext(key, new ModelAttributes(attributes));
 
             // Act
             provider.GetBindingMetadata(context);
@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var attributes = new Attribute[] { editable };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new BindingMetadataProviderContext(key, attributes);
+            var context = new BindingMetadataProviderContext(key, new ModelAttributes(attributes));
 
             // Act
             provider.GetBindingMetadata(context);
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var attributes = new Attribute[] { display };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, attributes);
+            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes));
 
             // Act
             provider.GetDisplayMetadata(context);
@@ -198,7 +198,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var attributes = new Attribute[] { display };
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var context = new DisplayMetadataProviderContext(key, attributes);
+            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes));
 
             // Act
             provider.GetDisplayMetadata(context);
@@ -232,7 +232,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var key = ModelMetadataIdentity.ForType(type);
             var attributes = new object[0];
-            var context = new DisplayMetadataProviderContext(key, attributes);
+            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes));
 
             // Act
             provider.GetDisplayMetadata(context);
@@ -266,7 +266,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var key = ModelMetadataIdentity.ForType(type);
             var attributes = new object[0];
-            var context = new DisplayMetadataProviderContext(key, attributes);
+            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes));
 
             // Act
             provider.GetDisplayMetadata(context);
@@ -398,7 +398,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var key = ModelMetadataIdentity.ForType(type);
             var attributes = new object[0];
-            var context = new DisplayMetadataProviderContext(key, attributes);
+            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes));
 
             // Act
             provider.GetDisplayMetadata(context);
@@ -532,7 +532,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var key = ModelMetadataIdentity.ForType(type);
             var attributes = new object[0];
-            var context = new DisplayMetadataProviderContext(key, attributes);
+            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes));
 
             // Act
             provider.GetDisplayMetadata(context);
@@ -551,7 +551,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var attributes = new Attribute[] { required };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new ValidationMetadataProviderContext(key, attributes);
+            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
 
             // Act
             provider.GetValidationMetadata(context);
@@ -571,7 +571,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var attributes = new Attribute[] { };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new ValidationMetadataProviderContext(key, attributes);
+            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
             context.ValidationMetadata.IsRequired = initialValue;
 
             // Act
@@ -592,7 +592,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var attributes = new Attribute[] { new RequiredAttribute() };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new BindingMetadataProviderContext(key, attributes);
+            var context = new BindingMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
             context.BindingMetadata.IsBindingRequired = initialValue;
 
             // Act
@@ -613,7 +613,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             var attributes = new Attribute[] { };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new BindingMetadataProviderContext(key, attributes);
+            var context = new BindingMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
             context.BindingMetadata.IsReadOnly = initialValue;
 
             // Act
@@ -632,7 +632,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             var attribute = new TestValidationAttribute();
             var attributes = new Attribute[] { attribute };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new ValidationMetadataProviderContext(key, attributes);
+            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
 
             // Act
             provider.GetValidationMetadata(context);
@@ -651,7 +651,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             var attribute = new TestValidationAttribute();
             var attributes = new Attribute[] { attribute };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new ValidationMetadataProviderContext(key, attributes);
+            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
             context.ValidationMetadata.ValidatorMetadata.Add(attribute);
 
             // Act

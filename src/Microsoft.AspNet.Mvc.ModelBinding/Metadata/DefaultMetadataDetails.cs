@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 {
@@ -19,16 +19,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// </summary>
         /// <param name="key">The <see cref="ModelMetadataIdentity"/>.</param>
         /// <param name="attributes">The set of model attributes.</param>
-        public DefaultMetadataDetails(ModelMetadataIdentity key, IReadOnlyList<object> attributes)
+        public DefaultMetadataDetails(ModelMetadataIdentity key, [NotNull] ModelAttributes attributes)
         {
             Key = key;
-            Attributes = attributes;
+            ModelAttributes = attributes;
         }
 
         /// <summary>
         /// Gets or sets the set of model attributes.
         /// </summary>
-        public IReadOnlyList<object> Attributes { get; }
+        public ModelAttributes ModelAttributes { get; }
 
         /// <summary>
         /// Gets or sets the <see cref="Metadata.BindingMetadata"/>.
