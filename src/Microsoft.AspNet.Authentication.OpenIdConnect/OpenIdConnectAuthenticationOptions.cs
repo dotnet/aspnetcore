@@ -52,13 +52,12 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "Microsoft.Owin.Security.OpenIdConnect.OpenIdConnectAuthenticationOptions.set_Caption(System.String)", Justification = "Not a LOC field")]
         public OpenIdConnectAuthenticationOptions(string authenticationScheme)
         {
-            // REVIEW: why was this active by default??
-            //AuthenticationMode = AuthenticationMode.Active;
             AuthenticationScheme = authenticationScheme;
             BackchannelTimeout = TimeSpan.FromMinutes(1);
             Caption = OpenIdConnectAuthenticationDefaults.Caption;
             ProtocolValidator = new OpenIdConnectProtocolValidator();
             RefreshOnIssuerKeyNotFound = true;
+            ResponseMode = OpenIdConnectResponseModes.FormPost;
             ResponseType = OpenIdConnectResponseTypes.CodeIdToken;
             Scope = OpenIdConnectScopes.OpenIdProfile;
             TokenValidationParameters = new TokenValidationParameters();
@@ -66,17 +65,17 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
+        /// Gets or sets the expected audience for any received JWT token.
+        /// </summary>
+        /// <value>
+        /// The expected audience for any received JWT token.
+        /// </value>
+        public string Audience { get; set; }
+
+        /// <summary>
         /// Gets or sets the Authority to use when making OpenIdConnect calls.
         /// </summary>
         public string Authority { get; set; }
-
-        /// <summary>
-        /// An optional constrained path on which to process the authentication callback.
-        /// If not provided and RedirectUri is available, this value will be generated from RedirectUri.
-        /// </summary>
-        /// <remarks>If you set this value, then the <see cref="OpenIdConnectAuthenticationHandler"/> will only listen for posts at this address. 
-        /// If the IdentityProvider does not post to this address, you may end up in a 401 -> IdentityProvider -> Client -> 401 -> ...</remarks>
-        public PathString CallbackPath { get; set; }
 
 #if DNX451
         /// <summary>
@@ -112,7 +111,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             {
                 if (value <= TimeSpan.Zero)
                 {
-                    throw new ArgumentOutOfRangeException("BackchannelTimeout", value, Resources.ArgsException_BackchallelLessThanZero);
+                    throw new ArgumentOutOfRangeException("BackchannelTimeout", value, Resources.OIDCH_0101_BackChallnelLessThanZero);
                 }
 
                 _backchannelTimeout = value;
@@ -127,6 +126,14 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             get { return Description.Caption; }
             set { Description.Caption = value; }
         }
+
+        /// <summary>
+        /// An optional constrained path on which to process the authentication callback.
+        /// If not provided and RedirectUri is available, this value will be generated from RedirectUri.
+        /// </summary>
+        /// <remarks>If you set this value, then the <see cref="OpenIdConnectAuthenticationHandler"/> will only listen for posts at this address. 
+        /// If the IdentityProvider does not post to this address, you may end up in a 401 -> IdentityProvider -> Client -> 401 -> ...</remarks>
+        public PathString CallbackPath { get; set; }
 
         /// <summary>
         /// Gets or sets the 'client_id'.
@@ -145,11 +152,16 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         public OpenIdConnectConfiguration Configuration { get; set; }
 
         /// <summary>
-        /// The OpenIdConnect protocol http://openid.net/specs/openid-connect-core-1_0.html
-        /// recommends adding a nonce to a request as a mitigation against replay attacks when requesting id_tokens.
-        /// By default the runtime uses cookies with unique names generated from a hash of the nonce.
+        /// Responsible for retrieving, caching, and refreshing the configuration from metadata.
+        /// If not provided, then one will be created using the MetadataAddress and Backchannel properties.
         /// </summary>
-        public INonceCache NonceCache { get; set; }
+        public IConfigurationManager<OpenIdConnectConfiguration> ConfigurationManager { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value controlling if the 'CurrentUri' should be used as the 'local redirect' post authentication
+        /// if AuthenticationProperties.RedirectUri is null or empty.
+        /// </summary>
+        public bool DefaultToCurrentUriOnRedirect { get; set; }
 
         /// <summary>
         /// Gets or sets the discovery endpoint for obtaining metadata
@@ -157,24 +169,11 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         public string MetadataAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the expected audience for any received JWT token.
+        /// The OpenIdConnect protocol http://openid.net/specs/openid-connect-core-1_0.html
+        /// recommends adding a nonce to a request as a mitigation against replay attacks when requesting id_tokens.
+        /// By default the runtime uses cookies with unique names generated from a hash of the nonce.
         /// </summary>
-        /// <value>
-        /// The expected audience for any received JWT token.
-        /// </value>
-        public string Audience { get; set; }
-
-        /// <summary>
-        /// Responsible for retrieving, caching, and refreshing the configuration from metadata.
-        /// If not provided, then one will be created using the MetadataAddress and Backchannel properties.
-        /// </summary>
-        public IConfigurationManager<OpenIdConnectConfiguration> ConfigurationManager { get; set; }
-
-        /// <summary>
-        /// Gets or sets if a metadata refresh should be attempted after a SecurityTokenSignatureKeyNotFoundException. This allows for automatic
-        /// recovery in the event of a signature key rollover. This is enabled by default.
-        /// </summary>
-        public bool RefreshOnIssuerKeyNotFound { get; set; }
+        public INonceCache NonceCache { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="OpenIdConnectAuthenticationNotifications"/> to notify when processing OpenIdConnect messages.
@@ -218,9 +217,20 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         public string RedirectUri { get; set; }
 
         /// <summary>
+        /// Gets or sets if a metadata refresh should be attempted after a SecurityTokenSignatureKeyNotFoundException. This allows for automatic
+        /// recovery in the event of a signature key rollover. This is enabled by default.
+        /// </summary>
+        public bool RefreshOnIssuerKeyNotFound { get; set; }
+
+        /// <summary>
         /// Gets or sets the 'resource'.
         /// </summary>
         public string Resource { get; set; }
+
+        /// <summary>
+        /// Gets or sets the 'response_mode'.
+        /// </summary>
+        public string ResponseMode { get; private set; }
 
         /// <summary>
         /// Gets or sets the 'response_type'.
@@ -233,10 +243,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         public string Scope { get; set; }
 
         /// <summary>
-        /// Gets or sets the authentication scheme corresponding to the middleware
-        /// responsible of persisting user's identity after a successful authentication.
-        /// This value typically corresponds to a cookie middleware registered in the Startup class.
-        /// When omitted, <see cref="ExternalAuthenticationOptions.SignInScheme"/> is used as a fallback value.
+        /// Gets or sets the SignInScheme which will be used to set the <see cref="System.Security.Claims.ClaimsIdentity.AuthenticationType"/>.
         /// </summary>
         public string SignInScheme { get; set; }
 

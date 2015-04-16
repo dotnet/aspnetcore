@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <summary>
         /// The prefix used to for the a nonce in the cookie
         /// </summary>
-        internal const string CookieNoncePrefix = ".AspNet.OpenIdConnect.Nonce.";
+        public const string CookieNoncePrefix = ".AspNet.OpenIdConnect.Nonce.";
 
         /// <summary>
         /// The property for the RedirectUri that was used when asking for a 'authorizationCode'
@@ -36,6 +36,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <summary>
         /// Constant used to identify state in openIdConnect protocal message
         /// </summary>
-        internal const string AuthenticationPropertiesKey = "OpenIdConnect.AuthenticationProperties";
+        public const string AuthenticationPropertiesKey = "OpenIdConnect.AuthenticationProperties";
     }
 }

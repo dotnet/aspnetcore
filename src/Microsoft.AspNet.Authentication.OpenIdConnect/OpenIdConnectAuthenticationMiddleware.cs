@@ -30,9 +30,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <summary>
         /// Initializes a <see cref="OpenIdConnectAuthenticationMiddleware"/>
         /// </summary>
-        /// <param name="next">The next middleware in the ASP.NET pipeline to invoke</param>
-        /// <param name="app">The ASP.NET application</param>
-        /// <param name="options">Configuration options for the middleware</param>
+        /// <param name="next">The next middleware in the ASP.NET pipeline to invoke.</param>
+        /// <param name="dataProtectionProvider"> provider for creating a data protector.</param>
+        /// <param name="loggerFactory">factory for creating a <see cref="ILogger"/>.</param>
+        /// <param name="options">a <see cref="IOptions{OpenIdConnectAuthenticationOptions}"/> instance that will supply <see cref="OpenIdConnectAuthenticationOptions"/> 
+        /// if configureOptions is null.</param>
+        /// <param name="configureOptions">a <see cref="ConfigureOptions{OpenIdConnectAuthenticationOptions}"/> instance that will be passed to an instance of <see cref="OpenIdConnectAuthenticationOptions"/>
+        /// that is retrieved by calling <see cref="IOptions{OpenIdConnectAuthenticationOptions}.GetNamedOptions(string)"/> where string == <see cref="ConfigureOptions{OpenIdConnectAuthenticationOptions}.Name"/> provides runtime configuration.</param>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]
         public OpenIdConnectAuthenticationMiddleware(
             [NotNull] RequestDelegate next,
@@ -40,19 +44,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             [NotNull] ILoggerFactory loggerFactory,
             [NotNull] IOptions<ExternalAuthenticationOptions> externalOptions,
             [NotNull] IOptions<OpenIdConnectAuthenticationOptions> options,
-            ConfigureOptions<OpenIdConnectAuthenticationOptions> configureOptions)
+            ConfigureOptions<OpenIdConnectAuthenticationOptions> configureOptions = null)
             : base(next, options, configureOptions)
         {
             _logger = loggerFactory.CreateLogger<OpenIdConnectAuthenticationMiddleware>();
-
-            if (string.IsNullOrEmpty(Options.SignInScheme))
+            if (string.IsNullOrEmpty(Options.SignInScheme) && !string.IsNullOrEmpty(externalOptions.Options.SignInScheme))
             {
                 Options.SignInScheme = externalOptions.Options.SignInScheme;
-            }
-
-            if (string.IsNullOrWhiteSpace(Options.TokenValidationParameters.AuthenticationType))
-            {
-                Options.TokenValidationParameters.AuthenticationType = Options.AuthenticationScheme;
             }
 
             if (Options.StateDataFormat == null)
@@ -152,7 +150,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 var webRequestHandler = handler as WebRequestHandler;
                 if (webRequestHandler == null)
                 {
-                    throw new InvalidOperationException(Resources.Exception_ValidatorHandlerMismatch);
+                    throw new InvalidOperationException(Resources.OIDCH_0102_ExceptionValidatorHandlerMismatch);
                 }
                 webRequestHandler.ServerCertificateValidationCallback = options.BackchannelCertificateValidator.Validate;
             }

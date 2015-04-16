@@ -15,7 +15,7 @@ namespace Microsoft.Framework.DependencyInjection
     {
         public static IServiceCollection ConfigureOpenIdConnectAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<OpenIdConnectAuthenticationOptions> configure)
         {
-            return services.ConfigureOpenIdConnectAuthentication(configure, optionsName: "");
+            return ConfigureOpenIdConnectAuthentication(services, configure, null);
         }
 
         public static IServiceCollection ConfigureOpenIdConnectAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<OpenIdConnectAuthenticationOptions> configure, string optionsName)
@@ -25,7 +25,7 @@ namespace Microsoft.Framework.DependencyInjection
 
         public static IServiceCollection ConfigureOpenIdConnectAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
         {
-            return services.ConfigureOpenIdConnectAuthentication(config, optionsName: "");
+            return ConfigureOpenIdConnectAuthentication(services, config, null);
         }
 
         public static IServiceCollection ConfigureOpenIdConnectAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config, string optionsName)
