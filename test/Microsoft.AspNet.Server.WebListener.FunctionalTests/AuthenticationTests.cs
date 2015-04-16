@@ -22,7 +22,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http.Core;
+using Microsoft.AspNet.Http;
 using Microsoft.Net.Http.Server;
 using Xunit;
 using AuthenticationSchemes = Microsoft.Net.Http.Server.AuthenticationSchemes;
