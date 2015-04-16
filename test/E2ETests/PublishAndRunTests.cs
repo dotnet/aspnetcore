@@ -81,8 +81,6 @@ namespace E2ETests
                         "SQLAZURECONNSTR_DefaultConnection",
                         string.Format(DbUtils.CONNECTION_STRING_FORMAT, musicStoreDbName)));
 
-                bool testSuccessful = false;
-
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
                 {
                     var deploymentResult = deployer.Deploy();
@@ -113,12 +111,7 @@ namespace E2ETests
                         }
                     }
 
-                    testSuccessful = true;
-                }
-
-                if (!testSuccessful)
-                {
-                    logger.LogError("Some tests failed.");
+                    logger.LogInformation("Variation completed successfully.");
                 }
             }
         }
