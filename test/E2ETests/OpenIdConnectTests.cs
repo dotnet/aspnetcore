@@ -73,10 +73,10 @@ namespace E2ETests
                     }, logger: logger, cancellationToken: deploymentResult.HostShutdownToken);
 
                     var validator = new Validator(httpClient, httpClientHandler, logger, deploymentResult);
-                    validator.VerifyHomePage(response);
+                    await validator.VerifyHomePage(response);
 
                     // OpenIdConnect login.
-                    validator.LoginWithOpenIdConnect();
+                    await validator.LoginWithOpenIdConnect();
 
                     logger.LogInformation("Variation completed successfully.");
                 }

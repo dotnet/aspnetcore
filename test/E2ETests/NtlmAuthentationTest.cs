@@ -64,10 +64,10 @@ namespace E2ETests
                     }, logger: logger, cancellationToken: deploymentResult.HostShutdownToken);
 
                     var validator = new Validator(httpClient, httpClientHandler, logger, deploymentResult);
-                    validator.VerifyNtlmHomePage(response);
+                    await validator.VerifyNtlmHomePage(response);
 
                     //Should be able to access the store as the Startup adds necessary permissions for the current user
-                    validator.AccessStoreWithPermissions();
+                    await validator.AccessStoreWithPermissions();
 
                     logger.LogInformation("Variation completed successfully.");
                 }
