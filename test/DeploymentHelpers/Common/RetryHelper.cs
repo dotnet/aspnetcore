@@ -43,7 +43,7 @@ namespace DeploymentHelpers
 
                     return response; //Went through successfully
                 }
-                catch (AggregateException exception)
+                catch (Exception exception)
                 {
                     if (retry == retryCount - 1)
                     {
@@ -51,13 +51,13 @@ namespace DeploymentHelpers
                     }
                     else
                     {
-                        if (exception.InnerException is HttpRequestException
+                        if (exception is HttpRequestException
 #if DNX451
-                        || exception.InnerException is System.Net.WebException
+                        || exception is System.Net.WebException
 #endif
                         )
                         {
-                            logger.LogWarning("Failed to complete the request : {0}.", exception.InnerException.Message);
+                            logger.LogWarning("Failed to complete the request : {0}.", exception.Message);
                             Thread.Sleep(1 * 1000); //Wait for a while before retry.
                         }
                     }
