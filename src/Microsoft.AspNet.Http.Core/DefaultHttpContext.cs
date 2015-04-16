@@ -23,6 +23,7 @@ namespace Microsoft.AspNet.Http.Core
 
         private readonly HttpRequest _request;
         private readonly HttpResponse _response;
+        private readonly ConnectionInfo _connection;
 
         private FeatureReference<IItemsFeature> _items;
         private FeatureReference<IServiceProvidersFeature> _serviceProviders;
@@ -44,6 +45,7 @@ namespace Microsoft.AspNet.Http.Core
             _features = features;
             _request = new DefaultHttpRequest(this, features);
             _response = new DefaultHttpResponse(this, features);
+            _connection = new DefaultConnectionInfo(features);
 
             _items = FeatureReference<IItemsFeature>.Default;
             _serviceProviders = FeatureReference<IServiceProvidersFeature>.Default;
@@ -86,6 +88,8 @@ namespace Microsoft.AspNet.Http.Core
         public override HttpRequest Request { get { return _request; } }
 
         public override HttpResponse Response { get { return _response; } }
+
+        public override ConnectionInfo Connection { get { return _connection; } }
 
         public override ClaimsPrincipal User
         {

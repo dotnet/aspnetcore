@@ -18,8 +18,10 @@ namespace Microsoft.AspNet.Http
 
         public abstract HttpResponse Response { get; }
 
+        public abstract ConnectionInfo Connection { get; }
+
         public abstract ClaimsPrincipal User { get; set; }
-        
+
         public abstract IDictionary<object, object> Items { get; }
 
         public abstract IServiceProvider ApplicationServices { get; set; }

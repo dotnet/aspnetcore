@@ -14,10 +14,12 @@
                 "System.Globalization": "4.0.10-beta-*",
                 "System.Globalization.Extensions": "4.0.0-beta-*",
                 "System.Linq": "4.0.0-beta-*",
+                "System.Net.Primitives": "4.0.10-beta-*",
                 "System.Net.WebSockets" : "4.0.0-beta-*",
                 "System.Runtime": "4.0.20-beta-*",
                 "System.Runtime.InteropServices": "4.0.20-beta-*",
                 "System.Security.Claims": "4.0.0-beta-*",
+                "System.Security.Cryptography.X509Certificates": "4.0.0-beta-*",
                 "System.Security.Principal": "4.0.0-beta-*",
                 "System.Threading.Tasks": "4.0.10-beta-*"
             }

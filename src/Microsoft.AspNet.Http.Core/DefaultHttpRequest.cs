@@ -19,8 +19,6 @@ namespace Microsoft.AspNet.Http.Core
         private readonly IFeatureCollection _features;
 
         private FeatureReference<IHttpRequestFeature> _request = FeatureReference<IHttpRequestFeature>.Default;
-        private FeatureReference<IHttpConnectionFeature> _connection = FeatureReference<IHttpConnectionFeature>.Default;
-        private FeatureReference<IHttpClientCertificateFeature> _clientCertificate = FeatureReference<IHttpClientCertificateFeature>.Default;
         private FeatureReference<IQueryFeature> _query = FeatureReference<IQueryFeature>.Default;
         private FeatureReference<IFormFeature> _form = FeatureReference<IFormFeature>.Default;
         private FeatureReference<IRequestCookiesFeature> _cookies = FeatureReference<IRequestCookiesFeature>.Default;
@@ -34,16 +32,6 @@ namespace Microsoft.AspNet.Http.Core
         private IHttpRequestFeature HttpRequestFeature
         {
             get { return _request.Fetch(_features); }
-        }
-
-        private IHttpConnectionFeature HttpConnectionFeature
-        {
-            get { return _connection.Fetch(_features); }
-        }
-
-        private IHttpClientCertificateFeature HttpClientCertificateFeature
-        {
-            get { return _clientCertificate.Fetch(_features); }
         }
 
         private IQueryFeature QueryFeature
