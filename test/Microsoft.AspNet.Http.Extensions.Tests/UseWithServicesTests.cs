@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http.Core;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 

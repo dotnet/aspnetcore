@@ -2,7 +2,7 @@
     "version": "1.0.0-*",
     "description": "ASP.NET 5 common extension methods for HTTP abstractions and IApplicationBuilder.",
     "dependencies": {
-        "Microsoft.AspNet.Http": "1.0.0-*",
+        "Microsoft.AspNet.Http.Core": "1.0.0-*",
         "Microsoft.AspNet.Http.Interfaces": "1.0.0-*",
         "Microsoft.Framework.DependencyInjection.Interfaces": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" },

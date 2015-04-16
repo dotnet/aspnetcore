@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Owin;
-using Microsoft.AspNet.Http.Core;
 
 namespace Microsoft.AspNet.Builder
 {
