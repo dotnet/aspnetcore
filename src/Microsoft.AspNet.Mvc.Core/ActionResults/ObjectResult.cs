@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             logger.LogVerbose(
-                "Selected output formatter '{OutputFormatter}'and content type " +
+                "Selected output formatter '{OutputFormatter}' and content type " +
                 "'{ContentType}' to write the response.", 
                 selectedFormatter.GetType().FullName,
                 formatterContext.SelectedContentType);
