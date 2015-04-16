@@ -100,14 +100,11 @@ namespace ServerComparison.FunctionalTests
                     var httpClientHandler = new HttpClientHandler();
                     var httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
 
-                    HttpResponseMessage response = null;
-
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
-                    RetryHelper.RetryRequest(() =>
+                    var response = await RetryHelper.RetryRequest(() =>
                     {
-                        response = httpClient.GetAsync(string.Empty).Result;
-                        return response;
-                    }, logger: logger);
+                        return httpClient.GetAsync(string.Empty);
+                    }, logger, deploymentResult.HostShutdownToken);
 
                     logger.LogInformation("[Time]: Approximate time taken for application initialization : '{t}' seconds", stopwatch.Elapsed.TotalSeconds);
 
