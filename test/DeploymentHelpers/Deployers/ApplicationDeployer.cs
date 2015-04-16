@@ -195,6 +195,7 @@ namespace DeploymentHelpers
 
         protected void TriggerHostShutdown(CancellationTokenSource hostShutdownSource)
         {
+            Logger.LogInformation("Host process shutting down.");
             try
             {
                 hostShutdownSource.Cancel();
