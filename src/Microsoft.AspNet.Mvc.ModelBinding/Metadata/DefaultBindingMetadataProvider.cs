@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
@@ -52,6 +53,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             {
                 context.BindingMetadata.PropertyBindingPredicateProvider = new CompositePredicateProvider(
                     predicateProviders);
+            }
+
+            if (context.Key.MetadataKind == ModelMetadataKind.Property)
+            {
+                // BindingBehavior can fall back to attributes on the Container Type, but we should ignore
+                // attributes on the Property Type.
+                var bindingBehavior = context.PropertyAttributes.OfType<BindingBehaviorAttribute>().FirstOrDefault();
+                if (bindingBehavior == null)
+                {
+                    bindingBehavior = 
+                        context.Key.ContainerType.GetTypeInfo()
+                        .GetCustomAttributes(typeof(BindingBehaviorAttribute), inherit: true)
+                        .OfType<BindingBehaviorAttribute>()
+                        .FirstOrDefault();
+                }
+
+                if (bindingBehavior != null)
+                {
+                    context.BindingMetadata.IsBindingAllowed = bindingBehavior.Behavior != BindingBehavior.Never;
+                    context.BindingMetadata.IsBindingRequired = bindingBehavior.Behavior == BindingBehavior.Required;
+                }
             }
         }
 

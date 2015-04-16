@@ -147,5 +147,392 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             // Assert
             Assert.Equal(BindingSource.Body, context.BindingMetadata.BindingSource);
         }
+
+        [Fact]
+        public void GetBindingDetails_FindsBindingBehaviorNever_OnProperty()
+        {
+            // Arrange
+            var propertyAttributes = new object[]
+            {
+                new BindingBehaviorAttribute(BindingBehavior.Never),
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string)),
+                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.GetBindingMetadata(context);
+
+            // Assert
+            Assert.False(context.BindingMetadata.IsBindingAllowed);
+            Assert.False(context.BindingMetadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void GetBindingDetails_FindsBindNever_OnProperty()
+        {
+            // Arrange
+            var propertyAttributes = new object[]
+            {
+                new BindNeverAttribute(),
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string)),
+                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.GetBindingMetadata(context);
+
+            // Assert
+            Assert.False(context.BindingMetadata.IsBindingAllowed);
+            Assert.False(context.BindingMetadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void GetBindingDetails_FindsBindingBehaviorOptional_OnProperty()
+        {
+            // Arrange
+            var propertyAttributes = new object[]
+            {
+                new BindingBehaviorAttribute(BindingBehavior.Optional),
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string)),
+                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.GetBindingMetadata(context);
+
+            // Assert
+            Assert.True(context.BindingMetadata.IsBindingAllowed);
+            Assert.False(context.BindingMetadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void GetBindingDetails_FindsBindingBehaviorRequired_OnProperty()
+        {
+            // Arrange
+            var propertyAttributes = new object[]
+            {
+                new BindingBehaviorAttribute(BindingBehavior.Required),
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string)),
+                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.GetBindingMetadata(context);
+
+            // Assert
+            Assert.True(context.BindingMetadata.IsBindingAllowed);
+            Assert.True(context.BindingMetadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void GetBindingDetails_FindsBindRequired_OnProperty()
+        {
+            // Arrange
+            var propertyAttributes = new object[]
+            {
+                new BindRequiredAttribute(),
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string)),
+                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.GetBindingMetadata(context);
+
+            // Assert
+            Assert.True(context.BindingMetadata.IsBindingAllowed);
+            Assert.True(context.BindingMetadata.IsBindingRequired);
+        }
+
+        // These attributes have conflicting behavior - the 'required' behavior should be used because
+        // of ordering.
+        [Fact]
+        public void GetBindingDetails_UsesFirstAttribute()
+        {
+            // Arrange
+            var propertyAttributes = new object[]
+            {
+                new BindingBehaviorAttribute(BindingBehavior.Required),
+                new BindNeverAttribute(),
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string)),
+                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.GetBindingMetadata(context);
+
+            // Assert
+            Assert.True(context.BindingMetadata.IsBindingAllowed);
+            Assert.True(context.BindingMetadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void GetBindingDetails_FindsBindRequired_OnContainerClass()
+        {
+            // Arrange
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(typeof(string), "Property", typeof(BindRequiredOnClass)),
+                new ModelAttributes(propertyAttributes: new object[0], typeAttributes: new object[0]));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.GetBindingMetadata(context);
+
+            // Assert
+            Assert.True(context.BindingMetadata.IsBindingAllowed);
+            Assert.True(context.BindingMetadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void GetBindingDetails_FindsBindNever_OnContainerClass()
+        {
+            // Arrange
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(typeof(string), "Property", typeof(BindNeverOnClass)),
+                new ModelAttributes(propertyAttributes: new object[0], typeAttributes: new object[0]));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.GetBindingMetadata(context);
+
+            // Assert
+            Assert.False(context.BindingMetadata.IsBindingAllowed);
+            Assert.False(context.BindingMetadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void GetBindingDetails_FindsBindNever_OnBaseClass()
+        {
+            // Arrange
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(typeof(string), "Property", typeof(InheritedBindNeverOnClass)),
+                new ModelAttributes(propertyAttributes: new object[0], typeAttributes: new object[0]));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.GetBindingMetadata(context);
+
+            // Assert
+            Assert.False(context.BindingMetadata.IsBindingAllowed);
+            Assert.False(context.BindingMetadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void GetBindingDetails_OverrideBehaviorOnClass_OverrideWithOptional()
+        {
+            // Arrange
+            var propertyAttributes = new object[]
+            {
+                new BindingBehaviorAttribute(BindingBehavior.Optional)
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(typeof(string), "Property", typeof(BindNeverOnClass)),
+                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.GetBindingMetadata(context);
+
+            // Assert
+            Assert.True(context.BindingMetadata.IsBindingAllowed);
+            Assert.False(context.BindingMetadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void GetBindingDetails_OverrideBehaviorOnClass_OverrideWithRequired()
+        {
+            // Arrange
+            var propertyAttributes = new object[]
+            {
+                new BindRequiredAttribute()
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(typeof(string), "Property", typeof(BindNeverOnClass)),
+                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.GetBindingMetadata(context);
+
+            // Assert
+            Assert.True(context.BindingMetadata.IsBindingAllowed);
+            Assert.True(context.BindingMetadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void GetBindingDetails_OverrideInheritedBehaviorOnClass_OverrideWithRequired()
+        {
+            // Arrange
+            var propertyAttributes = new object[]
+            {
+                new BindRequiredAttribute()
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(typeof(string), "Property", typeof(InheritedBindNeverOnClass)),
+                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.GetBindingMetadata(context);
+
+            // Assert
+            Assert.True(context.BindingMetadata.IsBindingAllowed);
+            Assert.True(context.BindingMetadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void GetBindingDetails_OverrideBehaviorOnClass_OverrideWithNever()
+        {
+            // Arrange
+            var propertyAttributes = new object[]
+            {
+                new BindNeverAttribute(),
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(typeof(string), "Property", typeof(BindRequiredOnClass)),
+                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.GetBindingMetadata(context);
+
+            // Assert
+            Assert.False(context.BindingMetadata.IsBindingAllowed);
+            Assert.False(context.BindingMetadata.IsBindingRequired);
+        }
+
+        // This overrides an inherited class-level attribute with a different class-level attribute.
+        [Fact]
+        public void GetBindingDetails_OverrideBehaviorOnBaseClass_OverrideWithRequired_OnClass()
+        {
+            // Arrange
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(typeof(string), "Property", typeof(BindRequiredOverridesInheritedBindNever)),
+                new ModelAttributes(propertyAttributes: new object[0], typeAttributes: new object[0]));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.GetBindingMetadata(context);
+
+            // Assert
+            Assert.True(context.BindingMetadata.IsBindingAllowed);
+            Assert.True(context.BindingMetadata.IsBindingRequired);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetBindingDetails_BindingBehaviorLeftAlone_ForTypeMetadata(bool initialValue)
+        {
+            // Arrange
+            var attributes = new object[]
+            {
+                new BindingBehaviorAttribute(BindingBehavior.Required),
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForType(typeof(string)),
+                new ModelAttributes(attributes));
+
+            // These values shouldn't be changed since this is a Type-Metadata
+            context.BindingMetadata.IsBindingAllowed = initialValue;
+            context.BindingMetadata.IsBindingRequired = initialValue;
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.GetBindingMetadata(context);
+
+            // Assert
+            Assert.Equal(initialValue, context.BindingMetadata.IsBindingAllowed);
+            Assert.Equal(initialValue, context.BindingMetadata.IsBindingRequired);
+        }
+
+        // Unlike most model metadata settings, BindingBehavior can be specified on the *container type*
+        // but not on the property type.
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetBindingDetails_BindingBehaviorLeftAlone_ForAttributeOnPropertyType(bool initialValue)
+        {
+            // Arrange
+            var typeAttributes = new object[]
+            {
+                new BindingBehaviorAttribute(BindingBehavior.Required),
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string)),
+                new ModelAttributes(propertyAttributes: new object[0], typeAttributes: typeAttributes));
+
+            // These values shouldn't be changed since this is a Type-Metadata
+            context.BindingMetadata.IsBindingAllowed = initialValue;
+            context.BindingMetadata.IsBindingRequired = initialValue;
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.GetBindingMetadata(context);
+
+            // Assert
+            Assert.Equal(initialValue, context.BindingMetadata.IsBindingAllowed);
+            Assert.Equal(initialValue, context.BindingMetadata.IsBindingRequired);
+        }
+
+        [BindNever]
+        private class BindNeverOnClass
+        {
+            public string Property { get; set; }
+        }
+
+        private class InheritedBindNeverOnClass : BindNeverOnClass
+        {
+        }
+
+        [BindRequired]
+        private class BindRequiredOnClass
+        {
+            public string Property { get; set; }
+        }
+
+        [BindRequired]
+        private class BindRequiredOverridesInheritedBindNever : BindNeverOnClass
+        {
+        }
     }
 }

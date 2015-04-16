@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
-using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -313,17 +312,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         internal static PropertyValidationInfo GetPropertyValidationInfo(ModelBindingContext bindingContext)
         {
             var validationInfo = new PropertyValidationInfo();
-            var modelTypeInfo = bindingContext.ModelType.GetTypeInfo();
-            var typeAttribute = modelTypeInfo.GetCustomAttribute<BindingBehaviorAttribute>();
-            var properties = bindingContext.ModelType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            foreach (var property in properties)
+
+            foreach (var propertyMetadata in bindingContext.ModelMetadata.Properties)
             {
-                var propertyName = property.Name;
-                var propertyMetadata = bindingContext.ModelMetadata.Properties[propertyName];
-                if (propertyMetadata == null)
+                var propertyName = propertyMetadata.PropertyName;
+
+                if (!propertyMetadata.IsBindingAllowed)
                 {
-                    // Skip indexer properties and others ModelMetadata ignores.
+                    // Nothing to do here if binding is not allowed.
+                    validationInfo.SkipProperties.Add(propertyName);
                     continue;
+                }
+
+                if (propertyMetadata.IsBindingRequired)
+                {
+                    validationInfo.RequiredProperties.Add(propertyName);
                 }
 
                 var validatorProviderContext = new ModelValidatorProviderContext(propertyMetadata);
@@ -334,29 +337,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 if (requiredValidator != null)
                 {
                     validationInfo.RequiredValidators[propertyName] = requiredValidator;
-                }
-
-                var propertyAttribute = property.GetCustomAttribute<BindingBehaviorAttribute>();
-                var bindingBehaviorAttribute = propertyAttribute ?? typeAttribute;
-                if (bindingBehaviorAttribute != null)
-                {
-                    switch (bindingBehaviorAttribute.Behavior)
-                    {
-                        case BindingBehavior.Required:
-                            validationInfo.RequiredProperties.Add(propertyName);
-                            break;
-
-                        case BindingBehavior.Never:
-                            validationInfo.SkipProperties.Add(propertyName);
-                            break;
-                    }
-                }
-                else if (requiredValidator != null)
-                {
-                    validationInfo.RequiredProperties.Add(propertyName);
-                }
-                else if (propertyMetadata.IsBindingRequired)
-                {
                     validationInfo.RequiredProperties.Add(propertyName);
                 }
             }

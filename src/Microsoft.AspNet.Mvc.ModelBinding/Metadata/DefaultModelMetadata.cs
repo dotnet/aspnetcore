@@ -256,11 +256,34 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
+        public override bool IsBindingAllowed
+        {
+            get
+            {
+                if (MetadataKind == ModelMetadataKind.Property)
+                {
+                    return BindingMetadata.IsBindingAllowed;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+        }
+
+        /// <inheritdoc />
         public override bool IsBindingRequired
         {
             get
             {
-                return BindingMetadata.IsBindingRequired;
+                if (MetadataKind == ModelMetadataKind.Property)
+                {
+                    return BindingMetadata.IsBindingRequired;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 

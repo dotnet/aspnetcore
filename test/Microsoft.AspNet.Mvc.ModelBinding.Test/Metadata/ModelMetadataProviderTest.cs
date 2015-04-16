@@ -726,6 +726,85 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             Assert.Null(metadata.Properties[propertyName]);
         }
 
+        [Fact]
+        public void BindingBehavior_GetMetadataForType_UsesDefaultValues()
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var type = typeof(BindingBehaviorModel);
+
+            // Act
+            var metadata = metadataProvider.GetMetadataForType(type);
+
+            // Assert
+            Assert.True(metadata.IsBindingAllowed);
+            Assert.False(metadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void BindingBehavior_Override_RequiredOnProperty()
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var type = typeof(BindingBehaviorModel);
+            var propertyName = nameof(BindingBehaviorModel.BindRequiredOverride);
+
+            // Act
+            var metadata = metadataProvider.GetMetadataForProperty(type, propertyName);
+
+            // Assert
+            Assert.True(metadata.IsBindingAllowed);
+            Assert.True(metadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void BindingBehavior_Override_OptionalOnProperty()
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var type = typeof(BindingBehaviorModel);
+            var propertyName = nameof(BindingBehaviorModel.BindingBehaviorOptionalOverride);
+
+            // Act
+            var metadata = metadataProvider.GetMetadataForProperty(type, propertyName);
+
+            // Assert
+            Assert.True(metadata.IsBindingAllowed);
+            Assert.False(metadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void BindingBehavior_Never_DuplicatedPropertyAndClass()
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var type = typeof(BindingBehaviorModel);
+            var propertyName = nameof(BindingBehaviorModel.BindingBehaviorNeverDuplicatedFromClass);
+
+            // Act
+            var metadata = metadataProvider.GetMetadataForProperty(type, propertyName);
+
+            // Assert
+            Assert.False(metadata.IsBindingAllowed);
+            Assert.False(metadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void BindingBehavior_Never_SetOnClass()
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var type = typeof(BindingBehaviorModel);
+            var propertyName = nameof(BindingBehaviorModel.BindingBehaviorNeverSetOnClass);
+
+            // Act
+            var metadata = metadataProvider.GetMetadataForProperty(type, propertyName);
+
+            // Assert
+            Assert.False(metadata.IsBindingAllowed);
+            Assert.False(metadata.IsBindingRequired);
+        }
+
         private IModelMetadataProvider CreateProvider(params object[] attributes)
         {
             return new AttributeInjectModelMetadataProvider(attributes);
@@ -867,6 +946,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         {
             [Required]
             public string RequiredProperty { get; set; }
+        }
+
+        [BindNever]
+        private class BindingBehaviorModel
+        {
+            [BindRequired]
+            public int BindRequiredOverride { get; set; }
+
+            [BindingBehavior(BindingBehavior.Optional)]
+            public int BindingBehaviorOptionalOverride { get; set; }
+
+            [BindingBehavior(BindingBehavior.Never)]
+            public int BindingBehaviorNeverDuplicatedFromClass { get; set; }
+
+            public int BindingBehaviorNeverSetOnClass { get; set; }
         }
 
         private class AttributeInjectModelMetadataProvider : DefaultModelMetadataProvider

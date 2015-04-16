@@ -29,8 +29,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         public Type BinderType { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether or not the property can be model bound.
+        /// Will be ignored if the model metadata being created does not represent a property.
+        /// See <see cref="ModelMetadata.IsBindingAllowed"/>.
+        /// </summary>
+        public bool IsBindingAllowed { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets a value indicating whether or not the request must contain a value for the model.
-        /// Will be ignored if the model metadata being created is not a property.
+        /// Will be ignored if the model metadata being created does not represent a property.
         /// See <see cref="ModelMetadata.IsBindingRequired"/>.
         /// </summary>
         public bool IsBindingRequired { get; set; }

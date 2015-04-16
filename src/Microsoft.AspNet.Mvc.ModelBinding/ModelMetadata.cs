@@ -167,11 +167,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public abstract bool HideSurroundingHtml { get; }
 
         /// <summary>
+        /// Gets a value indicating whether or not the model value can be bound by model binding. This is only
+        /// applicable when the current instance represents a property.
+        /// </summary>
+        /// <remarks>
+        /// If <c>true</c> then the model value is considered supported by model binding and can be set
+        /// based on provided input in the request.
+        /// </remarks>
+        public abstract bool IsBindingAllowed { get; }
+
+        /// <summary>
         /// Gets a value indicating whether or not the model value is required by model binding. This is only
         /// applicable when the current instance represents a property.
         /// </summary>
         /// <remarks>
-        /// If <c>true</c> then the model value is considered required by model-binding and must have a value
+        /// If <c>true</c> then the model value is considered required by model binding and must have a value
         /// supplied in the request to be considered valid.
         /// </remarks>
         public abstract bool IsBindingRequired { get; }
