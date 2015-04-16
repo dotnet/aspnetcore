@@ -128,11 +128,12 @@ The samples in this repo are basic starting points for you to experiment with.
 
 1. Clone the Home repository
 2. Change directory to the folder of the sample you want to run
-3. Run ```kpm restore``` to restore the packages required by that sample.
+3a. If using KRE: Run ```kpm restore``` to restore the packages required by the sample.
+3b. If using DNX: Run ```dnu restore``` to restore the packages required by the sample.
 4. You should see a bunch of output as all the dependencies of the app are downloaded from MyGet. 
-5. Run the sample using the appropriate `dnx` command:
-    - For the console app run  ```dnx . run```.
-    - For the web apps run ```dnx . web``` on Windows or ```dnx . kestrel``` on Mono.
+5. Run the sample using the appropriate `dnx` or `k` command:
+    - For the console app, run  ```dnx . run``` or ```k run```.
+    - For the web apps, run ```dnx . web``` or ```k web``` on Windows and ```dnx . kestrel``` or ```k kestrel``` on Mono.
 6. You should see the output of the console app or a message that says the site is now started.
 7. You can navigate to the web apps in a browser by going to "http://localhost:5001" or "http://localhost:5004" if running on Mono.
 
