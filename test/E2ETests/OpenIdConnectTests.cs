@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading.Tasks;
 using DeploymentHelpers;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Logging;
@@ -15,20 +16,20 @@ namespace E2ETests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.clr, RuntimeArchitecture.x86, "http://localhost:5040/")]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.coreclr, RuntimeArchitecture.x64, "http://localhost:5041/")]
-        public void OpenIdConnect_OnX86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        public async Task OpenIdConnect_OnX86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
-            OpenIdConnectTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
+            await OpenIdConnectTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.DotNet)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.mono, RuntimeArchitecture.x86, "http://localhost:5042/")]
-        public void OpenIdConnect_OnMono(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        public async Task OpenIdConnect_OnMono(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
-            OpenIdConnectTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
+            await OpenIdConnectTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
-        private void OpenIdConnectTestSuite(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        private async Task OpenIdConnectTestSuite(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             var logger = new LoggerFactory()
                             .AddConsole()
@@ -66,9 +67,9 @@ namespace E2ETests
                     var httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
 
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
-                    var response = RetryHelper.RetryRequest(() =>
+                    var response = await RetryHelper.RetryRequest(async () =>
                     {
-                        return httpClient.GetAsync(string.Empty).Result;
+                        return await httpClient.GetAsync(string.Empty);
                     }, logger: logger, cancellationToken: deploymentResult.HostShutdownToken);
 
                     var validator = new Validator(httpClient, httpClientHandler, logger, deploymentResult);

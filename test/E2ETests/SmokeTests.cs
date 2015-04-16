@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading.Tasks;
 using DeploymentHelpers;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Logging;
@@ -16,10 +17,10 @@ namespace E2ETests
         [InlineData(ServerType.IISExpress, RuntimeFlavor.clr, RuntimeArchitecture.x86, "http://localhost:5001/")]
         [InlineData(ServerType.WebListener, RuntimeFlavor.clr, RuntimeArchitecture.x86, "http://localhost:5002/")]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.clr, RuntimeArchitecture.x86, "http://localhost:5003/")]
-        public void SmokeTestSuite_OnX86_clr(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        public async Task SmokeTestSuite_OnX86_clr(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             var smokeTestRunner = new SmokeTests();
-            smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
+            await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
     }
 
@@ -30,10 +31,10 @@ namespace E2ETests
         [InlineData(ServerType.IISExpress, RuntimeFlavor.coreclr, RuntimeArchitecture.x86, "http://localhost:5004/")]
         [InlineData(ServerType.WebListener, RuntimeFlavor.coreclr, RuntimeArchitecture.x86, "http://localhost:5005/")]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.coreclr, RuntimeArchitecture.x86, "http://localhost:5006/")]
-        public void SmokeTestSuite_OnX86_coreclr(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        public async Task SmokeTestSuite_OnX86_coreclr(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             var smokeTestRunner = new SmokeTests();
-            smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
+            await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
     }
 
@@ -45,10 +46,10 @@ namespace E2ETests
         [InlineData(ServerType.WebListener, RuntimeFlavor.clr, RuntimeArchitecture.x64, "http://localhost:5007/")]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.coreclr, RuntimeArchitecture.x64, "http://localhost:5008/")]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.coreclr, RuntimeArchitecture.x64, "http://localhost:5009/")]
-        public void SmokeTestSuite_OnAMD64(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        public async Task SmokeTestSuite_OnAMD64(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             var smokeTestRunner = new SmokeTests();
-            smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
+            await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
     }
 
@@ -57,10 +58,10 @@ namespace E2ETests
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.DotNet)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.mono, RuntimeArchitecture.x86, "http://localhost:5010/")]
-        public void SmokeTestSuite_OnMono(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        public async Task SmokeTestSuite_OnMono(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             var smokeTestRunner = new SmokeTests();
-            smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
+            await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
     }
 
@@ -72,10 +73,10 @@ namespace E2ETests
         [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
         [SkipIfCurrentRuntimeIsCoreClr]
         [InlineData(ServerType.IISNativeModule, RuntimeFlavor.coreclr, RuntimeArchitecture.x86, "http://localhost:5011/")]
-        public void SmokeTestSuite_On_NativeModule_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        public async Task SmokeTestSuite_On_NativeModule_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             var smokeTestRunner = new SmokeTests();
-            smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
+            await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
@@ -85,10 +86,10 @@ namespace E2ETests
         [SkipOn32BitOS]
         [SkipIfCurrentRuntimeIsCoreClr]
         [InlineData(ServerType.IISNativeModule, RuntimeFlavor.coreclr, RuntimeArchitecture.x64, "http://localhost:5012/")]
-        public void SmokeTestSuite_On_NativeModule_AMD64(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        public async Task SmokeTestSuite_On_NativeModule_AMD64(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             var smokeTestRunner = new SmokeTests();
-            smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
+            await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
     }
 
@@ -101,16 +102,16 @@ namespace E2ETests
         [SkipIfIISVariationsNotEnabled]
         [InlineData(ServerType.IIS, RuntimeFlavor.clr, RuntimeArchitecture.x86, "http://localhost:5013/")]
         [InlineData(ServerType.IIS, RuntimeFlavor.coreclr, RuntimeArchitecture.x64, "http://localhost:5013/")]
-        public void SmokeTestSuite_On_IIS_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        public async Task SmokeTestSuite_On_IIS_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             var smokeTestRunner = new SmokeTests();
-            smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource: true);
+            await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource: true);
         }
     }
 
     public class SmokeTests
     {
-        public void SmokeTestSuite(
+        public async Task SmokeTestSuite(
             ServerType serverType,
             RuntimeFlavor donetFlavor,
             RuntimeArchitecture architecture,
@@ -157,9 +158,9 @@ namespace E2ETests
                     var httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
 
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
-                    var response = RetryHelper.RetryRequest(() =>
+                    var response = await RetryHelper.RetryRequest(async () =>
                     {
-                        return httpClient.GetAsync(string.Empty).Result;
+                        return await httpClient.GetAsync(string.Empty);
                     }, logger: logger, cancellationToken: deploymentResult.HostShutdownToken);
 
                     var validator = new Validator(httpClient, httpClientHandler, logger, deploymentResult);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Threading.Tasks;
 using DeploymentHelpers;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Logging;
@@ -17,10 +18,10 @@ namespace E2ETests
         [InlineData(ServerType.WebListener, RuntimeFlavor.clr, RuntimeArchitecture.x64, "http://localhost:5025/", false)]
         //https://github.com/aspnet/KRuntime/issues/642
         //[InlineData(ServerType.Helios, RuntimeFlavor.CoreClr, RuntimeArchitecture.amd64, "http://localhost:5026/")]
-        public void Publish_And_Run_Tests_On_AMD64(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, bool noSource)
+        public async Task Publish_And_Run_Tests_On_AMD64(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, bool noSource)
         {
             var testRunner = new PublishAndRunTests();
-            testRunner.Publish_And_Run_Tests(serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
+            await testRunner.Publish_And_Run_Tests(serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
         }
     }
 
@@ -30,26 +31,26 @@ namespace E2ETests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.clr, RuntimeArchitecture.x86, "http://localhost:5027/", false)]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.clr, RuntimeArchitecture.x86, "http://localhost:5028/", true)]
-        public void Publish_And_Run_Tests_On_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, bool noSource)
+        public async Task Publish_And_Run_Tests_On_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, bool noSource)
         {
             var testRunner = new PublishAndRunTests();
-            testRunner.Publish_And_Run_Tests(serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
+            await testRunner.Publish_And_Run_Tests(serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
         }
 
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.DotNet)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.mono, RuntimeArchitecture.x86, "http://localhost:5029/", false)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.mono, RuntimeArchitecture.x86, "http://localhost:5030/", true)]
-        public void Publish_And_Run_Tests_On_Mono(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, bool noSource)
+        public async Task Publish_And_Run_Tests_On_Mono(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, bool noSource)
         {
             var testRunner = new PublishAndRunTests();
-            testRunner.Publish_And_Run_Tests(serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
+            await testRunner.Publish_And_Run_Tests(serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
         }
     }
 
     public class PublishAndRunTests
     {
-        public void Publish_And_Run_Tests(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, bool noSource)
+        public async Task Publish_And_Run_Tests(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, bool noSource)
         {
             var logger = new LoggerFactory()
                             .AddConsole()
@@ -89,9 +90,9 @@ namespace E2ETests
 
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
                     // Add retry logic since tests are flaky on mono due to connection issues
-                    var response = RetryHelper.RetryRequest(() =>
+                    var response = await RetryHelper.RetryRequest(async () =>
                     {
-                        return httpClient.GetAsync(string.Empty).Result;
+                        return await httpClient.GetAsync(string.Empty);
                     }, logger: logger, cancellationToken: deploymentResult.HostShutdownToken);
 
                     var validator = new Validator(httpClient, httpClientHandler, logger, deploymentResult);

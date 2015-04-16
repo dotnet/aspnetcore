@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Framework.Logging;
 
 namespace DeploymentHelpers
@@ -15,8 +16,8 @@ namespace DeploymentHelpers
         /// <param name="logger"></param>
         /// <param name="cancellationToken"></param>
         /// <param name="retryCount"></param>
-        public static HttpResponseMessage RetryRequest(
-            Func<HttpResponseMessage> retryBlock,
+        public static async Task<HttpResponseMessage> RetryRequest(
+            Func<Task<HttpResponseMessage>> retryBlock,
             ILogger logger,
             CancellationToken cancellationToken = default(CancellationToken),
             int retryCount = 60)
@@ -31,7 +32,7 @@ namespace DeploymentHelpers
                     }
 
                     logger.LogWarning("Retry count {retryCount}..", retry + 1);
-                    var response = retryBlock();
+                    var response = await retryBlock();
 
                     if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
                     {
