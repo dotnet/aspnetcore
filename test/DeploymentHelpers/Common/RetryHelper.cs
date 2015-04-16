@@ -28,6 +28,7 @@ namespace DeploymentHelpers
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
+                        logger.LogInformation("Stopping retry as cancellation token is triggered.");
                         break;
                     }
 

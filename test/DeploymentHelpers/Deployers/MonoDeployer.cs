@@ -72,6 +72,7 @@ namespace DeploymentHelpers
             };
 
             _hostProcess = Process.Start(startInfo);
+            _hostProcess.EnableRaisingEvents = true;
             var hostExitTokenSource = new CancellationTokenSource();
             _hostProcess.Exited += (sender, e) =>
             {
