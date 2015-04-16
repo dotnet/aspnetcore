@@ -15,7 +15,7 @@ namespace DeploymentHelpers
         /// <param name="logger"></param>
         /// <param name="cancellationToken"></param>
         /// <param name="retryCount"></param>
-        public static void RetryRequest(
+        public static HttpResponseMessage RetryRequest(
             Func<HttpResponseMessage> retryBlock,
             ILogger logger,
             CancellationToken cancellationToken = default(CancellationToken),
@@ -40,7 +40,7 @@ namespace DeploymentHelpers
                         continue;
                     }
 
-                    break; //Went through successfully
+                    return response; //Went through successfully
                 }
                 catch (AggregateException exception)
                 {
@@ -62,6 +62,8 @@ namespace DeploymentHelpers
                     }
                 }
             }
+
+            return null;
         }
     }
 }

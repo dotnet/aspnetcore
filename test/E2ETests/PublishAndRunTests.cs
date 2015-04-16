@@ -87,14 +87,11 @@ namespace E2ETests
                     var httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
                     var httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
 
-                    HttpResponseMessage response = null;
-
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
                     // Add retry logic since tests are flaky on mono due to connection issues
-                    RetryHelper.RetryRequest(() =>
+                    var response = RetryHelper.RetryRequest(() =>
                     {
-                        response = httpClient.GetAsync(string.Empty).Result;
-                        return response;
+                        return httpClient.GetAsync(string.Empty).Result;
                     }, logger: logger, cancellationToken: deploymentResult.HostShutdownToken);
 
                     var validator = new Validator(httpClient, httpClientHandler, logger, deploymentResult);
