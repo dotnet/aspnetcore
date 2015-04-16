@@ -1,6 +1,5 @@
 {
     "dependencies": {
-        "Microsoft.AspNet.Http.Core": "1.0.0-*",
         "Microsoft.AspNet.StaticFiles": "1.0.0-*",
         "Microsoft.AspNet.TestHost": "1.0.0-*",
         "Microsoft.Framework.Logging.Testing": "1.0.0-*",

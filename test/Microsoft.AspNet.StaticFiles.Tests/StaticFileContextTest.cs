@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Core;
 using Microsoft.Framework.Expiration.Interfaces;
 using Microsoft.Framework.Logging.Testing;
 using Xunit;
