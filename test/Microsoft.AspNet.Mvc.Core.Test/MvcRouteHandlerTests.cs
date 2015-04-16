@@ -5,10 +5,9 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Logging.Testing;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -22,7 +21,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var sink = new TestSink();
-            var loggerFactory = new TestLoggerFactory(sink);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
             var displayName = "A.B.C";
             var actionDescriptor = new Mock<ActionDescriptor>();
             actionDescriptor.SetupGet(ad => ad.DisplayName)
@@ -46,7 +45,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var sink = new TestSink();
-            var loggerFactory = new TestLoggerFactory(sink);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             var mockActionSelector = new Mock<IActionSelector>();
             mockActionSelector.Setup(a => a.SelectAsync(It.IsAny<RouteContext>()))

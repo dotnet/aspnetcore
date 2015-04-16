@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Logging.Testing;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;

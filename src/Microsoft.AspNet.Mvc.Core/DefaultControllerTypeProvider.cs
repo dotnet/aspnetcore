@@ -5,9 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -27,7 +25,6 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="assemblyProvider"><see cref="IAssemblyProvider"/> that provides assemblies to look for
         /// controllers in.</param>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public DefaultControllerTypeProvider(IAssemblyProvider assemblyProvider)
         {
             _assemblyProvider = assemblyProvider;

@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Logging.Testing;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
