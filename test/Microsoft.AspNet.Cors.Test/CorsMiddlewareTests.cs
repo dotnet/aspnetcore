@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using Moq;
