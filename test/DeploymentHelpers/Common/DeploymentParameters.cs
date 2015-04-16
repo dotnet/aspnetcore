@@ -85,5 +85,17 @@ namespace DeploymentHelpers
         /// For any application level cleanup to be invoked after performing host cleanup.
         /// </summary>
         public Action<DeploymentParameters> UserAdditionalCleanup { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format(
+                    "[Variation] :: ServerType={0}, Runtime={1}, Arch={2}, BaseUrlHint={3}, Publish={4}, NoSource={5}",
+                    ServerType, 
+                    RuntimeFlavor, 
+                    RuntimeArchitecture, 
+                    ApplicationBaseUriHint,
+                    PublishApplicationBeforeDeployment, 
+                    PublishWithNoSource);
+        }
     }
 }

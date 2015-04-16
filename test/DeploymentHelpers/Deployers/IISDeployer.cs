@@ -24,6 +24,9 @@ namespace DeploymentHelpers
 
         public override DeploymentResult Deploy()
         {
+            // Start timer
+            StartTimer();
+
             // Only supports publish and run on IIS.
             DeploymentParameters.PublishApplicationBeforeDeployment = true;
 
@@ -93,6 +96,8 @@ namespace DeploymentHelpers
 
             CleanPublishedOutput();
             InvokeUserApplicationCleanup();
+
+            StopTimer();
         }
 
         private class IISApplication

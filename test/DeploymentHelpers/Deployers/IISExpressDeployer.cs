@@ -22,6 +22,9 @@ namespace DeploymentHelpers
 
         public override DeploymentResult Deploy()
         {
+            // Start timer
+            StartTimer();
+
             DeploymentParameters.DnxRuntime = PopulateChosenRuntimeInformation();
 
             if (DeploymentParameters.PublishApplicationBeforeDeployment)
@@ -91,11 +94,11 @@ namespace DeploymentHelpers
 
             // IIS express figures out the DNX from %PATH%.
 #if DNX451
-            startInfo.EnvironmentVariables["PATH"] = ChosenRuntimePath + ";" + startInfo.EnvironmentVariables["PATH"];
-            startInfo.EnvironmentVariables["DNX_APPBASE"] = DeploymentParameters.ApplicationPath;
+            SetEnvironmentVariable(startInfo.EnvironmentVariables, "PATH", ChosenRuntimePath + ";" + startInfo.EnvironmentVariables["PATH"]);
+            SetEnvironmentVariable(startInfo.EnvironmentVariables, "DNX_APPBASE", DeploymentParameters.ApplicationPath);
 #elif DNXCORE50
-            startInfo.Environment["PATH"] = ChosenRuntimePath + ";" + startInfo.Environment["PATH"];
-            startInfo.Environment["DNX_APPBASE"] = DeploymentParameters.ApplicationPath;
+            SetEnvironmentVariable(startInfo.Environment, "PATH", ChosenRuntimePath + ";" + startInfo.Environment["PATH"]);
+            SetEnvironmentVariable(startInfo.Environment, "DNX_APPBASE", DeploymentParameters.ApplicationPath);
 #endif
 
             _hostProcess = Process.Start(startInfo);
@@ -194,6 +197,8 @@ namespace DeploymentHelpers
             }
 
             InvokeUserApplicationCleanup();
+
+            StopTimer();
         }
     }
 }

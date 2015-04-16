@@ -20,6 +20,9 @@ namespace DeploymentHelpers
 
         public override DeploymentResult Deploy()
         {
+            // Start timer
+            StartTimer();
+
             DeploymentParameters.DnxRuntime = PopulateChosenRuntimeInformation();
 
             if (DeploymentParameters.PublishApplicationBeforeDeployment)
@@ -81,6 +84,8 @@ namespace DeploymentHelpers
             }
 
             InvokeUserApplicationCleanup();
+
+            StopTimer();
         }
     }
 }

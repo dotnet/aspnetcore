@@ -21,6 +21,9 @@ namespace DeploymentHelpers
 
         public override DeploymentResult Deploy()
         {
+            // Start timer
+            StartTimer();
+
             var path = Environment.GetEnvironmentVariable("PATH");
             var runtimeBin = path.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).
                 Where(c => c.Contains("dnx-mono")).FirstOrDefault();
@@ -97,6 +100,8 @@ namespace DeploymentHelpers
             }
 
             InvokeUserApplicationCleanup();
+
+            StopTimer();
         }
     }
 }

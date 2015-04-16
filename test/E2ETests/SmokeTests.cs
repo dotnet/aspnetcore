@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net.Http;
 using DeploymentHelpers;
 using Microsoft.AspNet.Testing.xunit;
@@ -124,14 +123,7 @@ namespace E2ETests
 
             using (logger.BeginScope("SmokeTestSuite"))
             {
-                var stopwatch = Stopwatch.StartNew();
-
-                logger.LogInformation("Variation Details : HostType = {hostType}, DonetFlavor = {flavor}, Architecture = {arch}, applicationBaseUrl = {appBase}",
-                    serverType, donetFlavor, architecture, applicationBaseUrl);
-
                 var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
-                var connectionString = string.Format(DbUtils.CONNECTION_STRING_FORMAT, musicStoreDbName);
-                logger.LogInformation("Pointing MusicStore DB to '{connString}'", connectionString);
 
                 var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, donetFlavor, architecture)
                 {
@@ -152,7 +144,9 @@ namespace E2ETests
 
                 // Override the connection strings using environment based configuration
                 deploymentParameters.EnvironmentVariables
-                    .Add(new KeyValuePair<string, string>("SQLAZURECONNSTR_DefaultConnection", connectionString));
+                    .Add(new KeyValuePair<string, string>(
+                        "SQLAZURECONNSTR_DefaultConnection",
+                        string.Format(DbUtils.CONNECTION_STRING_FORMAT, musicStoreDbName)));
 
                 bool testSuccessful = false;
 
@@ -172,8 +166,6 @@ namespace E2ETests
                         response = httpClient.GetAsync(string.Empty).Result;
                         return response;
                     }, logger: logger, cancellationToken: deploymentResult.HostShutdownToken);
-
-                    logger.LogInformation("[Time]: Approximate time taken for application initialization : '{t}' seconds", stopwatch.Elapsed.TotalSeconds);
 
                     var validator = new Validator(httpClient, httpClientHandler, logger, deploymentResult);
 
@@ -260,8 +252,6 @@ namespace E2ETests
                     // MicrosoftAccountLogin
                     validator.LoginWithMicrosoftAccount();
 
-                    stopwatch.Stop();
-                    logger.LogInformation("[Time]: Total time taken for this test variation '{t}' seconds", stopwatch.Elapsed.TotalSeconds);
                     testSuccessful = true;
                 }
 

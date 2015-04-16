@@ -21,6 +21,8 @@ namespace DeploymentHelpers
 
         protected ILogger Logger { get; private set; }
 
+        protected Stopwatch StopWatch { get; private set; } = new Stopwatch();
+
         public abstract DeploymentResult Deploy();
 
         public ApplicationDeployer(
@@ -140,19 +142,38 @@ namespace DeploymentHelpers
                 startInfo.Environment;
 #endif
 
-            environment["ASPNET_ENV"] = DeploymentParameters.EnvironmentName;
+            SetEnvironmentVariable(environment, "ASPNET_ENV", DeploymentParameters.EnvironmentName);
 
             // Work around for https://github.com/aspnet/dnx/issues/1515
             if (DeploymentParameters.PublishWithNoSource)
             {
-                environment.Remove("DNX_PACKAGES");
+                SetEnvironmentVariable(environment, "DNX_PACKAGES", null);
             }
 
-            environment.Remove("DNX_DEFAULT_LIB");
+            SetEnvironmentVariable(environment, "DNX_DEFAULT_LIB", null);
 
             foreach (var environmentVariable in DeploymentParameters.EnvironmentVariables)
             {
-                environment[environmentVariable.Key] = environmentVariable.Value;
+                SetEnvironmentVariable(environment, environmentVariable.Key, environmentVariable.Value);
+            }
+        }
+
+#if DNX451
+        protected void SetEnvironmentVariable(System.Collections.Specialized.StringDictionary environment, string name, string value)
+        {
+#elif DNXCORE50
+        protected void SetEnvironmentVariable(System.Collections.Generic.IDictionary<string, string> environment, string name, string value)
+        {
+#endif
+            if (value == null)
+            {
+                Logger.LogInformation("Removing environment variable {name}", name);
+                environment.Remove(name);
+            }
+            else
+            {
+                Logger.LogInformation("SET {name}={value}", name, value);
+                environment[name] = value;
             }
         }
 
@@ -182,6 +203,18 @@ namespace DeploymentHelpers
             {
                 // Suppress errors.
             }
+        }
+
+        protected void StartTimer()
+        {
+            Logger.LogInformation("Deploying {VariationDetails}", DeploymentParameters.ToString());
+            StopWatch.Start();
+        }
+
+        protected void StopTimer()
+        {
+            StopWatch.Stop();
+            Logger.LogInformation("[Time]: Total time taken for this test variation '{t}' seconds", StopWatch.Elapsed.TotalSeconds);
         }
 
         public abstract void Dispose();
