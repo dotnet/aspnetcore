@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Core.Collections;
+using Microsoft.AspNet.Http.Collections;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.WebEncoders;
 using Moq;

@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Core.Collections;
+using Microsoft.AspNet.Http.Collections;
 using Microsoft.AspNet.Mvc.Xml;
 using Microsoft.Net.Http.Headers;
 using Moq;

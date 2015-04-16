@@ -3,8 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Core;
-using Microsoft.AspNet.Http.Core.Collections;
+using Microsoft.AspNet.Http.Collections;
 
 namespace MvcTagHelpersWebSite.Models
 {

@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Core;
+using Microsoft.AspNet.Http;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test

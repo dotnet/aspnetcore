@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Core.Collections;
+using Microsoft.AspNet.Http.Collections;
 using Microsoft.AspNet.Mvc;
 
 namespace ModelBindingWebSite.Controllers
