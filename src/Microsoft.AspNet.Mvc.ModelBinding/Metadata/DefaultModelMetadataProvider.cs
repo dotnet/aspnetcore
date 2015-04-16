@@ -121,14 +121,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 var propertyEntry = new DefaultMetadataDetails(propertyKey, attributes);
                 if (propertyHelper.Property.CanRead && propertyHelper.Property.GetMethod?.IsPublic == true)
                 {
-                    propertyEntry.PropertyGetter = PropertyHelper.MakeFastPropertyGetter(propertyHelper.Property);
+                    propertyEntry.PropertyGetter = propertyHelper.ValueGetter;
                 }
 
                 if (propertyHelper.Property.CanWrite &&
                     propertyHelper.Property.SetMethod?.IsPublic == true &&
                     !key.ModelType.IsValueType())
                 {
-                    propertyEntry.PropertySetter = PropertyHelper.MakeFastPropertySetter(propertyHelper.Property);
+                    propertyEntry.PropertySetter = propertyHelper.ValueSetter;
                 }
 
                 propertyEntries.Add(propertyEntry);

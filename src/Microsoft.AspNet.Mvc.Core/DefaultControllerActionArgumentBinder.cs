@@ -71,15 +71,15 @@ namespace Microsoft.AspNet.Mvc
             var propertyHelpers = PropertyHelper.GetProperties(controller);
             foreach (var property in properties)
             {
-                var propertyHelper = propertyHelpers.First(helper => helper.Name == property.Key);
+                var propertyHelper = propertyHelpers.First(helper =>
+                    string.Equals(helper.Name, property.Key, StringComparison.Ordinal));
                 if (propertyHelper.Property == null || !propertyHelper.Property.CanWrite)
                 {
                     // nothing to do
                     return;
                 }
 
-                var setter = PropertyHelper.MakeFastPropertySetter(propertyHelper.Property);
-                setter(controller, property.Value);
+                propertyHelper.SetValue(controller, property.Value);
             }
         }
 
