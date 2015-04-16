@@ -25,7 +25,9 @@ namespace MusicStore
 {
     public class StartupSocialTesting
     {
-        public StartupSocialTesting(IApplicationEnvironment appEnvironment)
+        private readonly IRuntimeEnvironment _runtimeEnvironment;
+
+        public StartupSocialTesting(IApplicationEnvironment appEnvironment, IRuntimeEnvironment runtimeEnvironment)
         {
             //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
             //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
@@ -33,6 +35,8 @@ namespace MusicStore
                         .AddJsonFile("config.json")
                         .AddEnvironmentVariables() //All environment variables in the process's context flow in as configuration values.
                         .AddJsonFile("configoverride.json", optional: true); // Used to override some configuration parameters that cannot be overridden by environment.
+
+            _runtimeEnvironment = runtimeEnvironment;
         }
 
         public IConfiguration Configuration { get; private set; }
@@ -45,7 +49,7 @@ namespace MusicStore
             string value;
             var useInMemoryStore = Configuration.TryGet("UseInMemoryStore", out value) && value == "true" ?
                 true :
-                Type.GetType("Mono.Runtime") != null;
+                _runtimeEnvironment.RuntimeType.Equals("Mono", StringComparison.OrdinalIgnoreCase);
 
             // Add EF services to the services container
             if (useInMemoryStore)

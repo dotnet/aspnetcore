@@ -19,13 +19,17 @@ namespace MusicStore
 {
     public class StartupOpenIdConnectTesting
     {
-        public StartupOpenIdConnectTesting(IApplicationEnvironment env)
+        private readonly IRuntimeEnvironment _runtimeEnvironment;
+
+        public StartupOpenIdConnectTesting(IApplicationEnvironment env, IRuntimeEnvironment runtimeEnvironment)
         {
             //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
             //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
             Configuration = new Configuration(env.ApplicationBasePath)
                         .AddJsonFile("config.json")
                         .AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
+
+            _runtimeEnvironment = runtimeEnvironment;
         }
 
         public IConfiguration Configuration { get; private set; }
@@ -35,7 +39,7 @@ namespace MusicStore
             services.Configure<AppSettings>(Configuration.GetSubKey("AppSettings"));
 
             //Sql client not available on mono
-            var useInMemoryStore = Type.GetType("Mono.Runtime") != null;
+            var useInMemoryStore = _runtimeEnvironment.RuntimeType.Equals("Mono", StringComparison.OrdinalIgnoreCase);
 
             // Add EF services to the services container
             if (useInMemoryStore)
