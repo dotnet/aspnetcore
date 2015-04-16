@@ -111,6 +111,20 @@ namespace MusicStore.Models
                 //await userManager.AddToRoleAsync(user, adminRole);
                 await userManager.AddClaimAsync(user, new Claim("ManageStore", "Allowed"));
             }
+
+            var envPerfLab = configuration.Get<string>("PERF_LAB");
+            if (envPerfLab == "true")
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    var email = string.Format("User{0:D3}@sample.com", i);
+                    var normalUser = await userManager.FindByEmailAsync(email);
+                    if (normalUser == null)
+                    {
+                        await userManager.CreateAsync(new ApplicationUser { UserName = email, Email = email }, "Password~!1");
+                    }
+                }
+            }
         }
 
         private static Album[] GetAlbums(string imgUrl, Dictionary<string, Genre> genres, Dictionary<string, Artist> artists)
