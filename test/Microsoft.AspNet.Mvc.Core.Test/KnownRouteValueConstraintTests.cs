@@ -172,7 +172,7 @@ namespace Microsoft.AspNet.Routing.Tests
 
             context.Setup(o => o.RequestServices
                                .GetService(typeof(IActionDescriptorsCollectionProvider)))
-                   .Returns(new DefaultActionDescriptorsCollectionProvider(context.Object.RequestServices, new NullLoggerFactory()));
+                   .Returns(new DefaultActionDescriptorsCollectionProvider(context.Object.RequestServices));
             return context.Object;
         }
 

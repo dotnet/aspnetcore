@@ -4,9 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.Core
@@ -17,19 +15,16 @@ namespace Microsoft.AspNet.Mvc.Core
         private readonly IControllerTypeProvider _controllerTypeProvider;
         private readonly IReadOnlyList<IFilter> _globalFilters;
         private readonly IEnumerable<IApplicationModelConvention> _conventions;
-        private readonly ILogger _logger;
 
         public ControllerActionDescriptorProvider([NotNull] IControllerTypeProvider controllerTypeProvider,
                                                   [NotNull] IControllerModelBuilder applicationModelBuilder,
                                                   [NotNull] IGlobalFilterProvider globalFilters,
-                                                  [NotNull] IOptions<MvcOptions> optionsAccessor,
-                                                  [NotNull] ILoggerFactory loggerFactory)
+                                                  [NotNull] IOptions<MvcOptions> optionsAccessor)
         {
             _controllerTypeProvider = controllerTypeProvider;
             _applicationModelBuilder = applicationModelBuilder;
             _globalFilters = globalFilters.Filters;
             _conventions = optionsAccessor.Options.Conventions;
-            _logger = loggerFactory.CreateLogger<ControllerActionDescriptorProvider>();
         }
 
         public int Order
@@ -55,13 +50,6 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             var applicationModel = BuildModel();
             ApplicationModelConventions.ApplyConventions(applicationModel, _conventions);
-            if (_logger.IsEnabled(LogLevel.Verbose))
-            {
-                foreach (var controller in applicationModel.Controllers)
-                {
-                    _logger.LogVerbose(new ControllerModelValues(controller));
-                }
-            }
             return ControllerActionDescriptorBuilder.Build(applicationModel);
         }
 

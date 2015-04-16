@@ -4,9 +4,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc.Core
 {
@@ -17,17 +15,15 @@ namespace Microsoft.AspNet.Mvc.Core
     public class DefaultActionDescriptorsCollectionProvider : IActionDescriptorsCollectionProvider
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly ILogger _logger;
         private ActionDescriptorsCollection _collection;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultActionDescriptorsCollectionProvider" /> class.
         /// </summary>
         /// <param name="serviceProvider">The application IServiceProvider.</param>
-        public DefaultActionDescriptorsCollectionProvider(IServiceProvider serviceProvider, ILoggerFactory factory)
+        public DefaultActionDescriptorsCollectionProvider(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
-            _logger = factory.CreateLogger<DefaultActionDescriptorsCollectionProvider>();
         }
 
         /// <summary>
@@ -63,14 +59,6 @@ namespace Microsoft.AspNet.Mvc.Core
             for (var i = providers.Length - 1; i >= 0; i--)
             {
                 providers[i].OnProvidersExecuted(context);
-            }
-
-            if (_logger.IsEnabled(LogLevel.Verbose))
-            {
-                foreach (var actionDescriptor in context.Results)
-                {
-                    _logger.LogVerbose(new ActionDescriptorValues(actionDescriptor));
-                }
             }
 
             return new ActionDescriptorsCollection(

@@ -22,9 +22,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void BuildControllerModel_DerivedFromControllerClass_HasFilter()
         {
             // Arrange
-            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
-                                                            NullLoggerFactory.Instance,
-                                                            null);
+            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null), null);
             var typeInfo = typeof(StoreController).GetTypeInfo();
 
             // Act
@@ -39,9 +37,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void BuildControllerModel_AuthorizeAttributeAddsAuthorizeFilter()
         {
             // Arrange
-            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
-                                                            NullLoggerFactory.Instance,
-                                                            null);
+            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null), null);
             var typeInfo = typeof(AccountController).GetTypeInfo();
 
             // Act
@@ -61,8 +57,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             mockOptions.SetupGet(o => o.Options)
                        .Returns(corsOptions);
             var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
-                                                            NullLoggerFactory.Instance,
-                                                            authorizationOptions: null);
+                authorizationOptions: null);
             var typeInfo = typeof(CorsController).GetTypeInfo();
 
             // Act
@@ -76,9 +71,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void BuildControllerModel_AddsControllerProperties()
         {
             // Arrange
-            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
-                                                            NullLoggerFactory.Instance,
-                                                            null);
+            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null), null);
             var typeInfo = typeof(ModelBinderController).GetTypeInfo();
 
             // Act
@@ -103,7 +96,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             mockOptions.SetupGet(o => o.Options)
                        .Returns(corsOptions);
             var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
-                                                            NullLoggerFactory.Instance,
                                                             authorizationOptions: null);
             var typeInfo = typeof(DisableCorsController).GetTypeInfo();
 
@@ -120,9 +112,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void BuildControllerModel_ClassWithoutFilterInterfaces_HasNoControllerFilter()
         {
             // Arrange
-            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
-                                                            NullLoggerFactory.Instance,
-                                                            null);
+            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null), null);
             var typeInfo = typeof(NoFiltersController).GetTypeInfo();
 
             // Act
@@ -137,9 +127,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void BuildControllerModel_ClassWithFilterInterfaces_HasFilter()
         {
             // Arrange
-            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
-                                                            NullLoggerFactory.Instance,
-                                                            null);
+            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null), null);
             var typeInfo = typeof(SomeFiltersController).GetTypeInfo();
 
             // Act
@@ -154,9 +142,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void BuildControllerModel_ClassWithFilterInterfaces_UnsupportedType()
         {
             // Arrange
-            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
-                                                            NullLoggerFactory.Instance,
-                                                            null);
+            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null), null);
             var typeInfo = typeof(UnsupportedFiltersController).GetTypeInfo();
 
             // Act

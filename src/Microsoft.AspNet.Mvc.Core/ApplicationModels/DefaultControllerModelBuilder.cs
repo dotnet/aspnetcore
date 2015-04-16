@@ -12,7 +12,6 @@ using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
@@ -23,7 +22,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
     public class DefaultControllerModelBuilder : IControllerModelBuilder
     {
         private readonly IActionModelBuilder _actionModelBuilder;
-        private readonly ILogger _logger;
         private readonly AuthorizationOptions _authorizationOptions;
 
         /// <summary>
@@ -31,12 +29,10 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// </summary>
         /// <param name="actionModelBuilder">The <see cref="IActionModelBuilder"/> used to create actions.</param>
         public DefaultControllerModelBuilder(
-            IActionModelBuilder actionModelBuilder, 
-            ILoggerFactory loggerFactory, 
+            IActionModelBuilder actionModelBuilder,
             IOptions<AuthorizationOptions> authorizationOptions)
         {
             _actionModelBuilder = actionModelBuilder;
-            _logger = loggerFactory.CreateLogger<DefaultControllerModelBuilder>();
             _authorizationOptions = authorizationOptions?.Options ?? new AuthorizationOptions();
         }
 

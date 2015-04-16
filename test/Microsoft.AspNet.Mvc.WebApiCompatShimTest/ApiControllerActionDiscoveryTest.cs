@@ -12,7 +12,6 @@ using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
-using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -373,9 +372,7 @@ namespace System.Web.Http
             var assemblyProvider = new FixedSetAssemblyProvider();
             assemblyProvider.CandidateAssemblies.Add(GetType().GetTypeInfo().Assembly);
             var controllerTypeProvider = new NamespaceFilteredControllerTypeProvider(assemblyProvider);
-            var modelBuilder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
-                                                                 new LoggerFactory(),
-                                                                 null);
+            var modelBuilder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null), null);
 
             var filterProvider = new Mock<IGlobalFilterProvider>();
             filterProvider
@@ -396,8 +393,7 @@ namespace System.Web.Http
                 controllerTypeProvider,
                 modelBuilder,
                 filterProvider.Object,
-                optionsAccessor.Object,
-                new LoggerFactory());
+                optionsAccessor.Object);
 
             return provider;
         }

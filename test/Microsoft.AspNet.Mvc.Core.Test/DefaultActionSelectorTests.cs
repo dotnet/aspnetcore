@@ -13,7 +13,6 @@ using Microsoft.AspNet.Http.Core.Collections;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Internal;
@@ -645,7 +644,7 @@ namespace Microsoft.AspNet.Mvc
 
             serviceContainer.AddService(typeof(IEnumerable<IActionDescriptorProvider>), list);
 
-            var actionCollectionDescriptorProvider = new DefaultActionDescriptorsCollectionProvider(serviceContainer, new NullLoggerFactory());
+            var actionCollectionDescriptorProvider = new DefaultActionDescriptorsCollectionProvider(serviceContainer);
             var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionCollectionDescriptorProvider);
 
             var actionConstraintProviders = new IActionConstraintProvider[] {
@@ -669,16 +668,13 @@ namespace Microsoft.AspNet.Mvc
                 .ToList();
 
             var controllerTypeProvider = new FixedSetControllerTypeProvider(controllerTypes);
-            var modelBuilder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null),
-                                                                 NullLoggerFactory.Instance,
-                                                                 null);
+            var modelBuilder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null), null);
 
             return new ControllerActionDescriptorProvider(
                                         controllerTypeProvider,
                                         modelBuilder,
                                         new TestGlobalFilterProvider(),
-                                        new MockMvcOptionsAccessor(),
-                                        new NullLoggerFactory());
+                                        new MockMvcOptionsAccessor());
         }
 
         private static HttpContext GetHttpContext(string httpMethod)
