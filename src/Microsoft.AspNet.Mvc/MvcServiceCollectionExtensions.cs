@@ -5,11 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.Logging;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -76,8 +74,7 @@ namespace Microsoft.Framework.DependencyInjection
                 assemblyProvider.CandidateAssemblies.Add(assembly);
             }
 
-            var loggerFactory = new LoggerFactory();
-            var controllerTypeProvider = new DefaultControllerTypeProvider(assemblyProvider, loggerFactory);
+            var controllerTypeProvider = new DefaultControllerTypeProvider(assemblyProvider);
             var controllerTypes = controllerTypeProvider.ControllerTypes;
 
             return WithControllersAsServices(services, controllerTypes.Select(type => type.AsType()));

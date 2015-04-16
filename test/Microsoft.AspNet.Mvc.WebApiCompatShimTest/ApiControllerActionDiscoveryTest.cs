@@ -411,7 +411,7 @@ namespace System.Web.Http
         private class NamespaceFilteredControllerTypeProvider : DefaultControllerTypeProvider
         {
             public NamespaceFilteredControllerTypeProvider(IAssemblyProvider provider)
-                : base(provider, new LoggerFactory())
+                : base(provider)
             {
 
             }

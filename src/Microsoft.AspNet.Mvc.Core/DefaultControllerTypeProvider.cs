@@ -21,7 +21,6 @@ namespace Microsoft.AspNet.Mvc
         private static readonly TypeInfo ControllerTypeInfo = typeof(Controller).GetTypeInfo();
         private static readonly TypeInfo ObjectTypeInfo = typeof(object).GetTypeInfo();
         private readonly IAssemblyProvider _assemblyProvider;
-        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of <see cref="DefaultControllerTypeProvider"/>.
@@ -29,11 +28,9 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="assemblyProvider"><see cref="IAssemblyProvider"/> that provides assemblies to look for
         /// controllers in.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public DefaultControllerTypeProvider(IAssemblyProvider assemblyProvider,
-                                             ILoggerFactory loggerFactory)
+        public DefaultControllerTypeProvider(IAssemblyProvider assemblyProvider)
         {
             _assemblyProvider = assemblyProvider;
-            _logger = loggerFactory.CreateLogger<DefaultControllerTypeProvider>();
         }
 
         /// <inheritdoc />
@@ -42,14 +39,6 @@ namespace Microsoft.AspNet.Mvc
             get
             {
                 var candidateAssemblies = new HashSet<Assembly>(_assemblyProvider.CandidateAssemblies);
-                if (_logger.IsEnabled(LogLevel.Verbose))
-                {
-                    foreach (var assembly in candidateAssemblies)
-                    {
-                        _logger.LogVerbose(new AssemblyValues(assembly));
-                    }
-                }
-
                 var types = candidateAssemblies.SelectMany(a => a.DefinedTypes);
                 return types.Where(typeInfo => IsController(typeInfo, candidateAssemblies));
             }

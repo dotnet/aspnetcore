@@ -222,7 +222,7 @@ namespace Microsoft.AspNet.Mvc
         private static DefaultControllerTypeProvider GetControllerTypeProvider()
         {
             var assemblyProvider = new FixedSetAssemblyProvider();
-            return new DefaultControllerTypeProvider(assemblyProvider, NullLoggerFactory.Instance);
+            return new DefaultControllerTypeProvider(assemblyProvider);
         }
     }
 }
