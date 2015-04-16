@@ -1,0 +1,23 @@
+{
+    "compilationOptions": {
+        "warningsAsErrors": "true"
+    },
+    "commands": {
+        "test": "xunit.runner.aspnet"
+    },
+    "dependencies": {
+        "DeploymentHelpers": "1.0.0-*",
+        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
+        "Microsoft.Framework.Logging.Console": "1.0.0-*",
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    },
+    "frameworks": {
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.Data": "",
+                "System.Net.Http": "",
+                "System.Xml": ""
+            }
+        }
+    }
+}
