@@ -6,7 +6,7 @@
         "Microsoft.AspNet.FileProviders": "1.0.0-*",
         "Microsoft.AspNet.Hosting.Interfaces": "1.0.0-*",
         "Microsoft.AspNet.Hosting.Server.Interfaces": "1.0.0-*",
-        "Microsoft.AspNet.Http.Core": "1.0.0-*",
+        "Microsoft.AspNet.Http": "1.0.0-*",
         "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
         "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
         "Microsoft.Framework.DependencyInjection": "1.0.0-*",

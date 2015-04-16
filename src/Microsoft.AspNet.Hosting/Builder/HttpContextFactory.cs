@@ -3,7 +3,6 @@
 
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Core;
 
 namespace Microsoft.AspNet.Hosting.Builder
 {
