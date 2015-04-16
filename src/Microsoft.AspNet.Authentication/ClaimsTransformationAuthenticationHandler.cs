@@ -5,7 +5,6 @@ using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Http.Core.Authentication;
 
 namespace Microsoft.AspNet.Authentication
 {

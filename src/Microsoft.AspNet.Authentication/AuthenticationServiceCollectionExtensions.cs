@@ -5,7 +5,6 @@ using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication;
-using Microsoft.AspNet.Http.Core.Authentication;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection

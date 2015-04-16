@@ -6,7 +6,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Authentication;
 using Shouldly;
 using Xunit;

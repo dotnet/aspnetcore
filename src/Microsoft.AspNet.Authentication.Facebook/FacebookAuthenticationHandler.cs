@@ -9,7 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Core.Collections;
+using Microsoft.AspNet.Http.Collections;
 using Microsoft.AspNet.Http.Extensions;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Authentication.OAuth;
