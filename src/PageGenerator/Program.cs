@@ -54,9 +54,6 @@ namespace PageGenerator
             Console.WriteLine();
             Console.WriteLine("{0} files successfully generated.", fileCount);
             Console.WriteLine();
-
-            Console.Write("Press enter to close application...");
-            Console.ReadLine();
         }
 
         private static IEnumerable<string> GetCshtmlFiles(string path)

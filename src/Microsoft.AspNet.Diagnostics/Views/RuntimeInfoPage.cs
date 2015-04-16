@@ -70,32 +70,74 @@ using Microsoft.Framework.Runtime;
 #line default
 #line hidden
             WriteLiteral("</title>\r\n    <style>\r\n        body {\r\n    font-family: 'Segoe UI', Tahoma, Arial, Helvetica, sans-serif;\r\n    font-size: .813em;\r\n    line-height: 1.4em;\r\n    color: #222;\r\n}\r\n\r\nh1, h2, h3, h4, h5, th {\r\n    font-weight: 100;\r\n}\r\n\r\nh1 {\r\n    color: #44525e;\r\n    margin: 15px 0 15px 0;\r\n}\r\n\r\nh2 {\r\n    margin: 10px 5px 0 0;\r\n}\r\n\r\ntable .even{\r\n    background-color: #f0f0f0;\r\n}\r\n\r\nth {\r\n    font-size: 16px;\r\n}\r\n\r\n\r\n\r\n    </style>\r" +
-"\n</head>\r\n<body>\r\n    <h1>");
+"\n</head>\r\n<body>\r\n    <h2>");
 #line 27 "RuntimeInfoPage.cshtml"
-   Write(Resources.RuntimeInfoPage_RuntimeVersion);
+   Write(Resources.RuntimeInfoPage_Environment);
 
 #line default
 #line hidden
-            WriteLiteral("</h1>\r\n    <h2>");
+            WriteLiteral("</h2>\r\n    <p>");
 #line 28 "RuntimeInfoPage.cshtml"
-    Write(string.IsNullOrWhiteSpace(Model.Version) ? Resources.RuntimeInfoPage_RuntimeVersionFail : Model.Version);
+  Write(Resources.RuntimeInfoPage_OperatingSystem);
 
 #line default
 #line hidden
-            WriteLiteral("</h2>\r\n    \r\n    <h1>");
+            WriteLiteral(" ");
+#line 28 "RuntimeInfoPage.cshtml"
+                                              Write(string.IsNullOrWhiteSpace(Model.OperatingSystem) ? Resources.RuntimeInfoPage_OperatingSystemFail : Model.OperatingSystem);
+
+#line default
+#line hidden
+            WriteLiteral("</p>\r\n    \r\n    <p>");
 #line 30 "RuntimeInfoPage.cshtml"
+  Write(Resources.RuntimeInfoPage_RuntimeVersion);
+
+#line default
+#line hidden
+            WriteLiteral(" ");
+#line 30 "RuntimeInfoPage.cshtml"
+                                             Write(string.IsNullOrWhiteSpace(Model.Version) ? Resources.RuntimeInfoPage_RuntimeVersionFail : Model.Version);
+
+#line default
+#line hidden
+            WriteLiteral("</p>\r\n\r\n    <p>");
+#line 32 "RuntimeInfoPage.cshtml"
+  Write(Resources.RuntimeInfoPage_RuntimeArchitecture);
+
+#line default
+#line hidden
+            WriteLiteral(" ");
+#line 32 "RuntimeInfoPage.cshtml"
+                                                  Write(string.IsNullOrWhiteSpace(Model.RuntimeArchitecture) ? Resources.RuntimeInfoPage_RuntimeArchitectureFail : Model.RuntimeArchitecture);
+
+#line default
+#line hidden
+            WriteLiteral("</p>\r\n\r\n    <p>");
+#line 34 "RuntimeInfoPage.cshtml"
+  Write(Resources.RuntimeInfoPage_RuntimeType);
+
+#line default
+#line hidden
+            WriteLiteral(" ");
+#line 34 "RuntimeInfoPage.cshtml"
+                                          Write(string.IsNullOrWhiteSpace(Model.RuntimeType) ? Resources.RuntimeInfoPage_RuntimeTypeFail : Model.RuntimeType);
+
+#line default
+#line hidden
+            WriteLiteral("</p>\r\n    \r\n    <h2>");
+#line 36 "RuntimeInfoPage.cshtml"
    Write(Resources.RuntimeInfoPage_Packages);
 
 #line default
 #line hidden
-            WriteLiteral("</h1>\r\n");
-#line 31 "RuntimeInfoPage.cshtml"
+            WriteLiteral("</h2>\r\n");
+#line 37 "RuntimeInfoPage.cshtml"
     
 
 #line default
 #line hidden
 
-#line 31 "RuntimeInfoPage.cshtml"
+#line 37 "RuntimeInfoPage.cshtml"
      if (@Resources.RuntimeInfoPage_Packages == null)
     {
 
@@ -103,13 +145,13 @@ using Microsoft.Framework.Runtime;
 #line hidden
 
             WriteLiteral("        <h2>");
-#line 33 "RuntimeInfoPage.cshtml"
+#line 39 "RuntimeInfoPage.cshtml"
        Write(Resources.RuntimeInfoPage_PackagesFail);
 
 #line default
 #line hidden
             WriteLiteral("</h2>\r\n");
-#line 34 "RuntimeInfoPage.cshtml"
+#line 40 "RuntimeInfoPage.cshtml"
     }
     else
     {
@@ -119,44 +161,44 @@ using Microsoft.Framework.Runtime;
 
             WriteLiteral("        <table>\r\n            <thead>\r\n                <tr>\r\n                    <" +
 "th>");
-#line 40 "RuntimeInfoPage.cshtml"
+#line 46 "RuntimeInfoPage.cshtml"
                    Write(Resources.RuntimeInfoPage_PackageNameColumnName);
 
 #line default
 #line hidden
             WriteLiteral("</th>\r\n                    <th>");
-#line 41 "RuntimeInfoPage.cshtml"
+#line 47 "RuntimeInfoPage.cshtml"
                    Write(Resources.RuntimeInfoPage_PackageVersionColumnName);
 
 #line default
 #line hidden
             WriteLiteral("</th>\r\n                    <th>");
-#line 42 "RuntimeInfoPage.cshtml"
+#line 48 "RuntimeInfoPage.cshtml"
                    Write(Resources.RuntimeInfoPage_PackagePathColumnName);
 
 #line default
 #line hidden
             WriteLiteral("</th>\r\n                </tr>\r\n            </thead>\r\n            <tbody>\r\n");
-#line 46 "RuntimeInfoPage.cshtml"
+#line 52 "RuntimeInfoPage.cshtml"
             
 
 #line default
 #line hidden
 
-#line 46 "RuntimeInfoPage.cshtml"
+#line 52 "RuntimeInfoPage.cshtml"
                bool even = false; 
 
 #line default
 #line hidden
 
             WriteLiteral("\r\n");
-#line 47 "RuntimeInfoPage.cshtml"
+#line 53 "RuntimeInfoPage.cshtml"
             
 
 #line default
 #line hidden
 
-#line 47 "RuntimeInfoPage.cshtml"
+#line 53 "RuntimeInfoPage.cshtml"
              foreach (var package in Model.References.OrderBy(package => package.Name.ToLowerInvariant()))
             {
 
@@ -164,40 +206,40 @@ using Microsoft.Framework.Runtime;
 #line hidden
 
             WriteLiteral("                <tr");
-            WriteAttribute("class", Tuple.Create(" class=\"", 1576), Tuple.Create("\"", 1604), 
-            Tuple.Create(Tuple.Create("", 1584), Tuple.Create<System.Object, System.Int32>(even?"even":"odd", 1584), false));
+            WriteAttribute("class", Tuple.Create(" class=\"", 2160), Tuple.Create("\"", 2188), 
+            Tuple.Create(Tuple.Create("", 2168), Tuple.Create<System.Object, System.Int32>(even?"even":"odd", 2168), false));
             WriteLiteral(">\r\n                    <td>");
-#line 50 "RuntimeInfoPage.cshtml"
+#line 56 "RuntimeInfoPage.cshtml"
                    Write(package.Name);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                    <td>");
-#line 51 "RuntimeInfoPage.cshtml"
+#line 57 "RuntimeInfoPage.cshtml"
                    Write(package.Version);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                    <td>");
-#line 52 "RuntimeInfoPage.cshtml"
+#line 58 "RuntimeInfoPage.cshtml"
                    Write(package.Path);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                </tr>\r\n");
-#line 54 "RuntimeInfoPage.cshtml"
+#line 60 "RuntimeInfoPage.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 54 "RuntimeInfoPage.cshtml"
+#line 60 "RuntimeInfoPage.cshtml"
                    even = !even; 
 
 #line default
 #line hidden
 
-#line 54 "RuntimeInfoPage.cshtml"
+#line 60 "RuntimeInfoPage.cshtml"
                                   
             }
 
@@ -205,7 +247,7 @@ using Microsoft.Framework.Runtime;
 #line hidden
 
             WriteLiteral("            </tbody>\r\n        </table>\r\n");
-#line 58 "RuntimeInfoPage.cshtml"
+#line 64 "RuntimeInfoPage.cshtml"
     }
 
 #line default

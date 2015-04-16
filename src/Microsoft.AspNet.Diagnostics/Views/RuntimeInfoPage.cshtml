@@ -24,10 +24,16 @@
     </style>
 </head>
 <body>
-    <h1>@Resources.RuntimeInfoPage_RuntimeVersion</h1>
-    <h2>@(string.IsNullOrWhiteSpace(Model.Version) ? Resources.RuntimeInfoPage_RuntimeVersionFail : Model.Version)</h2>
+    <h2>@Resources.RuntimeInfoPage_Environment</h2>
+    <p>@Resources.RuntimeInfoPage_OperatingSystem @(string.IsNullOrWhiteSpace(Model.OperatingSystem) ? Resources.RuntimeInfoPage_OperatingSystemFail : Model.OperatingSystem)</p>
     
-    <h1>@Resources.RuntimeInfoPage_Packages</h1>
+    <p>@Resources.RuntimeInfoPage_RuntimeVersion @(string.IsNullOrWhiteSpace(Model.Version) ? Resources.RuntimeInfoPage_RuntimeVersionFail : Model.Version)</p>
+
+    <p>@Resources.RuntimeInfoPage_RuntimeArchitecture @(string.IsNullOrWhiteSpace(Model.RuntimeArchitecture) ? Resources.RuntimeInfoPage_RuntimeArchitectureFail : Model.RuntimeArchitecture)</p>
+
+    <p>@Resources.RuntimeInfoPage_RuntimeType @(string.IsNullOrWhiteSpace(Model.RuntimeType) ? Resources.RuntimeInfoPage_RuntimeTypeFail : Model.RuntimeType)</p>
+    
+    <h2>@Resources.RuntimeInfoPage_Packages</h2>
     @if (@Resources.RuntimeInfoPage_Packages == null)
     {
         <h2>@Resources.RuntimeInfoPage_PackagesFail</h2>

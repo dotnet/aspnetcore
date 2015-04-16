@@ -46,6 +46,12 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             var libraryManagerMock = new Mock<ILibraryManager>(MockBehavior.Strict);
             libraryManagerMock.Setup(l => l.GetLibraries()).Returns(libraries);
 
+            var runtimeEnvironmentMock = new Mock<IRuntimeEnvironment>(MockBehavior.Strict);
+            runtimeEnvironmentMock.Setup(r => r.OperatingSystem).Returns("Windows");
+            runtimeEnvironmentMock.Setup(r => r.RuntimeArchitecture).Returns("x64");
+            runtimeEnvironmentMock.Setup(r => r.RuntimeType).Returns("clr");
+            runtimeEnvironmentMock.Setup(r => r.RuntimeVersion).Returns("1.0.0");
+
             RequestDelegate next = _ =>
             {
                 return Task.FromResult<object>(null);
@@ -54,13 +60,17 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             var middleware = new RuntimeInfoMiddleware(
                 next,
                 new RuntimeInfoPageOptions(),
-                libraryManagerMock.Object);
+                libraryManagerMock.Object,
+                runtimeEnvironmentMock.Object);
 
             // Act
             var model = middleware.CreateRuntimeInfoModel();
 
             // Assert
-            Assert.False(string.IsNullOrWhiteSpace(model.Version));
+            Assert.Equal("1.0.0", model.Version);
+            Assert.Equal("Windows", model.OperatingSystem);
+            Assert.Equal("clr", model.RuntimeType);
+            Assert.Equal("x64", model.RuntimeArchitecture);
             Assert.Same(libraries, model.References);
         }
 
@@ -69,6 +79,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
         {
             // Arrange
             var libraryManagerMock = new Mock<ILibraryManager>(MockBehavior.Strict);
+            var runtimeEnvironmentMock = new Mock<IRuntimeEnvironment>(MockBehavior.Strict);
 
             RequestDelegate next = _ =>
             {
@@ -78,7 +89,8 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             var middleware = new RuntimeInfoMiddleware(
                next,
                new RuntimeInfoPageOptions(),
-               libraryManagerMock.Object);
+               libraryManagerMock.Object,
+               runtimeEnvironmentMock.Object);
 
             var contextMock = new Mock<HttpContext>(MockBehavior.Strict);
             contextMock
@@ -102,6 +114,12 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                         new FakeLibraryInformation() { Name ="LibInfo2", Version = "1.0.0-beta2", Path = "Path2" },
                     });
 
+            var runtimeEnvironmentMock = new Mock<IRuntimeEnvironment>(MockBehavior.Strict);
+            runtimeEnvironmentMock.Setup(r => r.OperatingSystem).Returns("Windows");
+            runtimeEnvironmentMock.Setup(r => r.RuntimeArchitecture).Returns("x64");
+            runtimeEnvironmentMock.Setup(r => r.RuntimeType).Returns("clr");
+            runtimeEnvironmentMock.Setup(r => r.RuntimeVersion).Returns("1.0.0");
+
             RequestDelegate next = _ =>
             {
                 return Task.FromResult<object>(null);
@@ -110,7 +128,8 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             var middleware = new RuntimeInfoMiddleware(
                 next,
                 new RuntimeInfoPageOptions(),
-                libraryManagerMock.Object);
+                libraryManagerMock.Object,
+                runtimeEnvironmentMock.Object);
 
             var buffer = new byte[4096];
             using (var responseStream = new MemoryStream(buffer))
@@ -132,12 +151,16 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                 // Assert
                 string response = Encoding.UTF8.GetString(buffer);
 
-                Assert.True(response.Contains("<td>LibInfo1</td>"));
-                Assert.True(response.Contains("<td>1.0.0-beta1</td>"));
-                Assert.True(response.Contains("<td>Path1</td>"));
-                Assert.True(response.Contains("<td>LibInfo2</td>"));
-                Assert.True(response.Contains("<td>1.0.0-beta2</td>"));
-                Assert.True(response.Contains("<td>Path2</td>"));
+                Assert.Contains("<p>Runtime Version: 1.0.0</p>", response);
+                Assert.Contains("<p>Operating System: Windows</p>", response);
+                Assert.Contains("<p>Runtime Architecture: x64</p>", response);
+                Assert.Contains("<p>Runtime Type: clr</p>", response);
+                Assert.Contains("<td>LibInfo1</td>", response);
+                Assert.Contains("<td>1.0.0-beta1</td>", response);
+                Assert.Contains("<td>Path1</td>", response);
+                Assert.Contains("<td>LibInfo2</td>", response);
+                Assert.Contains("<td>1.0.0-beta2</td>", response);
+                Assert.Contains("<td>Path2</td>", response);
             }
         }
 
@@ -150,6 +173,12 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                         new FakeLibraryInformation() { Name ="LibInfo1", Version = "1.0.0-beta1", Path = "Path1" },
                     });
 
+            var runtimeEnvironmentMock = new Mock<IRuntimeEnvironment>(MockBehavior.Strict);
+            runtimeEnvironmentMock.Setup(r => r.OperatingSystem).Returns("Windows");
+            runtimeEnvironmentMock.Setup(r => r.RuntimeArchitecture).Returns("x64");
+            runtimeEnvironmentMock.Setup(r => r.RuntimeType).Returns("clr");
+            runtimeEnvironmentMock.Setup(r => r.RuntimeVersion).Returns("1.0.0");
+
             RequestDelegate next = _ =>
             {
                 return Task.FromResult<object>(null);
@@ -158,7 +187,8 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             var middleware = new RuntimeInfoMiddleware(
                 next,
                 new RuntimeInfoPageOptions(),
-                libraryManagerMock.Object);
+                libraryManagerMock.Object,
+                runtimeEnvironmentMock.Object);
 
             var buffer = new byte[4096];
             using (var responseStream = new MemoryStream(buffer))

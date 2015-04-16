@@ -1,15 +1,12 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Runtime;
-using System.Linq;
-using System.Reflection;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Diagnostics
 {
@@ -21,6 +18,7 @@ namespace Microsoft.AspNet.Diagnostics
         private readonly RequestDelegate _next;
         private readonly RuntimeInfoPageOptions _options;
         private readonly ILibraryManager _libraryManager;
+        private readonly IRuntimeEnvironment _runtimeEnvironment;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RuntimeInfoMiddleware"/> class
@@ -30,11 +28,13 @@ namespace Microsoft.AspNet.Diagnostics
         public RuntimeInfoMiddleware(
             [NotNull] RequestDelegate next,
             [NotNull] RuntimeInfoPageOptions options,
-            [NotNull] ILibraryManager libraryManager)
+            [NotNull] ILibraryManager libraryManager,
+            [NotNull] IRuntimeEnvironment runtimeEnvironment)
         {
             _next = next;
             _options = options;
             _libraryManager = libraryManager;
+            _runtimeEnvironment = runtimeEnvironment;
         }
 
         /// <summary>
@@ -59,16 +59,11 @@ namespace Microsoft.AspNet.Diagnostics
         {
             var model = new RuntimeInfoPageModel();
             model.References = _libraryManager.GetLibraries();
-            model.Version = GetRuntimeVersion();
-
+            model.Version = _runtimeEnvironment.RuntimeVersion;
+            model.OperatingSystem = _runtimeEnvironment.OperatingSystem;
+            model.RuntimeType = _runtimeEnvironment.RuntimeType;
+            model.RuntimeArchitecture = _runtimeEnvironment.RuntimeArchitecture;
             return model;
-        }
-
-        private static string GetRuntimeVersion()
-        {
-            var klr = Assembly.Load(new AssemblyName("dnx.host"));
-            var version = klr.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-            return version?.InformationalVersion;
         }
     }
 }

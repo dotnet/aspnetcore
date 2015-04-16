@@ -25,7 +25,8 @@ namespace Microsoft.AspNet.Builder
             [NotNull] RuntimeInfoPageOptions options)
         {
             var libraryManager = builder.ApplicationServices.GetService(typeof(ILibraryManager)) as ILibraryManager;
-            return builder.Use(next => new RuntimeInfoMiddleware(next, options, libraryManager).Invoke);
+            var runtimeEnvironment = builder.ApplicationServices.GetService(typeof(IRuntimeEnvironment)) as IRuntimeEnvironment;
+            return builder.Use(next => new RuntimeInfoMiddleware(next, options, libraryManager, runtimeEnvironment).Invoke);
         }
     }
 }

@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
         }
 
         /// <summary>
-        /// &gt; k ef migration add [migration name]
+        /// &gt; dnx . ef migration add [migration name]
         /// </summary>
         internal static string DatabaseErrorPage_AddMigrationCommand
         {
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
         }
 
         /// <summary>
-        /// &gt; k ef migration add [migration name]
+        /// &gt; dnx . ef migration add [migration name]
         /// </summary>
         internal static string FormatDatabaseErrorPage_AddMigrationCommand()
         {
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
         }
 
         /// <summary>
-        /// &gt; k ef migration apply
+        /// &gt; dnx . ef migration apply
         /// </summary>
         internal static string DatabaseErrorPage_ApplyMigrationsCommand
         {
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
         }
 
         /// <summary>
-        /// &gt; k ef migration apply
+        /// &gt; dnx . ef migration apply
         /// </summary>
         internal static string FormatDatabaseErrorPage_ApplyMigrationsCommand()
         {

@@ -586,6 +586,118 @@ namespace Microsoft.AspNet.Diagnostics
             return GetString("ErrorPageHtml_CompilationException");
         }
 
+        /// <summary>
+        /// Operating System:
+        /// </summary>
+        internal static string RuntimeInfoPage_OperatingSystem
+        {
+            get { return GetString("RuntimeInfoPage_OperatingSystem"); }
+        }
+
+        /// <summary>
+        /// Operating System:
+        /// </summary>
+        internal static string FormatRuntimeInfoPage_OperatingSystem()
+        {
+            return GetString("RuntimeInfoPage_OperatingSystem");
+        }
+
+        /// <summary>
+        /// Runtime Architecture:
+        /// </summary>
+        internal static string RuntimeInfoPage_RuntimeArchitecture
+        {
+            get { return GetString("RuntimeInfoPage_RuntimeArchitecture"); }
+        }
+
+        /// <summary>
+        /// Runtime Architecture:
+        /// </summary>
+        internal static string FormatRuntimeInfoPage_RuntimeArchitecture()
+        {
+            return GetString("RuntimeInfoPage_RuntimeArchitecture");
+        }
+
+        /// <summary>
+        /// Runtime Type:
+        /// </summary>
+        internal static string RuntimeInfoPage_RuntimeType
+        {
+            get { return GetString("RuntimeInfoPage_RuntimeType"); }
+        }
+
+        /// <summary>
+        /// Runtime Type:
+        /// </summary>
+        internal static string FormatRuntimeInfoPage_RuntimeType()
+        {
+            return GetString("RuntimeInfoPage_RuntimeType");
+        }
+
+        /// <summary>
+        /// Could not determine the operating system.
+        /// </summary>
+        internal static string RuntimeInfoPage_OperatingSystemFail
+        {
+            get { return GetString("RuntimeInfoPage_OperatingSystemFail"); }
+        }
+
+        /// <summary>
+        /// Could not determine the operating system.
+        /// </summary>
+        internal static string FormatRuntimeInfoPage_OperatingSystemFail()
+        {
+            return GetString("RuntimeInfoPage_OperatingSystemFail");
+        }
+
+        /// <summary>
+        /// Could not determine the runtime architecture.
+        /// </summary>
+        internal static string RuntimeInfoPage_RuntimeArchitectureFail
+        {
+            get { return GetString("RuntimeInfoPage_RuntimeArchitectureFail"); }
+        }
+
+        /// <summary>
+        /// Could not determine the runtime architecture.
+        /// </summary>
+        internal static string FormatRuntimeInfoPage_RuntimeArchitectureFail()
+        {
+            return GetString("RuntimeInfoPage_RuntimeArchitectureFail");
+        }
+
+        /// <summary>
+        /// Could not determine the runtime type.
+        /// </summary>
+        internal static string RuntimeInfoPage_RuntimeTypeFail
+        {
+            get { return GetString("RuntimeInfoPage_RuntimeTypeFail"); }
+        }
+
+        /// <summary>
+        /// Could not determine the runtime type.
+        /// </summary>
+        internal static string FormatRuntimeInfoPage_RuntimeTypeFail()
+        {
+            return GetString("RuntimeInfoPage_RuntimeTypeFail");
+        }
+
+        /// <summary>
+        /// Environment:
+        /// </summary>
+        internal static string RuntimeInfoPage_Environment
+        {
+            get { return GetString("RuntimeInfoPage_Environment"); }
+        }
+
+        /// <summary>
+        /// Environment:
+        /// </summary>
+        internal static string FormatRuntimeInfoPage_Environment()
+        {
+            return GetString("RuntimeInfoPage_Environment");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

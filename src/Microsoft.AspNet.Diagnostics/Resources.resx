@@ -233,4 +233,25 @@
   <data name="ErrorPageHtml_CompilationException" xml:space="preserve">
     <value>An error occurred during the compilation of a resource required to process this request. Please review the following specific error details and modify your source code appropriately.</value>
   </data>
+  <data name="RuntimeInfoPage_OperatingSystem" xml:space="preserve">
+    <value>Operating System:</value>
+  </data>
+  <data name="RuntimeInfoPage_RuntimeArchitecture" xml:space="preserve">
+    <value>Runtime Architecture:</value>
+  </data>
+  <data name="RuntimeInfoPage_RuntimeType" xml:space="preserve">
+    <value>Runtime Type:</value>
+  </data>
+  <data name="RuntimeInfoPage_OperatingSystemFail" xml:space="preserve">
+    <value>Could not determine the operating system.</value>
+  </data>
+  <data name="RuntimeInfoPage_RuntimeArchitectureFail" xml:space="preserve">
+    <value>Could not determine the runtime architecture.</value>
+  </data>
+  <data name="RuntimeInfoPage_RuntimeTypeFail" xml:space="preserve">
+    <value>Could not determine the runtime type.</value>
+  </data>
+  <data name="RuntimeInfoPage_Environment" xml:space="preserve">
+    <value>Environment:</value>
+  </data>
 </root>
