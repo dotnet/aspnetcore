@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -61,9 +62,11 @@ namespace Microsoft.AspNet.DataProtection.Repositories
         /// </summary>
         protected IServiceProvider Services { get; }
 
+        private const string DataProtectionKeysFolderName = "DataProtection-Keys";
+
         private static DirectoryInfo GetKeyStorageDirectoryFromBaseAppDataPath(string basePath)
         {
-            return new DirectoryInfo(Path.Combine(basePath, "ASP.NET", "DataProtection-Keys"));
+            return new DirectoryInfo(Path.Combine(basePath, "ASP.NET", DataProtectionKeysFolderName));
         }
 
         public virtual IReadOnlyCollection<XElement> GetAllElements()
@@ -103,10 +106,33 @@ namespace Microsoft.AspNet.DataProtection.Repositories
             }
 #else
             // On core CLR, we need to fall back to environment variables.
-            string folderPath = Environment.GetEnvironmentVariable("LOCALAPPDATA")
-                ?? Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), "AppData", "Local");
+            DirectoryInfo retVal;
 
-            DirectoryInfo retVal = GetKeyStorageDirectoryFromBaseAppDataPath(folderPath);
+            var localAppDataPath = Environment.GetEnvironmentVariable("LOCALAPPDATA");
+            var userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
+            var homePath = Environment.GetEnvironmentVariable("HOME");
+
+            if (localAppDataPath != null)
+            {
+                retVal = GetKeyStorageDirectoryFromBaseAppDataPath(localAppDataPath);
+            }
+            else if (userProfilePath != null)
+            {
+                retVal = GetKeyStorageDirectoryFromBaseAppDataPath(Path.Combine(userProfilePath, "AppData", "Local"));
+            }
+            else if (homePath != null)
+            {
+                // If LOCALAPPDATA and USERPROFILE are not present but HOME is,
+                // it's a good guess that this is a *NIX machine.  Use *NIX conventions for a folder name.
+                retVal = new DirectoryInfo(Path.Combine(homePath, ".aspnet", DataProtectionKeysFolderName));
+            }
+            else
+            {
+                return null;
+            }
+
+            Debug.Assert(retVal != null);
+
             try
             {
                 retVal.Create(); // throws if we don't have access, e.g., user profile not loaded
