@@ -10,9 +10,9 @@ namespace Microsoft.AspNet.Builder
     {
         IServiceProvider ApplicationServices { get; set; }
 
-        object Server { get; set; }
+        object Server { get; }
 
-        IDictionary<string, object> Properties { get; set; }
+        IDictionary<string, object> Properties { get; }
 
         IApplicationBuilder Use(Func<RequestDelegate, RequestDelegate> middleware);
 

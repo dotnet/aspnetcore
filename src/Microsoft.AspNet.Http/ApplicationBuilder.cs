@@ -19,6 +19,12 @@ namespace Microsoft.AspNet.Builder
             ApplicationServices = serviceProvider;
         }
 
+        public ApplicationBuilder(IServiceProvider serviceProvider, object server)
+            : this(serviceProvider)
+        {
+            SetProperty(Constants.BuilderProperties.ServerInformation, server);
+        }
+
         private ApplicationBuilder(ApplicationBuilder builder)
         {
             Properties = builder.Properties;
@@ -42,13 +48,9 @@ namespace Microsoft.AspNet.Builder
             {
                 return GetProperty<object>(Constants.BuilderProperties.ServerInformation);
             }
-            set
-            {
-                SetProperty<object>(Constants.BuilderProperties.ServerInformation, value);
-            }
         }
 
-        public IDictionary<string, object> Properties { get; set; }
+        public IDictionary<string, object> Properties { get; }
 
         private T GetProperty<T>(string key)
         {
