@@ -20,27 +20,13 @@ namespace Microsoft.AspNet.Builder.Extensions
 
         public async Task Invoke([NotNull] HttpContext context)
         {
-            if (_options.Predicate != null)
+            if (_options.Predicate(context))
             {
-                if (_options.Predicate(context))
-                {
-                    await _options.Branch(context);
-                }
-                else
-                {
-                    await _next(context);
-                }
+                await _options.Branch(context);
             }
             else
             {
-                if (await _options.PredicateAsync(context))
-                {
-                    await _options.Branch(context);
-                }
-                else
-                {
-                    await _next(context);
-                }
+                await _next(context);
             }
         }
     }

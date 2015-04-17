@@ -18,19 +18,6 @@ namespace Microsoft.AspNet.Builder
         /// <param name="pathMatch">The path to match</param>
         /// <param name="configuration">The branch to take for positive path matches</param>
         /// <returns></returns>
-        public static IApplicationBuilder Map([NotNull] this IApplicationBuilder app, [NotNull] string pathMatch, [NotNull] Action<IApplicationBuilder> configuration)
-        {
-            return Map(app, new PathString(pathMatch), configuration);
-        }
-
-        /// <summary>
-        /// If the request path starts with the given pathMatch, execute the app configured via configuration parameter instead of
-        /// continuing to the next component in the pipeline.
-        /// </summary>
-        /// <param name="app"></param>
-        /// <param name="pathMatch">The path to match</param>
-        /// <param name="configuration">The branch to take for positive path matches</param>
-        /// <returns></returns>
         public static IApplicationBuilder Map([NotNull] this IApplicationBuilder app, PathString pathMatch, [NotNull] Action<IApplicationBuilder> configuration)
         {
             if (pathMatch.HasValue && pathMatch.Value.EndsWith("/", StringComparison.Ordinal))

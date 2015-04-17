@@ -16,7 +16,6 @@ namespace Microsoft.AspNet.Builder.Extensions
     public class MapPredicateMiddlewareTests
     {
         private static readonly Predicate NotImplementedPredicate = new Predicate(envionment => { throw new NotImplementedException(); });
-        private static readonly PredicateAsync NotImplementedPredicateAsync = new PredicateAsync(envionment => { throw new NotImplementedException(); });
 
         private static Task Success(HttpContext context)
         {
@@ -47,16 +46,6 @@ namespace Microsoft.AspNet.Builder.Extensions
         private bool FalsePredicate(HttpContext context)
         {
             return false;
-        }
-
-        private Task<bool> TruePredicateAsync(HttpContext context)
-        {
-            return Task.FromResult<bool>(true);
-        }
-
-        private Task<bool> FalsePredicateAsync(HttpContext context)
-        {
-            return Task.FromResult<bool>(false);
         }
 
         [Fact]
@@ -114,31 +103,6 @@ namespace Microsoft.AspNet.Builder.Extensions
         }
 
         [Fact]
-        public void PredicateAsyncTrueAction_BranchTaken()
-        {
-            HttpContext context = CreateRequest();
-            var builder = new ApplicationBuilder(serviceProvider: null);
-            builder.MapWhenAsync(TruePredicateAsync, UseSuccess);
-            var app = builder.Build();
-            app.Invoke(context).Wait();
-
-            Assert.Equal(200, context.Response.StatusCode);
-        }
-
-        [Fact]
-        public void PredicateAsyncFalseAction_PassThrough()
-        {
-            HttpContext context = CreateRequest();
-            var builder = new ApplicationBuilder(serviceProvider: null);
-            builder.MapWhenAsync(FalsePredicateAsync, UseNotImplemented);
-            builder.Run(Success);
-            var app = builder.Build();
-            app.Invoke(context).Wait();
-
-            Assert.Equal(200, context.Response.StatusCode);
-        }
-
-        [Fact]
         public void ChainedPredicates_Success()
         {
             var builder = new ApplicationBuilder(serviceProvider: null);
@@ -146,23 +110,6 @@ namespace Microsoft.AspNet.Builder.Extensions
             {
                 map1.MapWhen((Predicate)FalsePredicate, UseNotImplemented);
                 map1.MapWhen((Predicate)TruePredicate, map2 => map2.MapWhen((Predicate)TruePredicate, UseSuccess));
-                map1.Run(NotImplemented);
-            });
-            var app = builder.Build();
-
-            HttpContext context = CreateRequest();
-            app.Invoke(context).Wait();
-            Assert.Equal(200, context.Response.StatusCode);
-        }
-
-        [Fact]
-        public void ChainedPredicatesAsync_Success()
-        {
-            var builder = new ApplicationBuilder(serviceProvider: null);
-            builder.MapWhenAsync(TruePredicateAsync, map1 =>
-            {
-                map1.MapWhenAsync((PredicateAsync)FalsePredicateAsync, UseNotImplemented);
-                map1.MapWhenAsync((PredicateAsync)TruePredicateAsync, map2 => map2.MapWhenAsync((PredicateAsync)TruePredicateAsync, UseSuccess));
                 map1.Run(NotImplemented);
             });
             var app = builder.Build();

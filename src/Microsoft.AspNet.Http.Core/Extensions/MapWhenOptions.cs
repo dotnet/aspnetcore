@@ -18,11 +18,6 @@ namespace Microsoft.AspNet.Builder.Extensions
         public Func<HttpContext, bool> Predicate { get; set; }
 
         /// <summary>
-        /// The async user callback that determines if the branch should be taken
-        /// </summary>
-        public Func<HttpContext, Task<bool>> PredicateAsync { get; set; }
-
-        /// <summary>
         /// The branch taken for a positive match
         /// </summary>
         public RequestDelegate Branch { get; set; }
