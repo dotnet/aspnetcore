@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Core.Collections;
+using Microsoft.AspNet.Http.Collections;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Logging;
 using Xunit;

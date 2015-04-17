@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Core;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Session;
 using Microsoft.Framework.Caching.Distributed;
