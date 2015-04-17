@@ -56,7 +56,7 @@ namespace E2ETests
     public class SmokeTests_OnMono
     {
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR | RuntimeFrameworks.CoreCLR)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5010/")]
         public async Task SmokeTestSuite_OnMono(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
