@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.AspNet.Testing;
 using Microsoft.Framework.WebEncoders;
 using Xunit;
 
@@ -77,6 +78,35 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             var attribute = Assert.Single(tagHelperOutput.Attributes);
             Assert.Equal(expectedAttribute, attribute);
+        }
+
+        [Fact]
+        public void CopyHtmlAttribute_ThrowsWhenUnknownAttribute()
+        {
+            // Arrange
+            var invalidAttributeName = "hello2";
+            var tagHelperOutput = new TagHelperOutput(
+                "p",
+                attributes: new Dictionary<string, object>());
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(StringComparer.Ordinal)
+                {
+                    { "hello", "world" }
+                },
+                items: new Dictionary<object, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.Append("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgument(
+                () => tagHelperOutput.CopyHtmlAttribute(invalidAttributeName, tagHelperContext),
+                "attributeName",
+                "The attribute 'hello2' does not exist in the TagHelperContext.");
         }
 
         [Fact]

@@ -122,6 +122,22 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             return string.Format(CultureInfo.CurrentCulture, GetString("InvalidEnumArgument"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// The attribute '{0}' does not exist in the {1}.
+        /// </summary>
+        internal static string TagHelperOutput_AttributeDoesNotExist
+        {
+            get { return GetString("TagHelperOutput_AttributeDoesNotExist"); }
+        }
+
+        /// <summary>
+        /// The attribute '{0}' does not exist in the {1}.
+        /// </summary>
+        internal static string FormatTagHelperOutput_AttributeDoesNotExist(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperOutput_AttributeDoesNotExist"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

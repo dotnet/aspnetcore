@@ -138,4 +138,7 @@
   <data name="InvalidEnumArgument" xml:space="preserve">
     <value>The value of argument '{0}' ({1}) is invalid for Enum type '{2}'.</value>
   </data>
+  <data name="TagHelperOutput_AttributeDoesNotExist" xml:space="preserve">
+    <value>The attribute '{0}' does not exist in the {1}.</value>
+  </data>
 </root>

@@ -35,8 +35,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 // We look for the original attribute so we can restore the exact attribute name the user typed.
                 // Approach also ignores changes made to tagHelperOutput[attributeName].
-                var entry = context.AllAttributes.First(
+                var entry = context.AllAttributes.FirstOrDefault(
                     attribute => attribute.Key.Equals(attributeName, StringComparison.OrdinalIgnoreCase));
+
+                if (entry.Equals(default(KeyValuePair<string, object>)))
+                {
+                    throw new ArgumentException(
+                        Resources.FormatTagHelperOutput_AttributeDoesNotExist(attributeName, nameof(TagHelperContext)),
+                        nameof(attributeName));
+                }
+                
                 tagHelperOutput.Attributes.Add(entry.Key, entry.Value);
             }
         }
