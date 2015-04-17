@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using DeploymentHelpers;
+using Microsoft.AspNet.Server.Testing;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.Framework.Logging;
 using Xunit;

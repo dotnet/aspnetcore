@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using DeploymentHelpers;
+using Microsoft.AspNet.Server.Testing;
 using Microsoft.Framework.Logging;
 
 namespace E2ETests
