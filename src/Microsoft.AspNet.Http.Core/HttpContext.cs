@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.WebSockets;
 using System.Security.Claims;
 using System.Threading;
@@ -19,6 +18,8 @@ namespace Microsoft.AspNet.Http
         public abstract HttpResponse Response { get; }
 
         public abstract ConnectionInfo Connection { get; }
+
+        public abstract AuthenticationManager Authentication { get; }
 
         public abstract ClaimsPrincipal User { get; set; }
 
@@ -53,12 +54,6 @@ namespace Microsoft.AspNet.Http
         {
             SetFeature(typeof(T), instance);
         }
-
-        public abstract IEnumerable<AuthenticationDescription> GetAuthenticationSchemes();
-
-        public abstract AuthenticationResult Authenticate(string authenticationScheme);
-
-        public abstract Task<AuthenticationResult> AuthenticateAsync(string authenticationScheme);
 
         public virtual Task<WebSocket> AcceptWebSocketAsync()
         {

@@ -46,34 +46,34 @@ namespace Microsoft.AspNet.Http
         public async Task AuthenticateWithNoAuthMiddlewareThrows()
         {
             var context = CreateContext();
-            Assert.Throws<InvalidOperationException>(() => context.Authenticate("Foo"));
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => await context.AuthenticateAsync("Foo"));
+            Assert.Throws<InvalidOperationException>(() => context.Authentication.Authenticate("Foo"));
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await context.Authentication.AuthenticateAsync("Foo"));
         }
 
         [Fact]
         public void ChallengeWithNoAuthMiddlewareMayThrow()
         {
             var context = CreateContext();
-            context.Response.Challenge();
+            context.Authentication.Challenge();
             Assert.Equal(401, context.Response.StatusCode);
 
-            Assert.Throws<InvalidOperationException>(() => context.Response.Challenge("Foo"));
+            Assert.Throws<InvalidOperationException>(() => context.Authentication.Challenge("Foo"));
         }
 
         [Fact]
         public void SignInWithNoAuthMiddlewareThrows()
         {
             var context = CreateContext();
-            Assert.Throws<InvalidOperationException>(() => context.Response.SignIn("Foo", new ClaimsPrincipal()));
+            Assert.Throws<InvalidOperationException>(() => context.Authentication.SignIn("Foo", new ClaimsPrincipal()));
         }
 
         [Fact]
         public void SignOutWithNoAuthMiddlewareMayThrow()
         {
             var context = CreateContext();
-            context.Response.SignOut();
+            context.Authentication.SignOut();
 
-            Assert.Throws<InvalidOperationException>(() => context.Response.SignOut("Foo"));
+            Assert.Throws<InvalidOperationException>(() => context.Authentication.SignOut("Foo"));
         }
 
         [Fact]
@@ -83,13 +83,13 @@ namespace Microsoft.AspNet.Http
             var handler = new AuthHandler();
             context.SetFeature<IHttpAuthenticationFeature>(new HttpAuthenticationFeature() { Handler = handler });
             var user = new ClaimsPrincipal();
-            context.Response.SignIn("ignored", user);
+            context.Authentication.SignIn("ignored", user);
             Assert.True(handler.SignedIn);
-            context.Response.SignOut("ignored");
+            context.Authentication.SignOut("ignored");
             Assert.False(handler.SignedIn);
-            context.Response.SignIn("ignored", user);
+            context.Authentication.SignIn("ignored", user);
             Assert.True(handler.SignedIn);
-            context.Response.SignOut("ignored", new AuthenticationProperties() { RedirectUri = "~/logout" });
+            context.Authentication.SignOut("ignored", new AuthenticationProperties() { RedirectUri = "~/logout" });
             Assert.False(handler.SignedIn);
         }
 

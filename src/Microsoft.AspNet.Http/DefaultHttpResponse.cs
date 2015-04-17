@@ -2,15 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Security.Claims;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Collections;
 using Microsoft.AspNet.Http.Infrastructure;
-using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http
@@ -21,7 +16,6 @@ namespace Microsoft.AspNet.Http
         private readonly IFeatureCollection _features;
         private FeatureReference<IHttpResponseFeature> _response = FeatureReference<IHttpResponseFeature>.Default;
         private FeatureReference<IResponseCookiesFeature> _cookies = FeatureReference<IResponseCookiesFeature>.Default;
-        private FeatureReference<IHttpAuthenticationFeature> _authentication = FeatureReference<IHttpAuthenticationFeature>.Default;
 
         public DefaultHttpResponse(DefaultHttpContext context, IFeatureCollection features)
         {
@@ -37,11 +31,6 @@ namespace Microsoft.AspNet.Http
         private IResponseCookiesFeature ResponseCookiesFeature
         {
             get { return _cookies.Fetch(_features) ?? _cookies.Update(_features, new ResponseCookiesFeature(_features)); }
-        }
-
-        private IHttpAuthenticationFeature HttpAuthenticationFeature
-        {
-            get { return _authentication.Fetch(_features) ?? _authentication.Update(_features, new HttpAuthenticationFeature()); }
         }
 
         public override HttpContext HttpContext { get { return _context; } }
@@ -127,62 +116,6 @@ namespace Microsoft.AspNet.Http
             }
 
             Headers.Set(HeaderNames.Location, location);
-        }
-
-        public override void Challenge(AuthenticationProperties properties, string authenticationScheme)
-        {
-            HttpResponseFeature.StatusCode = 401;
-            var handler = HttpAuthenticationFeature.Handler;
-
-            var challengeContext = new ChallengeContext(authenticationScheme, properties == null ? null : properties.Dictionary);
-            if (handler != null)
-            {
-                handler.Challenge(challengeContext);
-            }
-
-            if (!challengeContext.Accepted)
-            {
-                throw new InvalidOperationException("The following authentication type was not accepted: " + authenticationScheme);
-            }
-        }
-
-        public override void SignIn(string authenticationScheme, [NotNull] ClaimsPrincipal principal, AuthenticationProperties properties)
-        {
-            var handler = HttpAuthenticationFeature.Handler;
-
-            var signInContext = new SignInContext(authenticationScheme, principal, properties == null ? null : properties.Dictionary);
-            if (handler != null)
-            {
-                handler.SignIn(signInContext);
-            }
-
-            // Verify all types ack'd
-            if (!signInContext.Accepted)
-            {
-                throw new InvalidOperationException("The following authentication scheme was not accepted: " + authenticationScheme);
-            }
-        }
-
-        public override void SignOut(string authenticationScheme, AuthenticationProperties properties)
-        {
-            var handler = HttpAuthenticationFeature.Handler;
-
-            var signOutContext = new SignOutContext(authenticationScheme, properties?.Dictionary);
-            if (handler != null)
-            {
-                handler.SignOut(signOutContext);
-            }
-
-            // Verify all types ack'd
-            if (!string.IsNullOrWhiteSpace(authenticationScheme) && !signOutContext.Accepted)
-            {
-                throw new InvalidOperationException("The following authentication scheme was not accepted: " + authenticationScheme);
-            }
-        }
-
-        public override void SignOut(string authenticationScheme)
-        {
-            SignOut(authenticationScheme, properties: null);
         }
     }
 }

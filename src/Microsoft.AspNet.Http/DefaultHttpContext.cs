@@ -11,7 +11,6 @@ using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Collections;
 using Microsoft.AspNet.Http.Infrastructure;
-using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http
@@ -23,6 +22,7 @@ namespace Microsoft.AspNet.Http
         private readonly HttpRequest _request;
         private readonly HttpResponse _response;
         private readonly ConnectionInfo _connection;
+        private readonly AuthenticationManager _authenticationManager;
 
         private FeatureReference<IItemsFeature> _items;
         private FeatureReference<IServiceProvidersFeature> _serviceProviders;
@@ -45,6 +45,7 @@ namespace Microsoft.AspNet.Http
             _request = new DefaultHttpRequest(this, features);
             _response = new DefaultHttpResponse(this, features);
             _connection = new DefaultConnectionInfo(features);
+            _authenticationManager = new DefaultAuthenticationManager(features);
 
             _items = FeatureReference<IItemsFeature>.Default;
             _serviceProviders = FeatureReference<IServiceProvidersFeature>.Default;
@@ -89,6 +90,8 @@ namespace Microsoft.AspNet.Http
         public override HttpResponse Response { get { return _response; } }
 
         public override ConnectionInfo Connection { get { return _connection; } }
+
+        public override AuthenticationManager Authentication { get { return _authenticationManager; } }
 
         public override ClaimsPrincipal User
         {
@@ -199,56 +202,6 @@ namespace Microsoft.AspNet.Http
         public override void SetFeature(Type type, object instance)
         {
             _features[type] = instance;
-        }
-
-        public override IEnumerable<AuthenticationDescription> GetAuthenticationSchemes()
-        {
-            var handler = HttpAuthenticationFeature.Handler;
-            if (handler == null)
-            {
-                return new AuthenticationDescription[0];
-            }
-
-            var describeContext = new DescribeSchemesContext();
-            handler.GetDescriptions(describeContext);
-            return describeContext.Results;
-        }
-
-        public override AuthenticationResult Authenticate([NotNull] string authenticationScheme)
-        {
-            var handler = HttpAuthenticationFeature.Handler;
-
-            var authenticateContext = new AuthenticateContext(authenticationScheme);
-            if (handler != null)
-            {
-                handler.Authenticate(authenticateContext);
-            }
-
-            if (!authenticateContext.Accepted)
-            {
-                throw new InvalidOperationException("The following authentication scheme was not accepted: " + authenticationScheme);
-            }
-
-            return authenticateContext.Result;
-        }
-
-        public override async Task<AuthenticationResult> AuthenticateAsync([NotNull] string authenticationScheme)
-        {
-            var handler = HttpAuthenticationFeature.Handler;
-
-            var authenticateContext = new AuthenticateContext(authenticationScheme);
-            if (handler != null)
-            {
-                await handler.AuthenticateAsync(authenticateContext);
-            }
-
-            // Verify all types ack'd
-            if (!authenticateContext.Accepted)
-            {
-                throw new InvalidOperationException("The following authentication scheme was not accepted: " + authenticationScheme);
-            }
-
-            return authenticateContext.Result;
         }
 
         public override Task<WebSocket> AcceptWebSocketAsync(string subProtocol)
