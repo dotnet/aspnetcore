@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Http.Authentication
             HttpResponseFeature.StatusCode = 401;
             var handler = HttpAuthenticationFeature.Handler;
 
-            var challengeContext = new ChallengeContext(authenticationScheme, properties == null ? null : properties.Dictionary);
+            var challengeContext = new ChallengeContext(authenticationScheme, properties == null ? null : properties.Items);
             if (handler != null)
             {
                 handler.Challenge(challengeContext);
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Http.Authentication
         {
             var handler = HttpAuthenticationFeature.Handler;
 
-            var signInContext = new SignInContext(authenticationScheme, principal, properties == null ? null : properties.Dictionary);
+            var signInContext = new SignInContext(authenticationScheme, principal, properties == null ? null : properties.Items);
             if (handler != null)
             {
                 handler.SignIn(signInContext);
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Http.Authentication
         {
             var handler = HttpAuthenticationFeature.Handler;
 
-            var signOutContext = new SignOutContext(authenticationScheme, properties?.Dictionary);
+            var signOutContext = new SignOutContext(authenticationScheme, properties?.Items);
             if (handler != null)
             {
                 handler.SignOut(signOutContext);

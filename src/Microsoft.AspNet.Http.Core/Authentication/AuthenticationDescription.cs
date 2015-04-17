@@ -21,22 +21,22 @@ namespace Microsoft.AspNet.Http.Authentication
         /// </summary>
         public AuthenticationDescription()
         {
-            Dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
+            Items = new Dictionary<string, object>(StringComparer.Ordinal);
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticationDescription"/> class
         /// </summary>
-        /// <param name="properties"></param>
-        public AuthenticationDescription([NotNull] IDictionary<string, object> properties)
+        /// <param name="items"></param>
+        public AuthenticationDescription([NotNull] IDictionary<string, object> items)
         {
-            Dictionary = properties;
+            Items = items;
         }
 
         /// <summary>
         /// Contains metadata about the authentication provider.
         /// </summary>
-        public IDictionary<string, object> Dictionary { get; private set; }
+        public IDictionary<string, object> Items { get; private set; }
 
         /// <summary>
         /// Gets or sets the name used to reference the authentication middleware instance.
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Http.Authentication
         public string AuthenticationScheme
         {
             get { return GetString(AuthenticationSchemePropertyKey); }
-            set { Dictionary[AuthenticationSchemePropertyKey] = value; }
+            set { Items[AuthenticationSchemePropertyKey] = value; }
         }
 
         /// <summary>
@@ -53,13 +53,13 @@ namespace Microsoft.AspNet.Http.Authentication
         public string Caption
         {
             get { return GetString(CaptionPropertyKey); }
-            set { Dictionary[CaptionPropertyKey] = value; }
+            set { Items[CaptionPropertyKey] = value; }
         }
 
         private string GetString(string name)
         {
             object value;
-            if (Dictionary.TryGetValue(name, out value))
+            if (Items.TryGetValue(name, out value))
             {
                 return Convert.ToString(value, CultureInfo.InvariantCulture);
             }

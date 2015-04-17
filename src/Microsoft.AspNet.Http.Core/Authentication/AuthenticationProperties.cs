@@ -24,51 +24,51 @@ namespace Microsoft.AspNet.Http.Authentication
         /// Initializes a new instance of the <see cref="AuthenticationProperties"/> class
         /// </summary>
         public AuthenticationProperties()
-            : this(dictionary: null)
+            : this(items: null)
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticationProperties"/> class
         /// </summary>
-        /// <param name="dictionary"></param>
-        public AuthenticationProperties(IDictionary<string, string> dictionary)
+        /// <param name="items"></param>
+        public AuthenticationProperties(IDictionary<string, string> items)
         {
-            Dictionary = dictionary ?? new Dictionary<string, string>(StringComparer.Ordinal);
+            Items = items ?? new Dictionary<string, string>(StringComparer.Ordinal);
         }
 
         /// <summary>
         /// State values about the authentication session.
         /// </summary>
-        public IDictionary<string, string> Dictionary { get; private set; }
+        public IDictionary<string, string> Items { get; private set; }
 
         /// <summary>
         /// Gets or sets whether the authentication session is persisted across multiple requests.
         /// </summary>
         public bool IsPersistent
         {
-            get { return Dictionary.ContainsKey(IsPersistentKey); }
+            get { return Items.ContainsKey(IsPersistentKey); }
             set
             {
-                if (Dictionary.ContainsKey(IsPersistentKey))
+                if (Items.ContainsKey(IsPersistentKey))
                 {
                     if (!value)
                     {
-                        Dictionary.Remove(IsPersistentKey);
+                        Items.Remove(IsPersistentKey);
                     }
                 }
                 else
                 {
                     if (value)
                     {
-                        Dictionary.Add(IsPersistentKey, string.Empty);
+                        Items.Add(IsPersistentKey, string.Empty);
                     }
                 }
             }
         }
 
         /// <summary>
-        /// Gets or sets the full path or absolute URI to be used as an http redirect response value. 
+        /// Gets or sets the full path or absolute URI to be used as an http redirect response value.
         /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1056:UriPropertiesShouldNotBeStrings", Justification = "By design")]
         public string RedirectUri
@@ -76,19 +76,19 @@ namespace Microsoft.AspNet.Http.Authentication
             get
             {
                 string value;
-                return Dictionary.TryGetValue(RedirectUriKey, out value) ? value : null;
+                return Items.TryGetValue(RedirectUriKey, out value) ? value : null;
             }
             set
             {
                 if (value != null)
                 {
-                    Dictionary[RedirectUriKey] = value;
+                    Items[RedirectUriKey] = value;
                 }
                 else
                 {
-                    if (Dictionary.ContainsKey(RedirectUriKey))
+                    if (Items.ContainsKey(RedirectUriKey))
                     {
-                        Dictionary.Remove(RedirectUriKey);
+                        Items.Remove(RedirectUriKey);
                     }
                 }
             }
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Http.Authentication
             get
             {
                 string value;
-                if (Dictionary.TryGetValue(IssuedUtcKey, out value))
+                if (Items.TryGetValue(IssuedUtcKey, out value))
                 {
                     DateTimeOffset dateTimeOffset;
                     if (DateTimeOffset.TryParseExact(value, UtcDateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out dateTimeOffset))
@@ -116,13 +116,13 @@ namespace Microsoft.AspNet.Http.Authentication
             {
                 if (value.HasValue)
                 {
-                    Dictionary[IssuedUtcKey] = value.Value.ToString(UtcDateTimeFormat, CultureInfo.InvariantCulture);
+                    Items[IssuedUtcKey] = value.Value.ToString(UtcDateTimeFormat, CultureInfo.InvariantCulture);
                 }
                 else
                 {
-                    if (Dictionary.ContainsKey(IssuedUtcKey))
+                    if (Items.ContainsKey(IssuedUtcKey))
                     {
-                        Dictionary.Remove(IssuedUtcKey);
+                        Items.Remove(IssuedUtcKey);
                     }
                 }
             }
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Http.Authentication
             get
             {
                 string value;
-                if (Dictionary.TryGetValue(ExpiresUtcKey, out value))
+                if (Items.TryGetValue(ExpiresUtcKey, out value))
                 {
                     DateTimeOffset dateTimeOffset;
                     if (DateTimeOffset.TryParseExact(value, UtcDateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out dateTimeOffset))
@@ -150,13 +150,13 @@ namespace Microsoft.AspNet.Http.Authentication
             {
                 if (value.HasValue)
                 {
-                    Dictionary[ExpiresUtcKey] = value.Value.ToString(UtcDateTimeFormat, CultureInfo.InvariantCulture);
+                    Items[ExpiresUtcKey] = value.Value.ToString(UtcDateTimeFormat, CultureInfo.InvariantCulture);
                 }
                 else
                 {
-                    if (Dictionary.ContainsKey(ExpiresUtcKey))
+                    if (Items.ContainsKey(ExpiresUtcKey))
                     {
-                        Dictionary.Remove(ExpiresUtcKey);
+                        Items.Remove(ExpiresUtcKey);
                     }
                 }
             }
@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.Http.Authentication
             get
             {
                 string value;
-                if (Dictionary.TryGetValue(RefreshKey, out value))
+                if (Items.TryGetValue(RefreshKey, out value))
                 {
                     bool refresh;
                     if (bool.TryParse(value, out refresh))
@@ -184,13 +184,13 @@ namespace Microsoft.AspNet.Http.Authentication
             {
                 if (value.HasValue)
                 {
-                    Dictionary[RefreshKey] = value.Value.ToString();
+                    Items[RefreshKey] = value.Value.ToString();
                 }
                 else
                 {
-                    if (Dictionary.ContainsKey(RefreshKey))
+                    if (Items.ContainsKey(RefreshKey))
                     {
-                        Dictionary.Remove(RefreshKey);
+                        Items.Remove(RefreshKey);
                     }
                 }
             }
