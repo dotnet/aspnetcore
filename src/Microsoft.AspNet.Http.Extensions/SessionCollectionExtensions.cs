@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Http
 {
     public static class SessionCollectionExtensions
     {
-        public static void SetInt(this ISessionCollection session, string key, int value)
+        public static void SetInt32(this ISessionCollection session, string key, int value)
         {
             var bytes = new byte[]
             {
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Http
             session.Set(key, bytes);
         }
 
-        public static int? GetInt(this ISessionCollection session, string key)
+        public static int? GetInt32(this ISessionCollection session, string key)
         {
             var data = session.Get(key);
             if (data == null || data.Length < 4)
