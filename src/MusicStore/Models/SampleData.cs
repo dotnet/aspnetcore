@@ -117,7 +117,7 @@ namespace MusicStore.Models
             {
                 for (int i = 0; i < 100; ++i)
                 {
-                    var email = string.Format("User{0:D3}@sample.com", i);
+                    var email = string.Format("User{0:D3}@example.com", i);
                     var normalUser = await userManager.FindByEmailAsync(email);
                     if (normalUser == null)
                     {
