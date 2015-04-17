@@ -174,7 +174,6 @@ namespace MvcSample.Web
                 Alive = true,
                 Age = 13,
                 GPA = 13.37M,
-                Password = "Secure string",
                 Dependent = new User()
                 {
                     Name = "Dependents name",
