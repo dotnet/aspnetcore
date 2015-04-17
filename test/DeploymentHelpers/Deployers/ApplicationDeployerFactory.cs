@@ -26,7 +26,7 @@ namespace DeploymentHelpers
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (deploymentParameters.RuntimeFlavor == RuntimeFlavor.mono)
+            if (deploymentParameters.RuntimeFlavor == RuntimeFlavor.Mono)
             {
                 return new MonoDeployer(deploymentParameters, logger);
             }

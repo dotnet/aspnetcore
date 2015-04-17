@@ -15,9 +15,9 @@ namespace E2ETests
     {
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [OSSkipCondition(OperatingSystems.Unix | OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.coreclr, RuntimeArchitecture.x86, "http://localhost:5050/")]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.clr, RuntimeArchitecture.x64, "http://localhost:5051/")]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.coreclr, RuntimeArchitecture.x64, "http://localhost:5052/")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5050/")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5051/")]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5052/")]
         public async Task NtlmAuthenticationTest(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             var logger = new LoggerFactory()

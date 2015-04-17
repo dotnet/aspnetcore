@@ -2,8 +2,8 @@
 {
     public enum RuntimeFlavor
     {
-        clr,
-        coreclr,
-        mono
+        Clr,
+        CoreClr,
+        Mono
     }
 }

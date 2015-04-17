@@ -62,7 +62,7 @@ namespace E2ETests
             //var runtimeResponse = await _httpClient.GetAsync("runtimeinfo");
 
             // https://github.com/aspnet/Diagnostics/issues/108
-            if (_deploymentResult.DeploymentParameters.RuntimeFlavor != RuntimeFlavor.coreclr)
+            if (_deploymentResult.DeploymentParameters.RuntimeFlavor != RuntimeFlavor.CoreClr)
             {
                 //Helpers.ThrowIfResponseStatusNotOk(runtimeResponse, _logger);
             }

@@ -41,7 +41,7 @@ namespace DeploymentHelpers
 
             var replaceStr = new StringBuilder().
                 Append("dnx").
-                Append((DeploymentParameters.RuntimeFlavor == RuntimeFlavor.coreclr) ? "-coreclr" : "-clr").
+                Append((DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr) ? "-coreclr" : "-clr").
                 Append("-win").
                 Append((DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86) ? "-x86" : "-x64").
                 ToString();
