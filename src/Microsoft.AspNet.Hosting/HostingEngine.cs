@@ -51,8 +51,8 @@ namespace Microsoft.AspNet.Hosting
         public virtual IDisposable Start()
         {
             EnsureApplicationServices();
-            EnsureBuilder();
             EnsureServer();
+            EnsureBuilder();
 
             var applicationDelegate = BuildApplicationDelegate();
 
@@ -105,17 +105,6 @@ namespace Microsoft.AspNet.Hosting
             }
         }
 
-        private void EnsureBuilder()
-        {
-            if (_builderFactory == null)
-            {
-                _builderFactory = _applicationServices.GetRequiredService<IApplicationBuilderFactory>();
-            }
-
-            _builder = _builderFactory.CreateBuilder();
-            _builder.ApplicationServices = _applicationServices;
-        }
-
         private void EnsureServer()
         {
             if (_serverFactory == null)
@@ -130,7 +119,17 @@ namespace Microsoft.AspNet.Hosting
             }
 
             _serverInstance = _serverFactory.Initialize(_config);
-            _builder.Server = _serverInstance;
+        }
+
+        private void EnsureBuilder()
+        {
+            if (_builderFactory == null)
+            {
+                _builderFactory = _applicationServices.GetRequiredService<IApplicationBuilderFactory>();
+            }
+
+            _builder = _builderFactory.CreateBuilder(_serverInstance);
+            _builder.ApplicationServices = _applicationServices;
         }
 
         private RequestDelegate BuildApplicationDelegate()

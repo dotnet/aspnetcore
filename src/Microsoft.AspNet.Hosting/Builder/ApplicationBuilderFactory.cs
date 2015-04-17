@@ -15,9 +15,9 @@ namespace Microsoft.AspNet.Hosting.Builder
             _serviceProvider = serviceProvider;
         }
 
-        public IApplicationBuilder CreateBuilder()
+        public IApplicationBuilder CreateBuilder(object server)
         {
-            return new ApplicationBuilder(_serviceProvider);
+            return new ApplicationBuilder(_serviceProvider, server);
         }
     }
 }

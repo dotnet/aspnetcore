@@ -7,6 +7,6 @@ namespace Microsoft.AspNet.Hosting.Builder
 {
     public interface IApplicationBuilderFactory
     {
-        IApplicationBuilder CreateBuilder();
+        IApplicationBuilder CreateBuilder(object server);
     }
 }
