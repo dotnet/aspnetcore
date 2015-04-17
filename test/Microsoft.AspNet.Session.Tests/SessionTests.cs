@@ -75,14 +75,14 @@ namespace Microsoft.AspNet.Session
                 app.UseInMemorySession();
                 app.Run(context =>
                 {
-                    int? value = context.Session.GetInt("Key");
+                    int? value = context.Session.GetInt32("Key");
                     if (context.Request.Path == new PathString("/first"))
                     {
                         Assert.False(value.HasValue);
                         value = 0;
                     }
                     Assert.True(value.HasValue);
-                    context.Session.SetInt("Key", value.Value + 1);
+                    context.Session.SetInt32("Key", value.Value + 1);
                     return context.Response.WriteAsync(value.Value.ToString());
                 });
             },
@@ -110,12 +110,12 @@ namespace Microsoft.AspNet.Session
                 app.UseInMemorySession();
                 app.Run(context =>
                 {
-                    int? value = context.Session.GetInt("Key");
+                    int? value = context.Session.GetInt32("Key");
                     if (context.Request.Path == new PathString("/first"))
                     {
                         Assert.False(value.HasValue);
                         value = 0;
-                        context.Session.SetInt("Key", 1);
+                        context.Session.SetInt32("Key", 1);
                     }
                     else if (context.Request.Path == new PathString("/second"))
                     {
@@ -154,12 +154,12 @@ namespace Microsoft.AspNet.Session
                 app.UseInMemorySession();
                 app.Run(context =>
                 {
-                    int? value = context.Session.GetInt("Key");
+                    int? value = context.Session.GetInt32("Key");
                     if (context.Request.Path == new PathString("/first"))
                     {
                         Assert.False(value.HasValue);
                         value = 0;
-                        context.Session.SetInt("Key", 1);
+                        context.Session.SetInt32("Key", 1);
                     }
                     else if (context.Request.Path == new PathString("/second"))
                     {
@@ -231,12 +231,12 @@ namespace Microsoft.AspNet.Session
                 });
                 app.Run(context =>
                 {
-                    int? value = context.Session.GetInt("Key");
+                    int? value = context.Session.GetInt32("Key");
                     if (context.Request.Path == new PathString("/first"))
                     {
                         Assert.False(value.HasValue);
                         value = 1;
-                        context.Session.SetInt("Key", 1);
+                        context.Session.SetInt32("Key", 1);
                     }
                     else if (context.Request.Path == new PathString("/second"))
                     {

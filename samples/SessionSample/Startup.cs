@@ -31,8 +31,8 @@ namespace SessionSample
                 subApp.Run(async context =>
                 {
                     int visits = 0;
-                    visits = context.Session.GetInt("visits") ?? 0;
-                    context.Session.SetInt("visits", ++visits);
+                    visits = context.Session.GetInt32("visits") ?? 0;
+                    context.Session.SetInt32("visits", ++visits);
                     await context.Response.WriteAsync("Counting: You have visited our page this many times: " + visits);
                 });
             });
@@ -40,7 +40,7 @@ namespace SessionSample
             app.Run(async context =>
             {
                 int visits = 0;
-                visits = context.Session.GetInt("visits") ?? 0;
+                visits = context.Session.GetInt32("visits") ?? 0;
                 await context.Response.WriteAsync("<html><body>");
                 if (visits == 0)
                 {
@@ -50,7 +50,7 @@ namespace SessionSample
                 }
                 else
                 {
-                    context.Session.SetInt("visits", ++visits);
+                    context.Session.SetInt32("visits", ++visits);
                     await context.Response.WriteAsync("Your session was located, you've visited the site this many times: " + visits);
                 }
                 await context.Response.WriteAsync("</body></html>");
