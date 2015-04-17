@@ -4,6 +4,7 @@
 using System;
 using Xunit;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.WebEncoders.Testing;
 
 namespace Microsoft.Framework.WebEncoders
 {
