@@ -12,7 +12,7 @@ using Microsoft.Framework.Logging;
 namespace Microsoft.AspNet.Server.Testing
 {
     /// <summary>
-    /// Abstract base class of all deplolyers with a back bone implementation of some of the common helpers.
+    /// Abstract base class of all deployers with implementation of some of the common helpers.
     /// </summary>
     public abstract class ApplicationDeployer : IApplicationDeployer
     {
