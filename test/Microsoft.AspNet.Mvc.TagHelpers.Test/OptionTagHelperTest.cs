@@ -233,14 +233,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                             "text")
                     },
                     {
-                        "text", null, null, new [] { "text", },
+                        "HtmlEncode[[text]]", null, null, new [] { "text", },
                         GetTagHelperOutput(
                             "not-option",
                             new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "selected", "selected" }
                             },
-                            "text")
+                            "HtmlEncode[[text]]")
                     },
                     {
                         "text", string.Empty, null, new [] { "text", },
@@ -253,14 +253,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                             "text")
                     },
                     {
-                        "text", null, null, new [] { string.Empty, "text", },
+                        "HtmlEncode[[text]]", null, null, new [] { string.Empty, "text", },
                         GetTagHelperOutput(
                             "not-option",
                             new Dictionary<string, object>
                             {
                                 { "label", "my-label" }, { "selected", "selected" }
                             },
-                            "text")
+                            "HtmlEncode[[text]]")
                     },
                     {
                         "text", string.Empty, "value", null,
@@ -400,15 +400,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 uniqueId: "test",
                 getChildContentAsync: () =>
                 {
-                    var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.SetContent(originalContent);
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                    // GetChildContentAsync should not be invoked since we are setting the content below.
+                    Assert.True(false);
+                    return Task.FromResult<TagHelperContent>(null);
                 });
 
             var output = new TagHelperOutput(expectedTagHelperOutput.TagName, originalAttributes)
             {
                 SelfClosing = false,
             };
+
             output.Content.SetContent(originalContent);
 
             var metadataProvider = new EmptyModelMetadataProvider();

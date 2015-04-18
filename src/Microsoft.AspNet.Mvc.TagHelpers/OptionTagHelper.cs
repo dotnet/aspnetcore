@@ -78,6 +78,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     {
                         selected = selectedValues.Contains(Value);
                     }
+                    else if (output.IsContentModified)
+                    {
+                        selected = encodedValues.Contains(output.Content.GetContent());
+                    }
                     else
                     {
                         var childContent = await context.GetChildContentAsync();

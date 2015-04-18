@@ -9,7 +9,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             generator
                 .Setup(mock =>
                     mock.GenerateValidationMessage(expectedViewContext, "Hello", null, null, null))
-                .Returns(new TagBuilder("span", new HtmlEncoder()))
+                .Returns(new TagBuilder("span", new CommonTestEncoder()))
                 .Verifiable();
             validationMessageTagHelper.Generator = generator.Object;
             validationMessageTagHelper.ViewContext = expectedViewContext;
@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent(childContent);
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var tagBuilder = new TagBuilder("span2", new HtmlEncoder())
+            var tagBuilder = new TagBuilder("span2", new CommonTestEncoder())
             {
                 InnerHtml = "New HTML"
             };
@@ -216,7 +216,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent(childContent);
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var tagBuilder = new TagBuilder("span2", new HtmlEncoder())
+            var tagBuilder = new TagBuilder("span2", new CommonTestEncoder())
             {
                 InnerHtml = "New HTML"
             };

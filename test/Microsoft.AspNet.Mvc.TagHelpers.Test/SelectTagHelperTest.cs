@@ -44,17 +44,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     modelWithText,
                 };
                 var noneSelected = "<option></option>" + Environment.NewLine +
-                    "<option>outer text</option>" + Environment.NewLine +
-                    "<option>inner text</option>" + Environment.NewLine +
-                    "<option>other text</option>" + Environment.NewLine;
+                    "<option>HtmlEncode[[outer text]]</option>" + Environment.NewLine +
+                    "<option>HtmlEncode[[inner text]]</option>" + Environment.NewLine +
+                    "<option>HtmlEncode[[other text]]</option>" + Environment.NewLine;
                 var innerSelected = "<option></option>" + Environment.NewLine +
-                    "<option>outer text</option>" + Environment.NewLine +
-                    "<option selected=\"selected\">inner text</option>" + Environment.NewLine +
-                    "<option>other text</option>" + Environment.NewLine;
+                    "<option>HtmlEncode[[outer text]]</option>" + Environment.NewLine +
+                    "<option selected=\"HtmlEncode[[selected]]\">HtmlEncode[[inner text]]</option>" + Environment.NewLine +
+                    "<option>HtmlEncode[[other text]]</option>" + Environment.NewLine;
                 var outerSelected = "<option></option>" + Environment.NewLine +
-                    "<option selected=\"selected\">outer text</option>" + Environment.NewLine +
-                    "<option>inner text</option>" + Environment.NewLine +
-                    "<option>other text</option>" + Environment.NewLine;
+                    "<option selected=\"HtmlEncode[[selected]]\">HtmlEncode[[outer text]]</option>" + Environment.NewLine +
+                    "<option>HtmlEncode[[inner text]]</option>" + Environment.NewLine +
+                    "<option>HtmlEncode[[other text]]</option>" + Environment.NewLine;
 
                 return new TheoryData<object, Type, Func<object>, NameAndId, string>
                 {

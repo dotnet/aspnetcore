@@ -9,8 +9,8 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.WebEncoders;
+using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
-            var htmlEncoder = new HtmlEncoder();
+            var htmlEncoder = new CommonTestEncoder();
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(MyService)))
                            .Returns(myService);
@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
-            var htmlEncoder = new HtmlEncoder();
+            var htmlEncoder = new CommonTestEncoder();
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(MyService)))
                            .Returns(myService);
@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var instance = new TestRazorPage();
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
-            var htmlEncoder = new HtmlEncoder();
+            var htmlEncoder = new CommonTestEncoder();
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(MyService)))
                            .Returns(myService);
@@ -172,7 +172,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var instance = new DoesNotDeriveFromRazorPageOfTButHasModelProperty();
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
-            var htmlEncoder = new HtmlEncoder();
+            var htmlEncoder = new CommonTestEncoder();
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(MyService)))
                            .Returns(myService);

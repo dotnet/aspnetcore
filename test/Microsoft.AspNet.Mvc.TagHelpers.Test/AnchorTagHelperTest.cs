@@ -8,6 +8,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.WebEncoders;
+using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -104,7 +105,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             generator
                 .Setup(mock => mock.GenerateRouteLink(
                     string.Empty, "Default", "http", "contoso.com", "hello=world", null, null))
-                .Returns(new TagBuilder("a", new HtmlEncoder()))
+                .Returns(new TagBuilder("a", new CommonTestEncoder()))
                 .Verifiable();
             var anchorTagHelper = new AnchorTagHelper
             {
@@ -146,7 +147,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             generator
                 .Setup(mock => mock.GenerateActionLink(
                     string.Empty, "Index", "Home", "http", "contoso.com", "hello=world", null, null))
-                .Returns(new TagBuilder("a", new HtmlEncoder()))
+                .Returns(new TagBuilder("a", new CommonTestEncoder()))
                 .Verifiable();
             var anchorTagHelper = new AnchorTagHelper
             {

@@ -20,6 +20,7 @@ using Microsoft.Framework.Expiration.Interfaces;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.WebEncoders;
+using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -178,8 +179,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = MakeViewContext();
             var helper = new LinkTagHelper
             {
-                HtmlEncoder = new HtmlEncoder(),
-                JavaScriptEncoder = new JavaScriptStringEncoder(),
+                HtmlEncoder = new CommonTestEncoder(),
+                JavaScriptEncoder = new CommonTestEncoder(),
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
@@ -222,8 +223,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = MakeViewContext();
             var helper = new LinkTagHelper
             {
-                HtmlEncoder = new HtmlEncoder(),
-                JavaScriptEncoder = new JavaScriptStringEncoder(),
+                HtmlEncoder = new CommonTestEncoder(),
+                JavaScriptEncoder = new CommonTestEncoder(),
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
@@ -240,7 +241,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.StartsWith(
-                "<link rel=\"stylesheet\" data-extra=\"something\" href=\"test.css\"", output.Content.GetContent());
+                "<link rel=\"stylesheet\" data-extra=\"something\" href=\"HtmlEncode[[test.css]]\"", output.Content.GetContent());
         }
 
         public static TheoryData DoesNotRunWhenARequiredAttributeIsMissing_Data
@@ -392,7 +393,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 .Returns(new[] { "/css/site.css", "/base.css" });
             var helper = new LinkTagHelper
             {
-                HtmlEncoder = new HtmlEncoder(),
+                HtmlEncoder = new CommonTestEncoder(),
                 GlobbingUrlBuilder = globbingUrlBuilder.Object,
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
@@ -407,8 +408,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal(
-                "<link rel=\"stylesheet\" href=\"/css/site.css\" />" +
-                "<link rel=\"stylesheet\" href=\"/base.css\" />",
+                "<link rel=\"stylesheet\" href=\"HtmlEncode[[/css/site.css]]\" />" +
+                "<link rel=\"stylesheet\" href=\"HtmlEncode[[/base.css]]\" />",
                 output.Content.GetContent());
         }
 
@@ -435,7 +436,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 .Returns(new[] { "/css/site.css", "/base.css" });
             var helper = new LinkTagHelper
             {
-                HtmlEncoder = new TestHtmlEncoder(),
+                HtmlEncoder = new CommonTestEncoder(),
                 GlobbingUrlBuilder = globbingUrlBuilder.Object,
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
@@ -475,7 +476,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = MakeViewContext();
             var helper = new LinkTagHelper
             {
-                HtmlEncoder = new TestHtmlEncoder(),
+                HtmlEncoder = new CommonTestEncoder(),
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
@@ -514,7 +515,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = MakeViewContext("/bar");
             var helper = new LinkTagHelper
             {
-                HtmlEncoder = new TestHtmlEncoder(),
+                HtmlEncoder = new CommonTestEncoder(),
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
@@ -557,7 +558,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 .Returns(new[] { "/css/site.css", "/base.css" });
             var helper = new LinkTagHelper
             {
-                HtmlEncoder = new TestHtmlEncoder(),
+                HtmlEncoder = new CommonTestEncoder(),
                 GlobbingUrlBuilder = globbingUrlBuilder.Object,
                 Logger = logger.Object,
                 HostingEnvironment = hostingEnvironment,

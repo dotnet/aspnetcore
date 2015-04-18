@@ -20,6 +20,7 @@ using Microsoft.Framework.Expiration.Interfaces;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.WebEncoders;
+using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -222,8 +223,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = MakeViewContext();
             var helper = new ScriptTagHelper
             {
-                HtmlEncoder = new HtmlEncoder(),
-                JavaScriptEncoder = new JavaScriptStringEncoder(),
+                HtmlEncoder = new CommonTestEncoder(),
+                JavaScriptEncoder = new CommonTestEncoder(),
                 Logger = logger,
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
@@ -453,8 +454,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var helper = new ScriptTagHelper
             {
-                HtmlEncoder = new HtmlEncoder(),
-                JavaScriptEncoder = new JavaScriptStringEncoder(),
+                HtmlEncoder = new CommonTestEncoder(),
+                JavaScriptEncoder = new CommonTestEncoder(),
                 Logger = logger,
                 ViewContext = viewContext,
                 HostingEnvironment = hostingEnvironment,
@@ -469,7 +470,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.StartsWith(
-                "<script data-extra=\"something\" data-more=\"else\" src=\"/blank.js\"", output.Content.GetContent());
+                "<script data-extra=\"HtmlEncode[[something]]\" data-more=\"HtmlEncode[[else]]\" src=\"HtmlEncode[[/blank.js]]\"",
+                output.Content.GetContent());
             Assert.Empty(logger.Logged);
         }
 
@@ -498,7 +500,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 ViewContext = viewContext,
                 Src = "/js/site.js",
                 SrcInclude = "**/*.js",
-                HtmlEncoder = new HtmlEncoder(),
+                HtmlEncoder = new CommonTestEncoder(),
                 Cache = MakeCache(),
             };
 
@@ -506,7 +508,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             await helper.ProcessAsync(context, output);
 
             // Assert
-            Assert.Equal("<script src=\"/js/site.js\"></script><script src=\"/common.js\"></script>", output.Content.GetContent());
+            Assert.Equal("<script src=\"HtmlEncode[[/js/site.js]]\"></script>" +
+                "<script src=\"HtmlEncode[[/common.js]]\"></script>", output.Content.GetContent());
         }
 
         [Fact]
@@ -534,7 +537,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 ViewContext = viewContext,
                 Src = "/js/site.js",
                 SrcInclude = "**/*.js",
-                HtmlEncoder = new TestHtmlEncoder(),
+                HtmlEncoder = new CommonTestEncoder(),
                 JavaScriptEncoder = new TestJavaScriptEncoder(),
                 Cache = MakeCache(),
             };
@@ -569,7 +572,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 FileVersion = true,
-                HtmlEncoder = new TestHtmlEncoder(),
+                HtmlEncoder = new CommonTestEncoder(),
                 JavaScriptEncoder = new TestJavaScriptEncoder(),
                 Src = "/js/site.js",
                 Cache = MakeCache(),
@@ -606,7 +609,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 FileVersion = true,
-                HtmlEncoder = new TestHtmlEncoder(),
+                HtmlEncoder = new CommonTestEncoder(),
                 JavaScriptEncoder = new TestJavaScriptEncoder(),
                 Src = "/bar/js/site.js",
                 Cache = MakeCache(),
@@ -647,7 +650,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 FallbackSrc = "fallback.js",
                 FallbackTestExpression = "isavailable()",
                 FileVersion = true,
-                HtmlEncoder = new TestHtmlEncoder(),
+                HtmlEncoder = new CommonTestEncoder(),
                 JavaScriptEncoder = new TestJavaScriptEncoder(),
                 Src = "/js/site.js",
                 Cache = MakeCache(),
@@ -690,7 +693,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 ViewContext = viewContext,
                 SrcInclude = "*.js",
                 FileVersion = true,
-                HtmlEncoder = new TestHtmlEncoder(),
+                HtmlEncoder = new CommonTestEncoder(),
                 JavaScriptEncoder = new TestJavaScriptEncoder(),
                 Src = "/js/site.js",
                 Cache = MakeCache(),

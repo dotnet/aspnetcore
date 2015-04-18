@@ -11,7 +11,7 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             IOptions<MvcOptions> options,
             IUrlHelper urlHelper,
             IDictionary<string, object> validationAttributes)
-            : base(GetAntiForgery(), options, metadataProvider, urlHelper, new HtmlEncoder())
+            : base(GetAntiForgery(), options, metadataProvider, urlHelper, new CommonTestEncoder())
         {
             _validationAttributes = validationAttributes;
         }
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         public override TagBuilder GenerateAntiForgery(ViewContext viewContext)
         {
-            return new TagBuilder("input", new HtmlEncoder())
+            return new TagBuilder("input", new CommonTestEncoder())
             {
                 Attributes =
                 {
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Mock.Of<IDataProtectionProvider>(),
                 Mock.Of<IAntiForgeryAdditionalDataProvider>(),
                 optionsAccessor.Object,
-                new HtmlEncoder(),
+                new CommonTestEncoder(),
                 mockDataProtectionOptions.Object);
 
             return antiForgery;

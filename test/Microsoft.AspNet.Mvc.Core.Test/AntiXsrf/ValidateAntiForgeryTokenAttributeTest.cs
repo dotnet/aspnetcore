@@ -4,7 +4,7 @@
 using Microsoft.AspNet.DataProtection;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                    dataProtectionProvider.Object,
                                    additionalDataProvider.Object,
                                    optionsAccessor.Object,
-                                   new HtmlEncoder(),
+                                   new CommonTestEncoder(),
                                    mockDataProtectionOptions.Object);
         }
     }

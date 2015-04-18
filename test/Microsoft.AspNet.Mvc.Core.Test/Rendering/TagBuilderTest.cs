@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Framework.WebEncoders.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Core.Rendering
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.Core.Rendering
         public void MergeAttribute_IgnoresCase(bool replaceExisting, string expectedKey, string expectedValue)
         {
             // Arrange
-            var tagBuilder = new TagBuilder("p", new HtmlEncoder());
+            var tagBuilder = new TagBuilder("p", new NullTestEncoder());
             tagBuilder.Attributes.Add("Hello", "World");
 
             // Act
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.Core.Rendering
         public void AddCssClass_IgnoresCase()
         {
             // Arrange
-            var tagBuilder = new TagBuilder("p", new HtmlEncoder());
+            var tagBuilder = new TagBuilder("p", new NullTestEncoder());
             tagBuilder.Attributes.Add("ClaSs", "btn");
 
             // Act
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.Core.Rendering
         public void GenerateId_IgnoresCase()
         {
             // Arrange
-            var tagBuilder = new TagBuilder("p", new HtmlEncoder());
+            var tagBuilder = new TagBuilder("p", new NullTestEncoder());
             tagBuilder.Attributes.Add("ID", "something");
 
             // Act
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.Core.Rendering
         public void ToString_IgnoresIdAttributeCase(TagRenderMode renderingMode, string expectedOutput)
         {
             // Arrange
-            var tagBuilder = new TagBuilder("p", new HtmlEncoder());
+            var tagBuilder = new TagBuilder("p", new NullTestEncoder());
 
             // An empty value id attribute should not be rendered via ToString.
             tagBuilder.Attributes.Add("ID", string.Empty);
@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Mvc.Core.Rendering
         public void ToHtmlString_IgnoresIdAttributeCase(TagRenderMode renderingMode, string expectedOutput)
         {
             // Arrange
-            var tagBuilder = new TagBuilder("p", new HtmlEncoder());
+            var tagBuilder = new TagBuilder("p", new NullTestEncoder());
 
             // An empty value id attribute should not be rendered via ToHtmlString.
             tagBuilder.Attributes.Add("ID", string.Empty);
@@ -102,6 +102,19 @@ namespace Microsoft.AspNet.Mvc.Core.Rendering
 
             // Assert
             Assert.Equal(expectedOutput, value.ToString());
+        }
+
+        [Fact]
+        public void SetInnerText_HtmlEncodesValue()
+        {
+            // Arrange
+            var tagBuilder = new TagBuilder("p", new CommonTestEncoder());
+
+            // Act
+            tagBuilder.SetInnerText("TestValue");
+
+            // Assert
+            Assert.Equal("HtmlEncode[[TestValue]]", tagBuilder.InnerHtml);
         }
     }
 }

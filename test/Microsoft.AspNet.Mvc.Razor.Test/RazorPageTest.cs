@@ -11,7 +11,7 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewContext = CreateViewContext();
             var page = CreatePage(v =>
             {
-                v.HtmlEncoder = new HtmlEncoder();
+                v.HtmlEncoder = new CommonTestEncoder();
                 v.Write("Hello Prefix");
                 v.StartTagHelperWritingScope();
                 v.Write("Hello from Output");
@@ -44,7 +44,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             var pageOutput = page.Output.ToString();
 
             // Assert
-            Assert.Equal("Hello PrefixFrom Scope: Hello from OutputHello from view context writer", pageOutput);
+            Assert.Equal("HtmlEncode[[Hello Prefix]]HtmlEncode[[From Scope: HtmlEncode[[Hello from Output]]" +
+                "Hello from view context writer]]", pageOutput);
         }
 
         [Fact]
@@ -54,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewContext = CreateViewContext();
             var page = CreatePage(v =>
             {
-                v.HtmlEncoder = new HtmlEncoder();
+                v.HtmlEncoder = new CommonTestEncoder();
                 v.Write("Hello Prefix");
                 v.StartTagHelperWritingScope();
                 v.Write("Hello In Scope");
@@ -67,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var pageOutput = page.Output.ToString();
 
             // Assert
-            Assert.Equal("Hello PrefixFrom Scope: Hello In Scope", pageOutput);
+            Assert.Equal("HtmlEncode[[Hello Prefix]]HtmlEncode[[From Scope: HtmlEncode[[Hello In Scope]]]]", pageOutput);
         }
 
         [Fact]
@@ -77,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewContext = CreateViewContext();
             var page = CreatePage(v =>
             {
-                v.HtmlEncoder = new HtmlEncoder();
+                v.HtmlEncoder = new CommonTestEncoder();
                 v.Write("Hello Prefix");
                 v.StartTagHelperWritingScope();
                 v.Write("Hello In Scope Pre Nest");
@@ -97,7 +98,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             var pageOutput = page.Output.ToString();
 
             // Assert
-            Assert.Equal("Hello PrefixFrom Scopes: Hello In Scope Pre NestHello In Scope Post NestHello In Nested Scope", pageOutput);
+            Assert.Equal("HtmlEncode[[Hello Prefix]]HtmlEncode[[From Scopes: HtmlEncode[[Hello In Scope Pre Nest]]" +
+                "HtmlEncode[[Hello In Scope Post Nest]]HtmlEncode[[Hello In Nested Scope]]]]", pageOutput);
         }
 
         [Fact]
@@ -148,14 +150,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Act
             var page = CreatePage(v =>
             {
-                v.HtmlEncoder = new HtmlEncoder();
+                v.HtmlEncoder = new CommonTestEncoder();
                 v.StartTagHelperWritingScope();
                 v.Write("Hello World!");
                 var returnValue = v.EndTagHelperWritingScope();
 
                 // Assert
                 var content = Assert.IsType<DefaultTagHelperContent>(returnValue);
-                Assert.Equal("Hello World!", content.GetContent());
+                Assert.Equal("HtmlEncode[[Hello World!]]", content.GetContent());
             });
             await page.ExecuteAsync();
         }
@@ -169,7 +171,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Act
             var page = CreatePage(v =>
             {
-                v.HtmlEncoder = new HtmlEncoder();
+                v.HtmlEncoder = new CommonTestEncoder();
                 v.StartTagHelperWritingScope(new RazorTextWriter(TextWriter.Null, Encoding.UTF8));
                 v.Write("Hello ");
                 v.Write("World!");
@@ -177,8 +179,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                 // Assert
                 var content = Assert.IsType<DefaultTagHelperContent>(returnValue);
-                Assert.Equal("Hello World!", content.GetContent());
-                Assert.Equal(new[] { "Hello ", "World!" }, content.AsArray());
+                Assert.Equal("HtmlEncode[[Hello ]]HtmlEncode[[World!]]", content.GetContent());
+                Assert.Equal(new[] { "HtmlEncode[[Hello ]]", "HtmlEncode[[World!]]" }, content.AsArray());
             }, viewContext);
             await page.ExecuteAsync();
         }
@@ -545,7 +547,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                   .Verifiable();
             var page = CreatePage(v =>
             {
-                v.HtmlEncoder = new HtmlEncoder();
+                v.HtmlEncoder = new CommonTestEncoder();
                 v.Write(v.Href("url"));
             });
             var services = new Mock<IServiceProvider>();
@@ -558,7 +560,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Assert
             var actual = page.RenderedContent;
-            Assert.Equal(expected, actual);
+            Assert.Equal($"HtmlEncode[[{expected}]]", actual);
             helper.Verify();
         }
 
@@ -649,7 +651,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var page = CreatePage(p =>
             {
-                p.HtmlEncoder = new HtmlEncoder();
+                p.HtmlEncoder = new CommonTestEncoder();
                 p.WriteAttribute("href",
                                  new PositionTagged<string>("prefix", 0),
                                  new PositionTagged<string>("suffix", 34),
@@ -787,7 +789,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                             content:     "Hello World!",
                             postContent: null,
                             postElement: null),
-                        "<p test=\"testVal\">Hello World!</p>"
+                        "<p test=\"HtmlEncode[[testVal]]\">Hello World!</p>"
                     },
                     {
                         GetTagHelperOutput(
@@ -799,7 +801,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                             content:     "Hello World!",
                             postContent: null,
                             postElement: null),
-                        "<p test=\"testVal\" something=\"  spaced  \">Hello World!</p>"
+                        "<p test=\"HtmlEncode[[testVal]]\" something=\"HtmlEncode[[  spaced  ]]\">Hello World!</p>"
                     },
                     {
                         GetTagHelperOutput(
@@ -811,7 +813,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                             content:     "Hello World!",
                             postContent: null,
                             postElement: null),
-                        "<p test=\"testVal\" />"
+                        "<p test=\"HtmlEncode[[testVal]]\" />"
                     },
                     {
                         GetTagHelperOutput(
@@ -823,7 +825,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                             content:     "Hello World!",
                             postContent: null,
                             postElement: null),
-                        "<p test=\"testVal\" something=\"  spaced  \" />"
+                        "<p test=\"HtmlEncode[[testVal]]\" something=\"HtmlEncode[[  spaced  ]]\" />"
                     },
                     {
                         GetTagHelperOutput(
@@ -955,7 +957,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                             content:     null,
                             postContent: null,
                             postElement: null),
-                        "Before<custom test=\"testVal\" />"
+                        "Before<custom test=\"HtmlEncode[[testVal]]\" />"
                     },
                     {
                         GetTagHelperOutput(
@@ -1015,7 +1017,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                             content:     null,
                             postContent: null,
                             postElement: "After"),
-                        "<custom test=\"testVal\" />After"
+                        "<custom test=\"HtmlEncode[[testVal]]\" />After"
                     },
                     {
                         GetTagHelperOutput(
@@ -1051,7 +1053,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                             content:     "Test",
                             postContent: "World!",
                             postElement: "After"),
-                        "Before<custom test=\"testVal\">HelloTestWorld!</custom>After"
+                        "Before<custom test=\"HtmlEncode[[testVal]]\">HelloTestWorld!</custom>After"
                     },
                     {
                         GetTagHelperOutput(
@@ -1125,7 +1127,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Act
             var page = CreatePage(p =>
             {
-                p.HtmlEncoder = new HtmlEncoder();
+                p.HtmlEncoder = new CommonTestEncoder();
                 p.WriteTagHelperAsync(tagHelperExecutionContext).Wait();
             }, context);
             await page.ExecuteAsync();
@@ -1167,7 +1169,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Act
             var page = CreatePage(p =>
             {
-                p.HtmlEncoder = new HtmlEncoder();
+                p.HtmlEncoder = new CommonTestEncoder();
                 p.WriteTagHelperAsync(tagHelperExecutionContext).Wait();
             }, context);
             await page.ExecuteAsync();
@@ -1224,7 +1226,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Act
             var page = CreatePage(p =>
             {
-                p.HtmlEncoder = new HtmlEncoder();
+                p.HtmlEncoder = new CommonTestEncoder();
                 p.WriteTagHelperToAsync(writer, tagHelperExecutionContext).Wait();
             }, context);
             await page.ExecuteAsync();

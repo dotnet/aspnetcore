@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Collections;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 tokenStore: null,
                 generator: null,
                 validator: null,
-                htmlEncoder: new HtmlEncoder());
+                htmlEncoder: new CommonTestEncoder());
 
             // Act & assert
             var ex =
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 tokenStore: null,
                 generator: null,
                 validator: null,
-                htmlEncoder: new HtmlEncoder());
+                htmlEncoder: new CommonTestEncoder());
 
             // Act & assert
             var ex = Assert.Throws<InvalidOperationException>(
@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 tokenStore: null,
                 generator: null,
                 validator: null,
-                htmlEncoder: new HtmlEncoder());
+                htmlEncoder: new CommonTestEncoder());
 
             // Act & assert
             var ex = Assert.Throws<InvalidOperationException>(() => worker.GetFormInputElement(mockHttpContext.Object));
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 tokenStore: null,
                 generator: null,
                 validator: null,
-                htmlEncoder: new HtmlEncoder());
+                htmlEncoder: new CommonTestEncoder());
 
             // Act & assert
             var ex = Assert.Throws<InvalidOperationException>(() => worker.GetTokens(mockHttpContext.Object, "cookie-token"));
@@ -154,7 +154,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var inputElement = worker.GetFormInputElement(context.HttpContext.Object);
 
             // Assert
-            Assert.Equal(@"<input name=""form-field-name"" type=""hidden"" value=""serialized-form-token"" />",
+            Assert.Equal(@"<input name=""HtmlEncode[[form-field-name]]"" type=""HtmlEncode[[hidden]]"" " +
+                @"value=""HtmlEncode[[serialized-form-token]]"" />",
                 inputElement.ToString(TagRenderMode.SelfClosing));
             context.TokenStore.Verify();
         }
@@ -184,7 +185,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var inputElement = worker.GetFormInputElement(context.HttpContext.Object);
 
             // Assert
-            Assert.Equal(@"<input name=""form-field-name"" type=""hidden"" value=""serialized-form-token"" />",
+            Assert.Equal(@"<input name=""HtmlEncode[[form-field-name]]"" type=""HtmlEncode[[hidden]]"" " +
+                @"value=""HtmlEncode[[serialized-form-token]]"" />",
                 inputElement.ToString(TagRenderMode.SelfClosing));
             context.TokenStore.Verify();
         }
@@ -206,7 +208,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var inputElement = worker.GetFormInputElement(context.HttpContext.Object);
 
             // Assert
-            Assert.Equal(@"<input name=""form-field-name"" type=""hidden"" value=""serialized-form-token"" />",
+            Assert.Equal(@"<input name=""HtmlEncode[[form-field-name]]"" type=""HtmlEncode[[hidden]]"" " +
+                @"value=""HtmlEncode[[serialized-form-token]]"" />",
                 inputElement.ToString(TagRenderMode.SelfClosing));
         }
 
@@ -415,7 +418,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                  tokenStore: context.TokenStore != null ? context.TokenStore.Object : null,
                  generator: context.TokenProvider != null ? context.TokenProvider.Object : null,
                  validator: context.TokenProvider != null ? context.TokenProvider.Object : null,
-                 htmlEncoder: new HtmlEncoder());
+                 htmlEncoder: new CommonTestEncoder());
         }
 
         private Mock<HttpContext> GetHttpContext(bool setupResponse = true)

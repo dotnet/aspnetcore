@@ -10,7 +10,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Rendering.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var originalContent = "original content";
             var originalTagName = "not-input";
             var expectedPreContent = "original pre-content";
-            var expectedContent = originalContent + "<input class=\"form-control\" /><hidden />";
+            var expectedContent = originalContent + "<input class=\"HtmlEncode[[form-control]]\" /><hidden />";
             var expectedPostContent = "original post-content";
 
             var context = new TagHelperContext(
@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var tagHelper = GetTagHelper(htmlGenerator.Object, model: false, propertyName: nameof(Model.IsACar));
-            var tagBuilder = new TagBuilder("input", new HtmlEncoder())
+            var tagBuilder = new TagBuilder("input", new CommonTestEncoder())
             {
                 Attributes =
                 {
@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelper.ViewContext,
                     tagHelper.For.ModelExplorer,
                     tagHelper.For.Name))
-                .Returns(new TagBuilder("hidden", new HtmlEncoder()))
+                .Returns(new TagBuilder("hidden", new NullTestEncoder()))
                 .Verifiable();
 
             // Act
@@ -288,7 +288,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 metadataProvider: metadataProvider);
             tagHelper.InputTypeName = inputTypeName;
 
-            var tagBuilder = new TagBuilder("input", new HtmlEncoder())
+            var tagBuilder = new TagBuilder("input", new NullTestEncoder())
             {
                 Attributes =
                 {
@@ -387,7 +387,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 metadataProvider: metadataProvider);
             tagHelper.InputTypeName = inputTypeName;
 
-            var tagBuilder = new TagBuilder("input", new HtmlEncoder())
+            var tagBuilder = new TagBuilder("input", new NullTestEncoder())
             {
                 Attributes =
                 {
@@ -477,7 +477,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             tagHelper.InputTypeName = inputTypeName;
             tagHelper.Value = value;
 
-            var tagBuilder = new TagBuilder("input", new HtmlEncoder())
+            var tagBuilder = new TagBuilder("input", new NullTestEncoder())
             {
                 Attributes =
                 {
@@ -588,7 +588,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 metadataProvider: metadataProvider);
             tagHelper.InputTypeName = inputTypeName;
 
-            var tagBuilder = new TagBuilder("input", new HtmlEncoder())
+            var tagBuilder = new TagBuilder("input", new NullTestEncoder())
             {
                 Attributes =
                 {
@@ -695,7 +695,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 propertyName: nameof(Model.Text),
                 metadataProvider: metadataProvider);
 
-            var tagBuilder = new TagBuilder("input", new HtmlEncoder());
+            var tagBuilder = new TagBuilder("input", new NullTestEncoder());
 
             Dictionary<string, object> htmlAttributes = null;
             if (string.Equals(dataTypeName, TemplateRenderer.IEnumerableOfIFormFileName))
@@ -774,7 +774,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 metadataProvider: metadataProvider);
             tagHelper.ViewContext.Html5DateRenderingMode = dateRenderingMode;
 
-            var tagBuilder = new TagBuilder("input", new HtmlEncoder());
+            var tagBuilder = new TagBuilder("input", new NullTestEncoder());
             htmlGenerator
                 .Setup(mock => mock.GenerateTextBox(
                     tagHelper.ViewContext,

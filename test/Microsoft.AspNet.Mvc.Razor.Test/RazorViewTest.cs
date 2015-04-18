@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.PageExecutionInstrumentation;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var page = new TestableRazorPage(v =>
             {
                 actual = v.Output;
-                v.HtmlEncoder = new HtmlEncoder();
+                v.HtmlEncoder = new CommonTestEncoder();
                 v.Write("Hello world");
             });
             var view = new RazorView(Mock.Of<IRazorViewEngine>(),
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Assert
             Assert.NotSame(expected, actual);
             Assert.IsAssignableFrom<IBufferedTextWriter>(actual);
-            Assert.Equal("Hello world", viewContext.Writer.ToString());
+            Assert.Equal("HtmlEncode[[Hello world]]", viewContext.Writer.ToString());
         }
 
         [Fact]
@@ -167,10 +167,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderAsync_AsPartial_ExecutesLayout_ButNotViewStartPages()
         {
             // Arrange
-            var htmlEncoder = new HtmlEncoder();
-            var expected = string.Join(htmlEncoder.HtmlEncode(Environment.NewLine),
-                                       "layout-content",
-                                       "page-content");
+            var htmlEncoder = new CommonTestEncoder();
+            var expected = string.Join(Environment.NewLine,
+                                       "HtmlEncode[[layout-content",
+                                       "]]HtmlEncode[[page-content]]");
             var page = new TestableRazorPage(v =>
             {
                 v.HtmlEncoder = htmlEncoder;
@@ -364,11 +364,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderAsync_ExecutesLayoutPages()
         {
             // Arrange
-            var htmlEncoder = new HtmlEncoder();
+            var htmlEncoder = new CommonTestEncoder();
             var htmlEncodedNewLine = htmlEncoder.HtmlEncode(Environment.NewLine);
-            var expected = "layout-content" +
-                           htmlEncodedNewLine +
-                           "head-content" +
+            var expected = "HtmlEncode[[layout-content" +
+                           Environment.NewLine +
+                           "]]head-content" +
                            htmlEncodedNewLine +
                            "body-content" +
                            htmlEncodedNewLine +
@@ -468,7 +468,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 "layout-section-content",
                 "page-section-content");
 
-            var htmlEncoder = new HtmlEncoder();
+            var htmlEncoder = new CommonTestEncoder();
             var page = new TestableRazorPage(v =>
             {
                 v.HtmlEncoder = htmlEncoder;
@@ -531,7 +531,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 "layout-section-content",
                 "page-section-content");
 
-            var htmlEncoder = new HtmlEncoder();
+            var htmlEncoder = new CommonTestEncoder();
             var page = new TestableRazorPage(v =>
             {
                 v.HtmlEncoder = htmlEncoder;
@@ -583,7 +583,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderAsync_WithNestedSections_ThrowsIfSectionsWereDefinedButNotRendered()
         {
             // Arrange
-            var htmlEncoder = new HtmlEncoder();
+            var htmlEncoder = new CommonTestEncoder();
             var page = new TestableRazorPage(v =>
             {
                 v.HtmlEncoder = htmlEncoder;
@@ -641,7 +641,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderAsync_WithNestedSectionsOfTheSameName_ThrowsIfSectionsWereDefinedButNotRendered()
         {
             // Arrange
-            var htmlEncoder = new HtmlEncoder();
+            var htmlEncoder = new CommonTestEncoder();
             var page = new TestableRazorPage(v =>
             {
                 v.HtmlEncoder = htmlEncoder;
@@ -735,15 +735,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderAsync_ExecutesNestedLayoutPages()
         {
             // Arrange
-            var htmlEncoder = new HtmlEncoder();
-            var htmlEncodedNewLine = htmlEncoder.HtmlEncode(Environment.NewLine);
-            var expected = "layout-2" +
-                           htmlEncodedNewLine +
-                           "bar-content" +
+            var htmlEncoder = new CommonTestEncoder();
+            var expected = "HtmlEncode[[layout-2" +
                            Environment.NewLine +
-                           "layout-1" +
-                           htmlEncodedNewLine +
-                           "foo-content" +
+                           "]]bar-content" +
+                           Environment.NewLine +
+                           "HtmlEncode[[layout-1" +
+                           Environment.NewLine +
+                           "]]foo-content" +
                            Environment.NewLine +
                            "body-content";
 
@@ -797,15 +796,15 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderAsync_ExecutesNestedLayoutsWithNestedSections()
         {
             // Arrange
-            var htmlEncoder = new HtmlEncoder();
-            var htmlEncodedNewLine = htmlEncoder.HtmlEncode(Environment.NewLine);
-            var expected = "BaseLayout" +
-                           htmlEncodedNewLine +
-                           "NestedLayout" +
-                           htmlEncodedNewLine +
-                           "BodyContent" +
+            var htmlEncoder = new CommonTestEncoder();
+            var expected = "HtmlEncode[[BaseLayout" +
+                           Environment.NewLine +
+                           "]]HtmlEncode[[NestedLayout" +
+                           Environment.NewLine +
+                           "]]BodyContent" +
                            "foo-content" +
                            Environment.NewLine +
+                           "HtmlEncode[[]]" +
                            Environment.NewLine;
 
             var page = new TestableRazorPage(v =>
@@ -860,10 +859,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderAsync_DoesNotCopyContentOnceRazorTextWriterIsNoLongerBuffering()
         {
             // Arrange
-            var htmlEncoder = new HtmlEncoder();
-            var expected = "layout-1" +
-                           htmlEncoder.HtmlEncode(Environment.NewLine) +
-                           "body content" +
+            var htmlEncoder = new CommonTestEncoder();
+            var expected = "HtmlEncode[[layout-1" +
+                           Environment.NewLine +
+                           "]]body content" +
                            Environment.NewLine +
                            "section-content-1" +
                            Environment.NewLine +
@@ -912,10 +911,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task FlushAsync_DoesNotThrowWhenInvokedInsideOfASection()
         {
             // Arrange
-            var htmlEncoder = new HtmlEncoder();
-            var expected = "layout-1" +
-                           htmlEncoder.HtmlEncode(Environment.NewLine) +
-                           "section-content-1" +
+            var htmlEncoder = new CommonTestEncoder();
+            var expected = "HtmlEncode[[layout-1" +
+                           Environment.NewLine +
+                           "]]section-content-1" +
                            Environment.NewLine +
                            "section-content-2";
 
@@ -993,7 +992,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var page = new TestableRazorPage(v =>
             {
                 v.Path = "/Views/TestPath/Test.cshtml";
-                v.HtmlEncoder = new HtmlEncoder();
+                v.HtmlEncoder = new CommonTestEncoder();
                 v.DefineSection("foo", async writer =>
                 {
                     writer.WriteLine("foo-content");
@@ -1004,7 +1003,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             });
             var layoutPage = new TestableRazorPage(v =>
             {
-                v.HtmlEncoder = new HtmlEncoder();
+                v.HtmlEncoder = new CommonTestEncoder();
                 v.Write("layout-1" + Environment.NewLine);
                 v.Write(v.RenderSection("foo"));
                 v.DefineSection("bar", writer => writer.WriteLineAsync("bar-content"));
@@ -1066,7 +1065,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var page = new TestableRazorPage(v =>
             {
-                v.HtmlEncoder = new HtmlEncoder();
+                v.HtmlEncoder = new CommonTestEncoder();
                 v.Layout = "Layout";
                 Assert.Same(pageWriter, v.Output);
                 Assert.Same(pageContext, v.PageExecutionContext);
@@ -1075,7 +1074,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var layout = new TestableRazorPage(v =>
             {
-                v.HtmlEncoder = new HtmlEncoder();
+                v.HtmlEncoder = new CommonTestEncoder();
                 Assert.Same(layoutWriter, v.Output);
                 Assert.Same(layoutContext, v.PageExecutionContext);
                 v.RenderBodyPublic();
@@ -1127,7 +1126,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var page = new TestableRazorPage(v =>
             {
-                v.HtmlEncoder = new HtmlEncoder();
+                v.HtmlEncoder = new CommonTestEncoder();
                 Assert.IsType<RazorTextWriter>(v.Output);
                 Assert.Same(pageContext, v.PageExecutionContext);
                 executed = true;
@@ -1151,7 +1150,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Assert
             feature.Verify();
             Assert.True(executed);
-            Assert.Equal("Hello world", viewContext.Writer.ToString());
+            Assert.Equal("HtmlEncode[[Hello world]]", viewContext.Writer.ToString());
         }
 
         [Theory]
