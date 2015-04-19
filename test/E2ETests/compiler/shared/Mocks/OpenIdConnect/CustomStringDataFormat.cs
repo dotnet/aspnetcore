@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Authentication;
+﻿#if TESTING
+using Microsoft.AspNet.Authentication;
 
 namespace MusicStore.Mocks.OpenIdConnect
 {
@@ -16,3 +17,4 @@ namespace MusicStore.Mocks.OpenIdConnect
         }
     }
 }
+#endif

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if TESTING
+using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -55,4 +56,5 @@ namespace MusicStore.Mocks.MicrosoftAccount
             context.Response.Redirect(context.RedirectUri + "&custom_redirect_uri=custom");
         }
     }
-}
+} 
+#endif

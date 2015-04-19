@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿#if TESTING
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,4 +29,5 @@ namespace MusicStore.Mocks.OpenIdConnect
             return Task.FromResult(response);
         }
     }
-}
+} 
+#endif

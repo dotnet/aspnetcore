@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿#if TESTING
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.Twitter;
@@ -48,4 +49,5 @@ namespace MusicStore.Mocks.Twitter
             context.Response.Redirect(context.RedirectUri + "&custom_redirect_uri=custom");
         }
     }
-}
+} 
+#endif

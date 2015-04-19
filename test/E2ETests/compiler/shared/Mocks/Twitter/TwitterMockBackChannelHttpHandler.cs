@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if TESTING
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -59,4 +60,5 @@ namespace MusicStore.Mocks.Twitter
             return response;
         }
     }
-}
+} 
+#endif

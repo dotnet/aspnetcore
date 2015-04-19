@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Authentication;
+﻿#if TESTING
+using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Http.Authentication;
 using Newtonsoft.Json;
 
@@ -29,4 +30,5 @@ namespace MusicStore.Mocks.Common
             return JsonConvert.DeserializeObject<AuthenticationProperties>(state);
         }
     }
-}
+} 
+#endif

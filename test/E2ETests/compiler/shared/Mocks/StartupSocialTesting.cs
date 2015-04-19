@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if TESTING
+using System;
 using Microsoft.AspNet.Authentication.Facebook;
 using Microsoft.AspNet.Authentication.Google;
 using Microsoft.AspNet.Authentication.MicrosoftAccount;
@@ -225,3 +226,4 @@ namespace MusicStore
         }
     }
 }
+#endif
