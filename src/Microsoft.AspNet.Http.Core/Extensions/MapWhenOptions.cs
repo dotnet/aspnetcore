@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Builder.Extensions
 {
@@ -15,7 +16,12 @@ namespace Microsoft.AspNet.Builder.Extensions
         /// <summary>
         /// The user callback that determines if the branch should be taken
         /// </summary>
-        public Func<HttpContext, bool> Predicate { get; set; }
+        public Func<HttpContext, bool> Predicate
+        {
+            get;
+            [param: NotNull]
+            set;
+        }
 
         /// <summary>
         /// The branch taken for a positive match
