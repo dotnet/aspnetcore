@@ -2,7 +2,7 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_DNVM_BUILDNUMBER="beta5-10365"
+_DNVM_BUILDNUMBER="beta5-10367"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
 _DNVM_RUNTIME_PACKAGE_NAME="dnx"
 _DNVM_RUNTIME_FRIENDLY_NAME=".NET Execution Environment"
@@ -11,7 +11,8 @@ _DNVM_RUNTIME_FOLDER_NAME=".dnx"
 _DNVM_COMMAND_NAME="dnvm"
 _DNVM_PACKAGE_MANAGER_NAME="dnu"
 _DNVM_VERSION_MANAGER_NAME=".NET Version Manager"
-_DNVM_DEFAULT_FEED="https://www.myget.org/F/aspnetvnext/api/v2"
+_DNVM_DEFAULT_FEED="https://nuget.org/api/v2"
+_DNVM_DEFAULT_UNSTABLE_FEED="https://www.myget.org/F/aspnetvnext/api/v2"
 _DNVM_UPDATE_LOCATION="https://raw.githubusercontent.com/aspnet/Home/dev/dnvm.sh"
 _DNVM_HOME_VAR_NAME="DNX_HOME"
 
@@ -50,9 +51,7 @@ _DNVM_USER_PACKAGES="$DNX_USER_HOME/runtimes"
 _DNVM_ALIAS_DIR="$DNX_USER_HOME/alias"
 _DNVM_DNVM_DIR="$DNX_USER_HOME/dnvm"
 
-if [ -z "$DNX_FEED" ]; then
-    DNX_FEED="$_DNVM_DEFAULT_FEED"
-fi
+DNX_ACTIVE_FEED=""
 
 __dnvm_current_os()
 {
@@ -72,7 +71,7 @@ __dnvm_find_latest() {
         return 1
     fi
 
-    local url="$DNX_FEED/GetUpdates()?packageIds=%27$_DNVM_RUNTIME_PACKAGE_NAME-$platform%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
+    local url="$DNX_ACTIVE_FEED/GetUpdates()?packageIds=%27$_DNVM_RUNTIME_PACKAGE_NAME-$platform%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
     xml="$(curl $url 2>/dev/null)"
     echo $xml | grep \<[a-zA-Z]:Version\>* >> /dev/null || return 1
     version="$(echo $xml | sed 's/.*<[a-zA-Z]:Version>\([^<]*\).*/\1/')"
@@ -138,7 +137,7 @@ __dnvm_download() {
 
     local pkgName=$(__dnvm_package_name "$runtimeFullName")
     local pkgVersion=$(__dnvm_package_version "$runtimeFullName")
-    local url="$DNX_FEED/package/$pkgName/$pkgVersion"
+    local url="$DNX_ACTIVE_FEED/package/$pkgName/$pkgVersion"
     local runtimeFile="$runtimeFolder/$runtimeFullName.nupkg"
 
     if [ -n "$force" ]; then
@@ -158,13 +157,17 @@ __dnvm_download() {
 
     mkdir -p "$runtimeFolder" > /dev/null 2>&1
 
-    echo "Downloading $runtimeFullName from $DNX_FEED"
+    echo "Downloading $runtimeFullName from $DNX_ACTIVE_FEED"
     echo "Download: $url"
 
     local httpResult=$(curl -L -D - "$url" -o "$runtimeFile" -# | grep "^HTTP/1.1" | head -n 1 | sed "s/HTTP.1.1 \([0-9]*\).*/\1/")
 
-    [[ $httpResult == "404" ]] &&printf "%b\n" "${Red}$runtimeFullName was not found in repository $DNX_FEED ${RCol}" && return 1
-    [[ $httpResult != "302" && $httpResult != "200" ]] && echo "${Red}HTTP Error $httpResult fetching $runtimeFullName from $DNX_FEED ${RCol}" && return 1
+    if [[ $httpResult == "404" ]]; then
+        printf "%b\n" "${Red}$runtimeFullName was not found in repository $DNX_ACTIVE_FEED ${RCol}"
+        printf "%b\n" "${Cya}This is most likely caused by the feed not having the version that you typed. Check that you typed the right version and try again. Other possible causes are the feed doesn't have a $DNVM_RUNTIME_SHORT_NAME of the right name format or some other error caused a 404 on the server.${RCol}"
+        return 1
+    fi
+    [[ $httpResult != "302" && $httpResult != "200" ]] && echo "${Red}HTTP Error $httpResult fetching $runtimeFullName from $DNX_ACTIVE_FEED ${RCol}" && return 1
 
     __dnvm_unpack $runtimeFile $runtimeFolder
     return $?
@@ -246,27 +249,51 @@ __echo_art() {
    printf "%b" "${RCol}"
 }
 
-__dnvm_help() {
+__dnvm_description() {
     __echo_art
     echo ""
     echo "$_DNVM_VERSION_MANAGER_NAME - Version 1.0.0-$_DNVM_BUILDNUMBER"
     [[ "$_DNVM_AUTHORS" != {{* ]] && echo "By $_DNVM_AUTHORS"
     echo ""
-   printf "%b\n" "${Cya}USAGE:${Yel} $_DNVM_COMMAND_NAME <command> [options] ${RCol} \n"
+    echo "DNVM can be used to download versions of the $_DNVM_RUNTIME_FRIENDLY_NAME and manage which version you are using."
+    echo "You can control the URL of the stable and unstable channel by setting the DNX_FEED and DNX_UNSTABLE_FEED variables."
     echo ""
-   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME upgrade [-f|-force] ${RCol}"
+   printf "%b\n" "${Yel}Current feed settings:${RCol}"
+   printf "%b\n" "${Cya}Default Stable:${Yel} $_DNVM_DEFAULT_FEED"
+   printf "%b\n" "${Cya}Default Unstable:${Yel} $_DNVM_DEFAULT_UNSTABLE_FEED"
+   
+   local dnxStableOverride="<none>"
+   [[ -n $DNX_FEED ]] && dnxStableOverride="$DNX_FEED"
+
+   printf "%b\n" "${Cya}Current Stable Override:${Yel} $dnxStableOverride"
+   
+   local dnxUnstableOverride="<none>"
+   [[ -n $DNX_UNSTABLE_FEED ]] && dnxUnstableOverride="$DNX_UNSTABLE_FEED"
+    
+   printf "%b\n" "${Cya}Current Unstable Override:${Yel} $dnxUnstableOverride${RCol}"
+    echo ""
+
+}
+
+__dnvm_help() {
+    UNSTABLE___dnvm_description
+   printf "%b\n" "${Cya}USAGE:${Yel} $_DNVM_COMMAND_NAME <command> [options] ${RCol}"
+    echo ""
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME upgrade [-f|-force] [-u|-unstable] ${RCol}"
     echo "  install latest $_DNVM_RUNTIME_SHORT_NAME from feed"
     echo "  adds $_DNVM_RUNTIME_SHORT_NAME bin to path of current command line"
     echo "  set installed version as default"
     echo "  -f|forces         force upgrade. Overwrite existing version of $_DNVM_RUNTIME_SHORT_NAME if already installed"
+    echo "  -u|unstable       use unstable feed. Installs the $_DNVM_RUNTIME_SHORT_NAME from the unstable unstable feed"
     echo ""
-   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME install <semver>|<alias>|<nupkg>|latest [-a|-alias <alias>] [-p|-persistent] [-f|-force] ${RCol}"
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME install <semver>|<alias>|<nupkg>|latest [-a|-alias <alias>] [-p|-persistent] [-f|-force] [-u|-unstable] ${RCol}"
     echo "  <semver>|<alias>  install requested $_DNVM_RUNTIME_SHORT_NAME from feed"
     echo "  <nupkg>           install requested $_DNVM_RUNTIME_SHORT_NAME from local package on filesystem"
     echo "  latest            install latest version of $_DNVM_RUNTIME_SHORT_NAME from feed"
     echo "  -a|-alias <alias> set alias <alias> for requested $_DNVM_RUNTIME_SHORT_NAME on install"
     echo "  -p|-persistent    set installed version as default"
     echo "  -f|force          force install. Overwrite existing version of $_DNVM_RUNTIME_SHORT_NAME if already installed"
+    echo "  -u|unstable       use unstable feed. Installs the $_DNVM_RUNTIME_SHORT_NAME from the unstable unstable feed"
     echo ""
     echo "  adds $_DNVM_RUNTIME_SHORT_NAME bin to path of current command line"
     echo ""
@@ -317,7 +344,10 @@ __dnvm_help() {
 dnvm()
 {
     if [ $# -lt 1 ]; then
-        __dnvm_help
+        __dnvm_description
+
+        printf "%b\n" "Use ${Yel}$_DNVM_COMMAND_NAME [help|-h|-help|--help] ${RCol} to display help text."
+        echo ""
         return
     fi
 
@@ -342,6 +372,7 @@ dnvm()
             local versionOrAlias=
             local alias=
             local force=
+            local unstable=
             while [ $# -ne 0 ]
             do
                 if [[ $1 == "-p" || $1 == "-persistent" ]]; then
@@ -351,12 +382,30 @@ dnvm()
                     shift
                 elif [[ $1 == "-f" || $1 == "-force" ]]; then
                     local force="-f"
+                elif [[ $1 == "-u" || $1 == "-unstable" ]]; then
+                    local unstable="-u"
                 elif [[ -n $1 ]]; then
                     [[ -n $versionOrAlias ]] && echo "Invalid option $1" && __dnvm_help && return 1
                     local versionOrAlias=$1
                 fi
                 shift
             done
+
+            if [ -z $unstable ]; then
+                DNX_ACTIVE_FEED="$DNX_FEED"
+                if [ -z "$DNX_ACTIVE_FEED" ]; then
+                    DNX_ACTIVE_FEED="$_DNVM_DEFAULT_FEED"
+                else
+                    printf "%b\n" "${Yel}Default stable feed ($_DNVM_DEFAULT_FEED) is being overridden by the value of the DNX_FEED variable ($DNX_FEED). ${RCol}"
+                fi
+            else
+                DNX_ACTIVE_FEED="$DNX_UNSTABLE_FEED"
+                if [ -z "$DNX_ACTIVE_FEED" ]; then
+                    DNX_ACTIVE_FEED="$_DNVM_DEFAULT_UNSTABLE_FEED"
+                else
+                    printf "%b\n" "${Yel}Default unstable feed ($_DNVM_DEFAULT_UNSTABLE_FEED) is being overridden by the value of the DNX_UNSTABLE_FEED variable ($DNX_UNSTABLE_FEED). ${RCol}"
+                fi
+            fi
 
             if ! __dnvm_has "mono"; then
                printf "%b\n" "${Yel}It appears you don't have Mono available. Remember to get Mono before trying to run $DNVM_RUNTIME_SHORT_NAME application. ${RCol}" >&2;
@@ -365,7 +414,7 @@ dnvm()
             if [[ "$versionOrAlias" == "latest" ]]; then
                 echo "Determining latest version"
                 versionOrAlias=$(__dnvm_find_latest)
-                [[ $? == 1 ]] && echo "Error: Could not find latest version from feed $DNX_FEED" && return 1
+                [[ $? == 1 ]] && echo "Error: Could not find latest version from feed $DNX_ACTIVE_FEED" && return 1
                printf "%b\n" "Latest version is ${Cya}$versionOrAlias ${RCol}"
             fi
 
