@@ -135,4 +135,7 @@
   <data name="PropertyDoesNotExist" xml:space="preserve">
     <value>Property does not exist at path '{0}'.</value>
   </data>
+  <data name="TestOperationNotSupported" xml:space="preserve">
+    <value>The test operation is not supported.</value>
+  </data>
 </root>

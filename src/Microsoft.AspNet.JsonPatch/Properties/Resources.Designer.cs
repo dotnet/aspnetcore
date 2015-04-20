@@ -106,6 +106,22 @@ namespace Microsoft.AspNet.JsonPatch
             return string.Format(CultureInfo.CurrentCulture, GetString("PropertyDoesNotExist"), p0);
         }
 
+        /// <summary>
+        /// The test operation is not supported.
+        /// </summary>
+        internal static string TestOperationNotSupported
+        {
+            get { return GetString("TestOperationNotSupported"); }
+        }
+
+        /// <summary>
+        /// The test operation is not supported.
+        /// </summary>
+        internal static string FormatTestOperationNotSupported()
+        {
+            return GetString("TestOperationNotSupported");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

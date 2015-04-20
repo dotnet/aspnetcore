@@ -9,17 +9,17 @@ namespace Microsoft.AspNet.JsonPatch
     /// <summary>
     /// Captures error message and the related entity and the operation that caused it.
     /// </summary>
-    public class JsonPatchError<T> where T : class
+    public class JsonPatchError<TModel> where TModel : class
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="JsonPatchError{T}"/>.
+        /// Initializes a new instance of <see cref="JsonPatchError{TModel}"/>.
         /// </summary>
         /// <param name="affectedObject">The object that is affected by the error.</param>
-        /// <param name="operation">The <see cref="Operation{T}"/> that caused the error.</param>
+        /// <param name="operation">The <see cref="Operation{TModel}"/> that caused the error.</param>
         /// <param name="errorMessage">The error message.</param>
         public JsonPatchError(
-            [NotNull] T affectedObject,
-            [NotNull] Operation<T> operation,
+            [NotNull] TModel affectedObject,
+            [NotNull] Operation<TModel> operation,
             [NotNull] string errorMessage)
         {
             AffectedObject = affectedObject;
@@ -30,12 +30,12 @@ namespace Microsoft.AspNet.JsonPatch
         /// <summary>
         /// Gets the object that is affected by the error.
         /// </summary>
-        public T AffectedObject { get; }
+        public TModel AffectedObject { get; }
 
         /// <summary>
-        /// Gets the <see cref="Operation{T}"/> that caused the error.
+        /// Gets the <see cref="Operation{TModel}"/> that caused the error.
         /// </summary>
-        public Operation<T> Operation { get; }
+        public Operation<TModel> Operation { get; }
 
         /// <summary>
         /// Gets the error message.

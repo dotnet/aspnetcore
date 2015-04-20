@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.JsonPatch.Helpers
 {
     internal static class ExpressionHelpers
     {
-        public static string GetPath<T, TProp>(Expression<Func<T, TProp>> expr) where T : class
+        public static string GetPath<TModel, TProp>(Expression<Func<TModel, TProp>> expr) where TModel : class
         {
             return "/" + GetPath(expr.Body, true);
         }

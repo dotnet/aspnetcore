@@ -6,10 +6,10 @@ using Microsoft.AspNet.JsonPatch.Operations;
 
 namespace Microsoft.AspNet.JsonPatch.Exceptions
 {
-    public class JsonPatchException<T> : JsonPatchException where T : class
+    public class JsonPatchException<TModel> : JsonPatchException where TModel : class
     {
-        public Operation<T> FailedOperation { get; private set; }
-        public new T AffectedObject { get; private set; }
+        public Operation<TModel> FailedOperation { get; private set; }
+        public new TModel AffectedObject { get; private set; }
 
         private string _message = "";
         public override string Message
@@ -26,14 +26,14 @@ namespace Microsoft.AspNet.JsonPatch.Exceptions
 
         }
 
-        public JsonPatchException(JsonPatchError<T> jsonPatchError)
+        public JsonPatchException(JsonPatchError<TModel> jsonPatchError)
         {
             FailedOperation = jsonPatchError.Operation;
             _message = jsonPatchError.ErrorMessage;
             AffectedObject = jsonPatchError.AffectedObject;
         }
 
-        public JsonPatchException(JsonPatchError<T> jsonPatchError, Exception innerException)
+        public JsonPatchException(JsonPatchError<TModel> jsonPatchError, Exception innerException)
             : this(jsonPatchError)
         {
             InnerException = innerException;
