@@ -78,11 +78,12 @@ namespace Microsoft.AspNet.Server.Testing
                     DeploymentParameters.DnxRuntime,
                     DeploymentParameters.PublishWithNoSource ? "--no-source" : string.Empty);
 
-            Logger.LogInformation("Executing command dnu {args}", parameters);
+            var dnuPath = Path.Combine(ChosenRuntimePath, "dnu.cmd");
+            Logger.LogInformation("Executing command {dnu} {args}", dnuPath, parameters);
 
             var startInfo = new ProcessStartInfo
             {
-                FileName = Path.Combine(ChosenRuntimePath, "dnu.cmd"),
+                FileName = dnuPath,
                 Arguments = parameters,
                 UseShellExecute = false,
                 CreateNoWindow = true
@@ -90,6 +91,11 @@ namespace Microsoft.AspNet.Server.Testing
 
             var hostProcess = Process.Start(startInfo);
             hostProcess.WaitForExit(60 * 1000);
+
+            if (hostProcess.ExitCode != 0)
+            {
+                throw new Exception("dnu publish exited with exit code : {0}");
+            }
 
             DeploymentParameters.ApplicationPath =
                 (DeploymentParameters.ServerType == ServerType.IISExpress ||
