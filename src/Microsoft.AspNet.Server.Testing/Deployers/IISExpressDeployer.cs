@@ -90,7 +90,9 @@ namespace Microsoft.AspNet.Server.Testing
                 FileName = iisExpressPath,
                 Arguments = parameters,
                 UseShellExecute = false,
-                CreateNoWindow = false
+                CreateNoWindow = true,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true
             };
 
             AddEnvironmentVariablesToProcess(startInfo);
@@ -104,13 +106,18 @@ namespace Microsoft.AspNet.Server.Testing
             SetEnvironmentVariable(startInfo.Environment, "DNX_APPBASE", DeploymentParameters.ApplicationPath);
 #endif
 
-            _hostProcess = Process.Start(startInfo);
+            _hostProcess = new Process() { StartInfo = startInfo };
+            _hostProcess.ErrorDataReceived += (sender, dataArgs) => { Logger.LogError(dataArgs.Data); };
+            _hostProcess.OutputDataReceived += (sender, dataArgs) => { Logger.LogInformation(dataArgs.Data); };
             _hostProcess.EnableRaisingEvents = true;
             var hostExitTokenSource = new CancellationTokenSource();
             _hostProcess.Exited += (sender, e) =>
             {
                 TriggerHostShutdown(hostExitTokenSource);
             };
+            _hostProcess.Start();
+            _hostProcess.BeginErrorReadLine();
+            _hostProcess.BeginOutputReadLine();
 
             if (_hostProcess.HasExited)
             {

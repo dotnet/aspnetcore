@@ -86,10 +86,17 @@ namespace Microsoft.AspNet.Server.Testing
                 FileName = dnuPath,
                 Arguments = parameters,
                 UseShellExecute = false,
-                CreateNoWindow = false
+                CreateNoWindow = true,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true
             };
 
-            var hostProcess = Process.Start(startInfo);
+            var hostProcess = new Process() { StartInfo = startInfo };
+            hostProcess.ErrorDataReceived += (sender, dataArgs) => { Logger.LogError(dataArgs.Data); };
+            hostProcess.OutputDataReceived += (sender, dataArgs) => { Logger.LogInformation(dataArgs.Data); };
+            hostProcess.Start();
+            hostProcess.BeginErrorReadLine();
+            hostProcess.BeginOutputReadLine();
             hostProcess.WaitForExit();
 
             if (hostProcess.ExitCode != 0)
