@@ -205,14 +205,6 @@
                 </tr>
                 <tr>
                     <td>
-                        @Html.LabelFor(model => model.Password, htmlAttributes: new { @class="control-label col-md-2" })
-                    </td>
-                    <td>
-                        @Html.PasswordFor(m => m.Password, htmlAttributes: new { @class = "form-control" })
-                    </td>
-                </tr>
-                <tr>
-                    <td>
                         <input type="submit" value="Save" class="btn btn-default" style="margin-left: 10px" />
                     </td>
                     <td></td>
@@ -261,14 +253,6 @@
                     <td>
                         @Html.TextBox("Anon.Address.Country", value: null, format: "{0} (4)",
                                           htmlAttributes: new { @class = "form-control" })
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        @Html.Label("Password")
-                    </td>
-                    <td>
-                        @Html.Password("Password", "some string")
                     </td>
                 </tr>
                 <tr>
