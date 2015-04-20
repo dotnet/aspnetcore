@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Server.Testing
 
             if (hostProcess.ExitCode != 0)
             {
-                throw new Exception("dnu publish exited with exit code : {0}");
+                throw new Exception(string.Format("dnu publish exited with exit code : {0}", hostProcess.ExitCode));
             }
 
             DeploymentParameters.ApplicationPath =
