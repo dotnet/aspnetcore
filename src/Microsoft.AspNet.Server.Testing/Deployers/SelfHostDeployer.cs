@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Server.Testing
                 FileName = dnxPath,
                 Arguments = string.Format("\"{0}\" {1} --server.urls {2}", DeploymentParameters.ApplicationPath, commandName, DeploymentParameters.ApplicationBaseUriHint),
                 UseShellExecute = false,
-                CreateNoWindow = true
+                CreateNoWindow = false
             };
 
             AddEnvironmentVariablesToProcess(startInfo);

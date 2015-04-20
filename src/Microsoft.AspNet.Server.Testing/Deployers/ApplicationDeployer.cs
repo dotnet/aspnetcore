@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Server.Testing
                 FileName = dnuPath,
                 Arguments = parameters,
                 UseShellExecute = false,
-                CreateNoWindow = true
+                CreateNoWindow = false
             };
 
             var hostProcess = Process.Start(startInfo);
