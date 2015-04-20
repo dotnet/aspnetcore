@@ -66,7 +66,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 {
                     typeof(RouteCollection).FullName,
                     typeof(AttributeRoute).FullName,
-                    typeof(TemplateRoute).FullName,
                     typeof(MvcRouteHandler).FullName,
                 },
                 result.Routers);

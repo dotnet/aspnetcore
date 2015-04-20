@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc.Routing
 {
@@ -21,9 +24,14 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// </summary>
         public decimal Precedence { get; set; }
 
-        /// <summary>
-        /// The <see cref="TemplateRoute"/>.
-        /// </summary>
-        public TemplateRoute Route { get; set; }
+        public IRouter Target { get; set; }
+
+        public string RouteName { get; set; }
+
+        public string RouteTemplate { get; set; }
+
+        public TemplateMatcher TemplateMatcher { get; set; }
+
+        public IReadOnlyDictionary<string, IRouteConstraint> Constraints { get; set; }
     }
 }

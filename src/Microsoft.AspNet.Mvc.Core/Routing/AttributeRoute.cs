@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
@@ -103,16 +102,16 @@ namespace Microsoft.AspNet.Mvc.Routing
                 {
                     Order = routeInfo.Order,
                     Precedence = routeInfo.Precedence,
-                    Route = new TemplateRoute(
-                        _target,
-                        routeInfo.RouteTemplate,
-                        defaults: new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                    Target = _target,
+                    RouteName = routeInfo.Name,
+                    RouteTemplate = routeInfo.RouteTemplate,
+                    TemplateMatcher = new TemplateMatcher(
+                        routeInfo.ParsedTemplate,
+                        new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
                         {
-                            { AttributeRouting.RouteGroupKey, routeInfo.RouteGroup },
-                        },
-                        constraints: null,
-                        dataTokens: null,
-                        inlineConstraintResolver: _constraintResolver),
+                            { AttributeRouting.RouteGroupKey, routeInfo.RouteGroup }
+                        }),
+                    Constraints = routeInfo.Constraints
                 });
             }
 

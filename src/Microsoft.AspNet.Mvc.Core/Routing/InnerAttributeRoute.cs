@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.Routing
     {
         private readonly IRouter _next;
         private readonly LinkGenerationDecisionTree _linkGenerationTree;
-        private readonly TemplateRoute[] _matchingRoutes;
+        private readonly AttributeRouteMatchingEntry[] _matchingEntries;
         private readonly IDictionary<string, AttributeRouteLinkGenerationEntry> _namedEntries;
 
         private ILogger _logger;
@@ -51,11 +51,10 @@ namespace Microsoft.AspNet.Mvc.Routing
             // We use ordinal comparison for the templates because we only care about them being exactly equal and
             // we don't want to make any equivalence between templates based on the culture of the machine.
 
-            _matchingRoutes = matchingEntries
+            _matchingEntries = matchingEntries
                 .OrderBy(o => o.Order)
                 .ThenBy(e => e.Precedence)
-                .ThenBy(e => e.Route.RouteTemplate, StringComparer.Ordinal)
-                .Select(e => e.Route)
+                .ThenBy(e => e.RouteTemplate, StringComparer.Ordinal)
                 .ToArray();
 
             var namedEntries = new Dictionary<string, AttributeRouteLinkGenerationEntry>(
@@ -101,20 +100,53 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// <inheritdoc />
         public async Task RouteAsync([NotNull] RouteContext context)
         {
-            foreach (var route in _matchingRoutes)
+            foreach(var matchingEntry in _matchingEntries)
             {
+                var requestPath = context.HttpContext.Request.Path.Value;
+
+                if (!string.IsNullOrEmpty(requestPath) && requestPath[0] == '/')
+                {
+                    requestPath = requestPath.Substring(1);
+                }
+
+                var values = matchingEntry.TemplateMatcher.Match(requestPath);
+                if (values == null)
+                {
+                    // If we got back a null value set, that means the URI did not match
+                    continue;
+                }
+
                 var oldRouteData = context.RouteData;
 
                 var newRouteData = new RouteData(oldRouteData);
-                newRouteData.Routers.Add(route);
+                newRouteData.Routers.Add(matchingEntry.Target);
+                MergeValues(newRouteData.Values, values);
+
+                if (!RouteConstraintMatcher.Match(
+                    matchingEntry.Constraints,
+                    newRouteData.Values,
+                    context.HttpContext,
+                    this,
+                    RouteDirection.IncomingRequest,
+                    _constraintLogger))
+                {
+                    continue;
+                }
+
+                _logger.LogInformation(
+                    "Request successfully matched the route with name '{RouteName}' and template '{RouteTemplate}'.",
+                    matchingEntry.RouteName,
+                    matchingEntry.RouteTemplate);
 
                 try
                 {
                     context.RouteData = newRouteData;
-                    await route.RouteAsync(context);
+
+                    await matchingEntry.Target.RouteAsync(context);
                 }
                 finally
                 {
+                    // Restore the original values to prevent polluting the route data.
                     if (!context.IsHandled)
                     {
                         context.RouteData = oldRouteData;
@@ -259,6 +291,19 @@ namespace Microsoft.AspNet.Mvc.Routing
             }
 
             return new VirtualPathData(this, path);
+        }
+
+        private static void MergeValues(
+                IDictionary<string, object> destination,
+                IDictionary<string, object> values)
+        {
+            foreach (var kvp in values)
+            {
+                // This will replace the original value for the specified key.
+                // Values from the matched route will take preference over previous
+                // data in the route context.
+                destination[kvp.Key] = kvp.Value;
+            }
         }
 
         private bool ContextHasSameValue(VirtualPathContext context, string key, object value)
