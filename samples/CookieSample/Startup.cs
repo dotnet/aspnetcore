@@ -18,13 +18,14 @@ namespace CookieSample
         {
             app.UseCookieAuthentication(options =>
             {
+                options.AutomaticAuthentication = true;
             });
 
             app.Run(async context =>
             {
-                if (context.User == null || !context.User.Identity.IsAuthenticated)
+                if (string.IsNullOrEmpty(context.User.Identity.Name))
                 {
-                    context.Response.SignIn(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "bob") })));
+                    context.Response.SignIn(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "bob") })));
                     context.Response.ContentType = "text/plain";
                     await context.Response.WriteAsync("Hello First timer");
                     return;
