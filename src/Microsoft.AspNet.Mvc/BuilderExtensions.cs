@@ -30,6 +30,22 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
+        /// Adds Mvc to the <see cref="IApplicationBuilder"/> request execution pipeline
+        /// with a default route.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
+        /// <returns>The <paramref name="app"/>.</returns>
+        public static IApplicationBuilder UseMvcWithDefaultRoute([NotNull] this IApplicationBuilder app)
+        {
+            return app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
+            });
+        }
+
+        /// <summary>
         /// Adds Mvc to the <see cref="IApplicationBuilder"/> request execution pipeline.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
