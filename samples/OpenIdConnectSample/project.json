@@ -1,10 +1,11 @@
 {
     "dependencies": {
-        "Kestrel": "1.0.0-*",
         "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
-        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
         "Microsoft.AspNet.Authentication.OpenIdConnect": "1.0.0-*",
-        "Microsoft.AspNet.Server.WebListener": "1.0.0-*"
+        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
+        "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+        "Microsoft.Framework.Logging.Console": "1.0.0-*",
+        "Kestrel": "1.0.0-*"
     },
     "frameworks": {
         "dnx451": { },
@@ -13,6 +14,6 @@
     "commands": {
         "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:12345",
         "kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:5004"
-    },    
+    },
     "webroot": "wwwroot"
 }

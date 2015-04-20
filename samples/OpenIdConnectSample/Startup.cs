@@ -5,6 +5,7 @@ using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.AspNet.Authentication.OpenIdConnect;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 
 namespace OpenIdConnectSample
 {
@@ -20,8 +21,10 @@ namespace OpenIdConnectSample
             });
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
+            loggerfactory.AddConsole(LogLevel.Information);
+
             app.UseCookieAuthentication(options =>
             {
                 options.AutomaticAuthentication = true;
@@ -36,7 +39,7 @@ namespace OpenIdConnectSample
 
             app.Run(async context =>
             {
-                if (context.User == null || !context.User.Identity.IsAuthenticated)
+                if (string.IsNullOrEmpty(context.User.Identity.Name))
                 {
                     context.Response.Challenge(new AuthenticationProperties { RedirectUri = "/" }, OpenIdConnectAuthenticationDefaults.AuthenticationScheme);
 

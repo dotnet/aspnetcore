@@ -4,6 +4,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 
 namespace CookieSessionSample
 {
@@ -15,20 +16,23 @@ namespace CookieSessionSample
             services.AddDataProtection();
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
-            app.UseCookieAuthentication(options => 
+            loggerfactory.AddConsole(LogLevel.Information);
+
+            app.UseCookieAuthentication(options =>
             {
+                options.AutomaticAuthentication = true;
                 options.SessionStore = new MemoryCacheSessionStore();
             });
 
             app.Run(async context =>
             {
-                if (context.User.Identity == null || !context.User.Identity.IsAuthenticated)
+                if (string.IsNullOrEmpty(context.User.Identity.Name))
                 {
                     // Make a large identity
                     var claims = new List<Claim>(1001);
-                    claims.Add(new Claim("name", "bob"));
+                    claims.Add(new Claim(ClaimTypes.Name, "bob"));
                     for (int i = 0; i < 1000; i++)
                     {
                         claims.Add(new Claim(ClaimTypes.Role, "SomeRandomGroup" + i, ClaimValueTypes.String, "IssuedByBob", "OriginalIssuerJoe"));

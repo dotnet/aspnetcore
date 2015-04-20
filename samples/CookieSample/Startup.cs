@@ -1,8 +1,9 @@
 using System.Security.Claims;
+using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 
 namespace CookieSample
 {
@@ -14,8 +15,10 @@ namespace CookieSample
             services.AddDataProtection();
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
+            loggerfactory.AddConsole(LogLevel.Information);
+
             app.UseCookieAuthentication(options =>
             {
                 options.AutomaticAuthentication = true;
@@ -25,7 +28,8 @@ namespace CookieSample
             {
                 if (string.IsNullOrEmpty(context.User.Identity.Name))
                 {
-                    context.Response.SignIn(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "bob") })));
+                    var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "bob") }));
+                    context.Response.SignIn(CookieAuthenticationDefaults.AuthenticationScheme, user);
                     context.Response.ContentType = "text/plain";
                     await context.Response.WriteAsync("Hello First timer");
                     return;

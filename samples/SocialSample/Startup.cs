@@ -10,6 +10,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 using Newtonsoft.Json.Linq;
 
 namespace CookieSample
@@ -33,14 +34,17 @@ namespace CookieSample
             });
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
+            loggerfactory.AddConsole(LogLevel.Information);
+
             app.UseErrorPage();
 
             app.UseCookieAuthentication(options =>
-                {
-                    options.LoginPath = new PathString("/login");
-                });
+            {
+                options.AutomaticAuthentication = true;
+                options.LoginPath = new PathString("/login");
+            });
 
             // https://developers.facebook.com/apps/
             app.UseFacebookAuthentication(options =>
@@ -217,7 +221,7 @@ namespace CookieSample
             // Deny anonymous request beyond this point.
             app.Use(async (context, next) =>
             {
-                if (!context.User.Identity.IsAuthenticated)
+                if (string.IsNullOrEmpty(context.User.Identity.Name))
                 {
                     // The cookie middleware will intercept this 401 and redirect to /login
                     context.Response.Challenge();
