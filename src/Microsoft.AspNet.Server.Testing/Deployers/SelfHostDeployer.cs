@@ -60,7 +60,9 @@ namespace Microsoft.AspNet.Server.Testing
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardError = true,
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                // Trying a work around for https://github.com/aspnet/Hosting/issues/140.
+                RedirectStandardInput = true
             };
 
             AddEnvironmentVariablesToProcess(startInfo);
