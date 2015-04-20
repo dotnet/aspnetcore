@@ -7,13 +7,16 @@ namespace Microsoft.AspNet.Http.Authentication
 {
     public interface IAuthenticationHandler
     {
-        void GetDescriptions(IDescribeSchemesContext context);
+        void GetDescriptions(DescribeSchemesContext context);
 
-        void Authenticate(IAuthenticateContext context);
-        Task AuthenticateAsync(IAuthenticateContext context);
+        void Authenticate(AuthenticateContext context);
 
-        void Challenge(IChallengeContext context);
-        void SignIn(ISignInContext context);
-        void SignOut(ISignOutContext context);
+        Task AuthenticateAsync(AuthenticateContext context);
+
+        void Challenge(ChallengeContext context);
+
+        void SignIn(SignInContext context);
+
+        void SignOut(SignOutContext context);
     }
 }

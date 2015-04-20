@@ -3,35 +3,26 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Authentication
 {
-    public class ChallengeContext : IChallengeContext
+    public class ChallengeContext
     {
-        private bool _accepted;
-
         public ChallengeContext(string authenticationScheme, IDictionary<string, string> properties)
         {
             AuthenticationScheme = authenticationScheme;
             Properties = properties ?? new Dictionary<string, string>(StringComparer.Ordinal);
-
-            // The default Challenge with no scheme is always accepted
-            _accepted = string.IsNullOrEmpty(authenticationScheme);
         }
 
-        public string AuthenticationScheme { get; private set; }
+        public string AuthenticationScheme { get; }
 
-        public IDictionary<string, string> Properties { get; private set; }
+        public IDictionary<string, string> Properties { get; }
 
-        public bool Accepted
-        {
-            get { return _accepted; }
-        }
+        public bool Accepted { get; private set; }
 
         public void Accept()
         {
-            _accepted = true;
+            Accepted = true;
         }
     }
 }

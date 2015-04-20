@@ -5,23 +5,23 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Http.Authentication
 {
-    public class DescribeSchemesContext : IDescribeSchemesContext
+    public class DescribeSchemesContext
     {
-        private List<AuthenticationDescription> _results;
+        private List<IDictionary<string, object>> _results;
 
         public DescribeSchemesContext()
         {
-            _results = new List<AuthenticationDescription>();
+            _results = new List<IDictionary<string, object>>();
         }
 
-        public IEnumerable<AuthenticationDescription> Results
+        public IEnumerable<IDictionary<string, object>> Results
         {
             get { return _results; }
         }
 
         public void Accept(IDictionary<string, object> description)
         {
-            _results.Add(new AuthenticationDescription(description));
+            _results.Add(description);
         }
     }
 }

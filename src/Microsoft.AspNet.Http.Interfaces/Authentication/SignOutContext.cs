@@ -7,10 +7,8 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Authentication
 {
-    public class SignOutContext : ISignOutContext
+    public class SignOutContext
     {
-        private bool _accepted;
-
         public SignOutContext([NotNull] string authenticationScheme, IDictionary<string, string> properties)
         {
             AuthenticationScheme = authenticationScheme;
@@ -21,14 +19,11 @@ namespace Microsoft.AspNet.Http.Authentication
 
         public IDictionary<string, string> Properties { get; }
 
-        public bool Accepted
-        {
-            get { return _accepted; }
-        }
+        public bool Accepted { get; private set; }
 
         public void Accept()
         {
-            _accepted = true;
+            Accepted = true;
         }
     }
 }

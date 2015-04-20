@@ -8,31 +8,26 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Authentication
 {
-    public class SignInContext : ISignInContext
+    public class SignInContext
     {
-        private bool _accepted;
-
-        public SignInContext([NotNull] string authenticationScheme, [NotNull] ClaimsPrincipal principal, IDictionary<string, string> dictionary)
+        public SignInContext([NotNull] string authenticationScheme, [NotNull] ClaimsPrincipal principal, IDictionary<string, string> properties)
         {
             AuthenticationScheme = authenticationScheme;
             Principal = principal;
-            Properties = dictionary ?? new Dictionary<string, string>(StringComparer.Ordinal);
+            Properties = properties ?? new Dictionary<string, string>(StringComparer.Ordinal);
         }
+
+        public string AuthenticationScheme { get; }
 
         public ClaimsPrincipal Principal { get; }
 
         public IDictionary<string, string> Properties { get; }
 
-        public string AuthenticationScheme { get; }
+        public bool Accepted { get; private set; }
 
-        public bool Accepted
+        public void Accept()
         {
-            get { return _accepted; }
-        }
-
-        public void Accept(IDictionary<string, object> description)
-        {
-            _accepted = true;
+            Accepted = true;
         }
     }
 }

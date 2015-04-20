@@ -97,33 +97,33 @@ namespace Microsoft.AspNet.Http
         {
             public bool SignedIn { get; set; }
 
-            public void Authenticate(IAuthenticateContext context)
+            public void Authenticate(AuthenticateContext context)
             {
                 throw new NotImplementedException();
             }
 
-            public Task AuthenticateAsync(IAuthenticateContext context)
+            public Task AuthenticateAsync(AuthenticateContext context)
             {
                 throw new NotImplementedException();
             }
 
-            public void Challenge(IChallengeContext context)
+            public void Challenge(ChallengeContext context)
             {
                 throw new NotImplementedException();
             }
 
-            public void GetDescriptions(IDescribeSchemesContext context)
+            public void GetDescriptions(DescribeSchemesContext context)
             {
                 throw new NotImplementedException();
             }
 
-            public void SignIn(ISignInContext context)
+            public void SignIn(SignInContext context)
             {
                 SignedIn = true;
-                context.Accept(new Dictionary<string, object>());
+                context.Accept();
             }
 
-            public void SignOut(ISignOutContext context)
+            public void SignOut(SignOutContext context)
             {
                 SignedIn = false;
                 context.Accept();
