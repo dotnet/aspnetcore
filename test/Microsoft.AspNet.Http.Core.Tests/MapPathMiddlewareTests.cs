@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Builder.Extensions
         {
             HttpContext context = CreateRequest(basePath, requestPath);
             var builder = new ApplicationBuilder(serviceProvider: null);
-            builder.Map(new PathString(matchPath), UseSuccess);
+            builder.Map(matchPath, UseSuccess);
             var app = builder.Build();
             app.Invoke(context).Wait();
 
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Builder.Extensions
         {
             HttpContext context = CreateRequest(basePath, requestPath);
             var builder = new ApplicationBuilder(serviceProvider: null);
-            builder.Map(new PathString(matchPath), subBuilder => subBuilder.Run(Success));
+            builder.Map(matchPath, subBuilder => subBuilder.Run(Success));
             var app = builder.Build();
             app.Invoke(context).Wait();
 
@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.Builder.Extensions
         [InlineData("/foo/cho/")]
         public void MatchPathWithTrailingSlashThrowsException(string matchPath)
         {
-            Should.Throw<ArgumentException>(() => new ApplicationBuilder(serviceProvider: null).Map(new PathString(matchPath), map => { }).Build());
+            Should.Throw<ArgumentException>(() => new ApplicationBuilder(serviceProvider: null).Map(matchPath, map => { }).Build());
         }
 
         [Theory]
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Builder.Extensions
         {
             HttpContext context = CreateRequest(basePath, requestPath);
             var builder = new ApplicationBuilder(serviceProvider: null);
-            builder.Map(new PathString(matchPath), UseNotImplemented);
+            builder.Map(matchPath, UseNotImplemented);
             builder.Run(Success);
             var app = builder.Build();
             app.Invoke(context).Wait();
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Builder.Extensions
         {
             HttpContext context = CreateRequest(basePath, requestPath);
             var builder = new ApplicationBuilder(serviceProvider: null);
-            builder.Map(new PathString(matchPath), UseNotImplemented);
+            builder.Map(matchPath, UseNotImplemented);
             builder.Run(Success);
             var app = builder.Build();
             app.Invoke(context).Wait();
@@ -147,12 +147,12 @@ namespace Microsoft.AspNet.Builder.Extensions
         public void ChainedRoutes_Success()
         {
             var builder = new ApplicationBuilder(serviceProvider: null);
-            builder.Map(new PathString("/route1"), map =>
+            builder.Map("/route1", map =>
             {
-                map.Map(new PathString("/subroute1"), UseSuccess);
+                map.Map("/subroute1", UseSuccess);
                 map.Run(NotImplemented);
             });
-            builder.Map(new PathString("/route2/subroute2"), UseSuccess);
+            builder.Map("/route2/subroute2", UseSuccess);
             var app = builder.Build();
 
             HttpContext context = CreateRequest(string.Empty, "/route1");

@@ -236,5 +236,23 @@ namespace Microsoft.AspNet.Http
         {
             return left.Add(right);
         }
+
+        /// <summary>
+        /// Implicitly creates a new PathString from the given string.
+        /// </summary>
+        /// <param name="s"></param>
+        public static implicit operator PathString(string s)
+        {
+            return new PathString(s);
+        }
+
+        /// <summary>
+        /// Implicitly calls ToString().
+        /// </summary>
+        /// <param name="path"></param>
+        public static implicit operator string(PathString path)
+        {
+            return path.ToString();
+        }
     }
 }
