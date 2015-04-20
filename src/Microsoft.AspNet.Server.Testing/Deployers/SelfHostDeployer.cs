@@ -58,12 +58,19 @@ namespace Microsoft.AspNet.Server.Testing
                 FileName = dnxPath,
                 Arguments = string.Format("\"{0}\" {1} --server.urls {2}", DeploymentParameters.ApplicationPath, commandName, DeploymentParameters.ApplicationBaseUriHint),
                 UseShellExecute = false,
-                CreateNoWindow = false
+                // https://github.com/aspnet/Hosting/issues/140 causing host process to exit when this is made false.
+                CreateNoWindow = true,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true
             };
 
             AddEnvironmentVariablesToProcess(startInfo);
 
             _hostProcess = Process.Start(startInfo);
+            _hostProcess.BeginErrorReadLine();
+            _hostProcess.BeginOutputReadLine();
+            _hostProcess.ErrorDataReceived += (sender, dataArgs) => { Logger.LogError(dataArgs.Data); };
+            _hostProcess.OutputDataReceived += (sender, dataArgs) => { Logger.LogInformation(dataArgs.Data); };
             _hostProcess.EnableRaisingEvents = true;
             var hostExitTokenSource = new CancellationTokenSource();
             _hostProcess.Exited += (sender, e) =>
