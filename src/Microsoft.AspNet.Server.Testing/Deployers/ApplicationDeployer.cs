@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Server.Testing
             };
 
             var hostProcess = Process.Start(startInfo);
-            hostProcess.WaitForExit(60 * 1000);
+            hostProcess.WaitForExit();
 
             if (hostProcess.ExitCode != 0)
             {
