@@ -2018,6 +2018,7 @@ namespace Microsoft.AspNet.Mvc
                        .Returns(tempData);
             httpContext.Setup(o => o.RequestServices.GetService(typeof(ILogger<ObjectResult>)))
                        .Returns(new Mock<ILogger<ObjectResult>>().Object);
+
             httpResponse.Body = new MemoryStream();
 
             var options = new MvcOptions();
@@ -2065,6 +2066,7 @@ namespace Microsoft.AspNet.Mvc
                 new IValueProviderFactory[0],
                 new MockScopedInstance<ActionBindingContext>(),
                 tempData,
+                new NullLoggerFactory(),
                 maxAllowedErrorsInModelState);
 
             return invoker;
@@ -2127,6 +2129,7 @@ namespace Microsoft.AspNet.Mvc
                 new IValueProviderFactory[0],
                 new MockScopedInstance<ActionBindingContext>(),
                 Mock.Of<ITempDataDictionary>(),
+                new NullLoggerFactory(),
                 200);
 
             // Act
@@ -2227,6 +2230,7 @@ namespace Microsoft.AspNet.Mvc
                 IReadOnlyList<IValueProviderFactory> valueProviderFactories,
                 IScopedInstance<ActionBindingContext> actionBindingContext,
                 ITempDataDictionary tempData,
+                ILoggerFactory loggerFactory,
                 int maxAllowedErrorsInModelState)
                 : base(
                       actionContext,
@@ -2241,6 +2245,7 @@ namespace Microsoft.AspNet.Mvc
                       valueProviderFactories,
                       actionBindingContext,
                       tempData,
+                      loggerFactory,
                       maxAllowedErrorsInModelState)
             {
                 ControllerFactory = controllerFactory;

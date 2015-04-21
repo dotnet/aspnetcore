@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc.Core
 {
@@ -31,6 +32,7 @@ namespace Microsoft.AspNet.Mvc.Core
             [NotNull] IReadOnlyList<IValueProviderFactory> valueProviderFactories,
             [NotNull] IScopedInstance<ActionBindingContext> actionBindingContextAccessor,
             [NotNull] ITempDataDictionary tempData,
+            [NotNull] ILoggerFactory loggerFactory,
             int maxModelValidationErrors)
             : base(
                   actionContext,
@@ -41,6 +43,7 @@ namespace Microsoft.AspNet.Mvc.Core
                   modelValidatorProviders, 
                   valueProviderFactories,
                   actionBindingContextAccessor,
+                  loggerFactory,
                   maxModelValidationErrors)
         {
             _descriptor = descriptor;
