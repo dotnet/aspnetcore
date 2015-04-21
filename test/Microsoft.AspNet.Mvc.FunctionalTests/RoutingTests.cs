@@ -1373,6 +1373,33 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
+        [Theory]
+        [InlineData("/Order/Add/1", "GET", "Add")]
+        [InlineData("/Order/Add", "POST", "Add")]
+        [InlineData("/Order/Edit/1", "PUT", "Edit")]
+        [InlineData("/Order/GetOrder", "GET", "GetOrder")]
+        public async Task AttributeRouting_RouteNameTokenReplace_Reachable(string path, string verb, string actionName)
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(new HttpMethod(verb), "http://localhost" + path);
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Contains(path, result.ExpectedUrls);
+            Assert.Equal("Order", result.Controller);
+            Assert.Equal(actionName, result.Action);
+        }
+
         private static LinkBuilder LinkFrom(string url)
         {
             return new LinkBuilder(url);

@@ -544,6 +544,13 @@ namespace Microsoft.AspNet.Mvc
                 actionDescriptor.AttributeRouteInfo.Template = AttributeRouteModel.ReplaceTokens(
                     actionDescriptor.AttributeRouteInfo.Template,
                     actionDescriptor.RouteValueDefaults);
+
+                if (actionDescriptor.AttributeRouteInfo.Name != null)
+                {
+                    actionDescriptor.AttributeRouteInfo.Name = AttributeRouteModel.ReplaceTokens(
+                        actionDescriptor.AttributeRouteInfo.Name,
+                        actionDescriptor.RouteValueDefaults);
+                }
             }
             catch (InvalidOperationException ex)
             {

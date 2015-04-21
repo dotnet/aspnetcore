@@ -865,6 +865,90 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
+        public void AttributeRouting_RouteNameTokenReplace_AllowsMultipleActions_WithSameRouteNameTemplate()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(ActionRouteNameTemplatesController).GetTypeInfo());
+            var editActionName = nameof(ActionRouteNameTemplatesController.Edit);
+            var getActionName = nameof(ActionRouteNameTemplatesController.Get);
+
+            // Act
+            var actions = provider.GetDescriptors();
+
+            // Assert
+            var getActions = actions.Where(a => a.Name.Equals(getActionName));
+            Assert.Equal(2, getActions.Count());
+
+            foreach (var getAction in getActions)
+            {
+                Assert.NotNull(getAction.AttributeRouteInfo);
+                Assert.Equal("Products/Get", getAction.AttributeRouteInfo.Template, StringComparer.OrdinalIgnoreCase);
+                Assert.Equal("Products_Get", getAction.AttributeRouteInfo.Name, StringComparer.OrdinalIgnoreCase);
+            }
+
+            var editAction = Assert.Single(actions, a => a.Name.Equals(editActionName));
+            Assert.NotNull(editAction.AttributeRouteInfo);
+            Assert.Equal("Products/Edit", editAction.AttributeRouteInfo.Template, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("Products_Edit", editAction.AttributeRouteInfo.Name, StringComparer.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void AttributeRouting_RouteNameTokenReplace_AreaControllerActionTokensInRoute()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(ControllerActionRouteNameTemplatesController).GetTypeInfo());
+            var editActionName = nameof(ControllerActionRouteNameTemplatesController.Edit);
+            var getActionName = nameof(ControllerActionRouteNameTemplatesController.Get);
+
+            // Act
+            var actions = provider.GetDescriptors();
+
+            // Assert
+            var getActions = actions.Where(a => a.Name.Equals(getActionName));
+            Assert.Equal(2, getActions.Count());
+
+            foreach (var getAction in getActions)
+            {
+                Assert.NotNull(getAction.AttributeRouteInfo);
+                Assert.Equal(
+                    "ControllerActionRouteNameTemplates/Get",
+                    getAction.AttributeRouteInfo.Template, StringComparer.OrdinalIgnoreCase);
+                Assert.Equal(
+                    "Products_ControllerActionRouteNameTemplates_Get",
+                    getAction.AttributeRouteInfo.Name, StringComparer.OrdinalIgnoreCase);
+            }
+
+            var editAction = Assert.Single(actions, a => a.Name.Equals(editActionName));
+            Assert.NotNull(editAction.AttributeRouteInfo);
+            Assert.Equal(
+                "ControllerActionRouteNameTemplates/Edit",
+                editAction.AttributeRouteInfo.Template, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(
+                "Products_ControllerActionRouteNameTemplates_Edit",
+                editAction.AttributeRouteInfo.Name, StringComparer.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void AttributeRouting_RouteNameTokenReplace_InvalidToken()
+        {
+            // Arrange
+            var provider = GetProvider(typeof(RouteNameIncorrectTokenController).GetTypeInfo());
+
+            var expectedMessage =
+                "The following errors occurred with attribute routing information:" + Environment.NewLine +
+                Environment.NewLine +
+                "Error 1:" + Environment.NewLine +
+                "For action: 'Microsoft.AspNet.Mvc.Test.ControllerActionDescriptorProviderTests+" +
+                "RouteNameIncorrectTokenController.Get'" + Environment.NewLine +
+                "Error: While processing template 'Products_[unknown]', a replacement value for the token 'unknown' " +
+                "could not be found. Available tokens: 'action, controller'.";
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => { provider.GetDescriptors(); });
+            Assert.Equal(expectedMessage, ex.Message);
+        }
+
+        [Fact]
         public void AttributeRouting_RouteGroupConstraint_IsAddedOnceForNonAttributeRoutes()
         {
             // Arrange
@@ -1628,6 +1712,37 @@ namespace Microsoft.AspNet.Mvc.Test
 
             [HttpPatch("/Items", Name = "Items")]
             public void PatchItems() { }
+        }
+
+        [Route("Products/[action]", Name = "Products_[action]")]
+        private class ActionRouteNameTemplatesController
+        {
+            [HttpGet]
+            public void Get() { }
+
+            [HttpPost]
+            public void Get(int id) { }
+
+            public void Edit() { }
+        }
+
+        [Area("Products")]
+        [Route("[controller]/[action]", Name = "[area]_[controller]_[action]")]
+        private class ControllerActionRouteNameTemplatesController
+        {
+            [HttpGet]
+            public void Get() { }
+
+            [HttpPost]
+            public void Get(int id) { }
+
+            public void Edit() { }
+        }
+
+        [Route("Products/[action]", Name = "Products_[unknown]")]
+        private class RouteNameIncorrectTokenController
+        {
+            public void Get() { }
         }
 
         private class DifferentCasingsAttributeRouteNamesController
