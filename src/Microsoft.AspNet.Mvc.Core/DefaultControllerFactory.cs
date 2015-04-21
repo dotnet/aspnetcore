@@ -62,6 +62,17 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var controllerType = actionDescriptor.ControllerTypeInfo.AsType();
+            var controllerTypeInfo = controllerType.GetTypeInfo();
+            if (controllerTypeInfo.IsValueType ||
+                controllerTypeInfo.IsInterface ||
+                controllerTypeInfo.IsAbstract ||
+                (controllerTypeInfo.IsGenericType && controllerTypeInfo.IsGenericTypeDefinition))
+            {
+                var message = Resources.FormatValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated(
+                    controllerType.FullName, GetType().FullName);
+                throw new InvalidOperationException(message);
+            }
+
             var controller = _controllerActivator.Create(actionContext, controllerType);
             ActivateProperties(controller, actionContext);
 
@@ -87,13 +98,6 @@ namespace Microsoft.AspNet.Mvc
         protected virtual void ActivateProperties([NotNull] object controller, [NotNull] ActionContext context)
         {
             var controllerType = controller.GetType();
-            var controllerTypeInfo = controllerType.GetTypeInfo();
-            if (controllerTypeInfo.IsValueType)
-            {
-                var message = Resources.FormatValueTypesCannotBeActivated(GetType().FullName);
-                throw new InvalidOperationException(message);
-            }
-
             var propertiesToActivate = _activateActions.GetOrAdd(controllerType,
                                                                  _getPropertiesToActivate);
 

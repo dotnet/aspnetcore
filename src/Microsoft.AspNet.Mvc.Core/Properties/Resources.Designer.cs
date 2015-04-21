@@ -1083,22 +1083,6 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// Value types cannot be activated by '{0}'.
-        /// </summary>
-        internal static string ValueTypesCannotBeActivated
-        {
-            get { return GetString("ValueTypesCannotBeActivated"); }
-        }
-
-        /// <summary>
-        /// Value types cannot be activated by '{0}'.
-        /// </summary>
-        internal static string FormatValueTypesCannotBeActivated(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ValueTypesCannotBeActivated"), p0);
-        }
-
-        /// <summary>
         /// The type '{0}' must derive from '{1}'.
         /// </summary>
         internal static string TypeMustDeriveFromType
@@ -1784,6 +1768,22 @@ namespace Microsoft.AspNet.Mvc.Core
         internal static string FormatTempData_CannotSerializeDictionary(object p0, object p1)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("TempData_CannotSerializeDictionary"), p0, p1);
+        }
+
+        /// <summary>
+        /// The type '{0}' cannot be activated by '{1}' because it is either a value type, an interface, an abstract class or an open generic type.
+        /// </summary>
+        internal static string ValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated
+        {
+            get { return GetString("ValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated"); }
+        }
+
+        /// <summary>
+        /// The type '{0}' cannot be activated by '{1}' because it is either a value type, an interface, an abstract class or an open generic type.
+        /// </summary>
+        internal static string FormatValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated"), p0, p1);
         }
 
         private static string GetString(string name, params string[] formatterNames)

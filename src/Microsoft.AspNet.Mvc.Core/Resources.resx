@@ -319,9 +319,6 @@
   <data name="ActionResult_ActionReturnValueCannotBeNull" xml:space="preserve">
     <value>Cannot return null from an action method with a return type of '{0}'.</value>
   </data>
-  <data name="ValueTypesCannotBeActivated" xml:space="preserve">
-    <value>Value types cannot be activated by '{0}'.</value>
-  </data>
   <data name="TypeMustDeriveFromType" xml:space="preserve">
     <value>The type '{0}' must derive from '{1}'.</value>
   </data>
@@ -459,5 +456,8 @@
   </data>
   <data name="TempData_CannotSerializeDictionary" xml:space="preserve">
     <value>The '{0}' cannot serialize a dictionary with a key of type '{1}' to session state.</value>
+  </data>
+  <data name="ValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated" xml:space="preserve">
+    <value>The type '{0}' cannot be activated by '{1}' because it is either a value type, an interface, an abstract class or an open generic type.</value>
   </data>
 </root>

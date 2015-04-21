@@ -188,6 +188,33 @@ namespace Microsoft.AspNet.Mvc.Core
                         "' cannot be activated.", exception.Message);
         }
 
+        [Theory]
+        [InlineData(typeof(int))]
+        [InlineData(typeof(OpenGenericType<>))]
+        [InlineData(typeof(AbstractType))]
+        [InlineData(typeof(InterfaceType))]
+        public void CreateController_ThrowsIfControllerCannotBeActivated(Type type)
+        {
+            // Arrange
+            var actionDescriptor = new ControllerActionDescriptor
+            {
+                ControllerTypeInfo = type.GetTypeInfo()
+            };
+            var services = GetServices();
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = services
+            };
+            var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
+            var factory = new DefaultControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
+
+            // Act and Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => factory.CreateController(context));
+            Assert.Equal("The type '" + type.FullName + "' cannot be activated by '" + typeof(DefaultControllerFactory) +
+                "' because it is either a value type, an interface, an abstract class or an open generic type.",
+                exception.Message);
+        }
+
         [Fact]
         public void DefaultControllerFactory_DisposesIDisposableController()
         {
@@ -287,6 +314,21 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         private class TestService
+        {
+
+        }
+
+        private class OpenGenericType<T> : Controller
+        {
+
+        }
+
+        private abstract class AbstractType : Controller
+        {
+
+        }
+
+        private interface InterfaceType
         {
 
         }
