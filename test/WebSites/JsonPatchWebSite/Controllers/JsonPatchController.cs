@@ -14,16 +14,23 @@ namespace JsonPatchWebSite.Controllers
         [HttpPatch]
         public IActionResult JsonPatchWithModelState([FromBody] JsonPatchDocument<Customer> patchDoc)
         {
-            var customer = CreateCustomer();
+            if (patchDoc != null)
+            {
+                var customer = CreateCustomer();
 
-            patchDoc.ApplyTo(customer, ModelState);
+                patchDoc.ApplyTo(customer, ModelState);
 
-            if (!ModelState.IsValid)
+                if (!ModelState.IsValid)
+                {
+                    return HttpBadRequest(ModelState);
+                }
+
+                return new ObjectResult(customer);
+            }
+            else
             {
                 return HttpBadRequest(ModelState);
             }
-
-            return new ObjectResult(customer);
         }
 
         [HttpPatch]
@@ -43,6 +50,16 @@ namespace JsonPatchWebSite.Controllers
             return new ObjectResult(customer);
         }
 
+        [HttpPatch]
+        public IActionResult JsonPatchWithoutModelState([FromBody] JsonPatchDocument<Customer> patchDoc)
+        {
+            var customer = CreateCustomer();
+
+            patchDoc.ApplyTo(customer);
+
+            return new ObjectResult(customer);
+        }
+
         private Customer CreateCustomer()
         {
             return new Customer
@@ -52,11 +69,11 @@ namespace JsonPatchWebSite.Controllers
                 {
                     new Order
                     {
-                        OrderName = "Order1"
+                        OrderName = "Order0"
                     },
                     new Order
                     {
-                        OrderName = "Order2"
+                        OrderName = "Order1"
                     }
                 }
             };
