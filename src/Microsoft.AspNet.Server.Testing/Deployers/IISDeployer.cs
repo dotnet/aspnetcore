@@ -117,8 +117,9 @@ namespace Microsoft.AspNet.Server.Testing
 
         private class IISApplication
         {
-            private const string WEBSITE_NAME = "ASPNETTESTRUNS";
-            private const string NATIVE_MODULE_MANAGED_RUNTIME_VERSION = "vCoreFX";
+            private const string WebSiteName = "ASPNETTESTRUNS";
+            private const string NativeModuleManagedRuntimeVersion = "vCoreFX";
+            private const string Dotnet45RuntimeVersion = "v4.0.30319";
 
             private readonly ServerManager _serverManager = new ServerManager();
             private readonly DeploymentParameters _deploymentParameters;
@@ -139,7 +140,7 @@ namespace Microsoft.AspNet.Server.Testing
                     return Path.Combine(
                         Environment.GetEnvironmentVariable("SystemDrive") + @"\",
                         "inetpub",
-                        WEBSITE_NAME);
+                        WebSiteName);
                 }
             }
 
@@ -162,10 +163,10 @@ namespace Microsoft.AspNet.Server.Testing
             {
                 get
                 {
-                    _website = _serverManager.Sites.Where(s => s.Name == WEBSITE_NAME).FirstOrDefault();
+                    _website = _serverManager.Sites.Where(s => s.Name == WebSiteName).FirstOrDefault();
                     if (_website == null)
                     {
-                        _website = _serverManager.Sites.Add(WEBSITE_NAME, WebSiteRootFolder, Port);
+                        _website = _serverManager.Sites.Add(WebSiteName, WebSiteRootFolder, Port);
                     }
 
                     return _website;
@@ -175,11 +176,10 @@ namespace Microsoft.AspNet.Server.Testing
             private ApplicationPool CreateAppPool(string appPoolName)
             {
                 var applicationPool = _serverManager.ApplicationPools.Add(appPoolName);
-                if (_deploymentParameters.ServerType == ServerType.IISNativeModule)
-                {
-                    // Not assigning a runtime version will choose v4.0 default.
-                    applicationPool.ManagedRuntimeVersion = NATIVE_MODULE_MANAGED_RUNTIME_VERSION;
-                }
+                applicationPool.ManagedRuntimeVersion =
+                    _deploymentParameters.ServerType == ServerType.IISNativeModule ?
+                    NativeModuleManagedRuntimeVersion :
+                    Dotnet45RuntimeVersion;
 
                 applicationPool.Enable32BitAppOnWin64 = (_deploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86);
                 _logger.LogInformation("Created {bit} application pool '{name}' with runtime version {runtime}.",
