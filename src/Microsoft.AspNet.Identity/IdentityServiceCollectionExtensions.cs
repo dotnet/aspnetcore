@@ -25,7 +25,7 @@ namespace Microsoft.Framework.DependencyInjection
 
         public static IServiceCollection ConfigureIdentityApplicationCookie(this IServiceCollection services, Action<CookieAuthenticationOptions> configureOptions)
         {
-            return services.Configure<CookieAuthenticationOptions>(configureOptions, IdentityOptions.ApplicationCookieAuthenticationScheme);
+            return services.ConfigureCookieAuthentication(configureOptions, IdentityOptions.ApplicationCookieAuthenticationScheme);
         }
 
         public static IdentityBuilder AddIdentity<TUser, TRole>(
@@ -82,6 +82,7 @@ namespace Microsoft.Framework.DependencyInjection
                     OnValidatePrincipal = SecurityStampValidator.ValidatePrincipalAsync
                 };
             });
+
             services.Configure<CookieAuthenticationOptions>(options =>
             {
                 options.AuthenticationScheme = IdentityOptions.ExternalCookieAuthenticationScheme;
