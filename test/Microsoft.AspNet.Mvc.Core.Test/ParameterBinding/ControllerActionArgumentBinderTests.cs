@@ -318,7 +318,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
 
         [Fact]
-        public async Task BindActionArgumentsAsync_SetsControllerProperties()
+        public async Task BindActionArgumentsAsync_SetsControllerProperties_ForReferenceTypes()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -351,8 +351,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             actionDescriptor.BoundProperties.Add(
                 new ParameterDescriptor
                 {
-                    Name = "ValueBinderMarkedProperty",
-                    BindingInfo = new BindingInfo(),
+                    Name = "NotNullableProperty",
+                    BindingInfo = new BindingInfo() { BindingSource = BindingSource.Custom },
                     ParameterType = typeof(int)
                 });
 
@@ -379,6 +379,44 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Assert
             Assert.Equal(-1, controller.NotNullableProperty);
+        }
+
+        [Fact]
+        public async Task BindActionArgumentsAsync_SetsNullValues_ForNullableProperties()
+        {
+            // Arrange
+            var actionDescriptor = GetActionDescriptor();
+            actionDescriptor.BoundProperties.Add(
+                new ParameterDescriptor
+                {
+                    Name = "NullableProperty",
+                    BindingInfo = new BindingInfo() { BindingSource = BindingSource.Custom },
+                    ParameterType = typeof(int?)
+                });
+
+            var actionContext = GetActionContext(actionDescriptor);
+
+            var binder = new Mock<IModelBinder>();
+            binder
+                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Returns(Task.FromResult(
+                    result: new ModelBindingResult(model: null, key: string.Empty, isModelSet: true)));
+            var actionBindingContext = new ActionBindingContext()
+            {
+                ModelBinder = binder.Object,
+            };
+
+            var argumentBinder = GetArgumentBinder();
+            var controller = new TestController();
+
+            // Some non default value.
+            controller.NullableProperty = -1;
+
+            // Act
+            var result = await argumentBinder.BindActionArgumentsAsync(actionContext, actionBindingContext, controller);
+
+            // Assert
+            Assert.Null(controller.NullableProperty);
         }
 
         private static ActionContext GetActionContext(ActionDescriptor descriptor = null)
@@ -440,6 +478,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             [CustomBindingSource]
             public int NotNullableProperty { get; set; }
+
+            [CustomBindingSource]
+            public int? NullableProperty { get; set; }
 
             public Person ActionWithBodyParam([FromBody] Person bodyParam)
             {
