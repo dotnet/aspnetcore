@@ -14,7 +14,8 @@
         },
         "dnxcore50": {
             "dependencies": {
-                "System.Net.Http.WinHttpHandler": "4.0.0-beta-*"
+                "System.Net.Http.WinHttpHandler": "4.0.0-beta-*",
+                "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*"
             }
         }
     }
