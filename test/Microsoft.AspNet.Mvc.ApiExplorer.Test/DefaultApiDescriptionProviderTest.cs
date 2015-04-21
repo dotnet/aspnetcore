@@ -543,9 +543,20 @@ namespace Microsoft.AspNet.Mvc.Description
             // Assert
             var description = Assert.Single(descriptions);
 
-            var parameter = Assert.Single(description.ParameterDescriptions);
-            Assert.Equal("product", parameter.Name);
+            var parameters = description.ParameterDescriptions;
+            Assert.Equal(3, parameters.Count);
+
+            var parameter = Assert.Single(parameters, p => p.Name == "ProductId");
             Assert.Same(BindingSource.ModelBinding, parameter.Source);
+            Assert.Equal(typeof(int), parameter.Type);
+
+            parameter = Assert.Single(parameters, p => p.Name == "Name");
+            Assert.Same(BindingSource.ModelBinding, parameter.Source);
+            Assert.Equal(typeof(string), parameter.Type);
+
+            parameter = Assert.Single(parameters, p => p.Name == "Description");
+            Assert.Same(BindingSource.ModelBinding, parameter.Source);
+            Assert.Equal(typeof(string), parameter.Type);
         }
 
         [Fact]
@@ -611,9 +622,20 @@ namespace Microsoft.AspNet.Mvc.Description
             // Assert
             var description = Assert.Single(descriptions);
 
-            var parameter = Assert.Single(description.ParameterDescriptions);
-            Assert.Equal("product", parameter.Name);
+            var parameters = description.ParameterDescriptions;
+            Assert.Equal(3, parameters.Count);
+
+            var parameter = Assert.Single(parameters, p => p.Name == "ProductId");
             Assert.Same(BindingSource.Form, parameter.Source);
+            Assert.Equal(typeof(int), parameter.Type);
+
+            parameter = Assert.Single(parameters, p => p.Name == "Name");
+            Assert.Same(BindingSource.Form, parameter.Source);
+            Assert.Equal(typeof(string), parameter.Type);
+
+            parameter = Assert.Single(parameters, p => p.Name == "Description");
+            Assert.Same(BindingSource.Form, parameter.Source);
+            Assert.Equal(typeof(string), parameter.Type);
         }
 
         [Fact]
@@ -677,9 +699,20 @@ namespace Microsoft.AspNet.Mvc.Description
             // Assert
             var description = Assert.Single(descriptions);
 
-            var parameter = Assert.Single(description.ParameterDescriptions);
-            Assert.Equal("product", parameter.Name);
+            var parameters = description.ParameterDescriptions;
+            Assert.Equal(3, parameters.Count);
+
+            var parameter = Assert.Single(parameters, p => p.Name == "ProductId");
             Assert.Same(BindingSource.ModelBinding, parameter.Source);
+            Assert.Equal(typeof(int), parameter.Type);
+
+            parameter = Assert.Single(parameters, p => p.Name == "Name");
+            Assert.Same(BindingSource.ModelBinding, parameter.Source);
+            Assert.Equal(typeof(string), parameter.Type);
+
+            parameter = Assert.Single(parameters, p => p.Name == "Description");
+            Assert.Same(BindingSource.ModelBinding, parameter.Source);
+            Assert.Equal(typeof(string), parameter.Type);
         }
 
         [Fact]
@@ -789,7 +822,7 @@ namespace Microsoft.AspNet.Mvc.Description
 
             // Assert
             var description = Assert.Single(descriptions);
-            Assert.Equal(3, description.ParameterDescriptions.Count);
+            Assert.Equal(4, description.ParameterDescriptions.Count);
 
             var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Id");
             Assert.Same(BindingSource.Path, id.Source);
@@ -799,9 +832,13 @@ namespace Microsoft.AspNet.Mvc.Description
             Assert.Same(BindingSource.Query, quantity.Source);
             Assert.Equal(typeof(int), quantity.Type);
 
-            var product = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product");
-            Assert.Same(BindingSource.Query, product.Source);
-            Assert.Equal(typeof(OrderProductDTO), product.Type);
+            var productId = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product.Id");
+            Assert.Same(BindingSource.Query, productId.Source);
+            Assert.Equal(typeof(int), productId.Type);
+
+            var productPrice = Assert.Single(description.ParameterDescriptions, p => p.Name == "Product.Price");
+            Assert.Same(BindingSource.Query, productPrice.Source);
+            Assert.Equal(typeof(decimal), productPrice.Type);
         }
 
         [Fact]
@@ -819,7 +856,7 @@ namespace Microsoft.AspNet.Mvc.Description
 
             var c = Assert.Single(description.ParameterDescriptions);
             Assert.Same(BindingSource.Query, c.Source);
-            Assert.Equal("C.C", c.Name);
+            Assert.Equal("C.C.C.C", c.Name);
             Assert.Equal(typeof(Cycle1), c.Type);
         }
 
@@ -856,14 +893,14 @@ namespace Microsoft.AspNet.Mvc.Description
             // Assert
             var description = Assert.Single(descriptions);
 
-            var c = Assert.Single(description.ParameterDescriptions);
-            Assert.Same(BindingSource.ModelBinding, c.Source);
-            Assert.Equal("c", c.Name);
-            Assert.Equal(typeof(HasCollection_Complex), c.Type);
+            var items = Assert.Single(description.ParameterDescriptions);
+            Assert.Same(BindingSource.ModelBinding, items.Source);
+            Assert.Equal("Items", items.Name);
+            Assert.Equal(typeof(Child[]), items.Type);
         }
 
         [Fact]
-        public void GetApiDescription_ParameterDescription_RedundentMetadataMergedWithParent()
+        public void GetApiDescription_ParameterDescription_RedundentMetadata_NotMergedWithParent()
         {
             // Arrange
             var action = CreateActionDescriptor(nameof(AcceptsRedundentMetadata));
@@ -875,10 +912,16 @@ namespace Microsoft.AspNet.Mvc.Description
             // Assert
             var description = Assert.Single(descriptions);
 
-            var r = Assert.Single(description.ParameterDescriptions);
-            Assert.Same(BindingSource.Query, r.Source);
-            Assert.Equal("r", r.Name);
-            Assert.Equal(typeof(RedundentMetadata), r.Type);
+            var parameters = description.ParameterDescriptions;
+            Assert.Equal(2, parameters.Count);
+
+            var id = Assert.Single(parameters, p => p.Name == "Id");
+            Assert.Same(BindingSource.Query, id.Source);
+            Assert.Equal(typeof(int), id.Type);
+
+            var name = Assert.Single(parameters, p => p.Name == "Name");
+            Assert.Same(BindingSource.Query, name.Source);
+            Assert.Equal(typeof(string), name.Type);
         }
 
         [Fact]

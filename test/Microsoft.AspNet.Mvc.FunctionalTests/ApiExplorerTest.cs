@@ -744,11 +744,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var description = Assert.Single(result);
             var parameters = description.ParameterDescriptions;
 
-            Assert.Equal(1, parameters.Count);
+            Assert.Equal(2, parameters.Count);
 
-            var product = Assert.Single(parameters, p => p.Name == "product");
-            Assert.Equal(BindingSource.ModelBinding.Id, product.Source);
-            Assert.Equal(typeof(ApiExplorerWebSite.Product).FullName, product.Type);
+            var id = Assert.Single(parameters, p => p.Name == "Id");
+            Assert.Equal(BindingSource.ModelBinding.Id, id.Source);
+            Assert.Equal(typeof(int).FullName, id.Type);
+
+            var name = Assert.Single(parameters, p => p.Name == "Name");
+            Assert.Equal(BindingSource.ModelBinding.Id, name.Source);
+            Assert.Equal(typeof(string).FullName, name.Type);
         }
 
         [Fact]
@@ -796,7 +800,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var description = Assert.Single(result);
             var parameters = description.ParameterDescriptions;
 
-            Assert.Equal(6, parameters.Count);
+            Assert.Equal(7, parameters.Count);
 
             var customerId = Assert.Single(parameters, p => p.Name == "CustomerId");
             Assert.Equal(BindingSource.Query.Id, customerId.Source);
@@ -810,9 +814,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(BindingSource.Form.Id, quantity.Source);
             Assert.Equal(typeof(int).FullName, quantity.Type);
 
-            var product = Assert.Single(parameters, p => p.Name == "Details.Product");
-            Assert.Equal(BindingSource.Form.Id, product.Source);
-            Assert.Equal(typeof(ApiExplorerWebSite.Product).FullName, product.Type);
+            var productId = Assert.Single(parameters, p => p.Name == "Details.Product.Id");
+            Assert.Equal(BindingSource.Form.Id, productId.Source);
+            Assert.Equal(typeof(int).FullName, productId.Type);
+
+            var productName = Assert.Single(parameters, p => p.Name == "Details.Product.Name");
+            Assert.Equal(BindingSource.Form.Id, productName.Source);
+            Assert.Equal(typeof(string).FullName, productName.Type);
 
             var shippingInstructions = Assert.Single(parameters, p => p.Name == "Comments.ShippingInstructions");
             Assert.Equal(BindingSource.Query.Id, shippingInstructions.Source);

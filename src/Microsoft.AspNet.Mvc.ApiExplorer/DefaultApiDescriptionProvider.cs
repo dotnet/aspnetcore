@@ -325,8 +325,8 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
                     if (responseFormatMetadataProvider != null)
                     {
                         var supportedTypes = responseFormatMetadataProvider.GetSupportedContentTypes(
-                            declaredType, 
-                            runtimeType, 
+                            declaredType,
+                            runtimeType,
                             contentType);
 
                         if (supportedTypes != null)
@@ -496,34 +496,17 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
                 //
                 // The default is ModelBinding (aka all default value providers)
                 var source = BindingSource.ModelBinding;
-                if (!Visit(context, source, containerName: string.Empty))
-                {
-                    // If we get here, then it means we didn't find a match for any of the model. This means that it's
-                    // likely 'model-bound' in the traditional MVC sense (formdata + query string + route data) and
-                    // doesn't use any IBinderMetadata.
-                    // 
-                    // Add a single 'default' parameter description for the model.
-                    Context.Results.Add(CreateResult(context, source, containerName: string.Empty));
-                }
+                Visit(context, source, containerName: string.Empty);
             }
 
             /// <summary>
             /// Visits a node in a model, and attempts to create <see cref="ApiParameterDescription"/> for any
-            /// model properties where we can definitely compute an answer. 
+            /// model properties that are leaf nodes (see comments).
             /// </summary>
             /// <param name="modelMetadata">The metadata for the model.</param>
             /// <param name="ambientSource">The <see cref="BindingSource"/> from the ambient context.</param>
             /// <param name="containerName">The current name prefix (to prepend to property names).</param>
-            /// <returns>
-            /// <c>true</c> if the set of <see cref="ApiParameterDescription"/> objects were created for the model.
-            /// <c>false</c> if no <see cref="ApiParameterDescription"/> objects were created for the model.
-            /// </returns>
-            /// <remarks>
-            /// Its the reponsibility of this method to create a parameter description for ALL of the current model
-            /// or NONE of it. If a parameter description is created for ANY sub-properties of the model, then a parameter
-            /// description will be created for ALL of them.
-            /// </remarks>
-            private bool Visit(
+            private void Visit(
                 ApiParameterDescriptionContext bindingContext,
                 BindingSource ambientSource,
                 string containerName)
@@ -534,8 +517,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
                     // We have a definite answer for this model. This is a greedy source like
                     // [FromBody] so there's no need to consider properties.
                     Context.Results.Add(CreateResult(bindingContext, source, containerName));
-
-                    return true;
+                    return;
                 }
 
                 var modelMetadata = bindingContext.ModelMetadata;
@@ -554,25 +536,11 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
                     !modelMetadata.IsComplexType ||
                     !modelMetadata.Properties.Any())
                 {
-                    if (source == null || source == ambientSource)
-                    {
-                        // If it's a leaf node, and we have no new source then we don't know how to bind this.
-                        // Return without creating any parameters, so that this can be included in the parent model.
-                        return false;
-                    }
-                    else
-                    {
-                        // We found a new source, and this model has no properties. This is probabaly
-                        // a simple type with an attribute like [FromQuery].
-                        Context.Results.Add(CreateResult(bindingContext, source, containerName));
-                        return true;
-                    }
+                    Context.Results.Add(CreateResult(bindingContext, source ?? ambientSource, containerName));
+                    return;
                 }
 
                 // This will come from composite model binding - so investigate what's going on with each property.
-                // 
-                // Basically once we find something that we know how to bind, we want to treat all properties at that
-                // level (and higher levels) as separate parameters. 
                 //
                 // Ex:
                 //
@@ -592,8 +560,6 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
                 //  Order - source: Body
                 //
 
-                var unboundProperties = new HashSet<ApiParameterDescriptionContext>();
-
                 // We don't want to append the **parameter** name when building a model name.
                 var newContainerName = containerName;
                 if (modelMetadata.ContainerType != null)
@@ -609,44 +575,16 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
                         propertyMetadata,
                         bindingInfo: null,
                         propertyName: null);
+
                     if (Visited.Add(key))
                     {
-                        if (!Visit(propertyContext, source ?? ambientSource, newContainerName))
-                        {
-                            unboundProperties.Add(propertyContext);
-                        }
+                        Visit(propertyContext, source ?? ambientSource, newContainerName);
                     }
                     else
                     {
-                        unboundProperties.Add(propertyContext);
+                        // This is cycle, so just add a result rather than traversing.
+                        Context.Results.Add(CreateResult(propertyContext, source ?? ambientSource, newContainerName));
                     }
-                }
-
-                if (unboundProperties.Count == modelMetadata.Properties.Count)
-                {
-                    if (source == null || source == ambientSource)
-                    {
-                        // No properties were bound and we didn't find a new source, let the caller handle it.
-                        return false;
-                    }
-                    else
-                    {
-                        // We found a new source, and didn't create a result for any of the properties yet,
-                        // so create a result for the current object.
-                        Context.Results.Add(CreateResult(bindingContext, source, containerName));
-                        return true;
-                    }
-                }
-                else
-                {
-                    // This model was only partially bound, so create a result for all the other properties
-                    foreach (var property in unboundProperties)
-                    {
-                        // Create a 'default' description for each property
-                        Context.Results.Add(CreateResult(property, source ?? ambientSource, newContainerName));
-                    }
-
-                    return true;
                 }
             }
 
