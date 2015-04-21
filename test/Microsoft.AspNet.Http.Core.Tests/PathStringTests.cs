@@ -63,6 +63,12 @@ namespace Microsoft.AspNet.Http
 
             var result = scheme + "://" + host + pathBase + path + query + fragment;
             Assert.Equal("http://localhost:80/base/path?query#frag", result);
+
+            result = pathBase + path + query + fragment;
+            Assert.Equal("/base/path?query#frag", result);
+
+            result = path + "text";
+            Assert.Equal("/pathtext", result);
         }
     }
 }

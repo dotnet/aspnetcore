@@ -228,6 +228,18 @@ namespace Microsoft.AspNet.Http
         }
 
         /// <summary>
+        /// </summary>
+        /// <param name="left">The left parameter</param>
+        /// <param name="right">The right parameter</param>
+        /// <returns>The ToString combination of both values</returns>
+        public static string operator +(PathString left, string right)
+        {
+            // This overload exists to prevent the implicit string<->PathString converter from
+            // trying to call the PathString+PathString operator for things that are not path strings.
+            return string.Concat(left.ToString(), right);
+        }
+
+        /// <summary>
         /// Operator call through to Add
         /// </summary>
         /// <param name="left">The left parameter</param>
