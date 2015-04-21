@@ -10,6 +10,6 @@ namespace Microsoft.AspNet.Http
     {
         bool IsWebSocketRequest { get; }
 
-        Task<WebSocket> AcceptAsync(IWebSocketAcceptContext context);
+        Task<WebSocket> AcceptAsync(WebSocketAcceptContext context);
     }
 }

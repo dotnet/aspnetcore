@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Owin
     using WebSocketAcceptAlt =
         Func
         <
-            IWebSocketAcceptContext, // WebSocket Accept parameters
+            WebSocketAcceptContext, // WebSocket Accept parameters
             Task<WebSocket>
         >;
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Owin
         private Task UpstreamTask { get; set; }
         private TaskCompletionSource<int> UpstreamWentAsyncTcs { get { return _upstreamWentAsync; } }
 
-        private async Task<WebSocket> AcceptWebSocketAsync(IWebSocketAcceptContext context)
+        private async Task<WebSocket> AcceptWebSocketAsync(WebSocketAcceptContext context)
         {
             IDictionary<string, object> options = null;
             if (context is OwinWebSocketAcceptContext)

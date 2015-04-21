@@ -6,7 +6,7 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Owin
 {
-    public class OwinWebSocketAcceptContext : IWebSocketAcceptContext
+    public class OwinWebSocketAcceptContext : WebSocketAcceptContext
     {
         private IDictionary<string, object> _options;
 
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Owin
             _options = options;
         }
 
-        public string SubProtocol
+        public override string SubProtocol
         {
             get
             {

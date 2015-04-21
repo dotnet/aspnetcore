@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Owin
     using WebSocketAcceptAlt =
         Func
         <
-            IWebSocketAcceptContext, // WebSocket Accept parameters
+            WebSocketAcceptContext, // WebSocket Accept parameters
             Task<WebSocket>
         >;
 
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Owin
                     feature => new Func<Task>(() => feature.GetClientCertificateAsync(CancellationToken.None))));
             }
 
-            if (context.IsWebSocketRequest)
+            if (context.WebSockets.IsWebSocketRequest)
             {
                 _entries.Add(OwinConstants.WebSocket.AcceptAlt, new FeatureMap<IHttpWebSocketFeature>(feature => new WebSocketAcceptAlt(feature.AcceptAsync)));
             }

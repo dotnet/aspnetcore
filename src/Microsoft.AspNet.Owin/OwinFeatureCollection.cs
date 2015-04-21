@@ -277,14 +277,14 @@ namespace Microsoft.AspNet.Owin
             }
         }
 
-        Task<WebSocket> IHttpWebSocketFeature.AcceptAsync(IWebSocketAcceptContext context)
+        Task<WebSocket> IHttpWebSocketFeature.AcceptAsync(WebSocketAcceptContext context)
         {
             object obj;
             if (!Environment.TryGetValue(OwinConstants.WebSocket.AcceptAlt, out obj))
             {
                 throw new NotSupportedException("WebSockets are not supported"); // TODO: LOC
             }
-            var accept = (Func<IWebSocketAcceptContext, Task<WebSocket>>)obj;
+            var accept = (Func<WebSocketAcceptContext, Task<WebSocket>>)obj;
             return accept(context);
         }
 

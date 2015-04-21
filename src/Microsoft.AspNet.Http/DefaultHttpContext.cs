@@ -3,22 +3,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.WebSockets;
 using System.Security.Claims;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Collections;
 using Microsoft.AspNet.Http.Infrastructure;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http
 {
     public class DefaultHttpContext : HttpContext
     {
-        private static IList<string> EmptyList = new List<string>();
-
         private readonly HttpRequest _request;
         private readonly HttpResponse _response;
         private readonly ConnectionInfo _connection;
@@ -28,8 +23,8 @@ namespace Microsoft.AspNet.Http
         private FeatureReference<IServiceProvidersFeature> _serviceProviders;
         private FeatureReference<IHttpAuthenticationFeature> _authentication;
         private FeatureReference<IHttpRequestLifetimeFeature> _lifetime;
-        private FeatureReference<IHttpWebSocketFeature> _webSockets;
         private FeatureReference<ISessionFeature> _session;
+        private WebSocketManager _websockets;
         private IFeatureCollection _features;
 
         public DefaultHttpContext()
@@ -51,7 +46,6 @@ namespace Microsoft.AspNet.Http
             _serviceProviders = FeatureReference<IServiceProvidersFeature>.Default;
             _authentication = FeatureReference<IHttpAuthenticationFeature>.Default;
             _lifetime = FeatureReference<IHttpRequestLifetimeFeature>.Default;
-            _webSockets = FeatureReference<IHttpWebSocketFeature>.Default;
             _session = FeatureReference<ISessionFeature>.Default;
         }
 
@@ -73,11 +67,6 @@ namespace Microsoft.AspNet.Http
         private IHttpRequestLifetimeFeature LifetimeFeature
         {
             get { return _lifetime.Fetch(_features); }
-        }
-
-        private IHttpWebSocketFeature WebSocketFeature
-        {
-            get { return _webSockets.Fetch(_features); }
         }
 
         private ISessionFeature SessionFeature
@@ -161,20 +150,15 @@ namespace Microsoft.AspNet.Http
             }
         }
 
-        public override bool IsWebSocketRequest
+        public override WebSocketManager WebSockets
         {
             get
             {
-                var webSocketFeature = WebSocketFeature;
-                return webSocketFeature != null && webSocketFeature.IsWebSocketRequest;
-            }
-        }
-
-        public override IList<string> WebSocketRequestedProtocols
-        {
-            get
-            {
-                return Request.Headers.GetValues(HeaderNames.WebSocketSubProtocols) ?? EmptyList;
+                if (_websockets == null)
+                {
+                    _websockets = new DefaultWebSocketManager(_features);
+                }
+                return _websockets;
             }
         }
 
@@ -202,16 +186,6 @@ namespace Microsoft.AspNet.Http
         public override void SetFeature(Type type, object instance)
         {
             _features[type] = instance;
-        }
-
-        public override Task<WebSocket> AcceptWebSocketAsync(string subProtocol)
-        {
-            var webSocketFeature = WebSocketFeature;
-            if (WebSocketFeature == null)
-            {
-                throw new NotSupportedException("WebSockets are not supported");
-            }
-            return WebSocketFeature.AcceptAsync(new WebSocketAcceptContext() { SubProtocol = subProtocol } );
         }
     }
 }

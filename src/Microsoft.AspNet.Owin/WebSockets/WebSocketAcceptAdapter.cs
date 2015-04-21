@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Owin
     using WebSocketAcceptAlt =
         Func
         <
-            IWebSocketAcceptContext, // WebSocket Accept parameters
+            WebSocketAcceptContext, // WebSocket Accept parameters
             Task<WebSocket>
         >;
 
@@ -65,11 +65,11 @@ namespace Microsoft.AspNet.Owin
                     await next(environment);
                     if ((int)environment[OwinConstants.ResponseStatusCode] == 101 && adapter._callback != null)
                     {
-                        IWebSocketAcceptContext acceptContext = null;
+                        WebSocketAcceptContext acceptContext = null;
                         object obj;
-                        if (adapter._options != null && adapter._options.TryGetValue(typeof(IWebSocketAcceptContext).FullName, out obj))
+                        if (adapter._options != null && adapter._options.TryGetValue(typeof(WebSocketAcceptContext).FullName, out obj))
                         {
-                            acceptContext = obj as IWebSocketAcceptContext;
+                            acceptContext = obj as WebSocketAcceptContext;
                         }
                         else if (adapter._options != null)
                         {

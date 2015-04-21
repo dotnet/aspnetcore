@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.WebSockets;
 using System.Security.Claims;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Authentication;
 
 namespace Microsoft.AspNet.Http
@@ -33,9 +31,7 @@ namespace Microsoft.AspNet.Http
 
         public abstract ISessionCollection Session { get; }
 
-        public abstract bool IsWebSocketRequest { get; }
-
-        public abstract IList<string> WebSocketRequestedProtocols { get; }
+        public abstract WebSocketManager WebSockets { get; }
 
         public abstract void Abort();
 
@@ -54,12 +50,5 @@ namespace Microsoft.AspNet.Http
         {
             SetFeature(typeof(T), instance);
         }
-
-        public virtual Task<WebSocket> AcceptWebSocketAsync()
-        {
-            return AcceptWebSocketAsync(subProtocol: null);
-        }
-
-        public abstract Task<WebSocket> AcceptWebSocketAsync(string subProtocol);
     }
 }
