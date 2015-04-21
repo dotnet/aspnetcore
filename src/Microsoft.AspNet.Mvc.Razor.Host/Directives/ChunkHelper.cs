@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             if (chunkOfT == null)
             {
                 var message = Resources.FormatArgumentMustBeOfType(typeof(TChunk).FullName);
-                throw new ArgumentException(message, "chunk");
+                throw new ArgumentException(message, nameof(chunk));
             }
 
             return chunkOfT;

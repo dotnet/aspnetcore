@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc
         {
             if (string.IsNullOrEmpty(areaName))
             {
-                throw new ArgumentException("Area name must not be empty", "areaName");
+                throw new ArgumentException("Area name must not be empty", nameof(areaName));
             }
         }
     }

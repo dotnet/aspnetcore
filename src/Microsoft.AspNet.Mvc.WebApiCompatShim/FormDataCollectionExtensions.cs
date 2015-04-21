@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                 var indexClose = key.IndexOf(']', indexOpen);
                 if (indexClose == -1)
                 {
-                    throw new ArgumentException(Resources.JQuerySyntaxMissingClosingBracket, "key");
+                    throw new ArgumentException(Resources.JQuerySyntaxMissingClosingBracket, nameof(key));
                 }
 
                 if (indexClose == indexOpen + 1)

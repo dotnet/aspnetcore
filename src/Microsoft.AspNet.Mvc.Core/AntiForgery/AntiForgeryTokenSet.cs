@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc
         {
             if (string.IsNullOrEmpty(formToken))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, formToken);
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(formToken));
             }
 
             FormToken = formToken;

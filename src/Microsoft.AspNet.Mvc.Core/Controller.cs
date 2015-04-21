@@ -396,7 +396,7 @@ namespace Microsoft.AspNet.Mvc
         {
             if (string.IsNullOrEmpty(url))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "url");
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(url));
             }
 
             return new RedirectResult(url);
@@ -413,7 +413,7 @@ namespace Microsoft.AspNet.Mvc
         {
             if (string.IsNullOrEmpty(url))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "url");
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(url));
             }
 
             return new RedirectResult(url, permanent: true);

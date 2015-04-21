@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 {
                     throw new ArgumentException(
                         Resources.FormatAttributeRoute_DifferentLinkGenerationEntries_SameName(entry.Name),
-                        "linkGenerationEntries");
+                        nameof(linkGenerationEntries));
                 }
                 else if (namedEntry == null)
                 {

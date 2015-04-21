@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc
                 var message = Resources.FormatRouteConstraintAttribute_InvalidKeyHandlingValue(
                     Enum.GetName(typeof(RouteKeyHandling), RouteKeyHandling.CatchAll),
                     Enum.GetName(typeof(RouteKeyHandling), RouteKeyHandling.DenyKey));
-                throw new ArgumentException(message, "keyHandling");
+                throw new ArgumentException(message, nameof(keyHandling));
             }
         }
 

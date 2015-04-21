@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc
         {
             if (string.IsNullOrEmpty(url))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "url");
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(url));
             }
 
             Permanent = permanent;
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 if (string.IsNullOrEmpty(value))
                 {
-                    throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "value");
+                    throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(value));
                 }
 
                 _url = value;

@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
         {
             if (bindingContext.ModelMetadata == null)
             {
-                throw new ArgumentException(Resources.ModelBinderUtil_ModelMetadataCannotBeNull, "bindingContext");
+                throw new ArgumentException(Resources.ModelBinderUtil_ModelMetadataCannotBeNull, nameof(bindingContext));
             }
         }
 
@@ -78,13 +78,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
             if (bindingContext.ModelType != requiredType)
             {
                 var message = Resources.FormatModelBinderUtil_ModelTypeIsWrong(bindingContext.ModelType, requiredType);
-                throw new ArgumentException(message, "bindingContext");
+                throw new ArgumentException(message, nameof(bindingContext));
             }
 
             if (!allowNullModel && bindingContext.Model == null)
             {
                 var message = Resources.FormatModelBinderUtil_ModelCannotBeNull(requiredType);
-                throw new ArgumentException(message, "bindingContext");
+                throw new ArgumentException(message, nameof(bindingContext));
             }
 
             if (bindingContext.Model != null &&
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
                 var message = Resources.FormatModelBinderUtil_ModelInstanceIsWrong(
                     bindingContext.Model.GetType(),
                     requiredType);
-                throw new ArgumentException(message, "bindingContext");
+                throw new ArgumentException(message, nameof(bindingContext));
             }
         }
 

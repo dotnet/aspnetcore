@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 throw new ArgumentException(
                     Resources.FormatUnobtrusiveJavascript_ValidationTypeCannotBeEmpty(rule.GetType().FullName),
-                    "rule");
+                    nameof(rule));
             }
 
             if (resultsDictionary.ContainsKey(dictionaryKey))

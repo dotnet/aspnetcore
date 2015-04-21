@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         {
             if (string.IsNullOrEmpty(ruleName))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "ruleName");
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(ruleName));
             }
             RuleName = ruleName;
         }

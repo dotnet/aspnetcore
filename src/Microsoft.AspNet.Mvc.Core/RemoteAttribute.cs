@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.Mvc
         {
             if (string.IsNullOrEmpty(property))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "property");
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(property));
             }
 
             var delimitedAdditionalFields = string.Join(",", _additionalFieldsSplit);
@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Mvc
         {
             if (string.IsNullOrEmpty(property))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "property");
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(property));
             }
 
             return "*." + property;

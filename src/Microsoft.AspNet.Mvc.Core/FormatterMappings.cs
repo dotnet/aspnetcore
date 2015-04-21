@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc
         {
             if (format == "")
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, "format");
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(format));
             }
 
             if (format.StartsWith("."))

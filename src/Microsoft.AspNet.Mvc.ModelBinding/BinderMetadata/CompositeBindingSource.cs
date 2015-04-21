@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     var message = Resources.FormatBindingSource_CannotBeGreedy(
                         bindingSource.DisplayName,
                         nameof(CompositeBindingSource));
-                    throw new ArgumentException(message, "bindingSources");
+                    throw new ArgumentException(message, nameof(bindingSources));
                 }
 
                 if (!bindingSource.IsFromRequest)
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     var message = Resources.FormatBindingSource_MustBeFromRequest(
                         bindingSource.DisplayName,
                         nameof(CompositeBindingSource));
-                    throw new ArgumentException(message, "bindingSources");
+                    throw new ArgumentException(message, nameof(bindingSources));
                 }
 
                 if (bindingSource is CompositeBindingSource)
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     var message = Resources.FormatBindingSource_CannotBeComposite(
                         bindingSource.DisplayName,
                         nameof(CompositeBindingSource));
-                    throw new ArgumentException(message, "bindingSources");
+                    throw new ArgumentException(message, nameof(bindingSources));
                 }
             }
 
