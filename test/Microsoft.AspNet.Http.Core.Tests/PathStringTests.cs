@@ -50,5 +50,19 @@ namespace Microsoft.AspNet.Http
             // Assert
             Assert.Equal(expected, result.Value);
         }
+
+        [Fact]
+        public void ImplicitStringConverters_WorksWithAdd()
+        {
+            var scheme = "http";
+            var host = new HostString("localhost:80");
+            var pathBase = new PathString("/base");
+            var path = new PathString("/path");
+            var query = new QueryString("?query");
+            var fragment = new FragmentString("#frag");
+
+            var result = scheme + "://" + host + pathBase + path + query + fragment;
+            Assert.Equal("http://localhost:80/base/path?query#frag", result);
+        }
     }
 }
