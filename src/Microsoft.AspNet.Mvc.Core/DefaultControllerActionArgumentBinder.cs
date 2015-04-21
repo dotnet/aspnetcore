@@ -111,7 +111,11 @@ namespace Microsoft.AspNet.Mvc
                     return;
                 }
 
-                propertyHelper.SetValue(controller, property.Value);
+                // Do not set the property if the type is a non nullable type.
+                if (property.Value != null || propertyHelper.Property.PropertyType.AllowsNullValue())
+                {
+                    propertyHelper.SetValue(controller, property.Value);
+                }
             }
         }
 

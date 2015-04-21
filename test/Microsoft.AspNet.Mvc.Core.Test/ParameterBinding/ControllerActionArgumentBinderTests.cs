@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
-        public async Task GetActionArgumentsAsync_DoesNotAddActionArguments_IfBinderReturnsFalse()
+        public async Task BindActionArgumentsAsync_DoesNotAddActionArguments_IfBinderReturnsFalse()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
-        public async Task GetActionArgumentsAsync_DoesNotAddActionArguments_IfBinderDoesNotSetModel()
+        public async Task BindActionArgumentsAsync_DoesNotAddActionArguments_IfBinderDoesNotSetModel()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
-        public async Task GetActionArgumentsAsync_AddsActionArguments_IfBinderReturnsTrue()
+        public async Task BindActionArgumentsAsync_AddsActionArguments_IfBinderReturnsTrue()
         {
             // Arrange
             Func<object, int> method = foo => 1;
@@ -174,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
-        public async Task GetActionArgumentsAsync_CallsValidator_IfModelBinderSucceeds()
+        public async Task BindActionArgumentsAsync_CallsValidator_IfModelBinderSucceeds()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
-        public async Task GetActionArgumentsAsync_DoesNotCallValidator_IfModelBinderFails()
+        public async Task BindActionArgumentsAsync_DoesNotCallValidator_IfModelBinderFails()
         {
             // Arrange
             Func<object, int> method = foo => 1;
@@ -246,7 +246,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
-        public async Task GetActionArgumentsAsync_CallsValidator_ForControllerProperties_IfModelBinderSucceeds()
+        public async Task BindActionArgumentsAsync_CallsValidator_ForControllerProperties_IfModelBinderSucceeds()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -276,7 +276,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
-        public async Task GetActionArgumentsAsync_DoesNotCallValidator_ForControllerProperties_IfModelBinderFails()
+        public async Task BindActionArgumentsAsync_DoesNotCallValidator_ForControllerProperties_IfModelBinderFails()
         {
             // Arrange
             Func<object, int> method = foo => 1;
@@ -318,7 +318,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
 
         [Fact]
-        public async Task GetActionArgumentsAsync_SetsControllerProperties()
+        public async Task BindActionArgumentsAsync_SetsControllerProperties()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -341,6 +341,44 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Assert
             Assert.Equal("Hello", controller.ValueBinderMarkedProperty);
             Assert.Null(controller.UnmarkedProperty);
+        }
+
+        [Fact]
+        public async Task BindActionArgumentsAsync_DoesNotSetNullValues_ForNonNullableProperties()
+        {
+            // Arrange
+            var actionDescriptor = GetActionDescriptor();
+            actionDescriptor.BoundProperties.Add(
+                new ParameterDescriptor
+                {
+                    Name = "ValueBinderMarkedProperty",
+                    BindingInfo = new BindingInfo(),
+                    ParameterType = typeof(int)
+                });
+
+            var actionContext = GetActionContext(actionDescriptor);
+
+            var binder = new Mock<IModelBinder>();
+            binder
+                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Returns(Task.FromResult(
+                    result: new ModelBindingResult(model: null, key: string.Empty, isModelSet: true)));
+            var actionBindingContext = new ActionBindingContext()
+            {
+                ModelBinder = binder.Object,
+            };
+
+            var argumentBinder = GetArgumentBinder();
+            var controller = new TestController();
+
+            // Some non default value.
+            controller.NotNullableProperty = -1;
+
+            // Act
+            var result = await argumentBinder.BindActionArgumentsAsync(actionContext, actionBindingContext, controller);
+
+            // Assert
+            Assert.Equal(-1, controller.NotNullableProperty);
         }
 
         private static ActionContext GetActionContext(ActionDescriptor descriptor = null)
@@ -400,6 +438,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             [ValueProviderMetadata]
             public string ValueBinderMarkedProperty { get; set; }
 
+            [CustomBindingSource]
+            public int NotNullableProperty { get; set; }
+
             public Person ActionWithBodyParam([FromBody] Person bodyParam)
             {
                 return bodyParam;
@@ -419,6 +460,11 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         private class NonValueProviderBinderMetadataAttribute : Attribute, IBindingSourceMetadata
         {
             public BindingSource BindingSource { get { return BindingSource.Body; } }
+        }
+
+        private class CustomBindingSourceAttribute : Attribute, IBindingSourceMetadata
+        {
+            public BindingSource BindingSource { get { return BindingSource.Custom; } }
         }
 
         private class ValueProviderMetadataAttribute : Attribute, IBindingSourceMetadata
