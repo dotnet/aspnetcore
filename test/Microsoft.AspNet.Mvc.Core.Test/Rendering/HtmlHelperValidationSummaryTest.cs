@@ -23,29 +23,29 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     { "attribute-name", "attribute-value" },
                 };
 
-                var basicDiv = "<div class=\"validation-summary-valid\" data-valmsg-summary=\"true\">" +
+                var basicDiv = "<div class=\"HtmlEncode[[validation-summary-valid]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
                     "<ul><li style=\"display:none\"></li>" + Environment.NewLine +
                     "</ul></div>";
-                var divWithAttributes = "<div attribute-name=\"attribute-value\" " +
-                    "class=\"validation-summary-valid wood smoke\" data-valmsg-summary=\"true\"><ul>" +
+                var divWithAttributes = "<div attribute-name=\"HtmlEncode[[attribute-value]]\" " +
+                    "class=\"HtmlEncode[[validation-summary-valid wood smoke]]\" data-valmsg-summary=\"HtmlEncode[[true]]\"><ul>" +
                     "<li style=\"display:none\"></li>" + Environment.NewLine +
                     "</ul></div>";
-                var divWithMessage = "<div class=\"validation-summary-valid\" data-valmsg-summary=\"true\">" +
-                    "<span>This is my message</span>" + Environment.NewLine +
+                var divWithMessage = "<div class=\"HtmlEncode[[validation-summary-valid]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
+                    "<span>HtmlEncode[[This is my message]]</span>" + Environment.NewLine +
                     "<ul><li style=\"display:none\"></li>" + Environment.NewLine +
                     "</ul></div>";
-                var divWithH3Message = "<div class=\"validation-summary-valid\" data-valmsg-summary=\"true\">" +
-                    "<h3>This is my message</h3>" + Environment.NewLine +
+                var divWithH3Message = "<div class=\"HtmlEncode[[validation-summary-valid]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
+                    "<h3>HtmlEncode[[This is my message]]</h3>" + Environment.NewLine +
                     "<ul><li style=\"display:none\"></li>" + Environment.NewLine +
                     "</ul></div>";
-                var divWithMessageAndAttributes = "<div attribute-name=\"attribute-value\" " +
-                    "class=\"validation-summary-valid wood smoke\" data-valmsg-summary=\"true\">" +
-                    "<span>This is my message</span>" + Environment.NewLine +
+                var divWithMessageAndAttributes = "<div attribute-name=\"HtmlEncode[[attribute-value]]\" " +
+                    "class=\"HtmlEncode[[validation-summary-valid wood smoke]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
+                    "<span>HtmlEncode[[This is my message]]</span>" + Environment.NewLine +
                     "<ul><li style=\"display:none\"></li>" + Environment.NewLine +
                     "</ul></div>";
-                var divWithH3MessageAndAttributes = "<div attribute-name=\"attribute-value\" " +
-                    "class=\"validation-summary-valid wood smoke\" data-valmsg-summary=\"true\">" +
-                    "<h3>This is my message</h3>" + Environment.NewLine +
+                var divWithH3MessageAndAttributes = "<div attribute-name=\"HtmlEncode[[attribute-value]]\" " +
+                    "class=\"HtmlEncode[[validation-summary-valid wood smoke]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
+                    "<h3>HtmlEncode[[This is my message]]</h3>" + Environment.NewLine +
                     "<ul><li style=\"display:none\"></li>" + Environment.NewLine +
                     "</ul></div>";
 
@@ -72,14 +72,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             get
             {
-                var basicDiv = "<div class=\"validation-summary-errors\"><ul>" +
+                var basicDiv = "<div class=\"HtmlEncode[[validation-summary-errors]]\"><ul>" +
                     "<li style=\"display:none\"></li>" + Environment.NewLine +
                     "</ul></div>";
-                var divWithError = "<div class=\"validation-summary-errors\"><ul>" +
-                    "<li>This is my validation message</li>" + Environment.NewLine +
+                var divWithError = "<div class=\"HtmlEncode[[validation-summary-errors]]\"><ul>" +
+                    "<li>HtmlEncode[[This is my validation message]]</li>" + Environment.NewLine +
                     "</ul></div>";
-                var divWithErrorAndSummary = "<div class=\"validation-summary-errors\" data-valmsg-summary=\"true\"><ul>" +
-                    "<li>This is my validation message</li>" + Environment.NewLine +
+                var divWithErrorAndSummary = "<div class=\"HtmlEncode[[validation-summary-errors]]\" data-valmsg-summary=\"HtmlEncode[[true]]\"><ul>" +
+                    "<li>HtmlEncode[[This is my validation message]]</li>" + Environment.NewLine +
                     "</ul></div>";
 
                 return new TheoryData<bool, bool, string, string>
@@ -97,25 +97,25 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             get
             {
-                var basicDiv = "<div class=\"validation-summary-errors\"><ul>" +
+                var basicDiv = "<div class=\"HtmlEncode[[validation-summary-errors]]\"><ul>" +
                     "<li style=\"display:none\"></li>" + Environment.NewLine +
                     "</ul></div>";
-                var divWithRootError = "<div class=\"validation-summary-errors\"><ul>" +
-                    "<li>This is an error for the model root.</li>" + Environment.NewLine +
-                    "<li>This is another error for the model root.</li>" + Environment.NewLine +
+                var divWithRootError = "<div class=\"HtmlEncode[[validation-summary-errors]]\"><ul>" +
+                    "<li>HtmlEncode[[This is an error for the model root.]]</li>" + Environment.NewLine +
+                    "<li>HtmlEncode[[This is another error for the model root.]]</li>" + Environment.NewLine +
                     "</ul></div>";
-                var divWithProperty3Error = "<div class=\"validation-summary-errors\"><ul>" +
-                    "<li>This is an error for Property3.</li>" + Environment.NewLine +
+                var divWithProperty3Error = "<div class=\"HtmlEncode[[validation-summary-errors]]\"><ul>" +
+                    "<li>HtmlEncode[[This is an error for Property3.]]</li>" + Environment.NewLine +
                     "</ul></div>";
-                var divWithAllErrors = "<div class=\"validation-summary-errors\" data-valmsg-summary=\"true\"><ul>" +
-                    "<li>This is an error for Property3.Property2.</li>" + Environment.NewLine +
-                    "<li>This is an error for Property3.OrderedProperty3.</li>" + Environment.NewLine +
-                    "<li>This is an error for Property3.OrderedProperty2.</li>" + Environment.NewLine +
-                    "<li>This is an error for Property3.</li>" + Environment.NewLine +
-                    "<li>This is an error for Property2.</li>" + Environment.NewLine +
-                    "<li>This is another error for Property2.</li>" + Environment.NewLine +
-                    "<li>This is an error for the model root.</li>" + Environment.NewLine +
-                    "<li>This is another error for the model root.</li>" + Environment.NewLine +
+                var divWithAllErrors = "<div class=\"HtmlEncode[[validation-summary-errors]]\" data-valmsg-summary=\"HtmlEncode[[true]]\"><ul>" +
+                    "<li>HtmlEncode[[This is an error for Property3.Property2.]]</li>" + Environment.NewLine +
+                    "<li>HtmlEncode[[This is an error for Property3.OrderedProperty3.]]</li>" + Environment.NewLine +
+                    "<li>HtmlEncode[[This is an error for Property3.OrderedProperty2.]]</li>" + Environment.NewLine +
+                    "<li>HtmlEncode[[This is an error for Property3.]]</li>" + Environment.NewLine +
+                    "<li>HtmlEncode[[This is an error for Property2.]]</li>" + Environment.NewLine +
+                    "<li>HtmlEncode[[This is another error for Property2.]]</li>" + Environment.NewLine +
+                    "<li>HtmlEncode[[This is an error for the model root.]]</li>" + Environment.NewLine +
+                    "<li>HtmlEncode[[This is another error for the model root.]]</li>" + Environment.NewLine +
                     "</ul></div>";
 
                 return new TheoryData<bool, string, string>
@@ -304,18 +304,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void ValidationSummary_ErrorsInModelUsingOrder_SortsErrorsAsExpected()
         {
             // Arrange
-            var expected = "<div class=\"validation-summary-errors\" data-valmsg-summary=\"true\"><ul>" +
-                "<li>This is an error for OrderedProperty3.</li>" + Environment.NewLine +
-                "<li>This is an error for OrderedProperty2.</li>" + Environment.NewLine +
-                "<li>This is another error for OrderedProperty2.</li>" + Environment.NewLine +
-                "<li>This is yet-another error for OrderedProperty2.</li>" + Environment.NewLine +
-                "<li>This is an error for OrderedProperty1.</li>" + Environment.NewLine +
-                "<li>This is an error for Property3.</li>" + Environment.NewLine +
-                "<li>This is an error for Property2.</li>" + Environment.NewLine +
-                "<li>This is another error for Property2.</li>" + Environment.NewLine +
-                "<li>This is an error for Property1.</li>" + Environment.NewLine +
-                "<li>This is another error for Property1.</li>" + Environment.NewLine +
-                "<li>This is an error for LastProperty.</li>" + Environment.NewLine +
+            var expected = "<div class=\"HtmlEncode[[validation-summary-errors]]\" data-valmsg-summary=\"HtmlEncode[[true]]\"><ul>" +
+                "<li>HtmlEncode[[This is an error for OrderedProperty3.]]</li>" + Environment.NewLine +
+                "<li>HtmlEncode[[This is an error for OrderedProperty2.]]</li>" + Environment.NewLine +
+                "<li>HtmlEncode[[This is another error for OrderedProperty2.]]</li>" + Environment.NewLine +
+                "<li>HtmlEncode[[This is yet-another error for OrderedProperty2.]]</li>" + Environment.NewLine +
+                "<li>HtmlEncode[[This is an error for OrderedProperty1.]]</li>" + Environment.NewLine +
+                "<li>HtmlEncode[[This is an error for Property3.]]</li>" + Environment.NewLine +
+                "<li>HtmlEncode[[This is an error for Property2.]]</li>" + Environment.NewLine +
+                "<li>HtmlEncode[[This is another error for Property2.]]</li>" + Environment.NewLine +
+                "<li>HtmlEncode[[This is an error for Property1.]]</li>" + Environment.NewLine +
+                "<li>HtmlEncode[[This is another error for Property1.]]</li>" + Environment.NewLine +
+                "<li>HtmlEncode[[This is an error for LastProperty.]]</li>" + Environment.NewLine +
                 "</ul></div>";
 
             var model = new OrderedModel();

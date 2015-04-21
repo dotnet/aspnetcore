@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                         object htmlAttributes)
         {
             //Arrange
-            string expectedLink = string.Format(@"<a href=""{0}{1}{2}{3}{4}{5}""{6}>Details</a>",
+            string expectedLink = string.Format(@"<a href=""HtmlEncode[[{0}{1}{2}{3}{4}{5}]]""{6}>HtmlEncode[[Details]]</a>",
                                                                 protocol,
                                                                 hostname,
                                                                 controller,
@@ -53,6 +53,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                                                 GetRouteValuesAsString(routeValues),
                                                                 fragment,
                                                                 GetHtmlAttributesAsString(htmlAttributes));
+            expectedLink = expectedLink.Replace("HtmlEncode[[]]", "");
 
             var urlHelper = new Mock<IUrlHelper>();
             urlHelper.Setup(h => h.Action(It.IsAny<UrlActionContext>()))
@@ -111,12 +112,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                         object htmlAttributes)
         {
             //Arrange
-            string expectedLink = string.Format(@"<a href=""{0}{1}{2}{3}""{4}>Details</a>",
+            string expectedLink = string.Format(@"<a href=""HtmlEncode[[{0}{1}{2}{3}]]""{4}>HtmlEncode[[Details]]</a>",
                                                                     protocol,
                                                                     hostname,
                                                                     GetRouteValuesAsString(routeValues),
                                                                     fragment,
                                                                     GetHtmlAttributesAsString(htmlAttributes));
+            expectedLink = expectedLink.Replace("HtmlEncode[[]]", "");
 
             var urlHelper = new Mock<IUrlHelper>();
             urlHelper
@@ -153,7 +155,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private string GetHtmlAttributesAsString(object routeValues)
         {
             var dict = TypeHelper.ObjectToDictionary(routeValues);
-            return string.Join(string.Empty, dict.Select(kvp => string.Format(" {0}=\"{1}\"", kvp.Key, kvp.Value.ToString())));
+            return string.Join(string.Empty, dict.Select(kvp => string.Format(" {0}=\"HtmlEncode[[{1}]]\"", kvp.Key, kvp.Value.ToString())));
         }
     }
 }

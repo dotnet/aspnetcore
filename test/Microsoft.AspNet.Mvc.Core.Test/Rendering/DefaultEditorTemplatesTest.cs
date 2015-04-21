@@ -34,8 +34,8 @@ namespace Microsoft.AspNet.Mvc.Core
                     { string.Empty, "__TextBox__ class='text-box single-line'" },
                     { "EmailAddress", "__TextBox__ class='text-box single-line' type='email'" },
                     { "emailaddress", "__TextBox__ class='text-box single-line' type='email'" },
-                    { "HiddenInput", "True__Hidden__" }, // Hidden also generates value by default.
-                    { "HIDDENINPUT", "True__Hidden__" },
+                    { "HiddenInput", "HtmlEncode[[True]]__Hidden__" }, // Hidden also generates value by default.
+                    { "HIDDENINPUT", "HtmlEncode[[True]]__Hidden__" },
                     { "MultilineText", "__TextArea__ class='text-box multi-line'" },
                     { "multilinetext", "__TextArea__ class='text-box multi-line'" },
                     { "Password", "__Password__ class='text-box single-line password'" },
@@ -91,15 +91,15 @@ namespace Microsoft.AspNet.Mvc.Core
         public void ObjectTemplateEditsSimplePropertiesOnObjectByDefault()
         {
             var expected =
-                "<div class=\"editor-label\"><label for=\"Property1\">Property1</label></div>" + Environment.NewLine
-              + "<div class=\"editor-field\">Model = p1, ModelType = System.String, PropertyName = Property1," +
+                "<div class=\"HtmlEncode[[editor-label]]\"><label for=\"HtmlEncode[[Property1]]\">HtmlEncode[[Property1]]</label></div>" + Environment.NewLine
+              + "<div class=\"HtmlEncode[[editor-field]]\">Model = p1, ModelType = System.String, PropertyName = Property1," +
                     " SimpleDisplayText = p1 " +
-                    "<span class=\"field-validation-valid\" data-valmsg-for=\"Property1\" data-valmsg-replace=\"true\">" +
+                    "<span class=\"HtmlEncode[[field-validation-valid]]\" data-valmsg-for=\"HtmlEncode[[Property1]]\" data-valmsg-replace=\"HtmlEncode[[true]]\">" +
                     "</span></div>" + Environment.NewLine
-              + "<div class=\"editor-label\"><label for=\"Property2\">Property2</label></div>" + Environment.NewLine
-              + "<div class=\"editor-field\">Model = (null), ModelType = System.String, PropertyName = Property2," +
+              + "<div class=\"HtmlEncode[[editor-label]]\"><label for=\"HtmlEncode[[Property2]]\">HtmlEncode[[Property2]]</label></div>" + Environment.NewLine
+              + "<div class=\"HtmlEncode[[editor-field]]\">Model = (null), ModelType = System.String, PropertyName = Property2," +
                     " SimpleDisplayText = (null) " +
-                    "<span class=\"field-validation-valid\" data-valmsg-for=\"Property2\" data-valmsg-replace=\"true\">" +
+                    "<span class=\"HtmlEncode[[field-validation-valid]]\" data-valmsg-for=\"HtmlEncode[[Property2]]\" data-valmsg-replace=\"HtmlEncode[[true]]\">" +
                     "</span></div>" + Environment.NewLine;
 
             // Arrange
@@ -174,15 +174,15 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             // Arrange
             var expected =
-@"<div class=""editor-label""><label for=""Property1"">Property1</label></div>" +
+@"<div class=""HtmlEncode[[editor-label]]""><label for=""HtmlEncode[[Property1]]"">HtmlEncode[[Property1]]</label></div>" +
 Environment.NewLine +
-@"<div class=""editor-field""><input class=""text-box single-line"" id=""Property1"" name=""Property1"" type=""text"" value="""" /> " +
-@"<span class=""field-validation-valid"" data-valmsg-for=""Property1"" data-valmsg-replace=""true""></span></div>" +
+@"<div class=""HtmlEncode[[editor-field]]""><input class=""HtmlEncode[[text-box single-line]]"" id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[text]]"" value="""" /> " +
+@"<span class=""HtmlEncode[[field-validation-valid]]"" data-valmsg-for=""HtmlEncode[[Property1]]"" data-valmsg-replace=""HtmlEncode[[true]]""></span></div>" +
 Environment.NewLine +
-@"<div class=""editor-label""><label for=""Property3"">Property3</label></div>" +
+@"<div class=""HtmlEncode[[editor-label]]""><label for=""HtmlEncode[[Property3]]"">HtmlEncode[[Property3]]</label></div>" +
 Environment.NewLine +
-@"<div class=""editor-field""><input class=""text-box single-line"" id=""Property3"" name=""Property3"" type=""text"" value="""" /> " +
-@"<span class=""field-validation-valid"" data-valmsg-for=""Property3"" data-valmsg-replace=""true""></span></div>" +
+@"<div class=""HtmlEncode[[editor-field]]""><input class=""HtmlEncode[[text-box single-line]]"" id=""HtmlEncode[[Property3]]"" name=""HtmlEncode[[Property3]]"" type=""HtmlEncode[[text]]"" value="""" /> " +
+@"<span class=""HtmlEncode[[field-validation-valid]]"" data-valmsg-for=""HtmlEncode[[Property3]]"" data-valmsg-replace=""HtmlEncode[[true]]""></span></div>" +
 Environment.NewLine;
 
             var model = new DefaultTemplatesUtilities.ObjectWithScaffoldColumn();
@@ -204,11 +204,11 @@ Environment.NewLine;
             // Arrange
             var expected =
                 "Model = p1, ModelType = System.String, PropertyName = Property1, SimpleDisplayText = p1" +
-                "<div class=\"editor-label\"><label for=\"Property2\">Property2</label></div>" +
+                "<div class=\"HtmlEncode[[editor-label]]\"><label for=\"HtmlEncode[[Property2]]\">HtmlEncode[[Property2]]</label></div>" +
                 Environment.NewLine +
-                "<div class=\"editor-field\">" +
+                "<div class=\"HtmlEncode[[editor-field]]\">" +
                     "Model = (null), ModelType = System.String, PropertyName = Property2, SimpleDisplayText = (null) " +
-                    "<span class=\"field-validation-valid\" data-valmsg-for=\"Property2\" data-valmsg-replace=\"true\">" +
+                    "<span class=\"HtmlEncode[[field-validation-valid]]\" data-valmsg-for=\"HtmlEncode[[Property2]]\" data-valmsg-replace=\"HtmlEncode[[true]]\">" +
                     "</span></div>" +
                 Environment.NewLine;
 
@@ -250,15 +250,15 @@ Environment.NewLine;
             {
                 var label = string.Format(
                     CultureInfo.InvariantCulture,
-                    "<div class=\"editor-label\"><label for=\"{0}\">{0}</label></div>",
+                    "<div class=\"HtmlEncode[[editor-label]]\"><label for=\"HtmlEncode[[{0}]]\">HtmlEncode[[{0}]]</label></div>",
                     property);
                 stringBuilder.AppendLine(label);
 
                 var value = string.Format(
                     CultureInfo.InvariantCulture,
-                    "<div class=\"editor-field\">Model = (null), ModelType = System.String, PropertyName = {0}, " +
+                    "<div class=\"HtmlEncode[[editor-field]]\">Model = (null), ModelType = System.String, PropertyName = {0}, " +
                     "SimpleDisplayText = (null) " +
-                    "<span class=\"field-validation-valid\" data-valmsg-for=\"{0}\" data-valmsg-replace=\"true\">" +
+                    "<span class=\"HtmlEncode[[field-validation-valid]]\" data-valmsg-for=\"HtmlEncode[[{0}]]\" data-valmsg-replace=\"HtmlEncode[[true]]\">" +
                     "</span></div>",
                     property);
                 stringBuilder.AppendLine(value);
@@ -277,7 +277,7 @@ Environment.NewLine;
         {
             // Arrange
             var expected =
-                "Formatted string<input id=\"FieldPrefix\" name=\"FieldPrefix\" type=\"hidden\" value=\"Model string\" />";
+                "HtmlEncode[[Formatted string]]<input id=\"HtmlEncode[[FieldPrefix]]\" name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[hidden]]\" value=\"HtmlEncode[[Model string]]\" />";
 
             var model = "Model string";
             var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
@@ -298,7 +298,7 @@ Environment.NewLine;
         public void HiddenInputTemplate_HonoursHideSurroundingHtml()
         {
             // Arrange
-            var expected = "<input id=\"FieldPrefix\" name=\"FieldPrefix\" type=\"hidden\" value=\"Model string\" />";
+            var expected = "<input id=\"HtmlEncode[[FieldPrefix]]\" name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[hidden]]\" value=\"HtmlEncode[[Model string]]\" />";
 
             var model = "Model string";
 
@@ -326,9 +326,9 @@ Environment.NewLine;
         {
             // Arrange
             var expected =
-                "<textarea class=\"text-box multi-line\" id=\"FieldPrefix\" name=\"FieldPrefix\">" +
+                "<textarea class=\"HtmlEncode[[text-box multi-line]]\" id=\"HtmlEncode[[FieldPrefix]]\" name=\"HtmlEncode[[FieldPrefix]]\">" +
                 Environment.NewLine +
-                "Formatted string</textarea>";
+                "HtmlEncode[[Formatted string]]</textarea>";
 
             var model = "Model string";
             var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
@@ -575,22 +575,22 @@ Environment.NewLine;
 
             // Assert
             Assert.Equal(
-                "<input class=\"text-box single-line\" id=\"Property1\" name=\"Property1\" type=\"text\" value=\"ViewData string\" />",
+                "<input class=\"HtmlEncode[[text-box single-line]]\" id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\" type=\"HtmlEncode[[text]]\" value=\"HtmlEncode[[ViewData string]]\" />",
                 result.ToString());
         }
 
         // DateTime-local is not special-cased unless using Html5DateRenderingMode.Rfc3339.
         [Theory]
         [InlineData("date", "{0:d}", "02/01/2000")]
-        [InlineData("datetime", null, "02/01/2000 03:04:05 &#x2B;00:00")]
-        [InlineData("datetime-local", null, "02/01/2000 03:04:05 &#x2B;00:00")]
+        [InlineData("datetime", null, "02/01/2000 03:04:05 +00:00")]
+        [InlineData("datetime-local", null, "02/01/2000 03:04:05 +00:00")]
         [InlineData("time", "{0:t}", "03:04")]
         [ReplaceCulture]
         public void Editor_FindsCorrectDateOrTimeTemplate(string dataTypeName, string editFormatString, string expected)
         {
             // Arrange
-            var expectedInput = "<input class=\"text-box single-line\" id=\"FieldPrefix\" name=\"FieldPrefix\" type=\"" +
-                dataTypeName + "\" value=\"" + expected + "\" />";
+            var expectedInput = "<input class=\"HtmlEncode[[text-box single-line]]\" id=\"HtmlEncode[[FieldPrefix]]\" name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[" +
+                dataTypeName + "]]\" value=\"HtmlEncode[[" + expected + "]]\" />";
             var offset = TimeSpan.FromHours(0);
             var model = new DateTimeOffset(
                 year: 2000,
@@ -629,15 +629,15 @@ Environment.NewLine;
 
         [Theory]
         [InlineData("date", "{0:d}", "2000-01-02")]
-        [InlineData("datetime", null, "2000-01-02T03:04:05.060&#x2B;00:00")]
+        [InlineData("datetime", null, "2000-01-02T03:04:05.060+00:00")]
         [InlineData("datetime-local", null, "2000-01-02T03:04:05.060")]
         [InlineData("time", "{0:t}", "03:04:05.060")]
         [ReplaceCulture]
         public void Editor_AppliesRfc3339(string dataTypeName, string editFormatString, string expected)
         {
             // Arrange
-            var expectedInput = "<input class=\"text-box single-line\" id=\"FieldPrefix\" name=\"FieldPrefix\" type=\"" +
-                dataTypeName + "\" value=\"" + expected + "\" />";
+            var expectedInput = "<input class=\"HtmlEncode[[text-box single-line]]\" id=\"HtmlEncode[[FieldPrefix]]\" name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[" +
+                dataTypeName + "]]\" value=\"HtmlEncode[[" + expected + "]]\" />";
 
             // Place DateTime-local value in current timezone.
             var offset = string.Equals("", dataTypeName) ? DateTimeOffset.Now.Offset : TimeSpan.FromHours(0);
@@ -689,8 +689,8 @@ Environment.NewLine;
         public void Editor_AppliesNonDefaultEditFormat(string dataTypeName, Html5DateRenderingMode renderingMode)
         {
             // Arrange
-            var expectedInput = "<input class=\"text-box single-line\" id=\"FieldPrefix\" name=\"FieldPrefix\" type=\"" +
-                dataTypeName + "\" value=\"Formatted as 2000-01-02T03:04:05.0600000&#x2B;00:00\" />";
+            var expectedInput = "<input class=\"HtmlEncode[[text-box single-line]]\" id=\"HtmlEncode[[FieldPrefix]]\" name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[" +
+                dataTypeName + "]]\" value=\"HtmlEncode[[Formatted as 2000-01-02T03:04:05.0600000+00:00]]\" />";
             var offset = TimeSpan.FromHours(0);
             var model = new DateTimeOffset(
                 year: 2000,
@@ -748,7 +748,7 @@ Environment.NewLine;
 
             // Assert
             Assert.Equal(
-                "<input class=\"text-box single-line\" id=\"Property1\" name=\"Property1\" type=\"text\" value=\"Model string\" />",
+                "<input class=\"HtmlEncode[[text-box single-line]]\" id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\" type=\"HtmlEncode[[text]]\" value=\"HtmlEncode[[Model string]]\" />",
                 result.ToString());
         }
 
@@ -768,7 +768,7 @@ Environment.NewLine;
 
             // Assert
             Assert.Equal(
-                "<input class=\"text-box single-line\" id=\"Property1\" name=\"Property1\" type=\"text\" value=\"Model string\" />",
+                "<input class=\"HtmlEncode[[text-box single-line]]\" id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\" type=\"HtmlEncode[[text]]\" value=\"HtmlEncode[[Model string]]\" />",
                 result.ToString());
         }
 
@@ -791,7 +791,7 @@ Environment.NewLine;
 
             // Assert
             Assert.Equal(
-                "<input class=\"text-box single-line\" id=\"Property1\" name=\"Property1\" type=\"text\" value=\"\" />",
+                "<input class=\"HtmlEncode[[text-box single-line]]\" id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\" type=\"HtmlEncode[[text]]\" value=\"\" />",
                 result.ToString());
         }
 

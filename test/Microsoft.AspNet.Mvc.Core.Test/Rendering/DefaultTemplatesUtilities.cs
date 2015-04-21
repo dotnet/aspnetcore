@@ -14,6 +14,7 @@ using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.WebEncoders;
+using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -193,7 +194,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     optionsAccessor.Object,
                     provider,
                     urlHelper,
-                    new HtmlEncoder());
+                    new CommonTestEncoder());
             }
 
             // TemplateRenderer will Contextualize this transient service.
@@ -201,7 +202,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlGenerator,
                 viewEngine,
                 provider,
-                new HtmlEncoder(),
+                new CommonTestEncoder(),
                 new UrlEncoder(),
                 new JavaScriptStringEncoder());
             if (innerHelperWrapper != null)
@@ -216,7 +217,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlGenerator,
                 viewEngine,
                 provider,
-                new HtmlEncoder(),
+                new CommonTestEncoder(),
                 new UrlEncoder(),
                 new JavaScriptStringEncoder());
             var viewContext = new ViewContext(actionContext, Mock.Of<IView>(), viewData, null, new StringWriter());
@@ -267,7 +268,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 dataProtectionProvider.Object,
                 additionalDataProvider.Object,
                 optionsAccessor.Object,
-                new HtmlEncoder(),
+                new CommonTestEncoder(),
                 mockDataProtectionOptions.Object);
         }
 

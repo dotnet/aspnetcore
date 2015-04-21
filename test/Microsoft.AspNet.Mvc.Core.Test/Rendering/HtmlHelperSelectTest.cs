@@ -69,93 +69,93 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 {
                     {
                         BasicSelectList,
-                        "<select id=\"Property1\" name=\"Property1\"><option value=\"0\">Zero</option>" +
+                        "<select id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\"><option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" +
                         Environment.NewLine +
-                        "<option value=\"1\">One</option>" + Environment.NewLine +
-                        "<option value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</select>",
-                        "<select id=\"Property1\" name=\"Property1\"><option value=\"0\">Zero</option>" +
+                        "<select id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\"><option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" +
                         Environment.NewLine +
-                        "<option value=\"1\">One</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</select>"
                     },
                     {
                         SomeDisabledOneSelectedSelectList,
-                        "<select id=\"Property1\" name=\"Property1\"><option value=\"0\">Zero</option>" +
+                        "<select id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\"><option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" +
                         Environment.NewLine +
-                        "<option disabled=\"disabled\" selected=\"selected\" value=\"1\">One</option>" +
+                        "<option disabled=\"HtmlEncode[[disabled]]\" selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" +
                         Environment.NewLine +
-                        "<option value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option disabled=\"disabled\" value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option disabled=\"HtmlEncode[[disabled]]\" value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</select>",
-                        "<select id=\"Property1\" name=\"Property1\"><option value=\"0\">Zero</option>" +
+                        "<select id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\"><option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" +
                         Environment.NewLine +
-                        "<option disabled=\"disabled\" value=\"1\">One</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option disabled=\"disabled\" value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option disabled=\"HtmlEncode[[disabled]]\" value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option disabled=\"HtmlEncode[[disabled]]\" value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</select>"
                     },
                     {
                         SomeGroupedSomeSelectedSelectList,
-                        "<select id=\"Property1\" name=\"Property1\"><optgroup label=\"Group One\">" +
+                        "<select id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\"><optgroup label=\"HtmlEncode[[Group One]]\">" +
                         Environment.NewLine +
-                        "<option selected=\"selected\" value=\"0\">Zero</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"2\">Two</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
-                        "<optgroup label=\"Group Two\">" + Environment.NewLine +
-                        "<option value=\"1\">One</option>" + Environment.NewLine +
+                        "<optgroup label=\"HtmlEncode[[Group Two]]\">" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
-                        "<option value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</select>",
-                        "<select id=\"Property1\" name=\"Property1\"><optgroup label=\"Group One\">" +
+                        "<select id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\"><optgroup label=\"HtmlEncode[[Group One]]\">" +
                         Environment.NewLine +
-                        "<option value=\"0\">Zero</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"2\">Two</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
-                        "<optgroup label=\"Group Two\">" + Environment.NewLine +
-                        "<option value=\"1\">One</option>" + Environment.NewLine +
+                        "<optgroup label=\"HtmlEncode[[Group Two]]\">" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
-                        "<option value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</select>"
                     },
                     {
                         OneGroupSomeSelectedSelectList,
-                        "<select id=\"Property1\" name=\"Property1\"><optgroup label=\"Group One\">" +
+                        "<select id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\"><optgroup label=\"HtmlEncode[[Group One]]\">" +
                         Environment.NewLine +
-                        "<option selected=\"selected\" value=\"0\">Zero</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"1\">One</option>" + Environment.NewLine +
-                        "<option value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
                         "</select>",
-                        "<select id=\"Property1\" name=\"Property1\"><optgroup label=\"Group One\">" +
+                        "<select id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\"><optgroup label=\"HtmlEncode[[Group One]]\">" +
                         Environment.NewLine +
-                        "<option value=\"0\">Zero</option>" + Environment.NewLine +
-                        "<option value=\"1\">One</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
                         "</select>"
                     },
                     {
                         OneDisabledGroupAllSelectedSelectList,
-                        "<select id=\"Property1\" name=\"Property1\"><optgroup disabled=\"disabled\" label=\"Disabled Group\">" +
+                        "<select id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\"><optgroup disabled=\"HtmlEncode[[disabled]]\" label=\"HtmlEncode[[Disabled Group]]\">" +
                         Environment.NewLine +
-                        "<option selected=\"selected\" value=\"0\">Zero</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"1\">One</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
                         "</select>",
-                        "<select id=\"Property1\" name=\"Property1\"><optgroup disabled=\"disabled\" label=\"Disabled Group\">" +
+                        "<select id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\"><optgroup disabled=\"HtmlEncode[[disabled]]\" label=\"HtmlEncode[[Disabled Group]]\">" +
                         Environment.NewLine +
-                        "<option value=\"0\">Zero</option>" + Environment.NewLine +
-                        "<option value=\"1\">One</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
                         "</select>"
                     },
@@ -172,131 +172,131 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 {
                     {
                         BasicSelectList,
-                        "<select id=\"Property1\" multiple=\"multiple\" name=\"Property1\"><option value=\"0\">Zero</option>" +
+                        "<select id=\"HtmlEncode[[Property1]]\" multiple=\"HtmlEncode[[multiple]]\" name=\"HtmlEncode[[Property1]]\"><option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" +
                         Environment.NewLine +
-                        "<option value=\"1\">One</option>" + Environment.NewLine +
-                        "<option value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</select>",
-                        "<select id=\"Property1\" multiple=\"multiple\" name=\"Property1\"><option value=\"0\">Zero</option>" +
+                        "<select id=\"HtmlEncode[[Property1]]\" multiple=\"HtmlEncode[[multiple]]\" name=\"HtmlEncode[[Property1]]\"><option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" +
                         Environment.NewLine +
-                        "<option value=\"1\">One</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</select>",
-                        "<select id=\"Property1\" multiple=\"multiple\" name=\"Property1\"><option value=\"0\">Zero</option>" +
+                        "<select id=\"HtmlEncode[[Property1]]\" multiple=\"HtmlEncode[[multiple]]\" name=\"HtmlEncode[[Property1]]\"><option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" +
                         Environment.NewLine +
-                        "<option selected=\"selected\" value=\"1\">One</option>" + Environment.NewLine +
-                        "<option value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</select>"
                     },
                     {
                         SomeDisabledOneSelectedSelectList,
-                        "<select id=\"Property1\" multiple=\"multiple\" name=\"Property1\"><option value=\"0\">Zero</option>" +
+                        "<select id=\"HtmlEncode[[Property1]]\" multiple=\"HtmlEncode[[multiple]]\" name=\"HtmlEncode[[Property1]]\"><option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" +
                         Environment.NewLine +
-                        "<option disabled=\"disabled\" selected=\"selected\" value=\"1\">One</option>" +
+                        "<option disabled=\"HtmlEncode[[disabled]]\" selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" +
                         Environment.NewLine +
-                        "<option value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option disabled=\"disabled\" value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option disabled=\"HtmlEncode[[disabled]]\" value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</select>",
-                        "<select id=\"Property1\" multiple=\"multiple\" name=\"Property1\"><option value=\"0\">Zero</option>" +
+                        "<select id=\"HtmlEncode[[Property1]]\" multiple=\"HtmlEncode[[multiple]]\" name=\"HtmlEncode[[Property1]]\"><option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" +
                         Environment.NewLine +
-                        "<option disabled=\"disabled\" value=\"1\">One</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option disabled=\"disabled\" value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option disabled=\"HtmlEncode[[disabled]]\" value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option disabled=\"HtmlEncode[[disabled]]\" value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</select>",
-                        "<select id=\"Property1\" multiple=\"multiple\" name=\"Property1\"><option value=\"0\">Zero</option>" +
+                        "<select id=\"HtmlEncode[[Property1]]\" multiple=\"HtmlEncode[[multiple]]\" name=\"HtmlEncode[[Property1]]\"><option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" +
                         Environment.NewLine +
-                        "<option disabled=\"disabled\" selected=\"selected\" value=\"1\">One</option>" + Environment.NewLine +
-                        "<option value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option disabled=\"disabled\" selected=\"selected\" value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option disabled=\"HtmlEncode[[disabled]]\" selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option disabled=\"HtmlEncode[[disabled]]\" selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</select>"
                     },
                     {
                         SomeGroupedSomeSelectedSelectList,
-                        "<select id=\"Property1\" multiple=\"multiple\" name=\"Property1\"><optgroup label=\"Group One\">" +
+                        "<select id=\"HtmlEncode[[Property1]]\" multiple=\"HtmlEncode[[multiple]]\" name=\"HtmlEncode[[Property1]]\"><optgroup label=\"HtmlEncode[[Group One]]\">" +
                         Environment.NewLine +
-                        "<option selected=\"selected\" value=\"0\">Zero</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"2\">Two</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
-                        "<optgroup label=\"Group Two\">" + Environment.NewLine +
-                        "<option value=\"1\">One</option>" + Environment.NewLine +
+                        "<optgroup label=\"HtmlEncode[[Group Two]]\">" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
-                        "<option value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</select>",
-                        "<select id=\"Property1\" multiple=\"multiple\" name=\"Property1\"><optgroup label=\"Group One\">" +
+                        "<select id=\"HtmlEncode[[Property1]]\" multiple=\"HtmlEncode[[multiple]]\" name=\"HtmlEncode[[Property1]]\"><optgroup label=\"HtmlEncode[[Group One]]\">" +
                         Environment.NewLine +
-                        "<option value=\"0\">Zero</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"2\">Two</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
-                        "<optgroup label=\"Group Two\">" + Environment.NewLine +
-                        "<option value=\"1\">One</option>" + Environment.NewLine +
+                        "<optgroup label=\"HtmlEncode[[Group Two]]\">" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
-                        "<option value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</select>",
-                        "<select id=\"Property1\" multiple=\"multiple\" name=\"Property1\"><optgroup label=\"Group One\">" +
+                        "<select id=\"HtmlEncode[[Property1]]\" multiple=\"HtmlEncode[[multiple]]\" name=\"HtmlEncode[[Property1]]\"><optgroup label=\"HtmlEncode[[Group One]]\">" +
                         Environment.NewLine +
-                        "<option value=\"0\">Zero</option>" + Environment.NewLine +
-                        "<option value=\"2\">Two</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
-                        "<optgroup label=\"Group Two\">" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"1\">One</option>" + Environment.NewLine +
+                        "<optgroup label=\"HtmlEncode[[Group Two]]\">" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</select>"
                     },
                     {
                         OneGroupSomeSelectedSelectList,
-                        "<select id=\"Property1\" multiple=\"multiple\" name=\"Property1\"><optgroup label=\"Group One\">" +
+                        "<select id=\"HtmlEncode[[Property1]]\" multiple=\"HtmlEncode[[multiple]]\" name=\"HtmlEncode[[Property1]]\"><optgroup label=\"HtmlEncode[[Group One]]\">" +
                         Environment.NewLine +
-                        "<option selected=\"selected\" value=\"0\">Zero</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"1\">One</option>" + Environment.NewLine +
-                        "<option value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
                         "</select>",
-                        "<select id=\"Property1\" multiple=\"multiple\" name=\"Property1\"><optgroup label=\"Group One\">" +
+                        "<select id=\"HtmlEncode[[Property1]]\" multiple=\"HtmlEncode[[multiple]]\" name=\"HtmlEncode[[Property1]]\"><optgroup label=\"HtmlEncode[[Group One]]\">" +
                         Environment.NewLine +
-                        "<option value=\"0\">Zero</option>" + Environment.NewLine +
-                        "<option value=\"1\">One</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
                         "</select>",
-                        "<select id=\"Property1\" multiple=\"multiple\" name=\"Property1\"><optgroup label=\"Group One\">" +
+                        "<select id=\"HtmlEncode[[Property1]]\" multiple=\"HtmlEncode[[multiple]]\" name=\"HtmlEncode[[Property1]]\"><optgroup label=\"HtmlEncode[[Group One]]\">" +
                         Environment.NewLine +
-                        "<option value=\"0\">Zero</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"1\">One</option>" + Environment.NewLine +
-                        "<option value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"3\">Three</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
                         "</select>"
                     },
                     {
                         OneDisabledGroupAllSelectedSelectList,
-                        "<select id=\"Property1\" multiple=\"multiple\" name=\"Property1\">" +
-                        "<optgroup disabled=\"disabled\" label=\"Disabled Group\">" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"0\">Zero</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"1\">One</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"3\">Three</option>" + Environment.NewLine +
+                        "<select id=\"HtmlEncode[[Property1]]\" multiple=\"HtmlEncode[[multiple]]\" name=\"HtmlEncode[[Property1]]\">" +
+                        "<optgroup disabled=\"HtmlEncode[[disabled]]\" label=\"HtmlEncode[[Disabled Group]]\">" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
                         "</select>",
-                        "<select id=\"Property1\" multiple=\"multiple\" name=\"Property1\">" +
-                        "<optgroup disabled=\"disabled\" label=\"Disabled Group\">" + Environment.NewLine +
-                        "<option value=\"0\">Zero</option>" + Environment.NewLine +
-                        "<option value=\"1\">One</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option value=\"3\">Three</option>" + Environment.NewLine +
+                        "<select id=\"HtmlEncode[[Property1]]\" multiple=\"HtmlEncode[[multiple]]\" name=\"HtmlEncode[[Property1]]\">" +
+                        "<optgroup disabled=\"HtmlEncode[[disabled]]\" label=\"HtmlEncode[[Disabled Group]]\">" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
                         "</select>",
-                        "<select id=\"Property1\" multiple=\"multiple\" name=\"Property1\">" +
-                        "<optgroup disabled=\"disabled\" label=\"Disabled Group\">" + Environment.NewLine +
-                        "<option value=\"0\">Zero</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"1\">One</option>" + Environment.NewLine +
-                        "<option value=\"2\">Two</option>" + Environment.NewLine +
-                        "<option selected=\"selected\" value=\"3\">Three</option>" + Environment.NewLine +
+                        "<select id=\"HtmlEncode[[Property1]]\" multiple=\"HtmlEncode[[multiple]]\" name=\"HtmlEncode[[Property1]]\">" +
+                        "<optgroup disabled=\"HtmlEncode[[disabled]]\" label=\"HtmlEncode[[Disabled Group]]\">" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                        "<option value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                        "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                         "</optgroup>" + Environment.NewLine +
                         "</select>"
                     },
@@ -476,11 +476,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var selectList = SomeDisabledOneSelectedSelectList;
             var savedSelected = selectList.Select(item => item.Selected).ToList();
             var expectedHtml =
-                "<select id=\"Property1_2_\" name=\"Property1[2]\"><option value=\"0\">Zero</option>" +
+                "<select id=\"HtmlEncode[[Property1_2_]]\" name=\"HtmlEncode[[Property1[2]]]\"><option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" +
                 Environment.NewLine +
-                "<option disabled=\"disabled\" value=\"1\">One</option>" + Environment.NewLine +
-                "<option selected=\"selected\" value=\"2\">Two</option>" + Environment.NewLine +
-                "<option disabled=\"disabled\" value=\"3\">Three</option>" + Environment.NewLine +
+                "<option disabled=\"HtmlEncode[[disabled]]\" value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                "<option disabled=\"HtmlEncode[[disabled]]\" value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                 "</select>";
 
             // Act
@@ -504,10 +504,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var selectList = SomeDisabledOneSelectedSelectList;
             var savedSelected = selectList.Select(item => item.Selected).ToList();
             var expectedHtml =
-                "<select id=\"unrelated\" name=\"unrelated\"><option value=\"0\">Zero</option>" + Environment.NewLine +
-                "<option disabled=\"disabled\" value=\"1\">One</option>" + Environment.NewLine +
-                "<option selected=\"selected\" value=\"2\">Two</option>" + Environment.NewLine +
-                "<option disabled=\"disabled\" value=\"3\">Three</option>" + Environment.NewLine +
+                "<select id=\"HtmlEncode[[unrelated]]\" name=\"HtmlEncode[[unrelated]]\"><option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" + Environment.NewLine +
+                "<option disabled=\"HtmlEncode[[disabled]]\" value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                "<option disabled=\"HtmlEncode[[disabled]]\" value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                 "</select>";
 
             // Act
@@ -638,11 +638,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var selectList = SomeDisabledOneSelectedSelectList;
             var savedSelected = selectList.Select(item => item.Selected).ToList();
             var expectedHtml =
-                "<select id=\"unrelated\" multiple=\"multiple\" name=\"unrelated\"><option value=\"0\">Zero</option>" +
+                "<select id=\"HtmlEncode[[unrelated]]\" multiple=\"HtmlEncode[[multiple]]\" name=\"HtmlEncode[[unrelated]]\"><option value=\"HtmlEncode[[0]]\">HtmlEncode[[Zero]]</option>" +
                 Environment.NewLine +
-                "<option disabled=\"disabled\" value=\"1\">One</option>" + Environment.NewLine +
-                "<option selected=\"selected\" value=\"2\">Two</option>" + Environment.NewLine +
-                "<option disabled=\"disabled\" value=\"3\">Three</option>" + Environment.NewLine +
+                "<option disabled=\"HtmlEncode[[disabled]]\" value=\"HtmlEncode[[1]]\">HtmlEncode[[One]]</option>" + Environment.NewLine +
+                "<option selected=\"HtmlEncode[[selected]]\" value=\"HtmlEncode[[2]]\">HtmlEncode[[Two]]</option>" + Environment.NewLine +
+                "<option disabled=\"HtmlEncode[[disabled]]\" value=\"HtmlEncode[[3]]\">HtmlEncode[[Three]]</option>" + Environment.NewLine +
                 "</select>";
 
             // Act

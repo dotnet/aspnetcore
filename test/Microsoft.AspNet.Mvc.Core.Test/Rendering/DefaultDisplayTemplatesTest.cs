@@ -25,21 +25,21 @@ namespace Microsoft.AspNet.Mvc.Core
                 return new TheoryData<string, bool, string>
                 {
                     { "Simple Display Text", false, "Simple Display Text" },
-                    { "Simple Display Text", true, "Simple Display Text" },
+                    { "Simple Display Text", true, "HtmlEncode[[Simple Display Text]]" },
                     { "<blink>text</blink>", false, "<blink>text</blink>" },
-                    { "<blink>text</blink>", true, "&lt;blink&gt;text&lt;/blink&gt;" },
+                    { "<blink>text</blink>", true, "HtmlEncode[[<blink>text</blink>]]" },
                     { "&'\"", false, "&'\"" },
-                    { "&'\"", true, "&amp;&#x27;&quot;" },
+                    { "&'\"", true, "HtmlEncode[[&'\"]]" },
                     { " ¡ÿĀ", false, " ¡ÿĀ" },                                           // high ASCII
-                    { " ¡ÿĀ", true, "&#xA0;&#xA1;&#xFF;&#x100;" },
+                    { " ¡ÿĀ", true, "HtmlEncode[[ ¡ÿĀ]]" },
                     { "Chinese西雅图Chars", false, "Chinese西雅图Chars" },
-                    { "Chinese西雅图Chars", true, "Chinese&#x897F;&#x96C5;&#x56FE;Chars" },
+                    { "Chinese西雅图Chars", true, "HtmlEncode[[Chinese西雅图Chars]]" },
                     { "Unicode؃Format؃Char", false, "Unicode؃Format؃Char" },            // class Cf
-                    { "Unicode؃Format؃Char", true, "Unicode&#x603;Format&#x603;Char" },
+                    { "Unicode؃Format؃Char", true, "HtmlEncode[[Unicode؃Format؃Char]]" },
                     { "UnicodeῼTitlecaseῼChar", false, "UnicodeῼTitlecaseῼChar" },       // class Lt
-                    { "UnicodeῼTitlecaseῼChar", true, "Unicode&#x1FFC;Titlecase&#x1FFC;Char" },
+                    { "UnicodeῼTitlecaseῼChar", true, "HtmlEncode[[UnicodeῼTitlecaseῼChar]]" },
                     { "UnicodeःCombiningःChar", false, "UnicodeःCombiningःChar" },    // class Mc
-                    { "UnicodeःCombiningःChar", true, "Unicode&#x903;Combining&#x903;Char" },
+                    { "UnicodeःCombiningःChar", true, "HtmlEncode[[UnicodeःCombiningःChar]]" },
                 };
             }
         }
@@ -48,11 +48,11 @@ namespace Microsoft.AspNet.Mvc.Core
         public void ObjectTemplateDisplaysSimplePropertiesOnObjectByDefault()
         {
             var expected =
-                "<div class=\"display-label\">Property1</div>" + Environment.NewLine
-              + "<div class=\"display-field\">Model = p1, ModelType = System.String, PropertyName = Property1," +
+                "<div class=\"HtmlEncode[[display-label]]\">HtmlEncode[[Property1]]</div>" + Environment.NewLine
+              + "<div class=\"HtmlEncode[[display-field]]\">Model = p1, ModelType = System.String, PropertyName = Property1," +
                     " SimpleDisplayText = p1</div>" + Environment.NewLine
-              + "<div class=\"display-label\">Property2</div>" + Environment.NewLine
-              + "<div class=\"display-field\">Model = (null), ModelType = System.String, PropertyName = Property2," +
+              + "<div class=\"HtmlEncode[[display-label]]\">HtmlEncode[[Property2]]</div>" + Environment.NewLine
+              + "<div class=\"HtmlEncode[[display-field]]\">Model = (null), ModelType = System.String, PropertyName = Property2," +
                     " SimpleDisplayText = (null)</div>" + Environment.NewLine;
 
             // Arrange
@@ -120,10 +120,10 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             // Arrange
             var expected =
-@"<div class=""display-label"">Property1</div>
-<div class=""display-field""></div>
-<div class=""display-label"">Property3</div>
-<div class=""display-field""></div>
+@"<div class=""HtmlEncode[[display-label]]"">HtmlEncode[[Property1]]</div>
+<div class=""HtmlEncode[[display-field]]"">HtmlEncode[[]]</div>
+<div class=""HtmlEncode[[display-label]]"">HtmlEncode[[Property3]]</div>
+<div class=""HtmlEncode[[display-field]]"">HtmlEncode[[]]</div>
 ";
             var model = new DefaultTemplatesUtilities.ObjectWithScaffoldColumn();
             var viewEngine = new Mock<ICompositeViewEngine>();
@@ -144,8 +144,8 @@ namespace Microsoft.AspNet.Mvc.Core
             // Arrange
             var expected =
                 "Model = p1, ModelType = System.String, PropertyName = Property1, SimpleDisplayText = p1" +
-                "<div class=\"display-label\">Property2</div>" + Environment.NewLine +
-                "<div class=\"display-field\">Model = (null), ModelType = System.String, PropertyName = Property2," +
+                "<div class=\"HtmlEncode[[display-label]]\">HtmlEncode[[Property2]]</div>" + Environment.NewLine +
+                "<div class=\"HtmlEncode[[display-field]]\">Model = (null), ModelType = System.String, PropertyName = Property2," +
                     " SimpleDisplayText = (null)</div>" + Environment.NewLine;
 
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "p1", Property2 = null };
@@ -187,13 +187,13 @@ namespace Microsoft.AspNet.Mvc.Core
             {
                 var label = string.Format(
                     CultureInfo.InvariantCulture,
-                    "<div class=\"display-label\">{0}</div>",
+                    "<div class=\"HtmlEncode[[display-label]]\">HtmlEncode[[{0}]]</div>",
                     property);
                 stringBuilder.AppendLine(label);
 
                 var value = string.Format(
                     CultureInfo.InvariantCulture,
-                    "<div class=\"display-field\">Model = (null), ModelType = System.String, PropertyName = {0}, " +
+                    "<div class=\"HtmlEncode[[display-field]]\">Model = (null), ModelType = System.String, PropertyName = {0}, " +
                     "SimpleDisplayText = (null)</div>",
                     property);
                 stringBuilder.AppendLine(value);
@@ -223,7 +223,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = DefaultDisplayTemplates.HiddenInputTemplate(html);
 
             // Assert
-            Assert.Equal("Formatted string", result);
+            Assert.Equal("HtmlEncode[[Formatted string]]", result);
         }
 
         [Fact]
@@ -268,7 +268,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = helper.Display("Property1");
 
             // Assert
-            Assert.Equal("ViewData string", result.ToString());
+            Assert.Equal("HtmlEncode[[ViewData string]]", result.ToString());
         }
 
         [Fact]
@@ -287,7 +287,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = helper.DisplayFor(m => m.Property1);
 
             // Assert
-            Assert.Equal("Model string", result.ToString());
+            Assert.Equal("HtmlEncode[[Model string]]", result.ToString());
         }
 
         [Fact]
@@ -305,7 +305,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = helper.Display("Property1");
 
             // Assert
-            Assert.Equal("Model string", result.ToString());
+            Assert.Equal("HtmlEncode[[Model string]]", result.ToString());
         }
 
         [Theory]
@@ -326,7 +326,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = helper.DisplayFor(m => m.Property1);
 
             // Assert
-            Assert.Empty(result.ToString());
+            Assert.Equal("HtmlEncode[[]]", result.ToString());
         }
 
         [Fact]

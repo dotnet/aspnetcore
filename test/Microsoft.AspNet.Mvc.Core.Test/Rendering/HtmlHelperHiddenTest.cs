@@ -18,13 +18,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             get
             {
-                var expected1 = @"<input baz=""BazValue"" id=""Property1"" name=""Property1"" type=""hidden"" " +
-                                @"value=""ModelStateValue"" />";
+                var expected1 = @"<input baz=""HtmlEncode[[BazValue]]"" id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" " +
+                                @"value=""HtmlEncode[[ModelStateValue]]"" />";
                 yield return new object[] { new Dictionary<string, object> { { "baz", "BazValue" } }, expected1 };
                 yield return new object[] { new { baz = "BazValue" }, expected1 };
 
-                var expected2 = @"<input foo-baz=""BazValue"" id=""Property1"" name=""Property1"" type=""hidden"" " +
-                                @"value=""ModelStateValue"" />";
+                var expected2 = @"<input foo-baz=""HtmlEncode[[BazValue]]"" id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" " +
+                                @"value=""HtmlEncode[[ModelStateValue]]"" />";
                 yield return new object[] { new Dictionary<string, object> { { "foo-baz", "BazValue" } }, expected2 };
                 yield return new object[] { new { foo_baz = "BazValue" }, expected2 };
             }
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenWithByteArrayValue_GeneratesBase64EncodedValue()
         {
             // Arrange
-            var expected = @"<input id=""ProductName"" name=""ProductName"" type=""hidden"" value=""Fys1"" />";
+            var expected = @"<input id=""HtmlEncode[[ProductName]]"" name=""HtmlEncode[[ProductName]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[Fys1]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper();
 
             // Act
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenOverridesValueFromAttributesWithArgumentValue()
         {
             // Arrange
-            var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value=""explicit-value"" />";
+            var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[explicit-value]]"" />";
             var attributes = new { value = "attribute-value" };
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNullModelAndNonNullViewData());
             helper.ViewData.Clear();
@@ -79,8 +79,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenWithArgumentValueAndNullModel_UsesArgumentValue()
         {
             // Arrange
-            var expected = @"<input id=""Property1"" key=""value"" name=""Property1"" type=""hidden"" " +
-                           @"value=""test"" />";
+            var expected = @"<input id=""HtmlEncode[[Property1]]"" key=""HtmlEncode[[value]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" " +
+                           @"value=""HtmlEncode[[test]]"" />";
             var attributes = new { key = "value" };
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNullModelAndNonNullViewData());
 
@@ -95,8 +95,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenWithNullValueAndNullModel_GeneratesExpectedValue()
         {
             // Arrange
-            var expected = @"<input data-key=""value"" id=""Property1"" name=""Property1"" type=""hidden"" " +
-                           @"value=""test"" />";
+            var expected = @"<input data-key=""HtmlEncode[[value]]"" id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" " +
+                           @"value=""HtmlEncode[[test]]"" />";
             var attributes = new Dictionary<string, object> { { "data-key", "value" } };
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNullModelAndNonNullViewData());
 
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenUsesValuesFromModelState_OverExplicitSpecifiedValueAndPropertyValue()
         {
             // Arrange
-            var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value=""ModelStateValue"" />";
+            var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[ModelStateValue]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.Model.Property1 = "test-value";
 
@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenUsesExplicitValue_IfModelStateDoesNotHaveProperty()
         {
             // Arrange
-            var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value=""explicit-value"" />";
+            var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[explicit-value]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.ModelState.Clear();
             helper.ViewData.Model.Property1 = "property-value";
@@ -142,7 +142,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenUsesValueFromViewData_IfModelStateDoesNotHavePropertyAndExplicitValueIsNull()
         {
             // Arrange
-            var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value=""view-data-val"" />";
+            var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[view-data-val]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.ModelState.Clear();
             helper.ViewData.Model.Property1 = "property-value";
@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenUsesPropertyValue_IfModelStateAndViewDataDoNotHavePropertyAndExplicitValueIsNull()
         {
             // Arrange
-            var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value=""property-value"" />";
+            var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[property-value]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.ModelState.Clear();
             helper.ViewData.Clear();
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenDoesNotUsesAttributeValue()
         {
             // Arrange
-            var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value="""" />";
+            var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value="""" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.ModelState.Clear();
             helper.ViewData.Clear();
@@ -192,7 +192,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenReturnsEmptyValue_IfPropertyIsNotFound()
         {
             // Arrange
-            var expected = @"<input baz=""BazValue"" id=""keyNotFound"" name=""keyNotFound"" type=""hidden"" " +
+            var expected = @"<input baz=""HtmlEncode[[BazValue]]"" id=""HtmlEncode[[keyNotFound]]"" name=""HtmlEncode[[keyNotFound]]"" type=""HtmlEncode[[hidden]]"" " +
                            @"value="""" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             var attributes = new Dictionary<string, object> { { "baz", "BazValue" } };
@@ -208,8 +208,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenWithPrefix_GeneratesExpectedValue()
         {
             // Arrange
-            var expected = @"<input id=""MyPrefix_Property1"" name=""MyPrefix.Property1"" type=""hidden"" " +
-                           @"value=""PropValue"" />";
+            var expected = @"<input id=""HtmlEncode[[MyPrefix_Property1]]"" name=""HtmlEncode[[MyPrefix.Property1]]"" type=""HtmlEncode[[hidden]]"" " +
+                           @"value=""HtmlEncode[[PropValue]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
 
@@ -224,7 +224,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenWithPrefixAndEmptyName_GeneratesExpectedValue()
         {
             // Arrange
-            var expected = @"<input id=""MyPrefix"" name=""MyPrefix"" type=""hidden"" value=""fooValue"" />";
+            var expected = @"<input id=""HtmlEncode[[MyPrefix]]"" name=""HtmlEncode[[MyPrefix]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[fooValue]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
 
@@ -239,8 +239,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenUsesPrefixName_ToLookupPropertyValueInModelState()
         {
             // Arrange
-            var expected = @"<input id=""MyPrefix$Property1"" name=""MyPrefix.Property1"" type=""hidden"" " +
-                           @"value=""modelstate-with-prefix"" />";
+            var expected = @"<input id=""HtmlEncode[[MyPrefix$Property1]]"" name=""HtmlEncode[[MyPrefix.Property1]]"" type=""HtmlEncode[[hidden]]"" " +
+                           @"value=""HtmlEncode[[modelstate-with-prefix]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
             helper.IdAttributeDotReplacement = "$";
@@ -260,8 +260,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenUsesPrefixName_ToLookupPropertyValueInViewData()
         {
             // Arrange
-            var expected = @"<input id=""MyPrefix$Property1"" name=""MyPrefix.Property1"" type=""hidden"" " +
-                           @"value=""vdd-with-prefix"" />";
+            var expected = @"<input id=""HtmlEncode[[MyPrefix$Property1]]"" name=""HtmlEncode[[MyPrefix.Property1]]"" type=""HtmlEncode[[hidden]]"" " +
+                           @"value=""HtmlEncode[[vdd-with-prefix]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
             helper.IdAttributeDotReplacement = "$";
@@ -297,8 +297,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenWithViewDataErrors_GeneratesExpectedValue()
         {
             // Arrange
-            var expected = @"<input baz=""BazValue"" class=""input-validation-error some-class"" id=""Property1""" +
-                           @" name=""Property1"" type=""hidden"" value=""ModelStateValue"" />";
+            var expected = @"<input baz=""HtmlEncode[[BazValue]]"" class=""HtmlEncode[[input-validation-error some-class]]"" id=""HtmlEncode[[Property1]]""" +
+                           @" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[ModelStateValue]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithErrors());
             var attributes = new Dictionary<string, object>
             {
@@ -317,8 +317,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenGeneratesUnobtrusiveValidation()
         {
             // Arrange
-            var expected = @"<input data-val=""true"" data-val-required=""The Property2 field is required."" " +
-                           @"id=""Property2"" name=""Property2"" type=""hidden"" value="""" />";
+            var expected = @"<input data-val=""HtmlEncode[[true]]"" data-val-required=""HtmlEncode[[The Property2 field is required.]]"" " +
+                           @"id=""HtmlEncode[[Property2]]"" name=""HtmlEncode[[Property2]]"" type=""HtmlEncode[[hidden]]"" value="""" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
 
             // Act
@@ -335,22 +335,22 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 yield return new object[]
                 {
                     "Property3[height]",
-                    @"<input data-test=""val"" id=""Property3_height_"" name=""Property3[height]"" type=""hidden"" " +
-                    @"value=""Prop3Value"" />",
+                    @"<input data-test=""HtmlEncode[[val]]"" id=""HtmlEncode[[Property3_height_]]"" name=""HtmlEncode[[Property3[height]]]"" type=""HtmlEncode[[hidden]]"" " +
+                    @"value=""HtmlEncode[[Prop3Value]]"" />",
                 };
 
                 yield return new object[]
                 {
                     "Property4.Property5",
-                    @"<input data-test=""val"" id=""Property4_Property5"" name=""Property4.Property5"" " +
-                    @"type=""hidden"" value=""Prop5Value"" />",
+                    @"<input data-test=""HtmlEncode[[val]]"" id=""HtmlEncode[[Property4_Property5]]"" name=""HtmlEncode[[Property4.Property5]]"" " +
+                    @"type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[Prop5Value]]"" />",
                 };
 
                 yield return new object[]
                {
                     "Property4.Property6[0]",
-                    @"<input data-test=""val"" id=""Property4_Property6_0_"" name=""Property4.Property6[0]"" " +
-                    @"type=""hidden"" value=""Prop6Value"" />",
+                    @"<input data-test=""HtmlEncode[[val]]"" id=""HtmlEncode[[Property4_Property6_0_]]"" name=""HtmlEncode[[Property4.Property6[0]]]"" " +
+                    @"type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[Prop6Value]]"" />",
                };
             }
         }
@@ -381,15 +381,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 yield return new object[]
                 {
                     "Property4.Property5",
-                    @"<input data-test=""val"" id=""Property4$$Property5"" name=""Property4.Property5"" " +
-                    @"type=""hidden"" value=""Prop5Value"" />",
+                    @"<input data-test=""HtmlEncode[[val]]"" id=""HtmlEncode[[Property4$$Property5]]"" name=""HtmlEncode[[Property4.Property5]]"" " +
+                    @"type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[Prop5Value]]"" />",
                 };
 
                 yield return new object[]
                {
                     "Property4.Property6[0]",
-                    @"<input data-test=""val"" id=""Property4$$Property6$$0$$"" name=""Property4.Property6[0]"" " +
-                    @"type=""hidden"" value=""Prop6Value"" />",
+                    @"<input data-test=""HtmlEncode[[val]]"" id=""HtmlEncode[[Property4$$Property6$$0$$]]"" name=""HtmlEncode[[Property4.Property6[0]]]"" " +
+                    @"type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[Prop6Value]]"" />",
                };
             }
         }
@@ -418,7 +418,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenForWithByteArrayValue_GeneratesBase64EncodedValue()
         {
             // Arrange
-            var expected = @"<input id=""Bytes"" name=""Bytes"" type=""hidden"" value=""Fys1"" />";
+            var expected = @"<input id=""HtmlEncode[[Bytes]]"" name=""HtmlEncode[[Bytes]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[Fys1]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.Model.Bytes = new byte[] { 23, 43, 53 };
 
@@ -448,7 +448,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenFor_UsesModelStateValueOverPropertyValue()
         {
             // Arrange
-            var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value=""ModelStateValue"" />";
+            var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[ModelStateValue]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.Model.Property1 = "DefaultValue";
 
@@ -463,7 +463,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenFor_UsesPropertyValueIfModelStateDoesNotHaveKey()
         {
             // Arrange
-            var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value=""PropertyValue"" />";
+            var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[PropertyValue]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.ModelState.Clear();
             helper.ViewData.Model.Property1 = "PropertyValue";
@@ -479,7 +479,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenForDoesNotUseValueFromViewDataDictionary_IfModelStateAndPropertyValueIsNull()
         {
             // Arrange
-            var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value="""" />";
+            var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value="""" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.Model.Property1 = null;
             helper.ViewData.ModelState.Clear();
@@ -495,7 +495,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenForWithAttributesDictionaryAndNullModel_GeneratesExpectedValue()
         {
             // Arrange
-            var expected = @"<input id=""Property1"" key=""value"" name=""Property1"" type=""hidden"" value="""" />";
+            var expected = @"<input id=""HtmlEncode[[Property1]]"" key=""HtmlEncode[[value]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value="""" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNullModelAndNonNullViewData());
             var attributes = new Dictionary<string, object> { { "key", "value" } };
 
@@ -511,8 +511,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenForWithPrefix_GeneratesExpectedValue()
         {
             // Arrange
-            var expected = @"<input id=""MyPrefix_Property1"" name=""MyPrefix.Property1"" type=""hidden"" " +
-                           @"value=""propValue"" />";
+            var expected = @"<input id=""HtmlEncode[[MyPrefix_Property1]]"" name=""HtmlEncode[[MyPrefix.Property1]]"" type=""HtmlEncode[[hidden]]"" " +
+                           @"value=""HtmlEncode[[propValue]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.Model.Property1 = "propValue";
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
@@ -528,8 +528,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenForWithPrefix_UsesPrefixWhenLookingUpModelStateValues()
         {
             // Arrange
-            var expected = @"<input id=""MyPrefix$Property1"" name=""MyPrefix.Property1"" type=""hidden"" " +
-                           @"value=""modelstate-with-prefix"" />";
+            var expected = @"<input id=""HtmlEncode[[MyPrefix$Property1]]"" name=""HtmlEncode[[MyPrefix.Property1]]"" type=""HtmlEncode[[hidden]]"" " +
+                           @"value=""HtmlEncode[[modelstate-with-prefix]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.Model.Property1 = "propValue";
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
@@ -550,8 +550,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenForWithViewDataErrors_GeneratesExpectedValue()
         {
             // Arrange
-            var expected = @"<input baz=""BazValue"" class=""input-validation-error some-class"" id=""Property1"" " +
-                           @"name=""Property1"" type=""hidden"" value=""ModelStateValue"" />";
+            var expected = @"<input baz=""HtmlEncode[[BazValue]]"" class=""HtmlEncode[[input-validation-error some-class]]"" id=""HtmlEncode[[Property1]]"" " +
+                           @"name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[ModelStateValue]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithErrors());
             var attributes = new Dictionary<string, object>
             {
@@ -570,8 +570,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenFor_GeneratesUnobtrusiveValidationAttributes()
         {
             // Arrange
-            var expected = @"<input data-val=""true"" data-val-required=""The Property2 field is required."" " +
-                           @"id=""Property2"" name=""Property2"" type=""hidden"" value="""" />";
+            var expected = @"<input data-val=""HtmlEncode[[true]]"" data-val-required=""HtmlEncode[[The Property2 field is required.]]"" " +
+                           @"id=""HtmlEncode[[Property2]]"" name=""HtmlEncode[[Property2]]"" type=""HtmlEncode[[hidden]]"" value="""" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithErrors());
 
             // Act
@@ -591,23 +591,23 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 {
                     {
                         model => model.Property3["key"],
-                        @"<input data-val=""true"" id=""Property3_key_"" name=""Property3[key]"" " +
-                        @"type=""hidden"" value=""ModelProp3Val"" />"
+                        @"<input data-val=""HtmlEncode[[true]]"" id=""HtmlEncode[[Property3_key_]]"" name=""HtmlEncode[[Property3[key]]]"" " +
+                        @"type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[ModelProp3Val]]"" />"
                     },
                     {
                         model => model.Property4.Property5,
-                        @"<input data-val=""true"" id=""Property4_Property5"" name=""Property4.Property5"" " +
-                        @"type=""hidden"" value=""ModelProp5Val"" />"
+                        @"<input data-val=""HtmlEncode[[true]]"" id=""HtmlEncode[[Property4_Property5]]"" name=""HtmlEncode[[Property4.Property5]]"" " +
+                        @"type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[ModelProp5Val]]"" />"
                     },
                     {
                         model => model.Property4.Property6[0],
-                        @"<input data-val=""true"" id=""Property4_Property6_0_"" name=""Property4.Property6[0]"" " +
-                        @"type=""hidden"" value=""ModelProp6Val"" />"
+                        @"<input data-val=""HtmlEncode[[true]]"" id=""HtmlEncode[[Property4_Property6_0_]]"" name=""HtmlEncode[[Property4.Property6[0]]]"" " +
+                        @"type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[ModelProp6Val]]"" />"
                     },
                     {
                         model => localModel.Property4.Property5,
-                        @"<input data-val=""true"" id=""localModel_Property4_Property5"" " +
-                        @"name=""localModel.Property4.Property5"" type=""hidden"" value=""local-value"" />"
+                        @"<input data-val=""HtmlEncode[[true]]"" id=""HtmlEncode[[localModel_Property4_Property5]]"" " +
+                        @"name=""HtmlEncode[[localModel.Property4.Property5]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[local-value]]"" />"
                     }
                 };
             }
@@ -650,18 +650,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 {
                     {
                         model => model.Property3["key"],
-                        @"<input data-val=""true"" id=""pre_Property3_key_"" name=""pre.Property3[key]"" " +
-                        @"type=""hidden"" value=""Prop3Val"" />"
+                        @"<input data-val=""HtmlEncode[[true]]"" id=""HtmlEncode[[pre_Property3_key_]]"" name=""HtmlEncode[[pre.Property3[key]]]"" " +
+                        @"type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[Prop3Val]]"" />"
                     },
                     {
                         model => model.Property4.Property5,
-                        @"<input data-val=""true"" id=""pre_Property4_Property5"" name=""pre.Property4.Property5"" " +
-                        @"type=""hidden"" value=""Prop5Val"" />"
+                        @"<input data-val=""HtmlEncode[[true]]"" id=""HtmlEncode[[pre_Property4_Property5]]"" name=""HtmlEncode[[pre.Property4.Property5]]"" " +
+                        @"type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[Prop5Val]]"" />"
                     },
                     {
                         model => model.Property4.Property6[0],
-                        @"<input data-val=""true"" id=""pre_Property4_Property6_0_"" " +
-                        @"name=""pre.Property4.Property6[0]"" type=""hidden"" value=""Prop6Val"" />"
+                        @"<input data-val=""HtmlEncode[[true]]"" id=""HtmlEncode[[pre_Property4_Property6_0_]]"" " +
+                        @"name=""HtmlEncode[[pre.Property4.Property6[0]]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[Prop6Val]]"" />"
                     }
                 };
             }
@@ -694,7 +694,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void HiddenFor_DoesNotUseAttributeValue()
         {
             // Arrange
-            var expected = @"<input id=""Property1"" name=""Property1"" type=""hidden"" value="""" />";
+            var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value="""" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNullModelAndNonNullViewData());
             var attributes = new Dictionary<string, object>
             {
