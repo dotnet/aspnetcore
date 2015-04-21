@@ -21,7 +21,9 @@ IF EXIST packages\KoreBuild goto run
 
 IF "%SKIP_DNX_INSTALL%"=="1" goto run
 CALL packages\KoreBuild\build\dnvm upgrade -runtime CLR -arch x86
+CALL packages\KoreBuild\build\dnvm install default -runtime CLR -arch x64
 CALL packages\KoreBuild\build\dnvm install default -runtime CoreCLR -arch x86
+CALL packages\KoreBuild\build\dnvm install default -runtime CoreCLR -arch x64
 
 :run
 CALL packages\KoreBuild\build\dnvm use default -runtime CLR -arch x86

@@ -15,7 +15,7 @@ namespace ServerComparison.TestSites
     /// To make runtime to load an environment based startup class, specify the environment by the following ways:
     /// 1. Drop a Microsoft.AspNet.Hosting.ini file in the wwwroot folder
     /// 2. Add a setting in the ini file named 'ASPNET_ENV' with value of the format 'Startup[EnvironmentName]'. For example: To load a Startup class named
-    /// 'StartupHelloWorld' the value of the env should be 'NtlmAuthentication' (eg. ASPNET_ENV=HelloWorld). Runtime adds a 'Startup' prefix to this and loads 'StartupHelloWorld'.
+    /// 'StartupHelloWorld' the value of the env should be 'HelloWorld' (eg. ASPNET_ENV=HelloWorld). Runtime adds a 'Startup' prefix to this and loads 'StartupHelloWorld'.
     /// If no environment name is specified the default startup class loaded is 'Startup'.
     /// Alternative ways to specify environment are:
     /// 1. Set the environment variable named SET ASPNET_ENV=HelloWorld

@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
-using DeploymentHelpers;
+using Microsoft.AspNet.Server.Testing;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Logging;
 using Xunit;
@@ -17,27 +16,27 @@ namespace ServerComparison.FunctionalTests
     {
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Unix | OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.coreclr, RuntimeArchitecture.x86, "http://localhost:5061/")]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.clr, RuntimeArchitecture.x64, "http://localhost:5062/")]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.clr, RuntimeArchitecture.x86, "http://localhost:5063/")]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.coreclr, RuntimeArchitecture.x64, "http://localhost:5064/")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5061/")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5062/")]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5063/")]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5064/")]
         public Task HelloWorld_Windows(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             return HelloWorld(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
         [Theory]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.coreclr, RuntimeArchitecture.x86, "http://localhost:5065/")]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.clr, RuntimeArchitecture.x64, "http://localhost:5066/")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5065/")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5066/")]
         public Task HelloWorld_Kestrel(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             return HelloWorld(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
         [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.DotNet)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.mono, RuntimeArchitecture.x86, "http://localhost:5067/")]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.mono, RuntimeArchitecture.x64, "http://localhost:5068/")]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5067/")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x64, "http://localhost:5068/")]
         public Task HelloWorld_Mono(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             return HelloWorld(serverType, runtimeFlavor, architecture, applicationBaseUrl);
@@ -47,8 +46,8 @@ namespace ServerComparison.FunctionalTests
         [SkipIfIISVariationsNotEnabled]
         [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Unix)]
         [SkipIfCurrentRuntimeIsCoreClr]
-        [InlineData(ServerType.IIS, RuntimeFlavor.clr, RuntimeArchitecture.x64, "http://localhost:5069/")]
-        [InlineData(ServerType.IIS, RuntimeFlavor.coreclr, RuntimeArchitecture.x86, "http://localhost:5070/")]
+        [InlineData(ServerType.IIS, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5069/")]
+        [InlineData(ServerType.IIS, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5070/")]
         public Task HelloWorld_IIS_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             return HelloWorld(serverType, runtimeFlavor, architecture, applicationBaseUrl);
@@ -58,7 +57,7 @@ namespace ServerComparison.FunctionalTests
         [SkipIfIISNativeVariationsNotEnabled]
         [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
         [SkipIfCurrentRuntimeIsCoreClr]
-        [InlineData(ServerType.IISNativeModule, RuntimeFlavor.coreclr, RuntimeArchitecture.x86, "http://localhost:5071/")]
+        [InlineData(ServerType.IISNativeModule, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5071/")]
         public Task HelloWorld_NativeModule_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             return HelloWorld(serverType, runtimeFlavor, architecture, applicationBaseUrl);
@@ -69,7 +68,7 @@ namespace ServerComparison.FunctionalTests
         [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
         [SkipOn32BitOS]
         [SkipIfCurrentRuntimeIsCoreClr]
-        [InlineData(ServerType.IISNativeModule, RuntimeFlavor.coreclr, RuntimeArchitecture.x64, "http://localhost:5072/")]
+        [InlineData(ServerType.IISNativeModule, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5072/")]
         public Task HelloWorld_NativeModule_AMD64(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             return HelloWorld(serverType, runtimeFlavor, architecture, applicationBaseUrl);
@@ -83,11 +82,6 @@ namespace ServerComparison.FunctionalTests
 
             using (logger.BeginScope("HelloWorldTest"))
             {
-                var stopwatch = Stopwatch.StartNew();
-
-                logger.LogInformation("Variation Details : HostType = {hostType}, RuntimeFlavor = {flavor}, Architecture = {arch}, applicationBaseUrl = {appBase}",
-                    serverType, runtimeFlavor, architecture, applicationBaseUrl);
-
                 var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
@@ -106,13 +100,8 @@ namespace ServerComparison.FunctionalTests
                         return httpClient.GetAsync(string.Empty);
                     }, logger, deploymentResult.HostShutdownToken);
 
-                    logger.LogInformation("[Time]: Approximate time taken for application initialization : '{t}' seconds", stopwatch.Elapsed.TotalSeconds);
-
                     var responseText = await response.Content.ReadAsStringAsync();
                     Assert.Equal("Hello World", responseText);
-
-                    stopwatch.Stop();
-                    logger.LogInformation("[Time]: Total time taken for this test variation '{t}' seconds", stopwatch.Elapsed.TotalSeconds);
                 }
             }
         }
