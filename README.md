@@ -6,15 +6,15 @@ If you want a more stable, released, experience then you should go to http://www
 
 ## What you need
 
-The key part of working with development feeds is getting your environment setup so that you can acquire and switch to new builds of the DNX. Once you have that then it is just a matter of pulling the latest packages from the development MyGet feed.
+The key part of working with development feeds is getting your environment set up so that you can acquire and switch to new builds of the DNX. Once you have that then it is just a matter of pulling the latest packages from the development MyGet feed.
 
-In order to be able to get new builds of the DNX, and switch between them, you need to get the DNX Version Manager (DNVM) command line tool. 
+In order to be able to get new builds of the DNX, and switch between them, you need to get the .NET Version Manager (DNVM) command line tool. 
 
 ## Getting Started on Windows
 
-The easiest way to get started on Windows is to grab the latest CTP of Visual Studio, which can be found [here](http://go.microsoft.com/fwlink/?LinkId=521794).
+The easiest way to get started on Windows is to grab the latest preview of Visual Studio 2015, which can be found [here](http://go.microsoft.com/fwlink/?LinkId=521794).
 
-Visual Studio will install DNVM for you, so if you open a command prompt and type DNVM you should get some help text.
+Visual Studio will install DNVM for you, so if you open a command prompt and type `dnvm` you should get some help text.
 
 ### Upgrading DNVM or running without Visual Studio
 
@@ -40,24 +40,22 @@ where dnvm
 
 ## OS X
 
-On OS X the best way to get DNVM is to use [Homebrew](http://www.brew.sh). If you don't have Homebrew installed then follow the instructions [here](http://www.brew.sh). Once you have Homebrew then run the following commands:
+On OS X the best way to get DNVM is to use [Homebrew](http://www.brew.sh). If you don't have Homebrew installed then follow the [Homebrew installation instructions](http://www.brew.sh). Once you have Homebrew then run the following commands:
 
 ```
 brew tap aspnet/k
 brew install dnvm
 ```
-Note that on Windows the .NET framework is installed already, whereas on OS X the brew formula compiles a particular version of [Mono](http://www.mono-project.com/) that we know works with ASP.NET 5.
+Note that on Windows the .NET Framework is already installed, whereas on OS X the brew formula compiles a particular version of [Mono](http://www.mono-project.com/) that we know works with ASP.NET 5.
 
 ## Linux
 
 * [Debian, Ubuntu and derivatives see here](GettingStartedDeb.md)
-* **CentOS, Fedora and derivatives don't currently have a seperate guide. We should have one soon. The commands are mostly the same, with some differences to account for the different package manager**
+* **CentOS, Fedora and derivatives don't currently have a separate guide. We should have one soon. The commands are mostly the same, with some differences to account for the different package manager**
 
 # Running an application
 
-Now we should have an environment that works and you can should be able to run an ASP.NET 5 application
-
-The first thin to do is download a DNX to run your applications with:
+Now that you have DNVM, you need to use it to download a DNX to run your applications with:
 
 ```
 dnvm upgrade
@@ -79,7 +77,7 @@ You should also be able to run `dnx` and see the help text of the `dnx` command.
     - For the console app run  `dnx . run`.
     - For the web apps run `dnx . web` on Windows or `dnx . kestrel` on OS X/Linux.
 6. You should see the output of the console app or a message that says the site is now started.
-7. You can navigate to the web apps in a browser by going to "http://localhost:5001" or "http://localhost:5004" if running on OS X/Linux.
+7. You can navigate to the web apps in a browser by navigating to `http://localhost:5001` or `http://localhost:5004` if running on OS X/Linux.
 
 # Documentation and Further Learning
 
