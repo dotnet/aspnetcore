@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Mvc
 
         private string RemovePeriodIfPresent(string format)
         {
-            if (format == "")
+            if (string.IsNullOrEmpty(format))
             {
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(format));
             }
