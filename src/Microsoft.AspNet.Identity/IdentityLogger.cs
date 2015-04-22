@@ -12,6 +12,11 @@ namespace Microsoft.AspNet.Identity.Logging
         private static TResult Log<TResult>(this ILogger logger, TResult result, Func<TResult, LogLevel> getLevel,
             Func<string> messageAccessor)
         {
+            if (logger == null)
+            {
+                return result;
+            }
+
             var logLevel = getLevel(result);
 
             // Check if log level is enabled before creating the message.

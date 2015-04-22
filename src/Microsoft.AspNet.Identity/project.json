@@ -5,7 +5,6 @@
     "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
     "Microsoft.AspNet.Cryptography.KeyDerivation": "1.0.0-*",
     "Microsoft.AspNet.Http" : "1.0.0-*",
-    "Microsoft.AspNet.Hosting" : "1.0.0-*",
     "Microsoft.AspNet.Hosting.Interfaces" : "1.0.0-*",
     "Microsoft.Framework.ConfigurationModel.Interfaces": "1.0.0-*",
     "Microsoft.Framework.DependencyInjection.Interfaces" : "1.0.0-*",

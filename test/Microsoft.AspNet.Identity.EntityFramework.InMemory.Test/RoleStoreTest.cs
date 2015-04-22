@@ -14,24 +14,18 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
         [Fact]
         public async Task CanCreateUsingAddRoleManager()
         {
-            var services = new ServiceCollection();
-            services.AddEntityFramework().AddInMemoryStore();
-            var store = new RoleStore<IdentityRole>(new InMemoryContext());
-            services.AddInstance<IRoleStore<IdentityRole>>(store);
-            services.AddIdentity<IdentityUser,IdentityRole>();
-            var provider = services.BuildServiceProvider();
-            var manager = provider.GetRequiredService<RoleManager<IdentityRole>>();
+            var manager = TestIdentityFactory.CreateRoleManager();
             Assert.NotNull(manager);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(new IdentityRole("arole")));
         }
+
         [Fact]
         public async Task CanCreateRoleWithSingletonManager()
         {
-            var services = new ServiceCollection();
+            var services = TestIdentityFactory.CreateTestServices();
             services.AddEntityFramework().AddInMemoryStore();
             services.AddTransient<InMemoryContext>();
             services.AddTransient<IRoleStore<IdentityRole>, RoleStore<IdentityRole, InMemoryContext>>();
-            services.AddIdentity<IdentityUser, IdentityRole>();
             services.AddSingleton<RoleManager<IdentityRole>>();
             var provider = services.BuildServiceProvider();
             var manager = provider.GetRequiredService<RoleManager<IdentityRole>>();

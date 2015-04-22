@@ -70,12 +70,12 @@ namespace Microsoft.AspNet.Identity.Test
         {
             Assert.Throws<ArgumentNullException>("userManager", () => new SignInManager<TestUser>(null, null, null, null, null));
             var userManager = MockHelpers.MockUserManager<TestUser>().Object;
-            Assert.Throws<ArgumentNullException>("contextAccessor", () => new SignInManager<TestUser>(userManager, null, null, null));
+            Assert.Throws<ArgumentNullException>("contextAccessor", () => new SignInManager<TestUser>(userManager, null, null, null, null));
             var contextAccessor = new Mock<IHttpContextAccessor>();
-            Assert.Throws<ArgumentNullException>("contextAccessor", () => new SignInManager<TestUser>(userManager, contextAccessor.Object, null, null));
+            Assert.Throws<ArgumentNullException>("contextAccessor", () => new SignInManager<TestUser>(userManager, contextAccessor.Object, null, null, null));
             var context = new Mock<HttpContext>();
             contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
-            Assert.Throws<ArgumentNullException>("claimsFactory", () => new SignInManager<TestUser>(userManager, contextAccessor.Object, null, null));
+            Assert.Throws<ArgumentNullException>("claimsFactory", () => new SignInManager<TestUser>(userManager, contextAccessor.Object, null, null, null));
         }
 
         //TODO: Mock fails in K (this works fine in net45)
@@ -129,8 +129,8 @@ namespace Microsoft.AspNet.Identity.Test
             var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
             var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, null);
             helper.Logger = logger.Object;
-            string expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
-            string expectedLog = string.Format("{0} : {1}", "PasswordSignInAsync", "Lockedout");
+            var expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
+            var expectedLog = string.Format("{0} : {1}", "PasswordSignInAsync", "Lockedout");
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, false);
@@ -153,6 +153,23 @@ namespace Microsoft.AspNet.Identity.Test
             return manager;
         }
 
+        private static SignInManager<TestUser> SetupSignInManager(UserManager<TestUser> manager, HttpContext context, StringBuilder logStore = null, IdentityOptions identityOptions = null)
+        {
+            var contextAccessor = new Mock<IHttpContextAccessor>();
+            contextAccessor.Setup(a => a.HttpContext).Returns(context);
+            var roleManager = MockHelpers.MockRoleManager<TestRole>();
+            identityOptions = identityOptions ?? new IdentityOptions();
+            var options = new Mock<IOptions<IdentityOptions>>();
+            options.Setup(a => a.Options).Returns(identityOptions);
+            var claimsFactory = new UserClaimsPrincipalFactory<TestUser, TestRole>(manager, roleManager.Object, options.Object);
+            var sm = new SignInManager<TestUser>(manager, contextAccessor.Object, claimsFactory, options.Object, null);
+            if (logStore != null)
+            {
+                sm.Logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore).Object;
+            }
+            return sm;
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -169,19 +186,10 @@ namespace Microsoft.AspNet.Identity.Test
             var response = new Mock<HttpResponse>();
             context.Setup(c => c.Response).Returns(response.Object).Verifiable();
             SetupSignIn(response, user.Id, isPersistent);
-            var contextAccessor = new Mock<IHttpContextAccessor>();
-            contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
-            var roleManager = MockHelpers.MockRoleManager<TestRole>();
-            var identityOptions = new IdentityOptions();
-            var options = new Mock<IOptions<IdentityOptions>>();
-            options.Setup(a => a.Options).Returns(identityOptions);
-            var claimsFactory = new UserClaimsPrincipalFactory<TestUser, TestRole>(manager.Object, roleManager.Object, options.Object);
             var logStore = new StringBuilder();
-            var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
-            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, null);
-            helper.Logger = logger.Object;
-            string expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
-            string expectedLog = string.Format("{0} : {1}", "PasswordSignInAsync", "Succeeded");
+            var helper = SetupSignInManager(manager.Object, context.Object, logStore);
+            var expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
+            var expectedLog = string.Format("{0} : {1}", "PasswordSignInAsync", "Succeeded");
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "password", isPersistent, false);
@@ -193,8 +201,34 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Verify();
             context.Verify();
             response.Verify();
-            contextAccessor.Verify();
         }
+
+        [Fact]
+        public async Task CanPasswordSignInWithNoLogger()
+        {
+            // Setup
+            var user = new TestUser { UserName = "Foo" };
+            var manager = SetupUserManager(user);
+            manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
+            manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
+            manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
+
+            var context = new Mock<HttpContext>();
+            var response = new Mock<HttpResponse>();
+            context.Setup(c => c.Response).Returns(response.Object).Verifiable();
+            SetupSignIn(response, user.Id, false);
+            var helper = SetupSignInManager(manager.Object, context.Object);
+
+            // Act
+            var result = await helper.PasswordSignInAsync(user.UserName, "password", false, false);
+
+            // Assert
+            Assert.True(result.Succeeded);
+            manager.Verify();
+            context.Verify();
+            response.Verify();
+        }
+
 
         [Fact]
         public async Task PasswordSignInWorksWithNonTwoFactorStore()
@@ -211,14 +245,7 @@ namespace Microsoft.AspNet.Identity.Test
             var response = new Mock<HttpResponse>();
             SetupSignIn(response);
             context.Setup(c => c.Response).Returns(response.Object).Verifiable();
-            var contextAccessor = new Mock<IHttpContextAccessor>();
-            contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
-            var roleManager = MockHelpers.MockRoleManager<TestRole>();
-            var identityOptions = new IdentityOptions();
-            var options = new Mock<IOptions<IdentityOptions>>();
-            options.Setup(a => a.Options).Returns(identityOptions);
-            var claimsFactory = new UserClaimsPrincipalFactory<TestUser, TestRole>(manager.Object, roleManager.Object, options.Object);
-            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object);
+            var helper = SetupSignInManager(manager.Object, context.Object);
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "password", false, false);
@@ -228,7 +255,6 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Verify();
             context.Verify();
             response.Verify();
-            contextAccessor.Verify();
         }
 
         [Theory]
@@ -260,22 +286,10 @@ namespace Microsoft.AspNet.Identity.Test
                 It.Is<ClaimsPrincipal>(id => id.FindFirstValue(ClaimTypes.Name) == user.Id),
                 It.IsAny<AuthenticationProperties>())).Verifiable();
             context.Setup(c => c.Response).Returns(response.Object).Verifiable();
-            var contextAccessor = new Mock<IHttpContextAccessor>();
-            contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
-            var roleManager = MockHelpers.MockRoleManager<TestRole>();
-            var identityOptions = new IdentityOptions();
-            var options = new Mock<IOptions<IdentityOptions>>();
-            options.Setup(a => a.Options).Returns(identityOptions);
             var logStore = new StringBuilder();
-            var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
-            var helper = new SignInManager<TestUser>(manager.Object,
-                contextAccessor.Object,
-                new UserClaimsPrincipalFactory<TestUser, TestRole>(manager.Object, roleManager.Object, options.Object),
-                options.Object,
-                null);
-            helper.Logger = logger.Object;
-            string expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
-            string expectedLog = string.Format("{0} : {1}", "PasswordSignInAsync", "RequiresTwoFactor");
+            var helper = SetupSignInManager(manager.Object, context.Object, logStore);
+            var expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
+            var expectedLog = string.Format("{0} : {1}", "PasswordSignInAsync", "RequiresTwoFactor");
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "password", false, false);
@@ -288,7 +302,6 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Verify();
             context.Verify();
             response.Verify();
-            contextAccessor.Verify();
         }
 
         [Theory]
@@ -314,20 +327,10 @@ namespace Microsoft.AspNet.Identity.Test
             var response = new Mock<HttpResponse>();
             context.Setup(c => c.Response).Returns(response.Object).Verifiable();
             SetupSignIn(response, user.Id, isPersistent, loginProvider);
-            var contextAccessor = new Mock<IHttpContextAccessor>();
-            contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
-            var roleManager = MockHelpers.MockRoleManager<TestRole>();
-            var identityOptions = new IdentityOptions();
-            response.Setup(r => r.SignOut(IdentityOptions.ExternalCookieAuthenticationScheme)).Verifiable();
-            var options = new Mock<IOptions<IdentityOptions>>();
-            options.Setup(a => a.Options).Returns(identityOptions);
-            var claimsFactory = new UserClaimsPrincipalFactory<TestUser, TestRole>(manager.Object, roleManager.Object, options.Object);
             var logStore = new StringBuilder();
-            var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
-            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, null);
-            helper.Logger = logger.Object;
-            string expectedScope = string.Format("{0} for {1}: {2}", "ExternalLoginSignInAsync", "user", user.Id);
-            string expectedLog = string.Format("{0} : {1}", "ExternalLoginSignInAsync", "Succeeded");
+            var helper = SetupSignInManager(manager.Object, context.Object, logStore);
+            var expectedScope = string.Format("{0} for {1}: {2}", "ExternalLoginSignInAsync", "user", user.Id);
+            var expectedLog = string.Format("{0} : {1}", "ExternalLoginSignInAsync", "Succeeded");
 
             // Act
             var result = await helper.ExternalLoginSignInAsync(loginProvider, providerKey, isPersistent);
@@ -339,7 +342,6 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Verify();
             context.Verify();
             response.Verify();
-            contextAccessor.Verify();
         }
 
         [Theory]
@@ -375,16 +377,10 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Setup(m => m.VerifyTwoFactorTokenAsync(user, provider, code)).ReturnsAsync(true).Verifiable();
             var context = new Mock<HttpContext>();
             var response = new Mock<HttpResponse>();
-            var contextAccessor = new Mock<IHttpContextAccessor>();
             var twoFactorInfo = new SignInManager<TestUser>.TwoFactorAuthenticationInfo { UserId = user.Id };
             var loginProvider = "loginprovider";
             var id = SignInManager<TestUser>.StoreTwoFactorInfo(user.Id, externalLogin ? loginProvider : null);
             var authResult = new AuthenticationResult(id, new AuthenticationProperties(), new AuthenticationDescription());
-            var roleManager = MockHelpers.MockRoleManager<TestRole>();
-            var identityOptions = new IdentityOptions();
-            var options = new Mock<IOptions<IdentityOptions>>();
-            options.Setup(a => a.Options).Returns(identityOptions);
-            var claimsFactory = new UserClaimsPrincipalFactory<TestUser, TestRole>(manager.Object, roleManager.Object, options.Object);
             if (externalLogin)
             {
                 response.Setup(r => r.SignIn(
@@ -408,13 +404,10 @@ namespace Microsoft.AspNet.Identity.Test
             }
             context.Setup(c => c.Response).Returns(response.Object).Verifiable();
             context.Setup(c => c.AuthenticateAsync(IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme)).ReturnsAsync(authResult).Verifiable();
-            contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
             var logStore = new StringBuilder();
-            var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
-            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, null);
-            helper.Logger = logger.Object;
-            string expectedScope = string.Format("{0} for {1}: {2}", "TwoFactorSignInAsync", "user", user.Id);
-            string expectedLog = string.Format("{0} : {1}", "TwoFactorSignInAsync", "Succeeded");
+            var helper = SetupSignInManager(manager.Object, context.Object, logStore);
+            var expectedScope = string.Format("{0} for {1}: {2}", "TwoFactorSignInAsync", "user", user.Id);
+            var expectedLog = string.Format("{0} : {1}", "TwoFactorSignInAsync", "Succeeded");
 
             // Act
             var result = await helper.TwoFactorSignInAsync(provider, code, isPersistent, rememberClient);
@@ -426,7 +419,6 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Verify();
             context.Verify();
             response.Verify();
-            contextAccessor.Verify();
         }
 
         [Fact]
@@ -437,23 +429,14 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = SetupUserManager(user);
             var context = new Mock<HttpContext>();
             var response = new Mock<HttpResponse>();
-            var contextAccessor = new Mock<IHttpContextAccessor>();
-            var roleManager = MockHelpers.MockRoleManager<TestRole>();
-            var identityOptions = new IdentityOptions();
-            var options = new Mock<IOptions<IdentityOptions>>();
-            options.Setup(a => a.Options).Returns(identityOptions);
-            var claimsFactory = new UserClaimsPrincipalFactory<TestUser, TestRole>(manager.Object, roleManager.Object, options.Object);
-
             context.Setup(c => c.Response).Returns(response.Object).Verifiable();
             response.Setup(r => r.SignIn(
                 IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme,
                 It.Is<ClaimsPrincipal>(i => i.FindFirstValue(ClaimTypes.Name) == user.Id
                     && i.Identities.First().AuthenticationType == IdentityOptions.TwoFactorRememberMeCookieAuthenticationType),
                 It.Is<AuthenticationProperties>(v => v.IsPersistent == true))).Verifiable();
-            contextAccessor.Setup(a => a.HttpContext).Returns(context.Object).Verifiable();
-            options.Setup(a => a.Options).Returns(identityOptions).Verifiable();
 
-            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object);
+            var helper = SetupSignInManager(manager.Object, context.Object);
 
             // Act
             await helper.RememberTwoFactorClientAsync(user);
@@ -462,8 +445,6 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Verify();
             context.Verify();
             response.Verify();
-            contextAccessor.Verify();
-            options.Verify();
         }
 
         [Theory]
@@ -490,15 +471,7 @@ namespace Microsoft.AspNet.Identity.Test
             id.AddClaim(new Claim(ClaimTypes.Name, user.Id));
             var authResult = new AuthenticationResult(new ClaimsPrincipal(id), new AuthenticationProperties(), new AuthenticationDescription());
             context.Setup(c => c.AuthenticateAsync(IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme)).ReturnsAsync(authResult).Verifiable();
-            var contextAccessor = new Mock<IHttpContextAccessor>();
-            contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
-            var roleManager = MockHelpers.MockRoleManager<TestRole>();
-            var identityOptions = new IdentityOptions();
-            var options = new Mock<IOptions<IdentityOptions>>();
-            options.Setup(a => a.Options).Returns(identityOptions);
-            var claimsFactory = new Mock<UserClaimsPrincipalFactory<TestUser, TestRole>>(manager.Object, roleManager.Object, options.Object);
-            claimsFactory.Setup(m => m.CreateAsync(user)).ReturnsAsync(new ClaimsPrincipal(new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationType))).Verifiable();
-            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory.Object, options.Object);
+            var helper = SetupSignInManager(manager.Object, context.Object);
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "password", isPersistent, false);
@@ -508,8 +481,6 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Verify();
             context.Verify();
             response.Verify();
-            contextAccessor.Verify();
-            claimsFactory.Verify();
         }
 
         [Theory]
@@ -525,18 +496,9 @@ namespace Microsoft.AspNet.Identity.Test
             response.Setup(r => r.SignOut(authenticationScheme)).Verifiable();
             response.Setup(r => r.SignOut(IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme)).Verifiable();
             response.Setup(r => r.SignOut(IdentityOptions.ExternalCookieAuthenticationScheme)).Verifiable();
-            var contextAccessor = new Mock<IHttpContextAccessor>();
-            contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
-            var roleManager = MockHelpers.MockRoleManager<TestRole>();
-            var identityOptions = new IdentityOptions();
-            var options = new Mock<IOptions<IdentityOptions>>();
-            options.Setup(a => a.Options).Returns(identityOptions);
             IdentityOptions.ApplicationCookieAuthenticationScheme = authenticationScheme;
-            var claimsFactory = new Mock<UserClaimsPrincipalFactory<TestUser, TestRole>>(manager.Object, roleManager.Object, options.Object);
             var logStore = new StringBuilder();
-            var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
-            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory.Object, options.Object, null);
-            helper.Logger = logger.Object;
+            var helper = SetupSignInManager(manager.Object, context.Object, logStore);
 
             // Act
             helper.SignOut();
@@ -544,8 +506,6 @@ namespace Microsoft.AspNet.Identity.Test
             // Assert
             context.Verify();
             response.Verify();
-            contextAccessor.Verify();
-            claimsFactory.Verify();
         }
 
         [Fact]
@@ -558,19 +518,10 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
             manager.Setup(m => m.CheckPasswordAsync(user, "bogus")).ReturnsAsync(false).Verifiable();
             var context = new Mock<HttpContext>();
-            var contextAccessor = new Mock<IHttpContextAccessor>();
-            contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
-            var roleManager = MockHelpers.MockRoleManager<TestRole>();
-            var identityOptions = new IdentityOptions();
-            var options = new Mock<IOptions<IdentityOptions>>();
-            options.Setup(a => a.Options).Returns(identityOptions);
-            var claimsFactory = new Mock<UserClaimsPrincipalFactory<TestUser, TestRole>>(manager.Object, roleManager.Object, options.Object);
             var logStore = new StringBuilder();
-            var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
-            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory.Object, options.Object);
-            helper.Logger = logger.Object;
-            string expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
-            string expectedLog = string.Format("{0} : {1}", "PasswordSignInAsync", "Failed");
+            var helper = SetupSignInManager(manager.Object, context.Object, logStore);
+            var expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
+            var expectedLog = string.Format("{0} : {1}", "PasswordSignInAsync", "Failed");
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, false);
 
@@ -580,7 +531,6 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
             manager.Verify();
             context.Verify();
-            contextAccessor.Verify();
         }
 
         [Fact]
@@ -590,14 +540,7 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = MockHelpers.MockUserManager<TestUser>();
             manager.Setup(m => m.FindByNameAsync("bogus")).ReturnsAsync(null).Verifiable();
             var context = new Mock<HttpContext>();
-            var contextAccessor = new Mock<IHttpContextAccessor>();
-            contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
-            var roleManager = MockHelpers.MockRoleManager<TestRole>();
-            var identityOptions = new IdentityOptions();
-            var options = new Mock<IOptions<IdentityOptions>>();
-            options.Setup(a => a.Options).Returns(identityOptions);
-            var claimsFactory = new Mock<UserClaimsPrincipalFactory<TestUser, TestRole>>(manager.Object, roleManager.Object, options.Object);
-            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory.Object, options.Object);
+            var helper = SetupSignInManager(manager.Object, context.Object);
 
             // Act
             var result = await helper.PasswordSignInAsync("bogus", "bogus", false, false);
@@ -606,7 +549,6 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.False(result.Succeeded);
             manager.Verify();
             context.Verify();
-            contextAccessor.Verify();
         }
 
         [Fact]
@@ -625,14 +567,7 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Setup(m => m.IsLockedOutAsync(user)).Returns(() => Task.FromResult(lockedout));
             manager.Setup(m => m.CheckPasswordAsync(user, "bogus")).ReturnsAsync(false).Verifiable();
             var context = new Mock<HttpContext>();
-            var contextAccessor = new Mock<IHttpContextAccessor>();
-            contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
-            var roleManager = MockHelpers.MockRoleManager<TestRole>();
-            var identityOptions = new IdentityOptions();
-            var options = new Mock<IOptions<IdentityOptions>>();
-            options.Setup(a => a.Options).Returns(identityOptions);
-            var claimsFactory = new Mock<UserClaimsPrincipalFactory<TestUser, TestRole>>(manager.Object, roleManager.Object, options.Object);
-            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory.Object, options.Object);
+            var helper = SetupSignInManager(manager.Object, context.Object);
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, true);
@@ -664,20 +599,12 @@ namespace Microsoft.AspNet.Identity.Test
                 context.Setup(c => c.Response).Returns(response.Object).Verifiable();
                 SetupSignIn(response);
             }
-            var contextAccessor = new Mock<IHttpContextAccessor>();
-            contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
-            var roleManager = MockHelpers.MockRoleManager<TestRole>();
             var identityOptions = new IdentityOptions();
             identityOptions.SignIn.RequireConfirmedEmail = true;
-            var options = new Mock<IOptions<IdentityOptions>>();
-            options.Setup(a => a.Options).Returns(identityOptions);
-            var claimsFactory = new Mock<UserClaimsPrincipalFactory<TestUser, TestRole>>(manager.Object, roleManager.Object, options.Object);
             var logStore = new StringBuilder();
-            var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
-            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory.Object, options.Object);
-            helper.Logger = logger.Object;
-            string expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
-            string expectedLog = string.Format("{0} : {1}", "CanSignInAsync", confirmed.ToString());
+            var helper = SetupSignInManager(manager.Object, context.Object, logStore, identityOptions);
+            var expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
+            var expectedLog = string.Format("{0} : {1}", "CanSignInAsync", confirmed.ToString());
 
             // Act
             var result = await helper.PasswordSignInAsync(user, "password", false, false);
@@ -692,7 +619,6 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Verify();
             context.Verify();
             response.Verify();
-            contextAccessor.Verify();
         }
 
         private static void SetupSignIn(Mock<HttpResponse> response, string userId = null, bool? isPersistent = null, string loginProvider = null)
@@ -722,20 +648,12 @@ namespace Microsoft.AspNet.Identity.Test
                 SetupSignIn(response);
             }
 
-            var contextAccessor = new Mock<IHttpContextAccessor>();
-            contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
-            var roleManager = MockHelpers.MockRoleManager<TestRole>();
             var identityOptions = new IdentityOptions();
             identityOptions.SignIn.RequireConfirmedPhoneNumber = true;
-            var options = new Mock<IOptions<IdentityOptions>>();
-            options.Setup(a => a.Options).Returns(identityOptions);
-            var claimsFactory = new Mock<UserClaimsPrincipalFactory<TestUser, TestRole>>(manager.Object, roleManager.Object, options.Object);
             var logStore = new StringBuilder();
-            var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
-            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory.Object, options.Object, null);
-            helper.Logger = logger.Object;
-            string expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
-            string expectedLog = string.Format("{0} : {1}", "CanSignInAsync", confirmed.ToString());
+            var helper = SetupSignInManager(manager.Object, context.Object, logStore, identityOptions);
+            var expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
+            var expectedLog = string.Format("{0} : {1}", "CanSignInAsync", confirmed.ToString());
 
             // Act
             var result = await helper.PasswordSignInAsync(user, "password", false, false);
@@ -748,7 +666,6 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Verify();
             context.Verify();
             response.Verify();
-            contextAccessor.Verify();
         }
     }
 }

@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Hosting;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
 {
@@ -19,10 +21,18 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
             return db;
         }
 
-        public static RoleManager<IdentityRole> CreateRoleManager(InMemoryContext context)
+        public static IServiceCollection CreateTestServices()
         {
             var services = new ServiceCollection();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddLogging();
             services.AddIdentity<IdentityUser, IdentityRole>();
+            return services;
+        }
+
+        public static RoleManager<IdentityRole> CreateRoleManager(InMemoryContext context)
+        {
+            var services = CreateTestServices();
             services.AddInstance<IRoleStore<IdentityRole>>(new RoleStore<IdentityRole>(context));
             return services.BuildServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
         }

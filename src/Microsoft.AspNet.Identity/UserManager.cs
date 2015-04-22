@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Identity
                 }
             }
 
-            Logger = logger?.CreateLogger<UserManager<TUser>>() ?? new Logger<UserManager<TUser>>(new LoggerFactory());
+            Logger = logger?.CreateLogger<UserManager<TUser>>();
 
             if (tokenProviders != null)
             {
@@ -1996,7 +1996,7 @@ namespace Microsoft.AspNet.Identity
         protected virtual async Task<IDisposable> BeginLoggingScopeAsync(TUser user, [CallerMemberName] string methodName = null)
         {
             var state = Resources.FormatLoggingResultMessageForUser(methodName, await GetUserIdAsync(user));
-            return Logger.BeginScope(state);
+            return Logger?.BeginScope(state);
         }
             
 

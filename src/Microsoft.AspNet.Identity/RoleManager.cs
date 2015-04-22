@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Identity
                 }
             }
 
-            Logger = logger?.CreateLogger<RoleManager<TRole>>() ?? new Logger<RoleManager<TRole>>(new LoggerFactory());
+            Logger = logger?.CreateLogger<RoleManager<TRole>>();
         }
 
         /// <summary>
@@ -408,7 +408,7 @@ namespace Microsoft.AspNet.Identity
         protected virtual async Task<IDisposable> BeginLoggingScopeAsync(TRole role, [CallerMemberName] string methodName = null)
         {
             var state = Resources.FormatLoggingResultMessageForRole(methodName, await GetRoleIdAsync(role));
-            return Logger.BeginScope(state);
+            return Logger?.BeginScope(state);
         }
             
 

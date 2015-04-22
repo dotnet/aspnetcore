@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
-using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
@@ -26,8 +25,8 @@ namespace Microsoft.AspNet.Identity
         public SignInManager(UserManager<TUser> userManager,
             IHttpContextAccessor contextAccessor,
             IUserClaimsPrincipalFactory<TUser> claimsFactory,
-            IOptions<IdentityOptions> optionsAccessor = null,
-            ILoggerFactory logger = null)
+            IOptions<IdentityOptions> optionsAccessor,
+            ILoggerFactory logger)
         {
             if (userManager == null)
             {
@@ -48,7 +47,7 @@ namespace Microsoft.AspNet.Identity
             ClaimsFactory = claimsFactory;
             Options = optionsAccessor?.Options ?? new IdentityOptions();
 
-            Logger = logger?.CreateLogger<SignInManager<TUser>>() ?? new Logger<SignInManager<TUser>>(new LoggerFactory());
+            Logger = logger?.CreateLogger<SignInManager<TUser>>();
         }
 
         protected internal virtual ILogger Logger { get; set; }
@@ -400,7 +399,7 @@ namespace Microsoft.AspNet.Identity
         protected virtual async Task<IDisposable> BeginLoggingScopeAsync(TUser user, [CallerMemberName] string methodName = null)
         {
             var state = Resources.FormatLoggingResultMessageForUser(methodName, await UserManager.GetUserIdAsync(user));
-            return Logger.BeginScope(state);
+            return Logger?.BeginScope(state);
         }
             
 
