@@ -1,25 +1,25 @@
 > Tested on: Ubuntu 14.04, Mint 17.01
 
-As with all other operating systems you need DNVM to get going with ASP.NEt 5. To get it you run curl to download a .sh file and then run it. However, getting a new Linux machine configured to be able to actually run an ASP.NET 5 application is more complicated.
+As with all other operating systems you need DNVM to get going with ASP.NET 5. To get it you run `curl` to download a `.sh` file and then run it. To configure a Linux machine to run an ASP.NET 5 application use the following instructions.
 
-To setup our Linux machine we will:
+The steps to set up a Linux machine are:
 
  * Get a working version of Mono
  * Get and compile libuv (Required for the Kestrel server)
  * Get DNVM
  * Add sources to NuGet.config (For package restore)
 
-###Docker
+### Docker
 
-There are instructions on how to use the ASP.NET [Docker](https://www.docker.com/) image here: http://blogs.msdn.com/b/webdev/archive/2015/01/14/running-asp-net-5-applications-in-linux-containers-with-docker.aspx
+Instructions on how to use the ASP.NET [Docker](https://www.docker.com/) image here: http://blogs.msdn.com/b/webdev/archive/2015/01/14/running-asp-net-5-applications-in-linux-containers-with-docker.aspx
 
-The rest of this section deals with setting up a machine to run applications without the docker image.
+The rest of this section deals with setting up a machine to run applications without the Docker image.
 
 ### Get Mono
 
-Mono is how .NET applications can run on platforms other than Windows, it is an ongoing effort to port the .NET framework to other platforms. In the process of developing ASP.NET 5 we worked with the Mono team to fix some bugs and add some features that we needed to run ASP.NET applications. Because these changes haven't yet made it into an official Mono release we will either grab a Mono nightly build or compile Mono from source.
+Mono is how .NET applications can run on platforms other than Windows. Mono is an ongoing effort to port the .NET Framework to other platforms. In the process of developing ASP.NET 5 we worked with the Mono team to fix some bugs and add features that are needed to run ASP.NET applications. Because these changes haven't yet made it into an official Mono release we will either grab a Mono nightly build or compile Mono from source.
 
-#### Option 1: CI build
+#### Option 1: Mono CI build
 
 The Mono CI server builds packages for Linux distributions on each commit. To get them you install a particular snapshot and then run `mono-snapshot APP/VER` to change the current shell to use the provided snapshot. In these instructions we will grab the latest snapshot and set it to be the one to use.
 
@@ -36,7 +36,7 @@ sudo apt-get install mono-snapshot-latest
 ```
 **NOTE:** Official Mono instructions that these steps come from are here: http://www.mono-project.com/docs/getting-started/install/linux/ci-packages/.
 
-#### Option 2: Build from source
+#### Option 2: Build Mono from source
 
 Building Mono from source can take some time, and the commands below will install the built version of Mono on your machine replacing any version you might already have.
 
@@ -55,7 +55,7 @@ mozroots --import --sync
 
 See http://www.mono-project.com/docs/compiling-mono/linux/ for more details and some other build options.
 
-**NOTE:** Mono on Linux before 3.12 by default didn’t trust any SSL certificates so you got errors when accessing HTTPS resources. This is not required anymore as 3.12 and later include a new tool that runs on package installation and syncs Mono’s certificate store with the system certificate store (on older versions you have to import Mozilla’s list of trusted certificates by running `mozroots --import --sync`. If you get exceptions during package restore this is the most likely reason.
+**NOTE:** Mono on Linux before 3.12 by default didn't trust any SSL certificates so you got errors when accessing HTTPS resources. This is not required anymore as 3.12 and later include a new tool that runs on package installation and syncs Mono's certificate store with the system certificate store (on older versions you have to import Mozilla's list of trusted certificates by running `mozroots --import --sync`. If you get exceptions during package restore this is the most likely reason.
 
 ### Get libuv
 
@@ -75,18 +75,18 @@ sudo rm -rf /usr/local/src/libuv-1.4.2 && cd ~/
 sudo ldconfig
 ```
 
-**NOTE:** `make install` puts `libuv.so.1` in `/usr/local/lib`, in the above commands `ldconfig` is used to update `ld.so.cache` so that `dlopen` (see man dlopen) can load it. If you are getting libuv some other way or not running `make install` then you need to ensure that dlopen is capable of loading `libuv.so.1`
+**NOTE:** `make install` puts `libuv.so.1` in `/usr/local/lib`, in the above commands `ldconfig` is used to update `ld.so.cache` so that `dlopen` (see `man dlopen`) can load it. If you are getting libuv some other way or not running `make install` then you need to ensure that dlopen is capable of loading `libuv.so.1`.
 
 ### Get DNVM
 
-Now lets get DNVM. To do this run:
+Now let's get DNVM. To do this run:
 
 ```
 curl -sSL https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.sh | DNX_BRANCH=dev sh && source ~/.dnx/dnvm/dnvm.sh
 ```
 
 (TODO: Need to change dnvinstall.sh to actually put it in bin. It doesn't at the moment but should.
-dnvminstall.sh grabs and copies dnvm.sh into your Home directory (~/.dnx/bin) and sources it. It will also try and find bash or zsh profiles and add a call to source dnvm to them so that dnvm will be available all the time. If you don't like this behaviour or want to do something else then you can edit your profile after running dnvminstall.sh or do all the tasks dnvminstall does changing what you like.
+dnvminstall.sh grabs and copies dnvm.sh into your Home directory (~/.dnx/bin) and sources it. It will also try and find bash or zsh profiles and add a call to source dnvm to them so that dnvm will be available all the time. If you don't like this behaviour or want to do something else then you can edit your profile after running dnvminstall.sh or do all the tasks dnvminstall does changing what you like.)
 
 Once this step is complete you should be able to run `dnvm` and see some help text.
 
@@ -94,7 +94,7 @@ Once this step is complete you should be able to run `dnvm` and see some help te
 
 Now that we have DNVM and the other tools needed to run an ASP.NET application we need to add the development configuration sources to get nightly builds of all the ASP.NET packages.
 
-The nightly package source is: https://www.myget.org/F/aspnetvnext/api/v2/
+The nightly package source is: `https://www.myget.org/F/aspnetvnext/api/v2/`
 
 To add this to your package sources you need to edit the NuGet.config.
 
