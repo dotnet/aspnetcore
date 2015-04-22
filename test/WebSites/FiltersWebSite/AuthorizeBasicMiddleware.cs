@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 
 namespace FiltersWebSite
@@ -12,8 +13,9 @@ namespace FiltersWebSite
         public AuthorizeBasicMiddleware(
             RequestDelegate next, 
             IOptions<BasicOptions> options,
+            ILoggerFactory loggerFactory,
             string authScheme) : 
-                base(next, options, 
+                base(next, options, loggerFactory,
                     new ConfigureOptions<BasicOptions>(o => o.AuthenticationScheme = authScheme) { Name = authScheme })
         {
         }
