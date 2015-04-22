@@ -25,8 +25,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
     /// </summary>
     public class OpenIdConnectAuthenticationMiddleware : AuthenticationMiddleware<OpenIdConnectAuthenticationOptions>
     {
-        private readonly ILogger _logger;
-
         /// <summary>
         /// Initializes a <see cref="OpenIdConnectAuthenticationMiddleware"/>
         /// </summary>
@@ -45,9 +43,8 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             [NotNull] IOptions<ExternalAuthenticationOptions> externalOptions,
             [NotNull] IOptions<OpenIdConnectAuthenticationOptions> options,
             ConfigureOptions<OpenIdConnectAuthenticationOptions> configureOptions = null)
-            : base(next, options, configureOptions)
+            : base(next, options, loggerFactory, configureOptions)
         {
-            _logger = loggerFactory.CreateLogger<OpenIdConnectAuthenticationMiddleware>();
             if (string.IsNullOrEmpty(Options.SignInScheme) && !string.IsNullOrEmpty(externalOptions.Options.SignInScheme))
             {
                 Options.SignInScheme = externalOptions.Options.SignInScheme;
@@ -120,7 +117,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                         Options.MetadataAddress += ".well-known/openid-configuration";
                     }
 
-                    HttpClient httpClient = new HttpClient(ResolveHttpMessageHandler(Options));
+                    var httpClient = new HttpClient(ResolveHttpMessageHandler(Options));
                     httpClient.Timeout = Options.BackchannelTimeout;
                     httpClient.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
                     Options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(Options.MetadataAddress, httpClient);
@@ -134,13 +131,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="OpenIdConnectAuthenticationOptions"/> supplied to the constructor.</returns>
         protected override AuthenticationHandler<OpenIdConnectAuthenticationOptions> CreateHandler()
         {
-            return new OpenIdConnectAuthenticationHandler(_logger);
+            return new OpenIdConnectAuthenticationHandler();
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]
         private static HttpMessageHandler ResolveHttpMessageHandler(OpenIdConnectAuthenticationOptions options)
         {
-            HttpMessageHandler handler = options.BackchannelHttpHandler ??
+            var handler = options.BackchannelHttpHandler ??
 #if DNX451
                 new WebRequestHandler();
             // If they provided a validator, apply it or fail.

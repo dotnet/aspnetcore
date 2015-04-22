@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
         /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="FacebookAuthenticationOptions"/> supplied to the constructor.</returns>
         protected override AuthenticationHandler<FacebookAuthenticationOptions> CreateHandler()
         {
-            return new FacebookAuthenticationHandler(Backchannel, Logger);
+            return new FacebookAuthenticationHandler(Backchannel);
         }
     }
 }

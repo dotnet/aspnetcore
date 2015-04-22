@@ -22,7 +22,6 @@ namespace Microsoft.AspNet.Authentication.Twitter
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Middleware are not disposable.")]
     public class TwitterAuthenticationMiddleware : AuthenticationMiddleware<TwitterAuthenticationOptions>
     {
-        private readonly ILogger _logger;
         private readonly HttpClient _httpClient;
 
         /// <summary>
@@ -40,7 +39,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             [NotNull] IOptions<ExternalAuthenticationOptions> externalOptions,
             [NotNull] IOptions<TwitterAuthenticationOptions> options,
             ConfigureOptions<TwitterAuthenticationOptions> configureOptions = null)
-            : base(next, options, configureOptions)
+            : base(next, options, loggerFactory, configureOptions)
         {
             if (string.IsNullOrWhiteSpace(Options.ConsumerSecret))
             {
@@ -50,8 +49,6 @@ namespace Microsoft.AspNet.Authentication.Twitter
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "ConsumerKey"));
             }
-
-            _logger = loggerFactory.CreateLogger(typeof(TwitterAuthenticationMiddleware).FullName);
 
             if (Options.Notifications == null)
             {
@@ -90,7 +87,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
         /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="TwitterAuthenticationOptions"/> supplied to the constructor.</returns>
         protected override AuthenticationHandler<TwitterAuthenticationOptions> CreateHandler()
         {
-            return new TwitterAuthenticationHandler(_httpClient, _logger);
+            return new TwitterAuthenticationHandler(_httpClient);
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]

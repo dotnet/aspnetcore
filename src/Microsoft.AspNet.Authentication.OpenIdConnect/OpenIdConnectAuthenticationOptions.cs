@@ -38,7 +38,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <remarks>
         /// Defaults:
         /// <para>AddNonceToRequest: true.</para>
-        /// <para>AuthenticationMode: <see cref="AuthenticationMode.Active"/>.</para>
         /// <para>BackchannelTimeout: 1 minute.</para>
         /// <para>Caption: <see cref="OpenIdConnectAuthenticationDefaults.Caption"/>.</para>
         /// <para>ProtocolValidator: new <see cref="OpenIdConnectProtocolValidator"/>.</para>

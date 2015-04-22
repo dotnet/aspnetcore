@@ -34,9 +34,8 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
             [NotNull] ILoggerFactory loggerFactory,
             [NotNull] IOptions<OAuthBearerAuthenticationOptions> options,
             ConfigureOptions<OAuthBearerAuthenticationOptions> configureOptions)
-            : base(next, options, configureOptions)
+            : base(next, options, loggerFactory, configureOptions)
         {
-            _logger = loggerFactory.CreateLogger<OAuthBearerAuthenticationMiddleware>();
             if (Options.Notifications == null)
             {
                 Options.Notifications = new OAuthBearerAuthenticationNotifications();
@@ -86,7 +85,7 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
         /// <returns>A new instance of the request handler</returns>
         protected override AuthenticationHandler<OAuthBearerAuthenticationOptions> CreateHandler()
         {
-            return new OAuthBearerAuthenticationHandler(_logger);
+            return new OAuthBearerAuthenticationHandler();
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]

@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Authentication
 {
@@ -19,11 +20,12 @@ namespace Microsoft.AspNet.Authentication
         /// </summary>
         /// <param name="options">The original options passed by the application control behavior</param>
         /// <param name="context">The utility object to observe the current request and response</param>
+        /// <param name="logger">The logging factory used to create loggers</param>
         /// <returns>async completion</returns>
-        public Task Initialize(TOptions options, HttpContext context)
+        public Task Initialize(TOptions options, HttpContext context, ILogger logger)
         {
             Options = options;
-            return BaseInitializeAsync(options, context);
+            return BaseInitializeAsync(options, context, logger);
         }
     }
 }

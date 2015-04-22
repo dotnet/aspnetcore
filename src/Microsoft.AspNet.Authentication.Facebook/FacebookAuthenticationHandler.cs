@@ -21,8 +21,8 @@ namespace Microsoft.AspNet.Authentication.Facebook
 {
     internal class FacebookAuthenticationHandler : OAuthAuthenticationHandler<FacebookAuthenticationOptions, IFacebookAuthenticationNotifications>
     {
-        public FacebookAuthenticationHandler(HttpClient httpClient, ILogger logger)
-            : base(httpClient, logger)
+        public FacebookAuthenticationHandler(HttpClient httpClient)
+            : base(httpClient)
         {
         }
 
@@ -39,9 +39,9 @@ namespace Microsoft.AspNet.Authentication.Facebook
 
             var tokenResponse = await Backchannel.GetAsync(Options.TokenEndpoint + queryBuilder.ToString(), Context.RequestAborted);
             tokenResponse.EnsureSuccessStatusCode();
-            string oauthTokenResponse = await tokenResponse.Content.ReadAsStringAsync();
+            var oauthTokenResponse = await tokenResponse.Content.ReadAsStringAsync();
 
-            IFormCollection form = new FormCollection(FormReader.ReadForm(oauthTokenResponse));
+            var form = new FormCollection(FormReader.ReadForm(oauthTokenResponse));
             var response = new JObject();
             foreach (string key in form.Keys)
             {
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
 
         protected override async Task<AuthenticationTicket> GetUserInformationAsync(AuthenticationProperties properties, TokenResponse tokens)
         {
-            string graphAddress = Options.UserInformationEndpoint + "?access_token=" + Uri.EscapeDataString(tokens.AccessToken);
+            var graphAddress = Options.UserInformationEndpoint + "?access_token=" + Uri.EscapeDataString(tokens.AccessToken);
             if (Options.SendAppSecretProof)
             {
                 graphAddress += "&appsecret_proof=" + GenerateAppSecretProof(tokens.AccessToken);
@@ -61,8 +61,8 @@ namespace Microsoft.AspNet.Authentication.Facebook
 
             var graphResponse = await Backchannel.GetAsync(graphAddress, Context.RequestAborted);
             graphResponse.EnsureSuccessStatusCode();
-            string text = await graphResponse.Content.ReadAsStringAsync();
-            JObject user = JObject.Parse(text);
+            var text = await graphResponse.Content.ReadAsStringAsync();
+            var user = JObject.Parse(text);
 
             var context = new FacebookAuthenticatedContext(Context, Options, user, tokens);
             var identity = new ClaimsIdentity(
@@ -107,8 +107,8 @@ namespace Microsoft.AspNet.Authentication.Facebook
         {
             using (HMACSHA256 algorithm = new HMACSHA256(Encoding.ASCII.GetBytes(Options.AppSecret)))
             {
-                byte[] hash = algorithm.ComputeHash(Encoding.ASCII.GetBytes(accessToken));
-                StringBuilder builder = new StringBuilder();
+                var hash = algorithm.ComputeHash(Encoding.ASCII.GetBytes(accessToken));
+                var builder = new StringBuilder();
                 for (int i = 0; i < hash.Length; i++)
                 {
                     builder.Append(hash[i].ToString("x2", CultureInfo.InvariantCulture));

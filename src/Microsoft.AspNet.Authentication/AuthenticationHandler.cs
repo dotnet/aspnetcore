@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,6 +48,8 @@ namespace Microsoft.AspNet.Authentication
 
         protected PathString RequestPathBase { get; private set; }
 
+        protected ILogger Logger { get; private set; }
+
         internal AuthenticationOptions BaseOptions
         {
             get { return _baseOptions; }
@@ -61,11 +61,12 @@ namespace Microsoft.AspNet.Authentication
 
         public bool Faulted { get; set; }
 
-        protected async Task BaseInitializeAsync(AuthenticationOptions options, HttpContext context)
+        protected async Task BaseInitializeAsync([NotNull] AuthenticationOptions options, [NotNull] HttpContext context, [NotNull] ILogger logger)
         {
             _baseOptions = options;
             Context = context;
             RequestPathBase = Request.PathBase;
+            Logger = logger;
 
             RegisterAuthenticationHandler();
 
@@ -414,13 +415,13 @@ namespace Microsoft.AspNet.Authentication
             Response.Cookies.Append(correlationKey, correlationId, cookieOptions);
         }
 
-        protected bool ValidateCorrelationId([NotNull] AuthenticationProperties properties, [NotNull] ILogger logger)
+        protected bool ValidateCorrelationId([NotNull] AuthenticationProperties properties)
         {
             var correlationKey = Constants.CorrelationPrefix + BaseOptions.AuthenticationScheme;
             var correlationCookie = Request.Cookies[correlationKey];
             if (string.IsNullOrWhiteSpace(correlationCookie))
             {
-                logger.LogWarning("{0} cookie not found.", correlationKey);
+                Logger.LogWarning("{0} cookie not found.", correlationKey);
                 return false;
             }
 
@@ -436,7 +437,7 @@ namespace Microsoft.AspNet.Authentication
                 correlationKey,
                 out correlationExtra))
             {
-                logger.LogWarning("{0} state property not found.", correlationKey);
+                Logger.LogWarning("{0} state property not found.", correlationKey);
                 return false;
             }
 
@@ -444,7 +445,7 @@ namespace Microsoft.AspNet.Authentication
 
             if (!string.Equals(correlationCookie, correlationExtra, StringComparison.Ordinal))
             {
-                logger.LogWarning("{0} correlation cookie and state property mismatch.", correlationKey);
+                Logger.LogWarning("{0} correlation cookie and state property mismatch.", correlationKey);
                 return false;
             }
 
@@ -465,4 +466,3 @@ namespace Microsoft.AspNet.Authentication
         }
     }
 }
-

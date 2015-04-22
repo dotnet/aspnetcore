@@ -1,35 +1,31 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Authentication.OAuth;
-using Microsoft.Framework.Logging;
+using Microsoft.AspNet.Http.Authentication;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Authentication.MicrosoftAccount
 {
     internal class MicrosoftAccountAuthenticationHandler : OAuthAuthenticationHandler<MicrosoftAccountAuthenticationOptions, IMicrosoftAccountAuthenticationNotifications>
     {
-        public MicrosoftAccountAuthenticationHandler(HttpClient httpClient, ILogger logger)
-            : base(httpClient, logger)
+        public MicrosoftAccountAuthenticationHandler(HttpClient httpClient)
+            : base(httpClient)
         {
         }
 
         protected override async Task<AuthenticationTicket> GetUserInformationAsync(AuthenticationProperties properties, TokenResponse tokens)
         {
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Options.UserInformationEndpoint);
+            var request = new HttpRequestMessage(HttpMethod.Get, Options.UserInformationEndpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
-            HttpResponseMessage graphResponse = await Backchannel.SendAsync(request, Context.RequestAborted);
+            var graphResponse = await Backchannel.SendAsync(request, Context.RequestAborted);
             graphResponse.EnsureSuccessStatusCode();
-            string accountString = await graphResponse.Content.ReadAsStringAsync();
-            JObject accountInformation = JObject.Parse(accountString);
+            var accountString = await graphResponse.Content.ReadAsStringAsync();
+            var accountInformation = JObject.Parse(accountString);
 
             var context = new MicrosoftAccountAuthenticatedContext(Context, Options, accountInformation, tokens);
             context.Properties = properties;

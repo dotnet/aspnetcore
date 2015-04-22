@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Authentication.Google
         /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="GoogleAuthenticationOptions"/> supplied to the constructor.</returns>
         protected override AuthenticationHandler<GoogleAuthenticationOptions> CreateHandler()
         {
-            return new GoogleAuthenticationHandler(Backchannel, Logger);
+            return new GoogleAuthenticationHandler(Backchannel);
         }
     }
 }

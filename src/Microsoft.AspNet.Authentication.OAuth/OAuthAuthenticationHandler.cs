@@ -19,15 +19,12 @@ namespace Microsoft.AspNet.Authentication.OAuth
         where TOptions : OAuthAuthenticationOptions<TNotifications>
         where TNotifications : IOAuthAuthenticationNotifications
     {
-        public OAuthAuthenticationHandler(HttpClient backchannel, ILogger logger)
+        public OAuthAuthenticationHandler(HttpClient backchannel)
         {
             Backchannel = backchannel;
-            Logger = logger;
         }
 
         protected HttpClient Backchannel { get; private set; }
-
-        protected ILogger Logger { get; private set; }
 
         public override async Task<bool> InvokeAsync()
         {
@@ -107,7 +104,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
                 }
 
                 // OAuth2 10.12 CSRF
-                if (!ValidateCorrelationId(properties, Logger))
+                if (!ValidateCorrelationId(properties))
                 {
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);
                 }

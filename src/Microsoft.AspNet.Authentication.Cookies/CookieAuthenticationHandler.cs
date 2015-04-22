@@ -22,17 +22,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
         private const string HeaderValueMinusOne = "-1";
         private const string SessionIdClaim = "Microsoft.AspNet.Authentication.Cookies-SessionId";
 
-        private readonly ILogger _logger;
-
         private bool _shouldRenew;
         private DateTimeOffset _renewIssuedUtc;
         private DateTimeOffset _renewExpiresUtc;
         private string _sessionKey;
-
-        public CookieAuthenticationHandler([NotNull] ILogger logger)
-        {
-            _logger = logger;
-        }
 
         protected override AuthenticationTicket AuthenticateCore()
         {
@@ -54,7 +47,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
                 if (ticket == null)
                 {
-                    _logger.LogWarning(@"Unprotect ticket failed");
+                    Logger.LogWarning(@"Unprotect ticket failed");
                     return null;
                 }
 
@@ -63,14 +56,14 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     Claim claim = ticket.Principal.Claims.FirstOrDefault(c => c.Type.Equals(SessionIdClaim));
                     if (claim == null)
                     {
-                        _logger.LogWarning(@"SessionId missing");
+                        Logger.LogWarning(@"SessionId missing");
                         return null;
                     }
                     _sessionKey = claim.Value;
                     ticket = await Options.SessionStore.RetrieveAsync(_sessionKey);
                     if (ticket == null)
                     {
-                        _logger.LogWarning(@"Identity missing in session store");
+                        Logger.LogWarning(@"Identity missing in session store");
                         return null;
                     }
                 }

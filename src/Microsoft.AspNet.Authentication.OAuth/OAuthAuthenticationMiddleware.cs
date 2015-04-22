@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
             [NotNull] IOptions<ExternalAuthenticationOptions> externalOptions,
             [NotNull] IOptions<TOptions> options,
             ConfigureOptions<TOptions> configureOptions = null)
-            : base(next, options, configureOptions)
+            : base(next, options, loggerFactory, configureOptions)
         {
             // todo: review error handling
             if (string.IsNullOrWhiteSpace(Options.AuthenticationScheme))
@@ -64,11 +64,9 @@ namespace Microsoft.AspNet.Authentication.OAuth
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "TokenEndpoint"));
             }
 
-            Logger = loggerFactory.CreateLogger(this.GetType().FullName);
-
             if (Options.StateDataFormat == null)
             {
-                IDataProtector dataProtector = dataProtectionProvider.CreateProtector(
+                var dataProtector = dataProtectionProvider.CreateProtector(
                     this.GetType().FullName, Options.AuthenticationScheme, "v1");
                 Options.StateDataFormat = new PropertiesDataFormat(dataProtector);
             }
@@ -90,15 +88,13 @@ namespace Microsoft.AspNet.Authentication.OAuth
 
         protected HttpClient Backchannel { get; private set; }
 
-        protected ILogger Logger { get; private set; }
-
         /// <summary>
         /// Provides the <see cref="AuthenticationHandler"/> object for processing authentication-related requests.
         /// </summary>
         /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="OAuthAuthenticationOptions"/> supplied to the constructor.</returns>
         protected override AuthenticationHandler<TOptions> CreateHandler()
         {
-            return new OAuthAuthenticationHandler<TOptions, TNotifications>(Backchannel, Logger);
+            return new OAuthAuthenticationHandler<TOptions, TNotifications>(Backchannel);
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]

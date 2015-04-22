@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.Logging;
 using Xunit;
 
 namespace Microsoft.AspNet.Authentication
@@ -13,12 +14,10 @@ namespace Microsoft.AspNet.Authentication
         public void ShouldHandleSchemeAreDeterminedOnlyByMatchingAuthenticationScheme()
         {
             var handler = new TestHandler("Alpha");
-
-            bool passiveNoMatch = handler.ShouldHandleScheme("Beta");
+            var passiveNoMatch = handler.ShouldHandleScheme("Beta");
 
             handler = new TestHandler("Alpha");
-
-            bool passiveWithMatch = handler.ShouldHandleScheme("Alpha");
+            var passiveWithMatch = handler.ShouldHandleScheme("Alpha");
 
             Assert.False(passiveNoMatch);
             Assert.True(passiveWithMatch);
@@ -56,7 +55,7 @@ namespace Microsoft.AspNet.Authentication
         {
             public TestHandler(string scheme)
             {
-                Initialize(new TestOptions(), new DefaultHttpContext());
+                Initialize(new TestOptions(), new DefaultHttpContext(), new LoggerFactory().CreateLogger("TestHandler"));
                 Options.AuthenticationScheme = scheme;
             }
 
@@ -90,7 +89,7 @@ namespace Microsoft.AspNet.Authentication
         {
             public TestAutoHandler(string scheme, bool auto)
             {
-                Initialize(new TestAutoOptions(), new DefaultHttpContext());
+                Initialize(new TestAutoOptions(), new DefaultHttpContext(), new LoggerFactory().CreateLogger("TestHandler"));
                 Options.AuthenticationScheme = scheme;
                 Options.AutomaticAuthentication = auto;
             }

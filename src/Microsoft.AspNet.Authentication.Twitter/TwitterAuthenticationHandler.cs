@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Collections;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Authentication.Twitter.Messages;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Logging;
@@ -28,12 +27,10 @@ namespace Microsoft.AspNet.Authentication.Twitter
         private const string AccessTokenEndpoint = "https://api.twitter.com/oauth/access_token";
 
         private readonly HttpClient _httpClient;
-        private readonly ILogger _logger;
 
-        public TwitterAuthenticationHandler(HttpClient httpClient, ILogger logger)
+        public TwitterAuthenticationHandler(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _logger = logger;
         }
 
         public override async Task<bool> InvokeAsync()
@@ -55,40 +52,40 @@ namespace Microsoft.AspNet.Authentication.Twitter
             AuthenticationProperties properties = null;
             try
             {
-                IReadableStringCollection query = Request.Query;
-                string protectedRequestToken = Request.Cookies[StateCookie];
+                var query = Request.Query;
+                var protectedRequestToken = Request.Cookies[StateCookie];
 
-                RequestToken requestToken = Options.StateDataFormat.Unprotect(protectedRequestToken);
+                var requestToken = Options.StateDataFormat.Unprotect(protectedRequestToken);
 
                 if (requestToken == null)
                 {
-                    _logger.LogWarning("Invalid state");
+                    Logger.LogWarning("Invalid state");
                     return null;
                 }
 
                 properties = requestToken.Properties;
 
-                string returnedToken = query.Get("oauth_token");
+                var returnedToken = query.Get("oauth_token");
                 if (string.IsNullOrWhiteSpace(returnedToken))
                 {
-                    _logger.LogWarning("Missing oauth_token");
+                    Logger.LogWarning("Missing oauth_token");
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);
                 }
 
                 if (returnedToken != requestToken.Token)
                 {
-                    _logger.LogWarning("Unmatched token");
+                    Logger.LogWarning("Unmatched token");
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);
                 }
 
                 string oauthVerifier = query.Get("oauth_verifier");
                 if (string.IsNullOrWhiteSpace(oauthVerifier))
                 {
-                    _logger.LogWarning("Missing or blank oauth_verifier");
+                    Logger.LogWarning("Missing or blank oauth_verifier");
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);
                 }
 
-                AccessToken accessToken = await ObtainAccessTokenAsync(Options.ConsumerKey, Options.ConsumerSecret, requestToken, oauthVerifier);
+                var accessToken = await ObtainAccessTokenAsync(Options.ConsumerKey, Options.ConsumerSecret, requestToken, oauthVerifier);
 
                 var context = new TwitterAuthenticatedContext(Context, accessToken.UserId, accessToken.ScreenName, accessToken.Token, accessToken.TokenSecret);
 
@@ -120,7 +117,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             }
             catch (Exception ex)
             {
-                _logger.LogError("Authentication failed", ex);
+                Logger.LogError("Authentication failed", ex);
                 return new AuthenticationTicket(properties, Options.AuthenticationScheme);
             }
         }
@@ -148,8 +145,8 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 return;
             }
 
-            string requestPrefix = Request.Scheme + "://" + Request.Host;
-            string callBackUrl = requestPrefix + RequestPathBase + Options.CallbackPath;
+            var requestPrefix = Request.Scheme + "://" + Request.Host;
+            var callBackUrl = requestPrefix + RequestPathBase + Options.CallbackPath;
 
             AuthenticationProperties properties;
             if (ChallengeContext == null)
@@ -165,11 +162,11 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 properties.RedirectUri = requestPrefix + Request.PathBase + Request.Path + Request.QueryString;
             }
 
-            RequestToken requestToken = await ObtainRequestTokenAsync(Options.ConsumerKey, Options.ConsumerSecret, callBackUrl, properties);
+            var requestToken = await ObtainRequestTokenAsync(Options.ConsumerKey, Options.ConsumerSecret, callBackUrl, properties);
 
             if (requestToken.CallbackConfirmed)
             {
-                string twitterAuthenticationEndpoint = AuthenticationEndpoint + requestToken.Token;
+                var twitterAuthenticationEndpoint = AuthenticationEndpoint + requestToken.Token;
 
                 var cookieOptions = new CookieOptions
                 {
@@ -186,16 +183,16 @@ namespace Microsoft.AspNet.Authentication.Twitter
             }
             else
             {
-                _logger.LogError("requestToken CallbackConfirmed!=true");
+                Logger.LogError("requestToken CallbackConfirmed!=true");
             }
         }
 
         public async Task<bool> InvokeReturnPathAsync()
         {
-            AuthenticationTicket model = await AuthenticateAsync();
+            var model = await AuthenticateAsync();
             if (model == null)
             {
-                _logger.LogWarning("Invalid return state, unable to redirect.");
+                Logger.LogWarning("Invalid return state, unable to redirect.");
                 Response.StatusCode = 500;
                 return true;
             }
@@ -230,9 +227,9 @@ namespace Microsoft.AspNet.Authentication.Twitter
 
         private async Task<RequestToken> ObtainRequestTokenAsync(string consumerKey, string consumerSecret, string callBackUri, AuthenticationProperties properties)
         {
-            _logger.LogVerbose("ObtainRequestToken");
+            Logger.LogVerbose("ObtainRequestToken");
 
-            string nonce = Guid.NewGuid().ToString("N");
+            var nonce = Guid.NewGuid().ToString("N");
 
             var authorizationParts = new SortedDictionary<string, string>
             {
@@ -250,7 +247,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 parameterBuilder.AppendFormat("{0}={1}&", Uri.EscapeDataString(authorizationKey.Key), Uri.EscapeDataString(authorizationKey.Value));
             }
             parameterBuilder.Length--;
-            string parameterString = parameterBuilder.ToString();
+            var parameterString = parameterBuilder.ToString();
 
             var canonicalizedRequestBuilder = new StringBuilder();
             canonicalizedRequestBuilder.Append(HttpMethod.Post.Method);
@@ -259,7 +256,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             canonicalizedRequestBuilder.Append("&");
             canonicalizedRequestBuilder.Append(Uri.EscapeDataString(parameterString));
 
-            string signature = ComputeSignature(consumerSecret, null, canonicalizedRequestBuilder.ToString());
+            var signature = ComputeSignature(consumerSecret, null, canonicalizedRequestBuilder.ToString());
             authorizationParts.Add("oauth_signature", signature);
 
             var authorizationHeaderBuilder = new StringBuilder();
@@ -274,11 +271,11 @@ namespace Microsoft.AspNet.Authentication.Twitter
             var request = new HttpRequestMessage(HttpMethod.Post, RequestTokenEndpoint);
             request.Headers.Add("Authorization", authorizationHeaderBuilder.ToString());
 
-            HttpResponseMessage response = await _httpClient.SendAsync(request, Context.RequestAborted);
+            var response = await _httpClient.SendAsync(request, Context.RequestAborted);
             response.EnsureSuccessStatusCode();
             string responseText = await response.Content.ReadAsStringAsync();
 
-            IFormCollection responseParameters = new FormCollection(FormReader.ReadForm(responseText));
+            var responseParameters = new FormCollection(FormReader.ReadForm(responseText));
             if (string.Equals(responseParameters["oauth_callback_confirmed"], "true", StringComparison.Ordinal))
             {
                 return new RequestToken { Token = Uri.UnescapeDataString(responseParameters["oauth_token"]), TokenSecret = Uri.UnescapeDataString(responseParameters["oauth_token_secret"]), CallbackConfirmed = true, Properties = properties };
@@ -291,9 +288,9 @@ namespace Microsoft.AspNet.Authentication.Twitter
         {
             // https://dev.twitter.com/docs/api/1/post/oauth/access_token
 
-            _logger.LogVerbose("ObtainAccessToken");
+            Logger.LogVerbose("ObtainAccessToken");
 
-            string nonce = Guid.NewGuid().ToString("N");
+            var nonce = Guid.NewGuid().ToString("N");
 
             var authorizationParts = new SortedDictionary<string, string>
             {
@@ -312,7 +309,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 parameterBuilder.AppendFormat("{0}={1}&", Uri.EscapeDataString(authorizationKey.Key), Uri.EscapeDataString(authorizationKey.Value));
             }
             parameterBuilder.Length--;
-            string parameterString = parameterBuilder.ToString();
+            var parameterString = parameterBuilder.ToString();
 
             var canonicalizedRequestBuilder = new StringBuilder();
             canonicalizedRequestBuilder.Append(HttpMethod.Post.Method);
@@ -321,7 +318,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             canonicalizedRequestBuilder.Append("&");
             canonicalizedRequestBuilder.Append(Uri.EscapeDataString(parameterString));
 
-            string signature = ComputeSignature(consumerSecret, token.TokenSecret, canonicalizedRequestBuilder.ToString());
+            var signature = ComputeSignature(consumerSecret, token.TokenSecret, canonicalizedRequestBuilder.ToString());
             authorizationParts.Add("oauth_signature", signature);
             authorizationParts.Remove("oauth_verifier");
 
@@ -344,17 +341,16 @@ namespace Microsoft.AspNet.Authentication.Twitter
 
             request.Content = new FormUrlEncodedContent(formPairs);
 
-            HttpResponseMessage response = await _httpClient.SendAsync(request, Context.RequestAborted);
+            var response = await _httpClient.SendAsync(request, Context.RequestAborted);
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogError("AccessToken request failed with a status code of " + response.StatusCode);
+                Logger.LogError("AccessToken request failed with a status code of " + response.StatusCode);
                 response.EnsureSuccessStatusCode(); // throw
             }
 
-            string responseText = await response.Content.ReadAsStringAsync();
-
-            IFormCollection responseParameters = new FormCollection(FormReader.ReadForm(responseText));
+            var responseText = await response.Content.ReadAsStringAsync();
+            var responseParameters = new FormCollection(FormReader.ReadForm(responseText));
 
             return new AccessToken
             {
@@ -367,7 +363,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
 
         private static string GenerateTimeStamp()
         {
-            TimeSpan secondsSinceUnixEpocStart = DateTime.UtcNow - Epoch;
+            var secondsSinceUnixEpocStart = DateTime.UtcNow - Epoch;
             return Convert.ToInt64(secondsSinceUnixEpocStart.TotalSeconds).ToString(CultureInfo.InvariantCulture);
         }
 
@@ -380,7 +376,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                         "{0}&{1}",
                         Uri.EscapeDataString(consumerSecret),
                         string.IsNullOrEmpty(tokenSecret) ? string.Empty : Uri.EscapeDataString(tokenSecret)));
-                byte[] hash = algorithm.ComputeHash(Encoding.ASCII.GetBytes(signatureData));
+                var hash = algorithm.ComputeHash(Encoding.ASCII.GetBytes(signatureData));
                 return Convert.ToBase64String(hash);
             }
         }

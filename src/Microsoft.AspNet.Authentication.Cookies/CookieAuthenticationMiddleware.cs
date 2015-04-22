@@ -15,8 +15,6 @@ namespace Microsoft.AspNet.Authentication.Cookies
 {
     public class CookieAuthenticationMiddleware : AuthenticationMiddleware<CookieAuthenticationOptions>
     {
-        private readonly ILogger _logger;
-
         public CookieAuthenticationMiddleware(
             [NotNull] RequestDelegate next,
             [NotNull] IDataProtectionProvider dataProtectionProvider,
@@ -24,7 +22,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             [NotNull] IUrlEncoder urlEncoder,
             [NotNull] IOptions<CookieAuthenticationOptions> options,
             ConfigureOptions<CookieAuthenticationOptions> configureOptions)
-            : base(next, options, configureOptions)
+            : base(next, options, loggerFactory, configureOptions)
         {
             if (Options.Notifications == null)
             {
@@ -36,7 +34,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             }
             if (Options.TicketDataFormat == null)
             {
-                IDataProtector dataProtector = dataProtectionProvider.CreateProtector(
+                var dataProtector = dataProtectionProvider.CreateProtector(
                     typeof(CookieAuthenticationMiddleware).FullName, Options.AuthenticationScheme, "v2");
                 Options.TicketDataFormat = new TicketDataFormat(dataProtector);
             }
@@ -44,13 +42,11 @@ namespace Microsoft.AspNet.Authentication.Cookies
             {
                 Options.CookieManager = new ChunkingCookieManager(urlEncoder);
             }
-
-            _logger = loggerFactory.CreateLogger(typeof(CookieAuthenticationMiddleware).FullName);
         }
 
         protected override AuthenticationHandler<CookieAuthenticationOptions> CreateHandler()
         {
-            return new CookieAuthenticationHandler(_logger);
+            return new CookieAuthenticationHandler();
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Authentication
@@ -17,6 +18,7 @@ namespace Microsoft.AspNet.Authentication
         protected AuthenticationMiddleware(
             [NotNull] RequestDelegate next, 
             [NotNull] IOptions<TOptions> options, 
+            [NotNull] ILoggerFactory loggerFactory,
             ConfigureOptions<TOptions> configureOptions)
         {
             if (configureOptions != null)
@@ -28,6 +30,8 @@ namespace Microsoft.AspNet.Authentication
             {
                 Options = options.Options;
             }
+            Logger = loggerFactory.CreateLogger(this.GetType().FullName);
+
             _next = next;
         }
 
@@ -35,10 +39,12 @@ namespace Microsoft.AspNet.Authentication
 
         public TOptions Options { get; set; }
 
+        public ILogger Logger { get; set; }
+
         public async Task Invoke(HttpContext context)
         {
-            AuthenticationHandler<TOptions> handler = CreateHandler();
-            await handler.Initialize(Options, context);
+            var handler = CreateHandler();
+            await handler.Initialize(Options, context, Logger);
             try
             {
                 if (!await handler.InvokeAsync())

@@ -10,27 +10,26 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.WebUtilities;
-using Microsoft.Framework.Logging;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Authentication.Google
 {
     internal class GoogleAuthenticationHandler : OAuthAuthenticationHandler<GoogleAuthenticationOptions, IGoogleAuthenticationNotifications>
     {
-        public GoogleAuthenticationHandler(HttpClient httpClient, ILogger logger)
-            : base(httpClient, logger)
+        public GoogleAuthenticationHandler(HttpClient httpClient)
+            : base(httpClient)
         {
         }
 
         protected override async Task<AuthenticationTicket> GetUserInformationAsync(AuthenticationProperties properties, TokenResponse tokens)
         {
             // Get the Google user
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Options.UserInformationEndpoint);
+            var request = new HttpRequestMessage(HttpMethod.Get, Options.UserInformationEndpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
-            HttpResponseMessage graphResponse = await Backchannel.SendAsync(request, Context.RequestAborted);
+            var graphResponse = await Backchannel.SendAsync(request, Context.RequestAborted);
             graphResponse.EnsureSuccessStatusCode();
             var text = await graphResponse.Content.ReadAsStringAsync();
-            JObject user = JObject.Parse(text);
+            var user = JObject.Parse(text);
 
             var context = new GoogleAuthenticatedContext(Context, Options, user, tokens);
             var identity = new ClaimsIdentity(
@@ -79,7 +78,7 @@ namespace Microsoft.AspNet.Authentication.Google
         // TODO: Abstract this properties override pattern into the base class?
         protected override string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)
         {
-            string scope = FormatScope();
+            var scope = FormatScope();
 
             var queryStrings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             queryStrings.Add("response_type", "code");
@@ -92,10 +91,10 @@ namespace Microsoft.AspNet.Authentication.Google
             AddQueryString(queryStrings, properties, "approval_prompt");
             AddQueryString(queryStrings, properties, "login_hint");
 
-            string state = Options.StateDataFormat.Protect(properties);
+            var state = Options.StateDataFormat.Protect(properties);
             queryStrings.Add("state", state);
 
-            string authorizationEndpoint = QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, queryStrings);
+            var authorizationEndpoint = QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, queryStrings);
             return authorizationEndpoint;
         }
 
