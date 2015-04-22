@@ -8,7 +8,7 @@
     "Microsoft.AspNet.Authentication": "1.0.0-*",
     "Microsoft.AspNet.Authorization": "1.0.0-*",
     "Microsoft.AspNet.Cors.Core": "1.0.0-*",
-    "Microsoft.AspNet.DataProtection.Interfaces": "1.0.0-*",
+    "Microsoft.AspNet.DataProtection": "1.0.0-*",
     "Microsoft.AspNet.Diagnostics.Interfaces": "1.0.0-*",
     "Microsoft.AspNet.FileProviders": "1.0.0-*",
     "Microsoft.AspNet.Hosting.Interfaces": "1.0.0-*",
