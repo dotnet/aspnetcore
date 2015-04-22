@@ -23,12 +23,14 @@ namespace Microsoft.AspNet.Http
             return new ResponseHeaders(response.Headers);
         }
 
-        public static DateTimeOffset? GetDate([NotNull] this IHeaderDictionary headers, [NotNull] string name)
+        // These are all shared helpers used by both RequestHeaders and ResponseHeaders
+
+        internal static DateTimeOffset? GetDate([NotNull] this IHeaderDictionary headers, [NotNull] string name)
         {
             return headers.Get<DateTimeOffset?>(name);
         }
 
-        public static void Set([NotNull] this IHeaderDictionary headers, [NotNull] string name, object value)
+        internal static void Set([NotNull] this IHeaderDictionary headers, [NotNull] string name, object value)
         {
             if (value == null)
             {
@@ -40,7 +42,7 @@ namespace Microsoft.AspNet.Http
             }
         }
 
-        public static void SetList<T>([NotNull] this IHeaderDictionary headers, [NotNull] string name, IList<T> values)
+        internal static void SetList<T>([NotNull] this IHeaderDictionary headers, [NotNull] string name, IList<T> values)
         {
             if (values == null || values.Count == 0)
             {
@@ -52,7 +54,7 @@ namespace Microsoft.AspNet.Http
             }
         }
 
-        public static void SetDate([NotNull] this IHeaderDictionary headers, [NotNull] string name, DateTimeOffset? value)
+        internal static void SetDate([NotNull] this IHeaderDictionary headers, [NotNull] string name, DateTimeOffset? value)
         {
             if (value.HasValue)
             {
@@ -62,16 +64,6 @@ namespace Microsoft.AspNet.Http
             {
                 headers.Remove(name);
             }
-        }
-
-        public static void Append([NotNull] this IHeaderDictionary headers, [NotNull] string name, [NotNull] object value)
-        {
-            headers.Append(name, value.ToString());
-        }
-
-        public static void AppendList<T>([NotNull] this IHeaderDictionary headers, [NotNull] string name, [NotNull] IList<T> values)
-        {
-            headers.AppendValues(name, values.Select(value => value.ToString()).ToArray());
         }
 
         private static IDictionary<Type, object> KnownParsers = new Dictionary<Type, object>()
@@ -96,7 +88,7 @@ namespace Microsoft.AspNet.Http
             { typeof(SetCookieHeaderValue), new Func<IList<string>, IList<SetCookieHeaderValue>>(value => { IList<SetCookieHeaderValue> result; return SetCookieHeaderValue.TryParseList(value, out result) ? result : null; })  },
         };
 
-        public static T Get<T>([NotNull] this IHeaderDictionary headers, string name)
+        internal static T Get<T>([NotNull] this IHeaderDictionary headers, string name)
         {
             object temp;
             if (KnownParsers.TryGetValue(typeof(T), out temp))
@@ -114,7 +106,7 @@ namespace Microsoft.AspNet.Http
             return GetViaReflection<T>(value);
         }
 
-        public static IList<T> GetList<T>([NotNull] this IHeaderDictionary headers, string name)
+        internal static IList<T> GetList<T>([NotNull] this IHeaderDictionary headers, string name)
         {
             object temp;
             if (KnownListParsers.TryGetValue(typeof(T), out temp))

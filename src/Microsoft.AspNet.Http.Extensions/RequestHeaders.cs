@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
@@ -255,6 +256,36 @@ namespace Microsoft.AspNet.Http.Headers
             {
                 Headers.Set(HeaderNames.Range, value);
             }
+        }
+
+        public T Get<T>(string name)
+        {
+            return Headers.Get<T>(name);
+        }
+
+        public IList<T> GetList<T>(string name)
+        {
+            return Headers.GetList<T>(name);
+        }
+
+        public void Set([NotNull] string name, object value)
+        {
+            Headers.Set(name, value);
+        }
+
+        public void SetList<T>([NotNull] string name, IList<T> values)
+        {
+            Headers.SetList<T>(name, values);
+        }
+
+        public void Append([NotNull] string name, [NotNull] object value)
+        {
+            Headers.Append(name, value.ToString());
+        }
+
+        public void AppendList<T>([NotNull] string name, [NotNull] IList<T> values)
+        {
+            Headers.AppendValues(name, values.Select(value => value.ToString()).ToArray());
         }
     }
 }

@@ -15,10 +15,10 @@ namespace Microsoft.AspNet.Http.Headers
         [Fact]
         public void GetT_KnownTypeWithValidValue_Success()
         {
-            var headers = new HeaderDictionary();
-            headers[HeaderNames.ContentType] = "text/plain";
+            var context = new DefaultHttpContext();
+            context.Request.Headers[HeaderNames.ContentType] = "text/plain";
 
-            var result = headers.Get<MediaTypeHeaderValue>(HeaderNames.ContentType);
+            var result = context.Request.GetTypedHeaders().Get<MediaTypeHeaderValue>(HeaderNames.ContentType);
 
             var expected = new MediaTypeHeaderValue("text/plain");
             Assert.Equal(expected, result);
@@ -27,9 +27,9 @@ namespace Microsoft.AspNet.Http.Headers
         [Fact]
         public void GetT_KnownTypeWithMissingValue_Null()
         {
-            var headers = new HeaderDictionary();
+            var context = new DefaultHttpContext();
 
-            var result = headers.Get<MediaTypeHeaderValue>(HeaderNames.ContentType);
+            var result = context.Request.GetTypedHeaders().Get<MediaTypeHeaderValue>(HeaderNames.ContentType);
 
             Assert.Null(result);
         }
@@ -37,10 +37,10 @@ namespace Microsoft.AspNet.Http.Headers
         [Fact]
         public void GetT_KnownTypeWithInvalidValue_Null()
         {
-            var headers = new HeaderDictionary();
-            headers[HeaderNames.ContentType] = "invalid";
+            var context = new DefaultHttpContext();
+            context.Request.Headers[HeaderNames.ContentType] = "invalid";
 
-            var result = headers.Get<MediaTypeHeaderValue>(HeaderNames.ContentType);
+            var result = context.Request.GetTypedHeaders().Get<MediaTypeHeaderValue>(HeaderNames.ContentType);
 
             Assert.Null(result);
         }
@@ -48,48 +48,48 @@ namespace Microsoft.AspNet.Http.Headers
         [Fact]
         public void GetT_UnknownTypeWithTryParseAndValidValue_Success()
         {
-            var headers = new HeaderDictionary();
-            headers["custom"] = "valid";
+            var context = new DefaultHttpContext();
+            context.Request.Headers["custom"] = "valid";
 
-            var result = headers.Get<TestHeaderValue>("custom");
+            var result = context.Request.GetTypedHeaders().Get<TestHeaderValue>("custom");
             Assert.NotNull(result);
         }
 
         [Fact]
         public void GetT_UnknownTypeWithTryParseAndInvalidValue_Null()
         {
-            var headers = new HeaderDictionary();
-            headers["custom"] = "invalid";
+            var context = new DefaultHttpContext();
+            context.Request.Headers["custom"] = "invalid";
 
-            var result = headers.Get<TestHeaderValue>("custom");
+            var result = context.Request.GetTypedHeaders().Get<TestHeaderValue>("custom");
             Assert.Null(result);
         }
 
         [Fact]
         public void GetT_UnknownTypeWithTryParseAndMissingValue_Null()
         {
-            var headers = new HeaderDictionary();
+            var context = new DefaultHttpContext();
 
-            var result = headers.Get<TestHeaderValue>("custom");
+            var result = context.Request.GetTypedHeaders().Get<TestHeaderValue>("custom");
             Assert.Null(result);
         }
 
         [Fact]
         public void GetT_UnknownTypeWithoutTryParse_Throws()
         {
-            var headers = new HeaderDictionary();
-            headers["custom"] = "valid";
+            var context = new DefaultHttpContext();
+            context.Request.Headers["custom"] = "valid";
 
-            Assert.Throws<NotSupportedException>(() => headers.Get<object>("custom"));
+            Assert.Throws<NotSupportedException>(() => context.Request.GetTypedHeaders().Get<object>("custom"));
         }
 
         [Fact]
         public void GetListT_KnownTypeWithValidValue_Success()
         {
-            var headers = new HeaderDictionary();
-            headers[HeaderNames.Accept] = "text/plain; q=0.9, text/other, */*";
+            var context = new DefaultHttpContext();
+            context.Request.Headers[HeaderNames.Accept] = "text/plain; q=0.9, text/other, */*";
 
-            var result = headers.GetList<MediaTypeHeaderValue>(HeaderNames.Accept);
+            var result = context.Request.GetTypedHeaders().GetList<MediaTypeHeaderValue>(HeaderNames.Accept);
 
             var expected = new[] {
                 new MediaTypeHeaderValue("text/plain", 0.9),
@@ -102,9 +102,9 @@ namespace Microsoft.AspNet.Http.Headers
         [Fact]
         public void GetListT_KnownTypeWithMissingValue_Null()
         {
-            var headers = new HeaderDictionary();
+            var context = new DefaultHttpContext();
 
-            var result = headers.GetList<MediaTypeHeaderValue>(HeaderNames.Accept);
+            var result = context.Request.GetTypedHeaders().GetList<MediaTypeHeaderValue>(HeaderNames.Accept);
 
             Assert.Null(result);
         }
@@ -112,10 +112,10 @@ namespace Microsoft.AspNet.Http.Headers
         [Fact]
         public void GetListT_KnownTypeWithInvalidValue_Null()
         {
-            var headers = new HeaderDictionary();
-            headers[HeaderNames.Accept] = "invalid";
+            var context = new DefaultHttpContext();
+            context.Request.Headers[HeaderNames.Accept] = "invalid";
 
-            var result = headers.GetList<MediaTypeHeaderValue>(HeaderNames.Accept);
+            var result = context.Request.GetTypedHeaders().GetList<MediaTypeHeaderValue>(HeaderNames.Accept);
 
             Assert.Null(result);
         }
@@ -123,10 +123,10 @@ namespace Microsoft.AspNet.Http.Headers
         [Fact]
         public void GetListT_UnknownTypeWithTryParseListAndValidValue_Success()
         {
-            var headers = new HeaderDictionary();
-            headers["custom"] = "valid";
+            var context = new DefaultHttpContext();
+            context.Request.Headers["custom"] = "valid";
 
-            var results = headers.GetList<TestHeaderValue>("custom");
+            var results = context.Request.GetTypedHeaders().GetList<TestHeaderValue>("custom");
             Assert.NotNull(results);
             Assert.Equal(new[] { new TestHeaderValue() }.ToList(), results);
         }
@@ -134,29 +134,29 @@ namespace Microsoft.AspNet.Http.Headers
         [Fact]
         public void GetListT_UnknownTypeWithTryParseListAndInvalidValue_Null()
         {
-            var headers = new HeaderDictionary();
-            headers["custom"] = "invalid";
+            var context = new DefaultHttpContext();
+            context.Request.Headers["custom"] = "invalid";
 
-            var results = headers.GetList<TestHeaderValue>("custom");
+            var results = context.Request.GetTypedHeaders().GetList<TestHeaderValue>("custom");
             Assert.Null(results);
         }
 
         [Fact]
         public void GetListT_UnknownTypeWithTryParseListAndMissingValue_Null()
         {
-            var headers = new HeaderDictionary();
+            var context = new DefaultHttpContext();
 
-            var results = headers.GetList<TestHeaderValue>("custom");
+            var results = context.Request.GetTypedHeaders().GetList<TestHeaderValue>("custom");
             Assert.Null(results);
         }
 
         [Fact]
         public void GetListT_UnknownTypeWithoutTryParseList_Throws()
         {
-            var headers = new HeaderDictionary();
-            headers["custom"] = "valid";
+            var context = new DefaultHttpContext();
+            context.Request.Headers["custom"] = "valid";
 
-            Assert.Throws<NotSupportedException>(() => headers.GetList<object>("custom"));
+            Assert.Throws<NotSupportedException>(() => context.Request.GetTypedHeaders().GetList<object>("custom"));
         }
 
         public class TestHeaderValue
