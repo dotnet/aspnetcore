@@ -7,8 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Description;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 

@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Description;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 

@@ -3,7 +3,7 @@
 
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Mvc.Description
+namespace Microsoft.AspNet.Mvc.ApiExplorer
 {
     /// <summary>
     /// Represents a possible format for the body of a response.

@@ -1,0 +1,17 @@
+﻿{
+    "description": "Contains API explorer functionality for ASP.NET MVC for discovering metadata such as the list of controllers and actions, and their URLs and allowed HTTP methods.",
+    "version": "6.0.0-*",
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
+    "dependencies": {
+        "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
+        "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
+        "Microsoft.Framework.PropertyHelper.Internal": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type": "build" }
+    },
+    "frameworks": {
+        "dnx451": { },
+        "dnxcore50": { }
+    }
+}

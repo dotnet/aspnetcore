@@ -8,7 +8,7 @@ using System.Reflection;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Cors;
 using Microsoft.AspNet.Cors.Core;
-using Microsoft.AspNet.Mvc.Description;
+using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.Routing;

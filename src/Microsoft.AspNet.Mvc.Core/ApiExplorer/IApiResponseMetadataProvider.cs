@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Mvc.Description
+namespace Microsoft.AspNet.Mvc.ApiExplorer
 {
     /// <summary>
     /// Provides a return type and a set of possible content types returned by a successful execution of the action.

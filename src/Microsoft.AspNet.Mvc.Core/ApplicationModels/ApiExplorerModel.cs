@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         }
 
         /// <summary>
-        /// If <c>true</c>, <see cref="Description.ApiDescription"/> objects will be created for the associated
+        /// If <c>true</c>, <c>APIExplorer.ApiDescription</c> objects will be created for the associated
         /// controller or action.
         /// </summary>
         /// <remarks>
@@ -37,8 +37,8 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public bool? IsVisible { get; set; }
 
         /// <summary>
-        /// The value for <see cref="Description.ApiDescription.GroupName"/> of
-        /// <see cref="Description.ApiDescription"/> objects created for the associated controller or action.
+        /// The value for <c>APIExplorer.ApiDescription.GroupName</c> of
+        /// <c>APIExplorer.ApiDescription</c> objects created for the associated controller or action.
         /// </summary>
         public string GroupName { get; set; }
     }

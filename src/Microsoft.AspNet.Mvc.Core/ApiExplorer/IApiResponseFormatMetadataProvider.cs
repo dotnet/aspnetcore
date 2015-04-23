@@ -5,19 +5,19 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Mvc.Description
+namespace Microsoft.AspNet.Mvc.ApiExplorer
 {
     /// <summary>
-    /// Provides metadata information about the response format to an <see cref="IApiDescriptionProvider"/>.
+    /// Provides metadata information about the response format to an <c>IApiDescriptionProvider</c>.
     /// </summary>
     /// <remarks>
     /// An <see cref="IOutputFormatter"/> should implement this interface to expose metadata information
-    /// to an <see cref="IApiDescriptionProvider"/>.
+    /// to an <c>IApiDescriptionProvider</c>.
     /// </remarks>
     public interface IApiResponseFormatMetadataProvider
     {
         /// <summary>
-        /// Gets a filtered list of content types which are supported by the <see cref="IOutputFormatter"/> 
+        /// Gets a filtered list of content types which are supported by the <see cref="IOutputFormatter"/>
         /// for the <paramref name="declaredType"/> and <paramref name="contentType"/>.
         /// </summary>
         /// <param name="declaredType">The declared type for which the supported content types are desired.</param>

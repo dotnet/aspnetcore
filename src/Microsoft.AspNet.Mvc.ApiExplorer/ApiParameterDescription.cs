@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Mvc.ModelBinding;
 
-namespace Microsoft.AspNet.Mvc.Description
+namespace Microsoft.AspNet.Mvc.ApiExplorer
 {
     /// <summary>
     /// A metadata description of an input to an API.
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Description
         public ModelMetadata ModelMetadata { get; set; }
 
         /// <summary>
-        /// Gets or sets the name. 
+        /// Gets or sets the name.
         /// </summary>
         public string Name { get; set; }
 

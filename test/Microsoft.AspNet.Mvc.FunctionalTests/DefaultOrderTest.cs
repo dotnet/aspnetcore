@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Description;
+using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.Framework.DependencyInjection;
