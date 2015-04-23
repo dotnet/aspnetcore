@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Server.WebListener
             _customChallenges = AuthenticationSchemes.None;
         }
 
-        public void Authenticate(IAuthenticateContext context)
+        public void Authenticate(AuthenticateContext context)
         {
             var user = _requestContext.User;
             var identity = user == null ? null : (ClaimsIdentity)user.Identity;
@@ -67,13 +67,13 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        public Task AuthenticateAsync(IAuthenticateContext context)
+        public Task AuthenticateAsync(AuthenticateContext context)
         {
             Authenticate(context);
             return Task.FromResult(0);
         }
 
-        public void Challenge(IChallengeContext context)
+        public void Challenge(ChallengeContext context)
         {
             foreach (var scheme in ListEnabledAuthSchemes())
             {
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Server.WebListener
             _requestContext.AuthenticationChallenges = _customChallenges;
         }
 
-        public void GetDescriptions(IDescribeSchemesContext context)
+        public void GetDescriptions(DescribeSchemesContext context)
         {
             // TODO: Caching, this data doesn't change per request.
             foreach (var scheme in ListEnabledAuthSchemes())
@@ -99,12 +99,12 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        public void SignIn(ISignInContext context)
+        public void SignIn(SignInContext context)
         {
             // Not supported
         }
 
-        public void SignOut(ISignOutContext context)
+        public void SignOut(SignOutContext context)
         {
             // Not supported
         }

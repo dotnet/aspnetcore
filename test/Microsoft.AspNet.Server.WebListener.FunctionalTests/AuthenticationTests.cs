@@ -201,7 +201,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, env =>
             {
                 var context = new DefaultHttpContext((IFeatureCollection)env);
-                var resultList = context.GetAuthenticationSchemes();
+                var resultList = context.Authentication.GetAuthenticationSchemes();
                 if (authType == AuthenticationSchemes.AllowAnonymous)
                 {
                     Assert.Equal(0, resultList.Count());
@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, env =>
             {
                 var context = new DefaultHttpContext((IFeatureCollection)env);
-                var resultList = context.GetAuthenticationSchemes();
+                var resultList = context.Authentication.GetAuthenticationSchemes();
                 Assert.Equal(4, resultList.Count());
                 return Task.FromResult(0);
             }))
@@ -265,7 +265,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 Assert.False(context.User.Identity.IsAuthenticated);
                 foreach (var scheme in authTypeList)
                 {
-                    var authResults = context.Authenticate(scheme);
+                    var authResults = context.Authentication.Authenticate(scheme);
                     Assert.Null(authResults);
                 }
                 return Task.FromResult(0);
@@ -296,7 +296,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 var count = 0;
                 foreach (var scheme in authTypeList)
                 {
-                    var authResults = context.Authenticate(scheme);
+                    var authResults = context.Authentication.Authenticate(scheme);
                     if (authResults != null)
                     {
                         count++;
@@ -327,7 +327,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 var context = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.NotNull(context.User);
                 Assert.False(context.User.Identity.IsAuthenticated);
-                context.Response.Challenge();
+                context.Authentication.Challenge();
                 return Task.FromResult(0);
             }))
             {
@@ -355,7 +355,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 Assert.False(context.User.Identity.IsAuthenticated);
                 foreach (var scheme in authTypeList)
                 {
-                    context.Response.Challenge(scheme);
+                    context.Authentication.Challenge(scheme);
                 }
                 return Task.FromResult(0);
             }))
@@ -381,7 +381,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 var context = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.NotNull(context.User);
                 Assert.False(context.User.Identity.IsAuthenticated);
-                context.Response.Challenge(authType.ToString());
+                context.Authentication.Challenge(authType.ToString());
                 return Task.FromResult(0);
             }))
             {
@@ -409,7 +409,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 var context = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.NotNull(context.User);
                 Assert.False(context.User.Identity.IsAuthenticated);
-                Assert.Throws<InvalidOperationException>(() => context.Response.Challenge(authType.ToString()));
+                Assert.Throws<InvalidOperationException>(() => context.Authentication.Challenge(authType.ToString()));
                 return Task.FromResult(0);
             }))
             {

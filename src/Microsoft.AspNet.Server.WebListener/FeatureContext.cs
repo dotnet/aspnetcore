@@ -410,7 +410,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        Task<WebSocket> IHttpWebSocketFeature.AcceptAsync(IWebSocketAcceptContext context)
+        Task<WebSocket> IHttpWebSocketFeature.AcceptAsync(WebSocketAcceptContext context)
         {
             // TODO: Advanced params
             string subProtocol = null;

@@ -21,10 +21,10 @@ namespace SelfHostServer
 
             app.Run(async context =>
             {
-                if (context.IsWebSocketRequest)
+                if (context.WebSockets.IsWebSocketRequest)
                 {
                     byte[] bytes = Encoding.ASCII.GetBytes("Hello World: " + DateTime.Now);
-                    WebSocket webSocket = await context.AcceptWebSocketAsync();
+                    WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
                     await webSocket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length), WebSocketMessageType.Text, true, CancellationToken.None);
                     await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Goodbye", CancellationToken.None);
                     webSocket.Dispose();
