@@ -6,6 +6,7 @@
     "resources": "EmbeddedResources/**",
     "dependencies": {
         "Kestrel": "1.0.0-*",
+        "Microsoft.AspNet.FileProviders.Embedded": "1.0.0-*",
         "Microsoft.AspNet.Mvc": "6.0.0-*",
         "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",

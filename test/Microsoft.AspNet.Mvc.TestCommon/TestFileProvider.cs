@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
             else
             {
-                return new NotFoundFileInfo(subpath);
+                return new NotFoundFileInfo();
             }
         }
 
@@ -73,6 +73,62 @@ namespace Microsoft.AspNet.Mvc.Razor
         public TestFileTrigger GetTrigger(string filter)
         {
             return _fileTriggers[filter];
+        }
+
+        private class NotFoundFileInfo : IFileInfo
+        {
+            public bool Exists
+            {
+                get
+                {
+                    return false;
+                }
+            }
+
+            public bool IsDirectory
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public DateTimeOffset LastModified
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public long Length
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public string Name
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public string PhysicalPath
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public Stream CreateReadStream()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
