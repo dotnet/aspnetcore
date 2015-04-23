@@ -390,7 +390,7 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="TagHelpersParseTreeRewriter_MissingCloseAngle" xml:space="preserve">
     <value>Missing close angle for tag helper '{0}'.</value>
   </data>
-  <data name="TagHelperBlockRewriter_TagHelperAttributesMustBeWelformed" xml:space="preserve">
+  <data name="TagHelperBlockRewriter_TagHelperAttributeListMustBeWelformed" xml:space="preserve">
     <value>TagHelper attributes must be welformed.</value>
   </data>
   <data name="TagHelpers_AttributeExpressionRequired" xml:space="preserve">

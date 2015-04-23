@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         {
             TagName = original.TagName;
             Descriptors = original.Descriptors;
-            Attributes = new Dictionary<string, SyntaxTreeNode>(original.Attributes);
+            Attributes = new List<KeyValuePair<string, SyntaxTreeNode>>(original.Attributes);
         }
 
         /// <summary>
@@ -39,26 +39,28 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         /// <param name="attributes">Attributes of the <see cref="TagHelperBlock"/>.</param>
         /// <param name="descriptors">The <see cref="TagHelperDescriptor"/>s associated with the current HTML
         /// tag.</param>
-        public TagHelperBlockBuilder(string tagName,
-                                     bool selfClosing,
-                                     SourceLocation start,
-                                     IDictionary<string, SyntaxTreeNode> attributes,
-                                     IEnumerable<TagHelperDescriptor> descriptors)
+        public TagHelperBlockBuilder(
+            string tagName,
+            bool selfClosing,
+            SourceLocation start,
+            IList<KeyValuePair<string, SyntaxTreeNode>> attributes,
+            IEnumerable<TagHelperDescriptor> descriptors)
         {
             TagName = tagName;
             SelfClosing = selfClosing;
             Start = start;
             Descriptors = descriptors;
-            Attributes = new Dictionary<string, SyntaxTreeNode>(attributes);
+            Attributes = new List<KeyValuePair<string, SyntaxTreeNode>>(attributes);
             Type = BlockType.Tag;
             CodeGenerator = new TagHelperCodeGenerator(descriptors);
         }
 
         // Internal for testing
-        internal TagHelperBlockBuilder(string tagName,
-                                       bool selfClosing,
-                                       IDictionary<string, SyntaxTreeNode> attributes,
-                                       IEnumerable<SyntaxTreeNode> children)
+        internal TagHelperBlockBuilder(
+            string tagName,
+            bool selfClosing,
+            IList<KeyValuePair<string, SyntaxTreeNode>> attributes,
+            IEnumerable<SyntaxTreeNode> children)
         {
             TagName = tagName;
             SelfClosing = selfClosing;
@@ -98,7 +100,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         /// <summary>
         /// The HTML attributes.
         /// </summary>
-        public IDictionary<string, SyntaxTreeNode> Attributes { get; private set; }
+        public IList<KeyValuePair<string, SyntaxTreeNode>> Attributes { get; }
 
         /// <summary>
         /// The HTML tag name.

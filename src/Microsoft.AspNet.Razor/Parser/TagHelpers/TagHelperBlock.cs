@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         {
             TagName = source.TagName;
             Descriptors = source.Descriptors;
-            Attributes = new Dictionary<string, SyntaxTreeNode>(source.Attributes);
+            Attributes = new List<KeyValuePair<string, SyntaxTreeNode>>(source.Attributes);
             _start = source.Start;
             SelfClosing = source.SelfClosing;
             SourceStartTag = source.SourceStartTag;
@@ -36,9 +36,9 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
 
             source.Reset();
 
-            foreach (var attributeChildren in Attributes.Values)
+            foreach (var attributeChildren in Attributes)
             {
-                attributeChildren.Parent = this;
+                attributeChildren.Value.Parent = this;
             }
         }
 
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         /// <summary>
         /// The HTML attributes.
         /// </summary>
-        public IDictionary<string, SyntaxTreeNode> Attributes { get; private set; }
+        public IList<KeyValuePair<string, SyntaxTreeNode>> Attributes { get; }
 
         /// <inheritdoc />
         public override SourceLocation Start

@@ -156,4 +156,10 @@
   <data name="TagHelperDescriptorFactory_InvalidBoundAttributeName" xml:space="preserve">
     <value>Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes beginning with '{2}'.</value>
   </data>
+  <data name="TagHelperAttributeList_CannotAddWithNullName" xml:space="preserve">
+    <value>Cannot add a '{0}' with a null '{1}'.</value>
+  </data>
+  <data name="TagHelperAttributeList_CannotAddAttribute" xml:space="preserve">
+    <value>Cannot add a {0} with inconsistent names. The {1} property '{2}' must match the location '{3}'.</value>
+  </data>
 </root>

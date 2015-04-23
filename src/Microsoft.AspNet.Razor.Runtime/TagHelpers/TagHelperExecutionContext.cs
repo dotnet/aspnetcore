@@ -60,8 +60,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             _endTagHelperWritingScope = endTagHelperWritingScope;
 
             SelfClosing = selfClosing;
-            AllAttributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            HTMLAttributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            HTMLAttributes = new TagHelperAttributeList();
+            AllAttributes = new TagHelperAttributeList();
             TagName = tagName;
             Items = items;
             UniqueId = uniqueId;
@@ -91,12 +91,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <summary>
         /// HTML attributes.
         /// </summary>
-        public IDictionary<string, object> HTMLAttributes { get; }
+        public TagHelperAttributeList HTMLAttributes { get; }
 
         /// <summary>
         /// <see cref="ITagHelper"/> bound attributes and HTML attributes.
         /// </summary>
-        public IDictionary<string, object> AllAttributes { get; }
+        public TagHelperAttributeList AllAttributes { get; }
 
         /// <summary>
         /// An identifier unique to the HTML element this context is for.

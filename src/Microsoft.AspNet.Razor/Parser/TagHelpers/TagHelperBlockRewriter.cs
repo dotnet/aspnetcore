@@ -31,14 +31,14 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             return new TagHelperBlockBuilder(tagName, selfClosing, start, attributes, descriptors);
         }
 
-        private static IDictionary<string, SyntaxTreeNode> GetTagAttributes(
+        private static IList<KeyValuePair<string, SyntaxTreeNode>> GetTagAttributes(
             string tagName,
             bool validStructure,
             Block tagBlock,
             IEnumerable<TagHelperDescriptor> descriptors,
             ErrorSink errorSink)
         {
-            var attributes = new Dictionary<string, SyntaxTreeNode>(StringComparer.OrdinalIgnoreCase);
+            var attributes = new List<KeyValuePair<string, SyntaxTreeNode>>();
 
             // Build a dictionary so we can easily lookup expected attribute value lookups
             IReadOnlyDictionary<string, string> attributeValueTypes =
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                             attribute.Key.Length);
                     }
 
-                    attributes[attribute.Key] = attribute.Value;
+                    attributes.Add(new KeyValuePair<string, SyntaxTreeNode>(attribute.Key, attribute.Value));
                 }
             }
 
@@ -137,13 +137,13 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
                 if (afterEquals)
                 {
-                    // We've captured all leading whitespace, the attribute name, and an equals with an optional 
+                    // We've captured all leading whitespace, the attribute name, and an equals with an optional
                     // quote/double quote. We're now at: " asp-for='|...'" or " asp-for=|..."
-                    // The goal here is to capture all symbols until the end of the attribute. Note this will not 
+                    // The goal here is to capture all symbols until the end of the attribute. Note this will not
                     // consume an ending quote due to the symbolOffset.
 
-                    // When symbols are accepted into SpanBuilders, their locations get altered to be offset by the 
-                    // parent which is why we need to mark our start location prior to adding the symbol. 
+                    // When symbols are accepted into SpanBuilders, their locations get altered to be offset by the
+                    // parent which is why we need to mark our start location prior to adding the symbol.
                     // This is needed to know the location of the attribute value start within the document.
                     if (!capturedAttributeValueStart)
                     {
@@ -206,10 +206,10 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 }
                 else if (symbol.Type == HtmlSymbolType.WhiteSpace)
                 {
-                    // We're at the start of the attribute, this branch may be hit on the first iterations of 
+                    // We're at the start of the attribute, this branch may be hit on the first iterations of
                     // the loop since the parser separates attributes with their spaces included as symbols.
                     // We're at: "| asp-for='...'" or "| asp-for=..."
-                    // Note: This will not be hit even for situations like asp-for  ="..." because the core Razor 
+                    // Note: This will not be hit even for situations like asp-for  ="..." because the core Razor
                     // parser currently does not know how to handle attributes in that format. This will be addressed
                     // by https://github.com/aspnet/Razor/issues/123.
 
@@ -230,7 +230,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 {
                     errorSink.OnError(
                         span.Start,
-                        RazorResources.TagHelperBlockRewriter_TagHelperAttributesMustBeWelformed,
+                        RazorResources.TagHelperBlockRewriter_TagHelperAttributeListMustBeWelformed,
                         span.Content.Length);
                 }
 
@@ -375,7 +375,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     else if (isDynamic && childSpan.CodeGenerator == SpanCodeGenerator.Null)
                     {
                         // Usually the dynamic code generator handles rendering the null code generators underneath
-                        // it. This doesn't make sense in terms of tag helpers though, we need to change null code 
+                        // it. This doesn't make sense in terms of tag helpers though, we need to change null code
                         // generators to markup code generators.
 
                         newCodeGenerator = new MarkupCodeGenerator();

@@ -1369,17 +1369,17 @@ namespace Microsoft.AspNet.Razor
         /// <summary>
         /// TagHelper attributes must be welformed.
         /// </summary>
-        internal static string TagHelperBlockRewriter_TagHelperAttributesMustBeWelformed
+        internal static string TagHelperBlockRewriter_TagHelperAttributeListMustBeWelformed
         {
-            get { return GetString("TagHelperBlockRewriter_TagHelperAttributesMustBeWelformed"); }
+            get { return GetString("TagHelperBlockRewriter_TagHelperAttributeListMustBeWelformed"); }
         }
 
         /// <summary>
         /// TagHelper attributes must be welformed.
         /// </summary>
-        internal static string FormatTagHelperBlockRewriter_TagHelperAttributesMustBeWelformed()
+        internal static string FormatTagHelperBlockRewriter_TagHelperAttributeListMustBeWelformed()
         {
-            return GetString("TagHelperBlockRewriter_TagHelperAttributesMustBeWelformed");
+            return GetString("TagHelperBlockRewriter_TagHelperAttributeListMustBeWelformed");
         }
 
         /// <summary>
