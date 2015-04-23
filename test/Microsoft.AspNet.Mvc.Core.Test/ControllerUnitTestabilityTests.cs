@@ -71,11 +71,13 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        [Theory]
-        [MemberData(nameof(TestabilityContentTestData))]
-        public void ControllerContent_InvokedInUnitTests(string content, string contentType, Encoding encoding)
+        [Fact]
+        public void ControllerContent_InvokedInUnitTests()
         {
             // Arrange
+            var content = "Content_1";
+            var contentType = "text/asp";
+            var encoding = Encoding.ASCII;
             var controller = new TestabilityController();
 
             // Act
@@ -86,8 +88,8 @@ namespace Microsoft.AspNet.Mvc
 
             var contentResult = Assert.IsType<ContentResult>(result);
             Assert.Equal(content, contentResult.Content);
-            Assert.Equal(contentType, contentResult.ContentType);
-            Assert.Equal(encoding, contentResult.ContentEncoding);
+            Assert.Equal("text/asp; charset=us-ascii", contentResult.ContentType.ToString());
+            Assert.Equal(encoding, contentResult.ContentType.Encoding);
         }
 
         [Theory]
@@ -110,12 +112,13 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(StatusCodes.Status201Created, createdResult.StatusCode);
         }
 
-        [Theory]
-        [InlineData("<html>CreatedBody</html>", "text/html", "Created.html")]
-        [InlineData("<html>CreatedBody</html>", null, null)]
-        public void ControllerFileContent_InvokedInUnitTests(string content, string contentType, string fileName)
+        [Fact]
+        public void ControllerFileContent_InvokedInUnitTests()
         {
             // Arrange
+            var content = "<html>CreatedBody</html>";
+            var contentType = "text/html";
+            var fileName = "Created.html";
             var controller = new TestabilityController();
 
             // Act
@@ -125,7 +128,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.NotNull(result);
 
             var fileContentResult = Assert.IsType<FileContentResult>(result);
-            Assert.Equal(contentType, fileContentResult.ContentType);
+            Assert.Equal(contentType, fileContentResult.ContentType.ToString());
             Assert.Equal(fileName ?? string.Empty, fileContentResult.FileDownloadName);
 
             if (content == null)
@@ -138,12 +141,13 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        [Theory]
-        [InlineData("<html>CreatedBody</html>", "text/html", "Created.html")]
-        [InlineData("<html>CreatedBody</html>", null, null)]
-        public void ControllerFileStream_InvokedInUnitTests(string content, string contentType, string fileName)
+        [Fact]
+        public void ControllerFileStream_InvokedInUnitTests()
         {
             // Arrange
+            var content = "<html>CreatedBody</html>";
+            var contentType = "text/html";
+            var fileName = "Created.html";
             var mockHttpContext = new Mock<DefaultHttpContext>();
             mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
             var controller = new TestabilityController()
@@ -158,7 +162,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.NotNull(result);
 
             var fileStreamResult = Assert.IsType<FileStreamResult>(result);
-            Assert.Equal(contentType, fileStreamResult.ContentType);
+            Assert.Equal(contentType, fileStreamResult.ContentType.ToString());
             Assert.Equal(fileName ?? string.Empty, fileStreamResult.FileDownloadName);
 
             if (content == null)
@@ -543,26 +547,6 @@ namespace Microsoft.AspNet.Mvc
                 {
                     new MyModel { Property1 = "Property_1", Property2 = "Property_2" },
                     "ViewName_1"
-                };
-            }
-        }
-
-        public static IEnumerable<object[]> TestabilityContentTestData
-        {
-            get
-            {
-                yield return new object[]
-                {
-                    null,
-                    null,
-                    null
-                };
-
-                yield return new object[]
-                {
-                    "Content_1",
-                    "text/asp",
-                    Encoding.ASCII
                 };
             }
         }

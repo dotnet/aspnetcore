@@ -11,6 +11,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -27,15 +28,15 @@ namespace Microsoft.AspNet.Mvc
 
         /// <summary>
         /// Creates a new <see cref="FilePathResult"/> instance with
-        /// the provided <paramref name="fileName"/>
+        /// the provided <paramref name="fileName"/> and the
+        /// provided <paramref name="contentType"/>.
         /// </summary>
         /// <param name="fileName">The path to the file. The path must be an absolute
         /// path. Relative and virtual paths are not supported.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public FilePathResult([NotNull] string fileName)
-            : base(contentType: null)
+        public FilePathResult([NotNull] string fileName, [NotNull] string contentType)
+            : this(fileName, new MediaTypeHeaderValue(contentType))
         {
-            FileName = fileName;
         }
 
         /// <summary>
@@ -46,7 +47,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="fileName">The path to the file. The path must be an absolute
         /// path. Relative and virtual paths are not supported.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public FilePathResult([NotNull] string fileName, string contentType)
+        public FilePathResult([NotNull] string fileName, [NotNull] MediaTypeHeaderValue contentType)
             : base(contentType)
         {
             FileName = fileName;

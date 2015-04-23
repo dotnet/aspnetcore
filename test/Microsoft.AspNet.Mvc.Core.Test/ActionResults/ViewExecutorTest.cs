@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -19,12 +21,44 @@ namespace Microsoft.AspNet.Mvc
         // The buffer size of the StreamWriter used in ViewResult.
         private const int ViewResultStreamWriterBufferSize = 1024;
 
-        [Fact]
-        public async Task ExecuteAsync_WritesOutputWithoutBOM()
+        public static TheoryData<MediaTypeHeaderValue, string, byte[]> ViewExecutorSetsContentTypeAndEncodingData
+        {
+            get
+            {
+                return new TheoryData<MediaTypeHeaderValue, string, byte[]>
+                {
+                    {
+                        null,
+                        "text/html; charset=utf-8",
+                        new byte[] { 97, 98, 99, 100 }
+                    },
+                    {
+                        new MediaTypeHeaderValue("text/foo"),
+                        "text/foo; charset=utf-8",
+                        new byte[] { 97, 98, 99, 100 }
+                    },
+                    {
+                        MediaTypeHeaderValue.Parse("text/foo; p1=p1-value"),
+                        "text/foo; p1=p1-value; charset=utf-8",
+                        new byte[] { 97, 98, 99, 100 }
+                    },
+                    {
+                        new MediaTypeHeaderValue("text/foo") { Charset = "us-ascii" },
+                        "text/foo; charset=us-ascii",
+                        new byte[] { 97, 98, 99, 100 }
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ViewExecutorSetsContentTypeAndEncodingData))]
+        public async Task ExecuteAsync_SetsContentTypeAndEncoding(
+            MediaTypeHeaderValue contentType,
+            string expectedContentType,
+            byte[] expectedContentData)
         {
             // Arrange
-            var expected = new byte[] { 97, 98, 99, 100 };
-
             var view = new Mock<IView>();
             view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
                  .Callback((ViewContext v) =>
@@ -44,33 +78,11 @@ namespace Microsoft.AspNet.Mvc
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
 
             // Act
-            await ViewExecutor.ExecuteAsync(view.Object, actionContext, viewData, null, contentType: null);
+            await ViewExecutor.ExecuteAsync(view.Object, actionContext, viewData, null, contentType);
 
             // Assert
-            Assert.Equal(expected, memoryStream.ToArray());
-            Assert.Equal("text/html; charset=utf-8", context.Response.ContentType);
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_UsesSpecifiedContentType()
-        {
-            // Arrange
-            var contentType = "some-content-type";
-            var view = Mock.Of<IView>();
-            var context = new DefaultHttpContext();
-            var memoryStream = new MemoryStream();
-            context.Response.Body = memoryStream;
-
-            var actionContext = new ActionContext(context,
-                                                  new RouteData(),
-                                                  new ActionDescriptor());
-            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
-
-            // Act
-            await ViewExecutor.ExecuteAsync(view, actionContext, viewData, null, contentType);
-
-            // Assert
-            Assert.Equal(contentType, context.Response.ContentType);
+            Assert.Equal(expectedContentType, context.Response.ContentType);
+            Assert.Equal(expectedContentData, memoryStream.ToArray());
         }
 
         public static IEnumerable<object[]> ExecuteAsync_DoesNotWriteToResponse_OnceExceptionIsThrownData

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -19,13 +20,14 @@ namespace Microsoft.AspNet.Mvc
 
         /// <summary>
         /// Creates a new <see cref="FileContentResult"/> instance with
-        /// the provided <paramref name="fileContents"/>.
+        /// the provided <paramref name="fileContents"/> and the
+        /// provided <paramref name="contentType"/>.
         /// </summary>
         /// <param name="fileContents">The bytes that represent the file contents.</param>
-        public FileContentResult([NotNull] byte[] fileContents)
-            : base(contentType: null)
+        /// <param name="contentType">The Content-Type header of the response.</param>
+        public FileContentResult([NotNull] byte[] fileContents, [NotNull] string contentType)
+            : this(fileContents, new MediaTypeHeaderValue(contentType))
         {
-            FileContents = fileContents;
         }
 
         /// <summary>
@@ -35,7 +37,7 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="fileContents">The bytes that represent the file contents.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public FileContentResult([NotNull] byte[] fileContents, string contentType)
+        public FileContentResult([NotNull] byte[] fileContents, [NotNull] MediaTypeHeaderValue contentType)
             : base(contentType)
         {
             FileContents = fileContents;

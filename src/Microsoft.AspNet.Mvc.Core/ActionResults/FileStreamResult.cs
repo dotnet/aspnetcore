@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -23,13 +24,14 @@ namespace Microsoft.AspNet.Mvc
 
         /// <summary>
         /// Creates a new <see cref="FileStreamResult"/> instance with
-        /// the provided <paramref name="fileStream"/>.
+        /// the provided <paramref name="fileStream"/> and the
+        /// provided <paramref name="contentType"/>.
         /// </summary>
         /// <param name="fileStream">The stream with the file.</param>
-        public FileStreamResult([NotNull] Stream fileStream)
-            : base(contentType: null)
+        /// <param name="contentType">The Content-Type header of the response.</param>
+        public FileStreamResult([NotNull] Stream fileStream, [NotNull] string contentType)
+            : this(fileStream, new MediaTypeHeaderValue(contentType))
         {
-            FileStream = fileStream;
         }
 
         /// <summary>
@@ -39,7 +41,7 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="fileStream">The stream with the file.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public FileStreamResult([NotNull] Stream fileStream, string contentType)
+        public FileStreamResult([NotNull] Stream fileStream, [NotNull] MediaTypeHeaderValue contentType)
             : base(contentType)
         {
             FileStream = fileStream;

@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -44,6 +45,30 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Equal(buffer, outStream.ToArray());
+        }
+
+        [Fact]
+        public async Task ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding()
+        {
+            // Arrange
+            var expectedContentType = "text/foo; charset=us-ascii";
+            var buffer = new byte[] { 1, 2, 3, 4, 5 };
+
+            var httpContext = new DefaultHttpContext();
+
+            var outStream = new MemoryStream();
+            httpContext.Response.Body = outStream;
+
+            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            var result = new FileContentResult(buffer, MediaTypeHeaderValue.Parse(expectedContentType));
+
+            // Act
+            await result.ExecuteResultAsync(context);
+
+            // Assert
+            Assert.Equal(buffer, outStream.ToArray());
+            Assert.Equal(expectedContentType, httpContext.Response.ContentType);
         }
     }
 }

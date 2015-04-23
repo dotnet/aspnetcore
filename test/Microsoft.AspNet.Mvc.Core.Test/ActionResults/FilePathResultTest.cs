@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FileProviders;
@@ -9,9 +10,9 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
-using System.Text;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -112,6 +113,36 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
+        public async Task ExecuteResultAsync_SetsSuppliedContentTypeAndEncoding()
+        {
+            // Arrange
+            var expectedContentType = "text/foo; charset=us-ascii";
+            // path will be C:/.../TestFiles/FilePathResultTestFile_ASCII.txt
+            var path = Path.GetFullPath(Path.Combine(".", "TestFiles", "FilePathResultTestFile_ASCII.txt"));
+            path = path.Replace(@"\", "/");
+
+            // Point the FileProviderRoot to a subfolder
+            var result = new FilePathResult(path, MediaTypeHeaderValue.Parse(expectedContentType))
+            {
+                FileProvider = new PhysicalFileProvider(Path.GetFullPath("Utils")),
+            };
+
+            var httpContext = new DefaultHttpContext();
+            var memoryStream = new MemoryStream();
+            httpContext.Response.Body = memoryStream;
+
+            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            // Act
+            await result.ExecuteResultAsync(context);
+
+            // Assert
+            var contents = Encoding.ASCII.GetString(memoryStream.ToArray());
+            Assert.Equal("FilePathResultTestFile contents ASCII encoded", contents);
+            Assert.Equal(expectedContentType, httpContext.Response.ContentType);
+        }
+
+        [Fact]
         public async Task ExecuteResultAsync_WorksWithAbsolutePaths_UsingBackSlash()
         {
             // Arrange
@@ -186,7 +217,7 @@ namespace Microsoft.AspNet.Mvc
             nonDiskFileInfo.Setup(fi => fi.CreateReadStream()).Returns(sourceStream);
             var nonDiskFileProvider = new Mock<IFileProvider>();
             nonDiskFileProvider.Setup(fp => fp.GetFileInfo(It.IsAny<string>())).Returns(nonDiskFileInfo.Object);
-            var filePathResult = new FilePathResult("/SampleEmbeddedFile.txt")
+            var filePathResult = new FilePathResult("/SampleEmbeddedFile.txt", "text/plain")
             {
                 FileProvider = nonDiskFileProvider.Object
             };

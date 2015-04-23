@@ -14,6 +14,7 @@ using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Internal;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -330,7 +331,7 @@ namespace Microsoft.AspNet.Mvc
         [NonAction]
         public virtual ContentResult Content(string content)
         {
-            return Content(content, contentType: null);
+            return Content(content, (MediaTypeHeaderValue)null);
         }
 
         /// <summary>
@@ -357,10 +358,22 @@ namespace Microsoft.AspNet.Mvc
         [NonAction]
         public virtual ContentResult Content(string content, string contentType, Encoding contentEncoding)
         {
+            return Content(content, new MediaTypeHeaderValue(contentType) { Encoding = contentEncoding });
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ContentResult"/> object by specifying a <paramref name="content"/>
+        /// string and a <paramref name="contentType"/>.
+        /// </summary>
+        /// <param name="content">The content to write to the response.</param>
+        /// <param name="contentType">The content type (MIME type).</param>
+        /// <returns>The created <see cref="ContentResult"/> object for the response.</returns>
+        [NonAction]
+        public virtual ContentResult Content(string content, MediaTypeHeaderValue contentType)
+        {
             var result = new ContentResult
             {
                 Content = content,
-                ContentEncoding = contentEncoding,
                 ContentType = contentType
             };
 

@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Logging;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -68,6 +70,69 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             viewEngine.Verify();
+        }
+
+        public static TheoryData<MediaTypeHeaderValue, string> ViewResultContentTypeData
+        {
+            get
+            {
+                return new TheoryData<MediaTypeHeaderValue, string>
+                {
+                    {
+                        null,
+                        "text/html; charset=utf-8"
+                    },
+                    {
+                        new MediaTypeHeaderValue("text/foo"),
+                        "text/foo; charset=utf-8"
+                    },
+                    {
+                        MediaTypeHeaderValue.Parse("text/foo;p1=p1-value"),
+                        "text/foo; p1=p1-value; charset=utf-8"
+                    },
+                    {
+                        new MediaTypeHeaderValue("text/foo") { Encoding = Encoding.ASCII },
+                        "text/foo; charset=us-ascii"
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ViewResultContentTypeData))]
+        public async Task ViewResult_SetsContentTypeHeader(
+            MediaTypeHeaderValue contentType,
+            string expectedContentTypeHeaderValue)
+        {
+            // Arrange
+            var viewName = "myview";
+            var httpContext = GetHttpContext();
+            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            var viewEngine = new Mock<IViewEngine>();
+            var view = Mock.Of<IView>();
+            var contentTypeBeforeViewResultExecution = contentType?.ToString();
+
+            viewEngine.Setup(e => e.FindView(context, "myview"))
+                      .Returns(ViewEngineResult.Found("myview", view));
+
+            var viewResult = new ViewResult
+            {
+                ViewName = viewName,
+                ViewEngine = viewEngine.Object,
+                ContentType = contentType
+            };
+
+            // Act
+            await viewResult.ExecuteResultAsync(context);
+
+            // Assert
+            Assert.Equal(expectedContentTypeHeaderValue, httpContext.Response.ContentType);
+
+            // Check if the original instance provided by the user has not changed.
+            // Since we do not have access to the new instance created within the view executor,
+            // check if at least the content is the same.
+            var contentTypeAfterViewResultExecution = contentType?.ToString();
+            Assert.Equal(contentTypeBeforeViewResultExecution, contentTypeAfterViewResultExecution);
         }
 
         [Fact]

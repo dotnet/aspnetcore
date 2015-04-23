@@ -7,6 +7,7 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -45,6 +46,11 @@ namespace Microsoft.AspNet.Mvc
         /// <c>ActionContext.HttpContext.RequestServices</c> is used.</remarks>
         public IViewEngine ViewEngine { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="MediaTypeHeaderValue"/> representing the Content-Type header of the response.
+        /// </summary>
+        public MediaTypeHeaderValue ContentType { get; set; }
+
         /// <inheritdoc />
         public override async Task ExecuteResultAsync([NotNull] ActionContext context)
         {
@@ -74,7 +80,7 @@ namespace Microsoft.AspNet.Mvc
 
             using (view as IDisposable)
             {
-                await ViewExecutor.ExecuteAsync(view, context, ViewData, TempData, contentType: null);
+                await ViewExecutor.ExecuteAsync(view, context, ViewData, TempData, ContentType);
             }
         }
     }

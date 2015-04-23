@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -86,6 +87,35 @@ namespace Microsoft.AspNet.Mvc
             // Assert
             var outBytes = outStream.ToArray();
             Assert.True(originalBytes.SequenceEqual(outBytes));
+        }
+
+        [Fact]
+        public async Task SetsSuppliedContentTypeAndEncoding()
+        {
+            // Arrange
+            var expectedContentType = "text/foo; charset=us-ascii";
+            // Generate an array of bytes with a predictable pattern
+            // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F, 10, 11, 12, 13
+            var originalBytes = Enumerable.Range(0, 0x1234)
+                .Select(b => (byte)(b % 20)).ToArray();
+
+            var originalStream = new MemoryStream(originalBytes);
+
+            var httpContext = new DefaultHttpContext();
+            var outStream = new MemoryStream();
+            httpContext.Response.Body = outStream;
+
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            var result = new FileStreamResult(originalStream, MediaTypeHeaderValue.Parse(expectedContentType));
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            var outBytes = outStream.ToArray();
+            Assert.True(originalBytes.SequenceEqual(outBytes));
+            Assert.Equal(expectedContentType, httpContext.Response.ContentType);
         }
     }
 }

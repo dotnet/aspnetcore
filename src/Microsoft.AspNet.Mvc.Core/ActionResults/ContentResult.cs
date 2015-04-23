@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -11,11 +13,20 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ContentResult : ActionResult
     {
+        private readonly MediaTypeHeaderValue DefaultContentType = new MediaTypeHeaderValue("text/plain")
+        {
+            Encoding = Encodings.UTF8EncodingWithoutBOM
+        };
+
+        /// <summary>
+        /// Gets or set the content representing the body of the response.
+        /// </summary>
         public string Content { get; set; }
 
-        public Encoding ContentEncoding { get; set; }
-
-        public string ContentType { get; set; }
+        /// <summary>
+        /// Gets or sets the <see cref="MediaTypeHeaderValue"/> representing the Content-Type header of the response.
+        /// </summary>
+        public MediaTypeHeaderValue ContentType { get; set; }
 
         /// <summary>
         /// Gets or sets the HTTP status code.
@@ -26,17 +37,30 @@ namespace Microsoft.AspNet.Mvc
         {
             var response = context.HttpContext.Response;
 
-            MediaTypeHeaderValue contentTypeHeader;
-            if (string.IsNullOrEmpty(ContentType))
+            var contentTypeHeader = ContentType;
+            Encoding encoding;
+            if (contentTypeHeader == null)
             {
-                contentTypeHeader = new MediaTypeHeaderValue("text/plain");
+                contentTypeHeader = DefaultContentType;
+                encoding = Encodings.UTF8EncodingWithoutBOM;
             }
             else
             {
-                contentTypeHeader = new MediaTypeHeaderValue(ContentType);
+                if (contentTypeHeader.Encoding == null)
+                {
+                    // 1. Do not modify the user supplied content type
+                    // 2. Parse here to handle parameters apart from charset
+                    contentTypeHeader = MediaTypeHeaderValue.Parse(contentTypeHeader.ToString());
+                    contentTypeHeader.Encoding = Encodings.UTF8EncodingWithoutBOM;
+
+                    encoding = Encodings.UTF8EncodingWithoutBOM;
+                }
+                else
+                {
+                    encoding = contentTypeHeader.Encoding;
+                }
             }
 
-            contentTypeHeader.Encoding = ContentEncoding ?? Encodings.UTF8EncodingWithoutBOM;
             response.ContentType = contentTypeHeader.ToString();
 
             if (StatusCode != null)
@@ -46,7 +70,7 @@ namespace Microsoft.AspNet.Mvc
 
             if (Content != null)
             {
-                await response.WriteAsync(Content, contentTypeHeader.Encoding);
+                await response.WriteAsync(Content, encoding);
             }
         }
     }

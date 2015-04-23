@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc
             var result = new EmptyFileResult("text/plain");
 
             // Assert
-            Assert.Equal("text/plain", result.ContentType);
+            Assert.Equal("text/plain", result.ContentType.ToString());
         }
 
         [Fact]
