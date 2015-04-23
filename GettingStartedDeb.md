@@ -85,9 +85,6 @@ Now let's get DNVM. To do this run:
 curl -sSL https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.sh | DNX_BRANCH=dev sh && source ~/.dnx/dnvm/dnvm.sh
 ```
 
-(TODO: Need to change dnvinstall.sh to actually put it in bin. It doesn't at the moment but should.
-dnvminstall.sh grabs and copies dnvm.sh into your Home directory (~/.dnx/bin) and sources it. It will also try and find bash or zsh profiles and add a call to source dnvm to them so that dnvm will be available all the time. If you don't like this behaviour or want to do something else then you can edit your profile after running dnvminstall.sh or do all the tasks dnvminstall does changing what you like.)
-
 Once this step is complete you should be able to run `dnvm` and see some help text.
 
 # Add Sources to NuGet.config
