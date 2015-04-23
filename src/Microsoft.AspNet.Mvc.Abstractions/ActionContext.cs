@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc
     public class ActionContext
     {
         /// <summary>
-        /// Creates a empty <see cref="ActionContext"/>.
+        /// Creates an empty <see cref="ActionContext"/>.
         /// </summary>
         /// <remarks>
         /// The default constructor is provided for unit test purposes only.

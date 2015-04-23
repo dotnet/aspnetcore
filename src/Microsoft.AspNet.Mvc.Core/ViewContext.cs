@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.Internal;
 
@@ -17,6 +18,17 @@ namespace Microsoft.AspNet.Mvc
 
         private FormContext _formContext;
         private DynamicViewData _viewBag;
+
+        /// <summary>
+        /// Creates an empty <see cref="ViewContext"/>.
+        /// </summary>
+        /// <remarks>
+        /// The default constructor is provided for unit test purposes only.
+        /// </remarks>
+        public ViewContext()
+        {
+            ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), ModelState);
+        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="ViewContext"/>.

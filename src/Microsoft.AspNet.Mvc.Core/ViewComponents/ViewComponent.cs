@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Security.Principal;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -17,6 +18,8 @@ namespace Microsoft.AspNet.Mvc
     public abstract class ViewComponent
     {
         private dynamic _viewBag;
+        private ViewContext _viewContext;
+        private ViewDataDictionary _viewData;
 
         /// <summary>
         /// Gets the <see cref="HttpContext"/>.
@@ -99,13 +102,49 @@ namespace Microsoft.AspNet.Mvc
         /// Gets or sets the <see cref="ViewContext"/>.
         /// </summary>
         [Activate]
-        public ViewContext ViewContext { get; set; }
+        public ViewContext ViewContext
+        {
+            get
+            {
+                if (_viewContext == null)
+                {
+                    // This should run only for the ViewComponent unit test scenarios
+                    _viewContext = new ViewContext();
+                }
+
+                return _viewContext;
+            }
+
+            [param: NotNull]
+            set
+            {
+                _viewContext = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="ViewDataDictionary"/>.
         /// </summary>
         [Activate]
-        public ViewDataDictionary ViewData { get; set; }
+        public ViewDataDictionary ViewData
+        {
+            get
+            {
+                if (_viewData == null)
+                {
+                    // This should run only for the ViewComponent unit test scenarios
+                    _viewData = new ViewDataDictionary(ViewContext.ViewData);
+                }
+
+                return _viewData;
+            }
+
+            [param: NotNull]
+            set
+            {
+                _viewData = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="ICompositeViewEngine"/>.
