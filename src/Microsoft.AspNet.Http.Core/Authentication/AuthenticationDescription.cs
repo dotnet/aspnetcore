@@ -20,17 +20,17 @@ namespace Microsoft.AspNet.Http.Authentication
         /// Initializes a new instance of the <see cref="AuthenticationDescription"/> class
         /// </summary>
         public AuthenticationDescription()
+            : this(items: null)
         {
-            Items = new Dictionary<string, object>(StringComparer.Ordinal);
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticationDescription"/> class
         /// </summary>
         /// <param name="items"></param>
-        public AuthenticationDescription([NotNull] IDictionary<string, object> items)
+        public AuthenticationDescription(IDictionary<string, object> items)
         {
-            Items = items;
+            Items = items ?? new Dictionary<string, object>(StringComparer.Ordinal); ;
         }
 
         /// <summary>

@@ -61,6 +61,11 @@ namespace Microsoft.AspNet.Http.Authentication
                 throw new InvalidOperationException($"The following authentication scheme was not accepted: {authenticationScheme}");
             }
 
+            if (authenticateContext.Principal == null)
+            {
+                return null;
+            }
+
             return new AuthenticationResult(authenticateContext.Principal,
                 new AuthenticationProperties(authenticateContext.Properties),
                 new AuthenticationDescription(authenticateContext.Description));
@@ -80,6 +85,11 @@ namespace Microsoft.AspNet.Http.Authentication
             if (!authenticateContext.Accepted)
             {
                 throw new InvalidOperationException($"The following authentication scheme was not accepted: {authenticationScheme}");
+            }
+
+            if (authenticateContext.Principal == null)
+            {
+                return null;
             }
 
             return new AuthenticationResult(authenticateContext.Principal,
