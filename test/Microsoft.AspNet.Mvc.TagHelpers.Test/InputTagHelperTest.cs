@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -18,6 +19,96 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 {
     public class InputTagHelperTest
     {
+        public static TheoryData MultiAttributeCheckBoxData
+        {
+            get
+            {
+                // outputAttributes, expectedAttributeString
+                return new TheoryData<TagHelperAttributeList, string>
+                {
+                    {
+                        new TagHelperAttributeList
+                        {
+                            { "hello", "world" },
+                            { "hello", "world2" }
+                        },
+                        "hello=\"HtmlEncode[[world]]\""
+                    },
+                    {
+                        new TagHelperAttributeList
+                        {
+                            { "hello", "world" },
+                            { "hello", "world2" },
+                            { "hello", "world3" }
+                        },
+                        "hello=\"HtmlEncode[[world]]\""
+                    },
+                    {
+                        new TagHelperAttributeList
+                        {
+                            { "HelLO", "world" },
+                            { "HELLO", "world2" }
+                        },
+                        "HelLO=\"HtmlEncode[[world]]\""
+                    },
+                    {
+                        new TagHelperAttributeList
+                        {
+                            { "Hello", "world" },
+                            { "HELLO", "world2" },
+                            { "hello", "world3" }
+                        },
+                        "Hello=\"HtmlEncode[[world]]\""
+                    },
+                    {
+                        new TagHelperAttributeList
+                        {
+                            { "HeLlO", "world" },
+                            { "hello", "world2" }
+                        },
+                        "HeLlO=\"HtmlEncode[[world]]\""
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(MultiAttributeCheckBoxData))]
+        public async Task CheckBoxHandlesMultipleAttributesSameNameCorrectly(
+            TagHelperAttributeList outputAttributes,
+            string expectedAttributeString)
+        {
+            // Arrange
+            var originalContent = "original content";
+            var originalTagName = "not-input";
+            var expectedContent = $"{originalContent}<input {expectedAttributeString} id=\"HtmlEncode[[IsACar]]\" " +
+                "name=\"HtmlEncode[[IsACar]]\" type=\"HtmlEncode[[checkbox]]\" value=\"HtmlEncode[[true]]\" />" +
+                "<input name=\"HtmlEncode[[IsACar]]\" type=\"HtmlEncode[[hidden]]\" value=\"HtmlEncode[[false]]\" />";
+
+            var context = new TagHelperContext(
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult<TagHelperContent>(result: null));
+            var output = new TagHelperOutput(originalTagName, outputAttributes)
+            {
+                SelfClosing = true,
+            };
+            output.Content.SetContent(originalContent);
+            var htmlGenerator = new TestableHtmlGenerator(new EmptyModelMetadataProvider());
+            var tagHelper = GetTagHelper(htmlGenerator, model: false, propertyName: nameof(Model.IsACar));
+
+            // Act
+            await tagHelper.ProcessAsync(context, output);
+
+            // Assert
+            Assert.Empty(output.Attributes); // Moved to Content and cleared
+            Assert.Equal(expectedContent, output.Content.GetContent());
+            Assert.True(output.SelfClosing);
+            Assert.Null(output.TagName); // Cleared
+        }
+
         // Top-level container (List<Model> or Model instance), immediate container type (Model or NestModel),
         // model accessor, expression path / id, expected value.
         public static TheoryData<object, Type, object, NameAndId, string> TestDataSet
@@ -84,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             string expectedValue)
         {
             // Arrange
-            var expectedAttributes = new Dictionary<string, object>
+            var expectedAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control" },
                 { "type", "text" },
@@ -99,7 +190,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedTagName = "not-input";
 
             var context = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>(),
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () =>
@@ -108,7 +200,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var originalAttributes = new Dictionary<string, object>
+            var originalAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control" },
             };
@@ -160,7 +252,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
 
             var context = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>(),
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () =>
@@ -169,7 +262,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var originalAttributes = new Dictionary<string, object>
+            var originalAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control" },
             };
@@ -236,7 +329,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             string model)
         {
             // Arrange
-            var contextAttributes = new Dictionary<string, object>
+            var contextAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control" },
             };
@@ -245,7 +338,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 contextAttributes["type"] = inputTypeName;  // Support restoration of type attribute, if any.
             }
 
-            var expectedAttributes = new Dictionary<string, object>
+            var expectedAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control hidden-control" },
                 { "type", inputTypeName ?? "hidden" },      // Generator restores type attribute; adds "hidden" if none.
@@ -265,7 +358,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var originalAttributes = new Dictionary<string, object>
+            var originalAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control" },
             };
@@ -335,7 +428,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             string model)
         {
             // Arrange
-            var contextAttributes = new Dictionary<string, object>
+            var contextAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control" },
             };
@@ -344,7 +437,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 contextAttributes["type"] = inputTypeName;  // Support restoration of type attribute, if any.
             }
 
-            var expectedAttributes = new Dictionary<string, object>
+            var expectedAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control password-control" },
                 { "type", inputTypeName ?? "password" },    // Generator restores type attribute; adds "password" if none.
@@ -364,7 +457,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var originalAttributes = new Dictionary<string, object>
+            var originalAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control" },
             };
@@ -429,7 +522,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var value = "match";            // Real generator would use this for comparison with For.Metadata.Model.
-            var contextAttributes = new Dictionary<string, object>
+            var contextAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control" },
                 { "value", value },
@@ -439,7 +532,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 contextAttributes["type"] = inputTypeName;  // Support restoration of type attribute, if any.
             }
 
-            var expectedAttributes = new Dictionary<string, object>
+            var expectedAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control radio-control" },
                 { "type", inputTypeName ?? "radio" },       // Generator restores type attribute; adds "radio" if none.
@@ -460,7 +553,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var originalAttributes = new Dictionary<string, object>
+            var originalAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control" },
             };
@@ -536,7 +629,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             string model)
         {
             // Arrange
-            var contextAttributes = new Dictionary<string, object>
+            var contextAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control" },
             };
@@ -545,7 +638,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 contextAttributes["type"] = inputTypeName;  // Support restoration of type attribute, if any.
             }
 
-            var expectedAttributes = new Dictionary<string, object>
+            var expectedAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control text-control" },
                 { "type", inputTypeName ?? "text" },        // Generator restores type attribute; adds "text" if none.
@@ -565,7 +658,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var originalAttributes = new Dictionary<string, object>
+            var originalAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control" },
             };
@@ -668,19 +761,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             string expectedType)
         {
             // Arrange
-            var expectedAttributes = new Dictionary<string, object>
+            var expectedAttributes = new TagHelperAttributeList
             {
                 { "type", expectedType },                   // Calculated; not passed to HtmlGenerator.
             };
             var expectedTagName = "not-input";
 
             var context = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>(),
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
 
-            var output = new TagHelperOutput(expectedTagName, attributes: new Dictionary<string, object>())
+            var output = new TagHelperOutput(expectedTagName, attributes: new TagHelperAttributeList())
             {
                 SelfClosing = true,
             };
@@ -748,19 +842,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             string expectedType)
         {
             // Arrange
-            var expectedAttributes = new Dictionary<string, object>
+            var expectedAttributes = new TagHelperAttributeList
             {
                 { "type", expectedType },                   // Calculated; not passed to HtmlGenerator.
             };
             var expectedTagName = "not-input";
 
             var context = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>(),
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
 
-            var output = new TagHelperOutput(expectedTagName, attributes: new Dictionary<string, object>())
+            var output = new TagHelperOutput(expectedTagName, attributes: new TagHelperAttributeList())
             {
                 SelfClosing = true,
             };

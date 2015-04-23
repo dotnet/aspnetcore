@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
 
             // inputType may be more specific than default the generator chooses below.
-            if (!output.Attributes.ContainsKey("type"))
+            if (!output.Attributes.ContainsName("type"))
             {
                 output.Attributes["type"] = inputType;
             }
@@ -218,9 +218,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
 
             // Prepare to move attributes from current element to <input type="checkbox"/> generated just below.
-            var htmlAttributes = output.Attributes.ToDictionary(
-                attribute => attribute.Key,
-                attribute => (object)attribute.Value);
+            var htmlAttributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+            // Construct attributes correctly (first attribute wins).
+            foreach (var attribute in output.Attributes)
+            {
+                if (!htmlAttributes.ContainsKey(attribute.Name))
+                {
+                    htmlAttributes.Add(attribute.Name, attribute.Value);
+                }
+            }
 
             var tagBuilder = Generator.GenerateCheckBox(
                 ViewContext,

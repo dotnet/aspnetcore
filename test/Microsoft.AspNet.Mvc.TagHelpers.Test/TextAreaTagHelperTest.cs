@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -88,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             string expectedContent)
         {
             // Arrange
-            var expectedAttributes = new Dictionary<string, object>
+            var expectedAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control" },
                 { "id", nameAndId.Id },
@@ -113,7 +114,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
 
             var tagHelperContext = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>(),
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () =>
@@ -122,7 +124,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var htmlAttributes = new Dictionary<string, object>
+            var htmlAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control" },
             };

@@ -747,7 +747,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         // parameters: TagName, Attributes, SelfClosing, PreContent, Content, PostContent
                         GetTagHelperOutput(
                             tagName:     "div",
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: false,
                             preElement:  null,
                             preContent:  null,
@@ -759,7 +759,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     null,
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: false,
                             preElement:  null,
                             preContent:  null,
@@ -771,7 +771,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "  ",
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: false,
                             preElement:  null,
                             preContent:  null,
@@ -783,7 +783,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "p",
-                            attributes:  new Dictionary<string, object>() { { "test", "testVal" } },
+                            attributes:  new TagHelperAttributeList() { { "test", "testVal" } },
                             selfClosing: false,
                             preElement:  null,
                             preContent:  null,
@@ -795,7 +795,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "p",
-                            attributes:  new Dictionary<string, object>() { { "test", "testVal" }, { "something", "  spaced  " } },
+                            attributes:  new TagHelperAttributeList() { { "test", "testVal" }, { "something", "  spaced  " } },
                             selfClosing: false,
                             preElement:  null,
                             preContent:  null,
@@ -807,7 +807,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "p",
-                            attributes:  new Dictionary<string, object>() { { "test", "testVal" } },
+                            attributes:  new TagHelperAttributeList() { { "test", "testVal" } },
                             selfClosing: true,
                             preElement:  null,
                             preContent:  null,
@@ -819,7 +819,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "p",
-                            attributes:  new Dictionary<string, object>() { { "test", "testVal" }, { "something", "  spaced  " } },
+                            attributes:  new TagHelperAttributeList() { { "test", "testVal" }, { "something", "  spaced  " } },
                             selfClosing: true,
                             preElement:  null,
                             preContent:  null,
@@ -831,7 +831,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "p",
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: false,
                             preElement:  null,
                             preContent:  "Hello World!",
@@ -843,7 +843,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "p",
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: false,
                             preElement:  null,
                             preContent:  null,
@@ -855,7 +855,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "p",
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: false,
                             preElement:  null,
                             preContent:  null,
@@ -867,7 +867,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "p",
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: false,
                             preElement:  null,
                             preContent:  "Hello",
@@ -879,7 +879,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "p",
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: true,
                             preElement:  null,
                             preContent:  "Hello",
@@ -891,7 +891,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "custom",
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: false,
                             preElement:  null,
                             preContent:  "Hello",
@@ -903,7 +903,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "random",
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: true,
                             preElement:  null,
                             preContent:  "Hello",
@@ -915,7 +915,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "custom",
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: false,
                             preElement:  "Before",
                             preContent:  null,
@@ -927,7 +927,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     null,
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: false,
                             preElement:  "Before",
                             preContent:  null,
@@ -939,7 +939,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     null,
-                            attributes:  new Dictionary<string, object> { { "test", "testVal" } },
+                            attributes:  new TagHelperAttributeList { { "test", "testVal" } },
                             selfClosing: true,
                             preElement:  "Before",
                             preContent:  null,
@@ -951,7 +951,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "custom",
-                            attributes:  new Dictionary<string, object> { { "test", "testVal" } },
+                            attributes:  new TagHelperAttributeList { { "test", "testVal" } },
                             selfClosing: true,
                             preElement:  "Before",
                             preContent:  null,
@@ -963,7 +963,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "custom",
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: true,
                             preElement:  "Before",
                             preContent:  null,
@@ -975,7 +975,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "custom",
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: false,
                             preElement:  null,
                             preContent:  null,
@@ -987,7 +987,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     null,
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: false,
                             preElement:  null,
                             preContent:  null,
@@ -999,7 +999,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     null,
-                            attributes:  new Dictionary<string, object> { { "test", "testVal" } },
+                            attributes:  new TagHelperAttributeList { { "test", "testVal" } },
                             selfClosing: true,
                             preElement:  null,
                             preContent:  null,
@@ -1011,7 +1011,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "custom",
-                            attributes:  new Dictionary<string, object> { { "test", "testVal" } },
+                            attributes:  new TagHelperAttributeList { { "test", "testVal" } },
                             selfClosing: true,
                             preElement:  null,
                             preContent:  null,
@@ -1023,7 +1023,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "custom",
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: true,
                             preElement:  null,
                             preContent:  null,
@@ -1035,7 +1035,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "custom",
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: false,
                             preElement:  "Before",
                             preContent:  "Hello",
@@ -1047,7 +1047,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "custom",
-                            attributes:  new Dictionary<string, object> { { "test", "testVal" } },
+                            attributes:  new TagHelperAttributeList { { "test", "testVal" } },
                             selfClosing: false,
                             preElement:  "Before",
                             preContent:  "Hello",
@@ -1059,7 +1059,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "custom",
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: true,
                             preElement:  "Before",
                             preContent:  "Hello",
@@ -1071,7 +1071,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     null,
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: true,
                             preElement:  "Before",
                             preContent:  "Hello",
@@ -1083,7 +1083,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     null,
-                            attributes:  new Dictionary<string, object>(),
+                            attributes:  new TagHelperAttributeList(),
                             selfClosing: false,
                             preElement:  "Before",
                             preContent:  "Hello",
@@ -1095,7 +1095,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     null,
-                            attributes:  new Dictionary<string, object> { { "test", "testVal" } },
+                            attributes:  new TagHelperAttributeList { { "test", "testVal" } },
                             selfClosing: false,
                             preElement:  "Before",
                             preContent:  "Hello",
@@ -1161,7 +1161,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 },
                 startTagHelperWritingScope: () => { },
                 endTagHelperWritingScope: () => defaultTagHelperContent);
-            tagHelperExecutionContext.Output = new TagHelperOutput("p", new Dictionary<string, object>());
+            tagHelperExecutionContext.Output = new TagHelperOutput("p", new TagHelperAttributeList());
             if (childContentRetrieved)
             {
                 await tagHelperExecutionContext.GetChildContentAsync();
@@ -1193,7 +1193,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 executeChildContentAsync: () => { return Task.FromResult(result: true); },
                 startTagHelperWritingScope: () => { },
                 endTagHelperWritingScope: () => new DefaultTagHelperContent());
-            tagHelperExecutionContext.Output = new TagHelperOutput("p", new Dictionary<string, object>());
+            tagHelperExecutionContext.Output = new TagHelperOutput("p", new TagHelperAttributeList());
             tagHelperExecutionContext.Output.Content.SetContent("Hello World!");
 
             // Act
@@ -1238,7 +1238,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private static TagHelperOutput GetTagHelperOutput(
             string tagName,
-            IDictionary<string, object> attributes,
+            TagHelperAttributeList attributes,
             bool selfClosing,
             string preElement,
             string preContent,

@@ -288,7 +288,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 foreach (var attribute in tagHelperOutput.Attributes)
                 {
                     writer.Write(' ');
-                    writer.Write(attribute.Key);
+                    writer.Write(attribute.Name);
                     writer.Write("=\"");
                     WriteTo(writer, HtmlEncoder, attribute.Value, escapeQuotes: true);
                     writer.Write('"');

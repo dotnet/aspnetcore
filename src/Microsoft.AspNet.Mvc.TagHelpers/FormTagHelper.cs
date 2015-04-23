@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var routePrefixedAttributes = output.FindPrefixedAttributes(RouteAttributePrefix);
 
             // If "action" is already set, it means the user is attempting to use a normal <form>.
-            if (output.Attributes.ContainsKey(HtmlActionAttributeName))
+            if (output.Attributes.ContainsName(HtmlActionAttributeName))
             {
                 if (Action != null || Controller != null || Route != null || routePrefixedAttributes.Any())
                 {
@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         // TODO: https://github.com/aspnet/Razor/issues/89 - We will not need this method once #89 is completed.
         private static Dictionary<string, object> GetRouteValues(
             TagHelperOutput output,
-            IEnumerable<KeyValuePair<string, object>> routePrefixedAttributes)
+            IEnumerable<TagHelperAttribute> routePrefixedAttributes)
         {
             Dictionary<string, object> routeValues = null;
             if (routePrefixedAttributes.Any())
@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 // Remove prefix from keys and convert all values to strings. HtmlString and similar classes are not
                 // meaningful to routing.
                 routeValues = routePrefixedAttributes.ToDictionary(
-                    attribute => attribute.Key.Substring(RouteAttributePrefix.Length),
+                    attribute => attribute.Name.Substring(RouteAttributePrefix.Length),
                     attribute => (object)attribute.Value.ToString());
             }
 

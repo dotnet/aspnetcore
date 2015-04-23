@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var mode = modeResult.FullMatches.Select(match => match.Mode).Max();
 
             // NOTE: Values in TagHelperOutput.Attributes may already be HTML-encoded.
-            var attributes = new Dictionary<string, object>(output.Attributes);
+            var attributes = new TagHelperAttributeList(output.Attributes);
 
             var builder = new DefaultTagHelperContent();
 
@@ -261,7 +261,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             output.Content.SetContent(builder);
         }
 
-        private void BuildGlobbedLinkTags(IDictionary<string, object> attributes, TagHelperContent builder)
+        private void BuildGlobbedLinkTags(TagHelperAttributeList attributes, TagHelperContent builder)
         {
             EnsureGlobbingUrlBuilder();
 
@@ -341,7 +341,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
-        private void BuildLinkTag(IDictionary<string, object> attributes, TagHelperContent builder)
+        private void BuildLinkTag(TagHelperAttributeList attributes, TagHelperContent builder)
         {
             EnsureFileVersionProvider();
             builder.Append("<link ");
@@ -350,7 +350,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 var attributeValue = attribute.Value;
                 if (FileVersion == true &&
-                    string.Equals(attribute.Key, HrefAttributeName, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(attribute.Name, HrefAttributeName, StringComparison.OrdinalIgnoreCase))
                 {
                     // "href" values come from bound attributes and globbing. So anything but a non-null string is
                     // unexpected but could happen if another helper targeting the same element does something odd.
@@ -363,7 +363,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 }
 
                 builder
-                    .Append(attribute.Key)
+                    .Append(attribute.Name)
                     .Append("=\"")
                     .Append(HtmlEncoder, ViewContext.Writer.Encoding, attributeValue)
                     .Append("\" ");

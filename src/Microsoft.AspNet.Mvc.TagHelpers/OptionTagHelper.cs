@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
 
             // Nothing to do if this <option/> is already selected.
-            if (!output.Attributes.ContainsKey("selected"))
+            if (!output.Attributes.ContainsName("selected"))
             {
                 // Is this <option/> element a child of a <select/> element the SelectTagHelper targeted?
                 object formDataEntry;

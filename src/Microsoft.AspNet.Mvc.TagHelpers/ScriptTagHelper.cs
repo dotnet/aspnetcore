@@ -205,7 +205,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var mode = modeResult.FullMatches.Select(match => match.Mode).Max();
 
             // NOTE: Values in TagHelperOutput.Attributes may already be HTML-encoded.
-            var attributes = new Dictionary<string, object>(output.Attributes);
+            var attributes = new TagHelperAttributeList(output.Attributes);
 
             var builder = new DefaultTagHelperContent();
             var originalContent = await context.GetChildContentAsync();
@@ -233,7 +233,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         private void BuildGlobbedScriptTags(
             TagHelperContent originalContent,
-            IDictionary<string, object> attributes,
+            TagHelperAttributeList attributes,
             TagHelperContent builder)
         {
             EnsureGlobbingUrlBuilder();
@@ -257,7 +257,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
-        private void BuildFallbackBlock(IDictionary<string, object> attributes, DefaultTagHelperContent builder)
+        private void BuildFallbackBlock(TagHelperAttributeList attributes, DefaultTagHelperContent builder)
         {
             EnsureGlobbingUrlBuilder();
             EnsureFileVersionProvider();
@@ -272,10 +272,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                        .Append("||document.write(\"");
 
                 // May have no "src" attribute in the dictionary e.g. if Src and SrcInclude were not bound.
-                if (!attributes.ContainsKey(SrcAttributeName))
+                if (!attributes.ContainsName(SrcAttributeName))
                 {
                     // Need this entry to place each fallback source.
-                    attributes.Add(SrcAttributeName, null);
+                    attributes.Add(new TagHelperAttribute(SrcAttributeName, value: null));
                 }
 
                 foreach (var src in fallbackSrcs)
@@ -287,9 +287,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
                     foreach (var attribute in attributes)
                     {
-                        if (!attribute.Key.Equals(SrcAttributeName, StringComparison.OrdinalIgnoreCase))
+                        if (!attribute.Name.Equals(SrcAttributeName, StringComparison.OrdinalIgnoreCase))
                         {
-                            var encodedKey = JavaScriptEncoder.JavaScriptStringEncode(attribute.Key);
+                            var encodedKey = JavaScriptEncoder.JavaScriptStringEncode(attribute.Name);
                             var attributeValue = attribute.Value.ToString();
                             var encodedValue = JavaScriptEncoder.JavaScriptStringEncode(attributeValue);
 
@@ -307,7 +307,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                             // attribute.Key ("src") does not need to be JavaScript-encoded.
                             var encodedValue = JavaScriptEncoder.JavaScriptStringEncode(attributeValue);
 
-                            AppendAttribute(builder, attribute.Key, encodedValue, escapeQuotes: true);
+                            AppendAttribute(builder, attribute.Name, encodedValue, escapeQuotes: true);
                         }
                     }
 
@@ -342,7 +342,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         private void BuildScriptTag(
             TagHelperContent content,
-            IDictionary<string, object> attributes,
+            TagHelperAttributeList attributes,
             TagHelperContent builder)
         {
             EnsureFileVersionProvider();
@@ -352,7 +352,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 var attributeValue = attribute.Value;
                 if (FileVersion == true &&
-                    string.Equals(attribute.Key, SrcAttributeName, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(attribute.Name, SrcAttributeName, StringComparison.OrdinalIgnoreCase))
                 {
                     // "src" values come from bound attributes and globbing. So anything but a non-null string is
                     // unexpected but could happen if another helper targeting the same element does something odd.
@@ -364,7 +364,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     }
                 }
 
-                AppendAttribute(builder, attribute.Key, attributeValue, escapeQuotes: false);
+                AppendAttribute(builder, attribute.Name, attributeValue, escapeQuotes: false);
             }
 
             builder.Append(">")

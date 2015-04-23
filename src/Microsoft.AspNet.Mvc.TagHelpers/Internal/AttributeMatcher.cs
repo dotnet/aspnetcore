@@ -86,10 +86,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 
             foreach (var attribute in requiredAttributes)
             {
-                if (!context.AllAttributes.ContainsKey(attribute) ||
+                if (!context.AllAttributes.ContainsName(attribute) ||
                     context.AllAttributes[attribute] == null ||
-                    (typeof(string).IsAssignableFrom(context.AllAttributes[attribute].GetType()) &&
-                    string.IsNullOrWhiteSpace(context.AllAttributes[attribute] as string)))
+                    (typeof(string).IsAssignableFrom(context.AllAttributes[attribute].Value.GetType()) &&
+                    string.IsNullOrWhiteSpace(context.AllAttributes[attribute].Value as string)))
                 {
                     // Missing attribute!
                     missingAttributes.Add(attribute);

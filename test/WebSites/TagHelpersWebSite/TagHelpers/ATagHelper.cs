@@ -21,8 +21,8 @@ namespace TagHelpersWebSite.TagHelpers
         {
             if (Controller != null && Action != null)
             {
-                var methodParameters = output.Attributes.ToDictionary(attribute => attribute.Key,
-                                                                      attribute => (object)attribute.Value);
+                var methodParameters = output.Attributes.ToDictionary(attribute => attribute.Name,
+                                                                      attribute => attribute.Value);
 
                 // We remove all attributes from the resulting HTML element because they're supposed to
                 // be parameters to our final href value.

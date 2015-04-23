@@ -31,21 +31,23 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             [NotNull] string attributeName,
             [NotNull] TagHelperContext context)
         {
-            if (!tagHelperOutput.Attributes.ContainsKey(attributeName))
+            if (!tagHelperOutput.Attributes.ContainsName(attributeName))
             {
+                IEnumerable<IReadOnlyTagHelperAttribute> entries;
+
                 // We look for the original attribute so we can restore the exact attribute name the user typed.
                 // Approach also ignores changes made to tagHelperOutput[attributeName].
-                var entry = context.AllAttributes.FirstOrDefault(
-                    attribute => attribute.Key.Equals(attributeName, StringComparison.OrdinalIgnoreCase));
-
-                if (entry.Equals(default(KeyValuePair<string, object>)))
+                if (!context.AllAttributes.TryGetAttributes(attributeName, out entries))
                 {
                     throw new ArgumentException(
                         Resources.FormatTagHelperOutput_AttributeDoesNotExist(attributeName, nameof(TagHelperContext)),
                         nameof(attributeName));
                 }
-                
-                tagHelperOutput.Attributes.Add(entry.Key, entry.Value);
+
+                foreach (var entry in entries)
+                {
+                    tagHelperOutput.Attributes.Add(entry.Name, entry.Value);
+                }
             }
         }
 
@@ -57,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <param name="prefix">A prefix to look for.</param>
         /// <returns><see cref="KeyValuePair{string, string}"/>s with <see cref="KeyValuePair{string, string}.Key"/>
         /// starting with the given <paramref name="prefix"/>.</returns>
-        public static IEnumerable<KeyValuePair<string, object>> FindPrefixedAttributes(
+        public static IEnumerable<TagHelperAttribute> FindPrefixedAttributes(
             [NotNull] this TagHelperOutput tagHelperOutput,
             [NotNull] string prefix)
         {
@@ -65,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // We're only interested in HTML attributes that have the desired prefix.
             var prefixedAttributes = tagHelperOutput.Attributes
-                .Where(attribute => attribute.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                .Where(attribute => attribute.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                 .ToArray();
 
             return prefixedAttributes;
@@ -85,13 +87,22 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             foreach (var attribute in tagBuilder.Attributes)
             {
-                if (!tagHelperOutput.Attributes.ContainsKey(attribute.Key))
+                if (!tagHelperOutput.Attributes.ContainsName(attribute.Key))
                 {
                     tagHelperOutput.Attributes.Add(attribute.Key, attribute.Value);
                 }
                 else if (attribute.Key.Equals("class", StringComparison.OrdinalIgnoreCase))
                 {
-                    tagHelperOutput.Attributes["class"] += " " + attribute.Value;
+                    TagHelperAttribute classAttribute;
+
+                    if (tagHelperOutput.Attributes.TryGetAttribute("class", out classAttribute))
+                    {
+                        tagHelperOutput.Attributes["class"] = classAttribute.Value + " " + attribute.Value;
+                    }
+                    else
+                    {
+                        tagHelperOutput.Attributes.Add("class", attribute.Value);
+                    }
                 }
             }
         }
@@ -104,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <param name="attributes">Attributes to remove.</param>
         public static void RemoveRange(
             [NotNull] this TagHelperOutput tagHelperOutput,
-            [NotNull] IEnumerable<KeyValuePair<string, object>> attributes)
+            [NotNull] IEnumerable<TagHelperAttribute> attributes)
         {
             foreach (var attribute in attributes)
             {

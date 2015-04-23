@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -164,7 +165,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var expectedTagName = "not-label";
-            var expectedAttributes = new Dictionary<string, object>
+            var expectedAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control" },
                 { "for", tagHelperOutputContent.ExpectedId }
@@ -186,7 +187,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
 
             var tagHelperContext = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>(),
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () =>
@@ -195,7 +197,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent(tagHelperOutputContent.OriginalChildContent);
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var htmlAttributes = new Dictionary<string, object>
+            var htmlAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control" },
             };

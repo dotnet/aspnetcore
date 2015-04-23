@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -34,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
 
             var tagHelperContext = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>
+                allAttributes: new TagHelperAttributeList
                 {
                     { "id", "myvalidationmessage" },
                     { "for", modelExpression },
@@ -49,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
             var output = new TagHelperOutput(
                 expectedTagName,
-                attributes: new Dictionary<string, object>
+                attributes: new TagHelperAttributeList
                 {
                     { "id", "myvalidationmessage" }
                 });
@@ -68,13 +69,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal(4, output.Attributes.Count);
-            var attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("id"));
+            var attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("id"));
             Assert.Equal("myvalidationmessage", attribute.Value);
-            attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("class"));
+            attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("class"));
             Assert.Equal("field-validation-valid", attribute.Value);
-            attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("data-valmsg-for"));
+            attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("data-valmsg-for"));
             Assert.Equal("Name", attribute.Value);
-            attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("data-valmsg-replace"));
+            attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("data-valmsg-replace"));
             Assert.Equal("true", attribute.Value);
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
@@ -94,7 +95,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "original content";
             var expectedPostContent = "original post-content";
             var context = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>(),
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () =>
@@ -105,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
             var output = new TagHelperOutput(
                 "span",
-                attributes: new Dictionary<string, object>());
+                attributes: new TagHelperAttributeList());
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);
@@ -145,11 +147,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var output = new TagHelperOutput(
                 "span",
-                attributes: new Dictionary<string, object>());
+                attributes: new TagHelperAttributeList());
             output.Content.SetContent(outputContent);
 
             var context = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>(),
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () =>
@@ -184,9 +187,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             Assert.Equal("span", output.TagName);
             Assert.Equal(2, output.Attributes.Count);
-            var attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("data-foo"));
+            var attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("data-foo"));
             Assert.Equal("bar", attribute.Value);
-            attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("data-hello"));
+            attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("data-hello"));
             Assert.Equal("world", attribute.Value);
             Assert.Equal(expectedOutputContent, output.Content.GetContent());
         }
@@ -204,10 +207,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var output = new TagHelperOutput(
                 "span",
-                attributes: new Dictionary<string, object>());
+                attributes: new TagHelperAttributeList());
 
             var context = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>(),
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () =>
@@ -242,9 +246,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             Assert.Equal("span", output.TagName);
             Assert.Equal(2, output.Attributes.Count);
-            var attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("data-foo"));
+            var attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("data-foo"));
             Assert.Equal("bar", attribute.Value);
-            attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("data-hello"));
+            attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("data-hello"));
             Assert.Equal("world", attribute.Value);
             Assert.Equal(expectedOutputContent, output.Content.GetContent());
         }
@@ -259,7 +263,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
             var output = new TagHelperOutput(
                 "span",
-                attributes: new Dictionary<string, object>());
+                attributes: new TagHelperAttributeList());
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);

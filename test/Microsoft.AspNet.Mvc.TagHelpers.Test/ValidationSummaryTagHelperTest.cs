@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -44,7 +45,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPreContent = "original pre-content";
             var expectedContent = "original content";
             var tagHelperContext = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>(),
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () =>
@@ -55,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
             var output = new TagHelperOutput(
                 expectedTagName,
-                attributes: new Dictionary<string, object>
+                attributes: new TagHelperAttributeList
                 {
                     { "class", "form-control" }
                 });
@@ -74,9 +76,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal(2, output.Attributes.Count);
-            var attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("class"));
+            var attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("class"));
             Assert.Equal("form-control validation-summary-valid", attribute.Value);
-            attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("data-valmsg-summary"));
+            attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("data-valmsg-summary"));
             Assert.Equal("true", attribute.Value);
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
@@ -102,7 +104,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, object>());
+                attributes: new TagHelperAttributeList());
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);
@@ -144,7 +146,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "original content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, object>());
+                attributes: new TagHelperAttributeList());
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent("Content of validation summary");
@@ -177,11 +179,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             Assert.Equal("div", output.TagName);
             Assert.Equal(3, output.Attributes.Count);
-            var attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("data-foo"));
+            var attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("data-foo"));
             Assert.Equal("bar", attribute.Value);
-            attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("data-hello"));
+            attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("data-hello"));
             Assert.Equal("world", attribute.Value);
-            attribute = Assert.Single(output.Attributes, kvp => kvp.Key.Equals("anything"));
+            attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("anything"));
             Assert.Equal("something", attribute.Value);
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
@@ -201,7 +203,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, object>());
+                attributes: new TagHelperAttributeList());
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);
@@ -236,7 +238,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "original content";
             var output = new TagHelperOutput(
                 "div",
-                attributes: new Dictionary<string, object>());
+                attributes: new TagHelperAttributeList());
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent("Content of validation message");

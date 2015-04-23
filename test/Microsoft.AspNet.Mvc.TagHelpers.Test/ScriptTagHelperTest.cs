@@ -28,14 +28,64 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 {
     public class ScriptTagHelperTest
     {
+        [Theory]
+        [MemberData(nameof(LinkTagHelperTest.MultiAttributeSameNameData), MemberType = typeof(LinkTagHelperTest))]
+        public async Task HandlesMultipleAttributesSameNameCorrectly(
+            TagHelperAttributeList outputAttributes,
+            string expectedAttributeString)
+        {
+            // Arrange
+            var allAttributes = new TagHelperAttributeList(
+                outputAttributes.Concat(
+                    new TagHelperAttributeList
+                    {
+                        ["data-extra"] = "something",
+                        ["src"] = "/blank.js",
+                        ["asp-fallback-src"] = "http://www.example.com/blank.js",
+                        ["asp-fallback-test"] = "isavailable()",
+                    }));
+            var tagHelperContext = MakeTagHelperContext(allAttributes);
+            var viewContext = MakeViewContext();
+            var combinedOutputAttributes = new TagHelperAttributeList(
+                outputAttributes.Concat(
+                    new[]
+                    {
+                        new TagHelperAttribute("data-extra", new HtmlString("something"))
+                    }));
+            var output = MakeTagHelperOutput("script", combinedOutputAttributes);
+            var hostingEnvironment = MakeHostingEnvironment();
+
+            var helper = new ScriptTagHelper
+            {
+                HtmlEncoder = new CommonTestEncoder(),
+                JavaScriptEncoder = new CommonTestEncoder(),
+                ViewContext = viewContext,
+                HostingEnvironment = hostingEnvironment,
+                FallbackSrc = "~/blank.js",
+                FallbackTestExpression = "http://www.example.com/blank.js",
+                Src = "/blank.js",
+                Cache = MakeCache(),
+                Logger = CreateLogger()
+            };
+
+            // Act
+            await helper.ProcessAsync(tagHelperContext, output);
+
+            // Assert
+            Assert.StartsWith(
+                "<script " + expectedAttributeString + " data-extra=\"something\" " +
+                "src=\"HtmlEncode[[/blank.js]]\"",
+                output.Content.GetContent());
+        }
+
         public static TheoryData RunsWhenRequiredAttributesArePresent_Data
         {
             get
             {
-                return new TheoryData<IDictionary<string, object>, Action<ScriptTagHelper>>
+                return new TheoryData<TagHelperAttributeList, Action<ScriptTagHelper>>
                 {
                     {
-                        new Dictionary<string, object>
+                        new TagHelperAttributeList
                         {
                             ["asp-src-include"] = "*.js"
                         },
@@ -45,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         }
                     },
                     {
-                        new Dictionary<string, object>
+                        new TagHelperAttributeList
                         {
                             ["asp-src-include"] = "*.js",
                             ["asp-src-exclude"] = "*.min.js"
@@ -57,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         }
                     },
                     {
-                        new Dictionary<string, object>
+                        new TagHelperAttributeList
                         {
                             ["asp-fallback-src"] = "test.js",
                             ["asp-fallback-test"] = "isavailable()"
@@ -69,7 +119,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         }
                     },
                     {
-                        new Dictionary<string, object>
+                        new TagHelperAttributeList
                         {
                             ["asp-fallback-src-include"] = "*.js",
                             ["asp-fallback-test"] = "isavailable()"
@@ -81,7 +131,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         }
                     },
                     {
-                        new Dictionary<string, object>
+                        new TagHelperAttributeList
                         {
                             ["asp-fallback-src"] = "test.js",
                             ["asp-fallback-src-include"] = "*.js",
@@ -95,7 +145,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         }
                     },
                     {
-                        new Dictionary<string, object>
+                        new TagHelperAttributeList
                         {
                             ["asp-fallback-src-include"] = "*.js",
                             ["asp-fallback-src-exclude"] = "*.min.js",
@@ -110,7 +160,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     },
                     // File Version
                     {
-                        new Dictionary<string, object>
+                        new TagHelperAttributeList
                         {
                             ["asp-file-version"] = "true"
                         },
@@ -120,7 +170,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         }
                     },
                     {
-                        new Dictionary<string, object>
+                        new TagHelperAttributeList
                         {
                             ["asp-src-include"] = "*.js",
                             ["asp-file-version"] = "true"
@@ -132,7 +182,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         }
                     },
                     {
-                        new Dictionary<string, object>
+                        new TagHelperAttributeList
                         {
                             ["asp-src-include"] = "*.js",
                             ["asp-src-exclude"] = "*.min.js",
@@ -146,7 +196,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         }
                     },
                     {
-                        new Dictionary<string, object>
+                        new TagHelperAttributeList
                         {
                             ["asp-fallback-src"] = "test.js",
                             ["asp-fallback-test"] = "isavailable()",
@@ -160,7 +210,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         }
                     },
                     {
-                        new Dictionary<string, object>
+                        new TagHelperAttributeList
                         {
                             ["asp-fallback-src-include"] = "*.js",
                             ["asp-fallback-test"] = "isavailable()",
@@ -174,7 +224,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         }
                     },
                     {
-                        new Dictionary<string, object>
+                        new TagHelperAttributeList
                         {
                             ["asp-fallback-src"] = "test.js",
                             ["asp-fallback-src-include"] = "*.js",
@@ -190,7 +240,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         }
                     },
                     {
-                        new Dictionary<string, object>
+                        new TagHelperAttributeList
                         {
                             ["asp-fallback-src-include"] = "*.js",
                             ["asp-fallback-src-exclude"] = "*.min.js",
@@ -212,7 +262,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [Theory]
         [MemberData(nameof(RunsWhenRequiredAttributesArePresent_Data))]
         public async Task RunsWhenRequiredAttributesArePresent(
-            IDictionary<string, object> attributes,
+            TagHelperAttributeList attributes,
             Action<ScriptTagHelper> setProperties)
         {
             // Arrange
@@ -245,10 +295,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             get
             {
-                return new TheoryData<IDictionary<string, object>, Action<ScriptTagHelper>>
+                return new TheoryData<TagHelperAttributeList, Action<ScriptTagHelper>>
                 {
                     {
-                        new Dictionary<string, object>
+                        new TagHelperAttributeList
                         {
                             // This is commented out on purpose: ["asp-src-include"] = "*.js",
                             ["asp-src-exclude"] = "*.min.js"
@@ -260,7 +310,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         }
                     },
                     {
-                        new Dictionary<string, object>
+                        new TagHelperAttributeList
                         {
                             // This is commented out on purpose: ["asp-fallback-src"] = "test.js",
                             ["asp-fallback-test"] = "isavailable()",
@@ -272,7 +322,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         }
                     },
                     {
-                        new Dictionary<string, object>
+                        new TagHelperAttributeList
                         {
                             ["asp-fallback-src"] = "test.js",
                             // This is commented out on purpose: ["asp-fallback-test"] = "isavailable()"
@@ -284,7 +334,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         }
                     },
                     {
-                        new Dictionary<string, object>
+                        new TagHelperAttributeList
                         {
                             // This is commented out on purpose: ["asp-fallback-src-include"] = "test.js",
                             ["asp-fallback-src-exclude"] = "**/*.min.js",
@@ -304,7 +354,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [Theory]
         [MemberData(nameof(DoesNotRunWhenARequiredAttributeIsMissing_Data))]
         public void DoesNotRunWhenARequiredAttributeIsMissing(
-            IDictionary<string, object> attributes,
+            TagHelperAttributeList attributes,
             Action<ScriptTagHelper> setProperties)
         {
             // Arrange
@@ -333,7 +383,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [Theory]
         [MemberData(nameof(DoesNotRunWhenARequiredAttributeIsMissing_Data))]
         public async Task LogsWhenARequiredAttributeIsMissing(
-            IDictionary<string, object> attributes,
+            TagHelperAttributeList attributes,
             Action<ScriptTagHelper> setProperties)
         {
             // Arrange
@@ -431,7 +481,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperContext = MakeTagHelperContext(
-                attributes: new Dictionary<string, object>
+                attributes: new TagHelperAttributeList
                 {
                     ["data-extra"] = "something",
                     ["src"] = "/blank.js",
@@ -443,7 +493,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = MakeViewContext();
 
             var output = MakeTagHelperOutput("src",
-                attributes: new Dictionary<string, object>
+                attributes: new TagHelperAttributeList
                 {
                     ["data-extra"] = "something",
                     ["data-more"] = "else",
@@ -480,12 +530,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var context = MakeTagHelperContext(
-                attributes: new Dictionary<string, object>
+                attributes: new TagHelperAttributeList
                 {
                     ["src"] = "/js/site.js",
                     ["asp-src-include"] = "**/*.js"
                 });
-            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, object>());
+            var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
             var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
@@ -517,12 +567,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var context = MakeTagHelperContext(
-                attributes: new Dictionary<string, object>
+                attributes: new TagHelperAttributeList
                 {
                     ["src"] = "/js/site.js",
                     ["asp-src-include"] = "**/*.js"
                 });
-            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, object>());
+            var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
             var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
@@ -555,12 +605,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var context = MakeTagHelperContext(
-                attributes: new Dictionary<string, object>
+                attributes: new TagHelperAttributeList
                 {
                     ["src"] = "/js/site.js",
                     ["asp-file-version"] = "true"
                 });
-            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, object>());
+            var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
 
             var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
@@ -592,12 +642,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var context = MakeTagHelperContext(
-                attributes: new Dictionary<string, object>
+                attributes: new TagHelperAttributeList
                 {
                     ["src"] = "/bar/js/site.js",
                     ["asp-file-version"] = "true"
                 });
-            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, object>());
+            var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
 
             var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
@@ -629,14 +679,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var context = MakeTagHelperContext(
-                attributes: new Dictionary<string, object>
+                attributes: new TagHelperAttributeList
                 {
                     ["src"] = "/js/site.js",
                     ["asp-fallback-src-include"] = "fallback.js",
                     ["asp-fallback-test"] = "isavailable()",
                     ["asp-file-version"] = "true"
                 });
-            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, object>());
+            var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
 
             var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
@@ -672,13 +722,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var context = MakeTagHelperContext(
-                attributes: new Dictionary<string, object>
+                attributes: new TagHelperAttributeList
                 {
                     ["src"] = "/js/site.js",
                     ["asp-src-include"] = "*.js",
                     ["asp-file-version"] = "true"
                 });
-            var output = MakeTagHelperOutput("script", attributes: new Dictionary<string, object>());
+            var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
             var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
@@ -709,10 +759,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         private TagHelperContext MakeTagHelperContext(
-            IDictionary<string, object> attributes = null,
+            TagHelperAttributeList attributes = null,
             string content = null)
         {
-            attributes = attributes ?? new Dictionary<string, object>();
+            attributes = attributes ?? new TagHelperAttributeList();
 
             return new TagHelperContext(
                 attributes,
@@ -746,9 +796,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             return viewContext;
         }
 
-        private TagHelperOutput MakeTagHelperOutput(string tagName, IDictionary<string, object> attributes = null)
+        private TagHelperOutput MakeTagHelperOutput(string tagName, TagHelperAttributeList attributes = null)
         {
-            attributes = attributes ?? new Dictionary<string, object>();
+            attributes = attributes ?? new TagHelperAttributeList();
 
             return new TagHelperOutput(tagName, attributes);
         }
