@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string ActionAttributeName = "asp-action";
         private const string AntiForgeryAttributeName = "asp-anti-forgery";
         private const string ControllerAttributeName = "asp-controller";
+        private const string RouteAttributeName = "asp-route";
         private const string RouteAttributePrefix = "asp-route-";
         private const string HtmlActionAttributeName = "action";
 
@@ -47,6 +48,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [HtmlAttributeName(AntiForgeryAttributeName)]
         public bool? AntiForgery { get; set; }
 
+        /// <summary>
+        /// Name of the route.
+        /// </summary>
+        /// <remarks>
+        /// Must be <c>null</c> if <see cref="Action"/> or <see cref="Controller"/> is non-<c>null</c>.
+        /// </remarks>
+        [HtmlAttributeName(RouteAttributeName)]
+        public string Route { get; set; }
+
         /// <inheritdoc />
         /// <remarks>
         /// Does nothing if user provides an <c>action</c> attribute and <see cref="AntiForgery"/> is <c>null</c> or
@@ -64,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // If "action" is already set, it means the user is attempting to use a normal <form>.
             if (output.Attributes.ContainsKey(HtmlActionAttributeName))
             {
-                if (Action != null || Controller != null || routePrefixedAttributes.Any())
+                if (Action != null || Controller != null || Route != null || routePrefixedAttributes.Any())
                 {
                     // User also specified bound attributes we cannot use.
                     throw new InvalidOperationException(
@@ -73,6 +83,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                             HtmlActionAttributeName,
                             ActionAttributeName,
                             ControllerAttributeName,
+                            RouteAttributeName,
                             RouteAttributePrefix));
                 }
 
@@ -82,13 +93,38 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
             else
             {
+                TagBuilder tagBuilder;
                 var routeValues = GetRouteValues(output, routePrefixedAttributes);
-                var tagBuilder = Generator.GenerateForm(ViewContext,
-                                                        Action,
-                                                        Controller,
-                                                        routeValues,
-                                                        method: null,
-                                                        htmlAttributes: null);
+                if (Route == null)
+                {
+                    tagBuilder = Generator.GenerateForm(
+                        ViewContext,
+                        Action,
+                        Controller,
+                        routeValues,
+                        method: null,
+                        htmlAttributes: null);
+                }
+                else if (Action != null || Controller != null)
+                {
+                    // Route and Action or Controller were specified. Can't determine the action attribute.
+                    throw new InvalidOperationException(
+                        Resources.FormatFormTagHelper_CannotDetermineActionWithRouteAndActionOrControllerSpecified(
+                            "<form>",
+                            RouteAttributeName,
+                            ActionAttributeName,
+                            ControllerAttributeName,
+                            HtmlActionAttributeName));
+                }
+                else
+                {
+                    tagBuilder = Generator.GenerateRouteForm(
+                        ViewContext,
+                        Route,
+                        routeValues,
+                        method: null,
+                        htmlAttributes: null);
+                }
 
                 if (tagBuilder != null)
                 {

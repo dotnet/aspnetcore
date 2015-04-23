@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot override the '{1}' attribute for {0}. A {0} with a specified '{1}' must not have attributes starting with '{4}' or an '{2}' or '{3}' attribute.
+        /// Cannot override the '{1}' attribute for {0}. A {0} with a specified '{1}' must not have attributes starting with '{5}' or an '{2}' or '{3}' or '{4}' attribute.
         /// </summary>
         internal static string FormTagHelper_CannotOverrideAction
         {
@@ -51,11 +51,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot override the '{1}' attribute for {0}. A {0} with a specified '{1}' must not have attributes starting with '{4}' or an '{2}' or '{3}' attribute.
+        /// Cannot override the '{1}' attribute for {0}. A {0} with a specified '{1}' must not have attributes starting with '{5}' or an '{2}' or '{3}' or '{4}' attribute.
         /// </summary>
-        internal static string FormatFormTagHelper_CannotOverrideAction(object p0, object p1, object p2, object p3, object p4)
+        internal static string FormatFormTagHelper_CannotOverrideAction(object p0, object p1, object p2, object p3, object p4, object p5)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("FormTagHelper_CannotOverrideAction"), p0, p1, p2, p3, p4);
+            return string.Format(CultureInfo.CurrentCulture, GetString("FormTagHelper_CannotOverrideAction"), p0, p1, p2, p3, p4, p5);
         }
 
         /// <summary>
@@ -136,6 +136,22 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         internal static string FormatTagHelperOutput_AttributeDoesNotExist(object p0, object p1)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperOutput_AttributeDoesNotExist"), p0, p1);
+        }
+
+        /// <summary>
+        /// Cannot determine an '{4}' attribute for {0}. A {0} with a specified '{1}' must not have an '{2}' or '{3}' attribute.
+        /// </summary>
+        internal static string FormTagHelper_CannotDetermineActionWithRouteAndActionOrControllerSpecified
+        {
+            get { return GetString("FormTagHelper_CannotDetermineActionWithRouteAndActionOrControllerSpecified"); }
+        }
+
+        /// <summary>
+        /// Cannot determine an '{4}' attribute for {0}. A {0} with a specified '{1}' must not have an '{2}' or '{3}' attribute.
+        /// </summary>
+        internal static string FormatFormTagHelper_CannotDetermineActionWithRouteAndActionOrControllerSpecified(object p0, object p1, object p2, object p3, object p4)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("FormTagHelper_CannotDetermineActionWithRouteAndActionOrControllerSpecified"), p0, p1, p2, p3, p4);
         }
 
         private static string GetString(string name, params string[] formatterNames)

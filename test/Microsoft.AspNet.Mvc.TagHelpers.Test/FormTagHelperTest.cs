@@ -252,9 +252,63 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal("form", output.TagName);
             Assert.False(output.SelfClosing);
             Assert.Empty(output.Attributes);
+            Assert.Empty(output.PreElement.GetContent());
             Assert.Empty(output.PreContent.GetContent());
             Assert.True(output.Content.IsEmpty);
             Assert.Empty(output.PostContent.GetContent());
+        }
+
+        [Fact]
+        public async Task ProcessAsync_CallsIntoGenerateRouteFormWithExpectedParameters()
+        {
+            // Arrange
+            var viewContext = CreateViewContext();
+            var context = new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+            var output = new TagHelperOutput(
+                "form",
+                attributes: new Dictionary<string, object>
+                {
+                    { "asp-route-foo", "bar" }
+                });
+            var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
+            generator
+                .Setup(mock => mock.GenerateRouteForm(
+                    viewContext,
+                    "Default",
+                    It.Is<Dictionary<string, object>>(m => string.Equals(m["foo"], "bar")),
+                    null,
+                    null))
+                .Returns(new TagBuilder("form", new CommonTestEncoder()))
+                .Verifiable();
+            var formTagHelper = new FormTagHelper
+            {
+                AntiForgery = false,
+                Route = "Default",
+                Generator = generator.Object,
+                ViewContext = viewContext,
+            };
+
+            // Act & Assert
+            await formTagHelper.ProcessAsync(context, output);
+            generator.Verify();
+
+            Assert.Equal("form", output.TagName);
+            Assert.False(output.SelfClosing);
+            Assert.Empty(output.Attributes);
+            Assert.Empty(output.PreElement.GetContent());
+            Assert.Empty(output.PreContent.GetContent());
+            Assert.True(output.Content.IsEmpty);
+            Assert.Empty(output.PostContent.GetContent());
+            Assert.Empty(output.PostElement.GetContent());
         }
 
         [Theory]
@@ -333,11 +387,35 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var expectedErrorMessage = "Cannot override the 'action' attribute for <form>. A <form> with a specified " +
                                        "'action' must not have attributes starting with 'asp-route-' or an " +
-                                       "'asp-action' or 'asp-controller' attribute.";
+                                       "'asp-action' or 'asp-controller' or 'asp-route' attribute.";
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => formTagHelper.ProcessAsync(context: null, output: tagHelperOutput));
+
+            Assert.Equal(expectedErrorMessage, ex.Message);
+        }
+
+        [Theory]
+        [InlineData("Action")]
+        [InlineData("Controller")]
+        public async Task ProcessAsync_ThrowsIfRouteAndActionOrControllerProvided(string propertyName)
+        {
+            // Arrange
+            var formTagHelper = new FormTagHelper
+            {
+                Route = "Default",
+            };
+            typeof(FormTagHelper).GetProperty(propertyName).SetValue(formTagHelper, "Home");
+            var output = new TagHelperOutput(
+                "form",
+                attributes: new Dictionary<string, object>());
+            var expectedErrorMessage = "Cannot determine an 'action' attribute for <form>. A <form> with a specified " +
+                "'asp-route' must not have an 'asp-action' or 'asp-controller' attribute.";
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => formTagHelper.ProcessAsync(context: null, output: output));
 
             Assert.Equal(expectedErrorMessage, ex.Message);
         }
