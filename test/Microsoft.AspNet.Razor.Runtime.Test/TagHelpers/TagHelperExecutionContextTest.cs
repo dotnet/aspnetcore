@@ -148,6 +148,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             }
         }
 
+        [Theory]
         [MemberData(nameof(DictionaryCaseTestingData))]
         public void HtmlAttributes_IgnoresCase(string originalName, string updatedName)
         {
@@ -160,22 +161,23 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             var attribute = Assert.Single(executionContext.HTMLAttributes);
-            Assert.Equal(new KeyValuePair<string, object>(originalName, "something else"), attribute);
+            Assert.Equal(new TagHelperAttribute(originalName, "something else"), attribute);
         }
 
+        [Theory]
         [MemberData(nameof(DictionaryCaseTestingData))]
         public void AllAttributes_IgnoresCase(string originalName, string updatedName)
         {
             // Arrange
             var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
-            executionContext.AllAttributes[originalName] = false;
+            executionContext.AllAttributes.Add(originalName, value: false);
 
             // Act
-            executionContext.AllAttributes[updatedName] = true;
+            executionContext.AllAttributes[updatedName].Value = true;
 
             // Assert
             var attribute = Assert.Single(executionContext.AllAttributes);
-            Assert.Equal(new KeyValuePair<string, object>(originalName, true), attribute);
+            Assert.Equal(new TagHelperAttribute(originalName, true), attribute);
         }
 
         [Fact]
@@ -183,7 +185,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
-            var expectedAttributes = new Dictionary<string, object>
+            var expectedAttributes = new TagHelperAttributeList
             {
                 { "class", "btn" },
                 { "foo", "bar" }
@@ -194,7 +196,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             executionContext.AddHtmlAttribute("foo", "bar");
 
             // Assert
-            Assert.Equal(expectedAttributes, executionContext.HTMLAttributes);
+            Assert.Equal(
+                expectedAttributes,
+                executionContext.HTMLAttributes,
+                CaseSensitiveTagHelperAttributeComparer.Default);
         }
 
         [Fact]
@@ -202,7 +207,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
-            var expectedAttributes = new Dictionary<string, object>
+            var expectedAttributes = new TagHelperAttributeList
             {
                 { "class", "btn" },
                 { "something", true },
@@ -215,7 +220,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             executionContext.AddHtmlAttribute("foo", "bar");
 
             // Assert
-            Assert.Equal(expectedAttributes, executionContext.AllAttributes);
+            Assert.Equal(
+                expectedAttributes,
+                executionContext.AllAttributes,
+                CaseSensitiveTagHelperAttributeComparer.Default);
         }
 
         [Fact]

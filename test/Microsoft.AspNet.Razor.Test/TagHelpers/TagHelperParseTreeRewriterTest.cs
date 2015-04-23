@@ -62,9 +62,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "p",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 }))
                     },
                     {
@@ -73,9 +73,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "p",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["class"] = dateTimeNow
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow)
                                 }))
                     },
                     {
@@ -83,9 +83,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 },
                                 children: factory.Markup("words and spaces")))
                     },
@@ -94,9 +94,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["class"] = dateTimeNow
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow)
                                 },
                                 children: factory.Markup("words and spaces")))
                     },
@@ -105,9 +105,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 },
                                 children: new SyntaxTreeNode[]
                                 {
@@ -124,9 +124,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "strong",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["catchAll"] = factory.Markup("hi")
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", factory.Markup("hi"))
                                 }))
                     },
                     {
@@ -135,9 +135,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "strong",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["catchAll"] = dateTimeNow
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", dateTimeNow)
                                 }))
                     },
                     {
@@ -145,9 +145,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "strong",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["catchAll"] = factory.Markup("hi")
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", factory.Markup("hi"))
                                 },
                                 children: factory.Markup("words and spaces")))
                     },
@@ -156,9 +156,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "strong",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["catchAll"] = dateTimeNow
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", dateTimeNow)
                                 },
                                 children: factory.Markup("words and spaces")))
                     },
@@ -205,10 +205,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "p",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["notRequired"] = factory.Markup("a"),
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("notRequired", factory.Markup("a")),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 }))
                     },
                     {
@@ -217,10 +217,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "p",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["notRequired"] = dateTimeNow,
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("notRequired", dateTimeNow),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 }))
                     },
                     {
@@ -228,10 +228,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["notRequired"] = factory.Markup("a"),
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("notRequired", factory.Markup("a")),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 },
                                 children: factory.Markup("words and spaces")))
                     },
@@ -241,10 +241,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "div",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["style"] = new MarkupBlock(),
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock()),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 }))
                     },
                     {
@@ -253,10 +253,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "div",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["style"] = dateTimeNow,
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("style", dateTimeNow),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 }))
                     },
                     {
@@ -264,10 +264,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "div",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["style"] = new MarkupBlock(),
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock()),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 },
                                 children: factory.Markup("words and spaces")))
                     },
@@ -276,10 +276,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "div",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["style"] = dateTimeNow,
-                                    ["class"] = dateTimeNow
+                                    new KeyValuePair<string, SyntaxTreeNode>("style", dateTimeNow),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow)
                                 },
                                 children: factory.Markup("words and spaces")))
                     },
@@ -288,10 +288,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "div",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["style"] = new MarkupBlock(),
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock()),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 },
                                 children: new SyntaxTreeNode[]
                                 {
@@ -308,10 +308,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "p",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["class"] = factory.Markup("btn"),
-                                    ["catchAll"] = factory.Markup("hi")
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn")),
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", factory.Markup("hi"))
                                 }))
                     },
                     {
@@ -319,10 +319,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["class"] = factory.Markup("btn"),
-                                    ["catchAll"] = factory.Markup("hi")
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn")),
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", factory.Markup("hi"))
                                 },
                                 children: factory.Markup("words and spaces")))
                     },
@@ -332,11 +332,11 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "div",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["style"] = new MarkupBlock(),
-                                    ["class"] = factory.Markup("btn"),
-                                    ["catchAll"] = factory.Markup("hi")
+                                    new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock()),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn")),
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", factory.Markup("hi"))
                                 }))
                     },
                     {
@@ -344,11 +344,11 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "div",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["style"] = new MarkupBlock(),
-                                    ["class"] = factory.Markup("btn"),
-                                    ["catchAll"] = factory.Markup("hi")
+                                    new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock()),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn")),
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", factory.Markup("hi"))
                                 },
                                 children: factory.Markup("words and spaces")))
                     },
@@ -358,11 +358,11 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "div",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["style"] = dateTimeNow,
-                                    ["class"] = dateTimeNow,
-                                    ["catchAll"] = dateTimeNow
+                                    new KeyValuePair<string, SyntaxTreeNode>("style", dateTimeNow),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow),
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", dateTimeNow)
                                 },
                                 children: factory.Markup("words and spaces")))
                     },
@@ -371,11 +371,11 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "div",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["style"] = new MarkupBlock(),
-                                    ["class"] = factory.Markup("btn"),
-                                    ["catchAll"] = factory.Markup("hi")
+                                    new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock()),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn")),
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", factory.Markup("hi"))
                                 },
                                 children: new SyntaxTreeNode[]
                                 {
@@ -446,9 +446,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 },
                                 children: new[]
                                 {
@@ -461,9 +461,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "strong",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["catchAll"] = factory.Markup("hi")
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", factory.Markup("hi"))
                                 },
                                 children: new SyntaxTreeNode[]
                                 {
@@ -476,9 +476,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 },
                                 children: new[]
                                 {
@@ -493,9 +493,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "strong",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["catchAll"] = factory.Markup("hi")
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", factory.Markup("hi"))
                                 },
                                 children: new SyntaxTreeNode[]
                                 {
@@ -510,15 +510,15 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 },
                                 children: new MarkupTagHelperBlock(
                                     "strong",
-                                    attributes: new Dictionary<string, SyntaxTreeNode>
+                                    attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                     {
-                                        ["catchAll"] = factory.Markup("hi")
+                                        new KeyValuePair<string, SyntaxTreeNode>("catchAll", factory.Markup("hi"))
                                     },
                                     children: new[]
                                     {
@@ -531,15 +531,15 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "strong",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["catchAll"] = factory.Markup("hi")
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", factory.Markup("hi"))
                                 },
                                 children: new MarkupTagHelperBlock(
                                     "p",
-                                    attributes: new Dictionary<string, SyntaxTreeNode>
+                                    attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                     {
-                                        ["class"] = factory.Markup("btn")
+                                        new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                     },
                                     children: new[]
                                     {
@@ -552,15 +552,15 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 },
                                 children: new MarkupTagHelperBlock(
                                     "p",
-                                    attributes: new Dictionary<string, SyntaxTreeNode>
+                                    attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                     {
-                                        ["class"] = factory.Markup("btn")
+                                        new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                     },
                                     children: new[]
                                     {
@@ -573,15 +573,15 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "strong",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["catchAll"] = factory.Markup("hi")
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", factory.Markup("hi"))
                                 },
                                 children: new MarkupTagHelperBlock(
                                     "strong",
-                                    attributes: new Dictionary<string, SyntaxTreeNode>
+                                    attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                     {
-                                        ["catchAll"] = factory.Markup("hi")
+                                        new KeyValuePair<string, SyntaxTreeNode>("catchAll", factory.Markup("hi"))
                                     },
                                     children: new[]
                                     {
@@ -594,9 +594,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 },
                                 children: new[]
                                 {
@@ -604,9 +604,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     blockFactory.MarkupTagBlock("<p>"),
                                     new MarkupTagHelperBlock(
                                         "p",
-                                        attributes: new Dictionary<string, SyntaxTreeNode>
+                                        attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                         {
-                                            ["class"] = factory.Markup("btn")
+                                            new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                         },
                                         children: new[]
                                         {
@@ -623,9 +623,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "strong",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["catchAll"] = factory.Markup("hi")
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", factory.Markup("hi"))
                                 },
                                 children: new[]
                                 {
@@ -633,9 +633,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     blockFactory.MarkupTagBlock("<strong>"),
                                     new MarkupTagHelperBlock(
                                     "strong",
-                                    attributes: new Dictionary<string, SyntaxTreeNode>
+                                    attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                     {
-                                        ["catchAll"] = factory.Markup("hi")
+                                        new KeyValuePair<string, SyntaxTreeNode>("catchAll", factory.Markup("hi"))
                                     },
                                     children: new[]
                                     {
@@ -701,9 +701,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 })),
                         new[]
                         {
@@ -720,10 +720,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["notRequired"] = factory.Markup("hi"),
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("notRequired", factory.Markup("hi")),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 })),
                         new[]
                         {
@@ -747,9 +747,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 })),
                         new[]
                         {
@@ -763,10 +763,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["notRequired"] = factory.Markup("hi"),
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("notRequired", factory.Markup("hi")),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 })),
                         new[]
                         {
@@ -779,9 +779,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         "<p class=\"btn\" <p>",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 },
                                 children: blockFactory.MarkupTagBlock("<p>"))),
                         new[]
@@ -798,10 +798,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         "<p notRequired=\"hi\" class=\"btn\" <p>",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["notRequired"] = factory.Markup("hi"),
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("notRequired", factory.Markup("hi")),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 },
                                 children: blockFactory.MarkupTagBlock("<p>"))),
                         new[]
@@ -819,9 +819,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 })),
                         new[]
                         {
@@ -838,10 +838,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    ["notRequired"] = factory.Markup("hi"),
-                                    ["class"] = factory.Markup("btn")
+                                    new KeyValuePair<string, SyntaxTreeNode>("notRequired", factory.Markup("hi")),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 })),
                         new[]
                         {
@@ -1033,9 +1033,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "th:myth",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "class", factory.Markup("btn") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 })),
                         availableDescriptorsColon
                     },
@@ -1045,9 +1045,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "PREFIXmyth",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "class", factory.Markup("btn") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 })),
                         availableDescriptorsText
                     },
@@ -1057,9 +1057,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "th:myth2",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "class", factory.Markup("btn") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 })),
                         availableDescriptorsColon
                     },
@@ -1069,9 +1069,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "PREFIXmyth2",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "class", factory.Markup("btn") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 })),
                         availableDescriptorsText
                     },
@@ -1080,9 +1080,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "th:myth",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "class", factory.Markup("btn") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 },
                                 children: factory.Markup("words and spaces"))),
                         availableDescriptorsColon
@@ -1092,9 +1092,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "PREFIXmyth",
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "class", factory.Markup("btn") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 },
                                 children: factory.Markup("words and spaces"))),
                         availableDescriptorsText
@@ -1105,17 +1105,19 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "th:myth2",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     {
-                                        "bound",
-                                        new MarkupBlock(
+                                        new KeyValuePair<string, SyntaxTreeNode>(
+                                            "bound",
                                             new MarkupBlock(
-                                                new ExpressionBlock(
-                                                    factory.CodeTransition(),
-                                                    factory.Code("DateTime.Now")
-                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                        .Accepts(AcceptedCharacters.NonWhiteSpace)))) }
+                                                new MarkupBlock(
+                                                    new ExpressionBlock(
+                                                        factory.CodeTransition(),
+                                                        factory.Code("DateTime.Now")
+                                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                                            .Accepts(AcceptedCharacters.NonWhiteSpace)))))
+                                    }
                                 })),
                         availableDescriptorsColon
                     },
@@ -1125,17 +1127,19 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "PREFIXmyth2",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     {
-                                        "bound",
-                                        new MarkupBlock(
+                                        new KeyValuePair<string, SyntaxTreeNode>(
+                                            "bound",
                                             new MarkupBlock(
-                                                new ExpressionBlock(
-                                                    factory.CodeTransition(),
-                                                    factory.Code("DateTime.Now")
-                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                        .Accepts(AcceptedCharacters.NonWhiteSpace)))) }
+                                                new MarkupBlock(
+                                                    new ExpressionBlock(
+                                                        factory.CodeTransition(),
+                                                        factory.Code("DateTime.Now")
+                                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                                            .Accepts(AcceptedCharacters.NonWhiteSpace)))))
+                                    }
                                 })),
                         availableDescriptorsText
                     },
@@ -1180,9 +1184,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "myth",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "bound", new MarkupBlock() }
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", new MarkupBlock())
                                 })),
                         new[]
                         {
@@ -1197,9 +1201,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "myth",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "bound", factory.CodeMarkup("    true") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup("    true"))
                                 })),
                         new RazorError[0]
                     },
@@ -1209,9 +1213,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "myth",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "bound", factory.CodeMarkup("    ") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup("    "))
                                 })),
                         new[]
                         {
@@ -1226,9 +1230,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "myth",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "bound", new MarkupBlock() }
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", new MarkupBlock()),
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", new MarkupBlock())
                                 })),
                         new[]
                         {
@@ -1246,9 +1251,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "myth",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "bound", factory.CodeMarkup("  ") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup(" ")),
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup("  "))
                                 })),
                         new[]
                         {
@@ -1266,9 +1272,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "myth",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null) }
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup("true")),
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null))
                                 })),
                         new[]
                         {
@@ -1283,10 +1290,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "myth",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null) },
-                                    { "name", new MarkupBlock() }
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null)),
+                                    new KeyValuePair<string, SyntaxTreeNode>("name", new MarkupBlock())
                                 })),
                         new[]
                         {
@@ -1301,10 +1308,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "myth",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null) },
-                                    { "name", factory.Markup("  ") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null)),
+                                    new KeyValuePair<string, SyntaxTreeNode>("name", factory.Markup("  "))
                                 })),
                         new[]
                         {
@@ -1319,10 +1326,12 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "myth",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null) },
-                                    { "name", factory.Markup(string.Empty).With(SpanCodeGenerator.Null) }
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup("true")),
+                                    new KeyValuePair<string, SyntaxTreeNode>("name", factory.Markup("john")),
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null)),
+                                    new KeyValuePair<string, SyntaxTreeNode>("name", factory.Markup(string.Empty).With(SpanCodeGenerator.Null))
                                 })),
                         new[]
                         {
@@ -1337,9 +1346,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "myth",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "BouND", new MarkupBlock() }
+                                    new KeyValuePair<string, SyntaxTreeNode>("BouND", new MarkupBlock())
                                 })),
                         new[]
                         {
@@ -1354,9 +1363,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "myth",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "BOUND", new MarkupBlock() }
+                                    new KeyValuePair<string, SyntaxTreeNode>("BOUND", new MarkupBlock()),
+                                    new KeyValuePair<string, SyntaxTreeNode>("bOUnd", new MarkupBlock())
                                 })),
                         new[]
                         {
@@ -1373,10 +1383,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                new Dictionary<string, SyntaxTreeNode>
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "BOUND", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null) },
-                                    { "nAMe", factory.Markup("john") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("BOUND", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null)),
+                                    new KeyValuePair<string, SyntaxTreeNode>("nAMe", factory.Markup("john"))
                                 })),
                         new[]
                         {
@@ -1391,19 +1401,20 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "myth",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     {
-                                        "bound",
-                                        new MarkupBlock(
+                                        new KeyValuePair<string, SyntaxTreeNode>(
+                                            "bound",
                                             new MarkupBlock(
-                                            factory.Markup("    "),
-                                            new ExpressionBlock(
-                                                factory.CodeTransition(),
-                                                factory.Code("true")
-                                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                    .Accepts(AcceptedCharacters.NonWhiteSpace))),
-                                        factory.Markup("  "))
+                                                new MarkupBlock(
+                                                factory.Markup("    "),
+                                                new ExpressionBlock(
+                                                    factory.CodeTransition(),
+                                                    factory.Code("true")
+                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                                        .Accepts(AcceptedCharacters.NonWhiteSpace))),
+                                                factory.Markup("  ")))
                                     }
                                 })),
                         new RazorError[0]
@@ -1414,19 +1425,20 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock(
                                 "myth",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     {
-                                        "bound",
-                                        new MarkupBlock(
+                                        new KeyValuePair<string, SyntaxTreeNode>(
+                                            "bound",
                                             new MarkupBlock(
-                                            factory.Markup("    "),
-                                            new ExpressionBlock(
-                                                factory.CodeTransition(),
-                                                factory.MetaCode("(").Accepts(AcceptedCharacters.None),
-                                                factory.Code("true").AsExpression(),
-                                                factory.MetaCode(")").Accepts(AcceptedCharacters.None))),
-                                        factory.Markup("  "))
+                                                new MarkupBlock(
+                                                factory.Markup("    "),
+                                                new ExpressionBlock(
+                                                    factory.CodeTransition(),
+                                                    factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                                                    factory.Code("true").AsExpression(),
+                                                    factory.MetaCode(")").Accepts(AcceptedCharacters.None))),
+                                                factory.Markup("  ")))
                                     }
                                 })),
                         new RazorError[0]
@@ -3116,29 +3128,31 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         "<p class=\"\"></p>",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class",  new MarkupBlock() }
+                                new KeyValuePair<string, SyntaxTreeNode>("class",  new MarkupBlock())
                             }))
                     },
                     {
                         "<p class=''></p>",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class",  new MarkupBlock() }
+                                new KeyValuePair<string, SyntaxTreeNode>("class",  new MarkupBlock())
                             }))
                     },
                     {
                         "<p class=></p>",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
                                 // We expected a markup node here because attribute values without quotes can only ever
                                 // be a single item, hence don't need to be enclosed by a block.
-                                { "class",  factory.Markup("").With(SpanCodeGenerator.Null) },
+                                new KeyValuePair<string, SyntaxTreeNode>(
+                                    "class",
+                                    factory.Markup("").With(SpanCodeGenerator.Null)),
                             }))
                     },
                     {
@@ -3146,11 +3160,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "class1",  new MarkupBlock() },
-                                    { "class2",  factory.Markup("").With(SpanCodeGenerator.Null) },
-                                    { "class3",  new MarkupBlock() },
+                                    new KeyValuePair<string, SyntaxTreeNode>("class1", new MarkupBlock()),
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "class2",
+                                        factory.Markup("").With(SpanCodeGenerator.Null)),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class3", new MarkupBlock()),
                                 }))
                     },
                     {
@@ -3158,11 +3174,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "class1",  new MarkupBlock() },
-                                    { "class2",  new MarkupBlock() },
-                                    { "class3",  factory.Markup("").With(SpanCodeGenerator.Null) },
+                                    new KeyValuePair<string, SyntaxTreeNode>("class1",  new MarkupBlock()),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class2",  new MarkupBlock()),
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "class3",
+                                        factory.Markup("").With(SpanCodeGenerator.Null)),
                                 }))
                     },
                 };
@@ -3209,7 +3227,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         "<p =\"false\"\" ></p>",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                                new Dictionary<string, SyntaxTreeNode>())),
+                                new List<KeyValuePair<string, SyntaxTreeNode>>())),
                         new []
                         {
                             new RazorError(
@@ -3221,9 +3239,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         "<p bar=\"false\"\" <strong>",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                                new Dictionary<string, SyntaxTreeNode>
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "bar", factory.Markup("false") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("bar", factory.Markup("false"))
                                 })),
                         new []
                         {
@@ -3236,9 +3254,11 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         "<p bar='false  <strong>",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                                new Dictionary<string, SyntaxTreeNode>
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "bar", new MarkupBlock(factory.Markup("false"), factory.Markup("  <strong>")) }
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "bar",
+                                        new MarkupBlock(factory.Markup("false"), factory.Markup("  <strong>")))
                                 })),
                         new []
                         {
@@ -3272,9 +3292,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         "<p class=btn\" bar<strong>",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                                new Dictionary<string, SyntaxTreeNode>
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "class", factory.Markup("btn") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 })),
                         new []
                         {
@@ -3287,9 +3307,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         "<p class=btn\" bar=\"foo\"<strong>",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                                new Dictionary<string, SyntaxTreeNode>
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "class", factory.Markup("btn") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 })),
                         new []
                         {
@@ -3302,10 +3322,12 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         "<p class=\"btn bar=\"foo\"<strong>",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                                new Dictionary<string, SyntaxTreeNode>
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "class", new MarkupBlock(factory.Markup("btn"), factory.Markup(" bar=")) },
-                                    { "foo", factory.Markup(string.Empty) }
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "class",
+                                        new MarkupBlock(factory.Markup("btn"), factory.Markup(" bar="))),
+                                    new KeyValuePair<string, SyntaxTreeNode>("foo", factory.Markup(string.Empty))
                                 },
                                 new MarkupTagHelperBlock("strong"))),
                         new []
@@ -3325,9 +3347,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         "<p class=\"btn bar=\"foo\"></p>",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                                new Dictionary<string, SyntaxTreeNode>
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "class", new MarkupBlock(factory.Markup("btn"), factory.Markup(" bar=")) },
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", new MarkupBlock(factory.Markup("btn"), factory.Markup(" bar="))),
                                 })),
                         new RazorError[0]
                     },
@@ -3357,9 +3379,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         "<p class=@DateTime.Now\"></p>",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                                new Dictionary<string, SyntaxTreeNode>
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "class", dateTimeNow }
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow)
                                 })),
                         new []
                         {
@@ -3372,9 +3394,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         "<p class=\"@do {",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                                new Dictionary<string, SyntaxTreeNode>
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "class", createInvalidDoBlock(string.Empty) }
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", createInvalidDoBlock(string.Empty))
                                 })),
                         new []
                         {
@@ -3393,9 +3415,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         "<p class=\"@do {\"></p>",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                                new Dictionary<string, SyntaxTreeNode>
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "class", createInvalidDoBlock("\"></p>") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", createInvalidDoBlock("\"></p>"))
                                 })),
                         new []
                         {
@@ -3620,9 +3642,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "age", factory.CodeMarkup("12") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("age", factory.CodeMarkup("12"))
                                 }))
                     },
                     {
@@ -3630,9 +3652,11 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "birthday", factory.CodeMarkup("DateTime.Now") }
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "birthday",
+                                        factory.CodeMarkup("DateTime.Now"))
                                 }))
                     },
                     {
@@ -3640,9 +3664,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "name", factory.Markup("John") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("name", factory.Markup("John"))
                                 }))
                     },
                     {
@@ -3650,9 +3674,11 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "name", new MarkupBlock(factory.Markup("Time:"), dateTimeNow) }
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "name",
+                                        new MarkupBlock(factory.Markup("Time:"), dateTimeNow))
                                 }))
                     },
                     {
@@ -3660,11 +3686,15 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
                                 selfClosing: true,
-                                attributes: new Dictionary<string, SyntaxTreeNode>
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "age", factory.CodeMarkup("12") },
-                                    { "birthday", factory.CodeMarkup("DateTime.Now") },
-                                    { "name", new MarkupBlock(factory.Markup("Time:"), dateTimeNow) }
+                                    new KeyValuePair<string, SyntaxTreeNode>("age", factory.CodeMarkup("12")),
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "birthday",
+                                        factory.CodeMarkup("DateTime.Now")),
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "name",
+                                        new MarkupBlock(factory.Markup("Time:"), dateTimeNow))
                                 }))
                     },
                 };
@@ -3716,11 +3746,11 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     "<p class=foo dynamic=@DateTime.Now style=color:red;><strong></p></strong>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class", factory.Markup("foo") },
-                                { "dynamic", new MarkupBlock(dateTimeNow) },
-                                { "style", factory.Markup("color:red;") }
+                                new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
+                                new KeyValuePair<string, SyntaxTreeNode>("dynamic", new MarkupBlock(dateTimeNow)),
+                                new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                             },
                             new MarkupTagHelperBlock("strong")),
                             blockFactory.MarkupTagBlock("</strong>")),
@@ -3773,15 +3803,15 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     "<p class=\"foo\">Hello <p style=\"color:red;\">World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class", factory.Markup("foo") }
+                                new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo"))
                             },
                             factory.Markup("Hello "),
                             new MarkupTagHelperBlock("p",
-                                new Dictionary<string, SyntaxTreeNode>
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "style", factory.Markup("color:red;") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                                 },
                                 factory.Markup("World")))),
                     new RazorError[]
@@ -4125,34 +4155,34 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     "<p      class=\"     foo\"    style=\"   color :  red  ;   \"    ></p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                        new Dictionary<string, SyntaxTreeNode>
+                        new List<KeyValuePair<string, SyntaxTreeNode>>
                         {
-                            { "class", factory.Markup("     foo") },
-                            { "style",
+                            new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("     foo")),
+                            new KeyValuePair<string, SyntaxTreeNode>(
+                                "style",
                                 new MarkupBlock(
                                     factory.Markup("   color"),
                                     factory.Markup(" :"),
                                     factory.Markup("  red"),
                                     factory.Markup("  ;"),
-                                    factory.Markup("   "))
-                            }
+                                    factory.Markup("   ")))
                         }))
                 };
                 yield return new object[] {
                     "<p      class=\"     foo\"    style=\"   color :  red  ;   \"    >Hello World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class", factory.Markup("     foo") },
-                                { "style",
+                                new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("     foo")),
+                                new KeyValuePair<string, SyntaxTreeNode>(
+                                    "style",
                                     new MarkupBlock(
                                         factory.Markup("   color"),
                                         factory.Markup(" :"),
                                         factory.Markup("  red"),
                                         factory.Markup("  ;"),
-                                        factory.Markup("   "))
-                                }
+                                        factory.Markup("   ")))
                             },
                             factory.Markup("Hello World")))
                 };
@@ -4160,16 +4190,20 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     "<p     class=\"   foo  \" >Hello</p> <p    style=\"  color:red; \" >World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class", new MarkupBlock(factory.Markup("   foo"), factory.Markup("  ")) }
+                                new KeyValuePair<string, SyntaxTreeNode>(
+                                    "class",
+                                    new MarkupBlock(factory.Markup("   foo"), factory.Markup("  ")))
                             },
                             factory.Markup("Hello")),
                         factory.Markup(" "),
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "style", new MarkupBlock(factory.Markup("  color:red;"), factory.Markup(" ")) }
+                                new KeyValuePair<string, SyntaxTreeNode>(
+                                    "style",
+                                    new MarkupBlock(factory.Markup("  color:red;"), factory.Markup(" ")))
                             },
                             factory.Markup("World")))
                 };
@@ -4218,20 +4252,20 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     string.Format(currentFormattedString, dateTimeNowString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                        new Dictionary<string, SyntaxTreeNode>
+                        new List<KeyValuePair<string, SyntaxTreeNode>>
                         {
-                            { "class", new MarkupBlock(dateTimeNow) },
-                            { "style", new MarkupBlock(dateTimeNow) }
+                            new KeyValuePair<string, SyntaxTreeNode>("class", new MarkupBlock(dateTimeNow)),
+                            new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock(dateTimeNow))
                         }))
                 };
                 yield return new object[] {
                     string.Format(currentFormattedString, doWhileString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                        new Dictionary<string, SyntaxTreeNode>
+                        new List<KeyValuePair<string, SyntaxTreeNode>>
                         {
-                            { "class", new MarkupBlock(doWhile) },
-                            { "style", new MarkupBlock(doWhile) }
+                            new KeyValuePair<string, SyntaxTreeNode>("class", new MarkupBlock(doWhile)),
+                            new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock(doWhile))
                         }))
                 };
 
@@ -4240,10 +4274,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     string.Format(currentFormattedString, dateTimeNowString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class", new MarkupBlock(dateTimeNow) },
-                                { "style", new MarkupBlock(dateTimeNow) }
+                                new KeyValuePair<string, SyntaxTreeNode>("class", new MarkupBlock(dateTimeNow)),
+                                new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock(dateTimeNow))
                             },
                             factory.Markup("Hello World")))
                 };
@@ -4251,10 +4285,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     string.Format(currentFormattedString, doWhileString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class", new MarkupBlock(doWhile) },
-                                { "style", new MarkupBlock(doWhile) }
+                                new KeyValuePair<string, SyntaxTreeNode>("class", new MarkupBlock(doWhile)),
+                                new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock(doWhile))
                             },
                             factory.Markup("Hello World")))
                 };
@@ -4264,16 +4298,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     string.Format(currentFormattedString, dateTimeNowString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class", new MarkupBlock(dateTimeNow) }
+                                new KeyValuePair<string, SyntaxTreeNode>("class", new MarkupBlock(dateTimeNow))
                             },
                             factory.Markup("Hello")),
                         factory.Markup(" "),
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "style", new MarkupBlock(dateTimeNow) }
+                                new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock(dateTimeNow))
                             },
                             factory.Markup("World")))
                 };
@@ -4281,16 +4315,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     string.Format(currentFormattedString, doWhileString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class", new MarkupBlock(doWhile) }
+                                new KeyValuePair<string, SyntaxTreeNode>("class", new MarkupBlock(doWhile))
                             },
                             factory.Markup("Hello")),
                         factory.Markup(" "),
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "style", new MarkupBlock(doWhile) }
+                                new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock(doWhile))
                             },
                             factory.Markup("World")))
                 };
@@ -4301,10 +4335,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     string.Format(currentFormattedString, dateTimeNowString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class", new MarkupBlock(dateTimeNow) },
-                                { "style", new MarkupBlock(dateTimeNow) }
+                                new KeyValuePair<string, SyntaxTreeNode>("class", new MarkupBlock(dateTimeNow)),
+                                new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock(dateTimeNow))
                             },
                             factory.Markup("Hello World "),
                             new MarkupTagBlock(
@@ -4482,10 +4516,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     new MarkupBlock(
                         new MarkupTagHelperBlock("script",
                             selfClosing: true,
-                            attributes: new Dictionary<string, SyntaxTreeNode>
+                            attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class", factory.Markup("foo") },
-                                { "style", factory.Markup("color:red;") }
+                                new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
+                                new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                             }))
                 };
                 yield return new object[] {
@@ -4494,10 +4528,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("p",
                             factory.Markup("Hello "),
                             new MarkupTagHelperBlock("script",
-                                new Dictionary<string, SyntaxTreeNode>
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    { "class", factory.Markup("foo") },
-                                    { "style", factory.Markup("color:red;") }
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
+                                    new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                                 }),
                             factory.Markup(" World")))
                 };
@@ -4524,10 +4558,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
                             selfClosing: true,
-                            attributes:  new Dictionary<string, SyntaxTreeNode>
+                            attributes:  new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class", factory.Markup("foo") },
-                                { "style", factory.Markup("color:red;") }
+                                new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
+                                new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                             }))
                 };
                 yield return new object[] {
@@ -4541,10 +4575,12 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 new MarkupTagHelperBlock(
                                     "p",
                                     selfClosing: true,
-                                    attributes: new Dictionary<string, SyntaxTreeNode>
+                                    attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                         {
-                                            { "class", factory.Markup("foo") },
-                                            { "style", factory.Markup("color:red;") }
+                                            new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
+                                            new KeyValuePair<string, SyntaxTreeNode>(
+                                                "style",
+                                                factory.Markup("color:red;"))
                                         }),
                                 factory.Markup(" World")}))
                 };
@@ -4554,16 +4590,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         factory.Markup("Hello"),
                         new MarkupTagHelperBlock("p",
                             selfClosing: true,
-                            attributes: new Dictionary<string, SyntaxTreeNode>
+                            attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class", factory.Markup("foo") }
+                                new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo"))
                             }),
                         factory.Markup(" "),
                         new MarkupTagHelperBlock("p",
                             selfClosing: true,
-                            attributes: new Dictionary<string, SyntaxTreeNode>
+                            attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "style", factory.Markup("color:red;") }
+                                new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                             }),
                         factory.Markup("World"))
                 };
@@ -4596,22 +4632,22 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     "<p class=foo dynamic=@DateTime.Now style=color:red;></p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                        new Dictionary<string, SyntaxTreeNode>
+                        new List<KeyValuePair<string, SyntaxTreeNode>>
                         {
-                            { "class", factory.Markup("foo") },
-                            { "dynamic", new MarkupBlock(dateTimeNow) },
-                            { "style", factory.Markup("color:red;") }
+                            new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
+                            new KeyValuePair<string, SyntaxTreeNode>("dynamic", new MarkupBlock(dateTimeNow)),
+                            new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                         }))
                 };
                 yield return new object[] {
                     "<p class=foo dynamic=@DateTime.Now style=color:red;>Hello World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class", factory.Markup("foo") },
-                                { "dynamic", new MarkupBlock(dateTimeNow) },
-                                { "style", factory.Markup("color:red;") }
+                                new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
+                                new KeyValuePair<string, SyntaxTreeNode>("dynamic", new MarkupBlock(dateTimeNow)),
+                                new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                             },
                             factory.Markup("Hello World")))
                 };
@@ -4619,18 +4655,18 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     "<p class=foo dynamic=@DateTime.Now>Hello</p> <p style=color:red; dynamic=@DateTime.Now>World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class", factory.Markup("foo") },
-                                { "dynamic", new MarkupBlock(dateTimeNow) }
+                                new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
+                                new KeyValuePair<string, SyntaxTreeNode>("dynamic", new MarkupBlock(dateTimeNow))
                             },
                             factory.Markup("Hello")),
                         factory.Markup(" "),
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "style", factory.Markup("color:red;") },
-                                { "dynamic", new MarkupBlock(dateTimeNow) }
+                                new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;")),
+                                new KeyValuePair<string, SyntaxTreeNode>("dynamic", new MarkupBlock(dateTimeNow))
                             },
                             factory.Markup("World")))
                 };
@@ -4638,11 +4674,11 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     "<p class=foo dynamic=@DateTime.Now style=color:red;>Hello World <strong class=\"foo\">inside of strong tag</strong></p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class", factory.Markup("foo") },
-                                { "dynamic", new MarkupBlock(dateTimeNow) },
-                                { "style", factory.Markup("color:red;") }
+                                new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
+                                new KeyValuePair<string, SyntaxTreeNode>("dynamic", new MarkupBlock(dateTimeNow)),
+                                new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                             },
                             factory.Markup("Hello World "),
                             new MarkupTagBlock(
@@ -4681,20 +4717,20 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     "<p class=\"foo\" style=\"color:red;\"></p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                        new Dictionary<string, SyntaxTreeNode>
+                        new List<KeyValuePair<string, SyntaxTreeNode>>
                         {
-                            { "class", factory.Markup("foo") },
-                            { "style", factory.Markup("color:red;") }
+                            new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
+                            new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                         }))
                 };
                 yield return new object[] {
                     "<p class=\"foo\" style=\"color:red;\">Hello World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class", factory.Markup("foo") },
-                                { "style", factory.Markup("color:red;") }
+                                new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
+                                new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                             },
                             factory.Markup("Hello World")))
                 };
@@ -4702,16 +4738,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     "<p class=\"foo\">Hello</p> <p style=\"color:red;\">World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class", factory.Markup("foo") }
+                                new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo"))
                             },
                             factory.Markup("Hello")),
                         factory.Markup(" "),
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "style", factory.Markup("color:red;") }
+                                new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                             },
                             factory.Markup("World")))
                 };
@@ -4719,10 +4755,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     "<p class=\"foo\" style=\"color:red;\">Hello World <strong class=\"foo\">inside of strong tag</strong></p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                            new Dictionary<string, SyntaxTreeNode>
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                { "class", factory.Markup("foo") },
-                                { "style", factory.Markup("color:red;") }
+                                new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
+                                new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                             },
                             factory.Markup("Hello World "),
                             new MarkupTagBlock(

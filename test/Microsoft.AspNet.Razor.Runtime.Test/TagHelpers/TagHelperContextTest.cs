@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -21,7 +22,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Act
             var context = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>(),
+                allAttributes: Enumerable.Empty<IReadOnlyTagHelperAttribute>(),
                 items: expectedItems,
                 uniqueId: string.Empty,
                 getChildContentAsync: () => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
