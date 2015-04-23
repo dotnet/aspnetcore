@@ -69,7 +69,8 @@ namespace StatusCodePagesSample
                         builder.AppendLine("<a href=\"" + HtmlEncoder.Default.HtmlEncode(referrer) + "\">Retry " + WebUtility.HtmlEncode(referrer) + "</a><br>");
                     }
                     builder.AppendLine("</body></html>");
-                    await context.Response.SendAsync(builder.ToString(), "text/html");
+                    context.Response.ContentType = "text/html";
+                    await context.Response.WriteAsync(builder.ToString());
                 });
             });
 
@@ -94,7 +95,8 @@ namespace StatusCodePagesSample
                 }
 
                 builder.AppendLine("</body></html>");
-                await context.Response.SendAsync(builder.ToString(), "text/html");
+                context.Response.ContentType = "text/html";
+                await context.Response.WriteAsync(builder.ToString());
             });
         }
     }

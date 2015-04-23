@@ -23,7 +23,8 @@ namespace Microsoft.AspNet.Diagnostics
                 var statusCode = context.HttpContext.Response.StatusCode;
                 var body = string.Format(CultureInfo.InvariantCulture, "Status Code: {0}; {1}",
                     statusCode, ReasonPhrases.GetReasonPhrase(statusCode)) + new string(' ', 500);
-                return context.HttpContext.Response.SendAsync(body, "text/plain");
+                context.HttpContext.Response.ContentType = "text/plain";
+                return context.HttpContext.Response.WriteAsync(body);
             };
         }
 

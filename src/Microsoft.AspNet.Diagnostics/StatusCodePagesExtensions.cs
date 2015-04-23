@@ -60,7 +60,8 @@ namespace Microsoft.AspNet.Builder
             return UseStatusCodePages(app, context =>
             {
                 var body = string.Format(CultureInfo.InvariantCulture, bodyFormat, context.HttpContext.Response.StatusCode);
-                return context.HttpContext.Response.SendAsync(body, contentType);
+                context.HttpContext.Response.ContentType = contentType;
+                return context.HttpContext.Response.WriteAsync(body);
             });
         }
 
