@@ -25,6 +25,13 @@ namespace MusicStore.Components
             set;
         }
 
+        [Activate]
+        public ISystemClock Clock
+        {
+            get;
+            set;
+        }
+
         public async Task<IViewComponentResult> InvokeAsync()
         {
             var latestAlbum = await Cache.GetOrSet("latestAlbum", async context =>
@@ -36,11 +43,11 @@ namespace MusicStore.Components
             return View(latestAlbum);
         }
 
-        private Task<Album> GetLatestAlbum()
+        private async Task<Album> GetLatestAlbum()
         {
-            var latestAlbum = DbContext.Albums
+            var latestAlbum = await DbContext.Albums
                 .OrderByDescending(a => a.Created)
-                .Where(a => (a.Created - DateTime.UtcNow).TotalDays <= 2)
+                .Where(a => (a.Created - Clock.UtcNow).TotalDays <= 2)
                 .FirstOrDefaultAsync();
 
             return latestAlbum;

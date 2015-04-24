@@ -147,7 +147,7 @@ namespace MusicStore.Models
             return order.OrderId;
         }
 
-        // We're using HttpContextBase to allow access to cookies.
+        // We're using HttpContextBase to allow access to sessions.
         private string GetCartId(HttpContext context)
         {
             var cartId = context.Session.GetString("Session");

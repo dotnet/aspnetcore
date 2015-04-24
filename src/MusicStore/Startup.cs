@@ -10,6 +10,7 @@ using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
+using MusicStore.Components;
 using MusicStore.Models;
 
 namespace MusicStore
@@ -103,6 +104,9 @@ namespace MusicStore
             // Add session related services.
             services.AddCaching();
             services.AddSession();
+
+            // Add the system clock service
+            services.AddSingleton<ISystemClock, SystemClock>();
 
             // Configure Auth
             services.Configure<AuthorizationOptions>(options =>
