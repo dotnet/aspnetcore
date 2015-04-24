@@ -9,12 +9,20 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
+    /// <summary>
+    /// <see cref="IModelBinder"/> implementation for binding complex values.
+    /// </summary>
     public class MutableObjectModelBinder : IModelBinder
     {
-        public virtual async Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+        private static readonly MethodInfo CallPropertyAddRangeOpenGenericMethod =
+            typeof(MutableObjectModelBinder).GetTypeInfo().GetDeclaredMethod(nameof(CallPropertyAddRange));
+
+        /// <inheritdoc />
+        public virtual async Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
         {
             ModelBindingHelper.ValidateBindingContext(bindingContext);
             if (!CanBindType(bindingContext.ModelMetadata))
@@ -44,7 +52,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 isModelSet: true);
         }
 
-        protected virtual bool CanUpdateProperty(ModelMetadata propertyMetadata)
+        /// <summary>
+        /// Gets an indication whether a property with the given <paramref name="propertyMetadata"/> can be updated.
+        /// </summary>
+        /// <param name="propertyMetadata"><see cref="ModelMetadata"/> for the property of interest.</param>
+        /// <returns><c>true</c> if the property can be updated; <c>false</c> otherwise.</returns>
+        /// <remarks>Should return <c>true</c> only for properties <see cref="SetProperty"/> can update.</remarks>
+        protected virtual bool CanUpdateProperty([NotNull] ModelMetadata propertyMetadata)
         {
             return CanUpdatePropertyInternal(propertyMetadata);
         }
@@ -255,14 +269,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return await bindingContext.OperationBindingContext.ModelBinder.BindModelAsync(childContext);
         }
 
-        protected virtual object CreateModel(ModelBindingContext bindingContext)
+        /// <summary>
+        /// Creates suitable <see cref="object"/> for given <paramref name="bindingContext"/>.
+        /// </summary>
+        /// <param name="bindingContext">The <see cref="ModelBindingContext"/>.</param>
+        /// <returns>An <see cref="object"/> compatible with <see cref="ModelBindingContext.ModelType"/>.</returns>
+        protected virtual object CreateModel([NotNull] ModelBindingContext bindingContext)
         {
             // If the Activator throws an exception, we want to propagate it back up the call stack, since the
             // application developer should know that this was an invalid type to try to bind to.
             return Activator.CreateInstance(bindingContext.ModelType);
         }
 
-        protected virtual void EnsureModel(ModelBindingContext bindingContext)
+        /// <summary>
+        /// Ensures <see cref="ModelBindingContext.Model"/> is not <c>null</c> in given
+        /// <paramref name="bindingContext"/>.
+        /// </summary>
+        /// <param name="bindingContext">The <see cref="ModelBindingContext"/>.</param>
+        protected virtual void EnsureModel([NotNull] ModelBindingContext bindingContext)
         {
             if (bindingContext.Model == null)
             {
@@ -270,7 +294,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-        protected virtual IEnumerable<ModelMetadata> GetMetadataForProperties(ModelBindingContext bindingContext)
+        /// <summary>
+        /// Gets the collection of <see cref="ModelMetadata"/> for properties this binder should update.
+        /// </summary>
+        /// <param name="bindingContext">The <see cref="ModelBindingContext"/>.</param>
+        /// <returns>Collection of <see cref="ModelMetadata"/> for properties this binder should update.</returns>
+        protected virtual IEnumerable<ModelMetadata> GetMetadataForProperties(
+            [NotNull] ModelBindingContext bindingContext)
         {
             var validationInfo = GetPropertyValidationInfo(bindingContext);
             var newPropertyFilter = GetPropertyFilter();
@@ -404,11 +434,25 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
+        /// <summary>
+        /// Updates a property in the current <see cref="ModelBindingContext.Model"/>.
+        /// </summary>
+        /// <param name="bindingContext">The <see cref="ModelBindingContext"/>.</param>
+        /// <param name="modelExplorer">
+        /// The <see cref="ModelExplorer"/> for the model containing property to set.
+        /// </param>
+        /// <param name="propertyMetadata">The <see cref="ModelMetadata"/> for the property to set.</param>
+        /// <param name="dtoResult">The <see cref="ModelBindingResult"/> for the property's new value.</param>
+        /// <param name="requiredValidator">
+        /// The <see cref="IModelValidator"/> which ensures the value is not <c>null</c>. Or <c>null</c> if no such
+        /// requirement exists.
+        /// </param>
+        /// <remarks>Should succeed in all cases that <see cref="CanUpdateProperty"/> returns <c>true</c>.</remarks>
         protected virtual void SetProperty(
-            ModelBindingContext bindingContext,
-            ModelExplorer modelExplorer,
-            ModelMetadata propertyMetadata,
-            ModelBindingResult dtoResult,
+            [NotNull] ModelBindingContext bindingContext,
+            [NotNull] ModelExplorer modelExplorer,
+            [NotNull] ModelMetadata propertyMetadata,
+            [NotNull] ModelBindingResult dtoResult,
             IModelValidator requiredValidator)
         {
             var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase;
@@ -416,9 +460,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 propertyMetadata.PropertyName,
                 bindingFlags);
 
-            if (property == null || !property.CanWrite)
+            if (property == null)
             {
-                // nothing to do
+                // Nothing to do if property does not exist.
+                return;
+            }
+
+            if (!property.CanWrite)
+            {
+                // Try to handle as a collection if property exists but is not settable.
+                AddToProperty(bindingContext, modelExplorer, property, dtoResult);
                 return;
             }
 
@@ -466,21 +517,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     propertyMetadata.PropertySetter(bindingContext.Model, value);
                 }
-                catch (Exception ex)
+                catch (Exception exception)
                 {
-                    // don't display a duplicate error message if a binding error has already occurred for this field
-                    var targetInvocationException = ex as TargetInvocationException;
-                    if (targetInvocationException != null &&
-                        targetInvocationException.InnerException != null)
-                    {
-                        ex = targetInvocationException.InnerException;
-                    }
-                    var modelStateKey = dtoResult.Key;
-                    var validationState = bindingContext.ModelState.GetFieldValidationState(modelStateKey);
-                    if (validationState == ModelValidationState.Unvalidated)
-                    {
-                        bindingContext.ModelState.AddModelError(modelStateKey, ex);
-                    }
+                    AddModelError(exception, bindingContext, dtoResult);
                 }
             }
             else
@@ -493,6 +532,82 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     var errorMessage = Resources.ModelBinderConfig_ValueRequired;
                     bindingContext.ModelState.TryAddModelError(modelStateKey, errorMessage);
                 }
+            }
+        }
+
+        // Neither [DefaultValue] nor [Required] is relevant for a non-settable collection.
+        private void AddToProperty(
+            ModelBindingContext bindingContext,
+            ModelExplorer modelExplorer,
+            PropertyInfo property,
+            ModelBindingResult dtoResult)
+        {
+            var propertyExplorer = modelExplorer.GetExplorerForProperty(property.Name);
+
+            var target = propertyExplorer.Model;
+            var source = dtoResult.Model;
+            if (!dtoResult.IsModelSet || target == null || source == null)
+            {
+                // Cannot copy to or from a null collection.
+                return;
+            }
+
+            // Determine T if this is an ICollection<T> property. No need for a T[] case because CanUpdateProperty()
+            // ensures property is either settable or not an array. Underlying assumption is that CanUpdateProperty()
+            // and SetProperty() are overridden together.
+            var collectionTypeArguments = propertyExplorer.ModelType
+                .ExtractGenericInterface(typeof(ICollection<>))
+                ?.GenericTypeArguments;
+            if (collectionTypeArguments == null)
+            {
+                // Not a collection model.
+                return;
+            }
+
+            var propertyAddRange = CallPropertyAddRangeOpenGenericMethod.MakeGenericMethod(collectionTypeArguments);
+            try
+            {
+                propertyAddRange.Invoke(obj: null, parameters: new[] { target, source });
+            }
+            catch (Exception exception)
+            {
+                AddModelError(exception, bindingContext, dtoResult);
+            }
+        }
+
+        // Called via reflection.
+        private static void CallPropertyAddRange<TElement>(object target, object source)
+        {
+            var targetCollection = (ICollection<TElement>)target;
+            var sourceCollection = source as IEnumerable<TElement>;
+            if (sourceCollection != null && !targetCollection.IsReadOnly)
+            {
+                targetCollection.Clear();
+                foreach (var item in sourceCollection)
+                {
+                    targetCollection.Add(item);
+                }
+            }
+        }
+
+        private static void AddModelError(
+            Exception exception,
+            ModelBindingContext bindingContext,
+            ModelBindingResult dtoResult)
+        {
+            var targetInvocationException = exception as TargetInvocationException;
+            if (targetInvocationException != null && targetInvocationException.InnerException != null)
+            {
+                exception = targetInvocationException.InnerException;
+            }
+
+            // Do not add an error message if a binding error has already occurred for this property.
+            var modelState = bindingContext.ModelState;
+            var modelStateKey = dtoResult.Key;
+            var validationState = modelState.GetFieldValidationState(modelStateKey);
+            if (validationState == ModelValidationState.Unvalidated)
+            {
+                modelState.AddModelError(modelStateKey, exception);
             }
         }
 

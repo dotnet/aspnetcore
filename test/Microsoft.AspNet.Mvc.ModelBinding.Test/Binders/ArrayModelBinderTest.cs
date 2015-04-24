@@ -11,57 +11,110 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     public class ArrayModelBinderTest
     {
         [Fact]
-        public async Task BindModel()
+        public async Task BindModelAsync_ValueProviderContainPrefix_Succeeds()
         {
             // Arrange
             var valueProvider = new SimpleHttpValueProvider
             {
                 { "someName[0]", "42" },
-                { "someName[1]", "84" }
+                { "someName[1]", "84" },
             };
             var bindingContext = GetBindingContext(valueProvider);
+            var modelState = bindingContext.ModelState;
             var binder = new ArrayModelBinder<int>();
 
             // Act
-            var retVal = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(retVal);
+            Assert.NotNull(result);
 
-            int[] array = retVal.Model as int[];
+            var array = Assert.IsType<int[]>(result.Model);
             Assert.Equal(new[] { 42, 84 }, array);
+            Assert.True(modelState.IsValid);
         }
 
         [Fact]
-        public async Task GetBinder_ValueProviderDoesNotContainPrefix_ReturnsNull()
+        public async Task BindModelAsync_ValueProviderDoesNotContainPrefix_ReturnsNull()
         {
             // Arrange
             var bindingContext = GetBindingContext(new SimpleHttpValueProvider());
             var binder = new ArrayModelBinder<int>();
 
             // Act
-            var bound = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Null(bound);
+            Assert.Null(result);
         }
 
-        [Fact]
-        public async Task GetBinder_ModelMetadataReturnsReadOnly_ReturnsNull()
+        public static TheoryData<int[]> ArrayModelData
+        {
+            get
+            {
+                return new TheoryData<int[]>
+                {
+                    new int[0],
+                    new [] { 357 },
+                    new [] { 357, 357 },
+                };
+            }
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [MemberData(nameof(ArrayModelData))]
+        public async Task BindModelAsync_ModelMetadataReadOnly_ReturnsNull(int[] model)
         {
             // Arrange
             var valueProvider = new SimpleHttpValueProvider
             {
-                { "foo[0]", "42" },
+                { "someName[0]", "42" },
+                { "someName[1]", "84" },
             };
             var bindingContext = GetBindingContext(valueProvider, isReadOnly: true);
+            bindingContext.Model = model;
             var binder = new ArrayModelBinder<int>();
 
             // Act
-            var bound = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Null(bound);
+            Assert.Null(result);
+        }
+
+        // Here "fails silently" means the call does not update the array but also does not throw or set an error.
+        [Theory]
+        [MemberData(nameof(ArrayModelData))]
+        public async Task BindModelAsync_ModelMetadataNotReadOnly_ModelNonNull_FailsSilently(int[] model)
+        {
+            // Arrange
+            var arrayLength = model.Length;
+            var valueProvider = new SimpleHttpValueProvider
+            {
+                { "someName[0]", "42" },
+                { "someName[1]", "84" },
+            };
+
+            var bindingContext = GetBindingContext(valueProvider, isReadOnly: false);
+            var modelState = bindingContext.ModelState;
+            bindingContext.Model = model;
+            var binder = new ArrayModelBinder<int>();
+
+            // Act
+            var result = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.IsModelSet);
+            Assert.Same(model, result.Model);
+
+            Assert.True(modelState.IsValid);
+            for (var i = 0; i < arrayLength; i++)
+            {
+                // Array should be unchanged.
+                Assert.Equal(357, model[i]);
+            }
         }
 
         private static IModelBinder CreateIntBinder()

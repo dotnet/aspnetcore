@@ -56,8 +56,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal(new[] { 42, 100 }, boundCollection.ToArray());
         }
 
-        [Fact]
-        public async Task BindModel_ComplexCollection()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task BindModel_ComplexCollection_Succeeds(bool isReadOnly)
         {
             // Arrange
             var valueProvider = new SimpleHttpValueProvider
@@ -67,33 +69,109 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 { "someName[bar]", "100" },
                 { "someName[baz]", "200" }
             };
-            var bindingContext = GetModelBindingContext(valueProvider);
+            var bindingContext = GetModelBindingContext(valueProvider, isReadOnly);
+            var modelState = bindingContext.ModelState;
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            var retVal = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Equal(new[] { 42, 100, 200 }, ((List<int>)retVal.Model).ToArray());
+            Assert.NotNull(result);
+            Assert.True(result.IsModelSet);
+
+            var list = Assert.IsAssignableFrom<IList<int>>(result.Model);
+            Assert.Equal(new[] { 42, 100, 200 }, list.ToArray());
+
+            Assert.True(modelState.IsValid);
         }
 
-        [Fact]
-        public async Task BindModel_SimpleCollection()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task BindModel_ComplexCollection_BindingContextModelNonNull_Succeeds(bool isReadOnly)
+        {
+            // Arrange
+            var valueProvider = new SimpleHttpValueProvider
+            {
+                { "someName.index", new[] { "foo", "bar", "baz" } },
+                { "someName[foo]", "42" },
+                { "someName[bar]", "100" },
+                { "someName[baz]", "200" }
+            };
+            var bindingContext = GetModelBindingContext(valueProvider, isReadOnly);
+            var modelState = bindingContext.ModelState;
+            var list = new List<int>();
+            bindingContext.Model = list;
+            var binder = new CollectionModelBinder<int>();
+
+            // Act
+            var result = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.IsModelSet);
+
+            Assert.Same(list, result.Model);
+            Assert.Equal(new[] { 42, 100, 200 }, list.ToArray());
+
+            Assert.True(modelState.IsValid);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task BindModel_SimpleCollection_Succeeds(bool isReadOnly)
         {
             // Arrange
             var valueProvider = new SimpleHttpValueProvider
             {
                 { "someName", new[] { "42", "100", "200" } }
             };
-            var bindingContext = GetModelBindingContext(valueProvider);
+            var bindingContext = GetModelBindingContext(valueProvider, isReadOnly);
+            var modelState = bindingContext.ModelState;
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            var retVal = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(retVal);
-            Assert.Equal(new[] { 42, 100, 200 }, ((List<int>)retVal.Model).ToArray());
+            Assert.NotNull(result);
+            Assert.True(result.IsModelSet);
+
+            var list = Assert.IsAssignableFrom<IList<int>>(result.Model);
+            Assert.Equal(new[] { 42, 100, 200 }, list.ToArray());
+
+            Assert.True(modelState.IsValid);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task BindModel_SimpleCollection_BindingContextModelNonNull_Succeeds(bool isReadOnly)
+        {
+            // Arrange
+            var valueProvider = new SimpleHttpValueProvider
+            {
+                { "someName", new[] { "42", "100", "200" } }
+            };
+            var bindingContext = GetModelBindingContext(valueProvider, isReadOnly);
+            var modelState = bindingContext.ModelState;
+            var list = new List<int>();
+            bindingContext.Model = list;
+            var binder = new CollectionModelBinder<int>();
+
+            // Act
+            var result = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.IsModelSet);
+
+            Assert.Same(list, result.Model);
+            Assert.Equal(new[] { 42, 100, 200 }, list.ToArray());
+
+            Assert.True(modelState.IsValid);
         }
 #endif
 
@@ -156,9 +234,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal(new[] { 42 }, boundCollection.ToArray());
         }
 
-        private static ModelBindingContext GetModelBindingContext(IValueProvider valueProvider)
+        private static ModelBindingContext GetModelBindingContext(
+            IValueProvider valueProvider,
+            bool isReadOnly = false)
         {
-            var metadataProvider = new EmptyModelMetadataProvider();
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider.ForType<IList<int>>().BindingDetails(bd => bd.IsReadOnly = isReadOnly);
+
             var bindingContext = new ModelBindingContext
             {
                 ModelMetadata = metadataProvider.GetMetadataForType(typeof(int)),
@@ -170,6 +252,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     MetadataProvider = metadataProvider
                 }
             };
+
             return bindingContext;
         }
 

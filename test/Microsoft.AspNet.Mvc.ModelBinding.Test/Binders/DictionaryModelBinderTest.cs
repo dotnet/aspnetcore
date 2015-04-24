@@ -11,39 +11,81 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
     public class DictionaryModelBinderTest
     {
-        [Fact]
-        public async Task BindModel()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task BindModel_Succeeds(bool isReadOnly)
         {
             // Arrange
-            var metadataProvider = new EmptyModelMetadataProvider();
-            ModelBindingContext bindingContext = new ModelBindingContext
+            var bindingContext = GetModelBindingContext(isReadOnly);
+            var modelState = bindingContext.ModelState;
+            var binder = new DictionaryModelBinder<int, string>();
+
+            // Act
+            var result = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.IsModelSet);
+            var dictionary = Assert.IsAssignableFrom<IDictionary<int, string>>(result.Model);
+            Assert.True(modelState.IsValid);
+
+            Assert.NotNull(dictionary);
+            Assert.Equal(2, dictionary.Count);
+            Assert.Equal("forty-two", dictionary[42]);
+            Assert.Equal("eighty-four", dictionary[84]);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task BindModel_BindingContextModelNonNull_Succeeds(bool isReadOnly)
+        {
+            // Arrange
+            var bindingContext = GetModelBindingContext(isReadOnly);
+            var modelState = bindingContext.ModelState;
+            var dictionary = new Dictionary<int, string>();
+            bindingContext.Model = dictionary;
+            var binder = new DictionaryModelBinder<int, string>();
+
+            // Act
+            var result = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.IsModelSet);
+            Assert.Same(dictionary, result.Model);
+            Assert.True(modelState.IsValid);
+
+            Assert.NotNull(dictionary);
+            Assert.Equal(2, dictionary.Count);
+            Assert.Equal("forty-two", dictionary[42]);
+            Assert.Equal("eighty-four", dictionary[84]);
+        }
+
+        private static ModelBindingContext GetModelBindingContext(bool isReadOnly)
+        {
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider.ForType<List<int>>().BindingDetails(bd => bd.IsReadOnly = isReadOnly);
+            var valueProvider = new SimpleHttpValueProvider
+            {
+                { "someName[0]", new KeyValuePair<int, string>(42, "forty-two") },
+                { "someName[1]", new KeyValuePair<int, string>(84, "eighty-four") },
+            };
+
+            var bindingContext = new ModelBindingContext
             {
                 ModelMetadata = metadataProvider.GetMetadataForType(typeof(IDictionary<int, string>)),
                 ModelName = "someName",
-                ValueProvider = new SimpleHttpValueProvider
-                {
-                    { "someName[0]", new KeyValuePair<int, string>(42, "forty-two") },
-                    { "someName[1]", new KeyValuePair<int, string>(84, "eighty-four") }
-                },
+                ValueProvider = valueProvider,
                 OperationBindingContext = new OperationBindingContext
                 {
                     ModelBinder = CreateKvpBinder(),
                     MetadataProvider = metadataProvider
                 }
             };
-            var binder = new DictionaryModelBinder<int, string>();
 
-            // Act
-            var retVal = await binder.BindModelAsync(bindingContext);
-
-            // Assert
-            Assert.NotNull(retVal);
-
-            var dictionary = Assert.IsAssignableFrom<IDictionary<int, string>>(retVal.Model);
-            Assert.NotNull(dictionary);
-            Assert.Equal(2, dictionary.Count);
-            Assert.Equal("forty-two", dictionary[42]);
-            Assert.Equal("eighty-four", dictionary[84]);
+            return bindingContext;
         }
 
         private static IModelBinder CreateKvpBinder()

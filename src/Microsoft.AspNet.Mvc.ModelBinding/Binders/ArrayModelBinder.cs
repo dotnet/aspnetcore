@@ -4,12 +4,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
+    /// <summary>
+    /// <see cref="IModelBinder"/> implementation for binding array values.
+    /// </summary>
+    /// <typeparam name="TElement">Type of elements in the array.</typeparam>
     public class ArrayModelBinder<TElement> : CollectionModelBinder<TElement>
     {
-        public override Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+        /// <inheritdoc />
+        public override Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
         {
             if (bindingContext.ModelMetadata.IsReadOnly)
             {
@@ -19,9 +25,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return base.BindModelAsync(bindingContext);
         }
 
+        /// <inheritdoc />
         protected override object GetModel(IEnumerable<TElement> newCollection)
         {
-            return newCollection.ToArray();
+            return newCollection?.ToArray();
+        }
+
+        /// <inheritdoc />
+        protected override void CopyToModel([NotNull] object target, IEnumerable<TElement> sourceCollection)
+        {
+            // Do not attempt to copy values into an array because an array's length is immutable. This choice is also
+            // consistent with MutableObjectModelBinder's handling of a read-only array property.
         }
     }
 }

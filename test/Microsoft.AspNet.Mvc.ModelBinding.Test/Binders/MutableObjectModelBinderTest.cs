@@ -305,7 +305,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
                     return null;
                 });
-            
+
             var modelMetadata = GetMetadataForType(modelType);
             var bindingContext = new MutableObjectBinderContext
             {
@@ -486,69 +486,43 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             testableBinder.Verify();
         }
 
-        [Fact]
-        public void CanUpdateProperty_HasPublicSetter_ReturnsTrue()
+        [Theory]
+        [InlineData(nameof(MyModelTestingCanUpdateProperty.ReadOnlyArray), false)]
+        [InlineData(nameof(MyModelTestingCanUpdateProperty.ReadOnlyInt), false)]    // read-only value type
+        [InlineData(nameof(MyModelTestingCanUpdateProperty.ReadOnlyObject), true)]
+        [InlineData(nameof(MyModelTestingCanUpdateProperty.ReadOnlySimple), true)]
+        [InlineData(nameof(MyModelTestingCanUpdateProperty.ReadOnlyString), false)]
+        [InlineData(nameof(MyModelTestingCanUpdateProperty.ReadWriteString), true)]
+        public void CanUpdateProperty_ReturnsExpectedValue(string propertyName, bool expected)
         {
             // Arrange
-            var propertyMetadata = GetMetadataForCanUpdateProperty("ReadWriteString");
+            var propertyMetadata = GetMetadataForCanUpdateProperty(propertyName);
 
             // Act
             var canUpdate = MutableObjectModelBinder.CanUpdatePropertyInternal(propertyMetadata);
 
             // Assert
-            Assert.True(canUpdate);
+            Assert.Equal(expected, canUpdate);
         }
 
-        [Fact]
-        public void CanUpdateProperty_ReadOnlyArray_ReturnsFalse()
+        [Theory]
+        [InlineData(nameof(CollectionContainer.ReadOnlyArray), false)]
+        [InlineData(nameof(CollectionContainer.ReadOnlyDictionary), true)]
+        [InlineData(nameof(CollectionContainer.ReadOnlyList), true)]
+        [InlineData(nameof(CollectionContainer.SettableArray), true)]
+        [InlineData(nameof(CollectionContainer.SettableDictionary), true)]
+        [InlineData(nameof(CollectionContainer.SettableList), true)]
+        public void CanUpdateProperty_CollectionProperty_FalseOnlyForArray(string propertyName, bool expected)
         {
             // Arrange
-            var propertyMetadata = GetMetadataForCanUpdateProperty("ReadOnlyArray");
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadata = metadataProvider.GetMetadataForProperty(typeof(CollectionContainer), propertyName);
 
             // Act
-            var canUpdate = MutableObjectModelBinder.CanUpdatePropertyInternal(propertyMetadata);
+            var canUpdate = MutableObjectModelBinder.CanUpdatePropertyInternal(metadata);
 
             // Assert
-            Assert.False(canUpdate);
-        }
-
-        [Fact]
-        public void CanUpdateProperty_ReadOnlyReferenceTypeNotBlacklisted_ReturnsTrue()
-        {
-            // Arrange
-            var propertyMetadata = GetMetadataForCanUpdateProperty("ReadOnlyObject");
-
-            // Act
-            var canUpdate = MutableObjectModelBinder.CanUpdatePropertyInternal(propertyMetadata);
-
-            // Assert
-            Assert.True(canUpdate);
-        }
-
-        [Fact]
-        public void CanUpdateProperty_ReadOnlyString_ReturnsFalse()
-        {
-            // Arrange
-            var propertyMetadata = GetMetadataForCanUpdateProperty("ReadOnlyString");
-
-            // Act
-            var canUpdate = MutableObjectModelBinder.CanUpdatePropertyInternal(propertyMetadata);
-
-            // Assert
-            Assert.False(canUpdate);
-        }
-
-        [Fact]
-        public void CanUpdateProperty_ReadOnlyValueType_ReturnsFalse()
-        {
-            // Arrange
-            var propertyMetadata = GetMetadataForCanUpdateProperty("ReadOnlyInt");
-
-            // Act
-            var canUpdate = MutableObjectModelBinder.CanUpdatePropertyInternal(propertyMetadata);
-
-            // Assert
-            Assert.False(canUpdate);
+            Assert.Equal(expected, canUpdate);
         }
 
         [Fact]
@@ -1364,6 +1338,142 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // If didn't throw, success!
         }
 
+        // Property name, property accessor
+        public static TheoryData<string, Func<object, object>> MyCanUpdateButCannotSetPropertyData
+        {
+            get
+            {
+                return new TheoryData<string, Func<object, object>>
+                {
+                    {
+                        nameof(MyModelTestingCanUpdateProperty.ReadOnlyObject),
+                        model => ((Simple)((MyModelTestingCanUpdateProperty)model).ReadOnlyObject).Name
+                    },
+                    {
+                        nameof(MyModelTestingCanUpdateProperty.ReadOnlySimple),
+                        model => ((MyModelTestingCanUpdateProperty)model).ReadOnlySimple.Name
+                    },
+                };
+            }
+        }
+
+        // Reviewers: Is this inconsistency with CanUpdateProperty() an issue we should be tracking?
+        [Theory]
+        [MemberData(nameof(MyCanUpdateButCannotSetPropertyData))]
+        public void SetProperty_ValueProvidedAndCanUpdatePropertyTrue_DoesNothing(
+            string propertyName,
+            Func<object, object> propertAccessor)
+        {
+            // Arrange
+            var model = new MyModelTestingCanUpdateProperty();
+            var type = model.GetType();
+            var bindingContext = CreateContext(GetMetadataForType(type), model);
+            var modelState = bindingContext.ModelState;
+            var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
+            var modelExplorer = metadataProvider.GetModelExplorerForType(type, model);
+
+            var propertyMetadata = bindingContext.ModelMetadata.Properties[propertyName];
+            var dtoResult = new ModelBindingResult(
+                model: new Simple { Name = "Hanna" },
+                isModelSet: true,
+                key: propertyName);
+
+            var testableBinder = new TestableMutableObjectModelBinder();
+
+            // Act
+            testableBinder.SetProperty(
+                bindingContext,
+                modelExplorer,
+                propertyMetadata,
+                dtoResult,
+                requiredValidator: null);
+
+            // Assert
+            Assert.Equal("Joe", propertAccessor(model));
+            Assert.True(modelState.IsValid);
+            Assert.Empty(modelState);
+        }
+
+        // Property name, property accessor, collection.
+        public static TheoryData<string, Func<object, object>, object> CollectionPropertyData
+        {
+            get
+            {
+                return new TheoryData<string, Func<object, object>, object>
+                {
+                    {
+                        nameof(CollectionContainer.ReadOnlyDictionary),
+                        model => ((CollectionContainer)model).ReadOnlyDictionary,
+                        new Dictionary<int, string>
+                        {
+                            { 1, "one" },
+                            { 2, "two" },
+                            { 3, "three" },
+                        }
+                    },
+                    {
+                        nameof(CollectionContainer.ReadOnlyList),
+                        model => ((CollectionContainer)model).ReadOnlyList,
+                        new List<int> { 1, 2, 3, 4 }
+                    },
+                    {
+                        nameof(CollectionContainer.SettableArray),
+                        model => ((CollectionContainer)model).SettableArray,
+                        new int[] { 1, 2, 3, 4 }
+                    },
+                    {
+                        nameof(CollectionContainer.SettableDictionary),
+                        model => ((CollectionContainer)model).SettableDictionary,
+                        new Dictionary<int, string>
+                        {
+                            { 1, "one" },
+                            { 2, "two" },
+                            { 3, "three" },
+                        }
+                    },
+                    {
+                        nameof(CollectionContainer.SettableList),
+                        model => ((CollectionContainer)model).SettableList,
+                        new List<int> { 1, 2, 3, 4 }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(CollectionPropertyData))]
+        public void SetProperty_CollectionProperty_UpdatesModel(
+            string propertyName,
+            Func<object, object> propertyAccessor,
+            object collection)
+        {
+            // Arrange
+            var model = new CollectionContainer();
+            var type = model.GetType();
+            var bindingContext = CreateContext(GetMetadataForType(type), model);
+            var modelState = bindingContext.ModelState;
+            var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
+            var modelExplorer = metadataProvider.GetModelExplorerForType(type, model);
+
+            var propertyMetadata = bindingContext.ModelMetadata.Properties[propertyName];
+            var dtoResult = new ModelBindingResult(model: collection, isModelSet: true, key: propertyName);
+
+            var testableBinder = new TestableMutableObjectModelBinder();
+
+            // Act
+            testableBinder.SetProperty(
+                bindingContext,
+                modelExplorer,
+                propertyMetadata,
+                dtoResult,
+                requiredValidator: null);
+
+            // Assert
+            Assert.Equal(collection, propertyAccessor(model));
+            Assert.True(modelState.IsValid);
+            Assert.Empty(modelState);
+        }
+
         [Fact]
         public void SetProperty_PropertyIsSettable_CallsSetter()
         {
@@ -1715,8 +1825,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             public int ReadOnlyInt { get; private set; }
             public string ReadOnlyString { get; private set; }
             public string[] ReadOnlyArray { get; private set; }
-            public object ReadOnlyObject { get; private set; }
+            public object ReadOnlyObject { get; } = new Simple { Name = "Joe" };
             public string ReadWriteString { get; set; }
+            public Simple ReadOnlySimple { get; } = new Simple { Name = "Joe" };
         }
 
         private sealed class ModelWhosePropertySetterThrows
@@ -1788,7 +1899,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             public int IncludedByDefault2 { get; set; }
         }
 
-        public class Document
+        private class Document
         {
             [NonValueBinderMetadata]
             public string Version { get; set; }
@@ -1807,7 +1918,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             public BindingSource BindingSource { get { return BindingSource.Query; } }
         }
 
-        public class ExcludedProvider : IPropertyBindingPredicateProvider
+        private class ExcludedProvider : IPropertyBindingPredicateProvider
         {
             public Func<ModelBindingContext, string, bool> PropertyFilter
             {
@@ -1820,14 +1931,35 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-        public class SimpleContainer
+        private class SimpleContainer
         {
             public Simple Simple { get; set; }
         }
 
-        public class Simple
+        private class Simple
         {
             public string Name { get; set; }
+        }
+
+        private class CollectionContainer
+        {
+            public int[] ReadOnlyArray { get; } = new int[4];
+
+            // Read-only collections get added values.
+            public IDictionary<int, string> ReadOnlyDictionary { get; } = new Dictionary<int, string>();
+
+            public IList<int> ReadOnlyList { get; } = new List<int>();
+
+            // Settable values are overwritten.
+            public int[] SettableArray { get; set; } = new int[] { 0, 1 };
+
+            public IDictionary<int, string> SettableDictionary { get; set; } = new Dictionary<int, string>
+            {
+                { 0, "zero" },
+                { 25, "twenty-five" },
+            };
+
+            public IList<int> SettableList { get; set; } = new List<int> { 3, 9, 0 };
         }
 
         private IServiceProvider CreateServices()

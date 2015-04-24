@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -19,6 +19,10 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class DefaultControllerActionArgumentBinder : IControllerActionArgumentBinder
     {
+        private static readonly MethodInfo CallPropertyAddRangeOpenGenericMethod =
+            typeof(DefaultControllerActionArgumentBinder).GetTypeInfo().GetDeclaredMethod(
+                nameof(CallPropertyAddRange));
+
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly IObjectModelValidator _validator;
 
@@ -64,12 +68,11 @@ namespace Microsoft.AspNet.Mvc
         }
 
         public async Task<ModelBindingResult> BindModelAsync(
-            ParameterDescriptor parameter,
-            ModelStateDictionary modelState,
-            OperationBindingContext operationContext)
+            [NotNull] ParameterDescriptor parameter,
+            [NotNull] ModelStateDictionary modelState,
+            [NotNull] OperationBindingContext operationContext)
         {
             var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterType);
-            var parameterType = parameter.ParameterType;
             var modelBindingContext = GetModelBindingContext(
                 parameter.Name,
                 metadata,
@@ -98,6 +101,21 @@ namespace Microsoft.AspNet.Mvc
             return modelBindingResult;
         }
 
+        // Called via reflection.
+        private static void CallPropertyAddRange<TElement>(object target, object source)
+        {
+            var targetCollection = (ICollection<TElement>)target;
+            var sourceCollection = source as IEnumerable<TElement>;
+            if (sourceCollection != null && !targetCollection.IsReadOnly)
+            {
+                targetCollection.Clear();
+                foreach (var item in sourceCollection)
+                {
+                    targetCollection.Add(item);
+                }
+            }
+        }
+
         private void ActivateProperties(object controller, Type containerType, Dictionary<string, object> properties)
         {
             var propertyHelpers = PropertyHelper.GetProperties(controller);
@@ -105,17 +123,47 @@ namespace Microsoft.AspNet.Mvc
             {
                 var propertyHelper = propertyHelpers.First(helper =>
                     string.Equals(helper.Name, property.Key, StringComparison.Ordinal));
-                if (propertyHelper.Property == null || !propertyHelper.Property.CanWrite)
+                var propertyType = propertyHelper.Property.PropertyType;
+                var source = property.Value;
+                if (propertyHelper.Property.CanWrite && propertyHelper.Property.SetMethod?.IsPublic == true)
                 {
-                    // nothing to do
-                    return;
+                    // Handle settable property. Do not set the property if the type is a non-nullable type.
+                    if (source != null || propertyType.AllowsNullValue())
+                    {
+                        propertyHelper.SetValue(controller, source);
+                    }
+
+                    continue;
                 }
 
-                // Do not set the property if the type is a non nullable type.
-                if (property.Value != null || propertyHelper.Property.PropertyType.AllowsNullValue())
+                if (propertyType.IsArray)
                 {
-                    propertyHelper.SetValue(controller, property.Value);
+                    // Do not attempt to copy values into an array because an array's length is immutable. This choice
+                    // is also consistent with MutableObjectModelBinder's handling of a read-only array property.
+                    continue;
                 }
+
+                var target = propertyHelper.GetValue(controller);
+                if (source == null || target == null)
+                {
+                    // Nothing to do when source or target is null.
+                    continue;
+                }
+
+                // Determine T if this is an ICollection<T> property.
+                var collectionTypeArguments = propertyType
+                    .ExtractGenericInterface(typeof(ICollection<>))
+                    ?.GenericTypeArguments;
+                if (collectionTypeArguments == null)
+                {
+                    // Not a collection model.
+                    continue;
+                }
+
+                // Handle a read-only collection property.
+                var propertyAddRange = CallPropertyAddRangeOpenGenericMethod.MakeGenericMethod(
+                    collectionTypeArguments);
+                propertyAddRange.Invoke(obj: null, parameters: new[] { target, source });
             }
         }
 

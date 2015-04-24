@@ -3,12 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Routing;
 using Moq;
@@ -18,39 +16,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 {
     public class ControllerActionArgumentBinderTests
     {
-        public class MySimpleModel
-        {
-        }
-
-        [Bind(Prefix = "TypePrefix")]
-        public class MySimpleModelWithTypeBasedBind
-        {
-        }
-
-        public void ParameterWithNoBindAttribute(MySimpleModelWithTypeBasedBind parameter)
-        {
-        }
-
-        public void ParameterHasFieldPrefix([Bind(Prefix = "simpleModelPrefix")] string parameter)
-        {
-        }
-
-        public void ParameterHasEmptyFieldPrefix([Bind(Prefix = "")] MySimpleModel parameter,
-                                                 [Bind(Prefix = "")] MySimpleModelWithTypeBasedBind parameter1)
-        {
-        }
-
-        public void ParameterHasPrefixAndComplexType(
-            [Bind(Prefix = "simpleModelPrefix")] MySimpleModel parameter,
-            [Bind(Prefix = "simpleModelPrefix")] MySimpleModelWithTypeBasedBind parameter1)
-        {
-        }
-
-        public void ParameterHasEmptyBindAttribute([Bind] MySimpleModel parameter,
-                                                   [Bind] MySimpleModelWithTypeBasedBind parameter1)
-        {
-        }
-
         [Fact]
         public async Task BindActionArgumentsAsync_DoesNotAddActionArguments_IfBinderReturnsFalse()
         {
@@ -76,7 +41,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             };
 
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-            
             var argumentBinder = GetArgumentBinder();
 
             // Act
@@ -253,7 +217,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             actionDescriptor.BoundProperties.Add(
                 new ParameterDescriptor
                 {
-                    Name = "ValueBinderMarkedProperty",
+                    Name = nameof(TestController.StringProperty),
                     ParameterType = typeof(string),
                 });
 
@@ -284,7 +248,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             actionDescriptor.BoundProperties.Add(
                 new ParameterDescriptor
                 {
-                    Name = "ValueBinderMarkedProperty",
+                    Name = nameof(TestController.StringProperty),
                     ParameterType = typeof(string),
                 });
 
@@ -325,8 +289,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             actionDescriptor.BoundProperties.Add(
                 new ParameterDescriptor
                 {
-                    Name = "ValueBinderMarkedProperty",
-                        BindingInfo = new BindingInfo(),
+                    Name = nameof(TestController.StringProperty),
+                    BindingInfo = new BindingInfo(),
                     ParameterType = typeof(string)
                 });
 
@@ -339,8 +303,37 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var result = await argumentBinder.BindActionArgumentsAsync(actionContext, actionBindingContext, controller);
 
             // Assert
-            Assert.Equal("Hello", controller.ValueBinderMarkedProperty);
-            Assert.Null(controller.UnmarkedProperty);
+            Assert.Equal("Hello", controller.StringProperty);
+            Assert.Equal(new List<string> { "goodbye" }, controller.CollectionProperty);
+            Assert.Null(controller.UntouchedProperty);
+        }
+
+        [Fact]
+        public async Task BindActionArgumentsAsync_AddsToCollectionControllerProperties()
+        {
+            // Arrange
+            var actionDescriptor = GetActionDescriptor();
+            actionDescriptor.BoundProperties.Add(
+                new ParameterDescriptor
+                {
+                    Name = nameof(TestController.CollectionProperty),
+                    BindingInfo = new BindingInfo(),
+                    ParameterType = typeof(ICollection<string>),
+                });
+
+            var expected = new List<string> { "Hello", "World", "!!" };
+            var actionContext = GetActionContext(actionDescriptor);
+            var actionBindingContext = GetActionBindingContext(model: expected);
+            var argumentBinder = GetArgumentBinder();
+            var controller = new TestController();
+
+            // Act
+            var result = await argumentBinder.BindActionArgumentsAsync(actionContext, actionBindingContext, controller);
+
+            // Assert
+            Assert.Equal(expected, controller.CollectionProperty);
+            Assert.Null(controller.StringProperty);
+            Assert.Null(controller.UntouchedProperty);
         }
 
         [Fact]
@@ -351,7 +344,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             actionDescriptor.BoundProperties.Add(
                 new ParameterDescriptor
                 {
-                    Name = "NotNullableProperty",
+                    Name = nameof(TestController.NonNullableProperty),
                     BindingInfo = new BindingInfo() { BindingSource = BindingSource.Custom },
                     ParameterType = typeof(int)
                 });
@@ -372,13 +365,13 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var controller = new TestController();
 
             // Some non default value.
-            controller.NotNullableProperty = -1;
+            controller.NonNullableProperty = -1;
 
             // Act
             var result = await argumentBinder.BindActionArgumentsAsync(actionContext, actionBindingContext, controller);
 
             // Assert
-            Assert.Equal(-1, controller.NotNullableProperty);
+            Assert.Equal(-1, controller.NonNullableProperty);
         }
 
         [Fact]
@@ -419,6 +412,148 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.Null(controller.NullableProperty);
         }
 
+        // property name, property type, property accessor, input value, expected value
+        public static TheoryData<string, Type, Func<object, object>, object, object> SkippedPropertyData
+        {
+            get
+            {
+                return new TheoryData<string, Type, Func<object, object>, object, object>
+                {
+                    {
+                        nameof(TestController.ArrayProperty),
+                        typeof(string[]),
+                        controller => ((TestController)controller).ArrayProperty,
+                        new string[] { "hello", "world" },
+                        new string[] { "goodbye" }
+                    },
+                    {
+                        nameof(TestController.CollectionProperty),
+                        typeof(ICollection<string>),
+                        controller => ((TestController)controller).CollectionProperty,
+                        null,
+                        new List<string> { "goodbye" }
+                    },
+                    {
+                        nameof(TestController.NonCollectionProperty),
+                        typeof(Person),
+                        controller => ((TestController)controller).NonCollectionProperty,
+                        new Person { Name = "Fred" },
+                        new Person { Name = "Ginger" }
+                    },
+                    {
+                        nameof(TestController.NullCollectionProperty),
+                        typeof(ICollection<string>),
+                        controller => ((TestController)controller).NullCollectionProperty,
+                        new List<string> { "hello", "world" },
+                        null
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(SkippedPropertyData))]
+        public async Task BindActionArgumentsAsync_SkipsReadOnlyControllerProperties(
+            string propertyName,
+            Type propertyType,
+            Func<object, object> propertyAccessor,
+            object inputValue,
+            object expectedValue)
+        {
+            // Arrange
+            var actionDescriptor = GetActionDescriptor();
+            actionDescriptor.BoundProperties.Add(
+                new ParameterDescriptor
+                {
+                    Name = propertyName,
+                    BindingInfo = new BindingInfo(),
+                    ParameterType = propertyType,
+                });
+
+            var actionContext = GetActionContext(actionDescriptor);
+            var actionBindingContext = GetActionBindingContext(model: inputValue);
+            var argumentBinder = GetArgumentBinder();
+            var controller = new TestController();
+
+            // Act
+            var result = await argumentBinder.BindActionArgumentsAsync(actionContext, actionBindingContext, controller);
+
+            // Assert
+            Assert.Equal(expectedValue, propertyAccessor(controller));
+            Assert.Null(controller.StringProperty);
+            Assert.Null(controller.UntouchedProperty);
+        }
+
+        [Fact]
+        public async Task BindActionArgumentsAsync_SetsMultipleControllerProperties()
+        {
+            // Arrange
+            var boundPropertyTypes = new Dictionary<string, Type>
+            {
+                { nameof(TestController.ArrayProperty), typeof(string[]) },                // Skipped
+                { nameof(TestController.CollectionProperty), typeof(List<string>) },
+                { nameof(TestController.NonCollectionProperty), typeof(Person) },          // Skipped
+                { nameof(TestController.NullCollectionProperty), typeof(List<string>) },   // Skipped
+                { nameof(TestController.StringProperty), typeof(string) },
+            };
+            var inputPropertyValues = new Dictionary<string, object>
+            {
+                { nameof(TestController.ArrayProperty), new string[] { "hello", "world" } },
+                { nameof(TestController.CollectionProperty), new List<string> { "hello", "world" } },
+                { nameof(TestController.NonCollectionProperty), new Person { Name = "Fred" } },
+                { nameof(TestController.NullCollectionProperty), new List<string> { "hello", "world" } },
+                { nameof(TestController.StringProperty), "Hello" },
+            };
+            var expectedPropertyValues = new Dictionary<string, object>
+            {
+                { nameof(TestController.ArrayProperty), new string[] { "goodbye" } },
+                { nameof(TestController.CollectionProperty), new List<string> { "hello", "world" } },
+                { nameof(TestController.NonCollectionProperty), new Person { Name = "Ginger" } },
+                { nameof(TestController.NullCollectionProperty), null },
+                { nameof(TestController.StringProperty), "Hello" },
+            };
+
+            var actionDescriptor = GetActionDescriptor();
+            foreach (var keyValuePair in boundPropertyTypes)
+            {
+                actionDescriptor.BoundProperties.Add(
+                    new ParameterDescriptor
+                    {
+                        Name = keyValuePair.Key,
+                        BindingInfo = new BindingInfo(),
+                        ParameterType = keyValuePair.Value,
+                    });
+            }
+
+            var actionContext = GetActionContext(actionDescriptor);
+            var argumentBinder = GetArgumentBinder();
+            var controller = new TestController();
+            var binder = new Mock<IModelBinder>();
+            binder
+                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Returns<ModelBindingContext>(bindingContext =>
+                {
+                    object model;
+                    var isModelSet = inputPropertyValues.TryGetValue(bindingContext.ModelName, out model);
+                    return Task.FromResult(new ModelBindingResult(model, bindingContext.ModelName, isModelSet));
+                });
+            var actionBindingContext = new ActionBindingContext
+            {
+                ModelBinder = binder.Object,
+            };
+
+            // Act
+            var result = await argumentBinder.BindActionArgumentsAsync(actionContext, actionBindingContext, controller);
+
+            // Assert
+            Assert.Equal(new string[] { "goodbye" }, controller.ArrayProperty);                 // Skipped
+            Assert.Equal(new List<string> { "hello", "world" }, controller.CollectionProperty);
+            Assert.Equal(new Person { Name = "Ginger" }, controller.NonCollectionProperty);     // Skipped
+            Assert.Null(controller.NullCollectionProperty);                                     // Skipped
+            Assert.Null(controller.UntouchedProperty);                                          // Not bound
+            Assert.Equal("Hello", controller.StringProperty);
+        }
+
         private static ActionContext GetActionContext(ActionDescriptor descriptor = null)
         {
            return new ActionContext(
@@ -441,11 +576,16 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
         private static ActionBindingContext GetActionBindingContext()
         {
+            return GetActionBindingContext("Hello");
+        }
+
+        private static ActionBindingContext GetActionBindingContext(object model)
+        {
             var binder = new Mock<IModelBinder>();
             binder
                 .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns(Task.FromResult(
-                    result: new ModelBindingResult(model: "Hello", key: string.Empty, isModelSet: true)));
+                    result: new ModelBindingResult(model: model, key: string.Empty, isModelSet: true)));
             return new ActionBindingContext()
             {
                 ModelBinder = binder.Object,
@@ -466,41 +606,40 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 validator);
         }
 
+        // No need for bind-related attributes on properties in this controller class. Properties are added directly
+        // to the BoundProperties collection, bypassing usual requirements.
         private class TestController
         {
-            public string UnmarkedProperty { get; set; }
+            public string UntouchedProperty { get; set; }
 
-            [NonValueProviderBinderMetadata]
-            public string NonValueBinderMarkedProperty { get; set; }
+            public string[] ArrayProperty { get; } = new string[] { "goodbye" };
 
-            [ValueProviderMetadata]
-            public string ValueBinderMarkedProperty { get; set; }
+            public ICollection<string> CollectionProperty { get; } = new List<string> { "goodbye" };
 
-            [CustomBindingSource]
-            public int NotNullableProperty { get; set; }
+            public Person NonCollectionProperty { get; } = new Person { Name = "Ginger" };
 
-            [CustomBindingSource]
+            public ICollection<string> NullCollectionProperty { get; private set; }
+
+            public string StringProperty { get; set; }
+
+            public int NonNullableProperty { get; set; }
+
             public int? NullableProperty { get; set; }
-
-            public Person ActionWithBodyParam([FromBody] Person bodyParam)
-            {
-                return bodyParam;
-            }
-
-            public Person ActionWithTwoBodyParam([FromBody] Person bodyParam, [FromBody] Person bodyParam1)
-            {
-                return bodyParam;
-            }
         }
 
-        private class Person
+        private class Person : IEquatable<Person>, IEquatable<object>
         {
             public string Name { get; set; }
-        }
 
-        private class NonValueProviderBinderMetadataAttribute : Attribute, IBindingSourceMetadata
-        {
-            public BindingSource BindingSource { get { return BindingSource.Body; } }
+            public bool Equals(Person other)
+            {
+                return other != null && string.Equals(Name, other.Name, StringComparison.Ordinal);
+            }
+
+            bool IEquatable<object>.Equals(object obj)
+            {
+                return Equals(obj as Person);
+            }
         }
 
         private class CustomBindingSourceAttribute : Attribute, IBindingSourceMetadata
@@ -511,18 +650,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         private class ValueProviderMetadataAttribute : Attribute, IBindingSourceMetadata
         {
             public BindingSource BindingSource { get { return BindingSource.Query; } }
-        }
-
-        [Bind(new string[] { nameof(IncludedExplicitly1), nameof(IncludedExplicitly2) })]
-        private class TypeWithIncludedPropertiesUsingBindAttribute
-        {
-            public int ExcludedByDefault1 { get; set; }
-
-            public int ExcludedByDefault2 { get; set; }
-
-            public int IncludedExplicitly1 { get; set; }
-
-            public int IncludedExplicitly2 { get; set; }
         }
     }
 }
