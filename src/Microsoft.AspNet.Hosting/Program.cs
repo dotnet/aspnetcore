@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Hosting
             config.AddEnvironmentVariables();
             config.AddCommandLine(args);
 
-            var host = new WebHostBuilder(_serviceProvider).Build();
+            var host = new WebHostBuilder(_serviceProvider, config).Build();
             var serverShutdown = host.Start();
             var loggerFactory = host.ApplicationServices.GetRequiredService<ILoggerFactory>();
             var appShutdownService = host.ApplicationServices.GetRequiredService<IApplicationShutdown>();
