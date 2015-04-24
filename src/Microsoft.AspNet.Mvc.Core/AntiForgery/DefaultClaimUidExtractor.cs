@@ -10,9 +10,12 @@ using System.Security.Cryptography;
 
 namespace Microsoft.AspNet.Mvc
 {
-    // Can extract unique identifers for a claims-based identity
+    /// <summary>
+    /// Default implementation of <see cref="IClaimUidExtractor"/>.
+    /// </summary>
     public class DefaultClaimUidExtractor : IClaimUidExtractor
     {
+        /// <inheritdoc />
         public string ExtractClaimUid(ClaimsIdentity claimsIdentity)
         {
             if (claimsIdentity == null || !claimsIdentity.IsAuthenticated)

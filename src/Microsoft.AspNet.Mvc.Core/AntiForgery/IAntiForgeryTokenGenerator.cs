@@ -7,7 +7,7 @@ using Microsoft.AspNet.Http;
 namespace Microsoft.AspNet.Mvc
 {
     // Provides configuration information about the anti-forgery system.
-    internal interface ITokenGenerator
+    internal interface IAntiForgeryTokenGenerator
     {
         // Generates a new random cookie token.
         AntiForgeryToken GenerateCookieToken();

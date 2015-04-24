@@ -17,16 +17,16 @@ namespace Microsoft.AspNet.Mvc
     {
         private readonly AntiForgeryOptions _config;
         private readonly IAntiForgeryTokenSerializer _serializer;
-        private readonly ITokenStore _tokenStore;
-        private readonly ITokenValidator _validator;
-        private readonly ITokenGenerator _generator;
+        private readonly IAntiForgeryTokenStore _tokenStore;
+        private readonly IAntiForgeryTokenValidator _validator;
+        private readonly IAntiForgeryTokenGenerator _generator;
         private readonly IHtmlEncoder _htmlEncoder;
 
         internal AntiForgeryWorker([NotNull] IAntiForgeryTokenSerializer serializer,
                                    [NotNull] AntiForgeryOptions config,
-                                   [NotNull] ITokenStore tokenStore,
-                                   [NotNull] ITokenGenerator generator,
-                                   [NotNull] ITokenValidator validator,
+                                   [NotNull] IAntiForgeryTokenStore tokenStore,
+                                   [NotNull] IAntiForgeryTokenGenerator generator,
+                                   [NotNull] IAntiForgeryTokenValidator validator,
                                    [NotNull] IHtmlEncoder htmlEncoder)
         {
             _serializer = serializer;
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc
                 : null;
         }
 
-        private AntiForgeryToken DeserializeTokenNoThrow(string serializedToken)
+        private AntiForgeryToken DeserializeTokenDoesNotThrow(string serializedToken)
         {
             try
             {
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Mvc
             return null;
         }
 
-        private AntiForgeryToken GetCookieTokenNoThrow(HttpContext httpContext)
+        private AntiForgeryToken GetCookieTokenDoesNotThrow(HttpContext httpContext)
         {
             try
             {
@@ -103,12 +103,12 @@ namespace Microsoft.AspNet.Mvc
         {
             CheckSSLConfig(httpContext);
 
-            var oldCookieToken = GetCookieTokenNoThrow(httpContext);
-            var tokenSet = GetTokens(httpContext, oldCookieToken);
-            var newCookieToken = tokenSet.CookieToken;
+            var cookieToken = GetCookieTokenDoesNotThrow(httpContext);
+            var tokenSet = GetTokens(httpContext, cookieToken);
+            cookieToken = tokenSet.CookieToken;
             var formToken = tokenSet.FormToken;
 
-            SaveCookieTokenAndHeader(httpContext, newCookieToken);
+            SaveCookieTokenAndHeader(httpContext, cookieToken);
 
             // <input type="hidden" name="__AntiForgeryToken" value="..." />
             var inputTag = new TagBuilder("input", _htmlEncoder)
@@ -129,28 +129,28 @@ namespace Microsoft.AspNet.Mvc
         // 'new cookie value' out param is non-null, the caller *must* persist
         // the new value to cookie storage since the original value was null or
         // invalid. This method is side-effect free.
-        public AntiForgeryTokenSet GetTokens([NotNull] HttpContext httpContext, string serializedOldCookieToken)
+        public AntiForgeryTokenSet GetTokens([NotNull] HttpContext httpContext, string cookieToken)
         {
             CheckSSLConfig(httpContext);
-            var oldCookieToken = DeserializeTokenNoThrow(serializedOldCookieToken);
-            var tokenSet = GetTokens(httpContext, oldCookieToken);
+            var deSerializedcookieToken = DeserializeTokenDoesNotThrow(cookieToken);
+            var tokenSet = GetTokens(httpContext, deSerializedcookieToken);
 
-            var serializedNewCookieToken = Serialize(tokenSet.CookieToken);
+            var serializedCookieToken = Serialize(tokenSet.CookieToken);
             var serializedFormToken = Serialize(tokenSet.FormToken);
-            return new AntiForgeryTokenSet(serializedFormToken, serializedNewCookieToken);
+            return new AntiForgeryTokenSet(serializedFormToken, serializedCookieToken);
         }
 
-        private AntiForgeryTokenSetInternal GetTokens(HttpContext httpContext, AntiForgeryToken oldCookieToken)
+        private AntiForgeryTokenSetInternal GetTokens(HttpContext httpContext, AntiForgeryToken cookieToken)
         {
-            var newCookieToken = ValidateAndGenerateNewToken(oldCookieToken);
+            var newCookieToken = ValidateAndGenerateNewCookieToken(cookieToken);
             if (newCookieToken != null)
             {
-                oldCookieToken = newCookieToken;
+                cookieToken = newCookieToken;
             }
             var formToken = _generator.GenerateFormToken(
                 httpContext,
                 ExtractIdentity(httpContext),
-                oldCookieToken);
+                cookieToken);
 
             return new AntiForgeryTokenSetInternal()
             {
@@ -208,16 +208,16 @@ namespace Microsoft.AspNet.Mvc
         {
             CheckSSLConfig(httpContext);
 
-            var oldCookieToken = GetCookieTokenNoThrow(httpContext);
-            var newCookieToken = ValidateAndGenerateNewToken(oldCookieToken);
-            
-            SaveCookieTokenAndHeader(httpContext, newCookieToken);
+            var cookieToken = GetCookieTokenDoesNotThrow(httpContext);
+            cookieToken = ValidateAndGenerateNewCookieToken(cookieToken);
+
+            SaveCookieTokenAndHeader(httpContext, cookieToken);
         }
 
         // This method returns null if oldCookieToken is valid.
-        private AntiForgeryToken ValidateAndGenerateNewToken(AntiForgeryToken oldCookieToken)
+        private AntiForgeryToken ValidateAndGenerateNewCookieToken(AntiForgeryToken cookieToken)
         {
-            if (!_validator.IsCookieTokenValid(oldCookieToken))
+            if (!_validator.IsCookieTokenValid(cookieToken))
             {
                 // Need to make sure we're always operating with a good cookie token.
                 var newCookieToken = _generator.GenerateCookieToken();
@@ -230,12 +230,12 @@ namespace Microsoft.AspNet.Mvc
 
         private void SaveCookieTokenAndHeader(
             [NotNull] HttpContext httpContext,
-            AntiForgeryToken newCookieToken)
+            AntiForgeryToken cookieToken)
         {
-            if (newCookieToken != null)
+            if (cookieToken != null)
             {
                 // Persist the new cookie if it is not null.
-                _tokenStore.SaveCookieToken(httpContext, newCookieToken);
+                _tokenStore.SaveCookieToken(httpContext, cookieToken);
             }
 
             if (!_config.SuppressXFrameOptionsHeader)

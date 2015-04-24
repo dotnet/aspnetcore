@@ -9,13 +9,13 @@ using Microsoft.AspNet.Mvc.Core;
 
 namespace Microsoft.AspNet.Mvc
 {
-    internal sealed class TokenProvider : ITokenValidator, ITokenGenerator
+    internal sealed class AntiForgeryTokenProvider : IAntiForgeryTokenValidator, IAntiForgeryTokenGenerator
     {
         private readonly IClaimUidExtractor _claimUidExtractor;
         private readonly AntiForgeryOptions _config;
         private readonly IAntiForgeryAdditionalDataProvider _additionalDataProvider;
 
-        internal TokenProvider(AntiForgeryOptions config,
+        internal AntiForgeryTokenProvider(AntiForgeryOptions config,
                                IClaimUidExtractor claimUidExtractor,
                                IAntiForgeryAdditionalDataProvider additionalDataProvider)
         {

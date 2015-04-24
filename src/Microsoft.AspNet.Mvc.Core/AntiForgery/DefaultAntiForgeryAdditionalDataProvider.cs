@@ -5,13 +5,18 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Mvc
 {
+    /// <summary>
+    /// A default <see cref="IAntiForgeryAdditionalDataProvider"/> implementation.
+    /// </summary>
     public class DefaultAntiForgeryAdditionalDataProvider : IAntiForgeryAdditionalDataProvider
     {
+        /// <inheritdoc />
         public virtual string GetAdditionalData(HttpContext context)
         {
             return string.Empty;
         }
 
+        /// <inheritdoc />
         public virtual bool ValidateAdditionalData(HttpContext context, string additionalData)
         {
             // Default implementation does not understand anything but empty data.

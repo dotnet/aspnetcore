@@ -6,8 +6,16 @@ using Microsoft.AspNet.Mvc.Core;
 
 namespace Microsoft.AspNet.Mvc
 {
+    /// <summary>
+    /// The anti-forgery token pair (cookie and form token) for a request.
+    /// </summary>
     public class AntiForgeryTokenSet
     {
+        /// <summary>
+        /// Creates the anti-forgery token pair (cookie and form token) for a request.
+        /// </summary>
+        /// <param name="formToken">The token that is supplied in the request form body.</param>
+        /// <param name="cookieToken">The token that is supplied in the request cookie.</param>
         public AntiForgeryTokenSet(string formToken, string cookieToken)
         {
             if (string.IsNullOrEmpty(formToken))
@@ -22,11 +30,14 @@ namespace Microsoft.AspNet.Mvc
             CookieToken = cookieToken;
         }
 
+        /// <summary>
+        /// The token that is supplied in the request form body.
+        /// </summary>
         public string FormToken { get; private set; }
 
-        // The cookie token is allowed to be null.
-        // This would be the case when the old cookie token is still valid.
-        // In such cases a call to GetTokens would return a token set with null cookie token.
+        /// The cookie token is allowed to be null.
+        /// This would be the case when the old cookie token is still valid.
+        /// In such cases a call to GetTokens would return a token set with null cookie token.
         public string CookieToken { get; private set; }
     }
 }

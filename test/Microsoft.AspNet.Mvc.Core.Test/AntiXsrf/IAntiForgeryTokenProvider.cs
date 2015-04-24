@@ -4,7 +4,7 @@
 namespace Microsoft.AspNet.Mvc.Core.Test
 {
     // A TokenProvider that can be passed to MoQ
-    internal interface ITokenProvider : ITokenValidator, ITokenGenerator
+    internal interface IAntiForgeryTokenProvider : IAntiForgeryTokenValidator, IAntiForgeryTokenGenerator
     {
     }
 }

@@ -7,7 +7,7 @@ using Microsoft.AspNet.Http;
 namespace Microsoft.AspNet.Mvc
 {
     // Provides an abstraction around how tokens are persisted and retrieved for a request
-    internal interface ITokenStore
+    internal interface IAntiForgeryTokenStore
     {
         AntiForgeryToken GetCookieToken(HttpContext httpContext);
         Task<AntiForgeryToken> GetFormTokenAsync(HttpContext httpContext);

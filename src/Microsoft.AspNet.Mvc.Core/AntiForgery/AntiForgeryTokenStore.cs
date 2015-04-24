@@ -10,7 +10,7 @@ using Microsoft.Framework.Internal;
 namespace Microsoft.AspNet.Mvc
 {
     // Saves anti-XSRF tokens split between HttpRequest.Cookies and HttpRequest.Form
-    internal sealed class AntiForgeryTokenStore : ITokenStore
+    internal sealed class AntiForgeryTokenStore : IAntiForgeryTokenStore
     {
         private readonly AntiForgeryOptions _config;
         private readonly IAntiForgeryTokenSerializer _serializer;

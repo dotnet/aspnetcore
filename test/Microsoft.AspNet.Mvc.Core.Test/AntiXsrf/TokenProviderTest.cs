@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public void GenerateCookieToken()
         {
             // Arrange
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                                             config: null,
                                             claimUidExtractor: null,
                                             additionalDataProvider: null);
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             var config = new AntiForgeryOptions();
 
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                 config: config,
                 claimUidExtractor: null,
                 additionalDataProvider: null);
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var config = new AntiForgeryOptions();
             IClaimUidExtractor claimUidExtractor = new Mock<IClaimUidExtractor>().Object;
 
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                 config: config,
                 claimUidExtractor: claimUidExtractor,
                 additionalDataProvider: null);
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var config = new AntiForgeryOptions();
             IClaimUidExtractor claimUidExtractor = new Mock<IClaimUidExtractor>().Object;
 
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                 config: config,
                 claimUidExtractor: claimUidExtractor,
                 additionalDataProvider: mockAdditionalDataProvider.Object);
@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(identity))
                                  .Returns(base64ClaimUId);
 
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                 config: config,
                 claimUidExtractor: mockClaimUidExtractor.Object,
                 additionalDataProvider: null);
@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var config = new AntiForgeryOptions();
             IClaimUidExtractor claimUidExtractor = new Mock<IClaimUidExtractor>().Object;
 
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                 config: config,
                 claimUidExtractor: claimUidExtractor,
                 additionalDataProvider: null);
@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 IsSessionToken = false
             };
 
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                 config: null,
                 claimUidExtractor: null,
                 additionalDataProvider: null);
@@ -221,7 +221,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             AntiForgeryToken cookieToken = null;
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                 config: null,
                 claimUidExtractor: null,
                 additionalDataProvider: null);
@@ -242,7 +242,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 IsSessionToken = true
             };
 
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                 config: null,
                 claimUidExtractor: null,
                 additionalDataProvider: null);
@@ -267,7 +267,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             {
                 CookieName = "my-cookie-name"
             };
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                 config: config,
                 claimUidExtractor: null,
                 additionalDataProvider: null);
@@ -293,7 +293,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 FormFieldName = "my-form-field-name"
             };
 
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                 config: config,
                 claimUidExtractor: null,
                 additionalDataProvider: null);
@@ -320,7 +320,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 FormFieldName = "my-form-field-name"
             };
 
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                 config: config,
                 claimUidExtractor: null,
                 additionalDataProvider: null);
@@ -352,7 +352,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             var sessionToken = new AntiForgeryToken() { IsSessionToken = true };
             var fieldtoken = new AntiForgeryToken() { IsSessionToken = false };
 
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                 config: null,
                 claimUidExtractor: null,
                 additionalDataProvider: null);
@@ -385,7 +385,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(identity))
                                  .Returns((string)null);
 
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                 config: null,
                 claimUidExtractor: mockClaimUidExtractor.Object,
                 additionalDataProvider: null);
@@ -418,7 +418,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(identity))
                                  .Returns(Convert.ToBase64String(differentToken.GetData()));
 
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                 config: null,
                 claimUidExtractor: mockClaimUidExtractor.Object,
                 additionalDataProvider: null);
@@ -452,7 +452,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                       .Returns(false);
 
             var config = new AntiForgeryOptions();
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                 config: config,
                 claimUidExtractor: null,
                 additionalDataProvider: mockAdditionalDataProvider.Object);
@@ -484,7 +484,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                       .Returns(true);
 
             var config = new AntiForgeryOptions();
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                 config: config,
                 claimUidExtractor: null,
                 additionalDataProvider: mockAdditionalDataProvider.Object);
@@ -516,7 +516,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                                       .Returns(true);
 
             var config = new AntiForgeryOptions();
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                 config: config,
                 claimUidExtractor: new Mock<IClaimUidExtractor>().Object,
                 additionalDataProvider: mockAdditionalDataProvider.Object);
@@ -548,7 +548,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             var config = new AntiForgeryOptions();
 
-            var tokenProvider = new TokenProvider(
+            var tokenProvider = new AntiForgeryTokenProvider(
                 config: config,
                 claimUidExtractor: mockClaimUidExtractor.Object,
                 additionalDataProvider: null);
