@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "add",
-                ExpressionHelpers.GetPath(path).ToLower(),
+                ExpressionHelpers.GetPath(path).ToLowerInvariant(),
                 from: null,
                 value: value));
 
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "add",
-                ExpressionHelpers.GetPath(path).ToLower() + "/" + position,
+                ExpressionHelpers.GetPath(path).ToLowerInvariant() + "/" + position,
                 from: null,
                 value: value));
 
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "add",
-                ExpressionHelpers.GetPath(path).ToLower() + "/-",
+                ExpressionHelpers.GetPath(path).ToLowerInvariant() + "/-",
                 from: null,
                 value: value));
 
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.JsonPatch
         /// <returns></returns>
         public JsonPatchDocument<TModel> Remove<TProp>(Expression<Func<TModel, TProp>> path)
         {
-            Operations.Add(new Operation<TModel>("remove", ExpressionHelpers.GetPath(path).ToLower(), from: null));
+            Operations.Add(new Operation<TModel>("remove", ExpressionHelpers.GetPath(path).ToLowerInvariant(), from: null));
 
             return this;
         }
@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "remove",
-                ExpressionHelpers.GetPath(path).ToLower() + "/" + position,
+                ExpressionHelpers.GetPath(path).ToLowerInvariant() + "/" + position,
                 from: null));
 
             return this;
@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "remove",
-                ExpressionHelpers.GetPath(path).ToLower() + "/-",
+                ExpressionHelpers.GetPath(path).ToLowerInvariant() + "/-",
                 from: null));
 
             return this;
@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "replace",
-                ExpressionHelpers.GetPath(path).ToLower(),
+                ExpressionHelpers.GetPath(path).ToLowerInvariant(),
                 from: null,
                 value: value));
 
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "replace",
-                ExpressionHelpers.GetPath(path).ToLower() + "/" + position,
+                ExpressionHelpers.GetPath(path).ToLowerInvariant() + "/" + position,
                 from: null,
                 value: value));
 
@@ -193,7 +193,7 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "replace",
-                ExpressionHelpers.GetPath(path).ToLower() + "/-",
+                ExpressionHelpers.GetPath(path).ToLowerInvariant() + "/-",
                 from: null,
                 value: value));
 
@@ -213,8 +213,8 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "move",
-                ExpressionHelpers.GetPath(path).ToLower(),
-                ExpressionHelpers.GetPath(from).ToLower()));
+                ExpressionHelpers.GetPath(path).ToLowerInvariant(),
+                ExpressionHelpers.GetPath(from).ToLowerInvariant()));
 
             return this;
         }
@@ -234,8 +234,8 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "move",
-                ExpressionHelpers.GetPath(path).ToLower(),
-                ExpressionHelpers.GetPath(from).ToLower() + "/" + positionFrom));
+                ExpressionHelpers.GetPath(path).ToLowerInvariant(),
+                ExpressionHelpers.GetPath(from).ToLowerInvariant() + "/" + positionFrom));
 
             return this;
         }
@@ -255,8 +255,8 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "move",
-                ExpressionHelpers.GetPath(path).ToLower() + "/" + positionTo,
-                ExpressionHelpers.GetPath(from).ToLower()));
+                ExpressionHelpers.GetPath(path).ToLowerInvariant() + "/" + positionTo,
+                ExpressionHelpers.GetPath(from).ToLowerInvariant()));
 
             return this;
         }
@@ -277,8 +277,8 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "move",
-                ExpressionHelpers.GetPath(path).ToLower() + "/" + positionTo,
-                ExpressionHelpers.GetPath(from).ToLower() + "/" + positionFrom));
+                ExpressionHelpers.GetPath(path).ToLowerInvariant() + "/" + positionTo,
+                ExpressionHelpers.GetPath(from).ToLowerInvariant() + "/" + positionFrom));
 
             return this;
         }
@@ -298,8 +298,8 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "move",
-                ExpressionHelpers.GetPath(path).ToLower() + "/-",
-                ExpressionHelpers.GetPath(from).ToLower() + "/" + positionFrom));
+                ExpressionHelpers.GetPath(path).ToLowerInvariant() + "/-",
+                ExpressionHelpers.GetPath(from).ToLowerInvariant() + "/" + positionFrom));
 
             return this;
         }
@@ -318,8 +318,8 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "move",
-                ExpressionHelpers.GetPath(path).ToLower() + "/-",
-                ExpressionHelpers.GetPath(from).ToLower()));
+                ExpressionHelpers.GetPath(path).ToLowerInvariant() + "/-",
+                ExpressionHelpers.GetPath(from).ToLowerInvariant()));
 
             return this;
         }
@@ -337,8 +337,8 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "copy",
-                ExpressionHelpers.GetPath(path).ToLower()
-              , ExpressionHelpers.GetPath(from).ToLower()));
+                ExpressionHelpers.GetPath(path).ToLowerInvariant()
+              , ExpressionHelpers.GetPath(from).ToLowerInvariant()));
 
             return this;
         }
@@ -358,8 +358,8 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "copy",
-                ExpressionHelpers.GetPath(path).ToLower(),
-                ExpressionHelpers.GetPath(from).ToLower() + "/" + positionFrom));
+                ExpressionHelpers.GetPath(path).ToLowerInvariant(),
+                ExpressionHelpers.GetPath(from).ToLowerInvariant() + "/" + positionFrom));
 
             return this;
         }
@@ -379,8 +379,8 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "copy",
-                ExpressionHelpers.GetPath(path).ToLower() + "/" + positionTo,
-                ExpressionHelpers.GetPath(from).ToLower()));
+                ExpressionHelpers.GetPath(path).ToLowerInvariant() + "/" + positionTo,
+                ExpressionHelpers.GetPath(from).ToLowerInvariant()));
 
             return this;
         }
@@ -401,8 +401,8 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "copy",
-                ExpressionHelpers.GetPath(path).ToLower() + "/" + positionTo,
-                ExpressionHelpers.GetPath(from).ToLower() + "/" + positionFrom));
+                ExpressionHelpers.GetPath(path).ToLowerInvariant() + "/" + positionTo,
+                ExpressionHelpers.GetPath(from).ToLowerInvariant() + "/" + positionFrom));
 
             return this;
         }
@@ -423,8 +423,8 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "copy",
-                ExpressionHelpers.GetPath(path).ToLower() + "/-",
-                ExpressionHelpers.GetPath(from).ToLower() + "/" + positionFrom));
+                ExpressionHelpers.GetPath(path).ToLowerInvariant() + "/-",
+                ExpressionHelpers.GetPath(from).ToLowerInvariant() + "/" + positionFrom));
 
             return this;
         }
@@ -443,8 +443,8 @@ namespace Microsoft.AspNet.JsonPatch
         {
             Operations.Add(new Operation<TModel>(
                 "copy",
-                ExpressionHelpers.GetPath(path).ToLower() + "/-",
-                ExpressionHelpers.GetPath(from).ToLower()));
+                ExpressionHelpers.GetPath(path).ToLowerInvariant() + "/-",
+                ExpressionHelpers.GetPath(from).ToLowerInvariant()));
 
             return this;
         }
