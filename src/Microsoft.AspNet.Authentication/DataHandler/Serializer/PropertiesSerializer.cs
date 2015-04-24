@@ -44,8 +44,8 @@ namespace Microsoft.AspNet.Authentication.DataHandler.Serializer
         public static void Write([NotNull] BinaryWriter writer, [NotNull] AuthenticationProperties properties)
         {
             writer.Write(FormatVersion);
-            writer.Write(properties.Dictionary.Count);
-            foreach (var kv in properties.Dictionary)
+            writer.Write(properties.Items.Count);
+            foreach (var kv in properties.Items)
             {
                 writer.Write(kv.Key);
                 writer.Write(kv.Value);

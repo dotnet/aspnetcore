@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             // When redeeming a 'code' for an AccessToken, this value is needed
             if (!string.IsNullOrWhiteSpace(Options.RedirectUri))
             {
-                properties.Dictionary.Add(OpenIdConnectAuthenticationDefaults.RedirectUriUsedForCodeKey, Options.RedirectUri);
+                properties.Items.Add(OpenIdConnectAuthenticationDefaults.RedirectUriUsedForCodeKey, Options.RedirectUri);
             }
 
             if (_configuration == null && Options.ConfigurationManager != null)
@@ -385,12 +385,12 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     ticket = new AuthenticationTicket(principal, properties, Options.AuthenticationScheme);
                     if (!string.IsNullOrWhiteSpace(message.SessionState))
                     {
-                        ticket.Properties.Dictionary[OpenIdConnectSessionProperties.SessionState] = message.SessionState;
+                        ticket.Properties.Items[OpenIdConnectSessionProperties.SessionState] = message.SessionState;
                     }
 
                     if (_configuration != null && !string.IsNullOrWhiteSpace(_configuration.CheckSessionIframe))
                     {
-                        ticket.Properties.Dictionary[OpenIdConnectSessionProperties.CheckSessionIFrame] = _configuration.CheckSessionIframe;
+                        ticket.Properties.Items[OpenIdConnectSessionProperties.CheckSessionIFrame] = _configuration.CheckSessionIframe;
                     }
 
                     // Rename?
@@ -466,8 +466,8 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                         Code = message.Code,
                         JwtSecurityToken = jwt,
                         ProtocolMessage = message,
-                        RedirectUri = ticket.Properties.Dictionary.ContainsKey(OpenIdConnectAuthenticationDefaults.RedirectUriUsedForCodeKey) ?
-                                      ticket.Properties.Dictionary[OpenIdConnectAuthenticationDefaults.RedirectUriUsedForCodeKey] : string.Empty,
+                        RedirectUri = ticket.Properties.Items.ContainsKey(OpenIdConnectAuthenticationDefaults.RedirectUriUsedForCodeKey) ?
+                                      ticket.Properties.Items[OpenIdConnectAuthenticationDefaults.RedirectUriUsedForCodeKey] : string.Empty,
                     };
 
                     await Options.Notifications.AuthorizationCodeReceived(authorizationCodeReceivedNotification);
@@ -632,7 +632,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             {
                 if (ticket.Principal != null)
                 {
-                    Request.HttpContext.Response.SignIn(Options.SignInScheme, ticket.Principal, ticket.Properties);
+                    Request.HttpContext.Authentication.SignIn(Options.SignInScheme, ticket.Principal, ticket.Properties);
                 }
 
                 // Redirect back to the original secured resource, if any.

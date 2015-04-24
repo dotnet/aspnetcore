@@ -326,8 +326,8 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
                     else if (context.Request.Path == new PathString("/unauthorized"))
                     {
                         // Simulate Authorization failure 
-                        var result = await context.AuthenticateAsync(OAuthBearerAuthenticationDefaults.AuthenticationScheme);
-                        context.Response.Challenge(OAuthBearerAuthenticationDefaults.AuthenticationScheme);
+                        var result = await context.Authentication.AuthenticateAsync(OAuthBearerAuthenticationDefaults.AuthenticationScheme);
+                        context.Authentication.Challenge(OAuthBearerAuthenticationDefaults.AuthenticationScheme);
                     }
 
                     else

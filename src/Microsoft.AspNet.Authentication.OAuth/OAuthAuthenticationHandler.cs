@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
 
             if (context.SignInScheme != null && context.Principal != null)
             {
-                Context.Response.SignIn(context.SignInScheme, context.Principal, context.Properties);
+                Context.Authentication.SignIn(context.SignInScheme, context.Principal, context.Properties);
             }
 
             if (!context.IsRequestCompleted && context.RedirectUri != null)

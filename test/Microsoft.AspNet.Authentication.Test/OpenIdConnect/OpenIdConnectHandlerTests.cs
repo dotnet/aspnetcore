@@ -493,28 +493,6 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         }
     }
 
-    public class OpenIdConnectAuthenticationContext : IAuthenticateContext
-    {
-        public OpenIdConnectAuthenticationContext(string scheme = null)
-        {
-            AuthenticationScheme = scheme ?? OpenIdConnectAuthenticationDefaults.AuthenticationScheme;
-        }
-
-        public string AuthenticationScheme
-        {
-            get;
-            set;
-        }
-
-        public void Authenticated(ClaimsPrincipal principal, IDictionary<string, string> properties, IDictionary<string, object> description)
-        {
-        }
-
-        public void NotAuthenticated()
-        {
-        }
-    }
-
     /// <summary>
     /// Provides a Facade over IOptions
     /// </summary>
@@ -576,7 +554,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             return true;
         }
 
-        public override void Challenge(IChallengeContext context)
+        public override void Challenge(ChallengeContext context)
         {
         }
 

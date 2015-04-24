@@ -36,7 +36,7 @@ namespace CookieSessionSample
                     {
                         claims.Add(new Claim(ClaimTypes.Role, "SomeRandomGroup" + i, ClaimValueTypes.String, "IssuedByBob", "OriginalIssuerJoe"));
                     }
-                    context.Response.SignIn(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity(claims)));
+                    context.Authentication.SignIn(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity(claims)));
                     context.Response.ContentType = "text/plain";
                     await context.Response.WriteAsync("Hello First timer");
                     return;

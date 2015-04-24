@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 },
                 context =>
                 {
-                    context.Response.Challenge("Facebook");
+                    context.Authentication.Challenge("Facebook");
                     return true;
                 });
             var transaction = await SendAsync(server, "http://example.com/challenge");
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 },
                 context =>
                 {
-                    context.Response.Challenge("Facebook");
+                    context.Authentication.Challenge("Facebook");
                     return true;
                 });
             var transaction = await SendAsync(server, "http://example.com/challenge");

@@ -102,14 +102,14 @@ namespace Microsoft.AspNet.Authentication.Google
             string name, string defaultValue = null)
         {
             string value;
-            if (!properties.Dictionary.TryGetValue(name, out value))
+            if (!properties.Items.TryGetValue(name, out value))
             {
                 value = defaultValue;
             }
             else
             {
                 // Remove the parameter from AuthenticationProperties so it won't be serialized to state parameter
-                properties.Dictionary.Remove(name);
+                properties.Items.Remove(name);
             }
 
             if (value == null)

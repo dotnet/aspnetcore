@@ -40,7 +40,7 @@ namespace OpenIdConnectSample
             {
                 if (string.IsNullOrEmpty(context.User.Identity.Name))
                 {
-                    context.Response.Challenge(new AuthenticationProperties { RedirectUri = "/" }, OpenIdConnectAuthenticationDefaults.AuthenticationScheme);
+                    context.Authentication.Challenge(OpenIdConnectAuthenticationDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/" });
 
                     context.Response.ContentType = "text/plain";
                     await context.Response.WriteAsync("Hello First timer");

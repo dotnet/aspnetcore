@@ -157,23 +157,23 @@ namespace Microsoft.AspNet.Authentication.Cookies
                         Options,
                         Options.AuthenticationScheme,
                         signin.Principal,
-                        signin.Properties,
+                        new AuthenticationProperties(signin.Properties),
                         cookieOptions);
 
                     DateTimeOffset issuedUtc;
-                    if (signin.Properties.IssuedUtc.HasValue)
+                    if (signInContext.Properties.IssuedUtc.HasValue)
                     {
-                        issuedUtc = signin.Properties.IssuedUtc.Value;
+                        issuedUtc = signInContext.Properties.IssuedUtc.Value;
                     }
                     else
                     {
                         issuedUtc = Options.SystemClock.UtcNow;
-                        signin.Properties.IssuedUtc = issuedUtc;
+                        signInContext.Properties.IssuedUtc = issuedUtc;
                     }
 
-                    if (!signin.Properties.ExpiresUtc.HasValue)
+                    if (!signInContext.Properties.ExpiresUtc.HasValue)
                     {
-                        signin.Properties.ExpiresUtc = issuedUtc.Add(Options.ExpireTimeSpan);
+                        signInContext.Properties.ExpiresUtc = issuedUtc.Add(Options.ExpireTimeSpan);
                     }
 
                     Options.Notifications.ResponseSignIn(signInContext);
@@ -226,7 +226,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                         Context,
                         Options,
                         cookieOptions);
-                    
+
                     Options.Notifications.ResponseSignOut(context);
 
                     Options.CookieManager.DeleteCookie(

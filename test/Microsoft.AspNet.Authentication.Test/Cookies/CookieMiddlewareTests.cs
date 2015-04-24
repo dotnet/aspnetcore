@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
         private Task SignInAsAlice(HttpContext context)
         {
-            context.Response.SignIn("Cookies",
+            context.Authentication.SignIn("Cookies",
                 new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))),
                 new AuthenticationProperties());
             return Task.FromResult<object>(null);
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
         private Task SignInAsWrong(HttpContext context)
         {
-            context.Response.SignIn("Oops",
+            context.Authentication.SignIn("Oops",
                 new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))),
                 new AuthenticationProperties());
             return Task.FromResult<object>(null);
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
         private Task SignOutAsWrong(HttpContext context)
         {
-            context.Response.SignOut("Oops");
+            context.Authentication.SignOut("Oops");
             return Task.FromResult<object>(null);
         }
 
@@ -305,7 +305,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             },
             context =>
             {
-                context.Response.SignIn("Cookies",
+                context.Authentication.SignIn("Cookies",
                     new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))),
                     new AuthenticationProperties() { ExpiresUtc = clock.UtcNow.Add(TimeSpan.FromMinutes(5)) });
                     return Task.FromResult<object>(null);
@@ -435,7 +435,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             context =>
             {
                 Assert.Equal(new PathString("/base"), context.Request.PathBase);
-                context.Response.SignIn("Cookies", 
+                context.Authentication.SignIn("Cookies", 
                     new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))));
                 return Task.FromResult<object>(null);
             },
@@ -545,12 +545,12 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     else if (req.Path == new PathString("/unauthorized"))
                     {
                         // Simulate Authorization failure 
-                        var result = await context.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                        res.Challenge(CookieAuthenticationDefaults.AuthenticationScheme);
+                        var result = await context.Authentication.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                        context.Authentication.Challenge(CookieAuthenticationDefaults.AuthenticationScheme);
                     }
                     else if (req.Path == new PathString("/protected/CustomRedirect"))
                     {
-                        context.Response.Challenge(new AuthenticationProperties() { RedirectUri = "/CustomRedirect" });
+                        context.Authentication.Challenge(new AuthenticationProperties() { RedirectUri = "/CustomRedirect" });
                     }
                     else if (req.Path == new PathString("/me"))
                     {
@@ -558,7 +558,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     }
                     else if (req.Path.StartsWithSegments(new PathString("/me"), out remainder))
                     {
-                        var result = await context.AuthenticateAsync(remainder.Value.Substring(1));
+                        var result = await context.Authentication.AuthenticateAsync(remainder.Value.Substring(1));
                         Describe(res, result);
                     }
                     else if (req.Path == new PathString("/testpath") && testpath != null)
@@ -594,7 +594,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             }
             if (result != null && result.Properties != null)
             {
-                xml.Add(result.Properties.Dictionary.Select(extra => new XElement("extra", new XAttribute("type", extra.Key), new XAttribute("value", extra.Value))));
+                xml.Add(result.Properties.Items.Select(extra => new XElement("extra", new XAttribute("type", extra.Key), new XAttribute("value", extra.Value))));
             }
             using (var memory = new MemoryStream())
             {

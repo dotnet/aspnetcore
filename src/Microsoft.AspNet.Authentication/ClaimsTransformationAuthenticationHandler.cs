@@ -22,24 +22,24 @@ namespace Microsoft.AspNet.Authentication
 
         public IAuthenticationHandler PriorHandler { get; set; }
 
-        private void ApplyTransform(IAuthenticateContext context)
+        private void ApplyTransform(AuthenticateContext context)
         {
             if (_transform != null)
             {
                 // REVIEW: this cast seems really bad (missing interface way to get the result back out?)
                 var authContext = context as AuthenticateContext;
-                if (authContext?.Result?.Principal != null)
+                if (authContext?.Principal != null)
                 {
                     context.Authenticated(
-                        _transform.Invoke(authContext.Result.Principal),
-                        authContext.Result.Properties.Dictionary,
-                        authContext.Result.Description.Dictionary);
+                        _transform.Invoke(authContext.Principal),
+                        authContext.Properties,
+                        authContext.Description);
                 }
             }
 
         }
 
-        public void Authenticate(IAuthenticateContext context)
+        public void Authenticate(AuthenticateContext context)
         {
             if (PriorHandler != null)
             {
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Authentication
             }
         }
 
-        public async Task AuthenticateAsync(IAuthenticateContext context)
+        public async Task AuthenticateAsync(AuthenticateContext context)
         {
             if (PriorHandler != null)
             {
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Authentication
             }
         }
 
-        public void Challenge(IChallengeContext context)
+        public void Challenge(ChallengeContext context)
         {
             if (PriorHandler != null)
             {
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Authentication
             }
         }
 
-        public void GetDescriptions(IDescribeSchemesContext context)
+        public void GetDescriptions(DescribeSchemesContext context)
         {
             if (PriorHandler != null)
             {
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Authentication
             }
         }
 
-        public void SignIn(ISignInContext context)
+        public void SignIn(SignInContext context)
         {
             if (PriorHandler != null)
             {
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Authentication
             }
         }
 
-        public void SignOut(ISignOutContext context)
+        public void SignOut(SignOutContext context)
         {
             if (PriorHandler != null)
             {

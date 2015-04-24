@@ -142,14 +142,14 @@ namespace Microsoft.AspNet.Authentication.Google
                     var res = context.Response;
                     if (req.Path == new PathString("/challenge2"))
                     {
-                        res.Challenge(new AuthenticationProperties(
+                        context.Authentication.Challenge("Google", new AuthenticationProperties(
                             new Dictionary<string, string>()
                             {
                                 { "scope", "https://www.googleapis.com/auth/plus.login" },
                                 { "access_type", "offline" },
                                 { "approval_prompt", "force" },
                                 { "login_hint", "test@example.com" }
-                            }), "Google");
+                            }));
                         res.StatusCode = 401;
                     }
 
@@ -280,7 +280,7 @@ namespace Microsoft.AspNet.Authentication.Google
             var properties = new AuthenticationProperties();
             var correlationKey = ".AspNet.Correlation.Google";
             var correlationValue = "TestCorrelationId";
-            properties.Dictionary.Add(correlationKey, correlationValue);
+            properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";
             var state = stateFormat.Protect(properties);
             var transaction = await SendAsync(server,
@@ -325,7 +325,7 @@ namespace Microsoft.AspNet.Authentication.Google
             var properties = new AuthenticationProperties();
             var correlationKey = ".AspNet.Correlation.Google";
             var correlationValue = "TestCorrelationId";
-            properties.Dictionary.Add(correlationKey, correlationValue);
+            properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";
             var state = stateFormat.Protect(properties);
             var transaction = await SendAsync(server,
@@ -355,7 +355,7 @@ namespace Microsoft.AspNet.Authentication.Google
             var properties = new AuthenticationProperties();
             var correlationKey = ".AspNet.Correlation.Google";
             var correlationValue = "TestCorrelationId";
-            properties.Dictionary.Add(correlationKey, correlationValue);
+            properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";
             var state = stateFormat.Protect(properties);
             var transaction = await SendAsync(server,
@@ -427,7 +427,7 @@ namespace Microsoft.AspNet.Authentication.Google
             var properties = new AuthenticationProperties();
             var correlationKey = ".AspNet.Correlation.Google";
             var correlationValue = "TestCorrelationId";
-            properties.Dictionary.Add(correlationKey, correlationValue);
+            properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";
             var state = stateFormat.Protect(properties);
             var transaction = await SendAsync(server,
@@ -497,7 +497,7 @@ namespace Microsoft.AspNet.Authentication.Google
                     var res = context.Response;
                     if (req.Path == new PathString("/challenge"))
                     {
-                        res.Challenge("Google");
+                        context.Authentication.Challenge("Google");
                         res.StatusCode = 401;
                     }
                     else if (req.Path == new PathString("/me"))
@@ -507,14 +507,14 @@ namespace Microsoft.AspNet.Authentication.Google
                     else if (req.Path == new PathString("/unauthorized"))
                     {
                         // Simulate Authorization failure 
-                        var result = await context.AuthenticateAsync("Google");
-                        res.Challenge("Google");
+                        var result = await context.Authentication.AuthenticateAsync("Google");
+                        context.Authentication.Challenge("Google");
                     }
                     else if (req.Path == new PathString("/unauthorizedAuto"))
                     {
-                        var result = await context.AuthenticateAsync("Google");
+                        var result = await context.Authentication.AuthenticateAsync("Google");
                         res.StatusCode = 401;
-                        res.Challenge();
+                        context.Authentication.Challenge();
                     }
                     else if (req.Path == new PathString("/401"))
                     {

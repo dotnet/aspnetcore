@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                 },
                 context =>
                 {
-                    context.Response.Challenge("Microsoft");
+                    context.Authentication.Challenge("Microsoft");
                     return true;
                 });
             var transaction = await SendAsync(server, "http://example.com/challenge");
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                 },
                 context =>
                 {
-                    context.Response.Challenge("Microsoft");
+                    context.Authentication.Challenge("Microsoft");
                     return true;
                 });
             var transaction = await SendAsync(server, "http://example.com/challenge");
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
             var properties = new AuthenticationProperties();
             var correlationKey = ".AspNet.Correlation.Microsoft";
             var correlationValue = "TestCorrelationId";
-            properties.Dictionary.Add(correlationKey, correlationValue);
+            properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";
             var state = stateFormat.Protect(properties);
             var transaction = await SendAsync(server,
