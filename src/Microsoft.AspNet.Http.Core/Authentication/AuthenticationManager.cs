@@ -17,22 +17,27 @@ namespace Microsoft.AspNet.Http.Authentication
 
         public virtual void Challenge()
         {
-            Challenge(properties: null, authenticationScheme: null);
+            Challenge(authenticationScheme: null, properties: null);
         }
 
         public virtual void Challenge(AuthenticationProperties properties)
         {
-            Challenge(properties, "");
+            Challenge(authenticationScheme: null, properties: properties);
         }
 
         public virtual void Challenge(string authenticationScheme)
         {
-            Challenge(properties: null, authenticationScheme: authenticationScheme);
+            Challenge(authenticationScheme: authenticationScheme, properties: null);
         }
 
-        public abstract void Challenge(AuthenticationProperties properties, string authenticationScheme);
+        public abstract void Challenge(string authenticationScheme, AuthenticationProperties properties);
 
-        public abstract void SignIn(string authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties properties = null);
+        public void SignIn(string authenticationScheme, ClaimsPrincipal principal)
+        {
+            SignIn(authenticationScheme, principal, properties: null);
+        }
+
+        public abstract void SignIn(string authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties properties);
 
         public virtual void SignOut()
         {

@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Http.Authentication
                 new AuthenticationDescription(authenticateContext.Description));
         }
 
-        public override void Challenge(AuthenticationProperties properties, string authenticationScheme)
+        public override void Challenge(string authenticationScheme, AuthenticationProperties properties)
         {
             HttpResponseFeature.StatusCode = 401;
             var handler = HttpAuthenticationFeature.Handler;
