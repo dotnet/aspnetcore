@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting.Internal;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
@@ -33,21 +34,10 @@ namespace Microsoft.AspNet.Hosting
             config.AddEnvironmentVariables();
             config.AddCommandLine(args);
 
-            var engine = WebHost.CreateEngine(_serviceProvider, config);
-            var server = config.Get("server");
-            if (server != null)
-            {
-                engine.UseServer(server);
-            }
-            var startup = config.Get("app");
-            if (startup != null)
-            {
-                engine.UseStartup(startup);
-            }
-
-            var serverShutdown = engine.Start();
-            var loggerFactory = engine.ApplicationServices.GetRequiredService<ILoggerFactory>();
-            var appShutdownService = engine.ApplicationServices.GetRequiredService<IApplicationShutdown>();
+            var host = new WebHostBuilder(_serviceProvider).Build();
+            var serverShutdown = host.Start();
+            var loggerFactory = host.ApplicationServices.GetRequiredService<ILoggerFactory>();
+            var appShutdownService = host.ApplicationServices.GetRequiredService<IApplicationShutdown>();
             var shutdownHandle = new ManualResetEvent(false);
 
             appShutdownService.ShutdownRequested.Register(() =>

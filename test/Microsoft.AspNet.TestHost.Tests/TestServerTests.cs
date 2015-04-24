@@ -2,20 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Infrastructure;
 using Xunit;
 
@@ -54,54 +50,6 @@ namespace Microsoft.AspNet.TestHost
 
             string result = await server.CreateClient().GetStringAsync("/path");
             Assert.Equal("RequestServices:True", result);
-        }
-
-        [Fact]
-        public async Task CanChangeApplicationName()
-        {
-            var fallbackServices = CallContextServiceLocator.Locator.ServiceProvider;
-            var appName = "gobblegobble";
-
-            var builder = TestServer.CreateBuilder(fallbackServices, new Configuration(),
-                app =>
-                {
-                    app.Run(context =>
-                    {
-                        var appEnv = app.ApplicationServices.GetRequiredService<IApplicationEnvironment>();
-                        return context.Response.WriteAsync("AppName:" + appEnv.ApplicationName);
-                    });
-                },
-                configureServices: null);
-
-            builder.ApplicationName = appName;
-            var server = builder.Build();
-
-            string result = await server.CreateClient().GetStringAsync("/path");
-            Assert.Equal("AppName:" + appName, result);
-        }
-
-        [Fact]
-        public async Task CanChangeAppPath()
-        {
-            var fallbackServices = CallContextServiceLocator.Locator.ServiceProvider;
-            var appPath = ".";
-
-            var builder = TestServer.CreateBuilder(fallbackServices, new Configuration(),
-                app =>
-                {
-                    app.Run(context =>
-                    {
-                        var env = app.ApplicationServices.GetRequiredService<IApplicationEnvironment>();
-                        return context.Response.WriteAsync("AppPath:" + env.ApplicationBasePath);
-                    });
-                },
-                configureServices: null);
-
-            builder.ApplicationBasePath = appPath;
-            var server = builder.Build();
-
-            string result = await server.CreateClient().GetStringAsync("/path");
-            Assert.Equal("AppPath:" + appPath, result);
         }
 
         [Fact]
@@ -242,7 +190,7 @@ namespace Microsoft.AspNet.TestHost
         [Fact]
         public async Task CanCreateViaStartupType()
         {
-            TestServer server = TestServer.Create<TestStartup>();
+            TestServer server = new TestServer(TestServer.CreateBuilder().UseStartup<TestStartup>());
             HttpResponseMessage result = await server.CreateClient().GetAsync("/");
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             Assert.Equal("FoundService:True", await result.Content.ReadAsStringAsync());
@@ -251,9 +199,9 @@ namespace Microsoft.AspNet.TestHost
         [Fact]
         public async Task CanCreateViaStartupTypeAndSpecifyEnv()
         {
-            var builder = TestServer.CreateBuilder<TestStartup>();
-            builder.Environment = "Foo";
-            var server = builder.Build();
+            TestServer server = new TestServer(TestServer.CreateBuilder()
+                    .UseStartup<TestStartup>()
+                    .UseEnvironment("Foo"));
             HttpResponseMessage result = await server.CreateClient().GetAsync("/");
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             Assert.Equal("FoundFoo:False", await result.Content.ReadAsStringAsync());

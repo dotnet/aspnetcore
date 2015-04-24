@@ -13,17 +13,19 @@ namespace Microsoft.AspNet.Hosting.Startup
     public class StartupLoader : IStartupLoader
     {
         private readonly IServiceProvider _services;
+        private readonly IHostingEnvironment _hostingEnv;
 
-        public StartupLoader(IServiceProvider services)
+        public StartupLoader(IServiceProvider services, IHostingEnvironment hostingEnv)
         {
             _services = services;
+            _hostingEnv = hostingEnv;
         }
 
-        public StartupMethods Load(
+        public StartupMethods LoadMethods(
             Type startupType,
-            string environmentName,
             IList<string> diagnosticMessages)
         {
+            var environmentName = _hostingEnv.EnvironmentName;
             var configureMethod = FindConfigureDelegate(startupType, environmentName);
             var servicesMethod = FindConfigureServicesDelegate(startupType, environmentName);
 
@@ -36,11 +38,9 @@ namespace Microsoft.AspNet.Hosting.Startup
             return new StartupMethods(configureMethod.Build(instance), servicesMethod?.Build(instance));
         }
 
-        public StartupMethods Load(
-            string startupAssemblyName,
-            string environmentName,
-            IList<string> diagnosticMessages)
+        public Type FindStartupType(string startupAssemblyName, IList<string> diagnosticMessages)
         {
+            var environmentName = _hostingEnv.EnvironmentName;
             if (string.IsNullOrEmpty(startupAssemblyName))
             {
                 throw new ArgumentException("Value cannot be null or empty.", nameof(startupAssemblyName));
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Hosting.Startup
                     startupAssemblyName));
             }
 
-            return Load(type, environmentName, diagnosticMessages);
+            return type;
         }
 
         private static ConfigureBuilder FindConfigureDelegate(Type startupType, string environmentName)
