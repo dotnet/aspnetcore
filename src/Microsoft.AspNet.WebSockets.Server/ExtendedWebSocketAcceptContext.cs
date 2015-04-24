@@ -6,9 +6,9 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.WebSockets.Server
 {
-    public class WebSocketAcceptContext : IWebSocketAcceptContext
+    public class ExtendedWebSocketAcceptContext : WebSocketAcceptContext
     {
-        public string SubProtocol { get; set; }
+        public override string SubProtocol { get; set; }
         public int? ReceiveBufferSize { get; set; }
         public TimeSpan? KeepAliveInterval { get; set; }
 

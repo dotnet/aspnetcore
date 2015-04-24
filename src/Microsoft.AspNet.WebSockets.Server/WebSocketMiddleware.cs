@@ -73,13 +73,13 @@ namespace Microsoft.AspNet.WebSockets.Server
                 }
             }
 
-            public async Task<WebSocket> AcceptAsync(IWebSocketAcceptContext acceptContext)
+            public async Task<WebSocket> AcceptAsync(WebSocketAcceptContext acceptContext)
             {
                 if (!IsWebSocketRequest)
                 {
                     throw new InvalidOperationException("Not a WebSocket request."); // TODO: LOC
                 }
-                
+
                 string subProtocol = null;
                 if (acceptContext != null)
                 {
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.WebSockets.Server
 
                 TimeSpan keepAliveInterval = _options.KeepAliveInterval;
                 int receiveBufferSize = _options.ReceiveBufferSize;
-                var advancedAcceptContext = acceptContext as WebSocketAcceptContext;
+                var advancedAcceptContext = acceptContext as ExtendedWebSocketAcceptContext;
                 if (advancedAcceptContext != null)
                 {
                     if (advancedAcceptContext.ReceiveBufferSize.HasValue)

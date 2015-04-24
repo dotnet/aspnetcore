@@ -19,8 +19,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
         {
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                Assert.True(context.IsWebSocketRequest);
-                var webSocket = await context.AcceptWebSocketAsync();
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
             }))
             {
                 var client = new WebSocketClient();
@@ -35,9 +35,9 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
         {
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                Assert.True(context.IsWebSocketRequest);
+                Assert.True(context.WebSockets.IsWebSocketRequest);
                 Assert.Equal("alpha, bravo, charlie", context.Request.Headers["Sec-WebSocket-Protocol"]);
-                var webSocket = await context.AcceptWebSocketAsync("Bravo");
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync("Bravo");
             }))
             {
                 var client = new WebSocketClient();
@@ -56,8 +56,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
         {
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                Assert.True(context.IsWebSocketRequest);
-                var webSocket = await context.AcceptWebSocketAsync();
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
                 var serverBuffer = new byte[0];
                 var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
@@ -81,8 +81,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                Assert.True(context.IsWebSocketRequest);
-                var webSocket = await context.AcceptWebSocketAsync();
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
                 var serverBuffer = new byte[orriginalData.Length];
                 var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
@@ -106,8 +106,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 130));
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                Assert.True(context.IsWebSocketRequest);
-                var webSocket = await context.AcceptWebSocketAsync();
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
                 var serverBuffer = new byte[orriginalData.Length];
                 var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
@@ -131,8 +131,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                Assert.True(context.IsWebSocketRequest);
-                var webSocket = await context.AcceptWebSocketAsync();
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
                 var serverBuffer = new byte[orriginalData.Length];
                 var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
@@ -168,8 +168,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                Assert.True(context.IsWebSocketRequest);
-                var webSocket = await context.AcceptWebSocketAsync();
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
                 var serverBuffer = new byte[orriginalData.Length];
                 var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
@@ -211,8 +211,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                Assert.True(context.IsWebSocketRequest);
-                var webSocket = await context.AcceptWebSocketAsync();
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
                 await webSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
             }))
@@ -235,8 +235,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                Assert.True(context.IsWebSocketRequest);
-                var webSocket = await context.AcceptWebSocketAsync();
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
                 await webSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
             }))
@@ -260,8 +260,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 130));
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                Assert.True(context.IsWebSocketRequest);
-                var webSocket = await context.AcceptWebSocketAsync();
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
                 await webSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
             }))
@@ -285,8 +285,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                Assert.True(context.IsWebSocketRequest);
-                var webSocket = await context.AcceptWebSocketAsync();
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
                 await webSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
             }))
@@ -318,8 +318,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                Assert.True(context.IsWebSocketRequest);
-                var webSocket = await context.AcceptWebSocketAsync();
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
                 await webSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
             }))
@@ -343,8 +343,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                Assert.True(context.IsWebSocketRequest);
-                var webSocket = await context.AcceptWebSocketAsync();
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
                 await webSocket.SendAsync(new ArraySegment<byte>(orriginalData, 0, 2), WebSocketMessageType.Binary, false, CancellationToken.None);
                 await webSocket.SendAsync(new ArraySegment<byte>(orriginalData, 2, 2), WebSocketMessageType.Binary, false, CancellationToken.None);
@@ -386,8 +386,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             string closeDescription = "Test Closed";
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                Assert.True(context.IsWebSocketRequest);
-                var webSocket = await context.AcceptWebSocketAsync();
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
                 var serverBuffer = new byte[1024];
                 var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
@@ -414,8 +414,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             string closeDescription = "Test Closed";
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                Assert.True(context.IsWebSocketRequest);
-                var webSocket = await context.AcceptWebSocketAsync();
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
                 await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
             }))
@@ -442,8 +442,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             string closeDescription = "Test Closed";
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                Assert.True(context.IsWebSocketRequest);
-                var webSocket = await context.AcceptWebSocketAsync();
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
                 var serverBuffer = new byte[1024];
                 var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
@@ -472,8 +472,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             string closeDescription = "Test Closed";
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                Assert.True(context.IsWebSocketRequest);
-                var webSocket = await context.AcceptWebSocketAsync();
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
                 var serverBuffer = new byte[1024];
                 var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(serverBuffer), CancellationToken.None);
@@ -504,8 +504,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             string closeDescription = "Test Closed";
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
             {
-                Assert.True(context.IsWebSocketRequest);
-                var webSocket = await context.AcceptWebSocketAsync();
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
                 await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, closeDescription, CancellationToken.None);
 

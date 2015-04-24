@@ -25,10 +25,10 @@ namespace AutobahnTestServer
 
                 managedWebSocketsApp.Use(async (context, next) =>
                 {
-                    if (context.IsWebSocketRequest)
+                    if (context.WebSockets.IsWebSocketRequest)
                     {
                         Console.WriteLine("Echo: " + context.Request.Path);
-                        var webSocket = await context.AcceptWebSocketAsync();
+                        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                         await Echo(webSocket);
                         return;
                     }
@@ -40,10 +40,10 @@ namespace AutobahnTestServer
             {
                 nativeWebSocketsApp.Use(async (context, next) =>
                 {
-                    if (context.IsWebSocketRequest)
+                    if (context.WebSockets.IsWebSocketRequest)
                     {
                         Console.WriteLine("Echo: " + context.Request.Path);
-                        var webSocket = await context.AcceptWebSocketAsync();
+                        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                         await Echo(webSocket);
                         return;
                     }
