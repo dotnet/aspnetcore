@@ -48,8 +48,6 @@ namespace ServerComparison.TestSites
         {
             loggerFactory.AddConsole(minLevel: LogLevel.Warning);
 
-            app.UseErrorPage(ErrorPageOptions.ShowAll);
-
             // Set up NTLM authentication for WebListener like below.
             // For IIS and IISExpress: Use inetmgr to setup NTLM authentication on the application vDir or modify the applicationHost.config to enable NTLM.
             if ((app.Server as ServerInformation) != null)
@@ -73,7 +71,7 @@ namespace ServerComparison.TestSites
                     }
                     else
                     {
-                        context.Response.Challenge();
+                        context.Authentication.Challenge();
                         return Task.FromResult(0);
                     }
                 }
