@@ -7,6 +7,7 @@ using Microsoft.Data.Entity;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Runtime;
 #if DNX451
 using NLog.Config;
 using NLog.Targets;
@@ -16,13 +17,13 @@ namespace IdentitySamples
 {
     public partial class Startup
     {
-        public Startup()
+        public Startup(IApplicationEnvironment env)
         {
             /* 
             * Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
             * then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
             */
-            Configuration = new Configuration()
+            Configuration = new Configuration(env.ApplicationBasePath)
                 .AddJsonFile("LocalConfig.json")
                 .AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
         }

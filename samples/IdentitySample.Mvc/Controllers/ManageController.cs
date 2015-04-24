@@ -72,7 +72,7 @@ namespace IdentitySample.Controllers
                 var result = await UserManager.RemoveLoginAsync(user, loginProvider, providerKey);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent: false);
+                    await SignInManager.RefreshSignInAsync(user);
                     message = ManageMessageId.RemoveLoginSuccess;
                 }
             }
@@ -113,7 +113,7 @@ namespace IdentitySample.Controllers
             if (user != null)
             {
                 await SignInManager.RememberTwoFactorClientAsync(user);
-                await SignInManager.SignInAsync(user, isPersistent: false);
+                await SignInManager.RefreshSignInAsync(user);
             }
             return RedirectToAction("Index", "Manage");
         }
@@ -138,8 +138,7 @@ namespace IdentitySample.Controllers
             if (user != null)
             {
                 await UserManager.SetTwoFactorEnabledAsync(user, true);
-                // TODO: flow remember me somehow?
-                await SignInManager.SignInAsync(user, isPersistent: false);
+                await SignInManager.RefreshSignInAsync(user);
             }
             return RedirectToAction("Index", "Manage");
         }
@@ -154,7 +153,7 @@ namespace IdentitySample.Controllers
             if (user != null)
             {
                 await UserManager.SetTwoFactorEnabledAsync(user, false);
-                await SignInManager.SignInAsync(user, isPersistent: false);
+                await SignInManager.RefreshSignInAsync(user);
             }
             return RedirectToAction("Index", "Manage");
         }
@@ -187,7 +186,7 @@ namespace IdentitySample.Controllers
                 var result = await UserManager.ChangePhoneNumberAsync(user, model.PhoneNumber, model.Code);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent: false);
+                    await SignInManager.RefreshSignInAsync(user);
                     return RedirectToAction("Index", new { Message = ManageMessageId.AddPhoneSuccess });
                 }
             }
@@ -207,7 +206,7 @@ namespace IdentitySample.Controllers
                 var result = await UserManager.SetPhoneNumberAsync(user, null);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent: false);
+                    await SignInManager.RefreshSignInAsync(user);
                     return RedirectToAction("Index", new { Message = ManageMessageId.RemovePhoneSuccess });
                 }
             }
@@ -238,7 +237,7 @@ namespace IdentitySample.Controllers
                 var result = await UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent: false);
+                    await SignInManager.RefreshSignInAsync(user);
                     return RedirectToAction("Index", new { Message = ManageMessageId.ChangePasswordSuccess });
                 }
                 AddErrors(result);
@@ -272,7 +271,7 @@ namespace IdentitySample.Controllers
                 var result = await UserManager.AddPasswordAsync(user, model.NewPassword);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent: false);
+                    await SignInManager.RefreshSignInAsync(user);
                     return RedirectToAction("Index", new { Message = ManageMessageId.SetPasswordSuccess });
                 }
                 AddErrors(result);

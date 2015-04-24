@@ -44,10 +44,11 @@ namespace Microsoft.AspNet.Identity.Test
             var httpContext = new Mock<HttpContext>();
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
+            var properties = new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow, IsPersistent = isPersistent };
             var signInManager = new Mock<SignInManager<TestUser>>(userManager.Object,
                 contextAccessor.Object, claimsManager.Object, options.Object, null);
             signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsPrincipal>(), user.Id)).ReturnsAsync(user).Verifiable();
-            signInManager.Setup(s => s.SignInAsync(user, isPersistent, null)).Returns(Task.FromResult(0)).Verifiable();
+            signInManager.Setup(s => s.SignInAsync(user, properties, null)).Returns(Task.FromResult(0)).Verifiable();
             var services = new ServiceCollection();
             services.AddInstance(options.Object);
             services.AddInstance(signInManager.Object);
@@ -57,7 +58,7 @@ namespace Microsoft.AspNet.Identity.Test
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
 
             var ticket = new AuthenticationTicket(new ClaimsPrincipal(id), 
-                new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow, IsPersistent = isPersistent }, 
+                properties, 
                 IdentityOptions.ApplicationCookieAuthenticationScheme);
             var context = new CookieValidatePrincipalContext(httpContext.Object, ticket, new CookieAuthenticationOptions());
             Assert.NotNull(context.Properties);

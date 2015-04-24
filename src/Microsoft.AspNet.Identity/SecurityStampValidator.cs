@@ -5,6 +5,7 @@ using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.Cookies;
+using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 
@@ -24,12 +25,7 @@ namespace Microsoft.AspNet.Identity
             var user = await manager.ValidateSecurityStampAsync(context.Principal, userId);
             if (user != null)
             {
-                var isPersistent = false;
-                if (context.Properties != null)
-                {
-                    isPersistent = context.Properties.IsPersistent;
-                }
-                await manager.SignInAsync(user, isPersistent, authenticationMethod: null);
+                await manager.SignInAsync(user, context.Properties, authenticationMethod: null);
             }
             else
             {

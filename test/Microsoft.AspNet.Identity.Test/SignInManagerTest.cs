@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting;
@@ -342,6 +341,42 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Verify();
             context.Verify();
             response.Verify();
+        }
+
+        [Theory]
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        [InlineData(false, false)]
+        public async Task CanResignIn(bool isPersistent, bool externalLogin)
+        {
+            // Setup
+            var user = new TestUser { UserName = "Foo" };
+            var context = new Mock<HttpContext>();
+            var loginProvider = "loginprovider";
+            var id = new ClaimsIdentity();
+            if (externalLogin)
+            {
+                id.AddClaim(new Claim(ClaimTypes.AuthenticationMethod, loginProvider));
+            }
+            var properties = new AuthenticationProperties { IsPersistent = isPersistent };
+            var authResult = new AuthenticationResult(new ClaimsPrincipal(id), properties, new AuthenticationDescription());
+            context.Setup(c => c.AuthenticateAsync(IdentityOptions.ApplicationCookieAuthenticationScheme)).ReturnsAsync(authResult).Verifiable();
+            var manager = SetupUserManager(user);
+            var signInManager = new Mock<SignInManager<TestUser>>(manager.Object,
+                new HttpContextAccessor { HttpContext = context.Object },
+                new Mock<IUserClaimsPrincipalFactory<TestUser>>().Object,
+                null, null)
+            { CallBase = true };
+            signInManager.Setup(s => s.SignInAsync(user, properties, externalLogin ? loginProvider : null)).Returns(Task.FromResult(0)).Verifiable();
+            signInManager.Object.Context = context.Object;
+
+            // Act
+            await signInManager.Object.RefreshSignInAsync(user);
+
+            // Assert
+            context.Verify();
+            signInManager.Verify();
         }
 
         [Theory]
