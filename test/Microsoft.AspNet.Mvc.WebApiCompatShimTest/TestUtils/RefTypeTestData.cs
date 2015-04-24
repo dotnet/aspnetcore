@@ -17,7 +17,7 @@ namespace Microsoft.TestCommon
         {
             if (testDataProvider == null)
             {
-                throw new ArgumentNullException("testDataProvider");
+                throw new ArgumentNullException(nameof(testDataProvider));
             }
 
             this.testDataProvider = testDataProvider;

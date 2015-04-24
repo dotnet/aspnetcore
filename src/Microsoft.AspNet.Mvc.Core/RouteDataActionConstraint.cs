@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc
         {
             if (routeKey == null)
             {
-                throw new ArgumentNullException("routeKey");
+                throw new ArgumentNullException(nameof(routeKey));
             }
 
             RouteKey = routeKey;

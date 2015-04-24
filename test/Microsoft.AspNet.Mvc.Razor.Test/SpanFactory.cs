@@ -193,7 +193,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
         {
             if (content == null)
             {
-                throw new ArgumentNullException("content");
+                throw new ArgumentNullException(nameof(content));
             }
 
             Start = start;

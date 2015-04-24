@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             if (content == null)
             {
-                throw new ArgumentNullException("content");
+                throw new ArgumentNullException(nameof(content));
             }
 
             Start = start;

@@ -50,8 +50,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value",
-                                                    Resources.FormatPropertyOfTypeCannotBeNull("AntiForgeryOptions",
+                    throw new ArgumentNullException(nameof(value),
+                                                    Resources.FormatPropertyOfTypeCannotBeNull(nameof(AntiForgeryOptions),
                                                                                                typeof(MvcOptions)));
                 }
 
