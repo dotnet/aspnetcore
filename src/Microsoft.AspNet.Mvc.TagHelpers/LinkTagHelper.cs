@@ -182,11 +182,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         [Activate]
         [HtmlAttributeNotBound]
-        public ILoggerFactory LoggerFactory { get; set; }
-
-        // TODO: will remove LoggerFactory and activate logger once DI/hosting bug is fixed
-        [HtmlAttributeNotBound]
-        public ILogger<LinkTagHelper> Logger { get; set; }
+        protected internal ILogger<LinkTagHelper> Logger { get; set; }
 
         [Activate]
         [HtmlAttributeNotBound]
@@ -222,9 +218,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var modeResult = AttributeMatcher.DetermineMode(context, ModeDetails);
 
-            var logger = Logger ?? LoggerFactory.CreateLogger<LinkTagHelper>();
-
-            modeResult.LogDetails(logger, this, context.UniqueId, ViewContext.View.Path);
+            modeResult.LogDetails(Logger, this, context.UniqueId, ViewContext.View.Path);
 
             if (!modeResult.FullMatches.Any())
             {

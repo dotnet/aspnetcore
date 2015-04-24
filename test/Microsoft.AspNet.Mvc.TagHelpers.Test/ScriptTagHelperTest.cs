@@ -411,13 +411,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(2, logger.Logged.Count);
 
             Assert.Equal(LogLevel.Warning, logger.Logged[0].LogLevel);
-            Assert.IsAssignableFrom<PartialModeMatchLoggerStructure>(logger.Logged[0].State);
+            Assert.IsAssignableFrom<ILogValues>(logger.Logged[0].State);
 
-            var loggerData0 = (PartialModeMatchLoggerStructure)logger.Logged[0].State;
+            var loggerData0 = (ILogValues)logger.Logged[0].State;
 
             Assert.Equal(LogLevel.Verbose, logger.Logged[1].LogLevel);
             Assert.IsAssignableFrom<ILogValues>(logger.Logged[1].State);
-            Assert.StartsWith("Skipping processing for Microsoft.AspNet.Mvc.TagHelpers.ScriptTagHelper",
+            Assert.StartsWith("Skipping processing for tag helper 'Microsoft.AspNet.Mvc.TagHelpers.ScriptTagHelper'" +
+                " with id",
                 ((ILogValues)logger.Logged[1].State).ToString());
         }
 
@@ -472,7 +473,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             Assert.Equal(LogLevel.Verbose, logger.Logged[0].LogLevel);
             Assert.IsAssignableFrom<ILogValues>(logger.Logged[0].State);
-            Assert.StartsWith("Skipping processing for Microsoft.AspNet.Mvc.TagHelpers.ScriptTagHelper",
+            Assert.StartsWith("Skipping processing for tag helper 'Microsoft.AspNet.Mvc.TagHelpers.ScriptTagHelper'",
                 ((ILogValues)logger.Logged[0].State).ToString());
         }
 

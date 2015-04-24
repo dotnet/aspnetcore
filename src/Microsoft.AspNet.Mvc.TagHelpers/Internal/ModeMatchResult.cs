@@ -55,13 +55,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                         attribute => PartiallyMatchedAttributes.Contains(
                             attribute, StringComparer.OrdinalIgnoreCase)));
 
-                logger.LogWarning(new PartialModeMatchLoggerStructure<TMode>(uniqueId, viewPath, partialOnlyMatches));
+                logger.LogWarning(new PartialModeMatchLogValues<TMode>(uniqueId, viewPath, partialOnlyMatches));
             }
 
             if (logger.IsEnabled(LogLevel.Verbose) && !FullMatches.Any())
             {
-                logger.LogVerbose("Skipping processing for {0} {1}",
-                    tagHelper.GetType().GetTypeInfo().FullName, uniqueId);
+                logger.LogVerbose(
+                    "Skipping processing for tag helper '{TagHelper}' with id '{TagHelperId}'.",
+                    tagHelper.GetType().GetTypeInfo().FullName,
+                    uniqueId);
             }
         }
     }
