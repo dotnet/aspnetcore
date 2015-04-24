@@ -444,7 +444,7 @@ namespace MusicStore.Controllers
             var appEnv = Context.RequestServices.GetService<IHostingEnvironment>();
             if (appEnv.EnvironmentName.StartsWith("OpenIdConnect"))
             {
-                Response.SignOut("OpenIdConnect");
+                Context.Authentication.SignOut("OpenIdConnect");
             }
 
             return RedirectToAction("Index", "Home");
