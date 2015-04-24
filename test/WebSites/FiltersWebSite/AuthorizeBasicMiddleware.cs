@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Builder;
+using Microsoft.Framework.WebEncoders;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 
@@ -14,8 +15,9 @@ namespace FiltersWebSite
             RequestDelegate next, 
             IOptions<BasicOptions> options,
             ILoggerFactory loggerFactory,
+            IUrlEncoder encoder,
             string authScheme) : 
-                base(next, options, loggerFactory,
+                base(next, options, loggerFactory, encoder,
                     new ConfigureOptions<BasicOptions>(o => o.AuthenticationScheme = authScheme) { Name = authScheme })
         {
         }
