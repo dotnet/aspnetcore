@@ -182,9 +182,9 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
 
             var context = new Mock<HttpContext>();
-            var response = new Mock<HttpResponse>();
-            context.Setup(c => c.Response).Returns(response.Object).Verifiable();
-            SetupSignIn(response, user.Id, isPersistent);
+            var auth = new Mock<AuthenticationManager>();
+            context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
+            SetupSignIn(auth, user.Id, isPersistent);
             var logStore = new StringBuilder();
             var helper = SetupSignInManager(manager.Object, context.Object, logStore);
             var expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
@@ -199,7 +199,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
             manager.Verify();
             context.Verify();
-            response.Verify();
+            auth.Verify();
         }
 
         [Fact]
@@ -213,9 +213,9 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
 
             var context = new Mock<HttpContext>();
-            var response = new Mock<HttpResponse>();
-            context.Setup(c => c.Response).Returns(response.Object).Verifiable();
-            SetupSignIn(response, user.Id, false);
+            var auth = new Mock<AuthenticationManager>();
+            context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
+            SetupSignIn(auth, user.Id, false);
             var helper = SetupSignInManager(manager.Object, context.Object);
 
             // Act
@@ -225,7 +225,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.True(result.Succeeded);
             manager.Verify();
             context.Verify();
-            response.Verify();
+            auth.Verify();
         }
 
 
@@ -241,9 +241,9 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Setup(m => m.ResetAccessFailedCountAsync(user)).ReturnsAsync(IdentityResult.Success).Verifiable();
 
             var context = new Mock<HttpContext>();
-            var response = new Mock<HttpResponse>();
-            SetupSignIn(response);
-            context.Setup(c => c.Response).Returns(response.Object).Verifiable();
+            var auth = new Mock<AuthenticationManager>();
+            SetupSignIn(auth);
+            context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
             var helper = SetupSignInManager(manager.Object, context.Object);
 
             // Act
@@ -253,7 +253,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.True(result.Succeeded);
             manager.Verify();
             context.Verify();
-            response.Verify();
+            auth.Verify();
         }
 
         [Theory]
@@ -280,11 +280,11 @@ namespace Microsoft.AspNet.Identity.Test
                 manager.Setup(m => m.ResetAccessFailedCountAsync(user)).ReturnsAsync(IdentityResult.Success).Verifiable();
             }
             var context = new Mock<HttpContext>();
-            var response = new Mock<HttpResponse>();
-            response.Setup(r => r.SignIn(IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme,
+            var auth = new Mock<AuthenticationManager>();
+            auth.Setup(a => a.SignIn(IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme,
                 It.Is<ClaimsPrincipal>(id => id.FindFirstValue(ClaimTypes.Name) == user.Id),
                 It.IsAny<AuthenticationProperties>())).Verifiable();
-            context.Setup(c => c.Response).Returns(response.Object).Verifiable();
+            context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
             var logStore = new StringBuilder();
             var helper = SetupSignInManager(manager.Object, context.Object, logStore);
             var expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
@@ -300,7 +300,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
             manager.Verify();
             context.Verify();
-            response.Verify();
+            auth.Verify();
         }
 
         [Theory]
@@ -323,9 +323,9 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Setup(m => m.FindByLoginAsync(loginProvider, providerKey)).ReturnsAsync(user).Verifiable();
 
             var context = new Mock<HttpContext>();
-            var response = new Mock<HttpResponse>();
-            context.Setup(c => c.Response).Returns(response.Object).Verifiable();
-            SetupSignIn(response, user.Id, isPersistent, loginProvider);
+            var auth = new Mock<AuthenticationManager>();
+            context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
+            SetupSignIn(auth, user.Id, isPersistent, loginProvider);
             var logStore = new StringBuilder();
             var helper = SetupSignInManager(manager.Object, context.Object, logStore);
             var expectedScope = string.Format("{0} for {1}: {2}", "ExternalLoginSignInAsync", "user", user.Id);
@@ -340,7 +340,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
             manager.Verify();
             context.Verify();
-            response.Verify();
+            auth.Verify();
         }
 
         [Theory]
@@ -353,6 +353,8 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var user = new TestUser { UserName = "Foo" };
             var context = new Mock<HttpContext>();
+            var auth = new Mock<AuthenticationManager>();
+            context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
             var loginProvider = "loginprovider";
             var id = new ClaimsIdentity();
             if (externalLogin)
@@ -361,7 +363,7 @@ namespace Microsoft.AspNet.Identity.Test
             }
             var properties = new AuthenticationProperties { IsPersistent = isPersistent };
             var authResult = new AuthenticationResult(new ClaimsPrincipal(id), properties, new AuthenticationDescription());
-            context.Setup(c => c.AuthenticateAsync(IdentityOptions.ApplicationCookieAuthenticationScheme)).ReturnsAsync(authResult).Verifiable();
+            auth.Setup(a => a.AuthenticateAsync(IdentityOptions.ApplicationCookieAuthenticationScheme)).ReturnsAsync(authResult).Verifiable();
             var manager = SetupUserManager(user);
             var signInManager = new Mock<SignInManager<TestUser>>(manager.Object,
                 new HttpContextAccessor { HttpContext = context.Object },
@@ -376,6 +378,7 @@ namespace Microsoft.AspNet.Identity.Test
 
             // Assert
             context.Verify();
+            auth.Verify();
             signInManager.Verify();
         }
 
@@ -411,34 +414,34 @@ namespace Microsoft.AspNet.Identity.Test
             }
             manager.Setup(m => m.VerifyTwoFactorTokenAsync(user, provider, code)).ReturnsAsync(true).Verifiable();
             var context = new Mock<HttpContext>();
-            var response = new Mock<HttpResponse>();
+            var auth = new Mock<AuthenticationManager>();
             var twoFactorInfo = new SignInManager<TestUser>.TwoFactorAuthenticationInfo { UserId = user.Id };
             var loginProvider = "loginprovider";
             var id = SignInManager<TestUser>.StoreTwoFactorInfo(user.Id, externalLogin ? loginProvider : null);
             var authResult = new AuthenticationResult(id, new AuthenticationProperties(), new AuthenticationDescription());
             if (externalLogin)
             {
-                response.Setup(r => r.SignIn(
+                auth.Setup(a => a.SignIn(
                     IdentityOptions.ApplicationCookieAuthenticationScheme,
                     It.Is<ClaimsPrincipal>(i => i.FindFirstValue(ClaimTypes.AuthenticationMethod) == loginProvider
                         && i.FindFirstValue(ClaimTypes.NameIdentifier) == user.Id),
                     It.Is<AuthenticationProperties>(v => v.IsPersistent == isPersistent))).Verifiable();
-                response.Setup(r => r.SignOut(IdentityOptions.ExternalCookieAuthenticationScheme)).Verifiable();
+                auth.Setup(a => a.SignOut(IdentityOptions.ExternalCookieAuthenticationScheme)).Verifiable();
             }
             else
             {
-                SetupSignIn(response, user.Id);
+                SetupSignIn(auth, user.Id);
             }
             if (rememberClient)
             {
-                response.Setup(r => r.SignIn(
+                auth.Setup(a => a.SignIn(
                     IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme,
                     It.Is<ClaimsPrincipal>(i => i.FindFirstValue(ClaimTypes.Name) == user.Id
                         && i.Identities.First().AuthenticationType == IdentityOptions.TwoFactorRememberMeCookieAuthenticationType),
                     It.Is<AuthenticationProperties>(v => v.IsPersistent == true))).Verifiable();
             }
-            context.Setup(c => c.Response).Returns(response.Object).Verifiable();
-            context.Setup(c => c.AuthenticateAsync(IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme)).ReturnsAsync(authResult).Verifiable();
+            auth.Setup(a => a.AuthenticateAsync(IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme)).ReturnsAsync(authResult).Verifiable();
+            context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
             var logStore = new StringBuilder();
             var helper = SetupSignInManager(manager.Object, context.Object, logStore);
             var expectedScope = string.Format("{0} for {1}: {2}", "TwoFactorSignInAsync", "user", user.Id);
@@ -453,7 +456,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
             manager.Verify();
             context.Verify();
-            response.Verify();
+            auth.Verify();
         }
 
         [Fact]
@@ -463,9 +466,9 @@ namespace Microsoft.AspNet.Identity.Test
             var user = new TestUser { UserName = "Foo" };
             var manager = SetupUserManager(user);
             var context = new Mock<HttpContext>();
-            var response = new Mock<HttpResponse>();
-            context.Setup(c => c.Response).Returns(response.Object).Verifiable();
-            response.Setup(r => r.SignIn(
+            var auth = new Mock<AuthenticationManager>();
+            context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
+            auth.Setup(a => a.SignIn(
                 IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme,
                 It.Is<ClaimsPrincipal>(i => i.FindFirstValue(ClaimTypes.Name) == user.Id
                     && i.Identities.First().AuthenticationType == IdentityOptions.TwoFactorRememberMeCookieAuthenticationType),
@@ -479,7 +482,7 @@ namespace Microsoft.AspNet.Identity.Test
             // Assert
             manager.Verify();
             context.Verify();
-            response.Verify();
+            auth.Verify();
         }
 
         [Theory]
@@ -499,13 +502,13 @@ namespace Microsoft.AspNet.Identity.Test
             manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
             manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
             var context = new Mock<HttpContext>();
-            var response = new Mock<HttpResponse>();
-            context.Setup(c => c.Response).Returns(response.Object).Verifiable();
-            SetupSignIn(response);
+            var auth = new Mock<AuthenticationManager>();
+            context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
+            SetupSignIn(auth);
             var id = new ClaimsIdentity(IdentityOptions.TwoFactorRememberMeCookieAuthenticationType);
             id.AddClaim(new Claim(ClaimTypes.Name, user.Id));
             var authResult = new AuthenticationResult(new ClaimsPrincipal(id), new AuthenticationProperties(), new AuthenticationDescription());
-            context.Setup(c => c.AuthenticateAsync(IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme)).ReturnsAsync(authResult).Verifiable();
+            auth.Setup(a => a.AuthenticateAsync(IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme)).ReturnsAsync(authResult).Verifiable();
             var helper = SetupSignInManager(manager.Object, context.Object);
 
             // Act
@@ -515,7 +518,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.True(result.Succeeded);
             manager.Verify();
             context.Verify();
-            response.Verify();
+            auth.Verify();
         }
 
         [Theory]
@@ -526,11 +529,11 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var manager = MockHelpers.MockUserManager<TestUser>();
             var context = new Mock<HttpContext>();
-            var response = new Mock<HttpResponse>();
-            context.Setup(c => c.Response).Returns(response.Object).Verifiable();
-            response.Setup(r => r.SignOut(authenticationScheme)).Verifiable();
-            response.Setup(r => r.SignOut(IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme)).Verifiable();
-            response.Setup(r => r.SignOut(IdentityOptions.ExternalCookieAuthenticationScheme)).Verifiable();
+            var auth = new Mock<AuthenticationManager>();
+            context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
+            auth.Setup(a => a.SignOut(authenticationScheme)).Verifiable();
+            auth.Setup(a => a.SignOut(IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme)).Verifiable();
+            auth.Setup(a => a.SignOut(IdentityOptions.ExternalCookieAuthenticationScheme)).Verifiable();
             IdentityOptions.ApplicationCookieAuthenticationScheme = authenticationScheme;
             var logStore = new StringBuilder();
             var helper = SetupSignInManager(manager.Object, context.Object, logStore);
@@ -540,7 +543,7 @@ namespace Microsoft.AspNet.Identity.Test
 
             // Assert
             context.Verify();
-            response.Verify();
+            auth.Verify();
         }
 
         [Fact]
@@ -627,12 +630,12 @@ namespace Microsoft.AspNet.Identity.Test
                 manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
             }
             var context = new Mock<HttpContext>();
-            var response = new Mock<HttpResponse>();
+            var auth = new Mock<AuthenticationManager>();
             if (confirmed)
             {
                 manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
-                context.Setup(c => c.Response).Returns(response.Object).Verifiable();
-                SetupSignIn(response);
+                context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
+                SetupSignIn(auth);
             }
             var identityOptions = new IdentityOptions();
             identityOptions.SignIn.RequireConfirmedEmail = true;
@@ -653,12 +656,12 @@ namespace Microsoft.AspNet.Identity.Test
 
             manager.Verify();
             context.Verify();
-            response.Verify();
+            auth.Verify();
         }
 
-        private static void SetupSignIn(Mock<HttpResponse> response, string userId = null, bool? isPersistent = null, string loginProvider = null)
+        private static void SetupSignIn(Mock<AuthenticationManager> auth, string userId = null, bool? isPersistent = null, string loginProvider = null)
         {
-            response.Setup(r => r.SignIn(IdentityOptions.ApplicationCookieAuthenticationScheme,
+            auth.Setup(a => a.SignIn(IdentityOptions.ApplicationCookieAuthenticationScheme,
                 It.Is<ClaimsPrincipal>(id =>
                     (userId == null || id.FindFirstValue(ClaimTypes.NameIdentifier) == userId) &&
                     (loginProvider == null || id.FindFirstValue(ClaimTypes.AuthenticationMethod) == loginProvider)),
@@ -675,12 +678,12 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = SetupUserManager(user);
             manager.Setup(m => m.IsPhoneNumberConfirmedAsync(user)).ReturnsAsync(confirmed).Verifiable();
             var context = new Mock<HttpContext>();
-            var response = new Mock<HttpResponse>();
+            var auth = new Mock<AuthenticationManager>();
             if (confirmed)
             {
                 manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
-                context.Setup(c => c.Response).Returns(response.Object).Verifiable();
-                SetupSignIn(response);
+                context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
+                SetupSignIn(auth);
             }
 
             var identityOptions = new IdentityOptions();
@@ -700,7 +703,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
             manager.Verify();
             context.Verify();
-            response.Verify();
+            auth.Verify();
         }
     }
 }

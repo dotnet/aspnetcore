@@ -206,7 +206,7 @@ namespace Microsoft.AspNet.Identity.InMemory
                     }
                     else if (req.Path.StartsWithSegments(new PathString("/me"), out remainder))
                     {
-                        var result = await context.AuthenticateAsync(remainder.Value.Substring(1));
+                        var result = await context.Authentication.AuthenticateAsync(remainder.Value.Substring(1));
                         Describe(res, result);
                     }
                     else if (req.Path == new PathString("/testpath") && testpath != null)
@@ -241,7 +241,7 @@ namespace Microsoft.AspNet.Identity.InMemory
             }
             if (result != null && result.Properties != null)
             {
-                xml.Add(result.Properties.Dictionary.Select(extra => new XElement("extra", new XAttribute("type", extra.Key), new XAttribute("value", extra.Value))));
+                xml.Add(result.Properties.Items.Select(extra => new XElement("extra", new XAttribute("type", extra.Key), new XAttribute("value", extra.Value))));
             }
             using (var memory = new MemoryStream())
             {

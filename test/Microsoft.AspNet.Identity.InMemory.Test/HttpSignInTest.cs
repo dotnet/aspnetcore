@@ -26,9 +26,9 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             app.UseCookieAuthentication();
 
             var context = new Mock<HttpContext>();
-            var response = new Mock<HttpResponse>();
-            context.Setup(c => c.Response).Returns(response.Object).Verifiable();
-            response.Setup(r => r.SignIn(IdentityOptions.ApplicationCookieAuthenticationScheme, 
+            var auth = new Mock<AuthenticationManager>();
+            context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
+            auth.Setup(a => a.SignIn(IdentityOptions.ApplicationCookieAuthenticationScheme,
                 It.IsAny<ClaimsPrincipal>(),
                 It.Is<AuthenticationProperties>(v => v.IsPersistent == isPersistent))).Verifiable();
             var contextAccessor = new Mock<IHttpContextAccessor>();
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             // Assert
             Assert.True(result.Succeeded);
             context.VerifyAll();
-            response.VerifyAll();
+            auth.VerifyAll();
             contextAccessor.VerifyAll();
         }
     }
