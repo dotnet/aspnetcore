@@ -70,7 +70,7 @@ namespace E2ETests
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [SkipIfIISNativeVariationsNotEnabled]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
+        [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Linux)]
         [SkipIfCurrentRuntimeIsCoreClr]
         [InlineData(ServerType.IISNativeModule, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5011/")]
         public async Task SmokeTestSuite_On_NativeModule_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
@@ -82,7 +82,7 @@ namespace E2ETests
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [SkipIfIISNativeVariationsNotEnabled]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
+        [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Linux)]
         [SkipOn32BitOS]
         [SkipIfCurrentRuntimeIsCoreClr]
         [InlineData(ServerType.IISNativeModule, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5012/")]
@@ -97,7 +97,7 @@ namespace E2ETests
     {
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Unix)]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux)]
         [SkipIfCurrentRuntimeIsCoreClr]
         [SkipIfIISVariationsNotEnabled]
         [InlineData(ServerType.IIS, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5013/")]

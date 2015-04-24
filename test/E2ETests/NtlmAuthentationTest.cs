@@ -14,7 +14,7 @@ namespace E2ETests
     public class NtlmAuthenticationTests
     {
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
-        [OSSkipCondition(OperatingSystems.Unix | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5050/")]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5051/")]
         [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5052/")]
