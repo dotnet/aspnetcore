@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
@@ -45,18 +44,6 @@ namespace ServerComparison.TestSites
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(minLevel: LogLevel.Warning);
-
-            // Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
-            // Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
-            app.UseErrorPage(ErrorPageOptions.ShowAll);
-
-            // Add the runtime information page that can be used by developers
-            // to see what packages are used by the application
-            // default path is: /runtimeinfo
-            app.UseRuntimeInfoPage();
-
-            // Add static files to the request pipeline
-            // app.UseStaticFiles();
 
             app.Run(ctx =>
             {

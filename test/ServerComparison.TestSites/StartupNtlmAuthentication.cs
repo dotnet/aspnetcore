@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Server.WebListener;
 using Microsoft.Framework.ConfigurationModel;
