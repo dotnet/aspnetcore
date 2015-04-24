@@ -8,13 +8,12 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Authentication.OAuth;
+using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Collections;
 using Microsoft.AspNet.Http.Extensions;
-using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.WebUtilities;
-using Microsoft.Framework.Logging;
+using Microsoft.Framework.WebEncoders;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Authentication.Facebook
@@ -53,7 +52,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
 
         protected override async Task<AuthenticationTicket> GetUserInformationAsync(AuthenticationProperties properties, TokenResponse tokens)
         {
-            var graphAddress = Options.UserInformationEndpoint + "?access_token=" + Uri.EscapeDataString(tokens.AccessToken);
+            var graphAddress = Options.UserInformationEndpoint + "?access_token=" + UrlEncoder.UrlEncode(tokens.AccessToken);
             if (Options.SendAppSecretProof)
             {
                 graphAddress += "&appsecret_proof=" + GenerateAppSecretProof(tokens.AccessToken);

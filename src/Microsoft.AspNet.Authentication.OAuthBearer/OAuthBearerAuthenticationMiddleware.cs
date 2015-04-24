@@ -11,6 +11,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.WebEncoders;
 using Microsoft.IdentityModel.Protocols;
 
 namespace Microsoft.AspNet.Authentication.OAuthBearer
@@ -32,9 +33,10 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
         public OAuthBearerAuthenticationMiddleware(
             [NotNull] RequestDelegate next,
             [NotNull] ILoggerFactory loggerFactory,
+            [NotNull] IUrlEncoder encoder,
             [NotNull] IOptions<OAuthBearerAuthenticationOptions> options,
             ConfigureOptions<OAuthBearerAuthenticationOptions> configureOptions)
-            : base(next, options, loggerFactory, configureOptions)
+            : base(next, options, loggerFactory, encoder, configureOptions)
         {
             if (Options.Notifications == null)
             {

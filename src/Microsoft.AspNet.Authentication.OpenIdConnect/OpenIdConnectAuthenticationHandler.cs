@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 ResponseMode = Options.ResponseMode,
                 ResponseType = Options.ResponseType,
                 Scope = Options.Scope,
-                State = OpenIdConnectAuthenticationDefaults.AuthenticationPropertiesKey + "=" + Uri.EscapeDataString(Options.StateDataFormat.Protect(properties))
+                State = OpenIdConnectAuthenticationDefaults.AuthenticationPropertiesKey + "=" + UrlEncoder.UrlEncode(Options.StateDataFormat.Protect(properties))
             };
 
             if (Options.ProtocolValidator.RequireNonce)

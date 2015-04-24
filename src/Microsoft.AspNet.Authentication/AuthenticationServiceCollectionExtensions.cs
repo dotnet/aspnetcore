@@ -3,7 +3,6 @@
 
 using System;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication;
 using Microsoft.Framework.Internal;
 
@@ -11,6 +10,13 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class AuthenticationServiceCollectionExtensions
     {
+        public static IServiceCollection AddAuthentication([NotNull] this IServiceCollection services)
+        {
+            services.AddWebEncoders();
+            services.AddDataProtection();
+            return services;
+        }
+
         public static IServiceCollection ConfigureClaimsTransformation([NotNull] this IServiceCollection services, [NotNull] Action<ClaimsTransformationOptions> configure)
         {
             return services.Configure(configure);

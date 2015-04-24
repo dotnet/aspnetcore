@@ -4,6 +4,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Authentication
 {
@@ -22,10 +23,10 @@ namespace Microsoft.AspNet.Authentication
         /// <param name="context">The utility object to observe the current request and response</param>
         /// <param name="logger">The logging factory used to create loggers</param>
         /// <returns>async completion</returns>
-        public Task Initialize(TOptions options, HttpContext context, ILogger logger)
+        public Task Initialize(TOptions options, HttpContext context, ILogger logger, IUrlEncoder encoder)
         {
             Options = options;
-            return BaseInitializeAsync(options, context, logger);
+            return BaseInitializeAsync(options, context, logger, encoder);
         }
     }
 }

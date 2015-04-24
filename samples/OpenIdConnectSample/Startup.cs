@@ -13,8 +13,7 @@ namespace OpenIdConnectSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddWebEncoders();
-            services.AddDataProtection();
+            services.AddAuthentication();
             services.Configure<ExternalAuthenticationOptions>(options =>
             {
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;

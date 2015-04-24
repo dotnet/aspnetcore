@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             var parameterBuilder = new StringBuilder();
             foreach (var authorizationKey in authorizationParts)
             {
-                parameterBuilder.AppendFormat("{0}={1}&", Uri.EscapeDataString(authorizationKey.Key), Uri.EscapeDataString(authorizationKey.Value));
+                parameterBuilder.AppendFormat("{0}={1}&", UrlEncoder.UrlEncode(authorizationKey.Key), UrlEncoder.UrlEncode(authorizationKey.Value));
             }
             parameterBuilder.Length--;
             var parameterString = parameterBuilder.ToString();
@@ -252,9 +252,9 @@ namespace Microsoft.AspNet.Authentication.Twitter
             var canonicalizedRequestBuilder = new StringBuilder();
             canonicalizedRequestBuilder.Append(HttpMethod.Post.Method);
             canonicalizedRequestBuilder.Append("&");
-            canonicalizedRequestBuilder.Append(Uri.EscapeDataString(RequestTokenEndpoint));
+            canonicalizedRequestBuilder.Append(UrlEncoder.UrlEncode(RequestTokenEndpoint));
             canonicalizedRequestBuilder.Append("&");
-            canonicalizedRequestBuilder.Append(Uri.EscapeDataString(parameterString));
+            canonicalizedRequestBuilder.Append(UrlEncoder.UrlEncode(parameterString));
 
             var signature = ComputeSignature(consumerSecret, null, canonicalizedRequestBuilder.ToString());
             authorizationParts.Add("oauth_signature", signature);
@@ -264,7 +264,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             foreach (var authorizationPart in authorizationParts)
             {
                 authorizationHeaderBuilder.AppendFormat(
-                    "{0}=\"{1}\", ", authorizationPart.Key, Uri.EscapeDataString(authorizationPart.Value));
+                    "{0}=\"{1}\", ", authorizationPart.Key, UrlEncoder.UrlEncode(authorizationPart.Value));
             }
             authorizationHeaderBuilder.Length = authorizationHeaderBuilder.Length - 2;
 
@@ -306,7 +306,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             var parameterBuilder = new StringBuilder();
             foreach (var authorizationKey in authorizationParts)
             {
-                parameterBuilder.AppendFormat("{0}={1}&", Uri.EscapeDataString(authorizationKey.Key), Uri.EscapeDataString(authorizationKey.Value));
+                parameterBuilder.AppendFormat("{0}={1}&", UrlEncoder.UrlEncode(authorizationKey.Key), UrlEncoder.UrlEncode(authorizationKey.Value));
             }
             parameterBuilder.Length--;
             var parameterString = parameterBuilder.ToString();
@@ -314,9 +314,9 @@ namespace Microsoft.AspNet.Authentication.Twitter
             var canonicalizedRequestBuilder = new StringBuilder();
             canonicalizedRequestBuilder.Append(HttpMethod.Post.Method);
             canonicalizedRequestBuilder.Append("&");
-            canonicalizedRequestBuilder.Append(Uri.EscapeDataString(AccessTokenEndpoint));
+            canonicalizedRequestBuilder.Append(UrlEncoder.UrlEncode(AccessTokenEndpoint));
             canonicalizedRequestBuilder.Append("&");
-            canonicalizedRequestBuilder.Append(Uri.EscapeDataString(parameterString));
+            canonicalizedRequestBuilder.Append(UrlEncoder.UrlEncode(parameterString));
 
             var signature = ComputeSignature(consumerSecret, token.TokenSecret, canonicalizedRequestBuilder.ToString());
             authorizationParts.Add("oauth_signature", signature);
@@ -327,7 +327,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             foreach (var authorizationPart in authorizationParts)
             {
                 authorizationHeaderBuilder.AppendFormat(
-                    "{0}=\"{1}\", ", authorizationPart.Key, Uri.EscapeDataString(authorizationPart.Value));
+                    "{0}=\"{1}\", ", authorizationPart.Key, UrlEncoder.UrlEncode(authorizationPart.Value));
             }
             authorizationHeaderBuilder.Length = authorizationHeaderBuilder.Length - 2;
 
@@ -367,15 +367,15 @@ namespace Microsoft.AspNet.Authentication.Twitter
             return Convert.ToInt64(secondsSinceUnixEpocStart.TotalSeconds).ToString(CultureInfo.InvariantCulture);
         }
 
-        private static string ComputeSignature(string consumerSecret, string tokenSecret, string signatureData)
+        private string ComputeSignature(string consumerSecret, string tokenSecret, string signatureData)
         {
             using (var algorithm = new HMACSHA1())
             {
                 algorithm.Key = Encoding.ASCII.GetBytes(
                     string.Format(CultureInfo.InvariantCulture,
                         "{0}&{1}",
-                        Uri.EscapeDataString(consumerSecret),
-                        string.IsNullOrEmpty(tokenSecret) ? string.Empty : Uri.EscapeDataString(tokenSecret)));
+                        UrlEncoder.UrlEncode(consumerSecret),
+                        string.IsNullOrEmpty(tokenSecret) ? string.Empty : UrlEncoder.UrlEncode(tokenSecret)));
                 var hash = algorithm.ComputeHash(Encoding.ASCII.GetBytes(signatureData));
                 return Convert.ToBase64String(hash);
             }

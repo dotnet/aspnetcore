@@ -20,7 +20,6 @@ namespace Microsoft.Framework.DependencyInjection
 
         public static IServiceCollection ConfigureCookieAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<CookieAuthenticationOptions> configure, string optionsName)
         {
-            services.AddWebEncoders();
             return services.Configure(configure, optionsName);
         }
 
@@ -31,7 +30,6 @@ namespace Microsoft.Framework.DependencyInjection
 
         public static IServiceCollection ConfigureCookieAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config, string optionsName)
         {
-            services.AddWebEncoders();
             return services.Configure<CookieAuthenticationOptions>(config, optionsName);
         }
     }

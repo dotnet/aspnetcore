@@ -19,8 +19,7 @@ namespace CookieSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddWebEncoders();
-            services.AddDataProtection();
+            services.AddAuthentication();
             services.Configure<ExternalAuthenticationOptions>(options =>
             {
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -139,13 +138,13 @@ namespace CookieSample
                     OnGetUserInformationAsync = async (context) =>
                     {
                         // Get the GitHub user
-                        HttpRequestMessage userRequest = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
+                        var userRequest = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
                         userRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
                         userRequest.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                        HttpResponseMessage userResponse = await context.Backchannel.SendAsync(userRequest, context.HttpContext.RequestAborted);
+                        var userResponse = await context.Backchannel.SendAsync(userRequest, context.HttpContext.RequestAborted);
                         userResponse.EnsureSuccessStatusCode();
                         var text = await userResponse.Content.ReadAsStringAsync();
-                        JObject user = JObject.Parse(text);
+                        var user = JObject.Parse(text);
 
                         var identity = new ClaimsIdentity(
                             context.Options.AuthenticationScheme,
@@ -184,7 +183,7 @@ namespace CookieSample
             {
                 signoutApp.Run(async context =>
                 {
-                    string authType = context.Request.Query["authscheme"];
+                    var authType = context.Request.Query["authscheme"];
                     if (!string.IsNullOrEmpty(authType))
                     {
                         // By default the client will be redirect back to the URL that issued the challenge (/login?authtype=foo),

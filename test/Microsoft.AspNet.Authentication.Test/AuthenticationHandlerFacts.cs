@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Authentication
         {
             public TestHandler(string scheme)
             {
-                Initialize(new TestOptions(), new DefaultHttpContext(), new LoggerFactory().CreateLogger("TestHandler"));
+                Initialize(new TestOptions(), new DefaultHttpContext(), new LoggerFactory().CreateLogger("TestHandler"), Framework.WebEncoders.UrlEncoder.Default);
                 Options.AuthenticationScheme = scheme;
             }
 
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Authentication
         {
             public TestAutoHandler(string scheme, bool auto)
             {
-                Initialize(new TestAutoOptions(), new DefaultHttpContext(), new LoggerFactory().CreateLogger("TestHandler"));
+                Initialize(new TestAutoOptions(), new DefaultHttpContext(), new LoggerFactory().CreateLogger("TestHandler"), Framework.WebEncoders.UrlEncoder.Default);
                 Options.AuthenticationScheme = scheme;
                 Options.AutomaticAuthentication = auto;
             }

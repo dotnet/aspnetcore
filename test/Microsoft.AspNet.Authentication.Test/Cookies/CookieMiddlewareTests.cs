@@ -573,8 +573,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             },
             services =>
             {
-                services.AddWebEncoders();
-                services.AddDataProtection();
+                services.AddAuthentication();
                 if (claimsTransform != null)
                 {
                     services.ConfigureClaimsTransformation(claimsTransform);

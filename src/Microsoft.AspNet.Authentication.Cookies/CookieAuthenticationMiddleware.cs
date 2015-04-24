@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             [NotNull] IUrlEncoder urlEncoder,
             [NotNull] IOptions<CookieAuthenticationOptions> options,
             ConfigureOptions<CookieAuthenticationOptions> configureOptions)
-            : base(next, options, loggerFactory, configureOptions)
+            : base(next, options, loggerFactory, urlEncoder, configureOptions)
         {
             if (Options.Notifications == null)
             {

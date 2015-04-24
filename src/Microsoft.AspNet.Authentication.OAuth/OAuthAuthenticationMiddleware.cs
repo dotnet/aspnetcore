@@ -11,6 +11,7 @@ using Microsoft.AspNet.DataProtection;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Authentication.OAuth
 {
@@ -33,10 +34,11 @@ namespace Microsoft.AspNet.Authentication.OAuth
             [NotNull] RequestDelegate next,
             [NotNull] IDataProtectionProvider dataProtectionProvider,
             [NotNull] ILoggerFactory loggerFactory,
+            [NotNull] IUrlEncoder encoder,
             [NotNull] IOptions<ExternalAuthenticationOptions> externalOptions,
             [NotNull] IOptions<TOptions> options,
             ConfigureOptions<TOptions> configureOptions = null)
-            : base(next, options, loggerFactory, configureOptions)
+            : base(next, options, loggerFactory, encoder, configureOptions)
         {
             // todo: review error handling
             if (string.IsNullOrWhiteSpace(Options.AuthenticationScheme))

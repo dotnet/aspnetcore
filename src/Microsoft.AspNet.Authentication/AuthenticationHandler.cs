@@ -10,6 +10,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Authentication
 {
@@ -50,6 +51,8 @@ namespace Microsoft.AspNet.Authentication
 
         protected ILogger Logger { get; private set; }
 
+        protected IUrlEncoder UrlEncoder { get; private set; }
+
         internal AuthenticationOptions BaseOptions
         {
             get { return _baseOptions; }
@@ -61,12 +64,13 @@ namespace Microsoft.AspNet.Authentication
 
         public bool Faulted { get; set; }
 
-        protected async Task BaseInitializeAsync([NotNull] AuthenticationOptions options, [NotNull] HttpContext context, [NotNull] ILogger logger)
+        protected async Task BaseInitializeAsync([NotNull] AuthenticationOptions options, [NotNull] HttpContext context, [NotNull] ILogger logger, [NotNull] IUrlEncoder encoder)
         {
             _baseOptions = options;
             Context = context;
             RequestPathBase = Request.PathBase;
             Logger = logger;
+            UrlEncoder = encoder;
 
             RegisterAuthenticationHandler();
 

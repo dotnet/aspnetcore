@@ -7,6 +7,7 @@ using Microsoft.AspNet.DataProtection;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Authentication.MicrosoftAccount
 {
@@ -26,10 +27,11 @@ namespace Microsoft.AspNet.Authentication.MicrosoftAccount
             [NotNull] RequestDelegate next,
             [NotNull] IDataProtectionProvider dataProtectionProvider,
             [NotNull] ILoggerFactory loggerFactory,
+            [NotNull] IUrlEncoder encoder,
             [NotNull] IOptions<ExternalAuthenticationOptions> externalOptions,
             [NotNull] IOptions<MicrosoftAccountAuthenticationOptions> options,
             ConfigureOptions<MicrosoftAccountAuthenticationOptions> configureOptions = null)
-            : base(next, dataProtectionProvider, loggerFactory, externalOptions, options, configureOptions)
+            : base(next, dataProtectionProvider, loggerFactory, encoder, externalOptions, options, configureOptions)
         {
             if (Options.Notifications == null)
             {

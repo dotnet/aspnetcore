@@ -8,6 +8,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Authentication
 {
@@ -19,6 +20,7 @@ namespace Microsoft.AspNet.Authentication
             [NotNull] RequestDelegate next, 
             [NotNull] IOptions<TOptions> options, 
             [NotNull] ILoggerFactory loggerFactory,
+            [NotNull] IUrlEncoder encoder,
             ConfigureOptions<TOptions> configureOptions)
         {
             if (configureOptions != null)
@@ -31,6 +33,7 @@ namespace Microsoft.AspNet.Authentication
                 Options = options.Options;
             }
             Logger = loggerFactory.CreateLogger(this.GetType().FullName);
+            UrlEncoder = encoder;
 
             _next = next;
         }
@@ -41,10 +44,12 @@ namespace Microsoft.AspNet.Authentication
 
         public ILogger Logger { get; set; }
 
+        public IUrlEncoder UrlEncoder { get; set; }
+
         public async Task Invoke(HttpContext context)
         {
             var handler = CreateHandler();
-            await handler.Initialize(Options, context, Logger);
+            await handler.Initialize(Options, context, Logger, UrlEncoder);
             try
             {
                 if (!await handler.InvokeAsync())

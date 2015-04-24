@@ -13,6 +13,7 @@ using Microsoft.AspNet.DataProtection;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Authentication.Twitter
 {
@@ -36,10 +37,11 @@ namespace Microsoft.AspNet.Authentication.Twitter
             [NotNull] RequestDelegate next,
             [NotNull] IDataProtectionProvider dataProtectionProvider,
             [NotNull] ILoggerFactory loggerFactory,
+            [NotNull] IUrlEncoder encoder,
             [NotNull] IOptions<ExternalAuthenticationOptions> externalOptions,
             [NotNull] IOptions<TwitterAuthenticationOptions> options,
             ConfigureOptions<TwitterAuthenticationOptions> configureOptions = null)
-            : base(next, options, loggerFactory, configureOptions)
+            : base(next, options, loggerFactory, encoder, configureOptions)
         {
             if (string.IsNullOrWhiteSpace(Options.ConsumerSecret))
             {
