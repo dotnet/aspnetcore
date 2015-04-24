@@ -46,17 +46,17 @@ namespace Microsoft.AspNet.Mvc
 
         public override void ExecuteResult([NotNull] ActionContext context)
         {
-            var response = context.HttpContext.Response;
+            var auth = context.HttpContext.Authentication;
             if (AuthenticationSchemes.Count > 0)
             {
                 foreach (var scheme in AuthenticationSchemes)
                 {
-                    response.Challenge(Properties, scheme);
+                    auth.Challenge(scheme, Properties);
                 }
             }
             else
             {
-                response.Challenge(Properties);
+                auth.Challenge(Properties);
             }
         }
     }

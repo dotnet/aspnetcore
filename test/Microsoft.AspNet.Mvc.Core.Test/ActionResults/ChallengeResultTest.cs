@@ -18,8 +18,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             // Arrange
             var result = new ChallengeResult("", null);
             var httpContext = new Mock<HttpContext>();
-            var httpResponse = new Mock<HttpResponse>();
-            httpContext.Setup(o => o.Response).Returns(httpResponse.Object);
+            var auth = new Mock<AuthenticationManager>();
+            httpContext.Setup(o => o.Authentication).Returns(auth.Object);
 
             var routeData = new RouteData();
             routeData.Routers.Add(Mock.Of<IRouter>());
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             result.ExecuteResult(actionContext);
 
             // Assert
-            httpResponse.Verify(c => c.Challenge(null, ""), Times.Exactly(1));
+            auth.Verify(c => c.Challenge("", null), Times.Exactly(1));
         }
 
         [Fact]
@@ -41,8 +41,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             // Arrange
             var result = new ChallengeResult(new string[] { }, null);
             var httpContext = new Mock<HttpContext>();
-            var httpResponse = new Mock<HttpResponse>();
-            httpContext.Setup(o => o.Response).Returns(httpResponse.Object);
+            var auth = new Mock<AuthenticationManager>();
+            httpContext.Setup(o => o.Authentication).Returns(auth.Object);
 
             var routeData = new RouteData();
             routeData.Routers.Add(Mock.Of<IRouter>());
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             result.ExecuteResult(actionContext);
 
             // Assert
-            httpResponse.Verify(c => c.Challenge((AuthenticationProperties)null), Times.Exactly(1));
+            auth.Verify(c => c.Challenge((AuthenticationProperties)null), Times.Exactly(1));
         }
     }
 }

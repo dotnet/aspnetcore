@@ -352,14 +352,16 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // HttpContext
             var httpContext = new Mock<HttpContext>();
+            var auth = new Mock<AuthenticationManager>();
+            httpContext.Setup(o => o.Authentication).Returns(auth.Object);
             httpContext.SetupProperty(c => c.User);
             if (!anonymous)
             {
                 httpContext.Object.User = validUser;
             }
             httpContext.SetupGet(c => c.RequestServices).Returns(serviceProvider);
-            httpContext.Setup(c => c.AuthenticateAsync("Bearer")).ReturnsAsync(new AuthenticationResult(bearerPrincipal, new AuthenticationProperties(), new AuthenticationDescription()));
-            httpContext.Setup(c => c.AuthenticateAsync("Basic")).ReturnsAsync(new AuthenticationResult(basicPrincipal, new AuthenticationProperties(), new AuthenticationDescription()));
+            auth.Setup(c => c.AuthenticateAsync("Bearer")).ReturnsAsync(new AuthenticationResult(bearerPrincipal, new AuthenticationProperties(), new AuthenticationDescription()));
+            auth.Setup(c => c.AuthenticateAsync("Basic")).ReturnsAsync(new AuthenticationResult(basicPrincipal, new AuthenticationProperties(), new AuthenticationDescription()));
 
             // AuthorizationContext
             var actionContext = new ActionContext(
