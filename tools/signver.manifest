@@ -35,6 +35,7 @@
     <File Name="System.Diagnostics.Contracts.dll" Ignore="yes" />
     <File Name="System.Diagnostics.Debug.dll" Ignore="yes" />
     <File Name="System.Diagnostics.Process.dll" Ignore="yes" />
+	<File Name="System.Diagnostics.StackTrace.dll" Ignore="yes" />
     <File Name="System.Diagnostics.TextWriterTraceListener.dll" Ignore="yes" />
     <File Name="System.Diagnostics.Tools.dll" Ignore="yes" />
     <File Name="System.Diagnostics.TraceSource.dll" Ignore="yes" />
@@ -56,9 +57,12 @@
     <File Name="System.Linq.Queryable.dll" Ignore="yes" />
     <File Name="System.Net.NetworkInformation.dll" Ignore="yes" />
     <File Name="System.Net.Primitives.dll" Ignore="yes" />
+	<File Name="System.Net.Requests.dll" Ignore="yes" />
     <File Name="System.Net.Sockets.dll" Ignore="yes" />
     <File Name="System.ObjectModel.dll" Ignore="yes" />
     <File Name="System.Observable.dll" Ignore="yes" />
+	<File Name="System.Private.CompilerServices.ICastable.dll" Ignore="yes" />
+	<File Name="System.Private.Uri.dll" Ignore="yes" />
     <File Name="System.Reflection.Compatibility.dll" Ignore="yes" />
     <File Name="System.Reflection.dll" Ignore="yes" />
     <File Name="System.Reflection.Emit.dll" Ignore="yes" />
