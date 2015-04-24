@@ -44,7 +44,7 @@ namespace Microsoft.Framework.DependencyInjection
         {
             // Services used by identity
             services.AddOptions();
-            services.AddDataProtection();
+            services.AddAuthentication();
 
             // Identity services
             services.TryAdd(ServiceDescriptor.Transient<IUserValidator<TUser>, UserValidator<TUser>>());
@@ -81,18 +81,18 @@ namespace Microsoft.Framework.DependencyInjection
                 };
             });
 
-            services.Configure<CookieAuthenticationOptions>(options =>
+            services.ConfigureCookieAuthentication(options =>
             {
                 options.AuthenticationScheme = IdentityOptions.ExternalCookieAuthenticationScheme;
                 options.CookieName = IdentityOptions.ExternalCookieAuthenticationScheme;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
             }, IdentityOptions.ExternalCookieAuthenticationScheme);
-            services.Configure<CookieAuthenticationOptions>(options =>
+            services.ConfigureCookieAuthentication(options =>
             {
                 options.AuthenticationScheme = IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme;
                 options.CookieName = IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme;
             }, IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme);
-            services.Configure<CookieAuthenticationOptions>(options =>
+            services.ConfigureCookieAuthentication(options =>
             {
                 options.AuthenticationScheme = IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme;
                 options.CookieName = IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme;
