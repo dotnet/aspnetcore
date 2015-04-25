@@ -15,7 +15,7 @@ namespace ServerComparison.FunctionalTests
     public class HelloWorldTests
     {
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Unix | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5061/")]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5062/")]
         [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5063/")]
@@ -44,7 +44,7 @@ namespace ServerComparison.FunctionalTests
 
         [ConditionalTheory]
         [SkipIfIISVariationsNotEnabled]
-        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Unix)]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux)]
         [SkipIfCurrentRuntimeIsCoreClr]
         [InlineData(ServerType.IIS, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5069/")]
         [InlineData(ServerType.IIS, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5070/")]
@@ -55,7 +55,7 @@ namespace ServerComparison.FunctionalTests
 
         [ConditionalTheory]
         [SkipIfIISNativeVariationsNotEnabled]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
+        [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Linux)]
         [SkipIfCurrentRuntimeIsCoreClr]
         [InlineData(ServerType.IISNativeModule, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5071/")]
         public Task HelloWorld_NativeModule_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
@@ -65,7 +65,7 @@ namespace ServerComparison.FunctionalTests
 
         [ConditionalTheory]
         [SkipIfIISNativeVariationsNotEnabled]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Unix)]
+        [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Linux)]
         [SkipOn32BitOS]
         [SkipIfCurrentRuntimeIsCoreClr]
         [InlineData(ServerType.IISNativeModule, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5072/")]
