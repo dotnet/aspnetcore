@@ -39,14 +39,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <summary>
         /// Gets or sets the <see cref="IMemoryCache"/> instance used to cache entries.
         /// </summary>
-        [Activate]
-        protected internal IMemoryCache MemoryCache { get; set; }
+        [Activate, HtmlAttributeNotBound]
+        public IMemoryCache MemoryCache { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="ViewContext"/> for the current executing View.
         /// </summary>
-        [Activate]
-        protected internal ViewContext ViewContext { get; set; }
+        [Activate, HtmlAttributeNotBound]
+        public ViewContext ViewContext { get; set; }
 
         /// <summary>
         /// Gets or sets a <see cref="string" /> to vary the cached result by.

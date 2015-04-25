@@ -4,13 +4,12 @@
 using System.Linq;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace TagHelpersWebSite.TagHelpers
 {
     public class ATagHelper : TagHelper
     {
-        [Activate]
+        [Activate, HtmlAttributeNotBound]
         public IUrlHelper UrlHelper { get; set; }
 
         public string Controller { get; set; }

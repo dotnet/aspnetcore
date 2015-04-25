@@ -149,27 +149,27 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [HtmlAttributeName(FallbackTestExpressionAttributeName)]
         public string FallbackTestExpression { get; set; }
 
-        // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
-        [Activate]
-        protected internal ILoggerFactory LoggerFactory { get; set; }
+        [Activate, HtmlAttributeNotBound]
+        public ILoggerFactory LoggerFactory { get; set; }
 
         // TODO: will remove LoggerFactory and activate logger once DI/hosting bug is fixed
-        internal ILogger<ScriptTagHelper> Logger { get; set; }
+        [HtmlAttributeNotBound]
+        public ILogger<ScriptTagHelper> Logger { get; set; }
 
-        [Activate]
-        protected internal IHostingEnvironment HostingEnvironment { get; set; }
+        [Activate, HtmlAttributeNotBound]
+        public IHostingEnvironment HostingEnvironment { get; set; }
 
-        [Activate]
-        protected internal ViewContext ViewContext { get; set; }
+        [Activate, HtmlAttributeNotBound]
+        public ViewContext ViewContext { get; set; }
 
-        [Activate]
-        protected internal IMemoryCache Cache { get; set; }
+        [Activate, HtmlAttributeNotBound]
+        public IMemoryCache Cache { get; set; }
 
-        [Activate]
-        protected internal IHtmlEncoder HtmlEncoder { get; set; }
+        [Activate, HtmlAttributeNotBound]
+        public IHtmlEncoder HtmlEncoder { get; set; }
 
-        [Activate]
-        protected internal IJavaScriptStringEncoder JavaScriptEncoder { get; set; }
+        [Activate, HtmlAttributeNotBound]
+        public IJavaScriptStringEncoder JavaScriptEncoder { get; set; }
 
         // Internal for ease of use when testing.
         protected internal GlobbingUrlBuilder GlobbingUrlBuilder { get; set; }

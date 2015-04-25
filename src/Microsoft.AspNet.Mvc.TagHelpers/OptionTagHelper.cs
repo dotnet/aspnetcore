@@ -19,13 +19,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// </remarks>
     public class OptionTagHelper : TagHelper
     {
-        // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
-        [Activate]
-        protected internal IHtmlGenerator Generator { get; set; }
+        [Activate, HtmlAttributeNotBound]
+        public IHtmlGenerator Generator { get; set; }
 
-        // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
-        [Activate]
-        protected internal ViewContext ViewContext { get; set; }
+        [Activate, HtmlAttributeNotBound]
+        public ViewContext ViewContext { get; set; }
 
         /// <summary>
         /// Specifies a value for the &lt;option&gt; element.

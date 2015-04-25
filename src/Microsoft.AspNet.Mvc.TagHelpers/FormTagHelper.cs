@@ -21,13 +21,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string RouteAttributePrefix = "asp-route-";
         private const string HtmlActionAttributeName = "action";
 
-        // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
-        [Activate]
-        protected internal ViewContext ViewContext { get; set; }
+        [Activate, HtmlAttributeNotBound]
+        public ViewContext ViewContext { get; set; }
 
-        // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
-        [Activate]
-        protected internal IHtmlGenerator Generator { get; set; }
+        [Activate, HtmlAttributeNotBound]
+        public IHtmlGenerator Generator { get; set; }
 
         /// <summary>
         /// The name of the action method.

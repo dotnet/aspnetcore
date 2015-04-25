@@ -30,13 +30,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// </remarks>
         public static readonly string SelectedValuesFormDataKey = nameof(SelectTagHelper) + "-SelectedValues";
 
-        // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
-        [Activate]
-        protected internal IHtmlGenerator Generator { get; set; }
+        [Activate, HtmlAttributeNotBound]
+        public IHtmlGenerator Generator { get; set; }
 
-        // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
-        [Activate]
-        protected internal ViewContext ViewContext { get; set; }
+        [Activate, HtmlAttributeNotBound]
+        public ViewContext ViewContext { get; set; }
 
         /// <summary>
         /// An expression to be evaluated against the current model.

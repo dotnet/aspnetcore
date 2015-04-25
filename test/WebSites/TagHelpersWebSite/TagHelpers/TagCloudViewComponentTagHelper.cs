@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ViewComponents;
@@ -26,7 +25,7 @@ namespace MvcSample.Web.Components
 
         public int Count { get; set; }
 
-        [Activate]
+        [Activate, HtmlAttributeNotBound]
         public ViewContext ViewContext { get; set; }
 
         public int Order { get; } = 0;
@@ -35,7 +34,7 @@ namespace MvcSample.Web.Components
         {
             var result = await InvokeAsync(Count);
             var writer = new StringWriter();
-            
+
             var viewComponentDescriptor = new ViewComponentDescriptor()
             {
                 Type = typeof(TagCloudViewComponentTagHelper),

@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private class ServiceTagHelper : TagHelper
         {
-            [Activate]
+            [Activate, HtmlAttributeNotBound]
             public MyService ActivatedService { get; set; }
         }
 
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private class ViewDataTagHelper : TagHelper
         {
-            [Activate]
+            [Activate, HtmlAttributeNotBound]
             public ViewDataDictionary ViewData { get; set; }
         }
 

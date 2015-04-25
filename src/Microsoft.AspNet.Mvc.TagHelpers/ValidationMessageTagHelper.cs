@@ -16,13 +16,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     {
         private const string ValidationForAttributeName = "asp-validation-for";
 
-        // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
-        [Activate]
-        protected internal ViewContext ViewContext { get; set; }
+        [Activate, HtmlAttributeNotBound]
+        public ViewContext ViewContext { get; set; }
 
-        // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
-        [Activate]
-        protected internal IHtmlGenerator Generator { get; set; }
+        [Activate, HtmlAttributeNotBound]
+        public IHtmlGenerator Generator { get; set; }
 
         /// <summary>
         /// Name to be validated on the current model.

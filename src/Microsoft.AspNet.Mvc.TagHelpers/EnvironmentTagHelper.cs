@@ -25,9 +25,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// </remarks>
         public string Names { get; set; }
 
-        // Protected to ensure subclasses are correctly activated. Internal for ease of use when testing.
-        [Activate]
-        protected internal IHostingEnvironment HostingEnvironment { get; set; }
+        [Activate, HtmlAttributeNotBound]
+        public IHostingEnvironment HostingEnvironment { get; set; }
 
         /// <inheritdoc />
         public override void Process(TagHelperContext context, TagHelperOutput output)
