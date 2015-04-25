@@ -17,6 +17,7 @@
     <File Name="Microsoft.Win32.Primitives.dll" Ignore="yes" />
     <File Name="Newtonsoft.Json.dll" Ignore="yes" />
     <File Name="PageGenerator.dll" Ignore="yes" />
+	<File Name="Placeholder.dll" Ignore="yes" />
     <File Name="SampleApp.dll" Ignore="yes" />
     <File Name="sos.dll" Ignore="yes" />
     <File Name="sqlite3.dll" Ignore="yes" />
