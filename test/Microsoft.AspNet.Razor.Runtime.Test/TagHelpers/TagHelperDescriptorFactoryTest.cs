@@ -443,11 +443,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var errorSink = new ErrorSink();
-            var validProperty = typeof(PrivateAccessorTagHelper).GetProperty(
-                nameof(PrivateAccessorTagHelper.ValidAttribute));
+            var validProperty = typeof(NonPublicAccessorTagHelper).GetProperty(
+                nameof(NonPublicAccessorTagHelper.ValidAttribute));
             var expectedDescriptor = new TagHelperDescriptor(
-                "private-accessor",
-                typeof(PrivateAccessorTagHelper).FullName,
+                "non-public-accessor",
+                typeof(NonPublicAccessorTagHelper).FullName,
                 AssemblyName,
                 new[] {
                     new TagHelperAttributeDescriptor(
@@ -457,13 +457,58 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                typeof(PrivateAccessorTagHelper),
+                typeof(NonPublicAccessorTagHelper),
                 errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
             var descriptor = Assert.Single(descriptors);
             Assert.Equal(expectedDescriptor, descriptor, CaseSensitiveTagHelperDescriptorComparer.Default);
+        }
+
+        [Fact]
+        public void CreateDescriptor_DoesNotIncludePropertiesWithNotBound()
+        {
+            // Arrange
+            var errorSink = new ErrorSink();
+            var boundProperty = typeof(NotBoundAttributeTagHelper).GetProperty(
+                nameof(NotBoundAttributeTagHelper.BoundProperty));
+            var expectedDescriptor = new TagHelperDescriptor(
+                "not-bound-attribute",
+                typeof(NotBoundAttributeTagHelper).FullName,
+                AssemblyName,
+                new[]
+                {
+                    new TagHelperAttributeDescriptor("bound-property", boundProperty)
+                });
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                typeof(NotBoundAttributeTagHelper),
+                errorSink);
+
+            // Assert
+            Assert.Empty(errorSink.Errors);
+            var descriptor = Assert.Single(descriptors);
+            Assert.Equal(expectedDescriptor, descriptor, CaseSensitiveTagHelperDescriptorComparer.Default);
+        }
+
+        [Fact(Skip = "#364")]
+        public void CreateDescriptor_AddsErrorForTagHelperWithDuplicateAttributeNames()
+        {
+            // Arrange
+            var errorSink = new ErrorSink();
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                typeof(DuplicateAttributeNameTagHelper),
+                errorSink);
+
+            // Assert
+            Assert.Empty(descriptors);
+            var error = Assert.Single(errorSink.Errors);
         }
 
         [Fact]
@@ -867,7 +912,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             {
                 var errorFormat = "Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML " +
                     "attributes beginning with 'data-'.";
-                
+
                 // type, expectedAttributeDescriptors, expectedErrors
                 return new TheoryData<Type, IEnumerable<TagHelperAttributeDescriptor>, string[]>
                 {
@@ -1047,6 +1092,26 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         private class InheritedSingleAttributeTagHelper : SingleAttributeTagHelper
         {
+        }
+
+        private class DuplicateAttributeNameTagHelper
+        {
+            public string MyNameIsLegion { get; set; }
+
+            [HtmlAttributeName("my-name-is-legion")]
+            public string Fred { get; set; }
+        }
+
+        private class NotBoundAttributeTagHelper
+        {
+            public string BoundProperty { get; set; }
+
+            [HtmlAttributeNotBound]
+            public string NotBoundProperty { get; set; }
+
+            [HtmlAttributeName("unused")]
+            [HtmlAttributeNotBound]
+            public string NamedNotBoundProperty { get; set; }
         }
 
         private class OverriddenAttributeTagHelper

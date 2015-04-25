@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         private static IEnumerable<TagHelperAttributeDescriptor> GetAttributeDescriptors(
-            Type type, 
+            Type type,
             ErrorSink errorSink)
         {
             var accessibleProperties = type.GetRuntimeProperties().Where(IsAccessibleProperty);
@@ -226,12 +226,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Type parentType,
             ErrorSink errorSink)
         {
-            // data-* attributes are explicitly not implemented by user agents and are not intended for use on 
+            // data-* attributes are explicitly not implemented by user agents and are not intended for use on
             // the server; therefore it's invalid for TagHelpers to bind to them.
             if (attributeDescriptor.Name.StartsWith(DataDashPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 errorSink.OnError(
-                    SourceLocation.Zero, 
+                    SourceLocation.Zero,
                     Resources.FormatTagHelperDescriptorFactory_InvalidBoundAttributeName(
                         attributeDescriptor.PropertyName,
                         parentType.FullName,
@@ -255,10 +255,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         private static bool IsAccessibleProperty(PropertyInfo property)
         {
-            return property.GetMethod != null &&
-                   property.GetMethod.IsPublic &&
-                   property.SetMethod != null &&
-                   property.SetMethod.IsPublic;
+            // Accessible properties are those with public getters and setters and without [HtmlAttributeNotBound].
+            return property.GetMethod?.IsPublic == true &&
+                property.SetMethod?.IsPublic == true &&
+                property.GetCustomAttribute<HtmlAttributeNotBoundAttribute>(inherit: false) == null;
         }
 
         /// <summary>

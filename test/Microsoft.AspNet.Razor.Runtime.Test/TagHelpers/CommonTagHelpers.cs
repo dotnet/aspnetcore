@@ -23,10 +23,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public string InvalidNoSetAttribute { get { return string.Empty; } }
     }
 
-    public class PrivateAccessorTagHelper : TagHelper
+    public class NonPublicAccessorTagHelper : TagHelper
     {
         public string ValidAttribute { get; set; }
         public string InvalidPrivateSetAttribute { get; private set; }
         public string InvalidPrivateGetAttribute { private get; set; }
+        protected string InvalidProtectedAttribute { get; set; }
+        internal string InvalidInternalAttribute { get; set; }
+        protected internal string InvalidProtectedInternalAttribute { get; set; }
     }
 }

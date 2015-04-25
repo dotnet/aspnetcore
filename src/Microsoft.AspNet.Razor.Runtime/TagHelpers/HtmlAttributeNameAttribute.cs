@@ -28,6 +28,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <summary>
         /// HTML attribute name of the associated property.
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; }
     }
 }
