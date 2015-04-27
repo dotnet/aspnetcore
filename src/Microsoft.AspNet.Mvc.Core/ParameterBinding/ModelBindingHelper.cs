@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -365,28 +366,12 @@ namespace Microsoft.AspNet.Mvc
             (string prefix, Expression<Func<TModel, object>> expression)
         {
             var propertyName = GetPropertyName(expression.Body);
-            var property = CreatePropertyModelName(prefix, propertyName);
+            var property = ModelNames.CreatePropertyModelName(prefix, propertyName);
 
             return
              (context, modelPropertyName) =>
-                 property.Equals(CreatePropertyModelName(context.ModelName, modelPropertyName),
+                 property.Equals(ModelNames.CreatePropertyModelName(context.ModelName, modelPropertyName),
                  StringComparison.OrdinalIgnoreCase);
-        }
-
-        public static string CreatePropertyModelName(string prefix, string propertyName)
-        {
-            if (string.IsNullOrEmpty(prefix))
-            {
-                return propertyName ?? string.Empty;
-            }
-            else if (string.IsNullOrEmpty(propertyName))
-            {
-                return prefix ?? string.Empty;
-            }
-            else
-            {
-                return prefix + "." + propertyName;
-            }
         }
 
         /// <summary>
@@ -444,6 +429,108 @@ namespace Microsoft.AspNet.Mvc
             }
 
             return typeof(object);
+        }
+
+
+        internal static void ValidateBindingContext([NotNull] ModelBindingContext bindingContext)
+        {
+            if (bindingContext.ModelMetadata == null)
+            {
+                throw new ArgumentException(Resources.ModelBinderUtil_ModelMetadataCannotBeNull, nameof(bindingContext));
+            }
+        }
+
+        internal static void ValidateBindingContext(ModelBindingContext bindingContext,
+                                                    Type requiredType,
+                                                    bool allowNullModel)
+        {
+            ValidateBindingContext(bindingContext);
+
+            if (bindingContext.ModelType != requiredType)
+            {
+                var message = Resources.FormatModelBinderUtil_ModelTypeIsWrong(bindingContext.ModelType, requiredType);
+                throw new ArgumentException(message, nameof(bindingContext));
+            }
+
+            if (!allowNullModel && bindingContext.Model == null)
+            {
+                var message = Resources.FormatModelBinderUtil_ModelCannotBeNull(requiredType);
+                throw new ArgumentException(message, nameof(bindingContext));
+            }
+
+            if (bindingContext.Model != null &&
+                !bindingContext.ModelType.GetTypeInfo().IsAssignableFrom(requiredType.GetTypeInfo()))
+            {
+                var message = Resources.FormatModelBinderUtil_ModelInstanceIsWrong(
+                    bindingContext.Model.GetType(),
+                    requiredType);
+                throw new ArgumentException(message, nameof(bindingContext));
+            }
+        }
+
+        internal static TModel CastOrDefault<TModel>(object model)
+        {
+            return (model is TModel) ? (TModel)model : default(TModel);
+        }
+
+        internal static Type GetPossibleBinderInstanceType(Type closedModelType,
+                                                           Type openModelType,
+                                                           Type openBinderType)
+        {
+            var typeArguments = TypeExtensions.GetTypeArgumentsIfMatch(closedModelType, openModelType);
+            return (typeArguments != null) ? openBinderType.MakeGenericType(typeArguments) : null;
+        }
+
+        internal static void ReplaceEmptyStringWithNull(ModelMetadata modelMetadata, ref object model)
+        {
+            if (model is string &&
+                modelMetadata.ConvertEmptyStringToNull &&
+                string.IsNullOrWhiteSpace(model as string))
+            {
+                model = null;
+            }
+        }
+
+        public static object ConvertValuesToCollectionType<T>(Type modelType, IList<T> values)
+        {
+            // There's a limited set of collection types we can support here.
+            //
+            // For the simple cases - choose a T[] or List<T> if the destination type supports
+            // it.
+            //
+            // For more complex cases, if the destination type is a class and implements ICollection<T>
+            // then activate it and add the values.
+            //
+            // Otherwise just give up.
+            if (typeof(List<T>).IsAssignableFrom(modelType))
+            {
+                return new List<T>(values);
+            }
+            else if (typeof(T[]).IsAssignableFrom(modelType))
+            {
+                return values.ToArray();
+            }
+            else if (
+                modelType.GetTypeInfo().IsClass &&
+                !modelType.GetTypeInfo().IsAbstract &&
+                typeof(ICollection<T>).IsAssignableFrom(modelType))
+            {
+                var result = (ICollection<T>)Activator.CreateInstance(modelType);
+                foreach (var value in values)
+                {
+                    result.Add(value);
+                }
+
+                return result;
+            }
+            else if (typeof(IEnumerable<T>).IsAssignableFrom(modelType))
+            {
+                return values;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

@@ -32,7 +32,6 @@ namespace Microsoft.AspNet.Mvc
             "Microsoft.AspNet.Mvc",
             "Microsoft.AspNet.Mvc.Abstractions",
             "Microsoft.AspNet.Mvc.Core",
-            "Microsoft.AspNet.Mvc.ModelBinding",
             "Microsoft.AspNet.Mvc.Razor",
             "Microsoft.AspNet.Mvc.Razor.Host",
             "Microsoft.AspNet.Mvc.TagHelpers",

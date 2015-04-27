@@ -11,6 +11,38 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             = new ResourceManager("Microsoft.AspNet.Mvc.Core.Test.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Comparing {0} to {1}.
+        /// </summary>
+        internal static string CompareAttributeTestResource
+        {
+            get { return GetString("CompareAttributeTestResource"); }
+        }
+
+        /// <summary>
+        /// Comparing {0} to {1}.
+        /// </summary>
+        internal static string FormatCompareAttributeTestResource(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("CompareAttributeTestResource"), p0, p1);
+        }
+
+        /// <summary>
+        /// description from resources
+        /// </summary>
+        internal static string DisplayAttribute_Description
+        {
+            get { return GetString("DisplayAttribute_Description"); }
+        }
+
+        /// <summary>
+        /// description from resources
+        /// </summary>
+        internal static string FormatDisplayAttribute_Description()
+        {
+            return GetString("DisplayAttribute_Description");
+        }
+
+        /// <summary>
         /// name from resources
         /// </summary>
         internal static string DisplayAttribute_Name

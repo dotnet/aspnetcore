@@ -675,7 +675,7 @@ namespace Microsoft.AspNet.Mvc.Description
                 }
                 else
                 {
-                    return ModelBindingHelper.CreatePropertyModelName(containerName, metadata.PropertyName);
+                    return ModelNames.CreatePropertyModelName(containerName, metadata.PropertyName);
                 }
             }
 

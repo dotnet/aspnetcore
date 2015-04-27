@@ -460,4 +460,58 @@
   <data name="ValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated" xml:space="preserve">
     <value>The type '{0}' cannot be activated by '{1}' because it is either a value type, an interface, an abstract class or an open generic type.</value>
   </data>
+  <data name="BinderType_MustBeIModelBinder" xml:space="preserve">
+    <value>The type '{0}' must implement '{1}' to be used as a model binder.</value>
+  </data>
+  <data name="BindingSource_CannotBeComposite" xml:space="preserve">
+    <value>The provided binding source '{0}' is a composite. '{1}' requires that the source must represent a single type of input.</value>
+  </data>
+  <data name="BindingSource_CannotBeGreedy" xml:space="preserve">
+    <value>The provided binding source '{0}' is a greedy data source. '{1}' does not support greedy data sources.</value>
+  </data>
+  <data name="BindingSource_MustBeFromRequest" xml:space="preserve">
+    <value>The provided binding source '{0}' is not a request-based binding source. '{1}' requires that the source must represent data from an HTTP request.</value>
+  </data>
+  <data name="BindingSource_MustBeGreedy" xml:space="preserve">
+    <value>The provided binding source '{0}' is not a greedy data source. '{1}' only supports greedy data sources.</value>
+  </data>
+  <data name="Common_PropertyNotFound" xml:space="preserve">
+    <value>The property {0}.{1} could not be found.</value>
+  </data>
+  <data name="KeyValuePair_BothKeyAndValueMustBePresent" xml:space="preserve">
+    <value>A value is required.</value>
+  </data>
+  <data name="ModelBinderUtil_ModelCannotBeNull" xml:space="preserve">
+    <value>The binding context has a null Model, but this binder requires a non-null model of type '{0}'.</value>
+  </data>
+  <data name="ModelBinderUtil_ModelInstanceIsWrong" xml:space="preserve">
+    <value>The binding context has a Model of type '{0}', but this binder can only operate on models of type '{1}'.</value>
+  </data>
+  <data name="ModelBinderUtil_ModelMetadataCannotBeNull" xml:space="preserve">
+    <value>The binding context cannot have a null ModelMetadata.</value>
+  </data>
+  <data name="ModelBinderUtil_ModelTypeIsWrong" xml:space="preserve">
+    <value>The binding context has a ModelType of '{0}', but this binder can only operate on models of type '{1}'.</value>
+  </data>
+  <data name="ModelBinderUtil_ValueInvalid" xml:space="preserve">
+    <value>The value '{0}' is not valid for {1}.</value>
+  </data>
+  <data name="ModelBinderUtil_ValueInvalidGeneric" xml:space="preserve">
+    <value>The supplied value is invalid for {0}.</value>
+  </data>
+  <data name="ModelBinding_MissingRequiredMember" xml:space="preserve">
+    <value>The '{0}' property is required.</value>
+  </data>
+  <data name="ModelBinding_ValueRequired" xml:space="preserve">
+    <value>A value is required.</value>
+  </data>
+  <data name="MultipleBodyParametersOrPropertiesAreNotAllowed" xml:space="preserve">
+    <value>More than one parameter and/or property is bound to the HTTP request's content.</value>
+  </data>
+  <data name="PropertyBindingPredicateProvider_WrongType" xml:space="preserve">
+    <value>The type '{0}' does not implement the interface '{1}'.</value>
+  </data>
+  <data name="ValidatableObjectAdapter_IncompatibleType" xml:space="preserve">
+    <value>The model object inside the metadata claimed to be compatible with '{0}', but was actually '{1}'.</value>
+  </data>
 </root>

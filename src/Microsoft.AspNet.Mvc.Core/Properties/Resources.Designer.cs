@@ -1786,6 +1786,294 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("ValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated"), p0, p1);
         }
 
+        /// <summary>
+        /// The type '{0}' must implement '{1}' to be used as a model binder.
+        /// </summary>
+        internal static string BinderType_MustBeIModelBinder
+        {
+            get { return GetString("BinderType_MustBeIModelBinder"); }
+        }
+
+        /// <summary>
+        /// The type '{0}' must implement '{1}' to be used as a model binder.
+        /// </summary>
+        internal static string FormatBinderType_MustBeIModelBinder(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("BinderType_MustBeIModelBinder"), p0, p1);
+        }
+
+        /// <summary>
+        /// The provided binding source '{0}' is a composite. '{1}' requires that the source must represent a single type of input.
+        /// </summary>
+        internal static string BindingSource_CannotBeComposite
+        {
+            get { return GetString("BindingSource_CannotBeComposite"); }
+        }
+
+        /// <summary>
+        /// The provided binding source '{0}' is a composite. '{1}' requires that the source must represent a single type of input.
+        /// </summary>
+        internal static string FormatBindingSource_CannotBeComposite(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_CannotBeComposite"), p0, p1);
+        }
+
+        /// <summary>
+        /// The provided binding source '{0}' is a greedy data source. '{1}' does not support greedy data sources.
+        /// </summary>
+        internal static string BindingSource_CannotBeGreedy
+        {
+            get { return GetString("BindingSource_CannotBeGreedy"); }
+        }
+
+        /// <summary>
+        /// The provided binding source '{0}' is a greedy data source. '{1}' does not support greedy data sources.
+        /// </summary>
+        internal static string FormatBindingSource_CannotBeGreedy(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_CannotBeGreedy"), p0, p1);
+        }
+
+        /// <summary>
+        /// The provided binding source '{0}' is not a request-based binding source. '{1}' requires that the source must represent data from an HTTP request.
+        /// </summary>
+        internal static string BindingSource_MustBeFromRequest
+        {
+            get { return GetString("BindingSource_MustBeFromRequest"); }
+        }
+
+        /// <summary>
+        /// The provided binding source '{0}' is not a request-based binding source. '{1}' requires that the source must represent data from an HTTP request.
+        /// </summary>
+        internal static string FormatBindingSource_MustBeFromRequest(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_MustBeFromRequest"), p0, p1);
+        }
+
+        /// <summary>
+        /// The provided binding source '{0}' is not a greedy data source. '{1}' only supports greedy data sources.
+        /// </summary>
+        internal static string BindingSource_MustBeGreedy
+        {
+            get { return GetString("BindingSource_MustBeGreedy"); }
+        }
+
+        /// <summary>
+        /// The provided binding source '{0}' is not a greedy data source. '{1}' only supports greedy data sources.
+        /// </summary>
+        internal static string FormatBindingSource_MustBeGreedy(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_MustBeGreedy"), p0, p1);
+        }
+
+        /// <summary>
+        /// The property {0}.{1} could not be found.
+        /// </summary>
+        internal static string Common_PropertyNotFound
+        {
+            get { return GetString("Common_PropertyNotFound"); }
+        }
+
+        /// <summary>
+        /// The property {0}.{1} could not be found.
+        /// </summary>
+        internal static string FormatCommon_PropertyNotFound(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Common_PropertyNotFound"), p0, p1);
+        }
+
+        /// <summary>
+        /// A value is required.
+        /// </summary>
+        internal static string KeyValuePair_BothKeyAndValueMustBePresent
+        {
+            get { return GetString("KeyValuePair_BothKeyAndValueMustBePresent"); }
+        }
+
+        /// <summary>
+        /// A value is required.
+        /// </summary>
+        internal static string FormatKeyValuePair_BothKeyAndValueMustBePresent()
+        {
+            return GetString("KeyValuePair_BothKeyAndValueMustBePresent");
+        }
+
+        /// <summary>
+        /// The binding context has a null Model, but this binder requires a non-null model of type '{0}'.
+        /// </summary>
+        internal static string ModelBinderUtil_ModelCannotBeNull
+        {
+            get { return GetString("ModelBinderUtil_ModelCannotBeNull"); }
+        }
+
+        /// <summary>
+        /// The binding context has a null Model, but this binder requires a non-null model of type '{0}'.
+        /// </summary>
+        internal static string FormatModelBinderUtil_ModelCannotBeNull(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ModelBinderUtil_ModelCannotBeNull"), p0);
+        }
+
+        /// <summary>
+        /// The binding context has a Model of type '{0}', but this binder can only operate on models of type '{1}'.
+        /// </summary>
+        internal static string ModelBinderUtil_ModelInstanceIsWrong
+        {
+            get { return GetString("ModelBinderUtil_ModelInstanceIsWrong"); }
+        }
+
+        /// <summary>
+        /// The binding context has a Model of type '{0}', but this binder can only operate on models of type '{1}'.
+        /// </summary>
+        internal static string FormatModelBinderUtil_ModelInstanceIsWrong(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ModelBinderUtil_ModelInstanceIsWrong"), p0, p1);
+        }
+
+        /// <summary>
+        /// The binding context cannot have a null ModelMetadata.
+        /// </summary>
+        internal static string ModelBinderUtil_ModelMetadataCannotBeNull
+        {
+            get { return GetString("ModelBinderUtil_ModelMetadataCannotBeNull"); }
+        }
+
+        /// <summary>
+        /// The binding context cannot have a null ModelMetadata.
+        /// </summary>
+        internal static string FormatModelBinderUtil_ModelMetadataCannotBeNull()
+        {
+            return GetString("ModelBinderUtil_ModelMetadataCannotBeNull");
+        }
+
+        /// <summary>
+        /// The binding context has a ModelType of '{0}', but this binder can only operate on models of type '{1}'.
+        /// </summary>
+        internal static string ModelBinderUtil_ModelTypeIsWrong
+        {
+            get { return GetString("ModelBinderUtil_ModelTypeIsWrong"); }
+        }
+
+        /// <summary>
+        /// The binding context has a ModelType of '{0}', but this binder can only operate on models of type '{1}'.
+        /// </summary>
+        internal static string FormatModelBinderUtil_ModelTypeIsWrong(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ModelBinderUtil_ModelTypeIsWrong"), p0, p1);
+        }
+
+        /// <summary>
+        /// The value '{0}' is not valid for {1}.
+        /// </summary>
+        internal static string ModelBinderUtil_ValueInvalid
+        {
+            get { return GetString("ModelBinderUtil_ValueInvalid"); }
+        }
+
+        /// <summary>
+        /// The value '{0}' is not valid for {1}.
+        /// </summary>
+        internal static string FormatModelBinderUtil_ValueInvalid(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ModelBinderUtil_ValueInvalid"), p0, p1);
+        }
+
+        /// <summary>
+        /// The supplied value is invalid for {0}.
+        /// </summary>
+        internal static string ModelBinderUtil_ValueInvalidGeneric
+        {
+            get { return GetString("ModelBinderUtil_ValueInvalidGeneric"); }
+        }
+
+        /// <summary>
+        /// The supplied value is invalid for {0}.
+        /// </summary>
+        internal static string FormatModelBinderUtil_ValueInvalidGeneric(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ModelBinderUtil_ValueInvalidGeneric"), p0);
+        }
+
+        /// <summary>
+        /// The '{0}' property is required.
+        /// </summary>
+        internal static string ModelBinding_MissingRequiredMember
+        {
+            get { return GetString("ModelBinding_MissingRequiredMember"); }
+        }
+
+        /// <summary>
+        /// The '{0}' property is required.
+        /// </summary>
+        internal static string FormatModelBinding_MissingRequiredMember(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ModelBinding_MissingRequiredMember"), p0);
+        }
+
+        /// <summary>
+        /// A value is required.
+        /// </summary>
+        internal static string ModelBinding_ValueRequired
+        {
+            get { return GetString("ModelBinding_ValueRequired"); }
+        }
+
+        /// <summary>
+        /// A value is required.
+        /// </summary>
+        internal static string FormatModelBinding_ValueRequired()
+        {
+            return GetString("ModelBinding_ValueRequired");
+        }
+
+        /// <summary>
+        /// More than one parameter and/or property is bound to the HTTP request's content.
+        /// </summary>
+        internal static string MultipleBodyParametersOrPropertiesAreNotAllowed
+        {
+            get { return GetString("MultipleBodyParametersOrPropertiesAreNotAllowed"); }
+        }
+
+        /// <summary>
+        /// More than one parameter and/or property is bound to the HTTP request's content.
+        /// </summary>
+        internal static string FormatMultipleBodyParametersOrPropertiesAreNotAllowed()
+        {
+            return GetString("MultipleBodyParametersOrPropertiesAreNotAllowed");
+        }
+
+        /// <summary>
+        /// The type '{0}' does not implement the interface '{1}'.
+        /// </summary>
+        internal static string PropertyBindingPredicateProvider_WrongType
+        {
+            get { return GetString("PropertyBindingPredicateProvider_WrongType"); }
+        }
+
+        /// <summary>
+        /// The type '{0}' does not implement the interface '{1}'.
+        /// </summary>
+        internal static string FormatPropertyBindingPredicateProvider_WrongType(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("PropertyBindingPredicateProvider_WrongType"), p0, p1);
+        }
+
+        /// <summary>
+        /// The model object inside the metadata claimed to be compatible with '{0}', but was actually '{1}'.
+        /// </summary>
+        internal static string ValidatableObjectAdapter_IncompatibleType
+        {
+            get { return GetString("ValidatableObjectAdapter_IncompatibleType"); }
+        }
+
+        /// <summary>
+        /// The model object inside the metadata claimed to be compatible with '{0}', but was actually '{1}'.
+        /// </summary>
+        internal static string FormatValidatableObjectAdapter_IncompatibleType(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ValidatableObjectAdapter_IncompatibleType"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

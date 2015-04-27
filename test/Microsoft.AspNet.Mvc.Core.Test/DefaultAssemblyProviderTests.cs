@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.Core
                    {
                         CreateLibraryInfo("Microsoft.AspNet.Mvc.Core"),
                         CreateLibraryInfo("Microsoft.AspNet.Mvc"),
-                        CreateLibraryInfo("Microsoft.AspNet.Mvc.ModelBinding"),
+                        CreateLibraryInfo("Microsoft.AspNet.Mvc.Abstractions"),
                         CreateLibraryInfo("SomeRandomAssembly"),
                    })
                    .Verifiable();
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.Core
                   .Returns(Enumerable.Empty<ILibraryInformation>());
             manager.Setup(f => f.GetReferencingLibraries("Microsoft.AspNet.Mvc.Core"))
                    .Returns(new[] { CreateLibraryInfo("Foo") });
-            manager.Setup(f => f.GetReferencingLibraries("Microsoft.AspNet.Mvc.ModelBinding"))
+            manager.Setup(f => f.GetReferencingLibraries("Microsoft.AspNet.Mvc.Abstractions"))
                    .Returns(new[] { CreateLibraryInfo("Bar") });
             manager.Setup(f => f.GetReferencingLibraries("Microsoft.AspNet.Mvc"))
                    .Returns(new[] { CreateLibraryInfo("Baz") });
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var candidates = provider.GetCandidateLibraries();
 
             // Assert
-            Assert.Equal(new[] { "Baz", "Foo", "Bar" }, candidates.Select(a => a.Name));
+            Assert.Equal(new[] { "Baz", "Bar", "Foo" }, candidates.Select(a => a.Name));
         }
 
         [Fact]
