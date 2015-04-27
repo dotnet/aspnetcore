@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Owin
         IHttpResponseFeature,
         IHttpConnectionFeature,
         IHttpSendFileFeature,
-        IHttpClientCertificateFeature,
+        ITlsConnectionFeature,
         IHttpRequestLifetimeFeature,
         IHttpAuthenticationFeature,
         IHttpWebSocketFeature,
@@ -228,20 +228,20 @@ namespace Microsoft.AspNet.Owin
             }
         }
 
-        X509Certificate IHttpClientCertificateFeature.ClientCertificate
+        X509Certificate2 ITlsConnectionFeature.ClientCertificate
         {
-            get { return Prop<X509Certificate>(OwinConstants.CommonKeys.ClientCertificate); }
+            get { return Prop<X509Certificate2>(OwinConstants.CommonKeys.ClientCertificate); }
             set { Prop(OwinConstants.CommonKeys.ClientCertificate, value); }
         }
 
-        async Task<X509Certificate> IHttpClientCertificateFeature.GetClientCertificateAsync(CancellationToken cancellationToken)
+        async Task<X509Certificate2> ITlsConnectionFeature.GetClientCertificateAsync(CancellationToken cancellationToken)
         {
             var loadAsync = Prop<Func<Task>>(OwinConstants.CommonKeys.LoadClientCertAsync);
             if (loadAsync != null)
             {
                 await loadAsync();
             }
-            return Prop<X509Certificate>(OwinConstants.CommonKeys.ClientCertificate);
+            return Prop<X509Certificate2>(OwinConstants.CommonKeys.ClientCertificate);
         }
 
         CancellationToken IHttpRequestLifetimeFeature.RequestAborted
@@ -308,7 +308,7 @@ namespace Microsoft.AspNet.Owin
                 {
                     return SupportsSendFile;
                 }
-                else if (key == typeof(IHttpClientCertificateFeature))
+                else if (key == typeof(ITlsConnectionFeature))
                 {
                     return SupportsClientCerts;
                 }
@@ -342,7 +342,7 @@ namespace Microsoft.AspNet.Owin
                 }
                 if (SupportsClientCerts)
                 {
-                    keys.Add(typeof(IHttpClientCertificateFeature));
+                    keys.Add(typeof(ITlsConnectionFeature));
                 }
                 if (SupportsWebSockets)
                 {

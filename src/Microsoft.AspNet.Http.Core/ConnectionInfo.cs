@@ -20,8 +20,8 @@ namespace Microsoft.AspNet.Http
 
         public abstract bool IsLocal { get; set; }
 
-        public abstract X509Certificate ClientCertificate { get; set; }
+        public abstract X509Certificate2 ClientCertificate { get; set; }
 
-        public abstract Task<X509Certificate> GetClientCertificateAsync(CancellationToken cancellationToken = new CancellationToken());
+        public abstract Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken = new CancellationToken());
     }
 }

@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Http
         private readonly IFeatureCollection _features;
 
         private FeatureReference<IHttpConnectionFeature> _connection = FeatureReference<IHttpConnectionFeature>.Default;
-        private FeatureReference<IHttpClientCertificateFeature> _clientCertificate = FeatureReference<IHttpClientCertificateFeature>.Default;
+        private FeatureReference<ITlsConnectionFeature> _tlsConnectoin = FeatureReference<ITlsConnectionFeature>.Default;
 
         public DefaultConnectionInfo(IFeatureCollection features)
         {
@@ -27,9 +27,9 @@ namespace Microsoft.AspNet.Http
             get { return _connection.Fetch(_features) ?? _connection.Update(_features, new HttpConnectionFeature()); }
         }
 
-        private IHttpClientCertificateFeature HttpClientCertificateFeature
+        private ITlsConnectionFeature TlsConnectionFeature
         {
-            get { return _clientCertificate.Fetch(_features) ?? _clientCertificate.Update(_features, new HttpClientCertificateFeature()); }
+            get { return _tlsConnectoin.Fetch(_features) ?? _tlsConnectoin.Update(_features, new TlsConnectionFeature()); }
         }
 
         public override IPAddress RemoteIpAddress
@@ -62,15 +62,15 @@ namespace Microsoft.AspNet.Http
             set { HttpConnectionFeature.IsLocal = value; }
         }
 
-        public override X509Certificate ClientCertificate
+        public override X509Certificate2 ClientCertificate
         {
-            get { return HttpClientCertificateFeature.ClientCertificate; }
-            set { HttpClientCertificateFeature.ClientCertificate = value; }
+            get { return TlsConnectionFeature.ClientCertificate; }
+            set { TlsConnectionFeature.ClientCertificate = value; }
         }
 
-        public override Task<X509Certificate> GetClientCertificateAsync(CancellationToken cancellationToken = new CancellationToken())
+        public override Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            return HttpClientCertificateFeature.GetClientCertificateAsync(cancellationToken);
+            return TlsConnectionFeature.GetClientCertificateAsync(cancellationToken);
         }
     }
 }

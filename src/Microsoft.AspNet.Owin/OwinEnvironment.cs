@@ -99,9 +99,9 @@ namespace Microsoft.AspNet.Owin
 
             if (context.Request.IsHttps)
             {
-                _entries.Add(OwinConstants.CommonKeys.ClientCertificate, new FeatureMap<IHttpClientCertificateFeature>(feature => feature.ClientCertificate,
-                    (feature, value) => feature.ClientCertificate = (X509Certificate)value));
-                _entries.Add(OwinConstants.CommonKeys.LoadClientCertAsync, new FeatureMap<IHttpClientCertificateFeature>(
+                _entries.Add(OwinConstants.CommonKeys.ClientCertificate, new FeatureMap<ITlsConnectionFeature>(feature => feature.ClientCertificate,
+                    (feature, value) => feature.ClientCertificate = (X509Certificate2)value));
+                _entries.Add(OwinConstants.CommonKeys.LoadClientCertAsync, new FeatureMap<ITlsConnectionFeature>(
                     feature => new Func<Task>(() => feature.GetClientCertificateAsync(CancellationToken.None))));
             }
 

@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Http
 {
-    public class HttpClientCertificateFeature : IHttpClientCertificateFeature
+    public class TlsConnectionFeature : ITlsConnectionFeature
     {
-        public HttpClientCertificateFeature()
+        public TlsConnectionFeature()
         {
         }
 
-        public X509Certificate ClientCertificate { get; set; }
+        public X509Certificate2 ClientCertificate { get; set; }
 
-        public Task<X509Certificate> GetClientCertificateAsync(CancellationToken cancellationToken)
+        public Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(ClientCertificate);
         }
