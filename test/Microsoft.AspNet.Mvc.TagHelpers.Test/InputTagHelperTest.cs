@@ -623,6 +623,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [InlineData("TEXT", null, "not-null")]
         [InlineData("custom-datatype", null, null)]
         [InlineData(null, "unknown-input-type", "not-null")]
+        [InlineData("Image", null, "not-null")]
+        [InlineData(null, "image", "not-null")]
         public async Task ProcessAsync_CallsGenerateTextBox_WithExpectedParameters(
             string dataTypeName,
             string inputTypeName,
@@ -695,7 +697,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelper.For.Name,
                     model,      // value
                     null,       // format
-                    null))      // htmlAttributes
+                    It.Is<Dictionary<string, object>>(m => m.ContainsKey("type"))))      // htmlAttributes
                 .Returns(tagBuilder)
                 .Verifiable();
 
@@ -791,13 +793,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var tagBuilder = new TagBuilder("input", new NullTestEncoder());
 
-            Dictionary<string, object> htmlAttributes = null;
+            var htmlAttributes = new Dictionary<string, object>
+            {
+                { "type", expectedType }
+            };
             if (string.Equals(dataTypeName, TemplateRenderer.IEnumerableOfIFormFileName))
             {
-                htmlAttributes = new Dictionary<string, object>
-                {
-                    { "multiple", "multiple" }
-                };
+                htmlAttributes["multiple"] = "multiple";
             }
             htmlGenerator
                 .Setup(mock => mock.GenerateTextBox(
@@ -860,6 +862,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 SelfClosing = true,
             };
 
+            var htmlAttributes = new Dictionary<string, object>
+            {
+                { "type", expectedType }
+            };
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var tagHelper = GetTagHelper(
@@ -877,7 +883,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelper.For.Name,
                     null,                                   // value
                     expectedFormat,
-                    null))                                  // htmlAttributes
+                    htmlAttributes))                    // htmlAttributes
                 .Returns(tagBuilder)
                 .Verifiable();
 

@@ -1024,7 +1024,23 @@ namespace Microsoft.AspNet.Mvc.Rendering
                         attributeValue = useViewData ? EvalString(viewContext, fullName, format) : valueParameter;
                     }
 
-                    tagBuilder.MergeAttribute("value", attributeValue, replaceExisting: isExplicitValue);
+                    var addValue = true;
+                    object typeAttributeValue;
+                    if (htmlAttributes != null && htmlAttributes.TryGetValue("type", out typeAttributeValue))
+                    {
+                        if (string.Equals(typeAttributeValue.ToString(), "file", StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(typeAttributeValue.ToString(), "image", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // 'value' attribute is not needed for 'file' and 'image' input types.
+                            addValue = false;
+                        }
+                    }
+
+                    if (addValue)
+                    {
+                        tagBuilder.MergeAttribute("value", attributeValue, replaceExisting: isExplicitValue);
+                    }
+
                     break;
             }
 

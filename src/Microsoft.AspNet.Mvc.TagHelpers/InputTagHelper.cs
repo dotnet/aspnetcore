@@ -281,13 +281,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 format = GetFormat(modelExplorer, inputTypeHint, inputType);
             }
 
-            object htmlAttributes = null;
+            var htmlAttributes = new Dictionary<string, object>
+            {
+                { "type", inputType }
+            };
+
             if (string.Equals(inputType, "file") && string.Equals(inputTypeHint, TemplateRenderer.IEnumerableOfIFormFileName))
             {
-                htmlAttributes = new Dictionary<string, object>
-                {
-                    { "multiple", "multiple" }
-                };
+                htmlAttributes["multiple"] = "multiple";
             }
 
             return Generator.GenerateTextBox(
