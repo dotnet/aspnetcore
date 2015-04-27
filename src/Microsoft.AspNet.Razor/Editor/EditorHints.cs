@@ -23,10 +23,5 @@ namespace Microsoft.AspNet.Razor.Editor
         /// if they do not support it.
         /// </summary>
         VirtualPath = 1, // 0000 0001
-
-        /// <summary>
-        /// Indicates that this span's content contains the path to the layout page for this document.
-        /// </summary>
-        LayoutPage = 2, // 0000 0010
     }
 }

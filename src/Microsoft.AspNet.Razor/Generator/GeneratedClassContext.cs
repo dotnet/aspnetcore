@@ -11,7 +11,6 @@ namespace Microsoft.AspNet.Razor.Generator
         public static readonly string DefaultWriteMethodName = "Write";
         public static readonly string DefaultWriteLiteralMethodName = "WriteLiteral";
         public static readonly string DefaultExecuteMethodName = "ExecuteAsync";
-        public static readonly string DefaultLayoutPropertyName = "Layout";
         public static readonly string DefaultWriteAttributeMethodName = "WriteAttribute";
         public static readonly string DefaultWriteAttributeToMethodName = "WriteAttributeTo";
 
@@ -57,7 +56,6 @@ namespace Microsoft.AspNet.Razor.Generator
             TemplateTypeName = null;
             DefineSectionMethodName = null;
 
-            LayoutPropertyName = DefaultLayoutPropertyName;
             WriteAttributeMethodName = DefaultWriteAttributeMethodName;
             WriteAttributeToMethodName = DefaultWriteAttributeToMethodName;
         }
@@ -132,7 +130,6 @@ namespace Microsoft.AspNet.Razor.Generator
         // Optional Items
         public string BeginContextMethodName { get; set; }
         public string EndContextMethodName { get; set; }
-        public string LayoutPropertyName { get; set; }
         public string DefineSectionMethodName { get; set; }
         public string TemplateTypeName { get; set; }
         public string WriteAttributeMethodName { get; set; }

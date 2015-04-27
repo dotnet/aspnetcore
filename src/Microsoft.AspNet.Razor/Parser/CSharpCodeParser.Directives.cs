@@ -22,7 +22,6 @@ namespace Microsoft.AspNet.Razor.Parser
             MapDirectives(InheritsDirective, SyntaxConstants.CSharp.InheritsKeyword);
             MapDirectives(FunctionsDirective, SyntaxConstants.CSharp.FunctionsKeyword);
             MapDirectives(SectionDirective, SyntaxConstants.CSharp.SectionKeyword);
-            MapDirectives(LayoutDirective, SyntaxConstants.CSharp.LayoutKeyword);
         }
 
         protected virtual void TagHelperPrefixDirective()
@@ -43,29 +42,9 @@ namespace Microsoft.AspNet.Razor.Parser
         protected virtual void RemoveTagHelperDirective()
         {
             TagHelperDirective(
-                SyntaxConstants.CSharp.RemoveTagHelperKeyword, 
+                SyntaxConstants.CSharp.RemoveTagHelperKeyword,
                 lookupText =>
                     new AddOrRemoveTagHelperCodeGenerator(removeTagHelperDescriptors: true, lookupText: lookupText));
-        }
-
-        protected virtual void LayoutDirective()
-        {
-            AssertDirective(SyntaxConstants.CSharp.LayoutKeyword);
-            AcceptAndMoveNext();
-            Context.CurrentBlock.Type = BlockType.Directive;
-
-            // Accept spaces, but not newlines
-            var foundSomeWhitespace = At(CSharpSymbolType.WhiteSpace);
-            AcceptWhile(CSharpSymbolType.WhiteSpace);
-            Output(SpanKind.MetaCode, foundSomeWhitespace ? AcceptedCharacters.None : AcceptedCharacters.Any);
-
-            // First non-whitespace character starts the Layout Page, then newline ends it
-            AcceptUntil(CSharpSymbolType.NewLine);
-            Span.CodeGenerator = new SetLayoutCodeGenerator(Span.GetContent());
-            Span.EditHandler.EditorHints = EditorHints.LayoutPage | EditorHints.VirtualPath;
-            var foundNewline = Optional(CSharpSymbolType.NewLine);
-            AddMarkerSymbolIfNecessary();
-            Output(SpanKind.MetaCode, foundNewline ? AcceptedCharacters.None : AcceptedCharacters.AnyExceptNewline);
         }
 
         protected virtual void SectionDirective()

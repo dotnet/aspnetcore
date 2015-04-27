@@ -653,11 +653,5 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         {
             RunTypeKeywordTest("class");
         }
-
-        [Fact]
-        public void ImplicitExpressionCorrectlyTriggersReparseIfLayoutKeywordTyped()
-        {
-            RunTypeKeywordTest("layout");
-        }
     }
 }

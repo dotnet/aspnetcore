@@ -27,7 +27,6 @@ namespace Microsoft.AspNet.Razor.Parser
             public static readonly string ElseIfKeyword = "else if";
             public static readonly string NamespaceKeyword = "namespace";
             public static readonly string ClassKeyword = "class";
-            public static readonly string LayoutKeyword = "layout";
         }
     }
 }

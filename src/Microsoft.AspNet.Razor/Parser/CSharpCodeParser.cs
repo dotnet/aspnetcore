@@ -36,7 +36,6 @@ namespace Microsoft.AspNet.Razor.Parser
             "functions",
             "namespace",
             "class",
-            "layout",
         };
 
         private Dictionary<string, Action> _directiveParsers = new Dictionary<string, Action>();

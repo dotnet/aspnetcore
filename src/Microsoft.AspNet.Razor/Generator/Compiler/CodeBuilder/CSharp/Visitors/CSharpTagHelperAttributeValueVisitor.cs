@@ -122,22 +122,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         /// <summary>
         /// Writes code for the given <paramref name="chunk"/>.
         /// </summary>
-        /// <param name="chunk">The <see cref="SetLayoutChunk"/> to render.</param>
-        /// <remarks>
-        /// Unconditionally adds a <see cref="RazorError"/> to inform user of unexpected <c>@layout</c> directive.
-        /// </remarks>
-        protected override void Visit(SetLayoutChunk chunk)
-        {
-            Context.ErrorSink.OnError(
-                chunk.Association.Start,
-                RazorResources.FormatTagHelpers_Directives_NotSupported_InAttributes(
-                    SyntaxConstants.CSharp.LayoutKeyword),
-                chunk.Association.Length);
-        }
-
-        /// <summary>
-        /// Writes code for the given <paramref name="chunk"/>.
-        /// </summary>
         /// <param name="chunk">The <see cref="StatementChunk"/> to render.</param>
         /// <remarks>
         /// Unconditionally adds a <see cref="RazorError"/> to inform user of unexpected code block.

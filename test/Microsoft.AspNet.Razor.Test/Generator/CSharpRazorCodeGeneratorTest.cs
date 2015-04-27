@@ -75,7 +75,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         [InlineData("Sections")]
         [InlineData("RazorComments")]
         [InlineData("InlineBlocks")]
-        [InlineData("LayoutDirective")]
         [InlineData("ConditionalAttributes")]
         [InlineData("ResolveUrl")]
         [InlineData("Await")]

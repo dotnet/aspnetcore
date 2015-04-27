@@ -69,10 +69,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             {
                 Visit((RemoveTagHelperChunk)chunk);
             }
-            else if (chunk is SetLayoutChunk)
-            {
-                Visit((SetLayoutChunk)chunk);
-            }
             else if (chunk is ResolveUrlChunk)
             {
                 Visit((ResolveUrlChunk)chunk);
@@ -132,7 +128,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         protected abstract void Visit(ResolveUrlChunk chunk);
         protected abstract void Visit(SetBaseTypeChunk chunk);
         protected abstract void Visit(TemplateChunk chunk);
-        protected abstract void Visit(SetLayoutChunk chunk);
         protected abstract void Visit(ExpressionBlockChunk chunk);
     }
 }

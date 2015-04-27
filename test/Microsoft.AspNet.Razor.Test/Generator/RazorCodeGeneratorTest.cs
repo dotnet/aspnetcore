@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             inputStream.Position = 0;
             var reader = new StreamReader(inputStream);
 
-            // Normalize newlines to be \r\n. This is to ensure when running tests cross plat the final test output 
+            // Normalize newlines to be \r\n. This is to ensure when running tests cross plat the final test output
             // is compared against test files in a normalized fashion.
             var fileContents = reader.ReadToEnd().Replace(Environment.NewLine, "\r\n");
 
@@ -150,7 +150,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                                                    "Instrumentation.EndContext",
                                                                    new GeneratedTagHelperContext())
             {
-                LayoutPropertyName = "Layout",
                 ResolveUrlMethodName = "Href"
             };
             if (hostConfig != null)

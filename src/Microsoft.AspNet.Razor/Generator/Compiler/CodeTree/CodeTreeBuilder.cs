@@ -140,14 +140,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             }, association);
         }
 
-        public void AddSetLayoutChunk(string layout, SyntaxTreeNode association)
-        {
-            AddChunk(new SetLayoutChunk
-            {
-                Layout = layout
-            }, association);
-        }
-
         public void AddSetBaseTypeChunk(string typeName, SyntaxTreeNode association)
         {
             AddChunk(new SetBaseTypeChunk

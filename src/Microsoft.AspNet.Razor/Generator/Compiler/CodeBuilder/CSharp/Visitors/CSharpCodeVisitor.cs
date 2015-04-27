@@ -79,17 +79,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             Accept(chunk.Children);
         }
 
-        protected override void Visit(SetLayoutChunk chunk)
-        {
-            if (!Context.Host.DesignTimeMode && !string.IsNullOrEmpty(Context.Host.GeneratedClassContext.LayoutPropertyName))
-            {
-                Writer.Write(Context.Host.GeneratedClassContext.LayoutPropertyName)
-                       .Write(" = ")
-                       .WriteStringLiteral(chunk.Layout)
-                       .WriteLine(";");
-            }
-        }
-
         protected override void Visit(TemplateChunk chunk)
         {
             Writer.Write(ItemParameterName).Write(" => ")
