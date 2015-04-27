@@ -11,12 +11,12 @@ using Microsoft.Framework.Internal;
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// Extension methods for <see cref="IApplicationBuilder"/> to add Mvc to the request execution pipeline.
+    /// Extension methods for <see cref="IApplicationBuilder"/> to add MVC to the request execution pipeline.
     /// </summary>
     public static class BuilderExtensions
     {
         /// <summary>
-        /// Adds Mvc to the <see cref="IApplicationBuilder"/> request execution pipeline.
+        /// Adds MVC to the <see cref="IApplicationBuilder"/> request execution pipeline.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
         /// <returns>The <paramref name="app"/>.</returns>
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
-        /// Adds Mvc to the <see cref="IApplicationBuilder"/> request execution pipeline
+        /// Adds MVC to the <see cref="IApplicationBuilder"/> request execution pipeline
         /// with a default route.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
@@ -46,10 +46,10 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
-        /// Adds Mvc to the <see cref="IApplicationBuilder"/> request execution pipeline.
+        /// Adds MVC to the <see cref="IApplicationBuilder"/> request execution pipeline.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
-        /// <param name="configureRoutes">A callback to configure Mvc routes.</param>
+        /// <param name="configureRoutes">A callback to configure MVC routes.</param>
         /// <returns>The <paramref name="app"/>.</returns>
         public static IApplicationBuilder UseMvc(
             [NotNull] this IApplicationBuilder app,
