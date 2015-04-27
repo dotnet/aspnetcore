@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc.ActionConstraints
     /// A factory for <see cref="IActionConstraint"/>.
     /// </summary>
     /// <remarks>
-    /// <see cref="IActionConstraintFactory"/> will be invoked by <see cref="DefaultActionConstraintProvider"/>
+    /// <see cref="IActionConstraintFactory"/> will be invoked during action selection
     /// to create constraint instances for an action.
     ///
     /// Place an attribute implementing this interface on a controller or action to insert an action

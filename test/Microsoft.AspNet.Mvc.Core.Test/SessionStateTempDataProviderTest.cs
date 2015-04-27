@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Http;
 using Moq;
 using Xunit;
@@ -278,7 +279,7 @@ namespace Microsoft.AspNet.Mvc
 
             public void Set(string key, ArraySegment<byte> value)
             {
-                _innerDictionary[key] = value.AsArray();
+                _innerDictionary[key] = value.ToArray();
             }
 
             public bool TryGetValue(string key, out byte[] value)

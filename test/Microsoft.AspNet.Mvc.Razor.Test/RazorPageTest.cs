@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -180,7 +181,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 // Assert
                 var content = Assert.IsType<DefaultTagHelperContent>(returnValue);
                 Assert.Equal("HtmlEncode[[Hello ]]HtmlEncode[[World!]]", content.GetContent());
-                Assert.Equal(new[] { "HtmlEncode[[Hello ]]", "HtmlEncode[[World!]]" }, content.AsArray());
+                Assert.Equal(new[] { "HtmlEncode[[Hello ]]", "HtmlEncode[[World!]]" }, content.ToArray());
             }, viewContext);
             await page.ExecuteAsync();
         }

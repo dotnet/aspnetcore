@@ -13,6 +13,7 @@
     "Microsoft.AspNet.FileProviders.Interfaces": "1.0.0-*",
     "Microsoft.AspNet.Hosting.Interfaces": "1.0.0-*",
     "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
+    "Microsoft.AspNet.Mvc.Abstractions": "6.0.0-*",
     "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
     "Microsoft.AspNet.Mvc.ModelBinding": "6.0.0-*",
     "Microsoft.AspNet.Routing": "1.0.0-*",

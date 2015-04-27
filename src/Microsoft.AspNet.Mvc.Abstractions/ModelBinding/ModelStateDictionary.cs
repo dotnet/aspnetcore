@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Mvc.ModelBinding.Internal;
+using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -216,11 +216,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 string errorMessage;
                 if (modelState == null)
                 {
-                    errorMessage = Resources.FormatModelBinderUtil_ValueInvalidGeneric(key);
+                    errorMessage = Resources.FormatModelError_InvalidValue_GenericMessage(key);
                 }
                 else
                 {
-                    errorMessage = Resources.FormatModelBinderUtil_ValueInvalid(
+                    errorMessage = Resources.FormatModelError_InvalidValue_MessageWithModelValue(
                         modelState.Value.AttemptedValue,
                         key);
                 }
@@ -281,7 +281,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// state errors; <see cref="ModelValidationState.Valid"/> otherwise.</returns>
         public ModelValidationState GetFieldValidationState([NotNull] string key)
         {
-            var entries = DictionaryHelper.FindKeysWithPrefix(this, key);
+            var entries = FindKeysWithPrefix(this, key);
             if (!entries.Any())
             {
                 return ModelValidationState.Unvalidated;
@@ -378,7 +378,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // If key is null or empty, clear all entries in the dictionary
             // else just clear the ones that have key as prefix
             var entries  = (string.IsNullOrEmpty(key)) ?
-                _innerDictionary : DictionaryHelper.FindKeysWithPrefix(this, key);
+                _innerDictionary : FindKeysWithPrefix(this, key);
 
             foreach (var entry in entries)
             {
@@ -500,6 +500,59 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        private static IEnumerable<KeyValuePair<string, TValue>> FindKeysWithPrefix<TValue>(
+            [NotNull] IDictionary<string, TValue> dictionary,
+            [NotNull] string prefix)
+        {
+            TValue exactMatchValue;
+            if (dictionary.TryGetValue(prefix, out exactMatchValue))
+            {
+                yield return new KeyValuePair<string, TValue>(prefix, exactMatchValue);
+            }
+
+            foreach (var entry in dictionary)
+            {
+                var key = entry.Key;
+
+                if (key.Length <= prefix.Length)
+                {
+                    continue;
+                }
+
+                if (key.StartsWith("[", StringComparison.OrdinalIgnoreCase))
+                {
+                    key = key.Substring(key.IndexOf('.') + 1);
+                    if (string.Equals(prefix, key, StringComparison.Ordinal))
+                    {
+                        yield return entry;
+                        continue;
+                    }
+                }
+
+                if (!key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                // Everything is prefixed by the empty string
+                if (prefix.Length == 0)
+                {
+                    yield return entry;
+                }
+                else
+                {
+                    var charAfterPrefix = key[prefix.Length];
+                    switch (charAfterPrefix)
+                    {
+                        case '[':
+                        case '.':
+                            yield return entry;
+                            break;
+                    }
+                }
+            }
         }
     }
 }

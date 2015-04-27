@@ -1,0 +1,23 @@
+{
+  "description": "The core abstractions of ASP.NET MVC.",
+  "version": "6.0.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Http.Interfaces": "1.0.0-*",
+    "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
+    "Microsoft.AspNet.Routing": "1.0.0-*",
+    "Microsoft.Framework.CopyOnWriteDictionary.Internal": { "version": "1.0.0-*", "type": "build" },
+    "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type": "build" },
+    "Microsoft.Framework.PropertyHelper.Internal": { "version": "1.0.0-*", "type": "build" }
+  },
+  "frameworks": {
+    "dnx451": {},
+    "dnxcore50": {
+      "dependencies": {
+        "Microsoft.CSharp": "4.0.0-beta-*"
+      }
+    }
+  }
+}

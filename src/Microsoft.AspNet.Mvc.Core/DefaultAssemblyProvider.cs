@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.Mvc
         protected virtual HashSet<string> ReferenceAssemblies { get; } = new HashSet<string>(StringComparer.Ordinal)
         {
             "Microsoft.AspNet.Mvc",
+            "Microsoft.AspNet.Mvc.Abstractions",
             "Microsoft.AspNet.Mvc.Core",
             "Microsoft.AspNet.Mvc.ModelBinding",
             "Microsoft.AspNet.Mvc.Razor",

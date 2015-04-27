@@ -222,7 +222,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// If <c>true</c> then the model value is considered required by validators.
         /// </para>
         /// <para>
-        /// By default an implicit <see cref="System.ComponentModel.DataAnnotations.RequiredAttribute"/> will be added
+        /// By default an implicit <c>System.ComponentModel.DataAnnotations.RequiredAttribute</c> will be added
         /// if not present when <c>true.</c>.
         /// </para>
         /// </remarks>

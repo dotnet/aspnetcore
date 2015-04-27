@@ -15,8 +15,8 @@ namespace Microsoft.AspNet.Mvc
     /// later in the pipeline.
     ///
     /// When filters have the same Order, the Scope value is used to determine the order of execution. Filters
-    /// with a higher value of Scope execute later in the pipeline. See <see cref="FilterScope"/> for commonly
-    /// used scopes.
+    /// with a higher value of Scope execute later in the pipeline. See <c>Microsoft.AspNet.Mvc.FilterScope</c>
+    /// for commonly used scopes.
     ///
     /// For <see cref="IExceptionFilter"/> implementions, the filter runs only after an exception has occurred,
     /// and so the observed order of execution will be opposite that of other filters.
