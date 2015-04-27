@@ -17,45 +17,17 @@ The rest of this section deals with setting up a machine to run applications wit
 
 ### Get Mono
 
-Mono is how .NET applications can run on platforms other than Windows. Mono is an ongoing effort to port the .NET Framework to other platforms. In the process of developing ASP.NET 5 we worked with the Mono team to fix some bugs and add features that are needed to run ASP.NET applications. Because these changes haven't yet made it into an official Mono release we will either grab a Mono nightly build or compile Mono from source.
+Mono is how .NET applications can run on platforms other than Windows. Mono is an ongoing effort to port the .NET Framework to other platforms. In the process of developing ASP.NET 5 we worked with the Mono team to fix some bugs and add features that are needed to run ASP.NET applications. These changes are only in builds of mono that are greatuer than 4.0.1.
 
-#### Option 1: Mono CI build
+To get these builds you need to run:
 
-The Mono CI server builds packages for Linux distributions on each commit. To get them you install a particular snapshot and then run `mono-snapshot APP/VER` to change the current shell to use the provided snapshot. In these instructions we will grab the latest snapshot and set it to be the one to use.
-
-**NOTE: Mono snapshots do not persist outside the current shell, you need to run `mono-snapshot` each time you want to run the newer version of Mono. If this isn't what you want then look at compiling Mono from source option, the instructions here show building from source and installing Mono. If you want other options then you should follow the links to the Mono build instructions. **
-
-To do this we need to add the Mono CI server to apt-get:
-
-```bash
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-echo "deb http://jenkins.mono-project.com/repo/debian sid main" | sudo tee /etc/apt/sources.list.d/mono-jenkins.list
+```
+echo "deb http://download.mono-project.com/repo/debian alpha main" | sudo tee /etc/apt/sources.list.d/mono-xamarin-alpha.list
 sudo apt-get update
-sudo apt-get install mono-snapshot-latest
-. mono-snapshot mono
-```
-**NOTE:** Official Mono instructions that these steps come from are here: http://www.mono-project.com/docs/getting-started/install/linux/ci-packages/.
-
-#### Option 2: Build Mono from source
-
-Building Mono from source can take some time, and the commands below will install the built version of Mono on your machine replacing any version you might already have.
-
-```bash
-sudo apt-get install git autoconf libtool automake build-essential mono-devel gettext
-PREFIX='/usr/local'
-PATH=$PREFIX/bin:$PATH
-git clone https://github.com/mono/mono.git
-cd mono
-./autogen.sh --prefix=$PREFIX
-make
-sudo make install
-cd .. && rm -rf Mono
-mozroots --import --sync
 ```
 
-See http://www.mono-project.com/docs/compiling-mono/linux/ for more details and some other build options.
+After that either `apt-get upgrade` or `apt-get install Mono-Complete` depending on whether you have Mono installed already.
 
-**NOTE:** Mono on Linux before 3.12 by default didn't trust any SSL certificates so you got errors when accessing HTTPS resources. This is not required anymore as 3.12 and later include a new tool that runs on package installation and syncs Mono's certificate store with the system certificate store (on older versions you have to import Mozilla's list of trusted certificates by running `mozroots --import --sync`. If you get exceptions during package restore this is the most likely reason.
 
 ### Get libuv
 
