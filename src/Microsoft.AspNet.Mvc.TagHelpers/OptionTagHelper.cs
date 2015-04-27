@@ -19,10 +19,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// </remarks>
     public class OptionTagHelper : TagHelper
     {
-        [Activate, HtmlAttributeNotBound]
+        [Activate]
+        [HtmlAttributeNotBound]
         public IHtmlGenerator Generator { get; set; }
 
-        [Activate, HtmlAttributeNotBound]
+        [Activate]
+        [HtmlAttributeNotBound]
         public ViewContext ViewContext { get; set; }
 
         /// <summary>

@@ -15,10 +15,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     {
         private const string ForAttributeName = "asp-for";
 
-        [Activate, HtmlAttributeNotBound]
+        [Activate]
+        [HtmlAttributeNotBound]
         public ViewContext ViewContext { get; set; }
 
-        [Activate, HtmlAttributeNotBound]
+        [Activate]
+        [HtmlAttributeNotBound]
         public IHtmlGenerator Generator { get; set; }
 
         /// <summary>

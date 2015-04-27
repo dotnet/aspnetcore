@@ -25,7 +25,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// </remarks>
         public string Names { get; set; }
 
-        [Activate, HtmlAttributeNotBound]
+        [Activate]
+        [HtmlAttributeNotBound]
         public IHostingEnvironment HostingEnvironment { get; set; }
 
         /// <inheritdoc />

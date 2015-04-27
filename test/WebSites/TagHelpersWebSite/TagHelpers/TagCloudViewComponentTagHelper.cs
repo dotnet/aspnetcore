@@ -25,7 +25,8 @@ namespace MvcSample.Web.Components
 
         public int Count { get; set; }
 
-        [Activate, HtmlAttributeNotBound]
+        [Activate]
+        [HtmlAttributeNotBound]
         public ViewContext ViewContext { get; set; }
 
         public int Order { get; } = 0;

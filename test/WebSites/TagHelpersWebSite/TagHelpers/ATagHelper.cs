@@ -9,7 +9,8 @@ namespace TagHelpersWebSite.TagHelpers
 {
     public class ATagHelper : TagHelper
     {
-        [Activate, HtmlAttributeNotBound]
+        [Activate]
+        [HtmlAttributeNotBound]
         public IUrlHelper UrlHelper { get; set; }
 
         public string Controller { get; set; }

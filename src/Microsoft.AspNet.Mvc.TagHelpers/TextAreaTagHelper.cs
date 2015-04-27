@@ -3,7 +3,6 @@
 
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -15,10 +14,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     {
         private const string ForAttributeName = "asp-for";
 
-        [Activate, HtmlAttributeNotBound]
+        [Activate]
+        [HtmlAttributeNotBound]
         public IHtmlGenerator Generator { get; set; }
 
-        [Activate, HtmlAttributeNotBound]
+        [Activate]
+        [HtmlAttributeNotBound]
         public ViewContext ViewContext { get; set; }
 
         /// <summary>

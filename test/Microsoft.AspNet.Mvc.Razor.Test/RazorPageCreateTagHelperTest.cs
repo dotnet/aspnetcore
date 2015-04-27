@@ -11,7 +11,6 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -147,7 +146,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private class ServiceTagHelper : TagHelper
         {
-            [Activate, HtmlAttributeNotBound]
+            [Activate]
+            [HtmlAttributeNotBound]
             public MyService ActivatedService { get; set; }
         }
 
@@ -159,7 +159,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private class ViewDataTagHelper : TagHelper
         {
-            [Activate, HtmlAttributeNotBound]
+            [Activate]
+            [HtmlAttributeNotBound]
             public ViewDataDictionary ViewData { get; set; }
         }
 

@@ -30,10 +30,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// </remarks>
         public static readonly string SelectedValuesFormDataKey = nameof(SelectTagHelper) + "-SelectedValues";
 
-        [Activate, HtmlAttributeNotBound]
+        [Activate]
+        [HtmlAttributeNotBound]
         public IHtmlGenerator Generator { get; set; }
 
-        [Activate, HtmlAttributeNotBound]
+        [Activate]
+        [HtmlAttributeNotBound]
         public ViewContext ViewContext { get; set; }
 
         /// <summary>

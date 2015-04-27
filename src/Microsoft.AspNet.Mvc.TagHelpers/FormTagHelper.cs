@@ -21,10 +21,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string RouteAttributePrefix = "asp-route-";
         private const string HtmlActionAttributeName = "action";
 
-        [Activate, HtmlAttributeNotBound]
+        [Activate]
+        [HtmlAttributeNotBound]
         public ViewContext ViewContext { get; set; }
 
-        [Activate, HtmlAttributeNotBound]
+        [Activate]
+        [HtmlAttributeNotBound]
         public IHtmlGenerator Generator { get; set; }
 
         /// <summary>

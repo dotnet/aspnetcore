@@ -62,10 +62,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "time", "{0:HH:mm:ss.fff}" },
             };
 
-        [Activate, HtmlAttributeNotBound]
+        [Activate]
+        [HtmlAttributeNotBound]
         public IHtmlGenerator Generator { get; set; }
 
-        [Activate, HtmlAttributeNotBound]
+        [Activate]
+        [HtmlAttributeNotBound]
         public ViewContext ViewContext { get; set; }
 
         /// <summary>

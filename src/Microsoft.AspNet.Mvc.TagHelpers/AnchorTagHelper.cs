@@ -24,7 +24,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string RouteAttributePrefix = "asp-route-";
         private const string Href = "href";
 
-        [Activate, HtmlAttributeNotBound]
+        [Activate]
+        [HtmlAttributeNotBound]
         public IHtmlGenerator Generator { get; set; }
 
         /// <summary>
