@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Text;
+using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 {
@@ -45,11 +46,11 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         }
 
         [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "Type is the most appropriate name for this property and there is little chance of confusion with GetType")]
-        public BlockType Type { get; private set; }
+        public BlockType Type { get; }
 
-        public IEnumerable<SyntaxTreeNode> Children { get; private set; }
+        public IEnumerable<SyntaxTreeNode> Children { get; }
 
-        public IBlockCodeGenerator CodeGenerator { get; private set; }
+        public IBlockCodeGenerator CodeGenerator { get; }
 
         public override bool IsBlock
         {
@@ -111,14 +112,18 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         {
             var other = obj as Block;
             return other != null &&
-                   Type == other.Type &&
-                   Equals(CodeGenerator, other.CodeGenerator) &&
-                   ChildrenEqual(Children, other.Children);
+                Type == other.Type &&
+                Equals(CodeGenerator, other.CodeGenerator) &&
+                ChildrenEqual(Children, other.Children);
         }
 
         public override int GetHashCode()
         {
-            return (int)Type;
+            return HashCodeCombiner.Start()
+                .Add(Type)
+                .Add(CodeGenerator)
+                .Add(Children)
+                .CombinedHash;
         }
 
         public IEnumerable<Span> Flatten()
@@ -201,7 +206,19 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             {
                 return false;
             }
+
             return Enumerable.SequenceEqual(Children, other.Children, new EquivalenceComparer());
+        }
+
+        public override int GetEquivalenceHash()
+        {
+            var combiner = HashCodeCombiner.Start().Add(Type);
+            foreach (var child in Children)
+            {
+                combiner.Add(child.GetEquivalenceHash());
+            }
+
+            return combiner.CombinedHash;
         }
     }
 }

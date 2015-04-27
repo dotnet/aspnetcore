@@ -6,7 +6,7 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 namespace Microsoft.AspNet.Razor.Generator
 {
     /// <summary>
-    /// A <see cref="SpanCodeGenerator"/> responsible for generating 
+    /// A <see cref="SpanCodeGenerator"/> responsible for generating
     /// <see cref="Compiler.TagHelperPrefixDirectiveChunk"/>s.
     /// </summary>
     public class TagHelperPrefixDirectiveCodeGenerator : SpanCodeGenerator

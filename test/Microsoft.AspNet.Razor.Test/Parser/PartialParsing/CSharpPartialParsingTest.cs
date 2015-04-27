@@ -50,7 +50,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
                     new StatementBlock(
                         factory.CodeTransition(),
                         factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                        factory.Code(Environment.NewLine + "    ").AsStatement(),
+                        factory.Code(Environment.NewLine + "    ")
+                            .AsStatement()
+                            .AutoCompleteWith(autoCompleteString: null),
                         new ExpressionBlock(
                             factory.CodeTransition(),
                             factory.Code("DateTime..Now")
@@ -106,7 +108,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
                         new StatementBlock(
                             factory.CodeTransition(),
                             factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                            factory.Code(Environment.NewLine + "    ").AsStatement(),
+                            factory.Code(Environment.NewLine + "    ")
+                                .AsStatement()
+                                .AutoCompleteWith(autoCompleteString: null),
                             new ExpressionBlock(
                                 factory.CodeTransition(),
                                 factory.Code(expectedCode)
@@ -166,7 +170,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
                         new StatementBlock(
                             factory.CodeTransition(),
                             factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                            factory.Code(Environment.NewLine + "    ").AsStatement(),
+                            factory.Code(Environment.NewLine + "    ")
+                                .AsStatement()
+                                .AutoCompleteWith(autoCompleteString: null),
                             new ExpressionBlock(
                                 factory.CodeTransition(),
                                 factory.Code(expectedCode)
@@ -352,7 +358,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
                     new StatementBlock(
                         factory.CodeTransition(),
                         factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                        factory.Code(Environment.NewLine + "    ").AsStatement(),
+                        factory.Code(Environment.NewLine + "    ")
+                            .AsStatement()
+                            .AutoCompleteWith(autoCompleteString: null),
                         new ExpressionBlock(
                             factory.CodeTransition(),
                             factory.Code("food")
@@ -379,7 +387,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
                     new StatementBlock(
                         factory.CodeTransition(),
                         factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                        factory.Code(Environment.NewLine + "    ").AsStatement(),
+                        factory.Code(Environment.NewLine + "    ")
+                            .AsStatement()
+                            .AutoCompleteWith(autoCompleteString: null),
                         new ExpressionBlock(
                             factory.CodeTransition(),
                             factory.Code("foo.d")
@@ -406,7 +416,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
                     new StatementBlock(
                         factory.CodeTransition(),
                         factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                        factory.Code(Environment.NewLine + "    ").AsStatement(),
+                        factory.Code(Environment.NewLine + "    ")
+                            .AsStatement()
+                            .AutoCompleteWith(autoCompleteString: null),
                         new ExpressionBlock(
                             factory.CodeTransition(),
                             factory.Code(@"foo.")
@@ -536,7 +548,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
                     new StatementBlock(
                         factory.CodeTransition(),
                         factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                        factory.EmptyCSharp().AsStatement(),
+                        factory.EmptyCSharp()
+                            .AsStatement()
+                            .AutoCompleteWith(autoCompleteString: null),
                         new ExpressionBlock(
                             factory.CodeTransition(),
                             factory.Code("foo.b")
@@ -559,7 +573,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
                     new StatementBlock(
                         factory.CodeTransition(),
                         factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                        factory.EmptyCSharp().AsStatement(),
+                        factory.EmptyCSharp()
+                            .AsStatement()
+                            .AutoCompleteWith(autoCompleteString: null),
                         new ExpressionBlock(
                             factory.CodeTransition(),
                             factory.Code("foo.")

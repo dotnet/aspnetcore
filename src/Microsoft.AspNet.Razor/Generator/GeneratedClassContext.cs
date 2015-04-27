@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Framework.Internal;
+using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
@@ -121,12 +122,12 @@ namespace Microsoft.AspNet.Razor.Generator
         }
 
         // Required Items
-        public string WriteMethodName { get; private set; }
-        public string WriteLiteralMethodName { get; private set; }
-        public string WriteToMethodName { get; private set; }
-        public string WriteLiteralToMethodName { get; private set; }
-        public string ExecuteMethodName { get; private set; }
-        public GeneratedTagHelperContext GeneratedTagHelperContext { get; private set; }
+        public string WriteMethodName { get; }
+        public string WriteLiteralMethodName { get; }
+        public string WriteToMethodName { get; }
+        public string WriteLiteralToMethodName { get; }
+        public string ExecuteMethodName { get; }
+        public GeneratedTagHelperContext GeneratedTagHelperContext { get; }
 
         // Optional Items
         public string BeginContextMethodName { get; set; }
@@ -160,30 +161,29 @@ namespace Microsoft.AspNet.Razor.Generator
             {
                 return false;
             }
+
             var other = (GeneratedClassContext)obj;
             return string.Equals(DefineSectionMethodName, other.DefineSectionMethodName, StringComparison.Ordinal) &&
-                   string.Equals(WriteMethodName, other.WriteMethodName, StringComparison.Ordinal) &&
-                   string.Equals(WriteLiteralMethodName, other.WriteLiteralMethodName, StringComparison.Ordinal) &&
-                   string.Equals(WriteToMethodName, other.WriteToMethodName, StringComparison.Ordinal) &&
-                   string.Equals(WriteLiteralToMethodName, other.WriteLiteralToMethodName, StringComparison.Ordinal) &&
-                   string.Equals(ExecuteMethodName, other.ExecuteMethodName, StringComparison.Ordinal) &&
-                   string.Equals(TemplateTypeName, other.TemplateTypeName, StringComparison.Ordinal) &&
-                   string.Equals(BeginContextMethodName, other.BeginContextMethodName, StringComparison.Ordinal) &&
-                   string.Equals(EndContextMethodName, other.EndContextMethodName, StringComparison.Ordinal);
+                string.Equals(WriteMethodName, other.WriteMethodName, StringComparison.Ordinal) &&
+                string.Equals(WriteLiteralMethodName, other.WriteLiteralMethodName, StringComparison.Ordinal) &&
+                string.Equals(WriteToMethodName, other.WriteToMethodName, StringComparison.Ordinal) &&
+                string.Equals(WriteLiteralToMethodName, other.WriteLiteralToMethodName, StringComparison.Ordinal) &&
+                string.Equals(ExecuteMethodName, other.ExecuteMethodName, StringComparison.Ordinal) &&
+                string.Equals(TemplateTypeName, other.TemplateTypeName, StringComparison.Ordinal) &&
+                string.Equals(BeginContextMethodName, other.BeginContextMethodName, StringComparison.Ordinal) &&
+                string.Equals(EndContextMethodName, other.EndContextMethodName, StringComparison.Ordinal);
         }
 
         public override int GetHashCode()
         {
-            // TODO: Use HashCodeCombiner
-            return DefineSectionMethodName.GetHashCode() ^
-                   WriteMethodName.GetHashCode() ^
-                   WriteLiteralMethodName.GetHashCode() ^
-                   WriteToMethodName.GetHashCode() ^
-                   WriteLiteralToMethodName.GetHashCode() ^
-                   ExecuteMethodName.GetHashCode() ^
-                   TemplateTypeName.GetHashCode() ^
-                   BeginContextMethodName.GetHashCode() ^
-                   EndContextMethodName.GetHashCode();
+            // Hash code should include only immutable properties.
+            return HashCodeCombiner.Start()
+                .Add(WriteMethodName, StringComparer.Ordinal)
+                .Add(WriteLiteralMethodName, StringComparer.Ordinal)
+                .Add(WriteToMethodName, StringComparer.Ordinal)
+                .Add(WriteLiteralToMethodName, StringComparer.Ordinal)
+                .Add(ExecuteMethodName, StringComparer.Ordinal)
+                .CombinedHash;
         }
 
         public static bool operator ==(GeneratedClassContext left, GeneratedClassContext right)

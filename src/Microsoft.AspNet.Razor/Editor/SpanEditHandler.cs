@@ -8,13 +8,14 @@ using System.Linq;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
-using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Editor
 {
     // Manages edits to a span
     public class SpanEditHandler
     {
+        private static readonly int TypeHashCode = typeof(SpanEditHandler).GetHashCode();
+
         [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Func<T> is the recommended delegate type and requires this level of nesting.")]
         public SpanEditHandler(Func<string, IEnumerable<ISymbol>> tokenizer)
             : this(tokenizer, AcceptedCharacters.Any)
@@ -170,16 +171,15 @@ namespace Microsoft.AspNet.Razor.Editor
         {
             var other = obj as SpanEditHandler;
             return other != null &&
-                   AcceptedCharacters == other.AcceptedCharacters &&
-                   EditorHints == other.EditorHints;
+                GetType() == other.GetType() &&
+                AcceptedCharacters == other.AcceptedCharacters &&
+                EditorHints == other.EditorHints;
         }
 
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
-                .Add(AcceptedCharacters)
-                .Add(EditorHints)
-                .CombinedHash;
+            // Hash code should include only immutable properties but Equals also checks the type.
+            return TypeHashCode;
         }
     }
 }

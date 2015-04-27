@@ -16,15 +16,5 @@ namespace Microsoft.AspNet.Razor.Generator
         {
             return "Stmt";
         }
-
-        public override bool Equals(object obj)
-        {
-            return obj is StatementCodeGenerator;
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
     }
 }

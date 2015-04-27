@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Razor.Editor;
+using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
@@ -20,7 +22,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.MarkupTransition()
                                    .Accepts(AcceptedCharacters.None),
                                Factory.MetaMarkup(":", HtmlSymbolType.Colon),
-                               Factory.Markup(" "),
+                               Factory.Markup(" ")
+                                   .With(new SingleLineMarkupEditHandler(
+                                       CSharpLanguageCharacteristics.Instance.TokenizeString,
+                                       AcceptedCharacters.Any)),
                                new StatementBlock(
                                    Factory.CodeTransition()
                                        .Accepts(AcceptedCharacters.None),

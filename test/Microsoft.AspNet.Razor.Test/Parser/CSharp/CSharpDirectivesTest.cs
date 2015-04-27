@@ -20,7 +20,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharacters.None),
-                    Factory.Code("\"\"").AsTagHelperPrefixDirective("")));
+                    Factory.Code("\"\"")
+                        .AsTagHelperPrefixDirective(string.Empty)));
         }
 
         [Fact]
@@ -32,7 +33,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharacters.None),
-                    Factory.Code("\"Foo\"").AsTagHelperPrefixDirective("Foo")));
+                    Factory.Code("\"Foo\"")
+                        .AsTagHelperPrefixDirective("Foo")));
         }
 
         [Fact]
@@ -44,7 +46,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharacters.None),
-                    Factory.EmptyCSharp().AsTagHelperPrefixDirective(string.Empty)),
+                    Factory.EmptyCSharp()
+                        .AsStatement()
+                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
                  new RazorError(
                     RazorResources.FormatParseError_DirectiveMustHaveValue(
                         SyntaxConstants.CSharp.TagHelperPrefixKeyword),
@@ -60,12 +64,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharacters.None),
-                    Factory.Code("\"Foo").AsTagHelperPrefixDirective("Foo")),
-                 new RazorError(
-                     RazorResources.ParseError_Unterminated_String_Literal,
-                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17),
-                 new RazorError(
-                     RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
+                    Factory.Code("\"Foo")
+                        .AsTagHelperPrefixDirective("Foo")),
+                new RazorError(
+                    RazorResources.ParseError_Unterminated_String_Literal,
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17),
+                new RazorError(
+                    RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.TagHelperPrefixKeyword),
                         absoluteIndex: 17, lineIndex: 0, columnIndex: 17));
         }
@@ -79,7 +84,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharacters.None),
-                    Factory.Code("Foo\"").AsTagHelperPrefixDirective("Foo")),
+                    Factory.Code("Foo\"")
+                        .AsStatement()
+                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
                  new RazorError(
                      RazorResources.ParseError_Unterminated_String_Literal,
                      absoluteIndex: 20, lineIndex: 0, columnIndex: 20),
@@ -98,7 +105,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharacters.None),
-                    Factory.Code("Foo").AsTagHelperPrefixDirective("Foo")),
+                    Factory.Code("Foo")
+                        .AsStatement()
+                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
                  new RazorError(
                      RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.TagHelperPrefixKeyword),
@@ -113,7 +122,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
-                    Factory.Code("\"Foo\"").AsRemoveTagHelper("Foo")));
+                    Factory.Code("\"Foo\"")
+                        .AsRemoveTagHelper("Foo")));
         }
 
         [Fact]
@@ -124,7 +134,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + "   ")
                            .Accepts(AcceptedCharacters.None),
-                    Factory.Code("\"  Foo,   Bar \"   ").AsRemoveTagHelper("  Foo,   Bar ")));
+                    Factory.Code("\"  Foo,   Bar \"   ")
+                        .AsRemoveTagHelper("Foo,   Bar")
+                        .Accepts(AcceptedCharacters.AnyExceptNewline)));
         }
 
         [Fact]
@@ -135,7 +147,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
-                    Factory.EmptyCSharp().AsRemoveTagHelper(string.Empty)),
+                    Factory.EmptyCSharp()
+                        .AsStatement()
+                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
                  new RazorError(
                     RazorResources.FormatParseError_DirectiveMustHaveValue(
                         SyntaxConstants.CSharp.RemoveTagHelperKeyword),
@@ -150,7 +164,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
-                    Factory.Code("\"Foo").AsRemoveTagHelper("Foo")),
+                    Factory.Code("\"Foo")
+                        .AsRemoveTagHelper("Foo")),
                  new RazorError(
                      RazorResources.ParseError_Unterminated_String_Literal,
                      absoluteIndex: 17, lineIndex: 0, columnIndex: 17),
@@ -168,7 +183,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
-                    Factory.Code("Foo\"").AsRemoveTagHelper("Foo")),
+                    Factory.Code("Foo\"")
+                        .AsStatement()
+                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
                  new RazorError(
                      RazorResources.ParseError_Unterminated_String_Literal,
                      absoluteIndex: 20, lineIndex: 0, columnIndex: 20),
@@ -186,7 +203,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
-                    Factory.Code("Foo").AsRemoveTagHelper("Foo")),
+                    Factory.Code("Foo")
+                        .AsStatement()
+                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
                  new RazorError(
                      RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.RemoveTagHelperKeyword),
@@ -201,7 +220,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
-                    Factory.Code("\"Foo\"").AsAddTagHelper("Foo")));
+                    Factory.Code("\"Foo\"")
+                        .AsAddTagHelper("Foo")));
         }
 
         [Fact]
@@ -212,7 +232,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + "   ")
                            .Accepts(AcceptedCharacters.None),
-                    Factory.Code("\"  Foo,   Bar \"   ").AsAddTagHelper("  Foo,   Bar ")));
+                    Factory.Code("\"  Foo,   Bar \"   ")
+                        .AsAddTagHelper("Foo,   Bar")));
         }
 
         [Fact]
@@ -223,7 +244,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
-                    Factory.EmptyCSharp().AsAddTagHelper(string.Empty)),
+                    Factory.EmptyCSharp()
+                        .AsStatement()
+                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
                  new RazorError(
                     RazorResources.FormatParseError_DirectiveMustHaveValue(SyntaxConstants.CSharp.AddTagHelperKeyword),
                     absoluteIndex: 14, lineIndex: 0, columnIndex: 14));
@@ -237,7 +260,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
-                    Factory.Code("\"Foo").AsAddTagHelper("Foo")),
+                    Factory.Code("\"Foo")
+                        .AsAddTagHelper("Foo")),
                  new RazorError(
                      RazorResources.ParseError_Unterminated_String_Literal,
                      absoluteIndex: 14, lineIndex: 0, columnIndex: 14),
@@ -255,7 +279,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
-                    Factory.Code("Foo\"").AsAddTagHelper("Foo")),
+                    Factory.Code("Foo\"")
+                        .AsStatement()
+                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
                  new RazorError(
                      RazorResources.ParseError_Unterminated_String_Literal,
                      absoluteIndex: 17, lineIndex: 0, columnIndex: 17),
@@ -273,7 +299,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
-                    Factory.Code("Foo").AsAddTagHelper("Foo")),
+                    Factory.Code("Foo")
+                        .AsStatement()
+                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
                  new RazorError(
                      RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.AddTagHelperKeyword),
@@ -349,7 +377,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.MetaCode(SyntaxConstants.CSharp.FunctionsKeyword + " {")
                            .Accepts(AcceptedCharacters.None),
                     Factory.Code(" foo(); bar(); ")
-                           .AsFunctionsBody(),
+                           .AsFunctionsBody()
+                           .AutoCompleteWith(autoCompleteString: null),
                     Factory.MetaCode("}")
                            .Accepts(AcceptedCharacters.None)));
         }
@@ -363,7 +392,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.MetaCode(SyntaxConstants.CSharp.FunctionsKeyword + " {")
                            .Accepts(AcceptedCharacters.None),
                     Factory.Code(" ")
-                           .AsFunctionsBody(),
+                        .AsFunctionsBody()
+                        .AutoCompleteWith(autoCompleteString: null),
                     Factory.MetaCode("}")
                            .Accepts(AcceptedCharacters.None)));
         }

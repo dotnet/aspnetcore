@@ -21,7 +21,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.MetaCode("{")
                                    .Accepts(AcceptedCharacters.None),
                                Factory.Code(" foo(); ")
-                                   .AsStatement(),
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                Factory.MetaCode("}")
                                    .Accepts(AcceptedCharacters.None)
                                ));
@@ -33,7 +34,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("{@}",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.EmptyCSharp().AsStatement(),
+                               Factory.EmptyCSharp()
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                new ExpressionBlock(
                                    Factory.CodeTransition(),
                                    Factory.EmptyCSharp().AsImplicitExpression(KeywordSet, acceptTrailingDot: true).Accepts(AcceptedCharacters.NonWhiteSpace)
@@ -53,7 +56,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("{@.}",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.EmptyCSharp().AsStatement(),
+                               Factory.EmptyCSharp()
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                new ExpressionBlock(
                                    Factory.CodeTransition(),
                                    Factory.EmptyCSharp().AsImplicitExpression(KeywordSet, acceptTrailingDot: true).Accepts(AcceptedCharacters.NonWhiteSpace)
@@ -75,7 +80,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "}",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(Environment.NewLine + "    ").AsStatement(),
+                               Factory.Code(Environment.NewLine + "    ")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                new ExpressionBlock(
                                    Factory.CodeTransition(),
                                    Factory.EmptyCSharp().AsImplicitExpression(KeywordSet, acceptTrailingDot: true).Accepts(AcceptedCharacters.NonWhiteSpace)
@@ -94,7 +101,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "}",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.EmptyCSharp().AsStatement(),
+                               Factory.EmptyCSharp()
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                new ExpressionBlock(
                                    Factory.CodeTransition(),
                                    Factory.Code("foo.").AsImplicitExpression(KeywordSet, acceptTrailingDot: true).Accepts(AcceptedCharacters.NonWhiteSpace)),
@@ -109,7 +118,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "}",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.EmptyCSharp().AsStatement(),
+                               Factory.EmptyCSharp()
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                new ExpressionBlock(
                                    Factory.CodeTransition(),
                                    Factory.Code("foo.").AsImplicitExpression(KeywordSet, acceptTrailingDot: true).Accepts(AcceptedCharacters.NonWhiteSpace)),

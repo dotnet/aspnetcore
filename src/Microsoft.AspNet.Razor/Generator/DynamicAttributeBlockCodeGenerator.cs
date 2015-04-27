@@ -1,12 +1,10 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Globalization;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
@@ -23,8 +21,9 @@ namespace Microsoft.AspNet.Razor.Generator
             ValueStart = valueStart;
         }
 
-        public LocationTagged<string> Prefix { get; private set; }
-        public SourceLocation ValueStart { get; private set; }
+        public LocationTagged<string> Prefix { get; }
+
+        public SourceLocation ValueStart { get; }
 
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
@@ -47,14 +46,12 @@ namespace Microsoft.AspNet.Razor.Generator
         {
             var other = obj as DynamicAttributeBlockCodeGenerator;
             return other != null &&
-                   Equals(other.Prefix, Prefix);
+                Equals(other.Prefix, Prefix);
         }
 
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
-                .Add(Prefix)
-                .CombinedHash;
+            return Prefix == null ? 0 : Prefix.GetHashCode();
         }
     }
 }

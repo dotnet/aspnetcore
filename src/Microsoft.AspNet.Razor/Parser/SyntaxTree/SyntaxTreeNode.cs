@@ -37,5 +37,15 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         /// symbols may be different.
         /// </returns>
         public abstract bool EquivalentTo(SyntaxTreeNode node);
+
+        /// <summary>
+        /// Determines a hash code for the <see cref="SyntaxTreeNode"/> using only information relevant in
+        /// <see cref="EquivalentTo"/> comparisons.
+        /// </summary>
+        /// <returns>
+        /// A hash code for the <see cref="SyntaxTreeNode"/> using only information relevant in
+        /// <see cref="EquivalentTo"/> comparisons.
+        /// </returns>
+        public abstract int GetEquivalenceHash();
     }
 }

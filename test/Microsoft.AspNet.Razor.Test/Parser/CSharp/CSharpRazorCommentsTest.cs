@@ -122,7 +122,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     new StatementBlock(
                         Factory.CodeTransition(),
                         Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                        Factory.Code(Environment.NewLine).AsStatement(),
+                        Factory.Code(Environment.NewLine)
+                            .AsStatement()
+                            .AutoCompleteWith("}"),
                         new MarkupBlock(
                             Factory.Markup("    "),
                             new MarkupTagBlock(
@@ -158,7 +160,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.CodeTransition(),
                         Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
                         Factory.EmptyCSharp()
-                               .AsStatement(),
+                            .AsStatement()
+                            .AutoCompleteWith("}"),
                         new CommentBlock(
                             Factory.CodeTransition(CSharpSymbolType.RazorCommentTransition)
                                    .Accepts(AcceptedCharacters.None),

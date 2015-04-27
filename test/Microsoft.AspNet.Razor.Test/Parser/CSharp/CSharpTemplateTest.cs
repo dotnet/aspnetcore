@@ -82,7 +82,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "; }",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(" var foo = ").AsStatement(),
+                               Factory.Code(" var foo = ")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                new TemplateBlock(
                                    new MarkupBlock(
                                        Factory.MarkupTransition(),
@@ -104,7 +106,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "}",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code("i").AsStatement(),
+                               Factory.Code("i")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                new TemplateBlock(
                                    new MarkupBlock(
                                        Factory.MarkupTransition(),
@@ -210,7 +214,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         {
             ParseBlockTest("foreach(foo in Bar) { Html.ExecuteTemplate(foo," + TestNestedTemplateCode + "); }",
                            new StatementBlock(
-                               Factory.Code("foreach(foo in Bar) { Html.ExecuteTemplate(foo, ").AsStatement(),
+                               Factory.Code("foreach(foo in Bar) { Html.ExecuteTemplate(foo, ")
+                                   .AsStatement(),
                                TestNestedTemplate(),
                                Factory.Code("); }")
                                    .AsStatement()
@@ -225,7 +230,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("{ var foo = bar; Html.ExecuteTemplate(foo," + TestTemplateCode + "); }",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(" var foo = bar; Html.ExecuteTemplate(foo, ").AsStatement(),
+                               Factory.Code(" var foo = bar; Html.ExecuteTemplate(foo, ")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                TestTemplate(),
                                Factory.Code("); ").AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
@@ -238,7 +245,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("{ var foo = bar; Html.ExecuteTemplate(foo," + TestTemplateCode + "," + TestTemplateCode + "); }",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(" var foo = bar; Html.ExecuteTemplate(foo, ").AsStatement(),
+                               Factory.Code(" var foo = bar; Html.ExecuteTemplate(foo, ")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                TestTemplate(),
                                Factory.Code(", ").AsStatement(),
                                TestTemplate(),
@@ -253,7 +262,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("{ var foo = bar; Html.ExecuteTemplate(foo," + TestNestedTemplateCode + "); }",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(" var foo = bar; Html.ExecuteTemplate(foo, ").AsStatement(),
+                               Factory.Code(" var foo = bar; Html.ExecuteTemplate(foo, ")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                TestNestedTemplate(),
                                Factory.Code("); ").AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)

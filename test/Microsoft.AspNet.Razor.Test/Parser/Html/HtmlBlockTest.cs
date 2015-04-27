@@ -36,7 +36,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     new StatementBlock(
                         Factory.CodeTransition(),
                         Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                        Factory.Code(Environment.NewLine).AsStatement(),
+                        Factory.Code(Environment.NewLine)
+                            .AsStatement()
+                            .AutoCompleteWith("}"),
                         new MarkupBlock(
                             new MarkupTagBlock(
                                 Factory.Markup("<"))))),
@@ -56,7 +58,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     new StatementBlock(
                         Factory.CodeTransition(),
                         Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                        Factory.Code(Environment.NewLine).AsStatement(),
+                        Factory.Code(Environment.NewLine)
+                            .AsStatement()
+                            .AutoCompleteWith("}"),
                         new MarkupBlock(
                             new MarkupTagBlock(
                                 Factory.Markup("<" + Environment.NewLine))

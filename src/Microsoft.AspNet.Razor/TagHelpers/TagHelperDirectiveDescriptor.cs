@@ -36,16 +36,16 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <summary>
         /// A <see cref="string"/> used to find tag helper <see cref="System.Type"/>s.
         /// </summary>
-        public string DirectiveText { get; private set; }
+        public string DirectiveText { get; }
 
         /// <summary>
         /// The <see cref="TagHelperDirectiveType"/> of this directive.
         /// </summary>
-        public TagHelperDirectiveType DirectiveType { get; private set; }
+        public TagHelperDirectiveType DirectiveType { get; }
 
         /// <summary>
         /// The <see cref="SourceLocation"/> of the directive.
         /// </summary>
-        public SourceLocation Location { get; private set; }
+        public SourceLocation Location { get; }
     }
 }

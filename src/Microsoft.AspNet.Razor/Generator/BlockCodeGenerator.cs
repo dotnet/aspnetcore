@@ -8,6 +8,8 @@ namespace Microsoft.AspNet.Razor.Generator
 {
     public abstract class BlockCodeGenerator : IBlockCodeGenerator
     {
+        private static readonly int TypeHashCode = typeof(BlockCodeGenerator).GetHashCode();
+
         [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "This class has no instance state")]
         public static readonly IBlockCodeGenerator Null = new NullBlockCodeGenerator();
 
@@ -21,12 +23,13 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override bool Equals(object obj)
         {
-            return (obj as IBlockCodeGenerator) != null;
+            return obj != null &&
+                GetType() == obj.GetType();
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return TypeHashCode;
         }
 
         private class NullBlockCodeGenerator : IBlockCodeGenerator

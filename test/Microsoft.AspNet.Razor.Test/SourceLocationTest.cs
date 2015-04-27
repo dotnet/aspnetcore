@@ -41,13 +41,15 @@ namespace Microsoft.AspNet.Razor
             Assert.Equal(characterIndex, sourceLocation.CharacterIndex);
         }
 
-        [Fact]
-        public void GetHashCode_ReturnsHashCode_UsingAbsoluteIndex()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("some-file")]
+        public void GetHashCode_ReturnsSameValue_WhenEqual(string path)
         {
             // Arrange
-            var sourceLocationA = new SourceLocation(10, 3, 4);
-            var sourceLocationB = new SourceLocation(10, 45, 8754);
-            var sourceLocationC = new SourceLocation(12, 45, 8754);
+            var sourceLocationA = new SourceLocation(path, 10, 3, 4);
+            var sourceLocationB = new SourceLocation(path, 10, 3, 4);
+            var sourceLocationC = new SourceLocation(path, 10, 45, 8754);
 
             // Act
             var hashCodeA = sourceLocationA.GetHashCode();
@@ -56,29 +58,11 @@ namespace Microsoft.AspNet.Razor
 
             // Assert
             Assert.Equal(hashCodeA, hashCodeB);
-            Assert.NotEqual(hashCodeA, hashCodeC);
+            Assert.Equal(hashCodeA, hashCodeC);
         }
 
         [Fact]
-        public void GetHashCode_ReturnsHashCode_UsingFilePathAndAbsoluteIndex_WhenFilePathIsNonNull()
-        {
-            // Arrange
-            var sourceLocationA = new SourceLocation("some-path", 3, 53, 94);
-            var sourceLocationB = new SourceLocation("some-path", 3, 43, 87);
-            var sourceLocationC = new SourceLocation(3, 53, 94);
-
-            // Act
-            var hashCodeA = sourceLocationA.GetHashCode();
-            var hashCodeB = sourceLocationB.GetHashCode();
-            var hashCodeC = sourceLocationC.GetHashCode();
-
-            // Assert
-            Assert.Equal(hashCodeA, hashCodeB);
-            Assert.NotEqual(hashCodeA, hashCodeC);
-        }
-
-        [Fact]
-        public void Equal_ReturnsFalse_IfIndexesDiffer()
+        public void Equals_ReturnsTrue_FilePathsNullAndAbsoluteIndicesMatch()
         {
             // Arrange
             var sourceLocationA = new SourceLocation(10, 3, 4);
@@ -88,11 +72,11 @@ namespace Microsoft.AspNet.Razor
             var result = sourceLocationA.Equals(sourceLocationB);
 
             // Assert
-            Assert.False(result);
+            Assert.True(result);
         }
 
         [Fact]
-        public void Equal_ReturnsFalse_IfFilePathIsDifferent()
+        public void Equals_ReturnsFalse_IfFilePathIsDifferent()
         {
             // Arrange
             var sourceLocationA = new SourceLocation(10, 3, 4);
@@ -108,7 +92,7 @@ namespace Microsoft.AspNet.Razor
         [Theory]
         [InlineData(null)]
         [InlineData("some-file")]
-        public void Equal_ReturnsTrue_IfFilePathAndIndexesAreSame(string path)
+        public void Equals_ReturnsTrue_IfFilePathAndIndexesAreSame(string path)
         {
             // Arrange
             var sourceLocationA = new SourceLocation(path, 10, 3, 4);

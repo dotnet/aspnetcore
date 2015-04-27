@@ -6,14 +6,13 @@ using System.Globalization;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
-using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Test.Framework
 {
     internal class RawTextSymbol : ISymbol
     {
         public SourceLocation Start { get; private set; }
-        public string Content { get; private set; }
+        public string Content { get; }
 
         public RawTextSymbol(SourceLocation start, string content)
         {
@@ -39,10 +38,8 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
-                .Add(Start)
-                .Add(Content)
-                .CombinedHash;
+            // Hash code should include only immutable properties.
+            return Content == null ? 0 : Content.GetHashCode();
         }
 
         public void OffsetStart(SourceLocation documentStart)

@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Razor.Generator
             BaseType = baseType;
         }
 
-        public string BaseType { get; private set; }
+        public string BaseType { get; }
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Razor.Generator
         {
             var other = obj as SetBaseTypeCodeGenerator;
             return other != null &&
-                   string.Equals(BaseType, other.BaseType, StringComparison.Ordinal);
+                string.Equals(BaseType, other.BaseType, StringComparison.Ordinal);
         }
 
         public override int GetHashCode()

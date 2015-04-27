@@ -2,12 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
+using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler
 {
     public class MappingLocation
     {
-        public MappingLocation() : base() { }
+        public MappingLocation()
+        {
+        }
 
         public MappingLocation(SourceLocation location, int contentLength)
         {
@@ -17,24 +20,36 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             CharacterIndex = location.CharacterIndex;
         }
 
-        public int ContentLength { get; set; }
-        public int AbsoluteIndex { get; set; }
-        public int LineIndex { get; set; }
-        public int CharacterIndex { get; set; }
+        public int ContentLength { get; }
+
+        public int AbsoluteIndex { get; }
+
+        public int LineIndex { get; }
+
+        public int CharacterIndex { get; }
 
         public override bool Equals(object obj)
         {
             var other = obj as MappingLocation;
+            if (ReferenceEquals(other, null))
+            {
+                return false;
+            }
 
             return AbsoluteIndex == other.AbsoluteIndex &&
-                   ContentLength == other.ContentLength &&
-                   LineIndex == other.LineIndex &&
-                   CharacterIndex == other.CharacterIndex;
+                ContentLength == other.ContentLength &&
+                LineIndex == other.LineIndex &&
+                CharacterIndex == other.CharacterIndex;
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return HashCodeCombiner.Start()
+                .Add(AbsoluteIndex)
+                .Add(ContentLength)
+                .Add(LineIndex)
+                .Add(CharacterIndex)
+                .CombinedHash;
         }
 
         public override string ToString()
@@ -49,11 +64,33 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
 
         public static bool operator ==(MappingLocation left, MappingLocation right)
         {
+            if (ReferenceEquals(left, right))
+            {
+                // Exact equality e.g. both objects are null.
+                return true;
+            }
+
+            if (ReferenceEquals(left, null))
+            {
+                return false;
+            }
+
             return left.Equals(right);
         }
 
         public static bool operator !=(MappingLocation left, MappingLocation right)
         {
+            if (ReferenceEquals(left, right))
+            {
+                // Exact equality e.g. both objects are null.
+                return false;
+            }
+
+            if (ReferenceEquals(left, null))
+            {
+                return true;
+            }
+
             return !left.Equals(right);
         }
     }

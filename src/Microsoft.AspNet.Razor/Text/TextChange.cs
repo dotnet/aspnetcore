@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Text
 {
@@ -58,12 +59,17 @@ namespace Microsoft.AspNet.Razor.Text
             OldBuffer = oldBuffer;
         }
 
-        public int OldPosition { get; private set; }
-        public int NewPosition { get; private set; }
-        public int OldLength { get; private set; }
-        public int NewLength { get; private set; }
-        public ITextBuffer NewBuffer { get; private set; }
-        public ITextBuffer OldBuffer { get; private set; }
+        public int OldPosition { get; }
+
+        public int NewPosition { get; }
+
+        public int OldLength { get; }
+
+        public int NewLength { get; }
+
+        public ITextBuffer NewBuffer { get; }
+
+        public ITextBuffer OldBuffer { get; }
 
         /// <remark>
         /// Note: This property is not thread safe, and will move position on the textbuffer while being read.
@@ -120,13 +126,26 @@ namespace Microsoft.AspNet.Razor.Text
             {
                 return false;
             }
+
             var change = (TextChange)obj;
-            return (change.OldPosition == OldPosition) &&
-                   (change.NewPosition == NewPosition) &&
-                   (change.OldLength == OldLength) &&
-                   (change.NewLength == NewLength) &&
-                   OldBuffer.Equals(change.OldBuffer) &&
-                   NewBuffer.Equals(change.NewBuffer);
+            return change.OldPosition == OldPosition &&
+                change.NewPosition == NewPosition &&
+                change.OldLength == OldLength &&
+                change.NewLength == NewLength &&
+                OldBuffer.Equals(change.OldBuffer) &&
+                NewBuffer.Equals(change.NewBuffer);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCodeCombiner.Start()
+                .Add(OldPosition)
+                .Add(NewPosition)
+                .Add(OldLength)
+                .Add(NewLength)
+                .Add(OldBuffer)
+                .Add(NewBuffer)
+                .CombinedHash;
         }
 
         public string ApplyChange(string content, int changeOffset)
@@ -145,11 +164,6 @@ namespace Microsoft.AspNet.Razor.Text
         public string ApplyChange(Span span)
         {
             return ApplyChange(span.Content, span.Start.AbsoluteIndex);
-        }
-
-        public override int GetHashCode()
-        {
-            return OldPosition ^ NewPosition ^ OldLength ^ NewLength ^ NewBuffer.GetHashCode() ^ OldBuffer.GetHashCode();
         }
 
         public override string ToString()

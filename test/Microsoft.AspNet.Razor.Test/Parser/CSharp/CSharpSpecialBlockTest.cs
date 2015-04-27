@@ -53,7 +53,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("{ using Foo.Bar.Baz; var foo = bar; }",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(" using Foo.Bar.Baz; var foo = bar; ").AsStatement(),
+                               Factory.Code(" using Foo.Bar.Baz; var foo = bar; ")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
                                ),
                            new RazorError(
@@ -67,7 +69,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("{ using Foo = Bar.Baz; var foo = bar; }",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(" using Foo = Bar.Baz; var foo = bar; ").AsStatement(),
+                               Factory.Code(" using Foo = Bar.Baz; var foo = bar; ")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
                                ),
                            new RazorError(
@@ -81,7 +85,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("{ functions Foo; }",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(" functions Foo; ").AsStatement(),
+                               Factory.Code(" functions Foo; ")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
                                ));
         }
@@ -94,7 +100,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "}",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code($"{Environment.NewLine}    List<dynamic> photos = gallery.Photo.ToList();{Environment.NewLine}").AsStatement(),
+                               Factory.Code($"{Environment.NewLine}    List<dynamic> photos = gallery.Photo.ToList();{Environment.NewLine}")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
                                ));
         }
@@ -109,7 +117,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("{" + code + "}",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(code).AsStatement(),
+                               Factory.Code(code)
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
                                ));
         }
@@ -136,7 +146,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("functions {" + code + "} zoop",
                            new FunctionsBlock(
                                Factory.MetaCode("functions {").Accepts(AcceptedCharacters.None),
-                               Factory.Code(code).AsFunctionsBody(),
+                               Factory.Code(code)
+                                   .AsFunctionsBody()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
                                ));
         }
@@ -147,7 +159,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("functions { { { { { } zoop",
                            new FunctionsBlock(
                                Factory.MetaCode("functions {").Accepts(AcceptedCharacters.None),
-                               Factory.Code(" { { { { } zoop").AsFunctionsBody()
+                               Factory.Code(" { { { { } zoop")
+                                   .AsFunctionsBody()
+                                   .AutoCompleteWith("}")
                                ),
                            new RazorError(
                                RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", "}", "{"),

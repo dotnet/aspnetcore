@@ -8,16 +8,16 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
     public class CSharpLineMappingWriter : IDisposable
     {
-        private CSharpCodeWriter _writer;
-        private MappingLocation _documentMapping;
-        private SourceLocation _generatedLocation;
-        private int _startIndent;
-        private int _generatedContentLength;
-        private bool _writePragmas;
-        private bool _addLineMapping;
+        private readonly CSharpCodeWriter _writer;
+        private readonly MappingLocation _documentMapping;
+        private readonly int _startIndent;
+        private readonly bool _writePragmas;
+        private readonly bool _addLineMapping;
 
-        private CSharpLineMappingWriter([NotNull] CSharpCodeWriter writer,
-                                        bool addLineMappings)
+        private SourceLocation _generatedLocation;
+        private int _generatedContentLength;
+
+        private CSharpLineMappingWriter([NotNull] CSharpCodeWriter writer, bool addLineMappings)
         {
             _writer = writer;
             _addLineMapping = addLineMappings;
@@ -32,7 +32,11 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             _generatedLocation = _writer.GetCurrentSourceLocation();
         }
 
-        public CSharpLineMappingWriter(CSharpCodeWriter writer, SourceLocation documentLocation, int contentLength, string sourceFilename)
+        public CSharpLineMappingWriter(
+            CSharpCodeWriter writer,
+            SourceLocation documentLocation,
+            int contentLength,
+            string sourceFilename)
             : this(writer, documentLocation, contentLength)
         {
             _writePragmas = true;
@@ -49,9 +53,10 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         /// <param name="writer">The <see cref="CSharpCodeWriter"/> to write output to.</param>
         /// <param name="documentLocation">The <see cref="SourceLocation"/> of the Razor content being mapping.</param>
         /// <param name="sourceFileName">The input file path.</param>
-        public CSharpLineMappingWriter([NotNull] CSharpCodeWriter writer,
-                                       [NotNull] SourceLocation documentLocation,
-                                       [NotNull] string sourceFileName)
+        public CSharpLineMappingWriter(
+            [NotNull] CSharpCodeWriter writer,
+            [NotNull] SourceLocation documentLocation,
+            [NotNull] string sourceFileName)
             : this(writer, addLineMappings: false)
         {
             _writePragmas = true;
@@ -79,14 +84,20 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 }
 
                 var generatedLocation = new MappingLocation(_generatedLocation, _generatedContentLength);
-                if (_documentMapping.ContentLength == -1)
+                var documentMapping = _documentMapping;
+                if (documentMapping.ContentLength == -1)
                 {
-                    _documentMapping.ContentLength = generatedLocation.ContentLength;
+                    documentMapping = new MappingLocation(
+                        location: new SourceLocation(
+                            _documentMapping.AbsoluteIndex,
+                            _documentMapping.LineIndex,
+                            _documentMapping.CharacterIndex),
+                        contentLength: _generatedContentLength);
                 }
 
                 _writer.LineMappingManager.AddMapping(
-                    documentLocation: _documentMapping,
-                    generatedLocation: new MappingLocation(_generatedLocation, _generatedContentLength));
+                    documentLocation: documentMapping,
+                    generatedLocation: generatedLocation);
             }
 
             if (_writePragmas)
@@ -105,7 +116,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 }
 
                 _writer.WriteLineDefaultDirective()
-                        .WriteLineHiddenDirective();
+                    .WriteLineHiddenDirective();
             }
 
             // Reset indent back to when it was started

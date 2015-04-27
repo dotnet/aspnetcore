@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor
 {
@@ -35,8 +36,22 @@ namespace Microsoft.AspNet.Razor
         {
         }
 
+        /// <summary>
+        /// Gets (or sets) the message describing the error.
+        /// </summary>
+        /// <remarks>Set property is only accessible for deserialization purposes.</remarks>
         public string Message { get; set; }
+
+        /// <summary>
+        /// Gets (or sets) the start position of the erroneous text.
+        /// </summary>
+        /// <remarks>Set property is only accessible for deserialization purposes.</remarks>
         public SourceLocation Location { get; set; }
+
+        /// <summary>
+        /// Gets or sets the length of the erroneous text.
+        /// </summary>
+        /// <remarks>Set property is only accessible for deserialization purposes.</remarks>
         public int Length { get; set; }
 
         public override string ToString()
@@ -46,19 +61,23 @@ namespace Microsoft.AspNet.Razor
 
         public override bool Equals(object obj)
         {
-            var err = obj as RazorError;
-            return (err != null) && Equals(err);
+            var error = obj as RazorError;
+            return Equals(error);
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return HashCodeCombiner.Start()
+                .Add(Message, StringComparer.Ordinal)
+                .Add(Location)
+                .CombinedHash;
         }
 
         public bool Equals(RazorError other)
         {
-            return string.Equals(other.Message, Message, StringComparison.Ordinal) &&
-                   Location.Equals(other.Location);
+            return other != null &&
+                string.Equals(other.Message, Message, StringComparison.Ordinal) &&
+                Location.Equals(other.Location);
         }
     }
 }

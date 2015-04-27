@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
@@ -15,7 +14,7 @@ namespace Microsoft.AspNet.Razor.Generator
             SectionName = sectionName;
         }
 
-        public string SectionName { get; private set; }
+        public string SectionName { get; }
 
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
@@ -32,17 +31,13 @@ namespace Microsoft.AspNet.Razor.Generator
         public override bool Equals(object obj)
         {
             var other = obj as SectionCodeGenerator;
-            return other != null &&
-                   base.Equals(other) &&
-                   string.Equals(SectionName, other.SectionName, StringComparison.Ordinal);
+            return base.Equals(other) &&
+                string.Equals(SectionName, other.SectionName, StringComparison.Ordinal);
         }
 
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
-                .Add(base.GetHashCode())
-                .Add(SectionName)
-                .CombinedHash;
+            return SectionName == null ? 0 : StringComparer.Ordinal.GetHashCode(SectionName);
         }
 
         public override string ToString()

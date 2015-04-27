@@ -16,15 +16,5 @@ namespace Microsoft.AspNet.Razor.Generator
         {
             return "Markup";
         }
-
-        public override bool Equals(object obj)
-        {
-            return obj is MarkupCodeGenerator;
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
     }
 }

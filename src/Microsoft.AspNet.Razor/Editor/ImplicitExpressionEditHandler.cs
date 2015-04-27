@@ -18,15 +18,31 @@ namespace Microsoft.AspNet.Razor.Editor
 {
     public class ImplicitExpressionEditHandler : SpanEditHandler
     {
+        private readonly ISet<string> _keywords;
+        private readonly IReadOnlyCollection<string> _readOnlyKeywords;
+
         [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Func<T> is the recommended delegate type and requires this level of nesting.")]
         public ImplicitExpressionEditHandler(Func<string, IEnumerable<ISymbol>> tokenizer, ISet<string> keywords, bool acceptTrailingDot)
             : base(tokenizer)
         {
-            Initialize(keywords, acceptTrailingDot);
+            _keywords = keywords ?? new HashSet<string>();
+
+            // HashSet<T> implements IReadOnlyCollection<T> as of 4.6, but does not for 4.5.1. If the runtime cast
+            // succeeds, avoid creating a new collection.
+            _readOnlyKeywords = (_keywords as IReadOnlyCollection<string>) ?? _keywords.ToArray();
+
+            AcceptTrailingDot = acceptTrailingDot;
         }
 
-        public bool AcceptTrailingDot { get; private set; }
-        public ISet<string> Keywords { get; private set; }
+        public bool AcceptTrailingDot { get; }
+
+        public IReadOnlyCollection<string> Keywords
+        {
+            get
+            {
+                return _readOnlyKeywords;
+            }
+        }
 
         public override string ToString()
         {
@@ -36,18 +52,17 @@ namespace Microsoft.AspNet.Razor.Editor
         public override bool Equals(object obj)
         {
             var other = obj as ImplicitExpressionEditHandler;
-            return other != null &&
-                   base.Equals(other) &&
-                   Keywords.SetEquals(other.Keywords) &&
-                   AcceptTrailingDot == other.AcceptTrailingDot;
+            return base.Equals(other) &&
+                _keywords.SetEquals(other._keywords) &&
+                AcceptTrailingDot == other.AcceptTrailingDot;
         }
 
         public override int GetHashCode()
         {
+            // Hash code should include only immutable properties and base has none.
             return HashCodeCombiner.Start()
-                .Add(base.GetHashCode())
-                .Add(AcceptTrailingDot)
                 .Add(Keywords)
+                .Add(AcceptTrailingDot)
                 .CombinedHash;
         }
 
@@ -102,12 +117,6 @@ namespace Microsoft.AspNet.Razor.Editor
             }
 
             return PartialParseResult.Rejected;
-        }
-
-        private void Initialize(ISet<string> keywords, bool acceptTrailingDot)
-        {
-            Keywords = keywords ?? new HashSet<string>();
-            AcceptTrailingDot = acceptTrailingDot;
         }
 
         // A dotless commit is the process of inserting a '.' with an intellisense selection.
@@ -310,7 +319,7 @@ namespace Microsoft.AspNet.Razor.Editor
         {
             using (var reader = new StringReader(newContent))
             {
-                return Keywords.Contains(reader.ReadWhile(ParserHelpers.IsIdentifierPart));
+                return _keywords.Contains(reader.ReadWhile(ParserHelpers.IsIdentifierPart));
             }
         }
     }

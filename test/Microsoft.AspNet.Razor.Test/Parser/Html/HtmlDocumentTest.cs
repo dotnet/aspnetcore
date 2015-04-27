@@ -257,7 +257,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     Factory.EmptyHtml(),
                     new SectionBlock(new SectionCodeGenerator("Foo"),
                         Factory.CodeTransition(),
-                        Factory.MetaCode("section Foo {"),
+                        Factory.MetaCode("section Foo {")
+                            .AutoCompleteWith(autoCompleteString: null, atEndOfSpan: true),
                         new MarkupBlock(
                             Factory.Markup(" "),
                             BlockFactory.MarkupTagBlock("<script>"),

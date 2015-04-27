@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Test.Generator
 {
@@ -28,9 +28,11 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         {
         }
 
-        public SpanKind Kind { get; private set; }
-        public int Start { get; private set; }
-        public int End { get; private set; }
+        public SpanKind Kind { get; }
+
+        public int Start { get; }
+
+        public int End { get; }
 
         public override string ToString()
         {
@@ -40,20 +42,19 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         public override bool Equals(object obj)
         {
             var other = obj as TestSpan;
-
-            if (other != null)
-            {
-                return (Kind == other.Kind) &&
-                       (Start == other.Start) &&
-                       (End == other.End);
-            }
-
-            return false;
+            return other != null &&
+                Kind == other.Kind &&
+                Start == other.Start &&
+                End == other.End;
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return HashCodeCombiner.Start()
+                .Add(Kind)
+                .Add(Start)
+                .Add(End)
+                .CombinedHash;
         }
     }
 }

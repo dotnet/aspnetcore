@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
         public int GetHashCode(SyntaxTreeNode obj)
         {
-            return obj.GetHashCode();
+            return obj.GetEquivalenceHash();
         }
     }
 }

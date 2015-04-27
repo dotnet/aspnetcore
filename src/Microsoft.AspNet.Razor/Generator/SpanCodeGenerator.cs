@@ -8,6 +8,8 @@ namespace Microsoft.AspNet.Razor.Generator
 {
     public abstract class SpanCodeGenerator : ISpanCodeGenerator
     {
+        private static readonly int TypeHashCode = typeof(SpanCodeGenerator).GetHashCode();
+
         [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "This class has no instance state")]
         public static readonly ISpanCodeGenerator Null = new NullSpanCodeGenerator();
 
@@ -17,12 +19,13 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override bool Equals(object obj)
         {
-            return (obj as ISpanCodeGenerator) != null;
+            return obj != null &&
+                GetType() == obj.GetType();
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return TypeHashCode;
         }
 
         private class NullSpanCodeGenerator : ISpanCodeGenerator

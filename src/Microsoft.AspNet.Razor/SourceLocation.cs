@@ -90,13 +90,13 @@ namespace Microsoft.AspNet.Razor
         /// <inheritdoc />
         public override bool Equals(object obj)
         {
-            return (obj is SourceLocation) && Equals((SourceLocation)obj);
+            return obj is SourceLocation &&
+                Equals((SourceLocation)obj);
         }
 
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            // LineIndex and CharacterIndex can be calculated from AbsoluteIndex and the document content.
             return HashCodeCombiner.Start()
                 .Add(FilePath, StringComparer.Ordinal)
                 .Add(AbsoluteIndex)
@@ -106,10 +106,8 @@ namespace Microsoft.AspNet.Razor
         /// <inheritdoc />
         public bool Equals(SourceLocation other)
         {
-            return string.Equals(FilePath, other.FilePath, StringComparison.Ordinal) &&
-                AbsoluteIndex == other.AbsoluteIndex &&
-                LineIndex == other.LineIndex &&
-                CharacterIndex == other.CharacterIndex;
+            // LineIndex and CharacterIndex can be calculated from AbsoluteIndex and the document content.
+            return CompareTo(other) == 0;
         }
 
         /// <inheritdoc />

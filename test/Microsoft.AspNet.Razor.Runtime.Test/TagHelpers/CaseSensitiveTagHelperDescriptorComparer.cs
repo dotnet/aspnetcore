@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             var hashCodeCombiner = HashCodeCombiner
                 .Start()
-                .Add(base.GetHashCode())
+                .Add(base.GetHashCode(descriptor))
                 .Add(descriptor.TagName, StringComparer.Ordinal)
                 .Add(descriptor.Prefix);
 

@@ -57,7 +57,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("{}",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.EmptyCSharp().AsStatement(),
+                               Factory.EmptyCSharp()
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
                                ));
         }
@@ -82,7 +84,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "}",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(Environment.NewLine + "    ").AsStatement(),
+                               Factory.Code(Environment.NewLine + "    ")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                new ExpressionBlock(
                                    Factory.CodeTransition(),
                                    Factory.EmptyCSharp()
@@ -101,7 +105,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "    @",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(Environment.NewLine + "    ").AsStatement(),
+                               Factory.Code(Environment.NewLine + "    ")
+                                   .AsStatement()
+                                   .AutoCompleteWith("}"),
                                new ExpressionBlock(
                                    Factory.CodeTransition(),
                                    Factory.EmptyCSharp()
@@ -247,8 +253,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("{ var foo = bar; if(foo != null) { bar(); } ",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(" var foo = bar; if(foo != null) { bar(); } ").AsStatement()
-                               ),
+                               Factory.Code(" var foo = bar; if(foo != null) { bar(); } ")
+                                   .AsStatement()
+                                   .AutoCompleteWith("}")),
                            new RazorError(
                                RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, '}', '{'),
                                SourceLocation.Zero));
@@ -260,8 +267,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("functions { var foo = bar; if(foo != null) { bar(); } ",
                            new FunctionsBlock(
                                Factory.MetaCode("functions {").Accepts(AcceptedCharacters.None),
-                               Factory.Code(" var foo = bar; if(foo != null) { bar(); } ").AsFunctionsBody()
-                               ),
+                               Factory.Code(" var foo = bar; if(foo != null) { bar(); } ")
+                                   .AsFunctionsBody()
+                                   .AutoCompleteWith("}")),
                            new RazorError(
                                RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", '}', '{'),
                                SourceLocation.Zero));
@@ -592,7 +600,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                 new StatementBlock(
                     Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
                     Factory.Code("string.Format(")
-                           .AsStatement(),
+                        .AsStatement()
+                        .AutoCompleteWith(autoCompleteString: null),
                     new MarkupBlock(
                         BlockFactory.MarkupTagBlock("<html>", AcceptedCharacters.None),
                         BlockFactory.MarkupTagBlock("</html>", AcceptedCharacters.None)),

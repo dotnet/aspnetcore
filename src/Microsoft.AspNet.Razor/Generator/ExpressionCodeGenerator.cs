@@ -8,6 +8,8 @@ namespace Microsoft.AspNet.Razor.Generator
 {
     public class ExpressionCodeGenerator : HybridCodeGenerator
     {
+        private static readonly int TypeHashCode = typeof(ExpressionCodeGenerator).GetHashCode();
+
         public override void GenerateStartBlockCode(Block target, CodeGeneratorContext context)
         {
             context.CodeTreeBuilder.StartChunkBlock<ExpressionBlockChunk>(target);
@@ -30,12 +32,13 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override bool Equals(object obj)
         {
-            return obj is ExpressionCodeGenerator;
+            return obj != null &&
+                GetType() == obj.GetType();
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return TypeHashCode;
         }
     }
 }

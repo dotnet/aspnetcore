@@ -16,16 +16,5 @@ namespace Microsoft.AspNet.Razor.Generator
         {
             return "TypeMember";
         }
-
-        public override bool Equals(object obj)
-        {
-            return obj is TypeMemberCodeGenerator;
-        }
-
-        // C# complains at us if we don't provide an implementation, even one like this
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
     }
 }

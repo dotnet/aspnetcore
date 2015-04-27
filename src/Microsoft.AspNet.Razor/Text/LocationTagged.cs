@@ -33,15 +33,20 @@ namespace Microsoft.AspNet.Razor.Text
             Value = value;
         }
 
-        public SourceLocation Location { get; private set; }
-        public T Value { get; private set; }
+        public SourceLocation Location { get; }
+
+        public T Value { get; }
 
         public override bool Equals(object obj)
         {
             LocationTagged<T> other = obj as LocationTagged<T>;
-            return other != null &&
-                   Equals(other.Location, Location) &&
-                   Equals(other.Value, Value);
+            if (ReferenceEquals(other, null))
+            {
+                return false;
+            }
+
+            return Equals(other.Location, Location) &&
+                Equals(other.Value, Value);
         }
 
         public override int GetHashCode()

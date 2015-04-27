@@ -19,7 +19,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("{ List< }",
                 new StatementBlock(
                     Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                    Factory.Code(" List< ").AsStatement(),
+                    Factory.Code(" List< ")
+                        .AsStatement()
+                        .AutoCompleteWith(autoCompleteString: null),
                     Factory.MetaCode("}").Accepts(AcceptedCharacters.None)));
         }
 
@@ -77,7 +79,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "}",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(Environment.NewLine + "    ").AsStatement(),
+                               Factory.Code(Environment.NewLine + "    ")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                new MarkupBlock(
                                         new MarkupTagBlock(
                                             Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
@@ -98,7 +102,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "}",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(Environment.NewLine + "    ").AsStatement(),
+                               Factory.Code(Environment.NewLine + "    ")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                new MarkupBlock(
                                    Factory.MarkupTransition(),
                                         new MarkupTagBlock(
@@ -122,7 +128,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "}",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(Environment.NewLine + "    ").AsStatement(),
+                               Factory.Code(Environment.NewLine + "    ")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                new MarkupBlock(
                                    Factory.MarkupTransition(),
                                    Factory.MetaMarkup(":", HtmlSymbolType.Colon),
@@ -152,13 +160,15 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                        new StatementBlock(
                                            Factory.CodeTransition(),
                                            Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                                           Factory.EmptyCSharp().AsStatement(),
+                                           Factory.EmptyCSharp()
+                                               .AsStatement()
+                                               .AutoCompleteWith(autoCompleteString: null),
                                            Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
                                            ),
                                        Factory.Markup(Environment.NewLine)
-                                           .With(new SingleLineMarkupEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString, AcceptedCharacters.None))
-                                       )
-                                   ),
+                                           .Accepts(AcceptedCharacters.None)
+                                   )
+                               ),
                                Factory.Code(")")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                    .Accepts(AcceptedCharacters.NonWhiteSpace)
@@ -291,7 +301,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("{ if(foo) { <p>Bar</p> } else if(bar) { <p>Baz</p> } else { <p>Boz</p> } }",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(" if(foo) {").AsStatement(),
+                               Factory.Code(" if(foo) {")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                new MarkupBlock(
                                    Factory.Markup(" "),
                                     new MarkupTagBlock(
@@ -421,7 +433,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "} }",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code($" switch(foo) {{{Environment.NewLine}    case 0:{Environment.NewLine}").AsStatement(),
+                               Factory.Code($" switch(foo) {{{Environment.NewLine}    case 0:{Environment.NewLine}")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                new MarkupBlock(
                                    Factory.Markup("        "),
                                    new MarkupTagBlock(
@@ -501,7 +515,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("{ for(int i = 0; i < 10; i++) { <p>Foo</p> } }",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(" for(int i = 0; i < 10; i++) {").AsStatement(),
+                               Factory.Code(" for(int i = 0; i < 10; i++) {")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                new MarkupBlock(
                                     Factory.Markup(" "),
                                     new MarkupTagBlock(
@@ -541,12 +557,15 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "} } zoop",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(" if(foo) {").AsStatement(),
+                               Factory.Code(" if(foo) {")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                new MarkupBlock(
                                    Factory.Markup(" "),
                                    Factory.MarkupTransition(),
                                    Factory.MetaMarkup(":", HtmlSymbolType.Colon),
                                    Factory.Markup("Bar" + Environment.NewLine).Accepts(AcceptedCharacters.None)
+                                       .With(new SingleLineMarkupEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString, AcceptedCharacters.None))
                                    ),
                                Factory.Code("} ").AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)));
@@ -576,7 +595,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("{ if (i > 0) { <text>;</text> } }",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(" if (i > 0) {").AsStatement(),
+                               Factory.Code(" if (i > 0) {")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                new MarkupBlock(
                                    Factory.Markup(" "),
                                    new MarkupTagBlock(
@@ -606,7 +627,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                          + "}",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code($"{Environment.NewLine}    if(true) {{{Environment.NewLine}").AsStatement(),
+                               Factory.Code($"{Environment.NewLine}    if(true) {{{Environment.NewLine}")
+                                   .AsStatement()
+                                   .AutoCompleteWith(autoCompleteString: null),
                                new MarkupBlock(
                                    Factory.Markup("        "),
                                    Factory.MarkupTransition(),

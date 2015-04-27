@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <paramref name="attributes"/>.
         /// </summary>
         /// <param name="prefix">
-        /// Text used as a required prefix when matching HTML start and end tags in the Razor source to available 
+        /// Text used as a required prefix when matching HTML start and end tags in the Razor source to available
         /// tag helpers.
         /// </param>
         /// <param name="tagName">The tag name that the tag helper targets. '*' indicates a catch-all
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         }
 
         /// <summary>
-        /// Text used as a required prefix when matching HTML start and end tags in the Razor source to available 
+        /// Text used as a required prefix when matching HTML start and end tags in the Razor source to available
         /// tag helpers.
         /// </summary>
         public string Prefix { get; private set; }
@@ -128,11 +128,11 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <summary>
         /// The list of attributes the tag helper expects.
         /// </summary>
-        public IList<TagHelperAttributeDescriptor> Attributes { get; private set; }
+        public IReadOnlyList<TagHelperAttributeDescriptor> Attributes { get; private set; }
 
         /// <summary>
         /// The list of required attribute names the tag helper expects to target an element.
         /// </summary>
-        public IList<string> RequiredAttributes { get; private set; }
+        public IReadOnlyList<string> RequiredAttributes { get; private set; }
     }
 }

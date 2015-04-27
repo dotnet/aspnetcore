@@ -12,15 +12,11 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
             Mappings = new List<LineMapping>();
         }
 
-        public List<LineMapping> Mappings { get; private set; }
+        public List<LineMapping> Mappings { get; }
 
         public void AddMapping(MappingLocation documentLocation, MappingLocation generatedLocation)
         {
-            Mappings.Add(new LineMapping
-            {
-                DocumentLocation = documentLocation,
-                GeneratedLocation = generatedLocation
-            });
+            Mappings.Add(new LineMapping(documentLocation, generatedLocation));
         }
     }
 }

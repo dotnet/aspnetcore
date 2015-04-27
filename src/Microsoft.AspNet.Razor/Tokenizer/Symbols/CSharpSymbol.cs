@@ -35,12 +35,13 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
         public override bool Equals(object obj)
         {
             var other = obj as CSharpSymbol;
-            return base.Equals(obj) && other.Keyword == Keyword;
+            return base.Equals(other) && other.Keyword == Keyword;
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode() ^ Keyword.GetHashCode();
+            // Hash code should include only immutable properties.
+            return base.GetHashCode();
         }
     }
 }

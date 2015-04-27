@@ -243,7 +243,12 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         public static SpanConstructor AutoCompleteWith(this SpanConstructor self, string autoCompleteString, bool atEndOfSpan)
         {
-            return self.With(new AutoCompleteEditHandler(SpanConstructor.TestTokenizer) { AutoCompleteString = autoCompleteString, AutoCompleteAtEndOfSpan = atEndOfSpan });
+            return self.With(new AutoCompleteEditHandler(
+                SpanConstructor.TestTokenizer,
+                autoCompleteAtEndOfSpan: atEndOfSpan)
+            {
+                AutoCompleteString = autoCompleteString
+            });
         }
 
         public static SpanConstructor WithEditorHints(this SpanConstructor self, EditorHints hints)

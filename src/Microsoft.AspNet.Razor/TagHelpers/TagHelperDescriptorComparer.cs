@@ -40,10 +40,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                    string.Equals(descriptorX.AssemblyName, descriptorY.AssemblyName, StringComparison.Ordinal) &&
                    Enumerable.SequenceEqual(
                        descriptorX.RequiredAttributes.OrderBy(
-                           attribute => attribute, 
+                           attribute => attribute,
                            StringComparer.OrdinalIgnoreCase),
                        descriptorY.RequiredAttributes.OrderBy(
-                           attribute => attribute, 
+                           attribute => attribute,
                            StringComparer.OrdinalIgnoreCase),
                        StringComparer.OrdinalIgnoreCase);
         }
@@ -62,12 +62,11 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 .Add(descriptor.AssemblyName, StringComparer.Ordinal);
 
             var attributes = descriptor.RequiredAttributes.OrderBy(
-                attribute => attribute, 
+                attribute => attribute,
                 StringComparer.OrdinalIgnoreCase);
-
             foreach (var attribute in attributes)
             {
-                hashCodeCombiner.Add(attributes);
+                hashCodeCombiner.Add(attribute, StringComparer.OrdinalIgnoreCase);
             }
 
             return hashCodeCombiner.CombinedHash;

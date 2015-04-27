@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         /// <summary>
         /// The HTML tag name.
         /// </summary>
-        public string TagName { get; private set; }
+        public string TagName { get; }
 
         public override int Length
         {
@@ -115,20 +115,18 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         /// </returns>
         public bool Equals(TagHelperBlock other)
         {
-            return other != null &&
-                   TagName == other.TagName &&
-                   Attributes.SequenceEqual(other.Attributes) &&
-                   base.Equals(other);
+            return base.Equals(other) &&
+                string.Equals(TagName, other.TagName, StringComparison.OrdinalIgnoreCase) &&
+                Attributes.SequenceEqual(other.Attributes);
         }
 
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return HashCodeCombiner
-                .Start()
-                .Add(TagName)
-                .Add(Attributes)
+            return HashCodeCombiner.Start()
                 .Add(base.GetHashCode())
+                .Add(TagName, StringComparer.OrdinalIgnoreCase)
+                .Add(Attributes)
                 .CombinedHash;
         }
     }

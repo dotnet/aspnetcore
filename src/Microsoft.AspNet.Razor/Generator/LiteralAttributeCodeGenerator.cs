@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Globalization;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
@@ -24,9 +23,11 @@ namespace Microsoft.AspNet.Razor.Generator
             Value = value;
         }
 
-        public LocationTagged<string> Prefix { get; private set; }
-        public LocationTagged<string> Value { get; private set; }
-        public LocationTagged<SpanCodeGenerator> ValueGenerator { get; private set; }
+        public LocationTagged<string> Prefix { get; }
+
+        public LocationTagged<string> Value { get; }
+
+        public LocationTagged<SpanCodeGenerator> ValueGenerator { get; }
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
@@ -62,9 +63,9 @@ namespace Microsoft.AspNet.Razor.Generator
         {
             var other = obj as LiteralAttributeCodeGenerator;
             return other != null &&
-                   Equals(other.Prefix, Prefix) &&
-                   Equals(other.Value, Value) &&
-                   Equals(other.ValueGenerator, ValueGenerator);
+                Equals(other.Prefix, Prefix) &&
+                Equals(other.Value, Value) &&
+                Equals(other.ValueGenerator, ValueGenerator);
         }
 
         public override int GetHashCode()

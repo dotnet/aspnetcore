@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                .Accepts(AcceptedCharacters.NonWhiteSpace)),
                     Factory.Markup(" Baz" + Environment.NewLine)
-                           .With(new SingleLineMarkupEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString, AcceptedCharacters.None))));
+                        .Accepts(AcceptedCharacters.None)));
         }
 
         [Fact]

@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Razor.Parser
             }
 
             // Set up edit handler
-            var editHandler = new AutoCompleteEditHandler(Language.TokenizeString) { AutoCompleteAtEndOfSpan = true };
+            var editHandler = new AutoCompleteEditHandler(Language.TokenizeString, autoCompleteAtEndOfSpan: true);
 
             Span.EditHandler = editHandler;
             Span.Accept(CurrentSymbol);
