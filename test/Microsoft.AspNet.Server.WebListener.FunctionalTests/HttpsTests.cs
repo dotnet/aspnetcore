@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpsServer(async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var tls = httpContext.GetFeature<IHttpClientCertificateFeature>();
+                var tls = httpContext.GetFeature<ITlsConnectionFeature>();
                 Assert.NotNull(tls);
                 var cert = await tls.GetClientCertificateAsync(CancellationToken.None);
                 Assert.Null(cert);
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpsServer(async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var tls = httpContext.GetFeature<IHttpClientCertificateFeature>();
+                var tls = httpContext.GetFeature<ITlsConnectionFeature>();
                 Assert.NotNull(tls);
                 var cert = await tls.GetClientCertificateAsync(CancellationToken.None);
                 Assert.NotNull(cert);

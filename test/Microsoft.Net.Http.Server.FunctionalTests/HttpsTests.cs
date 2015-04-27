@@ -90,16 +90,16 @@ namespace Microsoft.Net.Http.Server
         {
             using (var server = Utilities.CreateHttpsServer())
             {
-                Task<string> responseTask = SendRequestAsync(Address);
+                X509Certificate2 clientCert = FindClientCert();
+                Assert.NotNull(clientCert);
+                Task<string> responseTask = SendRequestAsync(Address, clientCert);
 
                 var context = await server.GetContextAsync();
                 var cert = await context.Request.GetClientCertificateAsync();
                 Assert.NotNull(cert);
                 context.Dispose();
 
-                X509Certificate2 clientCert = FindClientCert();
-                Assert.NotNull(clientCert);
-                string response = await SendRequestAsync(Address, clientCert);
+                string response = await responseTask;
                 Assert.Equal(string.Empty, response);
             }
         }

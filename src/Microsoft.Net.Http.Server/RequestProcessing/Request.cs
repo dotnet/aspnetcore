@@ -59,7 +59,7 @@ namespace Microsoft.Net.Http.Server
         private string _pathBase;
         private string _path;
 
-        private X509Certificate _clientCert;
+        private X509Certificate2 _clientCert;
 
         private HeaderCollection _headers;
         private BoundaryType _contentBoundaryType;
@@ -430,7 +430,7 @@ namespace Microsoft.Net.Http.Server
         // Populates the client certificate.  The result may be null if there is no client cert.
         // TODO: Does it make sense for this to be invoked multiple times (e.g. renegotiate)? Client and server code appear to
         // enable this, but it's unclear what Http.Sys would do.
-        public async Task<X509Certificate> GetClientCertificateAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (SslStatus == SslStatus.Insecure)
             {

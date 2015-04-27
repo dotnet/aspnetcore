@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Server.WebListener
         IHttpConnectionFeature,
         IHttpResponseFeature,
         IHttpSendFileFeature,
-        IHttpClientCertificateFeature,
+        ITlsConnectionFeature,
         IHttpRequestLifetimeFeature,
         IHttpWebSocketFeature,
         IHttpAuthenticationFeature,
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Server.WebListener
         private int? _remotePort;
         private int? _localPort;
         private bool? _isLocal;
-        private X509Certificate _clientCert;
+        private X509Certificate2 _clientCert;
         private ClaimsPrincipal _user;
         private IAuthenticationHandler _authHandler;
         private Stream _responseStream;
@@ -93,15 +93,16 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             _features.Add(typeof(IHttpRequestFeature), this);
             _features.Add(typeof(IHttpConnectionFeature), this);
-            if (Request.IsSecureConnection)
-            {
-                // TODO: Should this feature be conditional? Should we add this for HTTP requests?
-                _features.Add(typeof(IHttpClientCertificateFeature), this);
-            }
             _features.Add(typeof(IHttpResponseFeature), this);
             _features.Add(typeof(IHttpSendFileFeature), this);
             _features.Add(typeof(IHttpRequestLifetimeFeature), this);
             _features.Add(typeof(IHttpAuthenticationFeature), this);
+            _features.Add(typeof(IRequestIdentifierFeature), this);
+
+            if (Request.IsSecureConnection)
+            {
+                _features.Add(typeof(ITlsConnectionFeature), this);
+            }
 
             // Win8+
             if (WebSocketHelpers.AreWebSocketsSupported)
@@ -109,16 +110,6 @@ namespace Microsoft.AspNet.Server.WebListener
                 _features.Add(typeof(IHttpUpgradeFeature), this);
                 _features.Add(typeof(IHttpWebSocketFeature), this);
             }
-
-            _features.Add(typeof(IRequestIdentifierFeature), this);
-
-            // TODO:
-            /*
-            Server
-            _environment.Listener = _server;
-            Channel binding
-            _environment.ConnectionId = _request.ConnectionId;            
-             */
         }
 
         Stream IHttpRequestFeature.Body
@@ -302,7 +293,7 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _remotePort = value; }
         }
 
-        X509Certificate IHttpClientCertificateFeature.ClientCertificate
+        X509Certificate2 ITlsConnectionFeature.ClientCertificate
         {
             get
             {
@@ -315,7 +306,7 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _clientCert = value; }
         }
 
-        async Task<X509Certificate> IHttpClientCertificateFeature.GetClientCertificateAsync(CancellationToken cancellationToken)
+        async Task<X509Certificate2> ITlsConnectionFeature.GetClientCertificateAsync(CancellationToken cancellationToken)
         {
             if (_clientCert == null)
             {
