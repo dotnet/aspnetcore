@@ -31,7 +31,8 @@ namespace Microsoft.AspNet.Builder
 
         /// <summary>
         /// Adds MVC to the <see cref="IApplicationBuilder"/> request execution pipeline
-        /// with a default route.
+        /// with a default route named 'default' and the following template:
+        /// '{controller=Home}/{action=Index}/{id?}'.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
         /// <returns>The <paramref name="app"/>.</returns>
