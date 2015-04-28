@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Http
         private readonly IFeatureCollection _features;
 
         private FeatureReference<IHttpConnectionFeature> _connection = FeatureReference<IHttpConnectionFeature>.Default;
-        private FeatureReference<ITlsConnectionFeature> _tlsConnectoin = FeatureReference<ITlsConnectionFeature>.Default;
+        private FeatureReference<ITlsConnectionFeature> _tlsConnection = FeatureReference<ITlsConnectionFeature>.Default;
 
         public DefaultConnectionInfo(IFeatureCollection features)
         {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Http
 
         private ITlsConnectionFeature TlsConnectionFeature
         {
-            get { return _tlsConnectoin.Fetch(_features) ?? _tlsConnectoin.Update(_features, new TlsConnectionFeature()); }
+            get { return _tlsConnection.Fetch(_features) ?? _tlsConnection.Update(_features, new TlsConnectionFeature()); }
         }
 
         public override IPAddress RemoteIpAddress
