@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -199,6 +200,395 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.NotNull(model[0]);
 
             Assert.Equal(0, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+        }
+
+        // This is part of a random sampling of scenarios where a GenericModelBinder is used
+        // recursively.
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task GenericModelBinder_BindsArrayOfDictionary_WithPrefix_Success()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, int>[])
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext((request) =>
+            {
+                request.QueryString = new QueryString("?parameter[0][0].Key=key0&parameter[0][0].Value=10");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, int>[]>(modelBindingResult.Model);
+            var dictionary = Assert.Single(model);
+            var kvp = Assert.Single(dictionary);
+            Assert.Equal("key0", kvp.Key);
+            Assert.Equal(10, kvp.Value);
+
+            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "parameter[0][0].Key").Value;
+            Assert.Equal("key0", entry.Value.AttemptedValue);
+            Assert.Equal("key0", entry.Value.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "parameter[0][0].Value").Value;
+            Assert.Equal("10", entry.Value.AttemptedValue);
+            Assert.Equal("10", entry.Value.RawValue);
+        }
+
+        // This is part of a random sampling of scenarios where a GenericModelBinder is used
+        // recursively.
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task GenericModelBinder_BindsArrayOfDictionary_EmptyPrefix_Success()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, int>[])
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext((request) =>
+            {
+                request.QueryString = new QueryString("?[0][0].Key=key0&[0][0].Value=10");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, int>[]>(modelBindingResult.Model);
+            var dictionary = Assert.Single(model);
+            var kvp = Assert.Single(dictionary);
+            Assert.Equal("key0", kvp.Key);
+            Assert.Equal(10, kvp.Value);
+
+            Assert.Equal(1, modelState.Count);  // This fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "[0][0].Key").Value;
+            Assert.Equal("key0", entry.Value.AttemptedValue);
+            Assert.Equal("key0", entry.Value.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "[0][0].Value").Value;
+            Assert.Equal("10", entry.Value.AttemptedValue);
+            Assert.Equal("10", entry.Value.RawValue);
+        }
+
+        // This is part of a random sampling of scenarios where a GenericModelBinder is used
+        // recursively.
+        [Fact(Skip = "Empty collection should be created by the collection model binder #1579")]
+        public async Task GenericModelBinder_BindsArrayOfDictionary_NoData()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, int>[])
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext((request) =>
+            {
+                request.QueryString = new QueryString("?");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult); // This fails due to #1579
+            Assert.False(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, int>[]>(modelBindingResult.Model);
+            Assert.NotNull(model);
+            Assert.Empty(model);
+
+            Assert.Equal(0, modelState.Count);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+        }
+
+        // This is part of a random sampling of scenarios where a GenericModelBinder is used
+        // recursively.
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task GenericModelBinder_BindsCollectionOfKeyValuePair_WithPrefix_Success()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(ICollection<KeyValuePair<string, int>>)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext((request) =>
+            {
+                request.QueryString = new QueryString("?parameter[0].Key=key0&parameter[0].Value=10");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<List<KeyValuePair<string, int>>>(modelBindingResult.Model);
+            var kvp = Assert.Single(model);
+            Assert.Equal("key0", kvp.Key);
+            Assert.Equal(10, kvp.Value);
+
+            Assert.Equal(2, modelState.Count); // Fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "parameter[0].Key").Value;
+            Assert.Equal("key0", entry.Value.AttemptedValue);
+            Assert.Equal("key0", entry.Value.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "parameter[0].Value").Value;
+            Assert.Equal("10", entry.Value.AttemptedValue);
+            Assert.Equal("10", entry.Value.RawValue);
+        }
+
+        // This is part of a random sampling of scenarios where a GenericModelBinder is used
+        // recursively.
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task GenericModelBinder_BindsCollectionOfKeyValuePair_EmptyPrefix_Success()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(ICollection<KeyValuePair<string, int>>)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext((request) =>
+            {
+                request.QueryString = new QueryString("?[0].Key=key0&[0].Value=10");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<List<KeyValuePair<string, int>>>(modelBindingResult.Model);
+            var kvp = Assert.Single(model);
+            Assert.Equal("key0", kvp.Key);
+            Assert.Equal(10, kvp.Value);
+
+            Assert.Equal(2, modelState.Count); //Fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "[0].Key").Value;
+            Assert.Equal("key0", entry.Value.AttemptedValue);
+            Assert.Equal("key0", entry.Value.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "[0].Value").Value;
+            Assert.Equal("10", entry.Value.AttemptedValue);
+            Assert.Equal("10", entry.Value.RawValue);
+        }
+
+        // This is part of a random sampling of scenarios where a GenericModelBinder is used
+        // recursively.
+        [Fact(Skip = "Empty collection should be created by the collection model binder #1579")]
+        public async Task GenericModelBinder_BindsCollectionOfKeyValuePair_NoData()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Collection<KeyValuePair<string, int>>)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext((request) =>
+            {
+                request.QueryString = new QueryString("?");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult); // Fails due to #1579
+            Assert.False(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Collection<KeyValuePair<string, int>>>(modelBindingResult.Model);
+            Assert.NotNull(model);
+            Assert.Empty(model);
+
+            Assert.Equal(0, modelState.Count);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+        }
+
+        // This is part of a random sampling of scenarios where a GenericModelBinder is used
+        // recursively.
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task GenericModelBinder_BindsDictionaryOfList_WithPrefix_Success()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, List<int>>)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext((request) =>
+            {
+                request.QueryString = new QueryString(
+                    "?parameter[0].Key=key0&parameter[0].Value[0]=10&parameter[0].Value[1]=11");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, List<int>>>(modelBindingResult.Model);
+            var kvp = Assert.Single(model);
+            Assert.Equal("key0", kvp.Key);
+            Assert.Equal(new List<int>() { 10, 11 }, kvp.Value);
+
+            Assert.Equal(3, modelState.Count); // Fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "parameter[0].Key").Value;
+            Assert.Equal("key0", entry.Value.AttemptedValue);
+            Assert.Equal("key0", entry.Value.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "parameter[0].Value[0]").Value;
+            Assert.Equal("10", entry.Value.AttemptedValue);
+            Assert.Equal("10", entry.Value.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "parameter[0].Value[1]").Value;
+            Assert.Equal("11", entry.Value.AttemptedValue);
+            Assert.Equal("11", entry.Value.RawValue);
+        }
+
+        // This is part of a random sampling of scenarios where a GenericModelBinder is used
+        // recursively.
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task GenericModelBinder_BindsDictionaryOfList_EmptyPrefix_Success()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, List<int>>)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext((request) =>
+            {
+                request.QueryString = new QueryString("?[0].Key=key0&[0].Value[0]=10&[0].Value[1]=11");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, List<int>>>(modelBindingResult.Model);
+            var kvp = Assert.Single(model);
+            Assert.Equal("key0", kvp.Key);
+            Assert.Equal(new List<int>() { 10, 11 }, kvp.Value);
+
+            Assert.Equal(3, modelState.Count); // Fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "[0].Key").Value;
+            Assert.Equal("key0", entry.Value.AttemptedValue);
+            Assert.Equal("key0", entry.Value.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "[0].Value[0]").Value;
+            Assert.Equal("10", entry.Value.AttemptedValue);
+            Assert.Equal("10", entry.Value.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "[0].Value[1]").Value;
+            Assert.Equal("11", entry.Value.AttemptedValue);
+            Assert.Equal("11", entry.Value.RawValue);
+        }
+
+        // This is part of a random sampling of scenarios where a GenericModelBinder is used
+        // recursively.
+        [Fact(Skip = "Empty collection should be created by the collection model binder #1579")]
+        public async Task GenericModelBinder_BindsDictionaryOfList_NoData()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, List<int>>)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext((request) =>
+            {
+                request.QueryString = new QueryString("?");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult); // Fails due to #1579
+            Assert.False(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, List<int>>>(modelBindingResult.Model);
+            Assert.NotNull(model);
+            Assert.Empty(model);
+
+            Assert.Equal(0, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
