@@ -12,11 +12,30 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 {
     public static class ModelBindingTestHelper
     {
-        public static OperationBindingContext GetOperationBindingContext(Action<HttpRequest> updateRequest)
+        public static HttpContext GetHttpContext(
+            Action<HttpRequest> updateRequest = null,
+            Action<MvcOptions> updateOptions = null)
         {
-            var httpContext = ModelBindingTestHelper.GetHttpContext(updateRequest);
-            var actionBindingContext =
-              httpContext.RequestServices.GetRequiredService<IScopedInstance<ActionBindingContext>>().Value;
+            var httpContext = new DefaultHttpContext();
+
+            if (updateRequest != null)
+            {
+                updateRequest(httpContext.Request);
+            }
+
+            InitializeServices(httpContext, updateOptions);
+            return httpContext;
+        }
+
+        public static OperationBindingContext GetOperationBindingContext(
+            Action<HttpRequest> updateRequest = null,
+            Action<MvcOptions> updateOptions = null)
+        {
+            var httpContext = GetHttpContext(updateRequest, updateOptions);
+
+            var services = httpContext.RequestServices;
+            var actionBindingContext = services.GetRequiredService<IScopedInstance<ActionBindingContext>>().Value;
+
             return new OperationBindingContext()
             {
                 BodyBindingState = BodyBindingState.NotBodyBased,
@@ -40,13 +59,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     metadataProvider));
         }
 
-        public static HttpContext GetHttpContext(Action<HttpRequest> updateRequest)
+        private static void InitializeServices(HttpContext httpContext, Action<MvcOptions> updateOptions = null)
         {
-            var options = (new TestMvcOptions()).Options;
-            var httpContext = new DefaultHttpContext();
-
-            updateRequest(httpContext.Request);
-
             var serviceCollection = MvcServices.GetDefaultServices();
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
@@ -56,10 +70,15 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 httpContext.RequestServices.GetRequiredService<IScopedInstance<ActionContext>>();
             actionContextAccessor.Value = actionContext;
 
+            var options = new TestMvcOptions().Options;
+            if (updateOptions != null)
+            {
+                updateOptions(options);
+            }
+
             var actionBindingContextAccessor =
                 httpContext.RequestServices.GetRequiredService<IScopedInstance<ActionBindingContext>>();
             actionBindingContextAccessor.Value = GetActionBindingContext(options, actionContext);
-            return httpContext;
         }
 
         private static ActionBindingContext GetActionBindingContext(MvcOptions options, ActionContext actionContext)
