@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
+namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
     /// This is a container for prefix values. It normalizes all the values into dotted-form and then stores
@@ -18,14 +18,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
         private readonly ICollection<string> _originalValues;
         private readonly string[] _sortedValues;
 
-        internal PrefixContainer([NotNull] ICollection<string> values)
+        public PrefixContainer([NotNull] ICollection<string> values)
         {
             _originalValues = values;
             _sortedValues = ToArrayWithoutNulls(_originalValues);
             Array.Sort(_sortedValues, StringComparer.OrdinalIgnoreCase);
         }
 
-        internal bool ContainsPrefix([NotNull] string prefix)
+        public bool ContainsPrefix([NotNull] string prefix)
         {
             if (prefix.Length == 0)
             {
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
         // - "bar"/"foo.bar"
         // - "hello"/"foo.hello"
         // - "abc"/"foo[abc]"
-        internal IDictionary<string, string> GetKeysFromPrefix(string prefix)
+        public IDictionary<string, string> GetKeysFromPrefix(string prefix)
         {
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
             }
         }
 
-        internal static bool IsPrefixMatch(string prefix, string testString)
+        public static bool IsPrefixMatch(string prefix, string testString)
         {
             if (testString == null)
             {
@@ -192,13 +192,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
         /// Convert an ICollection to an array, removing null values. Fast path for case where
         /// there are no null values.
         /// </summary>
-        private static T[] ToArrayWithoutNulls<T>(ICollection<T> collection) where T : class
+        private static TElement[] ToArrayWithoutNulls<TElement>(ICollection<TElement> collection) where TElement : class
         {
             Debug.Assert(collection != null);
 
-            var result = new T[collection.Count];
+            var result = new TElement[collection.Count];
             var count = 0;
-            foreach (T value in collection)
+            foreach (TElement value in collection)
             {
                 if (value != null)
                 {
@@ -212,13 +212,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Internal
             }
             else
             {
-                var trimmedResult = new T[count];
+                var trimmedResult = new TElement[count];
                 Array.Copy(result, trimmedResult, count);
                 return trimmedResult;
             }
         }
 
-        private sealed class PrefixComparer : IComparer<String>
+        private sealed class PrefixComparer : IComparer<string>
         {
             private readonly string _prefix;
 
