@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {

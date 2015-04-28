@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNet.Razor.Text;
+using Microsoft.Framework.Internal;
 using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor

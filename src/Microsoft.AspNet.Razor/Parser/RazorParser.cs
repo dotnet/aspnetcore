@@ -13,6 +13,7 @@ using Microsoft.AspNet.Razor.Parser.TagHelpers;
 using Microsoft.AspNet.Razor.Parser.TagHelpers.Internal;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Razor.Text;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Parser
 {
@@ -205,14 +206,14 @@ namespace Microsoft.AspNet.Razor.Parser
         /// specified <paramref name="documentRoot"/>.
         /// </summary>
         /// <param name="documentRoot">The <see cref="Block"/> to scan for tag helper registrations in.</param>
-        /// <param name="errorSink">Used to manage <see cref="RazorError"/>s encountered during the Razor parsing 
+        /// <param name="errorSink">Used to manage <see cref="RazorError"/>s encountered during the Razor parsing
         /// phase.</param>
         /// <returns><see cref="TagHelperDescriptor"/>s that are applicable to the <paramref name="documentRoot"/>
         /// </returns>
         protected virtual IEnumerable<TagHelperDescriptor> GetTagHelperDescriptors([NotNull] Block documentRoot,
                                                                                    [NotNull] ErrorSink errorSink)
         {
-            var addOrRemoveTagHelperSpanVisitor = 
+            var addOrRemoveTagHelperSpanVisitor =
                 new TagHelperDirectiveSpanVisitor(TagHelperDescriptorResolver, errorSink);
             return addOrRemoveTagHelperSpanVisitor.GetDescriptors(documentRoot);
         }

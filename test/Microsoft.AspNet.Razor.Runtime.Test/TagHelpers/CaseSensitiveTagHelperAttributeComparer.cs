@@ -16,9 +16,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
         }
 
-        public bool Equals(
-            [NotNull] IReadOnlyTagHelperAttribute attributeX,
-            [NotNull] IReadOnlyTagHelperAttribute attributeY)
+        public bool Equals(IReadOnlyTagHelperAttribute attributeX, IReadOnlyTagHelperAttribute attributeY)
         {
             return
                 attributeX == attributeY ||
@@ -27,7 +25,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 Equals(attributeX.Value, attributeY.Value);
         }
 
-        public int GetHashCode([NotNull] IReadOnlyTagHelperAttribute attribute)
+        public int GetHashCode(IReadOnlyTagHelperAttribute attribute)
         {
             return HashCodeCombiner
                 .Start()

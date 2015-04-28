@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Parser.TagHelpers
 {
@@ -25,8 +26,9 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         {
         }
 
-        public TagHelperDirectiveSpanVisitor([NotNull] ITagHelperDescriptorResolver descriptorResolver,
-                                               [NotNull] ErrorSink errorSink)
+        public TagHelperDirectiveSpanVisitor(
+            [NotNull] ITagHelperDescriptorResolver descriptorResolver,
+            [NotNull] ErrorSink errorSink)
         {
             _descriptorResolver = descriptorResolver;
             _errorSink = errorSink;
@@ -61,14 +63,14 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             {
                 var codeGenerator = (AddOrRemoveTagHelperCodeGenerator)span.CodeGenerator;
 
-                var directive = 
+                var directive =
                     codeGenerator.RemoveTagHelperDescriptors ?
                     TagHelperDirectiveType.RemoveTagHelper :
                     TagHelperDirectiveType.AddTagHelper;
 
                 var directiveDescriptor = new TagHelperDirectiveDescriptor(
-                    codeGenerator.LookupText, 
-                    span.Start, 
+                    codeGenerator.LookupText,
+                    span.Start,
                     directive);
 
                 _directiveDescriptors.Add(directiveDescriptor);

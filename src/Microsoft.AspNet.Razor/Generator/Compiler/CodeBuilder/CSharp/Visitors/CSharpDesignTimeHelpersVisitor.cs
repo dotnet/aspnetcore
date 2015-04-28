@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {

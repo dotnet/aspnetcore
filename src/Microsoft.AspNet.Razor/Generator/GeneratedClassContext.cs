@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Generator
 {

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor
 {

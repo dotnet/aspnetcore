@@ -70,8 +70,9 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             {
             }
 
-            protected override CSharpCodeVisitor CreateCSharpCodeVisitor([NotNull] CSharpCodeWriter writer,
-                                                                         [NotNull] CodeBuilderContext context)
+            protected override CSharpCodeVisitor CreateCSharpCodeVisitor(
+                CSharpCodeWriter writer,
+                CodeBuilderContext context)
             {
                 var bodyVisitor = base.CreateCSharpCodeVisitor(writer, context);
 
@@ -83,11 +84,12 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
         private class CustomTagHelperAttributeCodeRenderer : TagHelperAttributeValueCodeRenderer
         {
-            public override void RenderAttributeValue([NotNull] TagHelperAttributeDescriptor attributeInfo,
-                                                      [NotNull] CSharpCodeWriter writer,
-                                                      [NotNull] CodeBuilderContext context,
-                                                      [NotNull] Action<CSharpCodeWriter> renderAttributeValue,
-                                                      bool complexValue)
+            public override void RenderAttributeValue(
+                TagHelperAttributeDescriptor attributeInfo,
+                CSharpCodeWriter writer,
+                CodeBuilderContext context,
+                Action<CSharpCodeWriter> renderAttributeValue,
+                bool complexValue)
             {
                 writer.Write("**From custom attribute code renderer**: ");
 
