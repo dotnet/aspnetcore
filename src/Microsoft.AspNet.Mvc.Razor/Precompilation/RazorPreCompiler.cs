@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
     public class RazorPreCompiler
     {
         public RazorPreCompiler(
-            [NotNull] IBeforeCompileContext compileContext,
+            [NotNull] BeforeCompileContext compileContext,
             [NotNull] IAssemblyLoadContextAccessor loadContextAccessor,
             [NotNull] IFileProvider fileProvider,
             [NotNull] IMemoryCache precompilationCache,
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 
         protected IFileProvider FileProvider { get; }
 
-        protected IBeforeCompileContext CompileContext { get; }
+        protected BeforeCompileContext CompileContext { get; }
 
         protected IAssemblyLoadContext LoadContext { get; }
 
@@ -62,7 +62,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
         public virtual void CompileViews()
         {
             var result = CreateFileInfoCollection();
-
             if (result != null)
             {
                 var collectionGenerator = new RazorFileInfoCollectionGenerator(

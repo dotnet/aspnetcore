@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc
 
         /// <inheritdoc />
         /// <remarks>Pre-compiles all Razor views in the application.</remarks>
-        public virtual void BeforeCompile(IBeforeCompileContext context)
+        public virtual void BeforeCompile(BeforeCompileContext context)
         {
             var compilerOptionsProvider = _appServices.GetRequiredService<ICompilerOptionsProvider>();
             var loadContextAccessor = _appServices.GetRequiredService<IAssemblyLoadContextAccessor>();
@@ -61,13 +61,13 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <inheritdoc />
-        public void AfterCompile(IAfterCompileContext context)
+        public void AfterCompile(AfterCompileContext context)
         {
         }
 
         private static CompilationSettings GetCompilationSettings(
             ICompilerOptionsProvider compilerOptionsProvider,
-            IProjectContext projectContext)
+            ProjectContext projectContext)
         {
             return compilerOptionsProvider.GetCompilerOptions(projectContext.Name,
                                                               projectContext.TargetFramework,

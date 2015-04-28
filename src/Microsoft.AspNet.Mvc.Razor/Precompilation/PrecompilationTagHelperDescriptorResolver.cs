@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
     public class PrecompilationTagHelperTypeResolver : TagHelperTypeResolver
     {
         private static readonly string TagHelperTypeName = typeof(ITagHelper).FullName;
-        private readonly IBeforeCompileContext _compileContext;
+        private readonly BeforeCompileContext _compileContext;
         private readonly IAssemblyLoadContext _loadContext;
         private object _compilationLock = new object();
         private bool _assemblyEmited;
@@ -29,9 +29,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
         /// <summary>
         /// Initializes a new instance of <see cref="PrecompilationTagHelperTypeResolver"/>.
         /// </summary>
-        /// <param name="compileContext">The <see cref="IBeforeCompileContext"/>.</param>
+        /// <param name="compileContext">The <see cref="BeforeCompileContext"/>.</param>
         /// <param name="loadContext">The <see cref="IAssemblyLoadContext"/>.</param>
-        public PrecompilationTagHelperTypeResolver([NotNull] IBeforeCompileContext compileContext,
+        public PrecompilationTagHelperTypeResolver([NotNull] BeforeCompileContext compileContext,
                                                    [NotNull] IAssemblyLoadContext loadContext)
         {
             _compileContext = compileContext;
