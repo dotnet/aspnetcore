@@ -27,12 +27,12 @@ namespace MusicStore.Models
         protected override void OnModelCreating(ModelBuilder builder)
         {
             // Configure pluralization
-            builder.Entity<Album>().ForRelational().Table("Albums");
-            builder.Entity<Artist>().ForRelational().Table("Artists");
-            builder.Entity<Order>().ForRelational().Table("Orders");
-            builder.Entity<Genre>().ForRelational().Table("Genres");
-            builder.Entity<CartItem>().ForRelational().Table("CartItems");
-            builder.Entity<OrderDetail>().ForRelational().Table("OrderDetails");
+            builder.Entity<Album>().Table("Albums");
+            builder.Entity<Artist>().Table("Artists");
+            builder.Entity<Order>().Table("Orders");
+            builder.Entity<Genre>().Table("Genres");
+            builder.Entity<CartItem>().Table("CartItems");
+            builder.Entity<OrderDetail>().Table("OrderDetails");
 
             // TODO: Remove this when we start using auto generated values
             builder.Entity<Artist>().Property(a => a.ArtistId).GenerateValueOnAdd(generateValue: false);
