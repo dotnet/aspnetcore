@@ -1298,7 +1298,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IView>(),
                 null,
                 Mock.Of<ITempDataDictionary>(),
-                writer);
+                writer,
+                new HtmlHelperOptions());
         }
 
         private static Action<TextWriter> CreateBodyAction(string value)

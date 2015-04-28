@@ -8,6 +8,7 @@ using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Net.Http.Headers;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -59,6 +60,8 @@ namespace Microsoft.AspNet.Mvc
 
             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<PartialViewResult>>();
 
+            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<MvcOptions>>();
+
             var viewName = ViewName ?? context.ActionDescriptor.Name;
             var viewEngineResult = viewEngine.FindPartialView(context, viewName);
             if (!viewEngineResult.Success)
@@ -80,7 +83,13 @@ namespace Microsoft.AspNet.Mvc
 
             using (view as IDisposable)
             {
-                await ViewExecutor.ExecuteAsync(view, context, ViewData, TempData, ContentType);
+                await ViewExecutor.ExecuteAsync(
+                    view,
+                    context,
+                    ViewData,
+                    TempData,
+                    options.Options.HtmlHelperOptions,
+                    ContentType);
             }
         }
     }

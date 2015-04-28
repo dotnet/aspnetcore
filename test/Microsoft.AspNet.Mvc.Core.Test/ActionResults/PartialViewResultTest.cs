@@ -12,6 +12,7 @@ using Microsoft.Framework.Logging;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -167,6 +168,13 @@ namespace Microsoft.AspNet.Mvc
                            .Returns(viewEngine.Object);
             serviceProvider.Setup(p => p.GetService(typeof(ILogger<PartialViewResult>)))
                            .Returns(new Mock<ILogger<PartialViewResult>>().Object);
+            serviceProvider.Setup(s => s.GetService(typeof(IOptions<MvcOptions>)))
+                .Returns(() => {
+                    var optionsAccessor = new Mock<IOptions<MvcOptions>>();
+                    optionsAccessor.SetupGet(o => o.Options)
+                        .Returns(new MvcOptions());
+                    return optionsAccessor.Object;
+                });
             context.HttpContext.RequestServices = serviceProvider.Object;
 
             var viewResult = new PartialViewResult
@@ -186,6 +194,14 @@ namespace Microsoft.AspNet.Mvc
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(s => s.GetService(typeof(ILogger<PartialViewResult>)))
                 .Returns(new Mock<ILogger<PartialViewResult>>().Object);
+
+            serviceProvider.Setup(s => s.GetService(typeof(IOptions<MvcOptions>)))
+                .Returns(() => {
+                    var optionsAccessor = new Mock<IOptions<MvcOptions>>();
+                    optionsAccessor.SetupGet(o => o.Options)
+                        .Returns(new MvcOptions());
+                    return optionsAccessor.Object;
+                });
 
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = serviceProvider.Object;

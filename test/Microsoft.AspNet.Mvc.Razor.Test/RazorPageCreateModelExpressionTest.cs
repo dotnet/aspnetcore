@@ -126,7 +126,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 view: Mock.Of<IView>(),
                 viewData: viewData,
                 tempData: Mock.Of<ITempDataDictionary>(),
-                writer: new StringWriter());
+                writer: new StringWriter(),
+                htmlHelperOptions: new HtmlHelperOptions());
         }
 
         private class TestRazorPage : RazorPage<RazorPageCreateModelExpressionModel>

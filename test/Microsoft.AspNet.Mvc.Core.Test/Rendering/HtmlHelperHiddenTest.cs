@@ -241,9 +241,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input id=""HtmlEncode[[MyPrefix$Property1]]"" name=""HtmlEncode[[MyPrefix.Property1]]"" type=""HtmlEncode[[hidden]]"" " +
                            @"value=""HtmlEncode[[modelstate-with-prefix]]"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(
+                GetViewDataWithModelStateAndModelAndViewDataValues(),
+                idAttributeDotReplacement: "$");
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
-            helper.IdAttributeDotReplacement = "$";
             helper.ViewData.ModelState.Clear();
             helper.ViewData.ModelState.Add("Property1", GetModelState("modelstate-without-prefix"));
             helper.ViewData.ModelState.Add("MyPrefix.Property1", GetModelState("modelstate-with-prefix"));
@@ -262,9 +263,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input id=""HtmlEncode[[MyPrefix$Property1]]"" name=""HtmlEncode[[MyPrefix.Property1]]"" type=""HtmlEncode[[hidden]]"" " +
                            @"value=""HtmlEncode[[vdd-with-prefix]]"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(
+                GetViewDataWithModelStateAndModelAndViewDataValues(),
+                idAttributeDotReplacement: "$");
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
-            helper.IdAttributeDotReplacement = "$";
             helper.ViewData.ModelState.Clear();
             helper.ViewData.Clear();
             helper.ViewData.Add("Property1", "vdd-without-prefix");
@@ -403,8 +405,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             viewData["Property3[height]"] = "Prop3Value";
             viewData["Property4.Property5"] = "Prop5Value";
             viewData["Property4.Property6[0]"] = "Prop6Value";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
-            helper.IdAttributeDotReplacement = "$$";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData, idAttributeDotReplacement: "$$");
             var attributes = new Dictionary<string, object> { { "data-test", "val" } };
 
             // Act
@@ -530,10 +531,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input id=""HtmlEncode[[MyPrefix$Property1]]"" name=""HtmlEncode[[MyPrefix.Property1]]"" type=""HtmlEncode[[hidden]]"" " +
                            @"value=""HtmlEncode[[modelstate-with-prefix]]"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(
+                GetViewDataWithModelStateAndModelAndViewDataValues(),
+                "$");
             helper.ViewData.Model.Property1 = "propValue";
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
-            helper.IdAttributeDotReplacement = "$";
             helper.ViewData.ModelState.Clear();
             helper.ViewData.ModelState.Add("Property1", GetModelState("modelstate-without-prefix"));
             helper.ViewData.ModelState.Add("MyPrefix.Property1", GetModelState("modelstate-with-prefix"));

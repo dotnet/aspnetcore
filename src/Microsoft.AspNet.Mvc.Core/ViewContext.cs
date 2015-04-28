@@ -43,7 +43,8 @@ namespace Microsoft.AspNet.Mvc
             [NotNull] IView view,
             [NotNull] ViewDataDictionary viewData,
             [NotNull] ITempDataDictionary tempData,
-            [NotNull] TextWriter writer)
+            [NotNull] TextWriter writer,
+            [NotNull] HtmlHelperOptions htmlHelperOptions)
             : base(actionContext)
         {
             View = view;
@@ -52,9 +53,10 @@ namespace Microsoft.AspNet.Mvc
             Writer = writer;
 
             _formContext = _defaultFormContext;
-            ClientValidationEnabled = true;
-            ValidationSummaryMessageElement = "span";
-            ValidationMessageElement = "span";
+            ClientValidationEnabled = htmlHelperOptions.ClientValidationEnabled;
+            Html5DateRenderingMode = htmlHelperOptions.Html5DateRenderingMode;
+            ValidationSummaryMessageElement = htmlHelperOptions.ValidationSummaryMessageElement;
+            ValidationMessageElement = htmlHelperOptions.ValidationMessageElement;
         }
 
         /// <summary>

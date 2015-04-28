@@ -300,14 +300,25 @@ namespace Microsoft.AspNet.Mvc
         private static ViewComponentContext GetViewComponentContext(IView view, ViewDataDictionary viewData)
         {
             var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
-            var viewContext = new ViewContext(actionContext, view, viewData, null, TextWriter.Null);
+            var viewContext = new ViewContext(
+                actionContext,
+                view,
+                viewData,
+                null,
+                TextWriter.Null,
+                new HtmlHelperOptions());
 
             var viewComponentDescriptor = new ViewComponentDescriptor()
             {
                 Type = typeof(object),
             };
 
-            var viewComponentContext = new ViewComponentContext(viewComponentDescriptor, new object[0], viewContext, TextWriter.Null);
+            var viewComponentContext = new ViewComponentContext(
+                viewComponentDescriptor,
+                new object[0],
+                viewContext,
+                TextWriter.Null);
+
             return viewComponentContext;
         }
     }

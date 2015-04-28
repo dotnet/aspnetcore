@@ -124,7 +124,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                                               Mock.Of<IView>(),
                                               viewData,
                                               Mock.Of<ITempDataDictionary>(),
-                                              TextWriter.Null);
+                                              TextWriter.Null,
+                                              new HtmlHelperOptions());
 
             return new TestRazorPage
             {

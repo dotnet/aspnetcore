@@ -612,7 +612,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 Mock.Of<IView>(),
                 viewData,
                 Mock.Of<ITempDataDictionary>(),
-                TextWriter.Null);
+                TextWriter.Null,
+                new HtmlHelperOptions());
         }
 
         public enum RegularEnum

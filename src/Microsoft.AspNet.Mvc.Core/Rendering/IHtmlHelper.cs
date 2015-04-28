@@ -24,9 +24,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         Html5DateRenderingMode Html5DateRenderingMode { get; set; }
 
         /// <summary>
-        /// Gets or sets the character that replaces periods in the ID attribute of an element.
+        /// Gets the <see cref="string"/> that replaces periods in the ID attribute of an element.
         /// </summary>
-        string IdAttributeDotReplacement { get; set; }
+        string IdAttributeDotReplacement { get; }
 
         /// <summary>
         /// Gets the metadata provider. Intended for use in <see cref="IHtmlHelper"/> extension methods.

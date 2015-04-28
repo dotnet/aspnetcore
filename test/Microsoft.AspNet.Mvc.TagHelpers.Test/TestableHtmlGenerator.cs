@@ -63,7 +63,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Mock.Of<IView>(),
                 viewData,
                 Mock.Of<ITempDataDictionary>(),
-                TextWriter.Null);
+                TextWriter.Null,
+                new HtmlHelperOptions());
 
             return viewContext;
         }

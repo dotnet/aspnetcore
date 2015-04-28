@@ -44,7 +44,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                                               Mock.Of<IView>(),
                                               new ViewDataDictionary(new EmptyModelMetadataProvider()),
                                               Mock.Of<ITempDataDictionary>(),
-                                              TextWriter.Null);
+                                              TextWriter.Null,
+                                              new HtmlHelperOptions());
 
             // Act
             activator.Activate(instance, viewContext);
@@ -75,7 +76,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                                               Mock.Of<IView>(),
                                               new ViewDataDictionary(new EmptyModelMetadataProvider()),
                                               Mock.Of<ITempDataDictionary>(),
-                                              TextWriter.Null);
+                                              TextWriter.Null,
+                                              new HtmlHelperOptions());
 
             // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(() => activator.Activate(instance, viewContext));
@@ -117,7 +119,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                                               Mock.Of<IView>(),
                                               viewData,
                                               Mock.Of<ITempDataDictionary>(),
-                                              TextWriter.Null);
+                                              TextWriter.Null,
+                                              new HtmlHelperOptions());
 
             // Act
             activator.Activate(instance, viewContext);
@@ -155,7 +158,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                                               Mock.Of<IView>(),
                                               viewData,
                                               Mock.Of<ITempDataDictionary>(),
-                                              TextWriter.Null);
+                                              TextWriter.Null,
+                                              new HtmlHelperOptions());
 
             // Act
             activator.Activate(instance, viewContext);
@@ -190,7 +194,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                                               Mock.Of<IView>(),
                                               viewData,
                                               Mock.Of<ITempDataDictionary>(),
-                                              TextWriter.Null);
+                                              TextWriter.Null,
+                                              new HtmlHelperOptions());
 
             // Act
             activator.Activate(instance, viewContext);

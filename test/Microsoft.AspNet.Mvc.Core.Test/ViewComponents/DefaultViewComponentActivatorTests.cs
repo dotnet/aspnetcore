@@ -110,7 +110,8 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                                               Mock.Of<IView>(),
                                               new ViewDataDictionary(new EmptyModelMetadataProvider()),
                                               null,
-                                              TextWriter.Null);
+                                              TextWriter.Null,
+                                              new HtmlHelperOptions());
         }
 
         private class TestViewComponent : ViewComponent

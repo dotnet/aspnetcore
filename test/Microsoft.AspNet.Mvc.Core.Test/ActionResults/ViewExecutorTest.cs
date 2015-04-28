@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -75,7 +75,13 @@ namespace Microsoft.AspNet.Mvc
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
 
             // Act
-            await ViewExecutor.ExecuteAsync(view.Object, actionContext, viewData, null, contentType);
+            await ViewExecutor.ExecuteAsync(
+                view.Object,
+                actionContext,
+                viewData,
+                null,
+                new HtmlHelperOptions(),
+                contentType);
 
             // Assert
             Assert.Equal(expectedContentType, context.Response.ContentType);
@@ -106,7 +112,13 @@ namespace Microsoft.AspNet.Mvc
 
             // Act
             await Record.ExceptionAsync(
-                () => ViewExecutor.ExecuteAsync(view.Object, actionContext, viewData, null, contentType: null));
+                () => ViewExecutor.ExecuteAsync(
+                    view.Object,
+                    actionContext,
+                    viewData,
+                    null,
+                    new HtmlHelperOptions(),
+                    contentType: null));
 
             // Assert
             Assert.Equal(expectedLength, memoryStream.Length);

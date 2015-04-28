@@ -168,8 +168,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
                            @"Property3=""HtmlEncode[[Property3Value]]"" type=""HtmlEncode[[checkbox]]"" value=""HtmlEncode[[true]]"" /><input " +
                            @"name=""HtmlEncode[[MyPrefix.Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
             var dictionary = new Dictionary<string, object> { { "Property3", "Property3Value" } };
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
-            helper.IdAttributeDotReplacement = "!!!";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper<DefaultTemplatesUtilities.ObjectTemplateModel>(
+                model: null,
+                idAttributeDotReplacement: "!!!");
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
 
             // Act

@@ -1339,7 +1339,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 view,
                 new ViewDataDictionary(new EmptyModelMetadataProvider()),
                 Mock.Of<ITempDataDictionary>(),
-                new StringWriter());
+                new StringWriter(),
+                new Rendering.HtmlHelperOptions());
         }
 
         private static IViewStartProvider CreateViewStartProvider(params IRazorPage[] viewStartPages)

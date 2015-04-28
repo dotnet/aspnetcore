@@ -25,6 +25,14 @@ namespace RazorWebSite
                 options.ViewLocationExpanders.Add(expander);
                 options.ViewLocationExpanders.Add(new CustomPartialDirectoryViewLocationExpander());
             });
+            services.ConfigureMvc(options =>
+            {
+                options.HtmlHelperOptions.ClientValidationEnabled = false;
+                options.HtmlHelperOptions.Html5DateRenderingMode = Microsoft.AspNet.Mvc.Rendering.Html5DateRenderingMode.Rfc3339;
+                options.HtmlHelperOptions.IdAttributeDotReplacement = "!";
+                options.HtmlHelperOptions.ValidationMessageElement = "validationMessageElement";
+                options.HtmlHelperOptions.ValidationSummaryMessageElement = "validationSummaryElement";
+            });
         }
 
         public void Configure(IApplicationBuilder app)

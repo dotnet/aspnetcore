@@ -24,7 +24,13 @@ namespace ModelBindingWebSite.Controllers
                 {
                     _activated = true;
                     var viewData = new ViewDataDictionary<Person>(ViewData);
-                    var context = new ViewContext(ActionContext, new TestView(), viewData, null, TextWriter.Null);
+                    var context = new ViewContext(
+                        ActionContext,
+                        new TestView(),
+                        viewData, null,
+                        TextWriter.Null,
+                        new HtmlHelperOptions());
+
                     ((ICanHasViewContext)PersonHelper).Contextualize(context);
                 }
 

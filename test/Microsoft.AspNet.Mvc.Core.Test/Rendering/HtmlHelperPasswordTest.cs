@@ -93,9 +93,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var expected = @"<input id=""HtmlEncode[[MyPrefix$Property1]]"" name=""HtmlEncode[[MyPrefix.Property1]]"" type=""HtmlEncode[[password]]"" " +
                            @"value=""HtmlEncode[[explicit-value]]"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(
+                GetViewDataWithModelStateAndModelAndViewDataValues(),
+                idAttributeDotReplacement: "$");
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
-            helper.IdAttributeDotReplacement = "$";
 
             // Act
             var result = helper.Password("Property1", "explicit-value", htmlAttributes: null);
@@ -196,8 +197,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var viewData = GetViewDataWithModelStateAndModelAndViewDataValues();
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
-            helper.IdAttributeDotReplacement = "$$";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData, idAttributeDotReplacement: "$$");
             var attributes = new Dictionary<string, object> { { "data-test", "val" } };
 
             // Act

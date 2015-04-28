@@ -308,7 +308,8 @@ Parameter name: value",
                 new ViewDataDictionary(
                     new EmptyModelMetadataProvider()),
                 Mock.Of<ITempDataDictionary>(),
-                TextWriter.Null);
+                TextWriter.Null,
+                new HtmlHelperOptions());
         }
 
         private class Model

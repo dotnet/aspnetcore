@@ -96,7 +96,6 @@ namespace Microsoft.AspNet.Mvc
                 context.ViewContext,
                 view,
                 ViewData ?? context.ViewContext.ViewData,
-                TempData ?? context.ViewContext.TempData,
                 context.Writer);
 
             using (view as IDisposable)

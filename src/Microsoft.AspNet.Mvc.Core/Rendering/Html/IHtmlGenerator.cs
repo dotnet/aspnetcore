@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
     /// </summary>
     public interface IHtmlGenerator
     {
-        string IdAttributeDotReplacement { get; set; }
+        string IdAttributeDotReplacement { get; }
 
         string Encode(string value);
 

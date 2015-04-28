@@ -872,7 +872,6 @@ Environment.NewLine;
             public string IdAttributeDotReplacement
             {
                 get { return _innerHelper.IdAttributeDotReplacement; }
-                set { _innerHelper.IdAttributeDotReplacement = value; }
             }
 
             public IModelMetadataProvider MetadataProvider

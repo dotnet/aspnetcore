@@ -73,10 +73,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 return _htmlGenerator.IdAttributeDotReplacement;
             }
-            set
-            {
-                _htmlGenerator.IdAttributeDotReplacement = value;
-            }
         }
 
         /// <inheritdoc />
@@ -494,7 +490,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var view = viewEngineResult.View;
             using (view as IDisposable)
             {
-                var viewContext = new ViewContext(ViewContext, view, newViewData, TempData, writer);
+                var viewContext = new ViewContext(ViewContext, view, newViewData, writer);
                 await viewEngineResult.View.RenderAsync(viewContext);
             }
         }

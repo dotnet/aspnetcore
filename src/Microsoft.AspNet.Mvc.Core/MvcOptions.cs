@@ -9,6 +9,8 @@ using Microsoft.AspNet.Mvc.Core.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.Framework.Internal;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc
@@ -36,6 +38,7 @@ namespace Microsoft.AspNet.Mvc
             ModelValidatorProviders = new List<IModelValidatorProvider>();
             ClientModelValidatorProviders = new List<IClientModelValidatorProvider>();
             CacheProfiles = new Dictionary<string, CacheProfile>(StringComparer.OrdinalIgnoreCase);
+            HtmlHelperOptions = new HtmlHelperOptions();
             SerializerSettings = SerializerSettingsProvider.CreateSerializerSettings();
         }
 
@@ -171,5 +174,10 @@ namespace Microsoft.AspNet.Mvc
         /// </ul>
         /// </remarks>
         public IList<IMetadataDetailsProvider> ModelMetadataDetailsProviders { get; }
+
+        /// <summary>
+        /// Gets or sets programmatic configuration for the HTML helpers and <see cref="ViewContext"/>.
+        /// </summary>
+        public HtmlHelperOptions HtmlHelperOptions { get; [param: NotNull] set; }
     }
 }

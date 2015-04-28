@@ -305,7 +305,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 new ViewDataDictionary(
                     new EmptyModelMetadataProvider()),
                 Mock.Of<ITempDataDictionary>(),
-                TextWriter.Null);
+                TextWriter.Null,
+                new HtmlHelperOptions());
         }
     }
 }
