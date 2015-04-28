@@ -8,7 +8,7 @@ If you want a more stable, released, experience then you should go to http://www
 
 The key part of working with development feeds is getting your environment set up so that you can acquire and switch to new builds of the DNX. Once you have that then it is just a matter of pulling the latest packages from the development MyGet feed.
 
-In order to be able to get new builds of the DNX, and switch between them, you need to get the .NET Version Manager (DNVM) command line tool. 
+In order to be able to get new builds of the DNX, and switch between them, you need to get the .NET Version Manager (DNVM) command line tool.
 
 ## Getting Started on Windows
 
@@ -43,7 +43,7 @@ where dnvm
 On OS X the best way to get DNVM is to use [Homebrew](http://www.brew.sh). If you don't have Homebrew installed then follow the [Homebrew installation instructions](http://www.brew.sh). Once you have Homebrew then run the following commands:
 
 ```
-brew tap aspnet/dnvm
+brew tap aspnet/dnx
 brew install dnvm
 ```
 Note that on Windows the .NET Framework is already installed, whereas on OS X the brew formula uses a particular version of [Mono](http://www.mono-project.com/) that we know works with ASP.NET 5.
@@ -72,7 +72,7 @@ You should also be able to run `dnx` and see the help text of the `dnx` command.
 1. Clone the ASP.NET 5 Home repository: https://github.com/aspnet/home
 2. Change directory to the folder of the sample you want to run
 3. Run ```dnu restore``` to restore the packages required by that sample.
-4. You should see a bunch of output as all the dependencies of the app are downloaded from MyGet. 
+4. You should see a bunch of output as all the dependencies of the app are downloaded from MyGet.
 5. Run the sample using the appropriate K command:
     - For the console app run  `dnx . run`.
     - For the web apps run `dnx . web` on Windows or `dnx . kestrel` on OS X/Linux.
@@ -82,7 +82,7 @@ You should also be able to run `dnx` and see the help text of the `dnx` command.
 # Documentation and Further Learning
 
 ## [Community Standup](http://www.youtube.com/playlist?list=PL0M0zPgJ3HSftTAAHttA3JQU4vOjXFquF)
-The community standup is held every week and streamed live to YouTube. You can view past standups in the linked playlist. 
+The community standup is held every week and streamed live to YouTube. You can view past standups in the linked playlist.
 
 If you have questions you can also jump online during the next standup and have them answered live.
 
@@ -103,7 +103,7 @@ These are some of the most common repos:
 * [Identity](https://github.com/aspnet/Identity) - users and membership system
 * [DNX](https://github.com/aspnet/DNX) - core runtime, project system, loader
 * [MVC](https://github.com/aspnet/Mvc) - MVC framework for web apps and services
-* [SignalR-Server](https://github.com/aspnet/SignalR-Server) - real-time 
+* [SignalR-Server](https://github.com/aspnet/SignalR-Server) - real-time
 
 A description of all the repos is [here](https://github.com/aspnet/Home/wiki/Repo-List).
 
