@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
@@ -11,19 +12,19 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 {
     public static class ModelBindingTestHelper
     {
-        public static OperationBindingContext GetOperationBindingContext()
+        public static OperationBindingContext GetOperationBindingContext(Action<HttpRequest> updateRequest)
         {
-            var httpContext = ModelBindingTestHelper.GetHttpContext();
-            var actionBindingContextAccessor =
+            var httpContext = ModelBindingTestHelper.GetHttpContext(updateRequest);
+            var actionBindingContext =
               httpContext.RequestServices.GetRequiredService<IScopedInstance<ActionBindingContext>>().Value;
             return new OperationBindingContext()
             {
                 BodyBindingState = BodyBindingState.NotBodyBased,
                 HttpContext = httpContext,
                 MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
-                ValidatorProvider = actionBindingContextAccessor.ValidatorProvider,
-                ValueProvider = actionBindingContextAccessor.ValueProvider,
-                ModelBinder = actionBindingContextAccessor.ModelBinder
+                ValidatorProvider = actionBindingContext.ValidatorProvider,
+                ValueProvider = actionBindingContext.ValueProvider,
+                ModelBinder = actionBindingContext.ModelBinder
             };
         }
 
@@ -39,10 +40,13 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     metadataProvider));
         }
 
-        public static HttpContext GetHttpContext()
+        public static HttpContext GetHttpContext(Action<HttpRequest> updateRequest)
         {
             var options = (new TestMvcOptions()).Options;
             var httpContext = new DefaultHttpContext();
+
+            updateRequest(httpContext.Request);
+
             var serviceCollection = MvcServices.GetDefaultServices();
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 

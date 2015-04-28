@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public string Street { get; set; }
         }
 
-        [Fact]
+        [Fact(Skip = "Extra entries in model state #2446.")]
         public async Task FromBodyAndRequiredOnProperty_EmptyBody_AddsModelStateError()
         {
             // Arrange
@@ -42,11 +42,18 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Person)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
-            var httpContext = operationContext.HttpContext;
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+              request =>
+              {
+                  request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ \"Id\":1234 }"));
+                  request.ContentType = "application/json";
+              });
 
-            ConfigureHttpRequest(httpContext.Request, string.Empty);
-            var modelState = new ModelStateDictionary();
+            var actionContext = operationContext
+                .HttpContext
+                .RequestServices
+                .GetRequiredService<IScopedInstance<ActionContext>>().Value;
+            var modelState = actionContext.ModelState;
 
             // Act
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
@@ -79,10 +86,14 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Person)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
-            var httpContext = operationContext.HttpContext;
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request =>
+                {
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ \"Id\":1234 }"));
+                    request.ContentType = "application/json";
+                });
 
-            ConfigureHttpRequest(httpContext.Request, "{ \"Id\":1234 }");
+            var httpContext = operationContext.HttpContext;
             var modelState = new ModelStateDictionary();
 
             // Act
@@ -122,9 +133,14 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Person4)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request =>
+                {
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
+                    request.ContentType = "application/json";
+                });
+
             var httpContext = operationContext.HttpContext;
-            ConfigureHttpRequest(httpContext.Request, string.Empty);
             var actionContext = httpContext.RequestServices.GetRequiredService<IScopedInstance<ActionContext>>().Value;
             var modelState = actionContext.ModelState;
 
@@ -177,9 +193,13 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Person2)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request =>
+                {
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes(inputText));
+                    request.ContentType = "application/json";
+                });
             var httpContext = operationContext.HttpContext;
-            ConfigureHttpRequest(httpContext.Request, inputText);
             var modelState = new ModelStateDictionary();
 
             // Act
@@ -231,9 +251,13 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Person3)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request =>
+                {
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes(inputText));
+                    request.ContentType = "application/json";
+                });
             var httpContext = operationContext.HttpContext;
-            ConfigureHttpRequest(httpContext.Request, inputText);
             var actionContext = httpContext.RequestServices.GetRequiredService<IScopedInstance<ActionContext>>().Value;
             var modelState = actionContext.ModelState;
 
@@ -257,12 +281,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.StartsWith(
                 "Required property 'Zip' not found in JSON. Path ''",
                 error.Exception.Message);
-        }
-
-        private static void ConfigureHttpRequest(HttpRequest request, string jsonContent)
-        {
-            request.Body = new MemoryStream(Encoding.UTF8.GetBytes(jsonContent));
-            request.ContentType = "application/json";
         }
     }
 }
