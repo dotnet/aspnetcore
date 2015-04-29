@@ -5,7 +5,6 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.AspNet.Http.Interfaces": "1.0.0-*",
     "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
     "Microsoft.AspNet.Routing": "1.0.0-*",
     "Microsoft.Framework.CopyOnWriteDictionary.Internal": { "version": "1.0.0-*", "type": "build" },

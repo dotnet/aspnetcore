@@ -3,7 +3,6 @@
         "warningsAsErrors": "true"
     },
     "dependencies": {
-        "Microsoft.AspNet.Http.Core": "1.0.0-*",
         "Microsoft.AspNet.Mvc":"6.0.0-*",
         "Microsoft.AspNet.Mvc.TestCommon": { "version": "6.0.0-*", "type": "build" },
         "Microsoft.AspNet.Testing": "1.0.0-*",
