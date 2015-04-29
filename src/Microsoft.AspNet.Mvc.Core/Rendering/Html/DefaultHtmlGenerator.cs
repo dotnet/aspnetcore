@@ -852,7 +852,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 }
             }
 
-            return (IReadOnlyCollection<string>)currentValues;
+            // HashSet<> implements IReadOnlyCollection<> as of 4.6, but does not for 4.5.1. If the runtime cast succeeds,
+            // avoid creating a new collection.
+            return (currentValues as IReadOnlyCollection<string>) ?? currentValues.ToArray();
         }
 
         internal static string EvalString(ViewContext viewContext, string key, string format)
