@@ -3,7 +3,6 @@
     "description": "ASP.NET 5 static files middleware.",
     "dependencies": {
         "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-        "Microsoft.AspNet.Http.Interfaces": "1.0.0-*",
         "Microsoft.AspNet.FileProviders.Interfaces": "1.0.0-*",
         "Microsoft.AspNet.Hosting.Interfaces": "1.0.0-*",
         "Microsoft.Framework.Logging.Interfaces": "1.0.0-*",
