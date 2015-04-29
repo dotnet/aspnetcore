@@ -38,7 +38,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Diagnostic
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "StatusCodePagesSample", "samples\StatusCodePagesSample\StatusCodePagesSample.xproj", "{CC1F5841-FE10-4DDB-8477-C4DE92BA759F}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Diagnostics.Interfaces", "src\Microsoft.AspNet.Diagnostics.Interfaces\Microsoft.AspNet.Diagnostics.Interfaces.xproj", "{83FFB65A-97B1-45AA-BCB8-3F43966BC8A3}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Diagnostics.Abstractions", "src\Microsoft.AspNet.Diagnostics.Abstractions\Microsoft.AspNet.Diagnostics.Abstractions.xproj", "{83FFB65A-97B1-45AA-BCB8-3F43966BC8A3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
