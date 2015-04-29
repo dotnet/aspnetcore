@@ -2,7 +2,7 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_DNVM_BUILDNUMBER="beta5-10371"
+_DNVM_BUILDNUMBER="beta5-10372"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
 _DNVM_RUNTIME_PACKAGE_NAME="dnx"
 _DNVM_RUNTIME_FRIENDLY_NAME=".NET Execution Environment"
@@ -11,7 +11,7 @@ _DNVM_RUNTIME_FOLDER_NAME=".dnx"
 _DNVM_COMMAND_NAME="dnvm"
 _DNVM_PACKAGE_MANAGER_NAME="dnu"
 _DNVM_VERSION_MANAGER_NAME=".NET Version Manager"
-_DNVM_DEFAULT_FEED="https://nuget.org/api/v2"
+_DNVM_DEFAULT_FEED="https://www.nuget.org/api/v2"
 _DNVM_DEFAULT_UNSTABLE_FEED="https://www.myget.org/F/aspnetvnext/api/v2"
 _DNVM_UPDATE_LOCATION="https://raw.githubusercontent.com/aspnet/Home/dev/dnvm.sh"
 _DNVM_HOME_VAR_NAME="DNX_HOME"
