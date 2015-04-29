@@ -3,7 +3,6 @@
     "description": "ASP.NET 5 session state middleware.",
     "dependencies": {
         "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-        "Microsoft.AspNet.Http.Interfaces": "1.0.0-*",
         "Microsoft.Framework.Caching.Distributed": "1.0.0-*",
         "Microsoft.Framework.Logging.Interfaces": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" }
