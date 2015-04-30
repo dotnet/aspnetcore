@@ -5,8 +5,8 @@
         "Microsoft.AspNet.Cryptography.Internal": "1.0.0-*",
         "Microsoft.AspNet.DataProtection.Abstractions": "1.0.0-*",
         "Microsoft.AspNet.DataProtection.Shared": { "type": "build", "version": "" },
-        "Microsoft.Framework.DependencyInjection.Interfaces": "1.0.0-*",
-        "Microsoft.Framework.Logging.Interfaces": "1.0.0-*",
+        "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
+        "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Framework.OptionsModel": "1.0.0-*"
     },
