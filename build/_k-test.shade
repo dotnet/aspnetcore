@@ -8,7 +8,6 @@ k-test
 
 projectFile='' 
     Required. Path to the test project.json to execute
-
 */}
 
 @{
@@ -34,20 +33,31 @@ projectFile=''
                 };
         
         // Currently only dnx* targets are supported. See aspnet/Universe#53
-        var targetFrameworks = configs.Keys.Where(k => k.StartsWith("dnx", StringComparison.OrdinalIgnoreCase));
-        
-        foreach (var framework in targetFrameworks)
-        {
-            var testArgs = IsMono ? " -parallel none" : "";
+        var targetFrameworks = configs.Keys.Where(k => k.StartsWith("dnx", StringComparison.OrdinalIgnoreCase)).ToList();
 
-            if (!framework.StartsWith("dnxcore", StringComparison.OrdinalIgnoreCase))
-            {
-                K(("test" + testArgs), projectFolder, "");
-            }
-            else if (!IsMono)
-            {
-                K("test", projectFolder, "default -runtime CoreCLR");
-            }
+        if (testParallel)
+        {
+            Parallel.ForEach (targetFrameworks, framework => RunTest(projectFolder, framework));
+        }
+        else
+        {
+            targetFrameworks.ForEach(framework => RunTest(projectFolder, framework));
+        }
+    }
+}
+
+functions @{
+    private void RunTest(string projectFolder, string framework)
+    {
+        var testArgs = IsMono ? " -parallel none" : "";
+
+        if (!framework.StartsWith("dnxcore", StringComparison.OrdinalIgnoreCase))
+        {
+            K(("test" + testArgs), projectFolder, "");
+        }
+        else if (!IsMono)
+        {
+            K("test", projectFolder, "default -runtime CoreCLR");
         }
     }
 }

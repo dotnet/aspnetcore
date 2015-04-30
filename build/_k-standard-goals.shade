@@ -73,12 +73,21 @@ default Configuration='${E("Configuration")}'
 #ci-deep-clean .deep-clean target='clean' if='IsTeamCity'
 
 #build-compile target='compile' if='Directory.Exists("src")'
-  kpm-pack each='var projectFile in Files.Include("src/**/project.json")' configuration='${Configuration}'
   @{
-    foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg")))
+    var projectFiles = Files.Include("src/**/project.json").ToList();
+    if (ShouldRunInParallel)
+    {
+        Parallel.ForEach(projectFiles, projectFile => DnuPack(projectFile, BUILD_DIR, Configuration));
+    }
+    else
+    {
+        projectFiles.ForEach(projectFile => DnuPack(projectFile, BUILD_DIR, Configuration));
+    }
+
+    Parallel.ForEach (Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg")), nupkg =>
     {
       File.Copy(nupkg, Path.Combine(BUILD_DIR, Path.GetFileName(nupkg)), true);
-    }
+    });
   }
 
 #native-compile target='compile' if='!IsMono && Directory.Exists(Path.Combine(BASE_DIR, "src"))'
@@ -121,10 +130,30 @@ default Configuration='${E("Configuration")}'
   nuget-resilient-publish sourcePackagesDir='${BUILD_DIR}' nugetFeed='${E("NUGET_PUBLISH_FEED")}' if='!string.IsNullOrEmpty(E("NUGET_PUBLISH_FEED"))'
 
 #xunit-test target='test' if='Directory.Exists("test")'
-  k-test each='var projectFile in Files.Include("test/**/project.json")'
+  @{
+    var projectFiles = Files.Include("test/**/project.json").ToList();
+    if (ShouldRunInParallel)
+    {
+        Parallel.ForEach(projectFiles, projectFile => DnxTest(projectFile, testParallel: true));
+    }
+    else
+    {
+        projectFiles.ForEach(projectFile => DnxTest(projectFile, testParallel: false));
+    }
+  }
 
 #build-samples target='test' if='Directory.Exists("samples")'
-  kpm-build each='var projectFile in Files.Include("samples/**/project.json")' configuration='${Configuration}'
+  @{
+    var projectFiles = Files.Include("test/**/project.json").ToList();
+    if (ShouldRunInParallel)
+    {
+        Parallel.ForEach(projectFiles, projectFile => DnuBuild(projectFile, Configuration));
+    }
+    else
+    {
+        projectFiles.ForEach(projectFile => DnuBuild(projectFile, Configuration));
+    }
+  }
 
 #make-roslyn-fast
   ngen-roslyn
@@ -146,6 +175,11 @@ default Configuration='${E("Configuration")}'
     E("npm_install_options","--quiet");
   }
 
+#--parallel
+   @{
+    E("KOREBUILD_PARALLEL", "1");
+   }
+
 #stylecop if='Directory.Exists("src")'
   stylecop-setup
   stylecop-run each='var projectFile in Files.Include("src/**/project.json")'
@@ -163,7 +197,7 @@ functions @{
                       .Select(p => Path.GetDirectoryName(p))
                       .Distinct();
     }
-    bool TestCommand(string program, string commandline) 
+    bool TestCommand(string program, string commandline)
     {
       // Tests whether a given command succeeds at the command line.
       // Useful for testing whether a given command is installed and on the path, e.g. node
@@ -176,7 +210,7 @@ functions @{
       	FileName = "cmd",
       	Arguments = "/C " + program + " " + commandline,
         };
-      } else 
+      } else
       {
       	processStartInfo = new ProcessStartInfo {
       	UseShellExecute = false,
@@ -184,12 +218,12 @@ functions @{
       	Arguments = commandline,
         };
       }
-      try 
+      try
       {
         Log.Info(string.Format("Testing for command: {0} {1}", program, commandline));
         var process = Process.Start(processStartInfo);
         process.WaitForExit();
-        if (process.ExitCode == 0) 
+        if (process.ExitCode == 0)
         {
           Log.Info("   command found (0 exit code)");
           return true;
@@ -200,12 +234,17 @@ functions @{
           return false;
         }
       }
-      catch (Exception ex) 
+      catch (Exception ex)
       {
         Log.Warn("   command exception: " + ex.ToString());
         Log.Warn("   command not found");
         return false;
       }
+    }
+
+    bool ShouldRunInParallel
+    {
+        get { return !string.IsNullOrEmpty(E("KOREBUILD_PARALLEL")); }
     }
 }
 
@@ -214,3 +253,13 @@ macro name='Exec' program='string' commandline='string'
 
 macro name="UpdateResx" resxFile='string'
     k-generate-resx
+
+macro name="DnxTest" projectFile='string' testParallel='bool'
+    k-test
+
+macro name="DnuBuild" projectFile='string' configuration='string'
+    kpm-build
+
+macro name="DnuPack" projectFile='string' kpmPackOutputDir='string' configuration='string'
+    kpm-pack
+
