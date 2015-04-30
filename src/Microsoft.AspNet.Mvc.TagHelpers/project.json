@@ -9,7 +9,7 @@
         "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
         "Microsoft.Framework.Caching.Memory": "1.0.0-*",
         "Microsoft.Framework.FileSystemGlobbing": "1.0.0-*",
-        "Microsoft.Framework.Logging.Interfaces": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.Framework.Logging.Abstractions": { "version": "1.0.0-*", "type": "build" },
         "Microsoft.Framework.PropertyHelper.Internal": { "version": "1.0.0-*", "type": "build" },
         "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type": "build" },
         "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*"
