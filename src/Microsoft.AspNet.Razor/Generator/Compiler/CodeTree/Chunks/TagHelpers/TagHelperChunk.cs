@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         public TagHelperChunk(
             string tagName,
             bool selfClosing,
-            IDictionary<string, Chunk> attributes,
+            IList<KeyValuePair<string, Chunk>> attributes,
             IEnumerable<TagHelperDescriptor> descriptors)
         {
             TagName = tagName;
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler
         /// These attributes are <see cref="string"/> => <see cref="Chunk"/> so attribute values can consist
         /// of all sorts of Razor specific pieces.
         /// </remarks>
-        public IDictionary<string, Chunk> Attributes { get; set; }
+        public IList<KeyValuePair<string, Chunk>> Attributes { get; set; }
 
         /// <summary>
         /// The <see cref="TagHelperDescriptor"/>s that are associated with the tag helpers HTML element.

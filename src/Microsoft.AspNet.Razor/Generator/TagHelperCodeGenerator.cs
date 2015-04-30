@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Razor.Generator
                     RazorResources.TagHelpers_TagHelperCodeGeneartorMustBeAssociatedWithATagHelperBlock);
             }
 
-            var attributes = new Dictionary<string, Chunk>(StringComparer.OrdinalIgnoreCase);
+            var attributes = new List<KeyValuePair<string, Chunk>>();
 
             // We need to create a code generator to create chunks for each of the attributes.
             var codeGenerator = context.Host.CreateCodeGenerator(
@@ -63,12 +63,13 @@ namespace Microsoft.AspNet.Razor.Generator
                 var chunks = codeGenerator.Context.CodeTreeBuilder.CodeTree.Chunks;
                 var first = chunks.FirstOrDefault();
 
-                attributes[attribute.Key] = new ChunkBlock
-                {
-                    Association = first?.Association,
-                    Children = chunks,
-                    Start = first == null ? SourceLocation.Zero : first.Start
-                };
+                attributes.Add(new KeyValuePair<string, Chunk>(attribute.Key,
+                    new ChunkBlock
+                    {
+                        Association = first?.Association,
+                        Children = chunks,
+                        Start = first == null ? SourceLocation.Zero : first.Start
+                    }));
 
                 // Reset the code tree builder so we can build a new one for the next attribute
                 codeGenerator.Context.CodeTreeBuilder = new CodeTreeBuilder();

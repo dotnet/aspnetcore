@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         public void RenderTagHelper(TagHelperChunk chunk)
         {
             // Remove any duplicate TagHelperDescriptors that reference the same type name. Duplicates can occur when
-            // multiple TargetElement attributes are on a TagHelper type and matchs overlap for an HTML element.
+            // multiple TargetElement attributes are on a TagHelper type and matches overlap for an HTML element.
             // Having more than one descriptor with the same TagHelper type results in generated code that runs
             // the same TagHelper X many times (instead of once) over a single HTML element.
             var tagHelperDescriptors = chunk.Descriptors.Distinct(TypeNameTagHelperDescriptorComparer.Default);
@@ -190,20 +190,21 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             }
         }
 
-        private void RenderBoundHTMLAttributes(IDictionary<string, Chunk> chunkAttributes,
+        private void RenderBoundHTMLAttributes(IList<KeyValuePair<string, Chunk>> chunkAttributes,
                                                string tagHelperVariableName,
                                                IEnumerable<TagHelperAttributeDescriptor> attributeDescriptors,
                                                Dictionary<string, string> htmlAttributeValues)
         {
             foreach (var attributeDescriptor in attributeDescriptors)
             {
-                Chunk attributeValueChunk;
+                var matchingAttributes = chunkAttributes.Where(
+                    attr => string.Equals(attr.Key, attributeDescriptor.Name, StringComparison.OrdinalIgnoreCase));
 
-                var providedAttribute = chunkAttributes.TryGetValue(attributeDescriptor.Name,
-                                                                    out attributeValueChunk);
-
-                if (providedAttribute)
+                if (matchingAttributes.Any())
                 {
+                    // First attribute wins, even if there's duplicates.
+                    var attributeValueChunk = matchingAttributes.First().Value;
+
                     var attributeValueRecorded = htmlAttributeValues.ContainsKey(attributeDescriptor.Name);
 
                     // Bufferable attributes are attributes that can have Razor code inside of them.
