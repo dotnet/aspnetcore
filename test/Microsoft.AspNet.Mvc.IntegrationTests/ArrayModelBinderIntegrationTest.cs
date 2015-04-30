@@ -168,5 +168,171 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
+
+        private class Person
+        {
+            public string Name { get; set; }
+        }
+
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task ArrayModelBinder_BindsArrayOfComplexType_WithPrefix_Success()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Person[])
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter[0].Name=bill&parameter[1].Name=lang");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Person[]>(modelBindingResult.Model);
+            Assert.Equal("bill", model[0].Name);
+            Assert.Equal("lang", model[1].Name);
+
+            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, kvp => kvp.Key == "parameter[0].Name").Value;
+            Assert.Equal("bill", entry.Value.AttemptedValue);
+            Assert.Equal("bill", entry.Value.RawValue);
+
+            entry = Assert.Single(modelState, kvp => kvp.Key == "parameter[1].Name").Value;
+            Assert.Equal("lang", entry.Value.AttemptedValue);
+            Assert.Equal("lang", entry.Value.RawValue);
+        }
+
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task ArrayModelBinder_BindsArrayOfComplexType_WithExplicitPrefix_Success()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                BindingInfo = new BindingInfo()
+                {
+                    BinderModelName = "prefix",
+                },
+                ParameterType = typeof(Person[])
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?prefix[0].Name=bill&prefix[1]=lang");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Person[]>(modelBindingResult.Model);
+            Assert.Equal("bill", model[0].Name);
+            Assert.Equal("lang", model[1].Name);
+
+            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, kvp => kvp.Key == "prefix[0].Name").Value;
+            Assert.Equal("bill", entry.Value.AttemptedValue);
+            Assert.Equal("bill", entry.Value.RawValue);
+
+            entry = Assert.Single(modelState, kvp => kvp.Key == "prefix[1].Name").Value;
+            Assert.Equal("lang", entry.Value.AttemptedValue);
+            Assert.Equal("lang", entry.Value.RawValue);
+        }
+
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task ArrayModelBinder_BindsArrayOfComplexType_EmptyPrefix_Success()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Person[])
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?[0].Name=bill&[1].Name=lang");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Person[]>(modelBindingResult.Model);
+            Assert.Equal("bill", model[0].Name);
+            Assert.Equal("lang", model[1].Name);
+
+            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, kvp => kvp.Key == "[0].Name").Value;
+            Assert.Equal("bill", entry.Value.AttemptedValue);
+            Assert.Equal("bill", entry.Value.RawValue);
+
+            entry = Assert.Single(modelState, kvp => kvp.Key == "[1].Name").Value;
+            Assert.Equal("lang", entry.Value.AttemptedValue);
+            Assert.Equal("lang", entry.Value.RawValue);
+        }
+
+        [Fact(Skip = "Empty collection should be created by the collection model binder #1579")]
+        public async Task ArrayModelBinder_BindsArrayOfComplexType_NoData()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Person[])
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);  // This fails due to #1579
+            Assert.False(modelBindingResult.IsModelSet);
+            Assert.Empty(Assert.IsType<Person[]>(modelBindingResult.Model));
+
+            Assert.Equal(0, modelState.Count);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+        }
     }
 }
