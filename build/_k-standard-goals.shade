@@ -144,7 +144,7 @@ default Configuration='${E("Configuration")}'
 
 #build-samples target='test' if='Directory.Exists("samples")'
   @{
-    var projectFiles = Files.Include("test/**/project.json").ToList();
+    var projectFiles = Files.Include("samples/**/project.json").ToList();
     if (ShouldRunInParallel)
     {
         Parallel.ForEach(projectFiles, projectFile => DnuBuild(projectFile, Configuration));
