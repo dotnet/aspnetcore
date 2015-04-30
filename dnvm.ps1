@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta5-10372"
+$BuildVersion="beta5-10373"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -190,7 +190,7 @@ if(!$UserHome) {
     _WriteDebug "Detecting User Home..."
     $pf = $env:ProgramFiles
     if(Test-Path "env:\ProgramFiles(x86)") {
-        $pf32 = cat "env:\ProgramFiles(x86)"
+        $pf32 = Get-Content "env:\ProgramFiles(x86)"
     }
 
     # Canonicalize so we can do StartsWith tests
@@ -1366,7 +1366,7 @@ function dnvm-setup {
     _WriteOut "Adding $DestinationHome to Process $HomeEnvVar"
     $processHome = ""
     if(Test-Path "env:\$HomeEnvVar") {
-        $processHome = cat "env:\$HomeEnvVar"
+        $processHome = Get-Content "env:\$HomeEnvVar"
     }
     $processHome = Change-Path $processHome "%USERPROFILE%\$DefaultUserDirectoryName" $PathsToRemove
     Set-Content "env:\$HomeEnvVar" $processHome
