@@ -61,7 +61,9 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         private static void InitializeServices(HttpContext httpContext, Action<MvcOptions> updateOptions = null)
         {
-            var serviceCollection = MvcServices.GetDefaultServices();
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddMvc();
+
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
             var actionContext = new ActionContext(httpContext, new RouteData(), new ControllerActionDescriptor());
