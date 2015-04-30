@@ -1,6 +1,6 @@
 {
 	"version": "1.0.0-*",
-	"description": "ASP.NET 5 diagnostics middleware interfaces.",
+	"description": "ASP.NET 5 diagnostics middleware abstractions.",
 	"compilationOptions": { "warningsAsErrors": true },
 	 "frameworks": {
         "dnx451": { },
