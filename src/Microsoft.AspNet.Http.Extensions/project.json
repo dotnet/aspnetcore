@@ -4,7 +4,7 @@
     "dependencies": {
         "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
         "Microsoft.AspNet.Http.Features": "1.0.0-*",
-        "Microsoft.Framework.DependencyInjection.Interfaces": "1.0.0-*",
+        "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Framework.WebEncoders.Core": "1.0.0-*",
         "Microsoft.Net.Http.Headers": "1.0.0-*"
