@@ -84,10 +84,10 @@ default Configuration='${E("Configuration")}'
         projectFiles.ForEach(projectFile => DnuPack(projectFile, BUILD_DIR, Configuration));
     }
 
-    Parallel.ForEach (Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg")), nupkg =>
+    foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg")))
     {
       File.Copy(nupkg, Path.Combine(BUILD_DIR, Path.GetFileName(nupkg)), true);
-    });
+    }
   }
 
 #native-compile target='compile' if='!IsMono && Directory.Exists(Path.Combine(BASE_DIR, "src"))'
