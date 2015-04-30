@@ -19,9 +19,9 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cryptograp
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cryptography.Internal.Test", "test\Microsoft.AspNet.Cryptography.Internal.Test\Microsoft.AspNet.Cryptography.Internal.Test.xproj", "{37053D5F-5B61-47CE-8B72-298CE007FFB0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtection.Interfaces", "src\Microsoft.AspNet.DataProtection.Interfaces\Microsoft.AspNet.DataProtection.Interfaces.xproj", "{4B115BDE-B253-46A6-97BF-A8B37B344FF2}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtection.Abstractions", "src\Microsoft.AspNet.DataProtection.Abstractions\Microsoft.AspNet.DataProtection.Abstractions.xproj", "{4B115BDE-B253-46A6-97BF-A8B37B344FF2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtection.Interfaces.Test", "test\Microsoft.AspNet.DataProtection.Interfaces.Test\Microsoft.AspNet.DataProtection.Interfaces.Test.xproj", "{FF650A69-DEE4-4B36-9E30-264EE7CFB478}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtection.Abstractions.Test", "test\Microsoft.AspNet.DataProtection.Abstractions.Test\Microsoft.AspNet.DataProtection.Abstractions.Test.xproj", "{FF650A69-DEE4-4B36-9E30-264EE7CFB478}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtection.Test.Shared", "test\Microsoft.AspNet.DataProtection.Test.Shared\Microsoft.AspNet.DataProtection.Test.Shared.xproj", "{4F14BA2A-4F04-4676-8586-EC380977EE2E}"
 EndProject

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNet.DataProtection.Infrastructure;
-using Microsoft.AspNet.DataProtection.Interfaces;
+using Microsoft.AspNet.DataProtection.Abstractions;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.Runtime;
 using Moq;

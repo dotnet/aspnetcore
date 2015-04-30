@@ -6,5 +6,5 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 
 // for unit testing
-[assembly: InternalsVisibleTo("Microsoft.AspNet.DataProtection.Interfaces.Test")]
+[assembly: InternalsVisibleTo("Microsoft.AspNet.DataProtection.Abstractions.Test")]
 [assembly: AssemblyMetadata("Serviceable", "True")]

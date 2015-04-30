@@ -1,6 +1,6 @@
 {
     "dependencies": {
-        "Microsoft.AspNet.DataProtection.Interfaces": "1.0.0-*",
+        "Microsoft.AspNet.DataProtection.Abstractions": "1.0.0-*",
         "Microsoft.AspNet.DataProtection.Extensions": "1.0.0-*",
         "Microsoft.AspNet.Testing": "1.0.0-*",
         "Moq": "4.2.1312.1622",

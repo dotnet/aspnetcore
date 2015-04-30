@@ -3,7 +3,7 @@
     "description": "ASP.NET 5 logic to protect and unprotect data, similar to DPAPI.",
     "dependencies": {
         "Microsoft.AspNet.Cryptography.Internal": "1.0.0-*",
-        "Microsoft.AspNet.DataProtection.Interfaces": "1.0.0-*",
+        "Microsoft.AspNet.DataProtection.Abstractions": "1.0.0-*",
         "Microsoft.AspNet.DataProtection.Shared": { "type": "build", "version": "" },
         "Microsoft.Framework.DependencyInjection.Interfaces": "1.0.0-*",
         "Microsoft.Framework.Logging.Interfaces": "1.0.0-*",
