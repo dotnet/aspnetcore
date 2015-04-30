@@ -6,7 +6,7 @@
   },
   "dependencies": {
     "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-    "Microsoft.Framework.Logging.Interfaces": "1.0.0-*",
+    "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
     "Microsoft.Framework.OptionsModel": "1.0.0-*",
     "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" }
   },
