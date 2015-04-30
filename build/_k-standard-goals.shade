@@ -104,10 +104,16 @@ default Configuration='${E("Configuration")}'
         var msbuildPath =  Path.Combine(programFilesX86, "MSBuild", msbuildVersions[i], "Bin", "MSBuild.exe");
         if (File.Exists(msbuildPath))
         {
+          var commonParameters =
+            " /p:Configuration=" + Configuration +
+            " /p:ProductVersion=1.0.0" +
+            " /p:FileRevision=" + E("DNX_ASSEMBLY_FILE_VERSION") +
+            " /p:BuildVersion=" + E("DNX_BUILD_VERSION");
+
           foreach (var project in nativeProjects)
           {
-            Exec(msbuildPath, project + " /p:Configuration=" + Configuration + ";Platform=Win32");
-            Exec(msbuildPath, project + " /p:Configuration=" + Configuration + ";Platform=x64");
+            Exec(msbuildPath, project + " /p:Configuration=Platform=Win32" + commonParameters);
+            Exec(msbuildPath, project + " /p:Configuration=Platform=x64" + commonParameters);
           }
 
           break;
