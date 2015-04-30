@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             builder.Entity<TUser>(b =>
                 {
                     b.Key(u => u.Id);
-                    b.ForRelational().Table("AspNetUsers");
+                    b.Table("AspNetUsers");
                     b.Property(u => u.ConcurrencyStamp).ConcurrencyToken();
 
                     b.Collection(u => u.Claims).InverseReference().ForeignKey(uc => uc.UserId);
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             builder.Entity<TRole>(b =>
                 {
                     b.Key(r => r.Id);
-                    b.ForRelational().Table("AspNetRoles");
+                    b.Table("AspNetRoles");
                     b.Property(r => r.ConcurrencyStamp).ConcurrencyToken();
 
                     b.Collection(r => r.Users).InverseReference().ForeignKey(ur => ur.RoleId);
@@ -54,19 +54,19 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             builder.Entity<IdentityUserClaim<TKey>>(b =>
                 {
                     b.Key(uc => uc.Id);
-                    b.ForRelational().Table("AspNetUserClaims");
+                    b.Table("AspNetUserClaims");
                 });
 
             builder.Entity<IdentityRoleClaim<TKey>>(b =>
                 {
                     b.Key(rc => rc.Id);
-                    b.ForRelational().Table("AspNetRoleClaims");
+                    b.Table("AspNetRoleClaims");
                 });
 
             builder.Entity<IdentityUserRole<TKey>>(b =>
                 {
                     b.Key(r => new { r.UserId, r.RoleId });
-                    b.ForRelational().Table("AspNetUserRoles");
+                    b.Table("AspNetUserRoles");
                 });
             // Blocks delete currently without cascade
             //.ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId))
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             builder.Entity<IdentityUserLogin<TKey>>(b =>
                 {
                     b.Key(l => new { l.LoginProvider, l.ProviderKey });
-                    b.ForRelational().Table("AspNetUserLogins");
+                    b.Table("AspNetUserLogins");
                 });
         }
     }
