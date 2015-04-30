@@ -126,20 +126,20 @@ namespace Microsoft.AspNet.Http.Headers
             }
         }
 
-        public UriHelper Location
+        public Uri Location
         {
             get
             {
                 Uri uri;
                 if (Uri.TryCreate(Headers[HeaderNames.Location], UriKind.RelativeOrAbsolute, out uri))
                 {
-                    return new UriHelper(uri);
+                    return uri;
                 }
                 return null;
             }
             set
             {
-                Headers.Set(HeaderNames.Location, value);
+                Headers.Set(HeaderNames.Location, value == null ? null : UriHelper.Encode(value));
             }
         }
 

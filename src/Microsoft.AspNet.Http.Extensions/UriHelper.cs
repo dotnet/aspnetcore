@@ -8,107 +8,68 @@ namespace Microsoft.AspNet.Http.Extensions
     /// <summary>
     /// A helper class for constructing encoded Uris for use in headers and other Uris.
     /// </summary>
-    public class UriHelper
+    public static class UriHelper
     {
-        public UriHelper()
-        {
-        }
-
-        public UriHelper(HttpRequest request)
-        {
-            Scheme = request.Scheme;
-            Host = request.Host;
-            PathBase = request.PathBase;
-            Path = request.Path;
-            Query = request.QueryString;
-            // Fragment is not a valid request field.
-        }
-
-        public UriHelper(Uri uri)
-        {
-            Scheme = uri.Scheme;
-            Host = HostString.FromUriComponent(uri);
-            // Assume nothing is being put in PathBase
-            Path = PathString.FromUriComponent(uri);
-            Query = QueryString.FromUriComponent(uri);
-            Fragment = FragmentString.FromUriComponent(uri);
-        }
-
-        public string Scheme { get; set; }
-
-        public HostString Host { get; set; }
-
-        public PathString PathBase { get; set; }
-
-        public PathString Path { get; set; }
-
-        public QueryString Query { get; set; }
-
-        public FragmentString Fragment { get; set; }
-
-        public bool IsFullUri
-        {
-            get { return !string.IsNullOrEmpty(Scheme) && Host.HasValue; }
-        }
-
-        // Always returns at least '/'
-        public string GetPartialUri()
-        {
-            string path = (PathBase.HasValue || Path.HasValue) ? (PathBase + Path).ToString() : "/";
-            return path + Query + Fragment;
-        }
-
-        // Always returns at least 'scheme://host/'
-        public string GetFullUri()
-        {
-            if (string.IsNullOrEmpty(Scheme))
-            {
-                throw new InvalidOperationException("Missing Scheme");
-            }
-            if (!Host.HasValue)
-            {
-                throw new InvalidOperationException("Missing Host");
-            }
-
-            string path = (PathBase.HasValue || Path.HasValue) ? (PathBase + Path).ToString() : "/";
-            return Scheme + "://" + Host + path + Query + Fragment;
-        }
-
-        public override string ToString()
-        {
-            return IsFullUri ? GetFullUri() : GetPartialUri();
-        }
-
-        public static string Create(PathString pathBase,
+        /// <summary>
+        /// Combines the given URI components into a string that is properly encoded for use in HTTP headers.
+        /// </summary>
+        /// <param name="pathBase"></param>
+        /// <param name="path"></param>
+        /// <param name="query"></param>
+        /// <param name="fragment"></param>
+        /// <returns></returns>
+        public static string Encode(PathString pathBase = new PathString(),
             PathString path = new PathString(),
             QueryString query = new QueryString(),
             FragmentString fragment = new FragmentString())
         {
-            return new UriHelper()
-            {
-                PathBase = pathBase,
-                Path = path,
-                Query = query,
-                Fragment = fragment
-            }.GetPartialUri();
+            string combinePath = (pathBase.HasValue || path.HasValue) ? (pathBase + path).ToString() : "/";
+            return combinePath + query + fragment;
         }
 
-        public static string Create(string scheme,
+        /// <summary>
+        /// Combines the given URI components into a string that is properly encoded for use in HTTP headers.
+        /// Note that unicode in the HostString will be encoded as punycode.
+        /// </summary>
+        /// <param name="scheme"></param>
+        /// <param name="host"></param>
+        /// <param name="pathBase"></param>
+        /// <param name="path"></param>
+        /// <param name="query"></param>
+        /// <param name="fragment"></param>
+        /// <returns></returns>
+        public static string Encode(string scheme,
             HostString host,
             PathString pathBase = new PathString(),
             PathString path = new PathString(),
             QueryString query = new QueryString(),
             FragmentString fragment = new FragmentString())
         {
-            return new UriHelper()
+            string combinePath = (pathBase.HasValue || path.HasValue) ? (pathBase + path).ToString() : "/";
+            return scheme + "://" + host + combinePath + query + fragment;
+        }
+
+        /// <summary>
+        /// Generates a string from the given absolute or relative Uri that is appropriately encoded for use in
+        /// HTTP headers. Note that a unicode host name will be encoded as punycode.
+        /// </summary>
+        /// <param name="uri"></param>
+        /// <returns></returns>
+        public static string Encode(Uri uri)
+        {
+            if (uri.IsAbsoluteUri)
             {
-                Scheme = scheme,
-                Host = host,
-                PathBase = pathBase,
-                Path = path,
-                Query = query,
-                Fragment = fragment
-            }.GetFullUri();
+                return Encode(
+                    scheme: uri.Scheme,
+                    host: HostString.FromUriComponent(uri),
+                    pathBase: PathString.FromUriComponent(uri),
+                    query: QueryString.FromUriComponent(uri),
+                    fragment: FragmentString.FromUriComponent(uri));
+            }
+            else
+            {
+                return uri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+            }
         }
     }
 }
