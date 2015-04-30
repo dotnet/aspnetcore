@@ -11,7 +11,7 @@
         "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
         "Microsoft.Framework.DependencyInjection": "1.0.0-*",
         "Microsoft.Framework.Logging": "1.0.0-*",
-        "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*",
+        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" },
         "Newtonsoft.Json": "6.0.6"
     },
