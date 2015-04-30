@@ -3,8 +3,8 @@
     "description": "ASP.NET 5 helpers to deploy applications to IIS Express, IIS, WebListener and Kestrel for testing.",
     "dependencies": {
         "Microsoft.AspNet.Testing": "1.0.0-*",
-        "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
-        "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*"
+        "Microsoft.Framework.Logging.Interfaces": "1.0.0-*",
+        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
     },
     "frameworks": {
         "dnx451": {

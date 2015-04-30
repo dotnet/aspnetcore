@@ -3,7 +3,7 @@
     "description": "ASP.NET 5 Hosting abstractions.",
     "dependencies": {
         "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
-        "Microsoft.AspNet.FileProviders.Abstractions": "1.0.0-*",
+        "Microsoft.AspNet.FileProviders.Interfaces": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" }
     },
     "frameworks": {
