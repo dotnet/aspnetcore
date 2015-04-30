@@ -4,7 +4,7 @@
     "dependencies": {
         "Microsoft.AspNet.Http.Features": "1.0.0-*",
         "Microsoft.AspNet.Hosting.Server.Interfaces": "1.0.0-*",
-        "Microsoft.Framework.Logging.Interfaces": "1.0.0-*",
+        "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
         "Microsoft.Net.Http.Server": "1.0.0-*"
     },
     "compilationOptions": {
