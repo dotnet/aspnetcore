@@ -35,8 +35,8 @@ namespace Microsoft.Framework.DependencyInjection
         public static IServiceCollection AddCors(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddOptions();
-            serviceCollection.AddTransient<ICorsService, CorsService>();
-            serviceCollection.AddTransient<ICorsPolicyProvider, DefaultCorsPolicyProvider>();
+            serviceCollection.TryAdd(ServiceDescriptor.Transient<ICorsService, CorsService>());
+            serviceCollection.TryAdd(ServiceDescriptor.Transient<ICorsPolicyProvider, DefaultCorsPolicyProvider>());
             return serviceCollection;
         }
     }
