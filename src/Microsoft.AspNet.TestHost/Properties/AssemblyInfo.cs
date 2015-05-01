@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc.
+// Copyright (c) .NET Foundation.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
