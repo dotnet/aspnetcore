@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Routing
         private readonly Dictionary<string, object> _dictionary;
 
         /// <summary>
-        /// Creates an empty RouteValueDictionary.
+        /// Creates an empty <see cref="RouteValueDictionary"/>.
         /// </summary>
         public RouteValueDictionary()
         {
@@ -31,28 +31,32 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// Creates a RouteValueDictionary initialized with the provided input values.
+        /// Creates a <see cref="RouteValueDictionary"/> initialized with the provided input value.
         /// </summary>
-        /// <param name="values">Input values to copy into the dictionary.</param>
-        public RouteValueDictionary([NotNull] IDictionary<string, object> values)
-        {
-            _dictionary = new Dictionary<string, object>(values, StringComparer.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Creates a RouteValueDictionary initialized with the provided input values.
-        /// </summary>
-        /// <param name="values">Input values to copy into the dictionary.</param>
+        /// <param name="obj">An object to initialize the dictionary. The value can be of type
+        /// <see cref="IDictionary{TKey, TValue}"/> or <see cref="IReadOnlyDictionary{TKey, TValue}"/> or
+        /// any other object.
+        /// </param>
         /// <remarks>
-        /// The input parameter is interpreted as a set of key-value-pairs where the property names
-        /// are keys, and property values are the values, and copied into the dictionary. Only public
-        /// instance non-index properties are considered.
+        /// If the value is a dictionary, then its entries are copied. Otherwise the object is interpreted as a set
+        /// of key-value-pairs where the property names are keys, and property values are the values, and copied
+        /// into the dictionary. Only public instance non-index properties are considered.
         /// </remarks>
         public RouteValueDictionary(object obj)
             : this()
         {
             if (obj != null)
             {
+                var keyValuePairCollection = obj as IEnumerable<KeyValuePair<string, object>>;
+                if (keyValuePairCollection != null)
+                {
+                    foreach (var kvp in keyValuePairCollection)
+                    {
+                        Add(kvp.Key, kvp.Value);
+                    }
+                    return;
+                }
+
                 var type = obj.GetType();
                 var allProperties = type.GetRuntimeProperties();
 

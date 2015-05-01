@@ -168,6 +168,48 @@ namespace Microsoft.AspNet.Routing.Tests
                 expected);
         }
 
+        [Fact]
+        public void CreateFromReadOnlyDictionary_CopiesValues()
+        {
+            // Arrange
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add("Name", "James");
+            dictionary.Add("Age", 30);
+            var readonlyDictionary = (IReadOnlyDictionary<string, object>)dictionary;
+
+            // Act
+            var dict = new RouteValueDictionary(readonlyDictionary);
+
+            // Assert
+            Assert.Equal(2, dict.Count);
+            Assert.Equal("James", dict["Name"]);
+            Assert.Equal(30, dict["Age"]);
+        }
+
+        [Fact]
+        public void CreateFromReadOnlyDictionary_ModifyRouteValueDictionary()
+        {
+            // Arrange
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add("Name", "James");
+            dictionary.Add("Age", 30);
+            dictionary.Add("Address", new Address() { City = "Redmond", State = "WA" });
+            var readonlyDictionary = (IReadOnlyDictionary<string, object>)dictionary;
+
+            // Act
+            var routeValueDictionary = new RouteValueDictionary(readonlyDictionary);
+            routeValueDictionary.Add("City", "Redmond");
+
+            // Assert
+            Assert.Equal(4, routeValueDictionary.Count);
+            Assert.Equal("James", routeValueDictionary["Name"]);
+            Assert.Equal(30, routeValueDictionary["Age"]);
+            Assert.Equal("Redmond", routeValueDictionary["City"]);
+            var address = Assert.IsType<Address>(routeValueDictionary["Address"]);
+            address.State = "Washington";
+            Assert.Equal("Washington", ((Address)routeValueDictionary["Address"]).State);
+        }
+
         private static string GetDuplicateKeyErrorMessage()
         {
             // Gets the exception message when duplicate entries are
@@ -232,6 +274,13 @@ namespace Microsoft.AspNet.Routing.Tests
                 get { return false; }
                 set { }
             }
+        }
+
+        private class Address
+        {
+            public string City { get; set; }
+
+            public string State { get; set; }
         }
     }
 }
