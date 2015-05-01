@@ -316,7 +316,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 var matched = RemoveTag(tags, tagName, tagStart);
 
                 if (tags.Count == 0 &&
-                    // Note tagName may contain a '!' escape character. This ensures </!text> doesn't match here. 
+                    // Note tagName may contain a '!' escape character. This ensures </!text> doesn't match here.
                     // </!text> tags are treated like any other escaped HTML end tag.
                     string.Equals(tagName, SyntaxConstants.TextTagName, StringComparison.OrdinalIgnoreCase) &&
                     matched)
@@ -491,7 +491,7 @@ namespace Microsoft.AspNet.Razor.Parser
         private void AttributePrefix(IEnumerable<HtmlSymbol> whitespace, IEnumerable<HtmlSymbol> nameSymbols)
         {
             // First, determine if this is a 'data-' attribute (since those can't use conditional attributes)
-            LocationTagged<string> name = nameSymbols.GetContent(Span.Start);
+            var name = nameSymbols.GetContent(Span.Start);
             var attributeCanBeConditional = !name.Value.StartsWith("data-", StringComparison.OrdinalIgnoreCase);
 
             // Accept the whitespace and name
@@ -507,7 +507,7 @@ namespace Microsoft.AspNet.Razor.Parser
             }
 
             // We now have the prefix: (i.e. '      foo="')
-            LocationTagged<string> prefix = Span.GetContent();
+            var prefix = Span.GetContent();
 
             if (attributeCanBeConditional)
             {
@@ -521,7 +521,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 }
 
                 // Capture the suffix
-                LocationTagged<string> suffix = new LocationTagged<string>(string.Empty, CurrentLocation);
+                var suffix = new LocationTagged<string>(string.Empty, CurrentLocation);
                 if (quote != HtmlSymbolType.Unknown && At(quote))
                 {
                     suffix = CurrentSymbol.GetContent();
@@ -554,23 +554,45 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             var prefixStart = CurrentLocation;
             var prefix = ReadWhile(sym => sym.Type == HtmlSymbolType.WhiteSpace || sym.Type == HtmlSymbolType.NewLine);
-            Accept(prefix);
 
             if (At(HtmlSymbolType.Transition))
             {
-                var valueStart = CurrentLocation;
-                PutCurrentBack();
-
-                // Output the prefix but as a null-span. DynamicAttributeBlockCodeGenerator will render it
-                Span.CodeGenerator = SpanCodeGenerator.Null;
-
-                // Dynamic value, start a new block and set the code generator
-                using (Context.StartBlock(BlockType.Markup))
+                if (NextIs(HtmlSymbolType.Transition))
                 {
-                    Context.CurrentBlock.CodeGenerator =
-                        new DynamicAttributeBlockCodeGenerator(prefix.GetContent(prefixStart), valueStart);
+                    // Wrapping this in a block so that the ConditionalAttributeCollapser doesn't rewrite it.
+                    using (Context.StartBlock(BlockType.Markup))
+                    {
+                        Accept(prefix);
 
-                    OtherParserBlock();
+                        // Render a single "@" in place of "@@".
+                        Span.CodeGenerator = new LiteralAttributeCodeGenerator(
+                            prefix.GetContent(prefixStart),
+                            new LocationTagged<string>(CurrentSymbol.GetContent(), CurrentLocation));
+                        AcceptAndMoveNext();
+                        Output(SpanKind.Markup, AcceptedCharacters.None);
+
+                        Span.CodeGenerator = SpanCodeGenerator.Null;
+                        AcceptAndMoveNext();
+                        Output(SpanKind.Markup, AcceptedCharacters.None);
+                    }
+                }
+                else
+                {
+                    Accept(prefix);
+                    var valueStart = CurrentLocation;
+                    PutCurrentBack();
+
+                    // Output the prefix but as a null-span. DynamicAttributeBlockCodeGenerator will render it
+                    Span.CodeGenerator = SpanCodeGenerator.Null;
+
+                    // Dynamic value, start a new block and set the code generator
+                    using (Context.StartBlock(BlockType.Markup))
+                    {
+                        Context.CurrentBlock.CodeGenerator =
+                            new DynamicAttributeBlockCodeGenerator(prefix.GetContent(prefixStart), valueStart);
+
+                        OtherParserBlock();
+                    }
                 }
             }
             else if (At(HtmlSymbolType.Text) &&
@@ -578,6 +600,8 @@ namespace Microsoft.AspNet.Razor.Parser
                      CurrentSymbol.Content[0] == '~' &&
                      NextIs(HtmlSymbolType.ForwardSlash))
             {
+                Accept(prefix);
+
                 // Virtual Path value
                 var valueStart = CurrentLocation;
                 VirtualPath();
@@ -587,6 +611,8 @@ namespace Microsoft.AspNet.Razor.Parser
             }
             else
             {
+                Accept(prefix);
+
                 // Literal value
                 // 'quote' should be "Unknown" if not quoted and symbols coming from the tokenizer should never have "Unknown" type.
                 var value = ReadWhile(sym =>
@@ -719,7 +745,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Tuple<HtmlSymbol, SourceLocation> tag = Tuple.Create(tagName, _lastTagStart);
 
             if (tags.Count == 0 &&
-                // Note tagName may contain a '!' escape character. This ensures <!text> doesn't match here. 
+                // Note tagName may contain a '!' escape character. This ensures <!text> doesn't match here.
                 // <!text> tags are treated like any other escaped HTML start tag.
                 string.Equals(tag.Item1.Content, SyntaxConstants.TextTagName, StringComparison.OrdinalIgnoreCase))
             {

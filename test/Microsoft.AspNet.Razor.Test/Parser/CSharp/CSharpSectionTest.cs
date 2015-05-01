@@ -6,6 +6,8 @@ using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
+using Microsoft.AspNet.Razor.Text;
+using Microsoft.AspNet.Razor.Tokenizer;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
@@ -442,6 +444,85 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                             Factory.Markup(" <? xml bleh ?>")),
                         Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                     Factory.EmptyHtml()));
+        }
+
+        public static TheoryData SectionWithEscapedTransitionData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+
+                return new TheoryData<string, Block>
+                {
+                    {
+                        "@section s {<span foo='@@' />}",
+                        new MarkupBlock(
+                            factory.EmptyHtml(),
+                            new SectionBlock(new SectionCodeGenerator("s"),
+                                factory.CodeTransition(),
+                                factory.MetaCode("section s {")
+                                    .AutoCompleteWith(null, atEndOfSpan: true),
+                            new MarkupBlock(
+                                new MarkupTagBlock(
+                                    factory.Markup("<span"),
+                                    new MarkupBlock(
+                                        new AttributeBlockCodeGenerator("foo", new LocationTagged<string>(" foo='", 17, 0, 17), new LocationTagged<string>("'", 25, 0, 25)),
+                                        factory.Markup(" foo='").With(SpanCodeGenerator.Null),
+                                        new MarkupBlock(
+                                            factory.Markup("@").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 23, 0, 23), new LocationTagged<string>("@", 23, 0, 23))).Accepts(AcceptedCharacters.None),
+                                            factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                factory.Markup(" />"))),
+                            factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                            factory.EmptyHtml())
+                    },
+                    {
+                        "@section s {<span foo='@DateTime.Now @@' />}",
+                        new MarkupBlock(
+                            factory.EmptyHtml(),
+                            new SectionBlock(new SectionCodeGenerator("s"),
+                                factory.CodeTransition(),
+                                factory.MetaCode("section s {")
+                                    .AutoCompleteWith(null, atEndOfSpan: true),
+                            new MarkupBlock(
+                                new MarkupTagBlock(
+                                    factory.Markup("<span"),
+                                    new MarkupBlock(
+                                        new AttributeBlockCodeGenerator("foo", new LocationTagged<string>(" foo='", 17, 0, 17), new LocationTagged<string>("'", 39, 0, 39)),
+                                        factory.Markup(" foo='").With(SpanCodeGenerator.Null),
+                                        new MarkupBlock(
+                                            new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 23, 0, 23), 23, 0, 23),
+                                            new ExpressionBlock(
+                                                factory.CodeTransition(),
+                                                factory.Code("DateTime.Now")
+                                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                                    .Accepts(AcceptedCharacters.NonWhiteSpace))),
+                                     new MarkupBlock(
+                                        factory.Markup(" @").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(" ", 36, 0, 36), new LocationTagged<string>("@", 37, 0, 37))).Accepts(AcceptedCharacters.None),
+                                        factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                    factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                factory.Markup(" />"))),
+                            factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                            factory.EmptyHtml())
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(SectionWithEscapedTransitionData))]
+        public void ParseSectionBlock_WithDoubleTransition_DoesNotThrow(string input, Block expected)
+        {
+            ParseDocumentTest(input, expected);
+        }
+
+        private static SpanFactory CreateDefaultSpanFactory()
+        {
+            return new SpanFactory
+            {
+                MarkupTokenizerFactory = doc => new HtmlTokenizer(doc),
+                CodeTokenizerFactory = doc => new CSharpTokenizer(doc)
+            };
         }
     }
 }

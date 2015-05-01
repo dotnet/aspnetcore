@@ -353,6 +353,24 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 children: factory.Markup("words and spaces")))
                     },
                     {
+                        "<div style=\"\" class=\"btn\" catchAll=\"@@hi\" >words and spaces</div>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "div",
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock()),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn")),
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll",
+                                        new MarkupBlock(
+                                            new MarkupBlock(
+                                                factory.Markup("@").Accepts(AcceptedCharacters.None),
+                                                factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                            factory.Markup("hi"))),
+                                },
+                                children: factory.Markup("words and spaces")))
+                    },
+                    {
                         "<div style=\"@DateTime.Now\" class=\"@DateTime.Now\" catchAll=\"@DateTime.Now\" >words and " +
                         "spaces</div>",
                         new MarkupBlock(
@@ -1134,6 +1152,32 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                             "bound",
                                             new MarkupBlock(
                                                 new MarkupBlock(
+                                                    new ExpressionBlock(
+                                                        factory.CodeTransition(),
+                                                        factory.Code("DateTime.Now")
+                                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                                            .Accepts(AcceptedCharacters.NonWhiteSpace)))))
+                                    }
+                                })),
+                        availableDescriptorsText
+                    },
+                    {
+                        "<PREFIXmyth2 bound=\"@@@DateTime.Now\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "PREFIXmyth2",
+                                selfClosing: true,
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    {
+                                        new KeyValuePair<string, SyntaxTreeNode>(
+                                            "bound",
+                                            new MarkupBlock(
+                                                new MarkupBlock(
+                                                    factory.Markup("@").Accepts(AcceptedCharacters.None),
+                                                    factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                                new MarkupBlock(
+                                                    factory.EmptyHtml(),
                                                     new ExpressionBlock(
                                                         factory.CodeTransition(),
                                                         factory.Code("DateTime.Now")
@@ -2165,6 +2209,41 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                             new LiteralAttributeCodeGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 13, 0, 13),
                                                 value: new LocationTagged<string>("btn}", 13, 0, 13))))))),
+                            new []
+                            {
+                                new RazorError(
+                                    errorMatchingBrace,
+                                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1),
+                                new RazorError(
+                                    string.Format(errorEOFMatchingBrace, "!p"),
+                                    absoluteIndex: 2, lineIndex: 0, columnIndex: 2)
+                            }
+                    },
+                    {
+                        "@{<!p class=\"btn@@}",
+                        buildPartialStatementBlock(
+                            () => new MarkupBlock(
+                                new MarkupTagBlock(
+                                    factory.Markup("<"),
+                                    factory.BangEscape(),
+                                    factory.Markup("p"),
+                                    new MarkupBlock(
+                                        new AttributeBlockCodeGenerator(
+                                            name: "class",
+                                            prefix: new LocationTagged<string>(" class=\"", 5, 0, 5),
+                                            suffix: new LocationTagged<string>(string.Empty, 19, 0, 19)),
+                                        factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                        factory.Markup("btn").With(
+                                            new LiteralAttributeCodeGenerator(
+                                                prefix: new LocationTagged<string>(string.Empty, 13, 0, 13),
+                                                value: new LocationTagged<string>("btn", 13, 0, 13))),
+                                        new MarkupBlock(
+                                            factory.Markup("@").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 16, 0, 16), new LocationTagged<string>("@", 16, 0, 16))).Accepts(AcceptedCharacters.None),
+                                            factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup("}").With(
+                                            new LiteralAttributeCodeGenerator(
+                                                prefix: new LocationTagged<string>(string.Empty, 18, 0, 18),
+                                                value: new LocationTagged<string>("}", 18, 0, 18))))))),
                             new []
                             {
                                 new RazorError(
@@ -3697,6 +3776,75 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                         new MarkupBlock(factory.Markup("Time:"), dateTimeNow))
                                 }))
                     },
+                    {
+                        "<person age=\"12\" birthday=\"DateTime.Now\" name=\"Time: @@ @DateTime.Now\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("person",
+                                selfClosing: true,
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>("age", factory.CodeMarkup("12")),
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "birthday",
+                                        factory.CodeMarkup("DateTime.Now")),
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "name",
+                                        new MarkupBlock(
+                                            factory.Markup("Time:"),
+                                             new MarkupBlock(
+                                                factory.Markup(" @").Accepts(AcceptedCharacters.None),
+                                                factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                            dateTimeNow))
+                                }))
+                    },
+                    {
+                        "<person age=\"12\" birthday=\"DateTime.Now\" name=\"@@BoundStringAttribute\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("person",
+                                selfClosing: true,
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>("age", factory.CodeMarkup("12")),
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "birthday",
+                                        factory.CodeMarkup("DateTime.Now")),
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "name",
+                                        new MarkupBlock(
+                                             new MarkupBlock(
+                                                factory.Markup("@").Accepts(AcceptedCharacters.None),
+                                                factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                            factory.Markup("BoundStringAttribute")))
+                                }))
+                    },
+                    {
+                        "<person age=\"@@@(11+1)\" birthday=\"DateTime.Now\" name=\"Time: @DateTime.Now\" />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("person",
+                                selfClosing: true,
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "age",
+                                        new MarkupBlock(
+                                            new MarkupBlock(
+                                                factory.Markup("@").Accepts(AcceptedCharacters.None),
+                                                factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                            new MarkupBlock(
+                                                factory.EmptyHtml(),
+                                                new ExpressionBlock(
+                                                    factory.CodeTransition(),
+                                                    factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                                                    factory.Code("11+1").AsExpression(),
+                                                    factory.MetaCode(")").Accepts(AcceptedCharacters.None))))),
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "birthday",
+                                        factory.CodeMarkup("DateTime.Now")),
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "name",
+                                        new MarkupBlock(factory.Markup("Time:"), dateTimeNow))
+                                }))
+                    },
                 };
             }
         }
@@ -4535,6 +4683,25 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 }),
                             factory.Markup(" World")))
                 };
+                yield return new object[] {
+                    "<p>Hello <script class=\"@@foo@bar.com\" style=\"color:red;\"></script> World</p>",
+                    new MarkupBlock(
+                        new MarkupTagHelperBlock("p",
+                            factory.Markup("Hello "),
+                            new MarkupTagHelperBlock("script",
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "class",
+                                        new MarkupBlock(
+                                            new MarkupBlock(
+                                                factory.Markup("@").Accepts(AcceptedCharacters.None),
+                                                factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                            factory.Markup("foo@bar.com"))),
+                                    new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
+                                }),
+                            factory.Markup(" World")))
+                };
             }
         }
 
@@ -4648,6 +4815,25 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
                                 new KeyValuePair<string, SyntaxTreeNode>("dynamic", new MarkupBlock(dateTimeNow)),
                                 new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
+                            },
+                            factory.Markup("Hello World")))
+                };
+                yield return new object[] {
+                    "<p class=foo dynamic=@DateTime.Now style=color@@:red;>Hello World</p>",
+                    new MarkupBlock(
+                        new MarkupTagHelperBlock("p",
+                            new List<KeyValuePair<string, SyntaxTreeNode>>
+                            {
+                                new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
+                                new KeyValuePair<string, SyntaxTreeNode>("dynamic", new MarkupBlock(dateTimeNow)),
+                                new KeyValuePair<string, SyntaxTreeNode>(
+                                    "style",
+                                    new MarkupBlock(
+                                        factory.Markup("color"),
+                                         new MarkupBlock(
+                                            factory.Markup("@").Accepts(AcceptedCharacters.None),
+                                            factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup(":red;")))
                             },
                             factory.Markup("Hello World")))
                 };

@@ -207,6 +207,31 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         }
 
         [Fact]
+        public void ConditionalAttributeCollapserDoesNotRewriteEscapedTransitions()
+        {
+            // Act
+            var results = ParseDocument("<span foo='@@' />");
+            var rewritingContext = new RewritingContext(results.Document, new ErrorSink());
+            new ConditionalAttributeCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(rewritingContext);
+            var rewritten = rewritingContext.SyntaxTree;
+
+            // Assert
+            Assert.Equal(0, results.ParserErrors.Count());
+            EvaluateParseTree(rewritten,
+                new MarkupBlock(
+                    new MarkupTagBlock(
+                        Factory.Markup("<span"),
+                        new MarkupBlock(
+                            new AttributeBlockCodeGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 13, 0, 13)),
+                            Factory.Markup(" foo='").With(SpanCodeGenerator.Null),
+                            new MarkupBlock(
+                                Factory.Markup("@").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharacters.None),
+                                Factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                            Factory.Markup("'").With(SpanCodeGenerator.Null)),
+                        Factory.Markup(" />"))));
+        }
+
+        [Fact]
         public void ConditionalAttributesDoNotCreateExtraDataForEntirelyLiteralAttribute()
         {
             // Arrange

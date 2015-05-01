@@ -277,15 +277,14 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             // Evaluate the result
             var collector = new ErrorCollector();
 
-            // Link all the nodes
-            expectedRoot.LinkNodes();
-
             if (expectedRoot == null)
             {
                 Assert.Null(actualRoot);
             }
             else
             {
+                // Link all the nodes
+                expectedRoot.LinkNodes();
                 Assert.NotNull(actualRoot);
                 EvaluateSyntaxTreeNode(collector, actualRoot, expectedRoot);
                 if (collector.Success)
@@ -412,7 +411,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
                         actual.TagName,
                         actual.SelfClosing);
                 }
-                
+
                 var expectedAttributes = expected.Attributes.GetEnumerator();
                 var actualAttributes = actual.Attributes.GetEnumerator();
 

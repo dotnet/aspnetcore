@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Razor.Parser
                     var current = CurrentSymbol;
                     if (At(CSharpSymbolType.StringLiteral) && CurrentSymbol.Content.Length > 0 && CurrentSymbol.Content[0] == SyntaxConstants.TransitionCharacter)
                     {
-                        Tuple<CSharpSymbol, CSharpSymbol> split = Language.SplitSymbol(CurrentSymbol, 1, CSharpSymbolType.Transition);
+                        var split = Language.SplitSymbol(CurrentSymbol, 1, CSharpSymbolType.Transition);
                         current = split.Item1;
                         Context.Source.Position = split.Item2.Start.AbsoluteIndex;
                         NextToken();
