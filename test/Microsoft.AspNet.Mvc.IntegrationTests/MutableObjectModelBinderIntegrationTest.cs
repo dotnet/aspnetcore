@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -1563,6 +1564,464 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState, e => e.Key == "Customer.Address").Value;
             Assert.Null(entry.Value.AttemptedValue); // This fails due to #2445
             Assert.Same(model.Customer.Address, entry.Value.RawValue);
+        }
+
+        private class Order10
+        {
+            [BindRequired]
+            public Person10 Customer { get; set; }
+        }
+
+        private class Person10
+        {
+            public string Name { get; set; }
+        }
+
+        [Fact(Skip = "Error message is incorrect #2493.")]
+        public async Task MutableObjectModelBinder_WithRequiredComplexProperty_NoData_GetsErrors()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order10)
+            };
+
+            // No Data
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order10>(modelBindingResult.Model);
+            Assert.Null(model.Customer);
+
+            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "Customer").Value;
+            Assert.Null(entry.Value);
+            var error = Assert.Single(modelState["Customer"].Errors);
+            Assert.Equal("The Customer field is required.", error.ErrorMessage);
+        }
+
+        private class Order11
+        {
+            public Person11 Customer { get; set; }
+        }
+
+        private class Person11
+        {
+            public int Id { get; set; }
+
+            [BindRequired]
+            public string Name { get; set; }
+        }
+
+        [Fact(Skip = "Error message is incorrect #2493.")]
+        public async Task MutableObjectModelBinder_WithNestedRequiredProperty_WithPartialData_GetsErrors()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order11)
+            };
+
+            // No Data
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter.Customer.Id=123");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order11>(modelBindingResult.Model);
+            Assert.NotNull(model.Customer);
+            Assert.Equal(123, model.Customer.Id);
+            Assert.Null(model.Customer.Name);
+
+            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "parameter.Customer.Id").Value;
+            Assert.NotNull(entry.Value);
+            Assert.Equal("123", entry.Value.RawValue);
+            Assert.Equal("123", entry.Value.AttemptedValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "parameter.Customer.Name").Value;
+            Assert.Null(entry.Value);
+            var error = Assert.Single(modelState["parameter.Customer.Name"].Errors);
+            Assert.Equal("The Name field is required.", error.ErrorMessage);
+        }
+
+        [Fact(Skip = "Error message is incorrect #2493.")]
+        public async Task MutableObjectModelBinder_WithNestedRequiredProperty_WithData_EmptyPrefix_GetsErrors()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order11)
+            };
+
+            // No Data
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?Customer.Id=123");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order11>(modelBindingResult.Model);
+            Assert.NotNull(model.Customer);
+            Assert.Equal(123, model.Customer.Id);
+            Assert.Null(model.Customer.Name);
+
+            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "Customer.Id").Value;
+            Assert.NotNull(entry.Value);
+            Assert.Equal("123", entry.Value.RawValue);
+            Assert.Equal("123", entry.Value.AttemptedValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "Customer.Name").Value;
+            Assert.Null(entry.Value);
+            var error = Assert.Single(modelState["Customer.Name"].Errors);
+            Assert.Equal("The Name field is required.", error.ErrorMessage);
+        }
+
+        [Fact(Skip = "Error message is incorrect #2493.")]
+        public async Task MutableObjectModelBinder_WithNestedRequiredProperty_WithData_CustomPrefix_GetsErrors()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order11),
+                BindingInfo = new BindingInfo()
+                {
+                    BinderModelName = "customParameter"
+                }
+            };
+
+            // No Data
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?customParameter.Customer.Id=123");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order11>(modelBindingResult.Model);
+            Assert.NotNull(model.Customer);
+            Assert.Equal(123, model.Customer.Id);
+            Assert.Null(model.Customer.Name);
+
+            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "customParameter.Customer.Id").Value;
+            Assert.NotNull(entry.Value);
+            Assert.Equal("123", entry.Value.RawValue);
+            Assert.Equal("123", entry.Value.AttemptedValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "customParameter.Customer.Name").Value;
+            Assert.Null(entry.Value);
+            var error = Assert.Single(modelState["customParameter.Customer.Name"].Errors);
+            Assert.Equal("The Name field is required.", error.ErrorMessage);
+        }
+
+        private class Order12
+        {
+            [BindRequired]
+            public string ProductName { get; set; }
+        }
+
+        [Fact(Skip = "Error message is incorrect #2493.")]
+        public async Task MutableObjectModelBinder_WithRequiredProperty_NoData_GetsErrors()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order12)
+            };
+
+            // No Data
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order12>(modelBindingResult.Model);
+            Assert.Null(model.ProductName);
+
+            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "ProductName").Value;
+            Assert.Null(entry.Value);
+            var error = Assert.Single(modelState["ProductName"].Errors);
+            Assert.Equal("The ProductName field is required.", error.ErrorMessage);
+        }
+
+        [Fact(Skip = "Error message is incorrect #2493.")]
+        public async Task MutableObjectModelBinder_WithRequiredProperty_NoData_CustomPrefix_GetsErros()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order12),
+                BindingInfo = new BindingInfo()
+                {
+                    BinderModelName = "customParameter"
+                }
+            };
+
+            // No Data
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order12>(modelBindingResult.Model);
+            Assert.Null(model.ProductName);
+
+            Assert.Equal(1, modelState.Count);
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "customParameter.ProductName").Value;
+            Assert.Null(entry.Value);
+            var error = Assert.Single(modelState["customParameter.ProductName"].Errors);
+            Assert.Equal("The ProductName field is required.", error.ErrorMessage);
+        }
+
+        [Fact(Skip = "Extra model state entry due to #2446")]
+        public async Task MutableObjectModelBinder_WithRequiredProperty_WithData_EmptyPrefix_GetsBound()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order12),
+            };
+
+            // No Data
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?ProductName=abc");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order12>(modelBindingResult.Model);
+            Assert.Equal("abc", model.ProductName);
+
+            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "ProductName").Value;
+            Assert.NotNull(entry.Value);
+            Assert.Equal("abc", entry.Value.RawValue);
+            Assert.Equal("abc", entry.Value.AttemptedValue);
+        }
+
+        private class Order13
+        {
+            [BindRequired]
+            public List<int> OrderIds { get; set; }
+        }
+
+        [Fact(Skip = "Error message is incorrect #2493.")]
+        public async Task MutableObjectModelBinder_WithRequiredCollectionProperty_NoData_GetsErros()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order13)
+            };
+
+            // No Data
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order13>(modelBindingResult.Model);
+            Assert.Null(model.OrderIds);
+
+            Assert.Equal(1, modelState.Count);
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "OrderIds").Value;
+            Assert.Null(entry.Value);
+            var error = Assert.Single(modelState["OrderIds"].Errors);
+            Assert.Equal("The OrderIds field is required.", error.ErrorMessage);
+        }
+
+        [Fact(Skip = "Error message is incorrect #2493.")]
+        public async Task MutableObjectModelBinder_WithRequiredCollectionProperty_NoData_CustomPrefix_GetsErros()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order13),
+                BindingInfo = new BindingInfo()
+                {
+                    BinderModelName = "customParameter"
+                }
+            };
+
+            // No Data
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order13>(modelBindingResult.Model);
+            Assert.Null(model.OrderIds);
+
+            Assert.Equal(1, modelState.Count);
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "customParameter.OrderIds").Value;
+            Assert.Null(entry.Value);
+            var error = Assert.Single(modelState["customParameter.OrderIds"].Errors);
+            Assert.Equal("The OrderIds field is required.", error.ErrorMessage);
+        }
+
+        [Fact(Skip = "Extra model state entry due to #2446")]
+        public async Task MutableObjectModelBinder_WithRequiredCollectionProperty_WithData_EmptyPrefix_GetsBound()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order13),
+            };
+
+            // No Data
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?OrderIds[0]=123");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order13>(modelBindingResult.Model);
+            Assert.Equal(new[] { 123 }, model.OrderIds.ToArray());
+
+            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "OrderIds[0]").Value;
+            Assert.NotNull(entry.Value);
+            Assert.Equal("123", entry.Value.RawValue);
+            Assert.Equal("123", entry.Value.AttemptedValue);
         }
 
         private static void SetJsonBodyContent(HttpRequest request, string content)
