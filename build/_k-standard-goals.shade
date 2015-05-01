@@ -112,8 +112,8 @@ default Configuration='${E("Configuration")}'
 
           foreach (var project in nativeProjects)
           {
-            Exec(msbuildPath, project + " /p:Configuration=Platform=Win32" + commonParameters);
-            Exec(msbuildPath, project + " /p:Configuration=Platform=x64" + commonParameters);
+            Exec(msbuildPath, project + " /p:Platform=Win32" + commonParameters);
+            Exec(msbuildPath, project + " /p:Platform=x64" + commonParameters);
           }
 
           break;
