@@ -16,13 +16,13 @@
         "net45": {},
         "dnx451": {
             "dependencies": {
-                "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
+                "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*"
             }
         },
         "dnxcore50": {
             "dependencies": {
                 "System.Collections.Concurrent": "4.0.10-beta-*",
-                "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
+                "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*"
             }
         }
     }
