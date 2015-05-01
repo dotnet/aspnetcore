@@ -97,8 +97,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             AssertRequiredError("CustomerName", error);
         }
 
-
-
         private class Order2
         {
             [Required]
@@ -462,6 +460,549 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var error = Assert.Single(entry.Errors);
             AssertRequiredError("ProductId", error);
+        }
+
+        private class Order6
+        {
+            [StringLength(5, ErrorMessage = "Too Long.")]
+            public string Name { get; set; }
+        }
+
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task Validation_StringLengthAttribute_OnPropertyOfPOCO_Valid()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order6)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter.Name=bill");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order6>(modelBindingResult.Model);
+            Assert.Equal("bill", model.Name);
+
+            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "parameter.Name").Value;
+            Assert.Equal("bill", entry.Value.AttemptedValue);
+            Assert.Equal("bill", entry.Value.RawValue);
+            Assert.Empty(entry.Errors);
+        }
+
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task Validation_StringLengthAttribute_OnPropertyOfPOCO_Invalid()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order6)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter.Name=billybob");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order6>(modelBindingResult.Model);
+            Assert.Equal("billybob", model.Name);
+
+            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "parameter.Name").Value;
+            Assert.Equal("billybob", entry.Value.AttemptedValue);
+            Assert.Equal("billybob", entry.Value.RawValue);
+
+            var error = Assert.Single(entry.Errors);
+            Assert.Equal("Too Long.", error.ErrorMessage);
+            Assert.Null(error.Exception);
+        }
+
+        private class Order7
+        {
+            public Person7 Customer { get; set; }
+        }
+
+        private class Person7
+        {
+            [StringLength(5, ErrorMessage = "Too Long.")]
+            public string Name { get; set; }
+        }
+
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task Validation_StringLengthAttribute_OnPropertyOfNestedPOCO_Valid()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order7)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter.Customer.Name=bill");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order7>(modelBindingResult.Model);
+            Assert.Equal("bill", model.Customer.Name);
+
+            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "parameter.Customer.Name").Value;
+            Assert.Equal("bill", entry.Value.AttemptedValue);
+            Assert.Equal("bill", entry.Value.RawValue);
+            Assert.Empty(entry.Errors);
+        }
+
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task Validation_StringLengthAttribute_OnPropertyOfNestedPOCO_Invalid()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order7)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter.Customer.Name=billybob");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order7>(modelBindingResult.Model);
+            Assert.Equal("billybob", model.Customer.Name);
+
+            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "parameter.Customer.Name").Value;
+            Assert.Equal("billybob", entry.Value.AttemptedValue);
+            Assert.Equal("billybob", entry.Value.RawValue);
+
+            var error = Assert.Single(entry.Errors);
+            Assert.Equal("Too Long.", error.ErrorMessage);
+            Assert.Null(error.Exception);
+        }
+
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task Validation_StringLengthAttribute_OnPropertyOfNestedPOCO_NoData()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order7)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order7>(modelBindingResult.Model);
+            Assert.Null(model.Customer);
+
+            Assert.Equal(0, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+        }
+
+        private class Order8
+        {
+            [ValidatePerson8]
+            public Person8 Customer { get; set; }
+        }
+
+        private class Person8
+        {
+            public string Name { get; set; }
+        }
+
+        private class ValidatePerson8Attribute : ValidationAttribute
+        {
+            protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+            {
+                if (((Person8)value).Name == "bill")
+                {
+                    return null;
+                }
+                else
+                {
+                    return new ValidationResult("Invalid Person.");
+                }
+            }
+        }
+
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task Validation_CustomAttribute_OnPOCOProperty_Valid()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order8)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter.Customer.Name=bill");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order8>(modelBindingResult.Model);
+            Assert.Equal("bill", model.Customer.Name);
+
+            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "parameter.Customer.Name").Value;
+            Assert.Equal("bill", entry.Value.AttemptedValue);
+            Assert.Equal("bill", entry.Value.RawValue);
+            Assert.Empty(entry.Errors);
+        }
+
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task Validation_CustomAttribute_OnPOCOProperty_Invalid()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order8)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter.Customer.Name=billybob");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order8>(modelBindingResult.Model);
+            Assert.Equal("billybob", model.Customer.Name);
+
+            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "parameter.Customer.Name").Value;
+            Assert.Equal("billybob", entry.Value.AttemptedValue);
+            Assert.Equal("billybob", entry.Value.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "parameter.Customer").Value;
+            Assert.Null(entry.Value);
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            var error = Assert.Single(entry.Errors);
+            Assert.Equal("Invalid Person.", error.ErrorMessage);
+            Assert.Null(error.Exception);
+        }
+
+        private class Order9
+        {
+            [ValidateProducts9]
+            public List<Product9> Products { get; set; }
+        }
+
+        private class Product9
+        {
+            public string Name { get; set; }
+        }
+
+        private class ValidateProducts9Attribute : ValidationAttribute
+        {
+            protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+            {
+                if (((List<Product9>)value)[0].Name == "bill")
+                {
+                    return null;
+                }
+                else
+                {
+                    return new ValidationResult("Invalid Product.");
+                }
+            }
+        }
+
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task Validation_CustomAttribute_OnCollectionElement_Valid()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order9)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter.Products[0].Name=bill");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order9>(modelBindingResult.Model);
+            Assert.Equal("bill", Assert.Single(model.Products).Name);
+
+            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "parameter.Products[0].Name").Value;
+            Assert.Equal("bill", entry.Value.AttemptedValue);
+            Assert.Equal("bill", entry.Value.RawValue);
+            Assert.Empty(entry.Errors);
+        }
+
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task Validation_CustomAttribute_OnCollectionElement_Invalid()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order9)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter.Products[0].Name=billybob");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order9>(modelBindingResult.Model);
+            Assert.Equal("billybob", Assert.Single(model.Products).Name);
+
+            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "parameter.Products[0].Name").Value;
+            Assert.Equal("billybob", entry.Value.AttemptedValue);
+            Assert.Equal("billybob", entry.Value.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "parameter.Products").Value;
+            Assert.Null(entry.Value);
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+
+            var error = Assert.Single(entry.Errors);
+            Assert.Equal("Invalid Product.", error.ErrorMessage);
+            Assert.Null(error.Exception);
+        }
+
+        private class Order10
+        {
+            [StringLength(5, ErrorMessage = "Too Long.")]
+            public string Name { get; set; }
+        }
+
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task Validation_StringLengthAttribute_OnProperyOfCollectionElement_Valid()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(List<Order10>)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter[0].Name=bill");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<List<Order10>>(modelBindingResult.Model);
+            Assert.Equal("bill", Assert.Single(model).Name);
+
+            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "parameter[0].Name").Value;
+            Assert.Equal("bill", entry.Value.AttemptedValue);
+            Assert.Equal("bill", entry.Value.RawValue);
+            Assert.Empty(entry.Errors);
+        }
+
+        [Fact(Skip = "Extra ModelState key because of #2446")]
+        public async Task Validation_StringLengthAttribute_OnProperyOfCollectionElement_Invalid()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(List<Order10>)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter[0].Name=billybob");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<List<Order10>>(modelBindingResult.Model);
+            Assert.Equal("billybob", Assert.Single(model).Name);
+
+            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "parameter[0].Name").Value;
+            Assert.Equal("billybob", entry.Value.AttemptedValue);
+            Assert.Equal("billybob", entry.Value.RawValue);
+
+            var error = Assert.Single(entry.Errors);
+            Assert.Equal("Too Long.", error.ErrorMessage);
+            Assert.Null(error.Exception);
+        }
+
+        [Fact(Skip = "Extra ModelState key because of #2446, Empty collection should be created by the collection model binder #1579")]
+        public async Task Validation_StringLengthAttribute_OnProperyOfCollectionElement_NoData()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(List<Order10>)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.False(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<List<Order10>>(modelBindingResult.Model);
+            Assert.Empty(model);
+
+            //Assert.Equal(0, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
         }
 
         private static void AssertRequiredError(string key, ModelError error)
