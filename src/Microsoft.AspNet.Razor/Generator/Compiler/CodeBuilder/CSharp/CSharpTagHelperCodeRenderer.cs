@@ -203,6 +203,13 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     var firstAttribute = matchingAttributes.First();
                     var attributeValueChunk = firstAttribute.Value;
 
+                    // Minimized attributes are not valid for bound attributes. There will be an error for the bound
+                    // attribute logged by TagHelperBlockRewriter already so we can skip.
+                    if (attributeValueChunk == null)
+                    {
+                        continue;
+                    }
+
                     var attributeValueRecorded = htmlAttributeValues.ContainsKey(attributeDescriptor.Name);
 
                     // Bufferable attributes are attributes that can have Razor code inside of them.
@@ -323,15 +330,21 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             // Build out the unbound HTML attributes for the tag builder
             foreach (var htmlAttribute in unboundHTMLAttributes)
             {
-                string textValue;
+                string textValue = null;
+                var isPlainTextValue = false;
                 var attributeValue = htmlAttribute.Value;
-                var isPlainTextValue = TryGetPlainTextValue(attributeValue, out textValue);
 
-                // HTML attributes are always strings. So if this value is not plain text i.e. if the value contains
-                // C# code, then we need to buffer it.
-                if (!isPlainTextValue)
+                // A null attribute value means the HTML attribute is minimized.
+                if (attributeValue != null)
                 {
-                    BuildBufferedWritingScope(attributeValue, htmlEncodeValues: true);
+                    isPlainTextValue = TryGetPlainTextValue(attributeValue, out textValue);
+
+                    // HTML attributes are always strings. So if this value is not plain text i.e. if the value contains
+                    // C# code, then we need to buffer it.
+                    if (!isPlainTextValue)
+                    {
+                        BuildBufferedWritingScope(attributeValue, htmlEncodeValues: true);
+                    }
                 }
 
                 // Execution contexts are a runtime feature, therefore no need to add anything to them.
@@ -340,27 +353,39 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                     continue;
                 }
 
-                _writer
-                    .WriteStartInstanceMethodInvocation(
-                        ExecutionContextVariableName,
-                        _tagHelperContext.ExecutionContextAddHtmlAttributeMethodName)
-                    .WriteStringLiteral(htmlAttribute.Key)
-                    .WriteParameterSeparator()
-                    .WriteStartMethodInvocation(_tagHelperContext.MarkAsHtmlEncodedMethodName);
-
-                // If it's a plain text value then we need to surround the value with quotes.
-                if (isPlainTextValue)
+                // If we have a minimized attribute there is no value
+                if (attributeValue == null)
                 {
-                    _writer.WriteStringLiteral(textValue);
+                    _writer
+                        .WriteStartInstanceMethodInvocation(
+                            ExecutionContextVariableName,
+                            _tagHelperContext.ExecutionContextAddMinimizedHtmlAttributeMethodName)
+                        .WriteStringLiteral(htmlAttribute.Key)
+                        .WriteEndMethodInvocation();
                 }
                 else
                 {
-                    RenderBufferedAttributeValueAccessor(_writer);
-                }
+                    _writer
+                        .WriteStartInstanceMethodInvocation(
+                            ExecutionContextVariableName,
+                            _tagHelperContext.ExecutionContextAddHtmlAttributeMethodName)
+                        .WriteStringLiteral(htmlAttribute.Key)
+                        .WriteParameterSeparator()
+                        .WriteStartMethodInvocation(_tagHelperContext.MarkAsHtmlEncodedMethodName);
 
-                _writer
-                    .WriteEndMethodInvocation(endLine: false)
-                    .WriteEndMethodInvocation();
+                    // If it's a plain text value then we need to surround the value with quotes.
+                    if (isPlainTextValue)
+                    {
+                        _writer.WriteStringLiteral(textValue);
+                    }
+                    else
+                    {
+                        RenderBufferedAttributeValueAccessor(_writer);
+                    }
+
+                    _writer.WriteEndMethodInvocation(endLine: false)
+                        .WriteEndMethodInvocation();
+                }
             }
         }
 

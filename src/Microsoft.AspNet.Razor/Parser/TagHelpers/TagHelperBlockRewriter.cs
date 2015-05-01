@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -71,11 +71,12 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 // Only want to track the attribute if we succeeded in parsing its corresponding Block/Span.
                 if (succeeded)
                 {
-                    // Check if it's a bound attribute that is not of type string and happens to be null or whitespace.
+                    // Check if it's a bound attribute that is minimized or not of type string and null or whitespace.
                     string attributeValueType;
                     if (attributeValueTypes.TryGetValue(attribute.Key, out attributeValueType) &&
+                        (attribute.Value == null ||
                         !IsStringAttribute(attributeValueType) &&
-                        IsNullOrWhitespaceAttributeValue(attribute.Value))
+                        IsNullOrWhitespaceAttributeValue(attribute.Value)))
                     {
                         var errorLocation = GetAttributeNameStartLocation(child);
 
@@ -167,7 +168,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 {
                     Debug.Assert(
                         name != null,
-                        "Name should never be null here. The parser should guaruntee an attribute has a name.");
+                        "Name should never be null here. The parser should guarantee an attribute has a name.");
 
                     // We've captured all leading whitespace and the attribute name.
                     // We're now at: " asp-for|='...'" or " asp-for|=..."
@@ -239,7 +240,9 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 return false;
             }
 
-            attribute = CreateMarkupAttribute(name, builder, attributeValueTypes);
+            // If we're not after an equal then we should treat the value as if it were a minimized attribute.
+            var attributeValueBuilder = afterEquals ? builder : null;
+            attribute = CreateMarkupAttribute(name, attributeValueBuilder, attributeValueTypes);
 
             return true;
         }
@@ -432,17 +435,24 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             IReadOnlyDictionary<string, string> attributeValueTypes)
         {
             string attributeTypeName;
+            Span value = null;
 
-            // If the attribute was requested by the tag helper and doesn't happen to be a string then we need to treat
-            // its value as code. Any non-string value can be any C# value so we need to ensure the SyntaxTreeNode
-            // reflects that.
-            if (attributeValueTypes.TryGetValue(name, out attributeTypeName) &&
-                !IsStringAttribute(attributeTypeName))
+            // Builder will be null in the case of minimized attributes
+            if (builder != null)
             {
-                builder.Kind = SpanKind.Code;
+                // If the attribute was requested by the tag helper and doesn't happen to be a string then we need to treat
+                // its value as code. Any non-string value can be any C# value so we need to ensure the SyntaxTreeNode
+                // reflects that.
+                if (attributeValueTypes.TryGetValue(name, out attributeTypeName) &&
+                    !IsStringAttribute(attributeTypeName))
+                {
+                    builder.Kind = SpanKind.Code;
+                }
+
+                value = builder.Build();
             }
 
-            return new KeyValuePair<string, SyntaxTreeNode>(name, builder.Build());
+            return new KeyValuePair<string, SyntaxTreeNode>(name, value);
         }
 
         private static bool IsNullOrWhitespaceAttributeValue(SyntaxTreeNode attributeValue)

@@ -38,7 +38,10 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
 
             foreach (var attributeChildren in Attributes)
             {
-                attributeChildren.Value.Parent = this;
+                if (attributeChildren.Value != null)
+                {
+                    attributeChildren.Value.Parent = this;
+                }
             }
         }
 

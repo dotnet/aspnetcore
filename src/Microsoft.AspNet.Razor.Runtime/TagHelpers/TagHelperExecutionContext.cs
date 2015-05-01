@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="tagName">The HTML tag name in the Razor source.</param>
         /// <param name="selfClosing">
         /// <see cref="bool"/> indicating whether or not the tag in the Razor source was self-closing.</param>
-        /// <param name="items">The collection of items used to communicate with other 
+        /// <param name="items">The collection of items used to communicate with other
         /// <see cref="ITagHelper"/>s</param>
         /// <param name="uniqueId">An identifier unique to the HTML element this context is for.</param>
         /// <param name="executeChildContentAsync">A delegate used to execute the child content asynchronously.</param>
@@ -134,6 +134,26 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         /// <summary>
+        /// Tracks the minimized HTML attribute in <see cref="AllAttributes"/> and <see cref="HTMLAttributes"/>.
+        /// </summary>
+        /// <param name="name">The minimized HTML attribute name.</param>
+        public void AddMinimizedHtmlAttribute([NotNull] string name)
+        {
+            HTMLAttributes.Add(
+                new TagHelperAttribute
+                {
+                    Name = name,
+                    Minimized = true
+                });
+            AllAttributes.Add(
+                new TagHelperAttribute
+                {
+                    Name = name,
+                    Minimized = true
+                });
+        }
+
+        /// <summary>
         /// Tracks the HTML attribute in <see cref="AllAttributes"/> and <see cref="HTMLAttributes"/>.
         /// </summary>
         /// <param name="name">The HTML attribute name.</param>
@@ -168,7 +188,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </summary>
         /// <returns>A <see cref="Task"/> that on completion returns the rendered child content.</returns>
         /// <remarks>
-        /// Child content is only executed once. Successive calls to this method or successive executions of the 
+        /// Child content is only executed once. Successive calls to this method or successive executions of the
         /// returned <see cref="Task{TagHelperContent}"/> return a cached result.
         /// </remarks>
         public async Task<TagHelperContent> GetChildContentAsync()

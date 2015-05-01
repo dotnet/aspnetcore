@@ -473,12 +473,25 @@ namespace Microsoft.AspNet.Razor.Parser
 
             if (!At(HtmlSymbolType.Equals))
             {
-                // Saw a space or newline after the name, so just skip this attribute and continue around the loop
-                Accept(whitespace);
-                Accept(name);
+                // Minimized attribute
+
+                // Output anything prior to the attribute, in most cases this will be the tag name:
+                // |<input| checked />. If in-between other attributes this will noop or output malformed attribute
+                // content (if the previous attribute was malformed).
+                Output(SpanKind.Markup);
+
+                using (Context.StartBlock(BlockType.Markup))
+                {
+                    Accept(whitespace);
+                    Accept(name);
+                    Output(SpanKind.Markup);
+                }
+
                 return;
             }
 
+            // Not a minimized attribute, parse as if it were well-formed (if attribute turns out to be malformed we
+            // will go into recovery).
             Output(SpanKind.Markup);
 
             // Start a new markup block for the attribute

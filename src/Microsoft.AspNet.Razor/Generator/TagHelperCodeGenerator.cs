@@ -57,19 +57,25 @@ namespace Microsoft.AspNet.Razor.Generator
 
             foreach (var attribute in tagHelperBlock.Attributes)
             {
-                // Populates the code tree with chunks associated with attributes
-                attribute.Value.Accept(codeGenerator);
+                ChunkBlock attributeChunkValue = null;
 
-                var chunks = codeGenerator.Context.CodeTreeBuilder.CodeTree.Chunks;
-                var first = chunks.FirstOrDefault();
+                if (attribute.Value != null)
+                {
+                    // Populates the code tree with chunks associated with attributes
+                    attribute.Value.Accept(codeGenerator);
 
-                attributes.Add(new KeyValuePair<string, Chunk>(attribute.Key,
-                    new ChunkBlock
+                    var chunks = codeGenerator.Context.CodeTreeBuilder.CodeTree.Chunks;
+                    var first = chunks.FirstOrDefault();
+
+                    attributeChunkValue = new ChunkBlock
                     {
                         Association = first?.Association,
                         Children = chunks,
                         Start = first == null ? SourceLocation.Zero : first.Start
-                    }));
+                    };
+                }
+
+                attributes.Add(new KeyValuePair<string, Chunk>(attribute.Key, attributeChunkValue));
 
                 // Reset the code tree builder so we can build a new one for the next attribute
                 codeGenerator.Context.CodeTreeBuilder = new CodeTreeBuilder();

@@ -19,6 +19,7 @@ namespace Microsoft.AspNet.Razor.Generator
             ScopeManagerEndMethodName = "End";
             ExecutionContextAddMethodName = "Add";
             ExecutionContextAddTagHelperAttributeMethodName = "AddTagHelperAttribute";
+            ExecutionContextAddMinimizedHtmlAttributeMethodName = "AddMinimizedHtmlAttribute";
             ExecutionContextAddHtmlAttributeMethodName = "AddHtmlAttribute";
             ExecutionContextOutputPropertyName = "Output";
             MarkAsHtmlEncodedMethodName = "Html.Raw";
@@ -56,6 +57,11 @@ namespace Microsoft.AspNet.Razor.Generator
         /// The name of the <see cref="ExecutionContextTypeName"/> method used to add tag helper attributes.
         /// </summary>
         public string ExecutionContextAddTagHelperAttributeMethodName { get; set; }
+
+        /// <summary>
+        /// The name of the <see cref="ExecutionContextTypeName"/> method used to add minimized HTML attributes.
+        /// </summary>
+        public string ExecutionContextAddMinimizedHtmlAttributeMethodName { get; set; }
 
         /// <summary>
         /// The name of the <see cref="ExecutionContextTypeName"/> method used to add HTML attributes.
