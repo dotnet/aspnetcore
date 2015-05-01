@@ -1,6 +1,6 @@
 {
     "version": "1.0.0-*",
-    "description": "Contains the core IDataProtector and IDataProtectionProvider interfaces for ASP.NET 5 Data Protection.",
+    "description": "Contains the core IDataProtector and IDataProtectionProvider abstractions for ASP.NET 5 Data Protection.",
     "dependencies": {
         "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.AspNet.DataProtection.Shared": { "type": "build", "version": "" }
@@ -9,12 +9,12 @@
         "net451": { },
         "dnx451": {
             "dependencies": {
-                "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
+                "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*"
             }
         },
         "dnxcore50": {
             "dependencies": {
-                "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
+                "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*",
                 "System.ComponentModel": "4.0.0-beta-*",
                 "System.Diagnostics.Debug": "4.0.10-beta-*",
                 "System.Reflection": "4.0.10-beta-*",
