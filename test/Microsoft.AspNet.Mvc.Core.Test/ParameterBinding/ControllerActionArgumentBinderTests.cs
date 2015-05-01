@@ -280,7 +280,6 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             mockValidatorProvider.Verify(o => o.Validate(It.IsAny<ModelValidationContext>()), Times.Never());
         }
 
-
         [Fact]
         public async Task BindActionArgumentsAsync_SetsControllerProperties_ForReferenceTypes()
         {

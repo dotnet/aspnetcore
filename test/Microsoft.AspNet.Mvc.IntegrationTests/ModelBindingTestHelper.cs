@@ -50,14 +50,20 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         public static DefaultControllerActionArgumentBinder GetArgumentBinder()
         {
-            var options = new TestMvcOptions();
-            options.Options.MaxModelValidationErrors = 5;
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             return new DefaultControllerActionArgumentBinder(
                 metadataProvider,
-                new DefaultObjectValidator(
+                GetObjectValidator());
+        }
+
+        public static IObjectModelValidator GetObjectValidator()
+        {
+            var options = new TestMvcOptions();
+            options.Options.MaxModelValidationErrors = 5;
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            return new DefaultObjectValidator(
                     options.Options.ValidationExcludeFilters,
-                    metadataProvider));
+                    metadataProvider);
         }
 
         private static void InitializeServices(HttpContext httpContext, Action<MvcOptions> updateOptions = null)
