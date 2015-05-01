@@ -1474,7 +1474,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 Year = 2013,
                 InspectedDates = new DateTimeOffset[]
                 {
-                    new DateTime(2008, 11, 01)
+                    new DateTimeOffset(new DateTime(2008, 11, 01), TimeSpan.FromHours(-7))
                 },
                 Make = "RealSlowCars",
                 Model = "Epsum",
