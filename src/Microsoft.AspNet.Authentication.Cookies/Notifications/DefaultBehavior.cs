@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         {
             if (IsAjaxRequest(context.Request))
             {
-                string jsonResponse = JsonConvert.SerializeObject(new
+                var jsonResponse = JsonConvert.SerializeObject(new
                 {
                     status = context.Response.StatusCode,
                     headers = new
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
         private static bool IsAjaxRequest(HttpRequest request)
         {
-            IReadableStringCollection query = request.Query;
+            var query = request.Query;
             if (query != null)
             {
                 if (query["X-Requested-With"] == "XMLHttpRequest")
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 }
             }
 
-            IHeaderDictionary headers = request.Headers;
+            var headers = request.Headers;
             if (headers != null)
             {
                 if (headers["X-Requested-With"] == "XMLHttpRequest")

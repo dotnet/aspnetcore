@@ -8,7 +8,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Authentication.Cookies
@@ -37,7 +36,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             AuthenticationTicket ticket = null;
             try
             {
-                string cookie = Options.CookieManager.GetRequestCookie(Context, Options.CookieName);
+                var cookie = Options.CookieManager.GetRequestCookie(Context, Options.CookieName);
                 if (string.IsNullOrWhiteSpace(cookie))
                 {
                     return null;
@@ -53,7 +52,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
                 if (Options.SessionStore != null)
                 {
-                    Claim claim = ticket.Principal.Claims.FirstOrDefault(c => c.Type.Equals(SessionIdClaim));
+                    var claim = ticket.Principal.Claims.FirstOrDefault(c => c.Type.Equals(SessionIdClaim));
                     if (claim == null)
                     {
                         Logger.LogWarning(@"SessionId missing");
@@ -68,9 +67,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     }
                 }
 
-                DateTimeOffset currentUtc = Options.SystemClock.UtcNow;
-                DateTimeOffset? issuedUtc = ticket.Properties.IssuedUtc;
-                DateTimeOffset? expiresUtc = ticket.Properties.ExpiresUtc;
+                var currentUtc = Options.SystemClock.UtcNow;
+                var issuedUtc = ticket.Properties.IssuedUtc;
+                var expiresUtc = ticket.Properties.ExpiresUtc;
 
                 if (expiresUtc != null && expiresUtc.Value < currentUtc)
                 {
@@ -81,17 +80,17 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     return null;
                 }
 
-                bool allowRefresh = ticket.Properties.AllowRefresh ?? true;
+                var allowRefresh = ticket.Properties.AllowRefresh ?? true;
                 if (issuedUtc != null && expiresUtc != null && Options.SlidingExpiration && allowRefresh)
                 {
-                    TimeSpan timeElapsed = currentUtc.Subtract(issuedUtc.Value);
-                    TimeSpan timeRemaining = expiresUtc.Value.Subtract(currentUtc);
+                    var timeElapsed = currentUtc.Subtract(issuedUtc.Value);
+                    var timeRemaining = expiresUtc.Value.Subtract(currentUtc);
 
                     if (timeRemaining < timeElapsed)
                     {
                         _shouldRenew = true;
                         _renewIssuedUtc = currentUtc;
-                        TimeSpan timeSpan = expiresUtc.Value.Subtract(issuedUtc.Value);
+                        var timeSpan = expiresUtc.Value.Subtract(issuedUtc.Value);
                         _renewExpiresUtc = currentUtc.Add(timeSpan);
                     }
                 }
@@ -104,7 +103,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             }
             catch (Exception exception)
             {
-                CookieExceptionContext exceptionContext = new CookieExceptionContext(Context, Options,
+                var exceptionContext = new CookieExceptionContext(Context, Options,
                     CookieExceptionContext.ExceptionLocation.Authenticate, exception, ticket);
                 Options.Notifications.Exception(exceptionContext);
                 if (exceptionContext.Rethrow)
@@ -123,16 +122,16 @@ namespace Microsoft.AspNet.Authentication.Cookies
         protected override async Task ApplyResponseGrantAsync()
         {
             var signin = SignInContext;
-            bool shouldSignin = signin != null;
+            var shouldSignin = signin != null;
             var signout = SignOutContext;
-            bool shouldSignout = signout != null;
+            var shouldSignout = signout != null;
 
             if (!(shouldSignin || shouldSignout || _shouldRenew))
             {
                 return;
             }
 
-            AuthenticationTicket model = await AuthenticateAsync();
+            var model = await AuthenticateAsync();
             try
             {
                 var cookieOptions = new CookieOptions
@@ -180,7 +179,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
                     if (signInContext.Properties.IsPersistent)
                     {
-                        DateTimeOffset expiresUtc = signInContext.Properties.ExpiresUtc ?? issuedUtc.Add(Options.ExpireTimeSpan);
+                        var expiresUtc = signInContext.Properties.ExpiresUtc ?? issuedUtc.Add(Options.ExpireTimeSpan);
                         signInContext.CookieOptions.Expires = expiresUtc.ToUniversalTime().DateTime;
                     }
 
@@ -198,7 +197,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                                 Options.AuthenticationScheme));
                         model = new AuthenticationTicket(principal, null, Options.AuthenticationScheme);
                     }
-                    string cookieValue = Options.TicketDataFormat.Protect(model);
+                    var cookieValue = Options.TicketDataFormat.Protect(model);
 
                     Options.CookieManager.AppendResponseCookie(
                         Context,
@@ -249,7 +248,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                         model = new AuthenticationTicket(principal, null, Options.AuthenticationScheme);
                     }
 
-                    string cookieValue = Options.TicketDataFormat.Protect(model);
+                    var cookieValue = Options.TicketDataFormat.Protect(model);
 
                     if (model.Properties.IsPersistent)
                     {
@@ -275,13 +274,13 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     HeaderNameExpires,
                     HeaderValueMinusOne);
 
-                bool shouldLoginRedirect = shouldSignin && Options.LoginPath.HasValue && Request.Path == Options.LoginPath;
-                bool shouldLogoutRedirect = shouldSignout && Options.LogoutPath.HasValue && Request.Path == Options.LogoutPath;
+                var shouldLoginRedirect = shouldSignin && Options.LoginPath.HasValue && Request.Path == Options.LoginPath;
+                var shouldLogoutRedirect = shouldSignout && Options.LogoutPath.HasValue && Request.Path == Options.LogoutPath;
 
                 if ((shouldLoginRedirect || shouldLogoutRedirect) && Response.StatusCode == 200)
                 {
-                    IReadableStringCollection query = Request.Query;
-                    string redirectUri = query.Get(Options.ReturnUrlParameter);
+                    var query = Request.Query;
+                    var redirectUri = query.Get(Options.ReturnUrlParameter);
                     if (!string.IsNullOrWhiteSpace(redirectUri)
                         && IsHostRelative(redirectUri))
                     {
@@ -292,7 +291,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             }
             catch (Exception exception)
             {
-                CookieExceptionContext exceptionContext = new CookieExceptionContext(Context, Options,
+                var exceptionContext = new CookieExceptionContext(Context, Options,
                     CookieExceptionContext.ExceptionLocation.ApplyResponseGrant, exception, model);
                 Options.Notifications.Exception(exceptionContext);
                 if (exceptionContext.Rethrow)
@@ -363,7 +362,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 return;
             }
 
-            string loginUri = string.Empty;
+            var loginUri = string.Empty;
             if (ChallengeContext != null)
             {
                 loginUri = new AuthenticationProperties(ChallengeContext.Properties).RedirectUri;
@@ -373,7 +372,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             {
                 if (string.IsNullOrWhiteSpace(loginUri))
                 {
-                    string currentUri =
+                    var currentUri =
                         Request.PathBase +
                         Request.Path +
                         Request.QueryString;
@@ -392,7 +391,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             }
             catch (Exception exception)
             {
-                CookieExceptionContext exceptionContext = new CookieExceptionContext(Context, Options,
+                var exceptionContext = new CookieExceptionContext(Context, Options,
                     CookieExceptionContext.ExceptionLocation.ApplyResponseChallenge, exception, ticket: null);
                 Options.Notifications.Exception(exceptionContext);
                 if (exceptionContext.Rethrow)
