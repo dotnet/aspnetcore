@@ -1,6 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
 
-using Shouldly;
 using Xunit;
 
 namespace Microsoft.AspNet.StaticFiles
@@ -12,7 +11,7 @@ namespace Microsoft.AspNet.StaticFiles
         {
             var provider = new FileExtensionContentTypeProvider();
             string contentType;
-            provider.TryGetContentType("unknown.ext", out contentType).ShouldBe(false);
+            Assert.False(provider.TryGetContentType("unknown.ext", out contentType));
         }
 
         [Fact]
@@ -20,8 +19,8 @@ namespace Microsoft.AspNet.StaticFiles
         {
             var provider = new FileExtensionContentTypeProvider();
             string contentType;
-            provider.TryGetContentType("known.txt", out contentType).ShouldBe(true);
-            contentType.ShouldBe("text/plain");
+            Assert.True(provider.TryGetContentType("known.txt", out contentType));
+            Assert.Equal("text/plain", contentType);
         }
 
         [Fact]
@@ -29,7 +28,7 @@ namespace Microsoft.AspNet.StaticFiles
         {
             var provider = new FileExtensionContentTypeProvider();
             string contentType;
-            provider.TryGetContentType("known.exe.config", out contentType).ShouldBe(false);
+            Assert.False(provider.TryGetContentType("known.exe.config", out contentType));
         }
 
         [Fact]
@@ -37,8 +36,8 @@ namespace Microsoft.AspNet.StaticFiles
         {
             var provider = new FileExtensionContentTypeProvider();
             string contentType;
-            provider.TryGetContentType("known.dvr-ms", out contentType).ShouldBe(true);
-            contentType.ShouldBe("video/x-ms-dvr");
+            Assert.True(provider.TryGetContentType("known.dvr-ms", out contentType));
+            Assert.Equal("video/x-ms-dvr", contentType);
         }
 
         [Fact]
@@ -46,10 +45,10 @@ namespace Microsoft.AspNet.StaticFiles
         {
             var provider = new FileExtensionContentTypeProvider();
             string contentType;
-            provider.TryGetContentType(@"/first/example.txt", out contentType).ShouldBe(true);
-            contentType.ShouldBe("text/plain");
-            provider.TryGetContentType(@"\second\example.txt", out contentType).ShouldBe(true);
-            contentType.ShouldBe("text/plain");
+            Assert.True(provider.TryGetContentType(@"/first/example.txt", out contentType));
+            Assert.Equal("text/plain", contentType);
+            Assert.True(provider.TryGetContentType(@"\second\example.txt", out contentType));
+            Assert.Equal("text/plain", contentType);
         }
 
         [Fact]
@@ -57,10 +56,10 @@ namespace Microsoft.AspNet.StaticFiles
         {
             var provider = new FileExtensionContentTypeProvider();
             string contentType;
-            provider.TryGetContentType(@"/first.css/example.txt", out contentType).ShouldBe(true);
-            contentType.ShouldBe("text/plain");
-            provider.TryGetContentType(@"\second.css\example.txt", out contentType).ShouldBe(true);
-            contentType.ShouldBe("text/plain");
+            Assert.True(provider.TryGetContentType(@"/first.css/example.txt", out contentType));
+            Assert.Equal("text/plain", contentType);
+            Assert.True(provider.TryGetContentType(@"\second.css\example.txt", out contentType));
+            Assert.Equal("text/plain", contentType);
         }
     }
 }

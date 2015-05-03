@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
-using Shouldly;
 using Xunit;
 
 namespace Microsoft.AspNet.StaticFiles
@@ -19,8 +18,8 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseFileServer());
 
             HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/SubFolder/Extra.xml");
-            response.Headers.ETag.ShouldNotBe(null);
-            response.Headers.ETag.Tag.ShouldNotBe(null);
+            Assert.NotNull(response.Headers.ETag);
+            Assert.NotNull(response.Headers.ETag.Tag);
         }
 
         [Fact]
@@ -30,7 +29,7 @@ namespace Microsoft.AspNet.StaticFiles
 
             HttpResponseMessage response1 = await server.CreateClient().GetAsync("http://localhost/SubFolder/Extra.xml");
             HttpResponseMessage response2 = await server.CreateClient().GetAsync("http://localhost/SubFolder/Extra.xml");
-            response1.Headers.ETag.ShouldBe(response2.Headers.ETag);
+            Assert.Equal(response2.Headers.ETag, response1.Headers.ETag);
         }
 
         // 14.24 If-Match
@@ -48,7 +47,7 @@ namespace Microsoft.AspNet.StaticFiles
             var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Extra.xml");
             req.Headers.Add("If-Match", "\"fake\"");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
-            resp.StatusCode.ShouldBe(HttpStatusCode.PreconditionFailed);
+            Assert.Equal(HttpStatusCode.PreconditionFailed, resp.StatusCode);
         }
 
         [Fact]
@@ -60,7 +59,7 @@ namespace Microsoft.AspNet.StaticFiles
             var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Extra.xml");
             req.Headers.Add("If-Match", original.Headers.ETag.ToString());
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
-            resp.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
         }
 
         [Fact]
@@ -70,7 +69,7 @@ namespace Microsoft.AspNet.StaticFiles
             var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Extra.xml");
             req.Headers.Add("If-Match", "*");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
-            resp.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
         }
 
         // 14.26 If-None-Match
@@ -96,12 +95,12 @@ namespace Microsoft.AspNet.StaticFiles
             var req2 = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Extra.xml");
             req2.Headers.Add("If-None-Match", resp1.Headers.ETag.ToString());
             HttpResponseMessage resp2 = await server.CreateClient().SendAsync(req2);
-            resp2.StatusCode.ShouldBe(HttpStatusCode.NotModified);
+            Assert.Equal(HttpStatusCode.NotModified, resp2.StatusCode);
 
             var req3 = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/Extra.xml");
             req3.Headers.Add("If-None-Match", resp1.Headers.ETag.ToString());
             HttpResponseMessage resp3 = await server.CreateClient().SendAsync(req3);
-            resp3.StatusCode.ShouldBe(HttpStatusCode.NotModified);
+            Assert.Equal(HttpStatusCode.NotModified, resp3.StatusCode);
         }
 
         [Fact]
@@ -113,12 +112,12 @@ namespace Microsoft.AspNet.StaticFiles
             var req2 = new HttpRequestMessage(HttpMethod.Post, "http://localhost/SubFolder/Extra.xml");
             req2.Headers.Add("If-None-Match", resp1.Headers.ETag.ToString());
             HttpResponseMessage resp2 = await server.CreateClient().SendAsync(req2);
-            resp2.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+            Assert.Equal(HttpStatusCode.NotFound, resp2.StatusCode);
 
             var req3 = new HttpRequestMessage(HttpMethod.Put, "http://localhost/SubFolder/Extra.xml");
             req3.Headers.Add("If-None-Match", resp1.Headers.ETag.ToString());
             HttpResponseMessage resp3 = await server.CreateClient().SendAsync(req3);
-            resp3.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+            Assert.Equal(HttpStatusCode.NotFound, resp3.StatusCode);
         }
 
         // 14.26 If-None-Match
@@ -137,7 +136,7 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseFileServer());
 
             HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/SubFolder/Extra.xml");
-            response.Content.Headers.LastModified.ShouldNotBe(null);
+            Assert.NotNull(response.Content.Headers.LastModified);
         }
 
         // 13.3.4
@@ -163,7 +162,7 @@ namespace Microsoft.AspNet.StaticFiles
                 .And(req => req.Headers.IfModifiedSince = resp1.Content.Headers.LastModified)
                 .GetAsync();
 
-            resp2.StatusCode.ShouldBe(HttpStatusCode.NotModified);
+            Assert.Equal(HttpStatusCode.NotModified, resp2.StatusCode);
         }
 
         [Fact]
@@ -196,9 +195,9 @@ namespace Microsoft.AspNet.StaticFiles
                 .And(req => req.Headers.IfModifiedSince = furtureDate)
                 .GetAsync();
 
-            resp2.StatusCode.ShouldBe(HttpStatusCode.OK);
-            resp3.StatusCode.ShouldBe(HttpStatusCode.OK);
-            resp4.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, resp2.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, resp3.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, resp4.StatusCode);
         }
 
         // 14.25 If-Modified-Since
@@ -223,7 +222,7 @@ namespace Microsoft.AspNet.StaticFiles
                 .AddHeader("If-Modified-Since", "bad-date")
                 .GetAsync();
 
-            res.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
         }
 
         // b) If the variant has been modified since the If-Modified-Since
@@ -247,7 +246,7 @@ namespace Microsoft.AspNet.StaticFiles
                 .And(req => req.Headers.IfModifiedSince = res1.Content.Headers.LastModified)
                 .GetAsync();
 
-            res2.StatusCode.ShouldBe(HttpStatusCode.NotModified);
+            Assert.Equal(HttpStatusCode.NotModified, res2.StatusCode);
         }
     }
 }

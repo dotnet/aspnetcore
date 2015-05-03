@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.StaticFiles
                 app.UseDefaultFiles(new DefaultFilesOptions()
                 {
                     RequestPath = new PathString(baseUrl),
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
+                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
                 });
                 app.Run(context => context.Response.WriteAsync(context.Request.Path.Value));
             });
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.StaticFiles
                 app.UseDefaultFiles(new DefaultFilesOptions()
                 {
                     RequestPath = new PathString(baseUrl),
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
+                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
                 });
                 app.Run(context => context.Response.WriteAsync(context.Request.Path.Value));
             });
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions()
             {
                 RequestPath = new PathString(baseUrl),
-                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
             }));
             HttpResponseMessage response = await server.CreateRequest(requestUrl + queryString).GetAsync();
 
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions()
             {
                 RequestPath = new PathString(baseUrl),
-                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
             }));
             HttpResponseMessage response = await server.CreateRequest(requestUrl).GetAsync();
 

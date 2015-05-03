@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.StaticFiles
                 app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
                 {
                     RequestPath = new PathString(baseUrl),
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
+                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
                 }),
                 services => services.AddDirectoryBrowser());
             HttpResponseMessage response = await server.CreateRequest(requestUrl).GetAsync();
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.StaticFiles
                 app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
                 {
                     RequestPath = new PathString(baseUrl),
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
+                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
                 }),
                 services => services.AddDirectoryBrowser());
             HttpResponseMessage response = await server.CreateRequest(requestUrl).GetAsync();
@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.StaticFiles
                 app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
                 {
                     RequestPath = new PathString(baseUrl),
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
+                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
                 }),
                 services => services.AddDirectoryBrowser());
 
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.StaticFiles
                 app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
                 {
                     RequestPath = new PathString(baseUrl),
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
+                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
                 }),
                 services => services.AddDirectoryBrowser());
 
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.StaticFiles
                 app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
                 {
                     RequestPath = new PathString(baseUrl),
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
+                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
                 }),
                 services => services.AddDirectoryBrowser());
 

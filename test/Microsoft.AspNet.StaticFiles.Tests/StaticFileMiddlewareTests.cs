@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
             {
                 RequestPath = new PathString(baseUrl),
-                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
             }));
             HttpResponseMessage response = await server.CreateRequest(requestUrl).GetAsync();
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
             {
                 RequestPath = new PathString(baseUrl),
-                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
             }));
             HttpResponseMessage response = await server.CreateRequest(requestUrl).GetAsync();
 
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
             {
                 RequestPath = new PathString(baseUrl),
-                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
             }));
             HttpResponseMessage response = await server.CreateRequest(requestUrl).PostAsync();
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
             {
                 RequestPath = new PathString(baseUrl),
-                FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, baseDir))
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
             }));
             HttpResponseMessage response = await server.CreateRequest(requestUrl).SendAsync("HEAD");
 
