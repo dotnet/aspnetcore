@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.StaticFiles.Infrastructure
         {
             if (sharedOptions == null)
             {
-                throw new ArgumentNullException("sharedOptions");
+                throw new ArgumentNullException(nameof(sharedOptions));
             }
 
             SharedOptions = sharedOptions;

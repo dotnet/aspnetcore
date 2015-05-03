@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.StaticFiles
 
                 if (string.IsNullOrWhiteSpace(fileName))
                 {
-                    throw new ArgumentNullException("fileName");
+                    throw new ArgumentNullException(nameof(fileName));
                 }
                 if (!File.Exists(fileName))
                 {
