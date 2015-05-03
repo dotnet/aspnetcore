@@ -1,5 +1,5 @@
 {
-    "resources": "TestFiles/**",
+    "resource": "TestFiles/**",
     "dependencies": {
         "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
         "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",
