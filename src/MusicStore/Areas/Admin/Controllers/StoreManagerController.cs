@@ -208,7 +208,7 @@ namespace MusicStore.Areas.Admin.Controllers
                 return HttpNotFound();
             }
 
-            return new ContentResult { Content = album.AlbumId.ToString(), ContentType = "text/plain" };
+            return new ContentResult { Content = album.AlbumId.ToString() };
         }
 #endif
     }
