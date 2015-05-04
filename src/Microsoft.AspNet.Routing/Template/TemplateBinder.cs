@@ -414,7 +414,7 @@ namespace Microsoft.AspNet.Routing.Template
                 return string.Format(
                     "{{Accepted: '{0}' Filters: '{1}'}}",
                     string.Join(", ", _acceptedValues.Keys),
-                    string.Join(", ", _filters.Keys));
+                    string.Join(", ", _filters?.Keys));
             }
         }
 

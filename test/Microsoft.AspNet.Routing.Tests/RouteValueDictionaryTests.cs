@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Microsoft.AspNet.Testing;
 using Xunit;
@@ -168,36 +169,47 @@ namespace Microsoft.AspNet.Routing.Tests
                 expected);
         }
 
-        [Fact]
-        public void CreateFromReadOnlyDictionary_CopiesValues()
+        public static IEnumerable<object[]> IEnumerableKeyValuePairData
         {
-            // Arrange
-            var dictionary = new Dictionary<string, object>();
-            dictionary.Add("Name", "James");
-            dictionary.Add("Age", 30);
-            var readonlyDictionary = (IReadOnlyDictionary<string, object>)dictionary;
+            get
+            {
+                var routeValues = new[]
+                {
+                    new KeyValuePair<string, object>("Name", "James"),
+                    new KeyValuePair<string, object>("Age", 30),
+                    new KeyValuePair<string, object>("Address", new Address() { City = "Redmond", State = "WA" })
+                };
 
-            // Act
-            var dict = new RouteValueDictionary(readonlyDictionary);
+                yield return new object[] { routeValues.ToDictionary(kvp => kvp.Key, kvp => kvp.Value) };
 
-            // Assert
-            Assert.Equal(2, dict.Count);
-            Assert.Equal("James", dict["Name"]);
-            Assert.Equal(30, dict["Age"]);
+                yield return new object[] { routeValues.ToList() };
+
+                yield return new object[] { routeValues };
+            }
         }
 
-        [Fact]
-        public void CreateFromReadOnlyDictionary_ModifyRouteValueDictionary()
+        [Theory]
+        [MemberData(nameof(IEnumerableKeyValuePairData))]
+        public void RouteValueDictionary_CopiesValues_FromIEnumerableKeyValuePair(object values)
         {
-            // Arrange
-            var dictionary = new Dictionary<string, object>();
-            dictionary.Add("Name", "James");
-            dictionary.Add("Age", 30);
-            dictionary.Add("Address", new Address() { City = "Redmond", State = "WA" });
-            var readonlyDictionary = (IReadOnlyDictionary<string, object>)dictionary;
+            // Arrange & Act
+            var dict = new RouteValueDictionary(values);
 
-            // Act
-            var routeValueDictionary = new RouteValueDictionary(readonlyDictionary);
+            // Assert
+            Assert.Equal(3, dict.Count);
+            Assert.Equal("James", dict["Name"]);
+            Assert.Equal(30, dict["Age"]);
+            var address = Assert.IsType<Address>(dict["Address"]);
+            Assert.Equal("Redmond", address.City);
+            Assert.Equal("WA", address.State);
+        }
+
+        [Theory]
+        [MemberData(nameof(IEnumerableKeyValuePairData))]
+        public void CreatedFrom_IEnumerableKeyValuePair_AllowsAddingOrModifyingValues(object values)
+        {
+            // Arrange & Act
+            var routeValueDictionary = new RouteValueDictionary(values);
             routeValueDictionary.Add("City", "Redmond");
 
             // Assert

@@ -31,23 +31,24 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// Creates a <see cref="RouteValueDictionary"/> initialized with the provided input value.
+        /// Creates a <see cref="RouteValueDictionary"/> initialized with the specified <paramref name="values"/>.
         /// </summary>
-        /// <param name="obj">An object to initialize the dictionary. The value can be of type
-        /// <see cref="IDictionary{TKey, TValue}"/> or <see cref="IReadOnlyDictionary{TKey, TValue}"/> or
-        /// any other object.
+        /// <param name="values">An object to initialize the dictionary. The value can be of type
+        /// <see cref="IDictionary{TKey, TValue}"/> or <see cref="IReadOnlyDictionary{TKey, TValue}"/>
+        /// or an object with public properties as key-value pairs.
         /// </param>
         /// <remarks>
-        /// If the value is a dictionary, then its entries are copied. Otherwise the object is interpreted as a set
-        /// of key-value-pairs where the property names are keys, and property values are the values, and copied
-        /// into the dictionary. Only public instance non-index properties are considered.
+        /// If the value is a dictionary or other <see cref="IEnumerable{KeyValuePair{string, object}}"/>,
+        /// then its entries are copied. Otherwise the object is interpreted as a set of key-value pairs where the
+        /// property names are keys, and property values are the values, and copied into the dictionary.
+        /// Only public instance non-index properties are considered.
         /// </remarks>
-        public RouteValueDictionary(object obj)
+        public RouteValueDictionary(object values)
             : this()
         {
-            if (obj != null)
+            if (values != null)
             {
-                var keyValuePairCollection = obj as IEnumerable<KeyValuePair<string, object>>;
+                var keyValuePairCollection = values as IEnumerable<KeyValuePair<string, object>>;
                 if (keyValuePairCollection != null)
                 {
                     foreach (var kvp in keyValuePairCollection)
@@ -57,7 +58,7 @@ namespace Microsoft.AspNet.Routing
                     return;
                 }
 
-                var type = obj.GetType();
+                var type = values.GetType();
                 var allProperties = type.GetRuntimeProperties();
 
                 // This is done to support 'new' properties that hide a property on a base class
@@ -69,7 +70,7 @@ namespace Microsoft.AspNet.Routing
                         !property.GetMethod.IsStatic &&
                         property.GetIndexParameters().Length == 0)
                     {
-                        var value = property.GetValue(obj);
+                        var value = property.GetValue(values);
                         if (ContainsKey(property.Name) && property.DeclaringType != type)
                         {
                             // This is a hidden property, ignore it.
