@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.Framework.Caching;
 using Microsoft.Framework.Caching.Memory;
-using Microsoft.Framework.Expiration.Interfaces;
 using TagHelperSample.Web.Models;
 
 namespace TagHelperSample.Web.Services

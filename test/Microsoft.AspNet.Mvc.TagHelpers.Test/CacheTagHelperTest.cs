@@ -14,9 +14,9 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.Caching;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Caching.Memory.Infrastructure;
-using Microsoft.Framework.Expiration.Interfaces;
 using Moq;
 using Xunit;
 

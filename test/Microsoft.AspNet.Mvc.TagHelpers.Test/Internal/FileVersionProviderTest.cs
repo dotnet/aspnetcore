@@ -7,8 +7,8 @@ using System.Text;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.Caching;
 using Microsoft.Framework.Caching.Memory;
-using Microsoft.Framework.Expiration.Interfaces;
 using Moq;
 using Xunit;
 
