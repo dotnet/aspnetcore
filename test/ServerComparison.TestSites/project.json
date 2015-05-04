@@ -8,7 +8,8 @@
     "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
     "Microsoft.AspNet.WebUtilities": "1.0.0-*",
     "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
-    "Microsoft.Framework.Logging.Console": "1.0.0-*"
+    "Microsoft.Framework.Logging.Console": "1.0.0-*",
+    "Microsoft.Net.Http.Headers": "1.0.0-*"
   },
 
   "commands": {
