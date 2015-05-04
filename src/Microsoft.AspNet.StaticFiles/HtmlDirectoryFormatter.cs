@@ -29,11 +29,11 @@ namespace Microsoft.AspNet.StaticFiles
         {
             if (context == null)
             {
-                throw new ArgumentNullException("context");
+                throw new ArgumentNullException(nameof(context));
             }
             if (contents == null)
             {
-                throw new ArgumentNullException("contents");
+                throw new ArgumentNullException(nameof(contents));
             }
 
             if (_htmlEncoder == null)

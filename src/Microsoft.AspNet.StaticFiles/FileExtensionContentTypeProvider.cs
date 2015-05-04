@@ -404,7 +404,7 @@ namespace Microsoft.AspNet.StaticFiles
         {
             if (mapping == null)
             {
-                throw new ArgumentNullException("mapping");
+                throw new ArgumentNullException(nameof(mapping));
             }
             Mappings = mapping;
         }
