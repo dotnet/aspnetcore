@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 #endif
                 _loggerProvider.Logger.StartLoggingForCurrentCallContext();
 
-                await _next(context).WithCurrentCulture();
+                await _next(context);
             }
             catch (Exception ex)
             {
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                                 {
                                     var page = new DatabaseErrorPage();
                                     page.Model = new DatabaseErrorPageModel(dbContextType, ex, databaseExists, pendingModelChanges, pendingMigrations, _options);
-                                    await page.ExecuteAsync(context).WithCurrentCulture();
+                                    await page.ExecuteAsync(context);
                                     return;
                                 }
                             }
