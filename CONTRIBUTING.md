@@ -17,7 +17,7 @@ Please log a new issue in the appropriate GitHub repo. Here are some of the most
 * [MVC](https://github.com/aspnet/Mvc)
 * [SignalR-Server](https://github.com/aspnet/SignalR-Server)
 
-A description of all the repos is [here](https://github.com/aspnet/Home/wiki/Repo-List).
+Or browse the full list of repos in the [aspnet](https://github.com/aspnet/) organization.
 
 
 ## Other discussions
