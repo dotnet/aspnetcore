@@ -1071,9 +1071,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var dto = new ComplexModelDto(containerMetadata, containerMetadata.Properties);
             var testableBinder = new TestableMutableObjectModelBinder();
 
-            // The [DefaultValue] on ValueTypeRequiredWithDefaultValue is ignored by model binding.
-            var expectedValue = 0;
-
             // Make ValueTypeRequired invalid.
             var propertyMetadata = dto.PropertyMetadata.Single(p => p.PropertyName == nameof(Person.ValueTypeRequired));
             dto.Results[propertyMetadata] = new ModelBindingResult(
@@ -1294,7 +1291,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal(dob, model.DateOfBirth);
             Assert.True(bindingContext.ModelState.IsValid);
 
-            // Ensure that we add child nodes for all the nodes which have a result (irrespective of if they 
+            // Ensure that we add child nodes for all the nodes which have a result (irrespective of if they
             // are bound or not).
             Assert.Equal(2, modelValidationNode.ChildNodes.Count());
 
@@ -1631,7 +1628,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                          bindingContext.ModelState["foo"].Errors[0].Exception.Message);
         }
 
-        // This can only really be done by writing an invalid model binder and returning 'isModelSet: true' 
+        // This can only really be done by writing an invalid model binder and returning 'isModelSet: true'
         // with a null model for a value type.
         [Fact]
         public void SetProperty_SettingNonNullableValueTypeToNull_CapturesException()

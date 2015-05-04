@@ -72,6 +72,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                     ExecutionContextAddTagHelperAttributeMethodName =
                         nameof(TagHelperExecutionContext.AddTagHelperAttribute),
                     ExecutionContextAddHtmlAttributeMethodName = nameof(TagHelperExecutionContext.AddHtmlAttribute),
+                    ExecutionContextAddMinimizedHtmlAttributeMethodName =
+                        nameof(TagHelperExecutionContext.AddMinimizedHtmlAttribute),
                     ExecutionContextOutputPropertyName = nameof(TagHelperExecutionContext.Output),
 
                     RunnerTypeName = typeof(TagHelperRunner).FullName,
@@ -85,6 +87,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                     // Can't use nameof because RazorPage is not accessible here.
                     CreateTagHelperMethodName = "CreateTagHelper",
+                    FormatInvalidIndexerAssignmentMethodName = "InvalidTagHelperIndexerAssignment",
                     StartTagHelperWritingScopeMethodName = "StartTagHelperWritingScope",
                     EndTagHelperWritingScopeMethodName = "EndTagHelperWritingScope",
 
@@ -211,7 +214,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             sourceFileName = _pathNormalizer.NormalizePath(sourceFileName);
 
             var inheritedCodeTrees = ChunkInheritanceUtility.GetInheritedCodeTrees(sourceFileName);
-            return new MvcRazorParser(razorParser, inheritedCodeTrees, DefaultInheritedChunks);
+            return new MvcRazorParser(razorParser, inheritedCodeTrees, DefaultInheritedChunks, ModelExpressionType);
         }
 
         /// <inheritdoc />
@@ -224,7 +227,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public override CodeBuilder DecorateCodeBuilder([NotNull] CodeBuilder incomingBuilder,
                                                         [NotNull] CodeBuilderContext context)
         {
-            // Need the normalized path to resolve inherited chunks only. Full paths are needed for generated Razor 
+            // Need the normalized path to resolve inherited chunks only. Full paths are needed for generated Razor
             // files checksum and line pragmas to enable DesignTime debugging.
             var normalizedPath = _pathNormalizer.NormalizePath(context.SourceFile);
             var inheritedChunks = ChunkInheritanceUtility.GetInheritedCodeTrees(normalizedPath);

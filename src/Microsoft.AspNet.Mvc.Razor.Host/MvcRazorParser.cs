@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Mvc.Razor.Host;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser;
@@ -20,6 +22,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     public class MvcRazorParser : RazorParser
     {
         private readonly IEnumerable<TagHelperDirectiveDescriptor> _globalImportDirectiveDescriptors;
+        private readonly string _modelExpressionTypeName;
 
         /// <summary>
         /// Initializes a new instance of <see cref="MvcRazorParser"/>.
@@ -32,13 +35,16 @@ namespace Microsoft.AspNet.Mvc.Razor
         public MvcRazorParser(
             [NotNull] RazorParser parser,
             [NotNull] IReadOnlyList<CodeTree> inheritedCodeTrees,
-            [NotNull] IReadOnlyList<Chunk> defaultInheritedChunks)
+            [NotNull] IReadOnlyList<Chunk> defaultInheritedChunks,
+            [NotNull] string modelExpressionTypeName)
             : base(parser)
         {
             // Construct tag helper descriptors from @addTagHelper, @removeTagHelper and @tagHelperPrefix chunks
             _globalImportDirectiveDescriptors = GetTagHelperDirectiveDescriptors(
                 inheritedCodeTrees,
                 defaultInheritedChunks);
+
+            _modelExpressionTypeName = modelExpressionTypeName;
         }
 
         /// <inheritdoc />
@@ -50,7 +56,27 @@ namespace Microsoft.AspNet.Mvc.Razor
                 TagHelperDescriptorResolver,
                 _globalImportDirectiveDescriptors,
                 errorSink);
-            return visitor.GetDescriptors(documentRoot);
+
+            var descriptors = visitor.GetDescriptors(documentRoot);
+            foreach (var descriptor in descriptors)
+            {
+                foreach (var attributeDescriptor in descriptor.Attributes)
+                {
+                    if (attributeDescriptor.IsIndexer &&
+                        string.Equals(
+                            attributeDescriptor.TypeName,
+                            _modelExpressionTypeName,
+                            StringComparison.Ordinal))
+                    {
+                        errorSink.OnError(SourceLocation.Undefined, Resources.FormatMvcRazorParser_InvalidPropertyType(
+                            descriptor.TypeName,
+                            attributeDescriptor.Name,
+                            _modelExpressionTypeName));
+                    }
+                }
+            }
+
+            return descriptors;
         }
 
         private static IEnumerable<TagHelperDirectiveDescriptor> GetTagHelperDirectiveDescriptors(
@@ -69,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var chunksInOrder = defaultInheritedChunks.Concat(chunksFromGlobalImports);
             foreach (var chunk in chunksInOrder)
             {
-                // All TagHelperDirectiveDescriptors created here have undefined source locations because the source 
+                // All TagHelperDirectiveDescriptors created here have undefined source locations because the source
                 // that created them is not in the same file.
                 var addTagHelperChunk = chunk as AddTagHelperChunk;
                 if (addTagHelperChunk != null)
@@ -154,8 +180,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                     }
                 }
 
-                // We need to see if the provided descriptors contain a @tagHelperPrefix directive. If so, it 
-                // takes precedence and overrides any provided by the inheritedDescriptors. If not we need to add the 
+                // We need to see if the provided descriptors contain a @tagHelperPrefix directive. If so, it
+                // takes precedence and overrides any provided by the inheritedDescriptors. If not we need to add the
                 // inherited @tagHelperPrefix directive back into the merged list.
                 if (prefixDirectiveDescriptor != null &&
                     !descriptors.Any(descriptor => descriptor.DirectiveType == TagHelperDirectiveType.TagHelperPrefix))

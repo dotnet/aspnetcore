@@ -106,6 +106,22 @@ namespace Microsoft.AspNet.Mvc.Razor.Host
             return string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorCodeParser_OnlyOneModelStatementIsAllowed"), p0);
         }
 
+        /// <summary>
+        /// Invalid tag helper property '{0}.{1}'. Dictionary values must not be of type '{2}'.
+        /// </summary>
+        internal static string MvcRazorParser_InvalidPropertyType
+        {
+            get { return GetString("MvcRazorParser_InvalidPropertyType"); }
+        }
+
+        /// <summary>
+        /// Invalid tag helper property '{0}.{1}'. Dictionary values must not be of type '{2}'.
+        /// </summary>
+        internal static string FormatMvcRazorParser_InvalidPropertyType(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorParser_InvalidPropertyType"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

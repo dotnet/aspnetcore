@@ -21,7 +21,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string HostAttributeName = "asp-host";
         private const string ProtocolAttributeName = "asp-protocol";
         private const string RouteAttributeName = "asp-route";
-        private const string RouteAttributePrefix = "asp-route-";
+        private const string RouteValuesDictionaryName = "asp-all-route-data";
+        private const string RouteValuesPrefix = "asp-route-";
         private const string Href = "href";
 
         [Activate]
@@ -69,6 +70,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [HtmlAttributeName(RouteAttributeName)]
         public string Route { get; set; }
 
+        /// <summary>
+        /// Additional parameters for the route.
+        /// </summary>
+        [HtmlAttributeName(RouteValuesDictionaryName, DictionaryAttributePrefix = RouteValuesPrefix)]
+        public IDictionary<string, string> RouteValues { get; set; } =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
         /// <inheritdoc />
         /// <remarks>Does nothing if user provides an <c>href</c> attribute.</remarks>
         /// <exception cref="InvalidOperationException">
@@ -79,8 +87,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// </exception>
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            var routePrefixedAttributes = output.FindPrefixedAttributes(RouteAttributePrefix);
-
             // If "href" is already set, it means the user is attempting to use a normal anchor.
             if (output.Attributes.ContainsName(Href))
             {
@@ -90,7 +96,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     Protocol != null ||
                     Host != null ||
                     Fragment != null ||
-                    routePrefixedAttributes.Any())
+                    RouteValues.Count != 0)
                 {
                     // User specified an href and one of the bound attributes; can't determine the href attribute.
                     throw new InvalidOperationException(
@@ -102,15 +108,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                             ProtocolAttributeName,
                             HostAttributeName,
                             FragmentAttributeName,
-                            RouteAttributePrefix,
+                            RouteValuesPrefix,
                             Href));
                 }
             }
             else
             {
-                TagBuilder tagBuilder;
-                var routeValues = GetRouteValues(output, routePrefixedAttributes);
+                // Convert from Dictionary<string, string> to Dictionary<string, object>.
+                var routeValues = RouteValues.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => (object)kvp.Value,
+                    StringComparer.OrdinalIgnoreCase);
 
+                TagBuilder tagBuilder;
                 if (Route == null)
                 {
                     tagBuilder = Generator.GenerateActionLink(linkText: string.Empty,
@@ -149,27 +159,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     output.MergeAttributes(tagBuilder);
                 }
             }
-        }
-
-        // TODO: https://github.com/aspnet/Razor/issues/89 - We will not need this method once #89 is completed.
-        private static Dictionary<string, object> GetRouteValues(
-            TagHelperOutput output,
-            IEnumerable<TagHelperAttribute> routePrefixedAttributes)
-        {
-            Dictionary<string, object> routeValues = null;
-            if (routePrefixedAttributes.Any())
-            {
-                // Prefixed values should be treated as bound attributes, remove them from the output.
-                output.RemoveRange(routePrefixedAttributes);
-
-                // Remove prefix from keys and convert all values to strings. HtmlString and similar classes are not
-                // meaningful to routing.
-                routeValues = routePrefixedAttributes.ToDictionary(
-                    attribute => attribute.Name.Substring(RouteAttributePrefix.Length),
-                    attribute => (object)attribute.Value.ToString());
-            }
-
-            return routeValues;
         }
     }
 }

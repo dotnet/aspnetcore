@@ -25,7 +25,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                     ModelExpressionTypeName = modelExpressionType,
                     CreateModelExpressionMethodName = "SomeMethod"
                 });
-            var attributeDescriptor = new TagHelperAttributeDescriptor("MyAttribute", "SomeProperty", propertyType);
+            var attributeDescriptor = new TagHelperAttributeDescriptor(
+                name: "MyAttribute",
+                propertyName: "SomeProperty",
+                typeName: propertyType,
+                isIndexer: false);
             var writer = new CSharpCodeWriter();
             var generatorContext = new CodeGeneratorContext(host: null,
                                                             className: string.Empty,

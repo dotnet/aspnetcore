@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser;
@@ -230,7 +231,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             public TestableMvcRazorParser(RazorParser parser,
                                           IReadOnlyList<CodeTree> codeTrees,
                                           IReadOnlyList<Chunk> defaultInheritedChunks)
-                : base(parser, codeTrees, defaultInheritedChunks)
+                : base(parser, codeTrees, defaultInheritedChunks, typeof(ModelExpression).FullName)
             {
             }
 

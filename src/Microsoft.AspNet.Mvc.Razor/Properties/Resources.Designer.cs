@@ -410,6 +410,22 @@ namespace Microsoft.AspNet.Mvc.Razor
             return GetString("GeneratedCodeFileName");
         }
 
+        /// <summary>
+        /// Unable to perform '{0}' assignment. Tag helper property '{1}.{2}' must not be null.
+        /// </summary>
+        internal static string RazorPage_InvalidTagHelperIndexerAssignment
+        {
+            get { return GetString("RazorPage_InvalidTagHelperIndexerAssignment"); }
+        }
+
+        /// <summary>
+        /// Unable to perform '{0}' assignment. Tag helper property '{1}.{2}' must not be null.
+        /// </summary>
+        internal static string FormatRazorPage_InvalidTagHelperIndexerAssignment(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("RazorPage_InvalidTagHelperIndexerAssignment"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -52,28 +52,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Returns all attributes from <paramref name="tagHelperOutput"/>'s
-        /// <see cref="TagHelperOutput.Attributes"/> that have the given <paramref name="prefix"/>.
-        /// </summary>
-        /// <param name="tagHelperOutput">The <see cref="TagHelperOutput"/> this method extends.</param>
-        /// <param name="prefix">A prefix to look for.</param>
-        /// <returns><see cref="KeyValuePair{string, string}"/>s with <see cref="KeyValuePair{string, string}.Key"/>
-        /// starting with the given <paramref name="prefix"/>.</returns>
-        public static IEnumerable<TagHelperAttribute> FindPrefixedAttributes(
-            [NotNull] this TagHelperOutput tagHelperOutput,
-            [NotNull] string prefix)
-        {
-            // TODO: https://github.com/aspnet/Razor/issues/89 - We will not need this method once #89 is completed.
-
-            // We're only interested in HTML attributes that have the desired prefix.
-            var prefixedAttributes = tagHelperOutput.Attributes
-                .Where(attribute => attribute.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                .ToArray();
-
-            return prefixedAttributes;
-        }
-
-        /// <summary>
         /// Merges the given <paramref name="tagBuilder"/>'s <see cref="TagBuilder.Attributes"/> into the
         /// <paramref name="tagHelperOutput"/>.
         /// </summary>

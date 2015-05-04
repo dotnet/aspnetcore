@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.Framework.WebEncoders;
 using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
@@ -28,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 allAttributes: new TagHelperAttributeList
                 {
                     { "id", "myanchor" },
-                    { "asp-route-foo", "bar" },
+                    { "asp-route-name", "value" },
                     { "asp-action", "index" },
                     { "asp-controller", "home" },
                     { "asp-fragment", "hello=world" },
@@ -48,7 +47,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 attributes: new TagHelperAttributeList
                 {
                     { "id", "myanchor" },
-                    { "asp-route-foo", "bar" },
                 });
             output.Content.SetContent("Something");
 
@@ -68,6 +66,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Generator = htmlGenerator,
                 Host = "contoso.com",
                 Protocol = "http",
+                RouteValues =
+                {
+                    {  "name", "value" },
+                },
             };
 
             // Act
@@ -106,7 +108,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             generator
                 .Setup(mock => mock.GenerateRouteLink(
-                    string.Empty, "Default", "http", "contoso.com", "hello=world", null, null))
+                    string.Empty,
+                    "Default",
+                    "http",
+                    "contoso.com",
+                    "hello=world",
+                    It.IsAny<IDictionary<string, object>>(),
+                    null))
                 .Returns(new TagBuilder("a", new CommonTestEncoder()))
                 .Verifiable();
             var anchorTagHelper = new AnchorTagHelper
@@ -149,7 +157,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var generator = new Mock<IHtmlGenerator>();
             generator
                 .Setup(mock => mock.GenerateActionLink(
-                    string.Empty, "Index", "Home", "http", "contoso.com", "hello=world", null, null))
+                    string.Empty,
+                    "Index",
+                    "Home",
+                    "http",
+                    "contoso.com",
+                    "hello=world",
+                    It.IsAny<IDictionary<string, object>>(),
+                    null))
                 .Returns(new TagBuilder("a", new CommonTestEncoder()))
                 .Verifiable();
             var anchorTagHelper = new AnchorTagHelper
@@ -190,7 +205,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
             if (propertyName == "asp-route-")
             {
-                output.Attributes.Add("asp-route-foo", "bar");
+                anchorTagHelper.RouteValues.Add("name", "value");
             }
             else
             {

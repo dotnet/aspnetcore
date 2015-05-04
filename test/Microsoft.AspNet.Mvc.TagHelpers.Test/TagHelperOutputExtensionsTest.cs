@@ -222,7 +222,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
             var expectedAttribute = new TagHelperAttribute("type", "btn");
             tagHelperOutput.Attributes.Add(expectedAttribute);
-            var attributes = tagHelperOutput.FindPrefixedAttributes("route-");
+
+            var attributes = tagHelperOutput.Attributes
+                .Where(item => item.Name.StartsWith("route-", StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
             // Act
             tagHelperOutput.RemoveRange(attributes);
@@ -264,19 +267,21 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 "p",
                 attributes: new TagHelperAttributeList()
                 {
-                    { "routeHello", "World" },
-                    { "Routee-I", "Am" }
+                    { "route-Hello", "World" },
+                    { "Route-I", "Am" }
                 });
+            var expectedAttribute = new TagHelperAttribute("type", "btn");
+            tagHelperOutput.Attributes.Add(expectedAttribute);
+
+            var attributes = tagHelperOutput.Attributes
+                .Where(item => item.Name.StartsWith("route-", StringComparison.OrdinalIgnoreCase));
 
             // Act
-            var attributes = tagHelperOutput.FindPrefixedAttributes("route-");
+            tagHelperOutput.RemoveRange(attributes);
 
             // Assert
-            Assert.Empty(attributes);
-            var attribute = Assert.Single(tagHelperOutput.Attributes, attr => attr.Name.Equals("routeHello"));
-            Assert.Equal(attribute.Value, "World");
-            attribute = Assert.Single(tagHelperOutput.Attributes, attr => attr.Name.Equals("Routee-I"));
-            Assert.Equal(attribute.Value, "Am");
+            var attribute = Assert.Single(tagHelperOutput.Attributes);
+            Assert.Equal(expectedAttribute, attribute);
         }
 
         public static TheoryData MultipleAttributeSameNameData

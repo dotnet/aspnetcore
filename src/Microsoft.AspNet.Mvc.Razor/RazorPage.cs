@@ -151,6 +151,24 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
+        /// Format an error message about using an indexer when the tag helper property is <c>null</c>.
+        /// </summary>
+        /// <param name="attributeName">Name of the HTML attribute associated with the indexer.</param>
+        /// <param name="tagHelperTypeName">Full name of the tag helper <see cref="Type"/>.</param>
+        /// <param name="propertyName">Dictionary property in the tag helper.</param>
+        /// <returns>An error message about using an indexer when the tag helper property is <c>null</c>.</returns>
+        public static string InvalidTagHelperIndexerAssignment(
+            string attributeName,
+            string tagHelperTypeName,
+            string propertyName)
+        {
+            return Resources.FormatRazorPage_InvalidTagHelperIndexerAssignment(
+                attributeName,
+                tagHelperTypeName,
+                propertyName);
+        }
+
+        /// <summary>
         /// Creates and activates a <see cref="ITagHelper"/>.
         /// </summary>
         /// <typeparam name="TTagHelper">A <see cref="ITagHelper"/> type.</typeparam>

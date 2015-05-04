@@ -135,4 +135,7 @@
   <data name="MvcRazorCodeParser_OnlyOneModelStatementIsAllowed" xml:space="preserve">
     <value>Only one '{0}' statement is allowed in a file.</value>
   </data>
+  <data name="MvcRazorParser_InvalidPropertyType" xml:space="preserve">
+    <value>Invalid tag helper property '{0}.{1}'. Dictionary values must not be of type '{2}'.</value>
+  </data>
 </root>
