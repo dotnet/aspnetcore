@@ -74,12 +74,14 @@ You should also be able to run `dnx` and see the help text of the `dnx` command.
 2. Change directory to the folder of the sample you want to run
 3. Before you move to the restore of the required packages, make sure you have the correct certificates in place: 
 
-    CERTMGR=/usr/bin/certmgr
-    sudo $CERTMGR -ssl -m https://go.microsoft.com
-    sudo $CERTMGR -ssl -m https://nugetgallery.blob.core.windows.net
-    sudo $CERTMGR -ssl -m https://nuget.org
+```
+CERTMGR=/usr/bin/certmgr
+sudo $CERTMGR -ssl -m https://go.microsoft.com
+sudo $CERTMGR -ssl -m https://nugetgallery.blob.core.windows.net
+sudo $CERTMGR -ssl -m https://nuget.org
 
-    mozroots --import --sync
+mozroots --import --sync
+```
 
 4. Run ```dnu restore``` to restore the packages required by that sample.
 5. You should see a bunch of output as all the dependencies of the app are downloaded from MyGet.
