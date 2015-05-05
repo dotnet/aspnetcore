@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "resources": "TestFiles/**/*",
+    "resource": "TestFiles/**/*",
     "dependencies": {
         "Moq": "4.2.1312.1622",
         "Microsoft.AspNet.Razor": "4.0.0-*",
