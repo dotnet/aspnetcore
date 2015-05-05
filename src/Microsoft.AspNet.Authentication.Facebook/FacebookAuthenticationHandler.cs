@@ -13,7 +13,6 @@ using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Collections;
 using Microsoft.AspNet.Http.Extensions;
 using Microsoft.AspNet.WebUtilities;
-using Microsoft.Framework.WebEncoders;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Authentication.Facebook
@@ -65,34 +64,34 @@ namespace Microsoft.AspNet.Authentication.Facebook
 
             var context = new FacebookAuthenticatedContext(Context, Options, user, tokens);
             var identity = new ClaimsIdentity(
-                Options.AuthenticationScheme,
+                Options.ClaimsIssuer,
                 ClaimsIdentity.DefaultNameClaimType,
                 ClaimsIdentity.DefaultRoleClaimType);
             if (!string.IsNullOrEmpty(context.Id))
             {
-                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, context.Id, ClaimValueTypes.String, Options.AuthenticationScheme));
+                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, context.Id, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
             if (!string.IsNullOrEmpty(context.UserName))
             {
-                identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, context.UserName, ClaimValueTypes.String, Options.AuthenticationScheme));
+                identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, context.UserName, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
             if (!string.IsNullOrEmpty(context.Email))
             {
-                identity.AddClaim(new Claim(ClaimTypes.Email, context.Email, ClaimValueTypes.String, Options.AuthenticationScheme));
+                identity.AddClaim(new Claim(ClaimTypes.Email, context.Email, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
             if (!string.IsNullOrEmpty(context.Name))
             {
-                identity.AddClaim(new Claim("urn:facebook:name", context.Name, ClaimValueTypes.String, Options.AuthenticationScheme));
+                identity.AddClaim(new Claim("urn:facebook:name", context.Name, ClaimValueTypes.String, Options.ClaimsIssuer));
 
                 // Many Facebook accounts do not set the UserName field.  Fall back to the Name field instead.
                 if (string.IsNullOrEmpty(context.UserName))
                 {
-                    identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, context.Name, ClaimValueTypes.String, Options.AuthenticationScheme));
+                    identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, context.Name, ClaimValueTypes.String, Options.ClaimsIssuer));
                 }
             }
             if (!string.IsNullOrEmpty(context.Link))
             {
-                identity.AddClaim(new Claim("urn:facebook:link", context.Link, ClaimValueTypes.String, Options.AuthenticationScheme));
+                identity.AddClaim(new Claim("urn:facebook:link", context.Link, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
             context.Properties = properties;
             context.Principal = new ClaimsPrincipal(identity);
@@ -104,7 +103,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
 
         private string GenerateAppSecretProof(string accessToken)
         {
-            using (HMACSHA256 algorithm = new HMACSHA256(Encoding.ASCII.GetBytes(Options.AppSecret)))
+            using (var algorithm = new HMACSHA256(Encoding.ASCII.GetBytes(Options.AppSecret)))
             {
                 var hash = algorithm.ComputeHash(Encoding.ASCII.GetBytes(accessToken));
                 var builder = new StringBuilder();

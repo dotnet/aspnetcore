@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 
@@ -105,11 +104,6 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// When omitted, <see cref="ExternalAuthenticationOptions.SignInScheme"/> is used as a fallback value.
         /// </summary>
         public string SignInScheme { get; set; }
-
-        /// <summary>
-        /// Gets or sets the issuer that should be used for any claims that are created
-        /// </summary>
-        public string ClaimsIssuer { get; set; }
 
         /// <summary>
         /// Gets or sets the type used to secure data handled by the middleware.

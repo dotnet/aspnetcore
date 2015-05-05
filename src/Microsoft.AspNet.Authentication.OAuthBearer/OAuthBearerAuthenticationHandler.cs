@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
 
                 // notify user token was received
                 var securityTokenReceivedNotification =
-                new SecurityTokenReceivedNotification<HttpContext, OAuthBearerAuthenticationOptions>(Context, Options)
+                    new SecurityTokenReceivedNotification<HttpContext, OAuthBearerAuthenticationOptions>(Context, Options)
                 {
                     ProtocolMessage = Context,
                     SecurityToken = token,
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
                     }
                     else
                     {
-                        IEnumerable<string> issuers = new[] { _configuration.Issuer };
+                        var issuers = new[] { _configuration.Issuer };
                         validationParameters.ValidIssuers = (validationParameters.ValidIssuers == null ? issuers : validationParameters.ValidIssuers.Concat(issuers));
                     }
 
@@ -122,8 +122,8 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
                 {
                     if (validator.CanReadToken(token))
                     {
-                        ClaimsPrincipal principal = validator.ValidateToken(token, validationParameters, out validatedToken);
-                        AuthenticationTicket ticket = new AuthenticationTicket(principal, new AuthenticationProperties(), Options.AuthenticationScheme);
+                        var principal = validator.ValidateToken(token, validationParameters, out validatedToken);
+                        var ticket = new AuthenticationTicket(principal, new AuthenticationProperties(), Options.AuthenticationScheme);
                         var securityTokenValidatedNotification = new SecurityTokenValidatedNotification<HttpContext, OAuthBearerAuthenticationOptions>(Context, Options)
                         {
                             ProtocolMessage = Context,

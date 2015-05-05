@@ -2,10 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
@@ -29,8 +26,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 },
                 services =>
                 {
-                    services.AddWebEncoders();
-                    services.AddDataProtection();
+                    services.AddAuthentication();
                     services.ConfigureFacebookAuthentication(options =>
                     {
                         options.AppId = "Test App Id";
@@ -58,7 +54,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
                     context.Authentication.Challenge("Facebook");
                     return true;
                 });
-            var transaction = await SendAsync(server, "http://example.com/challenge");
+            var transaction = await server.SendAsync("http://example.com/challenge");
             transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
             var query = transaction.Response.Headers.Location.Query;
             query.ShouldContain("custom=test");
@@ -75,8 +71,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 },
                 services =>
                 {
-                    services.AddWebEncoders();
-                    services.AddDataProtection();
+                    services.AddAuthentication();
                     services.ConfigureFacebookAuthentication(options =>
                     {
                         options.AppId = "Test App Id";
@@ -96,7 +91,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
                     context.Authentication.Challenge("Facebook");
                     return true;
                 });
-            var transaction = await SendAsync(server, "http://example.com/challenge");
+            var transaction = await server.SendAsync("http://example.com/challenge");
             transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
             location.ShouldContain("https://www.facebook.com/v2.2/dialog/oauth");
@@ -124,35 +119,6 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 });
             },
             configureServices);
-        }
-
-        private static async Task<Transaction> SendAsync(TestServer server, string uri, string cookieHeader = null)
-        {
-            var request = new HttpRequestMessage(HttpMethod.Get, uri);
-            if (!string.IsNullOrEmpty(cookieHeader))
-            {
-                request.Headers.Add("Cookie", cookieHeader);
-            }
-            var transaction = new Transaction
-            {
-                Request = request,
-                Response = await server.CreateClient().SendAsync(request),
-            };
-            if (transaction.Response.Headers.Contains("Set-Cookie"))
-            {
-                transaction.SetCookie = transaction.Response.Headers.GetValues("Set-Cookie").ToList();
-            }
-            transaction.ResponseText = await transaction.Response.Content.ReadAsStringAsync();
-
-            return transaction;
-        }
-
-        private class Transaction
-        {
-            public HttpRequestMessage Request { get; set; }
-            public HttpResponseMessage Response { get; set; }
-            public IList<string> SetCookie { get; set; }
-            public string ResponseText { get; set; }
         }
     }
 }

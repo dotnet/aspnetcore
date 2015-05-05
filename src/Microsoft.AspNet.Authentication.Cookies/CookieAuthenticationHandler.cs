@@ -193,8 +193,8 @@ namespace Microsoft.AspNet.Authentication.Cookies
                         _sessionKey = await Options.SessionStore.StoreAsync(model);
                         var principal = new ClaimsPrincipal(
                             new ClaimsIdentity(
-                                new[] { new Claim(SessionIdClaim, _sessionKey) },
-                                Options.AuthenticationScheme));
+                                new[] { new Claim(SessionIdClaim, _sessionKey, ClaimValueTypes.String, Options.ClaimsIssuer) },
+                                Options.ClaimsIssuer));
                         model = new AuthenticationTicket(principal, null, Options.AuthenticationScheme);
                     }
                     var cookieValue = Options.TicketDataFormat.Protect(model);
@@ -243,7 +243,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                         await Options.SessionStore.RenewAsync(_sessionKey, model);
                         var principal = new ClaimsPrincipal(
                             new ClaimsIdentity(
-                                new[] { new Claim(SessionIdClaim, _sessionKey) },
+                                new[] { new Claim(SessionIdClaim, _sessionKey, ClaimValueTypes.String, Options.ClaimsIssuer) },
                                 Options.AuthenticationScheme));
                         model = new AuthenticationTicket(principal, null, Options.AuthenticationScheme);
                     }

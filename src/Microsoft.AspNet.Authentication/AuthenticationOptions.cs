@@ -34,6 +34,11 @@ namespace Microsoft.AspNet.Authentication
         public bool AutomaticAuthentication { get; set; }
 
         /// <summary>
+        /// Gets or sets the issuer that should be used for any claims that are created
+        /// </summary>
+        public string ClaimsIssuer { get; set; }
+
+        /// <summary>
         /// Additional information about the authentication type which is made available to the application.
         /// </summary>
         public AuthenticationDescription Description { get; set; } = new AuthenticationDescription();

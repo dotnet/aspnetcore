@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);
                 }
 
-                string oauthVerifier = query.Get("oauth_verifier");
+                var oauthVerifier = query.Get("oauth_verifier");
                 if (string.IsNullOrWhiteSpace(oauthVerifier))
                 {
                     Logger.LogWarning("Missing or blank oauth_verifier");
@@ -93,12 +93,12 @@ namespace Microsoft.AspNet.Authentication.Twitter
                     new ClaimsIdentity(
                         new[]
                         {
-                            new Claim(ClaimTypes.NameIdentifier, accessToken.UserId, "http://www.w3.org/2001/XMLSchema#string", Options.AuthenticationScheme),
-                            new Claim(ClaimTypes.Name, accessToken.ScreenName, "http://www.w3.org/2001/XMLSchema#string", Options.AuthenticationScheme),
-                            new Claim("urn:twitter:userid", accessToken.UserId, "http://www.w3.org/2001/XMLSchema#string", Options.AuthenticationScheme),
-                            new Claim("urn:twitter:screenname", accessToken.ScreenName, "http://www.w3.org/2001/XMLSchema#string", Options.AuthenticationScheme)
+                            new Claim(ClaimTypes.NameIdentifier, accessToken.UserId, "http://www.w3.org/2001/XMLSchema#string", Options.ClaimsIssuer),
+                            new Claim(ClaimTypes.Name, accessToken.ScreenName, "http://www.w3.org/2001/XMLSchema#string", Options.ClaimsIssuer),
+                            new Claim("urn:twitter:userid", accessToken.UserId, "http://www.w3.org/2001/XMLSchema#string", Options.ClaimsIssuer),
+                            new Claim("urn:twitter:screenname", accessToken.ScreenName, "http://www.w3.org/2001/XMLSchema#string", Options.ClaimsIssuer)
                         },
-                        Options.AuthenticationScheme,
+                        Options.ClaimsIssuer,
                         ClaimsIdentity.DefaultNameClaimType,
                         ClaimsIdentity.DefaultRoleClaimType));
                 context.Properties = requestToken.Properties;

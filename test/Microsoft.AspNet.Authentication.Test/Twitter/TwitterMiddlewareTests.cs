@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -57,7 +55,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                     context.Authentication.Challenge("Twitter");
                     return true;
                 });
-            var transaction = await SendAsync(server, "http://example.com/challenge");
+            var transaction = await server.SendAsync("http://example.com/challenge");
             transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
             var query = transaction.Response.Headers.Location.Query;
             query.ShouldContain("custom=test");
@@ -95,7 +93,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                     context.Authentication.Challenge("Twitter");
                     return true;
                 });
-            var transaction = await SendAsync(server, "http://example.com/challenge");
+            var transaction = await server.SendAsync("http://example.com/challenge");
             transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
             location.ShouldContain("https://twitter.com/oauth/authenticate?oauth_token=");
@@ -129,50 +127,6 @@ namespace Microsoft.AspNet.Authentication.Twitter
                     options.SignInScheme = "External";
                 });
             });
-        }
-
-        private static async Task<Transaction> SendAsync(TestServer server, string uri, string cookieHeader = null)
-        {
-            var request = new HttpRequestMessage(HttpMethod.Get, uri);
-            if (!string.IsNullOrEmpty(cookieHeader))
-            {
-                request.Headers.Add("Cookie", cookieHeader);
-            }
-            var transaction = new Transaction
-            {
-                Request = request,
-                Response = await server.CreateClient().SendAsync(request),
-            };
-            if (transaction.Response.Headers.Contains("Set-Cookie"))
-            {
-                transaction.SetCookie = transaction.Response.Headers.GetValues("Set-Cookie").ToList();
-            }
-            transaction.ResponseText = await transaction.Response.Content.ReadAsStringAsync();
-
-            return transaction;
-        }
-
-        private class TestHttpMessageHandler : HttpMessageHandler
-        {
-            public Func<HttpRequestMessage, HttpResponseMessage> Sender { get; set; }
-
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
-            {
-                if (Sender != null)
-                {
-                    return Task.FromResult(Sender(request));
-                }
-
-                return Task.FromResult<HttpResponseMessage>(null);
-            }
-        }
-
-        private class Transaction
-        {
-            public HttpRequestMessage Request { get; set; }
-            public HttpResponseMessage Response { get; set; }
-            public IList<string> SetCookie { get; set; }
-            public string ResponseText { get; set; }
         }
     }
 }

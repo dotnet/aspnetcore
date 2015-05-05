@@ -23,8 +23,6 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
     /// </summary>
     public class OAuthBearerAuthenticationMiddleware : AuthenticationMiddleware<OAuthBearerAuthenticationOptions>
     {
-        private readonly ILogger _logger;
-
         /// <summary>
         /// Bearer authentication component which is added to an HTTP pipeline. This constructor is not
         /// called by application code directly, instead it is added by calling the the IAppBuilder UseOAuthBearerAuthentication 
@@ -72,7 +70,7 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
                         Options.MetadataAddress += ".well-known/openid-configuration";
                     }
 
-                    HttpClient httpClient = new HttpClient(ResolveHttpMessageHandler(Options));
+                    var httpClient = new HttpClient(ResolveHttpMessageHandler(Options));
                     httpClient.Timeout = Options.BackchannelTimeout;
                     httpClient.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
 

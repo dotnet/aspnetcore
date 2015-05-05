@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens;
 using System.Net.Http;
-using Microsoft.AspNet.Authentication;
 using Microsoft.IdentityModel.Protocols;
 
 namespace Microsoft.AspNet.Authentication.OAuthBearer

@@ -1,12 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Authentication;
 using Shouldly;
 using Xunit;
 
@@ -17,7 +15,7 @@ namespace Microsoft.AspNet.Authentication
         [Fact]
         public void AddingToAnonymousIdentityDoesNotKeepAnonymousIdentity()
         {
-            HttpContext context = new DefaultHttpContext();
+            var context = new DefaultHttpContext();
             context.User.ShouldNotBe(null);
             context.User.Identity.IsAuthenticated.ShouldBe(false);
 
@@ -36,7 +34,7 @@ namespace Microsoft.AspNet.Authentication
         [Fact]
         public void AddingExistingIdentityChangesDefaultButPreservesPrior()
         {
-            HttpContext context = new DefaultHttpContext();
+            var context = new DefaultHttpContext();
             context.User = new GenericPrincipal(new GenericIdentity("Test1", "Alpha"), null);
 
             context.User.Identity.AuthenticationType.ShouldBe("Alpha");

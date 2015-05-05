@@ -35,6 +35,12 @@ namespace Microsoft.AspNet.Authentication
             Logger = loggerFactory.CreateLogger(this.GetType().FullName);
             UrlEncoder = encoder;
 
+            if (string.IsNullOrEmpty(Options.ClaimsIssuer))
+            {
+                // Default to something reasonable
+                Options.ClaimsIssuer = Options.AuthenticationScheme;
+            }
+
             _next = next;
         }
 

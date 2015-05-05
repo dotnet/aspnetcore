@@ -32,18 +32,18 @@ namespace Microsoft.AspNet.Authentication.MicrosoftAccount
             var identity = new ClaimsIdentity(
                 new[]
                     {
-                        new Claim(ClaimTypes.NameIdentifier, context.Id, ClaimValueTypes.String, Options.AuthenticationScheme),
-                        new Claim(ClaimTypes.Name, context.Name, ClaimValueTypes.String, Options.AuthenticationScheme),
-                        new Claim("urn:microsoftaccount:id", context.Id, ClaimValueTypes.String, Options.AuthenticationScheme),
-                        new Claim("urn:microsoftaccount:name", context.Name, ClaimValueTypes.String, Options.AuthenticationScheme)
+                        new Claim(ClaimTypes.NameIdentifier, context.Id, ClaimValueTypes.String, Options.ClaimsIssuer),
+                        new Claim(ClaimTypes.Name, context.Name, ClaimValueTypes.String, Options.ClaimsIssuer),
+                        new Claim("urn:microsoftaccount:id", context.Id, ClaimValueTypes.String, Options.ClaimsIssuer),
+                        new Claim("urn:microsoftaccount:name", context.Name, ClaimValueTypes.String, Options.ClaimsIssuer)
                     },
-                Options.AuthenticationScheme,
+                Options.ClaimsIssuer,
                 ClaimsIdentity.DefaultNameClaimType,
                 ClaimsIdentity.DefaultRoleClaimType);
 
             if (!string.IsNullOrWhiteSpace(context.Email))
             {
-                identity.AddClaim(new Claim(ClaimTypes.Email, context.Email, ClaimValueTypes.String, Options.AuthenticationScheme));
+                identity.AddClaim(new Claim(ClaimTypes.Email, context.Email, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
             context.Principal = new ClaimsPrincipal(identity);
 

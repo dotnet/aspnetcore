@@ -33,39 +33,39 @@ namespace Microsoft.AspNet.Authentication.Google
 
             var context = new GoogleAuthenticatedContext(Context, Options, user, tokens);
             var identity = new ClaimsIdentity(
-                Options.AuthenticationScheme,
+                Options.ClaimsIssuer,
                 ClaimsIdentity.DefaultNameClaimType,
                 ClaimsIdentity.DefaultRoleClaimType);
 
             if (!string.IsNullOrEmpty(context.Id))
             {
                 identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, context.Id,
-                    ClaimValueTypes.String, Options.AuthenticationScheme));
+                    ClaimValueTypes.String, Options.ClaimsIssuer));
             }
             if (!string.IsNullOrEmpty(context.GivenName))
             {
                 identity.AddClaim(new Claim(ClaimTypes.GivenName, context.GivenName,
-                    ClaimValueTypes.String, Options.AuthenticationScheme));
+                    ClaimValueTypes.String, Options.ClaimsIssuer));
             }
             if (!string.IsNullOrEmpty(context.FamilyName))
             {
                 identity.AddClaim(new Claim(ClaimTypes.Surname, context.FamilyName,
-                    ClaimValueTypes.String, Options.AuthenticationScheme));
+                    ClaimValueTypes.String, Options.ClaimsIssuer));
             }
             if (!string.IsNullOrEmpty(context.Name))
             {
                 identity.AddClaim(new Claim(ClaimTypes.Name, context.Name, ClaimValueTypes.String,
-                    Options.AuthenticationScheme));
+                    Options.ClaimsIssuer));
             }
             if (!string.IsNullOrEmpty(context.Email))
             {
                 identity.AddClaim(new Claim(ClaimTypes.Email, context.Email, ClaimValueTypes.String,
-                    Options.AuthenticationScheme));
+                    Options.ClaimsIssuer));
             }
             if (!string.IsNullOrEmpty(context.Profile))
             {
                 identity.AddClaim(new Claim("urn:google:profile", context.Profile, ClaimValueTypes.String,
-                    Options.AuthenticationScheme));
+                    Options.ClaimsIssuer));
             }
             context.Properties = properties;
             context.Principal = new ClaimsPrincipal(identity);
