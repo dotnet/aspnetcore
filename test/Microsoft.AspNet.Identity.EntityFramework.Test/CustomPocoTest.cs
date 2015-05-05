@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Metadata;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test

@@ -26,12 +26,8 @@ namespace Microsoft.AspNet.Identity.Test
         where TRole : class
         where TKey : IEquatable<TKey>
     {
-        protected TestLoggerFactory loggerFactory;
-
-        public UserManagerTestBase()
-        {
-            loggerFactory = new TestLoggerFactory();
-        }
+        private readonly IdentityErrorDescriber _errorDescriber = new IdentityErrorDescriber();
+        protected TestLoggerFactory LoggerFactory { get; } = new TestLoggerFactory();
 
         protected virtual void SetupIdentityServices(IServiceCollection services, object context = null)
         {
@@ -39,7 +35,8 @@ namespace Microsoft.AspNet.Identity.Test
             services.AddIdentity<TUser, TRole>().AddDefaultTokenProviders();
             AddUserStore(services, context);
             AddRoleStore(services, context);
-            services.AddInstance<ILoggerFactory>(loggerFactory);
+            services.AddInstance<ILoggerFactory>(LoggerFactory);
+            services.AddLogging();
             services.ConfigureIdentity(options =>
             {
                 options.Password.RequireDigit = false;
@@ -143,8 +140,8 @@ namespace Microsoft.AspNet.Identity.Test
 
             var newUser = CreateTestUser(username, useNamePrefixAsUserName: true);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(newUser));
-            IdentityResultAssert.IsFailure(await manager.SetUserNameAsync(newUser, ""), IdentityErrorDescriber.Default.InvalidUserName(""));
-            IdentityResultAssert.IsFailure(await manager.SetUserNameAsync(newUser, newUsername), IdentityErrorDescriber.Default.DuplicateUserName(newUsername));
+            IdentityResultAssert.IsFailure(await manager.SetUserNameAsync(newUser, ""), _errorDescriber.InvalidUserName(""));
+            IdentityResultAssert.IsFailure(await manager.SetUserNameAsync(newUser, newUsername), _errorDescriber.DuplicateUserName(newUsername));
         }
 
         [Fact]
@@ -176,8 +173,8 @@ namespace Microsoft.AspNet.Identity.Test
 
             var newUser = CreateTestUser(email: email);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(newUser));
-            IdentityResultAssert.IsFailure(await manager.SetEmailAsync(newUser, newEmail), IdentityErrorDescriber.Default.DuplicateEmail(newEmail));
-            IdentityResultAssert.IsFailure(await manager.SetEmailAsync(newUser, ""), IdentityErrorDescriber.Default.InvalidEmail(""));
+            IdentityResultAssert.IsFailure(await manager.SetEmailAsync(newUser, newEmail), _errorDescriber.DuplicateEmail(newEmail));
+            IdentityResultAssert.IsFailure(await manager.SetEmailAsync(newUser, ""), _errorDescriber.InvalidEmail(""));
         }
 
         [Fact]
@@ -250,7 +247,7 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = CreateManager();
             var user = CreateTestUser();
             manager.Options.User.RequireUniqueEmail = true;
-            IdentityResultAssert.IsFailure(await manager.CreateAsync(user), IdentityErrorDescriber.Default.InvalidEmail(email));
+            IdentityResultAssert.IsFailure(await manager.CreateAsync(user), _errorDescriber.InvalidEmail(email));
         }
 
 #if DNX451
@@ -262,7 +259,7 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = CreateManager();
             var user = CreateTestUser("UpdateBlocked", email);
             manager.Options.User.RequireUniqueEmail = true;
-            IdentityResultAssert.IsFailure(await manager.CreateAsync(user), IdentityErrorDescriber.Default.InvalidEmail(email));
+            IdentityResultAssert.IsFailure(await manager.CreateAsync(user), _errorDescriber.InvalidEmail(email));
         }
 #endif
 
@@ -378,7 +375,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.True(await manager.HasPasswordAsync(user));
             IdentityResultAssert.IsFailure(await manager.AddPasswordAsync(user, "password"),
                 "User already has a password set.");
-            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "AddPasswordAsync", await manager.GetUserIdAsync(user), IdentityErrorDescriber.Default.UserAlreadyHasPassword());
+            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "AddPasswordAsync", await manager.GetUserIdAsync(user), _errorDescriber.UserAlreadyHasPassword());
         }
 
         [Fact]
@@ -556,7 +553,7 @@ namespace Microsoft.AspNet.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
             var result = await manager.ChangePasswordAsync(user, "bogus", "newpassword");
             IdentityResultAssert.IsFailure(result, "Incorrect password.");
-            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "ChangePasswordAsync", await manager.GetUserIdAsync(user), IdentityErrorDescriber.Default.PasswordMismatch());
+            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "ChangePasswordAsync", await manager.GetUserIdAsync(user), _errorDescriber.PasswordMismatch());
         }
 
         [Fact]
@@ -567,7 +564,7 @@ namespace Microsoft.AspNet.Identity.Test
             var user = CreateTestUser(username, useNamePrefixAsUserName: true);
             var user2 = CreateTestUser(username, useNamePrefixAsUserName: true);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            IdentityResultAssert.IsFailure(await manager.CreateAsync(user2), IdentityErrorDescriber.Default.DuplicateUserName(username));
+            IdentityResultAssert.IsFailure(await manager.CreateAsync(user2), _errorDescriber.DuplicateUserName(username));
         }
 
         [Fact]
@@ -589,7 +586,7 @@ namespace Microsoft.AspNet.Identity.Test
             var user = CreateTestUser(email: "FooUser@yup.com");
             var user2 = CreateTestUser(email: "FooUser@yup.com");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            IdentityResultAssert.IsFailure(await manager.CreateAsync(user2), IdentityErrorDescriber.Default.DuplicateEmail("FooUser@yup.com"));
+            IdentityResultAssert.IsFailure(await manager.CreateAsync(user2), _errorDescriber.DuplicateEmail("FooUser@yup.com"));
         }
 
         [Fact]
@@ -615,8 +612,8 @@ namespace Microsoft.AspNet.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await manager.AddLoginAsync(user, login));
             var result = await manager.AddLoginAsync(user, login);
-            IdentityResultAssert.IsFailure(result, IdentityErrorDescriber.Default.LoginAlreadyAssociated());
-            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "AddLoginAsync", await manager.GetUserIdAsync(user), IdentityErrorDescriber.Default.LoginAlreadyAssociated());
+            IdentityResultAssert.IsFailure(result, _errorDescriber.LoginAlreadyAssociated());
+            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "AddLoginAsync", await manager.GetUserIdAsync(user), _errorDescriber.LoginAlreadyAssociated());
         }
 
         // Email tests
@@ -744,7 +741,7 @@ namespace Microsoft.AspNet.Identity.Test
             var stamp = await manager.GetSecurityStampAsync(user);
             Assert.NotNull(stamp);
             IdentityResultAssert.IsFailure(await manager.ResetPasswordAsync(user, "bogus", newPassword), "Invalid token.");
-            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "ResetPasswordAsync", await manager.GetUserIdAsync(user), IdentityErrorDescriber.Default.InvalidToken());
+            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "ResetPasswordAsync", await manager.GetUserIdAsync(user), _errorDescriber.InvalidToken());
             Assert.True(await manager.CheckPasswordAsync(user, password));
             Assert.Equal(stamp, await manager.GetSecurityStampAsync(user));
         }
@@ -767,7 +764,7 @@ namespace Microsoft.AspNet.Identity.Test
             IdentityResultAssert.VerifyUserManagerSuccessLog(manager.Logger, "VerifyUserTokenAsync", userId);
 
             Assert.False(await manager.VerifyUserTokenAsync(user, "Static", "test2", token));
-            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "VerifyUserTokenAsync", userId, IdentityErrorDescriber.Default.InvalidToken());
+            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "VerifyUserTokenAsync", userId, _errorDescriber.InvalidToken());
 
             Assert.False(await manager.VerifyUserTokenAsync(user, "Static", "test", token + "a"));
             Assert.False(await manager.VerifyUserTokenAsync(user2, "Static", "test", token));
@@ -804,7 +801,7 @@ namespace Microsoft.AspNet.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             IdentityResultAssert.IsFailure(await manager.ConfirmEmailAsync(user, "bogus"), "Invalid token.");
             Assert.False(await manager.IsEmailConfirmedAsync(user));
-            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "ConfirmEmailAsync", await manager.GetUserIdAsync(user), IdentityErrorDescriber.Default.InvalidToken());
+            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "ConfirmEmailAsync", await manager.GetUserIdAsync(user), _errorDescriber.InvalidToken());
         }
 
         [Fact]
@@ -1322,8 +1319,8 @@ namespace Microsoft.AspNet.Identity.Test
             IdentityResultAssert.IsSuccess(await userMgr.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await roleMgr.CreateAsync(role));
             var result = await userMgr.RemoveFromRoleAsync(user, roleName);
-            IdentityResultAssert.IsFailure(result, IdentityErrorDescriber.Default.UserNotInRole(roleName));
-            IdentityResultAssert.VerifyUserManagerFailureLog(userMgr.Logger, "RemoveFromRoleAsync", await userMgr.GetUserIdAsync(user), IdentityErrorDescriber.Default.UserNotInRole(roleName));
+            IdentityResultAssert.IsFailure(result, _errorDescriber.UserNotInRole(roleName));
+            IdentityResultAssert.VerifyUserManagerFailureLog(userMgr.Logger, "RemoveFromRoleAsync", await userMgr.GetUserIdAsync(user), _errorDescriber.UserNotInRole(roleName));
         }
 
         [Fact]
@@ -1339,8 +1336,8 @@ namespace Microsoft.AspNet.Identity.Test
             IdentityResultAssert.IsSuccess(await roleMgr.CreateAsync(role));
             IdentityResultAssert.IsSuccess(await userMgr.AddToRoleAsync(user, roleName));
             Assert.True(await userMgr.IsInRoleAsync(user, roleName));
-            IdentityResultAssert.IsFailure(await userMgr.AddToRoleAsync(user, roleName), IdentityErrorDescriber.Default.UserAlreadyInRole(roleName));
-            IdentityResultAssert.VerifyUserManagerFailureLog(userMgr.Logger, "AddToRoleAsync", await userMgr.GetUserIdAsync(user), IdentityErrorDescriber.Default.UserAlreadyInRole(roleName));
+            IdentityResultAssert.IsFailure(await userMgr.AddToRoleAsync(user, roleName), _errorDescriber.UserAlreadyInRole(roleName));
+            IdentityResultAssert.VerifyUserManagerFailureLog(userMgr.Logger, "AddToRoleAsync", await userMgr.GetUserIdAsync(user), _errorDescriber.UserAlreadyInRole(roleName));
         }
 
         [Fact]
@@ -1402,7 +1399,7 @@ namespace Microsoft.AspNet.Identity.Test
             var stamp = await manager.GetSecurityStampAsync(user);
             IdentityResultAssert.IsFailure(await manager.ChangePhoneNumberAsync(user, "111-111-1111", "bogus"),
                 "Invalid token.");
-            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "ChangePhoneNumberAsync", await manager.GetUserIdAsync(user), IdentityErrorDescriber.Default.InvalidToken());
+            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "ChangePhoneNumberAsync", await manager.GetUserIdAsync(user), _errorDescriber.InvalidToken());
             Assert.False(await manager.IsPhoneNumberConfirmedAsync(user));
             Assert.Equal(await manager.GetPhoneNumberAsync(user), "123-456-7890");
             Assert.Equal(stamp, await manager.GetSecurityStampAsync(user));
@@ -1443,7 +1440,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.True(await manager.VerifyChangePhoneNumberTokenAsync(user, token2, num2));
             Assert.False(await manager.VerifyChangePhoneNumberTokenAsync(user, token2, num1));
             Assert.False(await manager.VerifyChangePhoneNumberTokenAsync(user, token1, num2));
-            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "VerifyChangePhoneNumberTokenAsync", userId, IdentityErrorDescriber.Default.InvalidToken());
+            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "VerifyChangePhoneNumberTokenAsync", userId, _errorDescriber.InvalidToken());
         }
 
         [Fact]
@@ -1478,7 +1475,7 @@ namespace Microsoft.AspNet.Identity.Test
             var stamp = await manager.GetSecurityStampAsync(user);
             IdentityResultAssert.IsFailure(await manager.ChangeEmailAsync(user, "whatevah@foo.barf", "bogus"),
                 "Invalid token.");
-            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "ChangeEmailAsync", await manager.GetUserIdAsync(user), IdentityErrorDescriber.Default.InvalidToken());
+            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "ChangeEmailAsync", await manager.GetUserIdAsync(user), _errorDescriber.InvalidToken());
             Assert.False(await manager.IsEmailConfirmedAsync(user));
             Assert.Equal(await manager.GetEmailAsync(user), oldEmail);
             Assert.Equal(stamp, await manager.GetSecurityStampAsync(user));
@@ -1628,7 +1625,7 @@ namespace Microsoft.AspNet.Identity.Test
             var user = CreateTestUser(phoneNumber: "4251234567");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             Assert.False(await manager.VerifyTwoFactorTokenAsync(user, "Phone", "bogus"));
-            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "VerifyTwoFactorTokenAsync", await manager.GetUserIdAsync(user), IdentityErrorDescriber.Default.InvalidToken());
+            IdentityResultAssert.VerifyUserManagerFailureLog(manager.Logger, "VerifyTwoFactorTokenAsync", await manager.GetUserIdAsync(user), _errorDescriber.InvalidToken());
         }
 
         [Fact]

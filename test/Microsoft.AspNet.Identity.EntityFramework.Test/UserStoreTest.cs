@@ -5,13 +5,8 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Identity.Test;
-using Microsoft.AspNet.TestHost;
-using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Runtime.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test
@@ -42,73 +37,6 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             var db = DbUtil.Create<ApplicationDbContext>(ConnectionString);
             db.Database.EnsureDeleted();
         }
-
-        //https://github.com/aspnet/Identity/issues/411
-        //[Fact]
-        //public async Task EnsureStartupUsageWorks()
-        //{
-        //    EnsureDatabase();
-
-        //    var server = TestServer.Create(
-        //        app =>
-        //        {
-        //            app.UseIdentity<ApplicationUser, IdentityRole>();
-        //            app.Run(async context =>
-        //            {
-        //                var userStore = context.RequestServices.GetRequiredService<IUserStore<ApplicationUser>>();
-        //                var userManager = context.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
-
-        //                Assert.NotNull(userStore);
-        //                Assert.NotNull(userManager);
-
-        //                const string userName = "admin";
-        //                const string password = "1qaz@WSX";
-        //                var user = new ApplicationUser { UserName = userName };
-        //                IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user, password));
-        //                IdentityResultAssert.IsSuccess(await userManager.DeleteAsync(user));
-        //            });
-        //        },
-        //        services =>
-        //        {
-        //            DbUtil.ConfigureDbServices<ApplicationDbContext>(ConnectionString, services);
-        //            services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
-        //        });
-        //}
-
-        //[Fact]
-        //public async Task EnsureStartupOptionsChangeWorks()
-        //{
-        //    EnsureDatabase();
-        //    var builder = new ApplicationBuilder(CallContextServiceLocator.Locator.ServiceProvider);
-
-        //    builder.UseServices(services =>
-        //    {
-        //        services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-        //        services.AddEntityFramework()
-        //                .AddSqlServer()
-        //                .AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(ConnectionString));
-        //        services.AddIdentity<ApplicationUser, IdentityRole>(options =>
-        //        {
-        //            options.Password.RequiredLength = 1;
-        //            options.Password.RequireLowercase = false;
-        //            options.Password.RequireNonLetterOrDigit = false;
-        //            options.Password.RequireUppercase = false;
-        //            options.Password.RequireDigit = false;
-        //        }).AddEntityFrameworkStores<ApplicationDbContext>();
-        //    });
-
-        //    var userStore = builder.ApplicationServices.GetRequiredService<IUserStore<ApplicationUser>>();
-        //    var userManager = builder.ApplicationServices.GetRequiredService<UserManager<ApplicationUser>>();
-
-        //    Assert.NotNull(userStore);
-        //    Assert.NotNull(userManager);
-
-        //    const string userName = "admin";
-        //    const string password = "a";
-        //    var user = new ApplicationUser { UserName = userName };
-        //    IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user, password));
-        //    IdentityResultAssert.IsSuccess(await userManager.DeleteAsync(user));
-        //}
 
         [Fact]
         public void CanCreateUserUsingEF()
@@ -302,7 +230,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                 user1.UserName = Guid.NewGuid().ToString();
                 user2.UserName = Guid.NewGuid().ToString();
                 IdentityResultAssert.IsSuccess(await manager1.UpdateAsync(user1));
-                IdentityResultAssert.IsFailure(await manager2.UpdateAsync(user2), IdentityErrorDescriber.Default.ConcurrencyFailure());
+                IdentityResultAssert.IsFailure(await manager2.UpdateAsync(user2), new IdentityErrorDescriber().ConcurrencyFailure());
             }
         }
 
@@ -326,7 +254,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                 user.UserName = Guid.NewGuid().ToString();
                 user2.UserName = Guid.NewGuid().ToString();
                 IdentityResultAssert.IsSuccess(await manager1.UpdateAsync(user));
-                IdentityResultAssert.IsFailure(await manager2.UpdateAsync(user2), IdentityErrorDescriber.Default.ConcurrencyFailure());
+                IdentityResultAssert.IsFailure(await manager2.UpdateAsync(user2), new IdentityErrorDescriber().ConcurrencyFailure());
             }
         }
 
@@ -351,7 +279,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                 Assert.NotSame(user1, user2);
                 user1.UserName = Guid.NewGuid().ToString();
                 IdentityResultAssert.IsSuccess(await manager1.UpdateAsync(user1));
-                IdentityResultAssert.IsFailure(await manager2.DeleteAsync(user2), IdentityErrorDescriber.Default.ConcurrencyFailure());
+                IdentityResultAssert.IsFailure(await manager2.DeleteAsync(user2), new IdentityErrorDescriber().ConcurrencyFailure());
             }
         }
 
@@ -377,7 +305,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                 role1.Name = Guid.NewGuid().ToString();
                 role2.Name = Guid.NewGuid().ToString();
                 IdentityResultAssert.IsSuccess(await manager1.UpdateAsync(role1));
-                IdentityResultAssert.IsFailure(await manager2.UpdateAsync(role2), IdentityErrorDescriber.Default.ConcurrencyFailure());
+                IdentityResultAssert.IsFailure(await manager2.UpdateAsync(role2), new IdentityErrorDescriber().ConcurrencyFailure());
             }
         }
 
@@ -402,7 +330,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                 role.Name = Guid.NewGuid().ToString();
                 role2.Name = Guid.NewGuid().ToString();
                 IdentityResultAssert.IsSuccess(await manager1.UpdateAsync(role));
-                IdentityResultAssert.IsFailure(await manager2.UpdateAsync(role2), IdentityErrorDescriber.Default.ConcurrencyFailure());
+                IdentityResultAssert.IsFailure(await manager2.UpdateAsync(role2), new IdentityErrorDescriber().ConcurrencyFailure());
             }
         }
 
@@ -427,7 +355,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                 Assert.NotSame(role1, role2);
                 role1.Name = Guid.NewGuid().ToString();
                 IdentityResultAssert.IsSuccess(await manager1.UpdateAsync(role1));
-                IdentityResultAssert.IsFailure(await manager2.DeleteAsync(role2), IdentityErrorDescriber.Default.ConcurrencyFailure());
+                IdentityResultAssert.IsFailure(await manager2.DeleteAsync(role2), new IdentityErrorDescriber().ConcurrencyFailure());
             }
         }
 
@@ -464,8 +392,5 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         protected override Expression<Func<IdentityUser, bool>> UserNameStartsWithPredicate(string userName) => u => u.UserName.StartsWith(userName);
     }
 
-    public class ApplicationUser : IdentityUser
-    {
-        
-    }
+    public class ApplicationUser : IdentityUser { }
 }

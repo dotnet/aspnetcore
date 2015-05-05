@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Identity
             IEnumerable<IRoleValidator<TRole>> roleValidators,
             ILookupNormalizer keyNormalizer,
             IdentityErrorDescriber errors,
-            ILoggerFactory logger,
+            ILogger<RoleManager<TRole>> logger,
             IHttpContextAccessor contextAccessor)
         {
             if (store == null)
@@ -48,6 +48,7 @@ namespace Microsoft.AspNet.Identity
             KeyNormalizer = keyNormalizer ?? new UpperInvariantLookupNormalizer();
             ErrorDescriber = errors ?? new IdentityErrorDescriber();
             _context = contextAccessor?.HttpContext;
+            Logger = logger;
 
             if (roleValidators != null)
             {
@@ -56,8 +57,6 @@ namespace Microsoft.AspNet.Identity
                     RoleValidators.Add(v);
                 }
             }
-
-            Logger = logger?.CreateLogger<RoleManager<TRole>>();
         }
 
         /// <summary>

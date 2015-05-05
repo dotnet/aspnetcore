@@ -279,7 +279,7 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await userManager.AddToRolesAsync(user, roles);
 
             // Assert
-            IdentityResultAssert.IsFailure(result, IdentityErrorDescriber.Default.UserAlreadyInRole("B"));
+            IdentityResultAssert.IsFailure(result, new IdentityErrorDescriber().UserAlreadyInRole("B"));
             store.VerifyAll();
         }
 
@@ -341,7 +341,7 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await userManager.RemoveFromRolesAsync(user, roles);
 
             // Assert
-            IdentityResultAssert.IsFailure(result, IdentityErrorDescriber.Default.UserNotInRole("B"));
+            IdentityResultAssert.IsFailure(result, new IdentityErrorDescriber().UserNotInRole("B"));
             store.VerifyAll();
         }
 

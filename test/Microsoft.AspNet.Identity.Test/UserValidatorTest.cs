@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Identity.Test
             var result = await validator.ValidateAsync(manager, user);
 
             // Assert
-            IdentityResultAssert.IsFailure(result, IdentityErrorDescriber.Default.InvalidUserName(input));
+            IdentityResultAssert.IsFailure(result, new IdentityErrorDescriber().InvalidUserName(input));
         }
 
         [Theory]

@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Identity
             ILookupNormalizer keyNormalizer,
             IdentityErrorDescriber errors,
             IEnumerable<IUserTokenProvider<TUser>> tokenProviders,
-            ILoggerFactory logger,
+            ILogger<UserManager<TUser>> logger,
             IHttpContextAccessor contextAccessor)
         {
             if (store == null)
@@ -65,6 +65,7 @@ namespace Microsoft.AspNet.Identity
             PasswordHasher = passwordHasher;
             KeyNormalizer = keyNormalizer;
             ErrorDescriber = errors;
+            Logger = logger;
 
             if (userValidators != null)
             {
@@ -80,8 +81,6 @@ namespace Microsoft.AspNet.Identity
                     PasswordValidators.Add(v);
                 }
             }
-
-            Logger = logger?.CreateLogger<UserManager<TUser>>();
 
             if (tokenProviders != null)
             {

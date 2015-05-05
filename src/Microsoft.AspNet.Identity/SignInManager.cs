@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Identity
             IHttpContextAccessor contextAccessor,
             IUserClaimsPrincipalFactory<TUser> claimsFactory,
             IOptions<IdentityOptions> optionsAccessor,
-            ILoggerFactory logger)
+            ILogger<SignInManager<TUser>> logger)
         {
             if (userManager == null)
             {
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Identity
             Context = contextAccessor.HttpContext;
             ClaimsFactory = claimsFactory;
             Options = optionsAccessor?.Options ?? new IdentityOptions();
-            Logger = logger?.CreateLogger<SignInManager<TUser>>();
+            Logger = logger;
         }
 
         protected internal virtual ILogger Logger { get; set; }

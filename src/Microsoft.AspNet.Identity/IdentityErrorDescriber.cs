@@ -5,8 +5,6 @@ namespace Microsoft.AspNet.Identity
 {
     public class IdentityErrorDescriber
     {
-        public static IdentityErrorDescriber Default = new IdentityErrorDescriber();
-
         public virtual IdentityError DefaultError()
         {
             return new IdentityError
