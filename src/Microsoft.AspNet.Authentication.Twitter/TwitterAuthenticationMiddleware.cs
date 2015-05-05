@@ -45,11 +45,11 @@ namespace Microsoft.AspNet.Authentication.Twitter
         {
             if (string.IsNullOrWhiteSpace(Options.ConsumerSecret))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "ConsumerSecret"));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.ConsumerSecret)));
             }
             if (string.IsNullOrWhiteSpace(Options.ConsumerKey))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "ConsumerKey"));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.ConsumerKey)));
             }
 
             if (Options.Notifications == null)

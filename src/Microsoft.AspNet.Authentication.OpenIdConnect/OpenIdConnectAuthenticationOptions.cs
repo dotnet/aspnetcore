@@ -9,6 +9,7 @@ using System.Net.Http;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.IdentityModel.Protocols;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authentication.OpenIdConnect
 {
@@ -110,7 +111,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             {
                 if (value <= TimeSpan.Zero)
                 {
-                    throw new ArgumentOutOfRangeException("BackchannelTimeout", value, Resources.OIDCH_0101_BackChallnelLessThanZero);
+                    throw new ArgumentOutOfRangeException(nameof(BackchannelTimeout), value, Resources.OIDCH_0101_BackChallnelLessThanZero);
                 }
 
                 _backchannelTimeout = value;
@@ -190,13 +191,9 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             {
                 return _protocolValidator;
             }
+            [param: NotNull]
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-
                 _protocolValidator = value;
             }
         }

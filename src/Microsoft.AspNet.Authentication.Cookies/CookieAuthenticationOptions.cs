@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Authentication.Cookies.Infrastructure;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authentication.Cookies
 {
@@ -38,12 +39,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public string CookieName
         {
             get { return _cookieName; }
+            [param: NotNull]
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
                 _cookieName = value;
             }
         }
