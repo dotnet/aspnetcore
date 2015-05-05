@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -209,7 +210,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         [Fact]
-        public void RemoveRange_RemovesProvidedAttributes()
+        public void RemoveRange_RemovesProvidedAttributes_WithArrayInput()
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
@@ -222,6 +223,30 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedAttribute = new TagHelperAttribute("type", "btn");
             tagHelperOutput.Attributes.Add(expectedAttribute);
             var attributes = tagHelperOutput.FindPrefixedAttributes("route-");
+
+            // Act
+            tagHelperOutput.RemoveRange(attributes);
+
+            // Assert
+            var attribute = Assert.Single(tagHelperOutput.Attributes);
+            Assert.Equal(expectedAttribute, attribute);
+        }
+
+        [Fact]
+        public void RemoveRange_RemovesProvidedAttributes_WithCollectionInput()
+        {
+            // Arrange
+            var tagHelperOutput = new TagHelperOutput(
+                "p",
+                attributes: new TagHelperAttributeList()
+                {
+                    { "route-Hello", "World" },
+                    { "Route-I", "Am" }
+                });
+            var expectedAttribute = new TagHelperAttribute("type", "btn");
+            tagHelperOutput.Attributes.Add(expectedAttribute);
+            var attributes = tagHelperOutput.Attributes
+                .Where(item => item.Name.StartsWith("route-", StringComparison.OrdinalIgnoreCase));
 
             // Act
             tagHelperOutput.RemoveRange(attributes);

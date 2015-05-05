@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             [NotNull] this TagHelperOutput tagHelperOutput,
             [NotNull] IEnumerable<TagHelperAttribute> attributes)
         {
-            foreach (var attribute in attributes)
+            foreach (var attribute in attributes.ToArray())
             {
                 tagHelperOutput.Attributes.Remove(attribute);
             }
