@@ -37,8 +37,6 @@ namespace CookieSample
         {
             loggerfactory.AddConsole(LogLevel.Information);
 
-            app.UseErrorPage();
-
             app.UseCookieAuthentication(options =>
             {
                 options.AutomaticAuthentication = true;
