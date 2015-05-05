@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         {
             if (context == null)
             {
-                throw new ArgumentNullException("context");
+                throw new ArgumentNullException(nameof(context));
             }
             Context = context;
             ErrorDescriber = describer ?? new IdentityErrorDescriber();

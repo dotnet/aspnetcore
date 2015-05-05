@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Identity
         {
             if (manager == null)
             {
-                throw new ArgumentNullException("manager");
+                throw new ArgumentNullException(nameof(manager));
             }
             var token = await manager.CreateSecurityTokenAsync(user);
             var modifier = await GetUserModifierAsync(purpose, manager, user);
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Identity
         {
             if (manager == null)
             {
-                throw new ArgumentNullException("manager");
+                throw new ArgumentNullException(nameof(manager));
             }
             int code;
             if (!int.TryParse(token, out code))

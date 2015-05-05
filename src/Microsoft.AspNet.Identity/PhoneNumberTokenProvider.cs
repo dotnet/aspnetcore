@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Identity
         {
             if (manager == null)
             {
-                throw new ArgumentNullException("manager");
+                throw new ArgumentNullException(nameof(manager));
             }
             var phoneNumber = await manager.GetPhoneNumberAsync(user);
             return !string.IsNullOrWhiteSpace(phoneNumber) && await manager.IsPhoneNumberConfirmedAsync(user);

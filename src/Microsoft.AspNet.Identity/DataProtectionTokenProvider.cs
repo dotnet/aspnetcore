@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Identity
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
             var ms = new MemoryStream();
             var userId = await manager.GetUserIdAsync(user);
