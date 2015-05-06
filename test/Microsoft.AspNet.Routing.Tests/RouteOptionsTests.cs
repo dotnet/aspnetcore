@@ -13,18 +13,6 @@ namespace Microsoft.AspNet.Routing.Tests
     public class RouteOptionsTests
     {
         [Fact]
-        public void ConstraintMap_SettingNullValue_Throws()
-        {
-            // Arrange
-            var options = new RouteOptions();
-
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentNullException>(() => options.ConstraintMap = null);
-            Assert.Equal("The 'ConstraintMap' property of 'Microsoft.AspNet.Routing.RouteOptions' must not be null." +
-                         Environment.NewLine + "Parameter name: value", ex.Message);
-        }
-
-        [Fact]
         public void ConfigureRouting_ConfiguresOptionsProperly()
         {
             // Arrange
