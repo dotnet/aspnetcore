@@ -2,18 +2,37 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_DNVM_BUILDNUMBER="beta4-10345"
+_DNVM_BUILDNUMBER="beta5-10375"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
 _DNVM_RUNTIME_PACKAGE_NAME="dnx"
 _DNVM_RUNTIME_FRIENDLY_NAME=".NET Execution Environment"
 _DNVM_RUNTIME_SHORT_NAME="DNX"
 _DNVM_RUNTIME_FOLDER_NAME=".dnx"
 _DNVM_COMMAND_NAME="dnvm"
+_DNVM_PACKAGE_MANAGER_NAME="dnu"
 _DNVM_VERSION_MANAGER_NAME=".NET Version Manager"
-_DNVM_DEFAULT_FEED="https://www.myget.org/F/aspnetvnext/api/v2"
+_DNVM_DEFAULT_FEED="https://www.nuget.org/api/v2"
+_DNVM_DEFAULT_UNSTABLE_FEED="https://www.myget.org/F/aspnetvnext/api/v2"
+_DNVM_UPDATE_LOCATION="https://raw.githubusercontent.com/aspnet/Home/dev/dnvm.sh"
 _DNVM_HOME_VAR_NAME="DNX_HOME"
 
-[ "$_DNVM_BUILDNUMBER" = "{{*" ] && _DNVM_BUILDNUMBER="HEAD"
+if [ "$NO_COLOR" != "1" ]; then
+    # ANSI Colors
+    RCol='\e[0m'    # Text Reset
+
+    # Regular           Bold                Underline           High Intensity      BoldHigh Intens     Background          High Intensity Backgrounds
+    Bla='\e[0;30m';     BBla='\e[1;30m';    UBla='\e[4;30m';    IBla='\e[0;90m';    BIBla='\e[1;90m';   On_Bla='\e[40m';    On_IBla='\e[0;100m';
+    Red='\e[0;31m';     BRed='\e[1;31m';    URed='\e[4;31m';    IRed='\e[0;91m';    BIRed='\e[1;91m';   On_Red='\e[41m';    On_IRed='\e[0;101m';
+    Gre='\e[0;32m';     BGre='\e[1;32m';    UGre='\e[4;32m';    IGre='\e[0;92m';    BIGre='\e[1;92m';   On_Gre='\e[42m';    On_IGre='\e[0;102m';
+    Yel='\e[0;33m';     BYel='\e[1;33m';    UYel='\e[4;33m';    IYel='\e[0;93m';    BIYel='\e[1;93m';   On_Yel='\e[43m';    On_IYel='\e[0;103m';
+    Blu='\e[0;34m';     BBlu='\e[1;34m';    UBlu='\e[4;34m';    IBlu='\e[0;94m';    BIBlu='\e[1;94m';   On_Blu='\e[44m';    On_IBlu='\e[0;104m';
+    Pur='\e[0;35m';     BPur='\e[1;35m';    UPur='\e[4;35m';    IPur='\e[0;95m';    BIPur='\e[1;95m';   On_Pur='\e[45m';    On_IPur='\e[0;105m';
+    Cya='\e[0;36m';     BCya='\e[1;36m';    UCya='\e[4;36m';    ICya='\e[0;96m';    BICya='\e[1;96m';   On_Cya='\e[46m';    On_ICya='\e[0;106m';
+    Whi='\e[0;37m';     BWhi='\e[1;37m';    UWhi='\e[4;37m';    IWhi='\e[0;97m';    BIWhi='\e[1;97m';   On_Whi='\e[47m';    On_IWhi='\e[0;107m';
+fi
+
+
+[[ "$_DNVM_BUILDNUMBER" = {{* ]] && _DNVM_BUILDNUMBER="HEAD"
 
 __dnvm_has() {
     type "$1" > /dev/null 2>&1
@@ -30,20 +49,41 @@ fi
 
 _DNVM_USER_PACKAGES="$DNX_USER_HOME/runtimes"
 _DNVM_ALIAS_DIR="$DNX_USER_HOME/alias"
+_DNVM_DNVM_DIR="$DNX_USER_HOME/dnvm"
 
-if [ -z "$DNX_FEED" ]; then
-    DNX_FEED="$_DNVM_DEFAULT_FEED"
-fi
+DNX_ACTIVE_FEED=""
+
+__dnvm_current_os()
+{
+    local uname=$(uname)
+    if [[ $uname == "Darwin" ]]; then
+        echo "darwin"
+    else
+        echo "linux"
+    fi
+}
 
 __dnvm_find_latest() {
-    local platform="mono"
+    local platform=$1
+    local arch=$2
 
-    if ! __dnvm_has "curl"; then
-        echo "$_DNVM_COMMAND_NAME needs curl to proceed." >&2;
-        return 1
+    if [ -z $platform ]; then
+        local platform="mono"
     fi
 
-    local url="$DNX_FEED/GetUpdates()?packageIds=%27$_DNVM_RUNTIME_PACKAGE_NAME-$platform%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
+    if ! __dnvm_has "curl"; then
+        printf "%b\n" "${Red}$_DNVM_COMMAND_NAME needs curl to proceed. ${RCol}" >&2;
+        return 1
+    fi
+    
+    if [[ $platform == "mono" ]]; then
+        #dnx-mono
+        local packageId="$_DNVM_RUNTIME_PACKAGE_NAME-$platform"
+    else
+        #dnx-coreclr-linux-x64
+        local packageId="$_DNVM_RUNTIME_PACKAGE_NAME-$platform-$(__dnvm_current_os)-$arch"
+    fi
+    local url="$DNX_ACTIVE_FEED/GetUpdates()?packageIds=%27$packageId%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
     xml="$(curl $url 2>/dev/null)"
     echo $xml | grep \<[a-zA-Z]:Version\>* >> /dev/null || return 1
     version="$(echo $xml | sed 's/.*<[a-zA-Z]:Version>\([^<]*\).*/\1/')"
@@ -77,33 +117,69 @@ __dnvm_package_runtime() {
     echo "$runtimeFullName" | sed "s/$_DNVM_RUNTIME_PACKAGE_NAME-\([^.-]*\).*/\1/"
 }
 
+__dnvm_package_arch() {
+    local runtimeFullName="$1"
+    if [[ "$runtimeFullName" =~ $_DNVM_RUNTIME_PACKAGE_NAME-[^-.]*-[^-.]*-[^-.]*\..* ]];
+    then
+        echo "$runtimeFullName" | sed "s/$_DNVM_RUNTIME_PACKAGE_NAME-[^-.]*-[^-.]*-\([^-.]*\)\..*/\1/"
+    fi
+}
+
+__dnvm_update_self() {
+    local dnvmFileLocation="$_DNVM_DNVM_DIR/dnvm.sh"
+    if [ ! -e $dnvmFileLocation ]; then
+        local formattedDnvmFileLocation=`(echo $dnvmFileLocation | sed s=$HOME=~=g)`
+        local formattedDnvmHome=`(echo $_DNVM_DNVM_DIR | sed s=$HOME=~=g)`
+        printf "%b\n" "${Red}$formattedDnvmFileLocation doesn't exist. This command assumes you have installed dnvm in the usual location and are trying to update it. If you want to use update-self then dnvm.sh should be sourced from $formattedDnvmHome ${RCol}"
+        return 1
+    fi
+    printf "%b\n" "${Cya}Downloading dnvm.sh from $_DNVM_UPDATE_LOCATION ${RCol}"
+    local httpResult=$(curl -L -D - "$_DNVM_UPDATE_LOCATION" -o "$dnvmFileLocation" -# | grep "^HTTP/1.1" | head -n 1 | sed "s/HTTP.1.1 \([0-9]*\).*/\1/")
+
+    [[ $httpResult == "404" ]] &&printf "%b\n" "${Red}404. Unable to download DNVM from $_DNVM_UPDATE_LOCATION ${RCol}" && return 1
+    [[ $httpResult != "302" && $httpResult != "200" ]] && echo "${Red}HTTP Error $httpResult fetching DNVM from $_DNVM_UPDATE_LOCATION ${RCol}" && return 1
+
+    source "$dnvmFileLocation"
+}
+
 __dnvm_download() {
     local runtimeFullName="$1"
     local runtimeFolder="$2"
+    local force="$3"
 
     local pkgName=$(__dnvm_package_name "$runtimeFullName")
     local pkgVersion=$(__dnvm_package_version "$runtimeFullName")
-    local url="$DNX_FEED/package/$pkgName/$pkgVersion"
+    local url="$DNX_ACTIVE_FEED/package/$pkgName/$pkgVersion"
     local runtimeFile="$runtimeFolder/$runtimeFullName.nupkg"
 
-    if [ -e "$runtimeFolder" ]; then
-        echo "$runtimeFullName already installed."
-        return 0
+    if [ -n "$force" ]; then
+        printf "%b\n" "${Yel}Forcing download by deleting $runtimeFolder directory ${RCol}"
+        rm -rf "$runtimeFolder"
     fi
 
-    echo "Downloading $runtimeFullName from $DNX_FEED"
-
+    if [ -e "$runtimeFolder" ]; then
+       printf "%b\n" "${Gre}$runtimeFullName already installed. ${RCol}"
+        return 0
+    fi
+    
     if ! __dnvm_has "curl"; then
-        echo "$_DNVM_COMMAND_NAME needs curl to proceed." >&2;
+       printf "%b\n" "${Red}$_DNVM_COMMAND_NAME needs curl to proceed. ${RCol}" >&2;
         return 1
     fi
 
     mkdir -p "$runtimeFolder" > /dev/null 2>&1
 
-    local httpResult=$(curl -L -D - "$url" -o "$runtimeFile" 2>/dev/null | grep "^HTTP/1.1" | head -n 1 | sed "s/HTTP.1.1 \([0-9]*\).*/\1/")
+    echo "Downloading $runtimeFullName from $DNX_ACTIVE_FEED"
+    echo "Download: $url"
 
-    [[ $httpResult == "404" ]] && echo "$runtimeFullName was not found in repository $DNX_FEED" && return 1
-    [[ $httpResult != "302" && $httpResult != "200" ]] && echo "HTTP Error $httpResult fetching $runtimeFullName from $DNX_FEED" && return 1
+    local httpResult=$(curl -L -D - "$url" -o "$runtimeFile" -# | grep "^HTTP/1.1" | head -n 1 | sed "s/HTTP.1.1 \([0-9]*\).*/\1/")
+
+    if [[ $httpResult == "404" ]]; then
+        printf "%b\n" "${Red}$runtimeFullName was not found in repository $DNX_ACTIVE_FEED ${RCol}"
+        printf "%b\n" "${Cya}This is most likely caused by the feed not having the version that you typed. Check that you typed the right version and try again. Other possible causes are the feed doesn't have a $_DNVM_RUNTIME_SHORT_NAME of the right name format or some other error caused a 404 on the server.${RCol}"
+        return 1
+    fi
+    [[ $httpResult != "302" && $httpResult != "200" ]] && echo "${Red}HTTP Error $httpResult fetching $runtimeFullName from $DNX_ACTIVE_FEED ${RCol}" && return 1
 
     __dnvm_unpack $runtimeFile $runtimeFolder
     return $?
@@ -133,27 +209,40 @@ __dnvm_unpack() {
     #Set shell commands as executable
     find "$runtimeFolder/bin/" -type f \
         -exec sh -c "head -c 11 {} | grep '/bin/bash' > /dev/null"  \; -print | xargs chmod 775
+
+    #Set dnx to be executable
+    chmod 775 "$runtimeFolder/bin/dnx"
 }
 
 __dnvm_requested_version_or_alias() {
     local versionOrAlias="$1"
+    local runtime="$2"
+    local arch="$3"
     local runtimeBin=$(__dnvm_locate_runtime_bin_from_full_name "$versionOrAlias")
 
     # If the name specified is an existing package, just use it as is
     if [ -n "$runtimeBin" ]; then
         echo "$versionOrAlias"
     else
-       if [ -e "$_DNVM_ALIAS_DIR/$versionOrAlias.alias" ]; then
-           local runtimeFullName=$(cat "$_DNVM_ALIAS_DIR/$versionOrAlias.alias")
-           local pkgName=$(echo $runtimeFullName | sed "s/\([^.]*\).*/\1/")
-           local pkgVersion=$(echo $runtimeFullName | sed "s/[^.]*.\(.*\)/\1/")
-           local pkgPlatform=$(echo "$pkgName" | sed "s/$_DNVM_RUNTIME_PACKAGE_NAME-\([^.-]*\).*/\1/")
+        if [ -e "$_DNVM_ALIAS_DIR/$versionOrAlias.alias" ]; then
+            local runtimeFullName=$(cat "$_DNVM_ALIAS_DIR/$versionOrAlias.alias")
+            echo "$runtimeFullName"
         else
             local pkgVersion=$versionOrAlias
-            local pkgPlatform="mono"
-        fi
 
-        echo "$_DNVM_RUNTIME_PACKAGE_NAME-$pkgPlatform.$pkgVersion"
+            if [[ -z $runtime || "$runtime" == "mono" ]]; then
+                echo "$_DNVM_RUNTIME_PACKAGE_NAME-mono.$pkgVersion"
+            elif [[ "$runtime" == "coreclr" ]]; then
+                local pkgArchitecture="x64"
+                local pkgSystem=$(__dnvm_current_os)
+
+                if [ "$arch" != "" ]; then
+                    local pkgArchitecture="$arch"
+                fi
+
+                echo "$_DNVM_RUNTIME_PACKAGE_NAME-coreclr-$pkgSystem-$pkgArchitecture.$pkgVersion"
+            fi
+        fi
     fi
 }
 
@@ -163,64 +252,131 @@ __dnvm_locate_runtime_bin_from_full_name() {
     [ -e "$_DNVM_USER_PACKAGES/$runtimeFullName/bin" ] && echo "$_DNVM_USER_PACKAGES/$runtimeFullName/bin" && return
 }
 
-__dnvm_help() {
+__echo_art() {
+  printf "%b" "${Cya}"
+    echo "    ___  _  ___   ____  ___"
+    echo "   / _ \/ |/ / | / /  |/  /"
+    echo "  / // /    /| |/ / /|_/ / "
+    echo " /____/_/|_/ |___/_/  /_/  "
+   printf "%b" "${RCol}"
+}
+
+__dnvm_description() {
+    __echo_art
     echo ""
     echo "$_DNVM_VERSION_MANAGER_NAME - Version 1.0.0-$_DNVM_BUILDNUMBER"
-    [ "$_DNVM_AUTHORS" != "{{*" ] && echo "By $_DNVM_AUTHORS"
+    [[ "$_DNVM_AUTHORS" != {{* ]] && echo "By $_DNVM_AUTHORS"
     echo ""
-    echo "USAGE: $_DNVM_COMMAND_NAME <command> [options]"
+    echo "DNVM can be used to download versions of the $_DNVM_RUNTIME_FRIENDLY_NAME and manage which version you are using."
+    echo "You can control the URL of the stable and unstable channel by setting the DNX_FEED and DNX_UNSTABLE_FEED variables."
     echo ""
-    echo "$_DNVM_COMMAND_NAME upgrade"
-    echo "install latest $_DNVM_RUNTIME_SHORT_NAME from feed"
-    echo "add $_DNVM_RUNTIME_SHORT_NAME bin to path of current command line"
-    echo "set installed version as default"
+   printf "%b\n" "${Yel}Current feed settings:${RCol}"
+   printf "%b\n" "${Cya}Default Stable:${Yel} $_DNVM_DEFAULT_FEED"
+   printf "%b\n" "${Cya}Default Unstable:${Yel} $_DNVM_DEFAULT_UNSTABLE_FEED"
+   
+   local dnxStableOverride="<none>"
+   [[ -n $DNX_FEED ]] && dnxStableOverride="$DNX_FEED"
+
+   printf "%b\n" "${Cya}Current Stable Override:${Yel} $dnxStableOverride"
+   
+   local dnxUnstableOverride="<none>"
+   [[ -n $DNX_UNSTABLE_FEED ]] && dnxUnstableOverride="$DNX_UNSTABLE_FEED"
+    
+   printf "%b\n" "${Cya}Current Unstable Override:${Yel} $dnxUnstableOverride${RCol}"
     echo ""
-    echo "$_DNVM_COMMAND_NAME install <semver>|<alias>|<nupkg>|latest [-a|-alias <alias>] [-p -persistent]"
-    echo "<semver>|<alias>  install requested $_DNVM_RUNTIME_SHORT_NAME from feed"
-    echo "<nupkg>           install requested $_DNVM_RUNTIME_SHORT_NAME from local package on filesystem"
-    echo "latest            install latest version of $_DNVM_RUNTIME_SHORT_NAME from feed"
-    echo "-a|-alias <alias> set alias <alias> for requested $_DNVM_RUNTIME_SHORT_NAME on install"
-    echo "-p -persistent    set installed version as default"
-    echo "add $_DNVM_RUNTIME_SHORT_NAME bin to path of current command line"
+
+}
+
+__dnvm_help() {
+    __dnvm_description
+   printf "%b\n" "${Cya}USAGE:${Yel} $_DNVM_COMMAND_NAME <command> [options] ${RCol}"
     echo ""
-    echo "$_DNVM_COMMAND_NAME use <semver>|<alias>|<package>|none [-p -persistent]"
-    echo "<semver>|<alias>|<package>  add $_DNVM_RUNTIME_SHORT_NAME bin to path of current command line   "
-    echo "none                        remove $_DNVM_RUNTIME_SHORT_NAME bin from path of current command line"
-    echo "-p -persistent              set selected version as default"
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME upgrade [-f|-force] [-u|-unstable] ${RCol}"
+    echo "  install latest $_DNVM_RUNTIME_SHORT_NAME from feed"
+    echo "  adds $_DNVM_RUNTIME_SHORT_NAME bin to path of current command line"
+    echo "  set installed version as default"
+    echo "  -f|forces         force upgrade. Overwrite existing version of $_DNVM_RUNTIME_SHORT_NAME if already installed"
+    echo "  -u|unstable       use unstable feed. Installs the $_DNVM_RUNTIME_SHORT_NAME from the unstable unstable feed"
+    echo "  -r|runtime        The runtime flavor to install [clr or coreclr] (default: clr)"
     echo ""
-    echo "$_DNVM_COMMAND_NAME list"
-    echo "list $_DNVM_RUNTIME_SHORT_NAME versions installed "
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME install <semver>|<alias>|<nupkg>|latest [-a|-alias <alias>] [-p|-persistent] [-f|-force] [-u|-unstable] ${RCol}"
+    echo "  <semver>|<alias>  install requested $_DNVM_RUNTIME_SHORT_NAME from feed"
+    echo "  <nupkg>           install requested $_DNVM_RUNTIME_SHORT_NAME from local package on filesystem"
+    echo "  latest            install latest version of $_DNVM_RUNTIME_SHORT_NAME from feed"
+    echo "  -a|-alias <alias> set alias <alias> for requested $_DNVM_RUNTIME_SHORT_NAME on install"
+    echo "  -p|-persistent    set installed version as default"
+    echo "  -f|force          force install. Overwrite existing version of $_DNVM_RUNTIME_SHORT_NAME if already installed"
+    echo "  -u|unstable       use unstable feed. Installs the $_DNVM_RUNTIME_SHORT_NAME from the unstable unstable feed"
+    echo "  -r|runtime        The runtime flavor to install [mono or coreclr] (default: mono)"
     echo ""
-    echo "$_DNVM_COMMAND_NAME alias"
-    echo "list $_DNVM_RUNTIME_SHORT_NAME aliases which have been defined"
+    echo "  adds $_DNVM_RUNTIME_SHORT_NAME bin to path of current command line"
     echo ""
-    echo "$_DNVM_COMMAND_NAME alias <alias>"
-    echo "display value of the specified alias"
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME use <semver>|<alias>|<package>|none [-p|-persistent] [-r|-runtime <runtime>] [-a|-arch <architecture>] ${RCol}"
+    echo "  <semver>|<alias>|<package>  add $_DNVM_RUNTIME_SHORT_NAME bin to path of current command line   "
+    echo "  none                        remove $_DNVM_RUNTIME_SHORT_NAME bin from path of current command line"
+    echo "  -p|-persistent              set selected version as default"
+    echo "  -r|-runtime                 runtime to use (mono, coreclr)"
+    echo "  -a|-arch                    architecture to use (x64)"
     echo ""
-    echo "$_DNVM_COMMAND_NAME alias <alias> <semver>|<alias>|<package>"
-    echo "<alias>                      the name of the alias to set"
-    echo "<semver>|<alias>|<package>   the $_DNVM_RUNTIME_SHORT_NAME version to set the alias to. Alternatively use the version of the specified alias"
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME run <semver>|<alias> <args...> ${RCol}"
+    echo "  <semver>|<alias>            the version or alias to run"
+    echo "  <args...>                   arguments to be passed to $_DNVM_RUNTIME_SHORT_NAME"
     echo ""
-    echo "$_DNVM_COMMAND_NAME unalias <alias>"
-    echo "remove the specified alias"
+    echo "  runs the $_DNVM_RUNTIME_SHORT_NAME command from the specified version of the runtime without affecting the current PATH"
     echo ""
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME exec <semver>|<alias> <command> <args...> ${RCol}"
+    echo "  <semver>|<alias>            the version or alias to execute in"
+    echo "  <command>                   the command to run"
+    echo "  <args...>                   arguments to be passed to the command"
+    echo ""
+    echo "  runs the specified command in the context of the specified version of the runtime without affecting the current PATH"
+    echo "  example: $_DNVM_COMMAND_NAME exec 1.0.0-beta4 $_DNVM_PACKAGE_MANAGER_NAME build"
+    echo ""
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME list ${RCol}"
+    echo "  list $_DNVM_RUNTIME_SHORT_NAME versions installed "
+    echo ""
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME alias ${RCol}"
+    echo "  list $_DNVM_RUNTIME_SHORT_NAME aliases which have been defined"
+    echo ""
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME alias <alias> ${RCol}"
+    echo "  display value of the specified alias"
+    echo ""
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME alias <alias> <semver>|<alias>|<package> ${RCol}"
+    echo "  <alias>                      the name of the alias to set"
+    echo "  <semver>|<alias>|<package>   the $_DNVM_RUNTIME_SHORT_NAME version to set the alias to. Alternatively use the version of the specified alias"
+    echo ""
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME unalias <alias> ${RCol}"
+    echo "  remove the specified alias"
+    echo ""
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME [help|-h|-help|--help] ${RCol}"
+    echo "  displays this help text."
+    echo ""
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME update-self ${RCol}"
+    echo "  updates dnvm itself."
 }
 
 dnvm()
 {
     if [ $# -lt 1 ]; then
-        __dnvm_help
+        __dnvm_description
+
+        printf "%b\n" "Use ${Yel}$_DNVM_COMMAND_NAME [help|-h|-help|--help] ${RCol} to display help text."
+        echo ""
         return
     fi
 
     case $1 in
-        "help" )
+        "help"|"-h"|"-help"|"--help" )
             __dnvm_help
         ;;
 
+        "update-self" )
+            __dnvm_update_self
+        ;;
+
         "upgrade" )
-            [ $# -ne 1 ] && __dnvm_help && return
-            $_DNVM_COMMAND_NAME install latest -p
+            shift
+            $_DNVM_COMMAND_NAME install latest -p $@
         ;;
 
         "install" )
@@ -229,6 +385,10 @@ dnvm()
             local persistent=
             local versionOrAlias=
             local alias=
+            local force=
+            local unstable=
+            local runtime="mono"
+            local arch="x64"
             while [ $# -ne 0 ]
             do
                 if [[ $1 == "-p" || $1 == "-persistent" ]]; then
@@ -236,61 +396,128 @@ dnvm()
                 elif [[ $1 == "-a" || $1 == "-alias" ]]; then
                     local alias=$2
                     shift
+                elif [[ $1 == "-f" || $1 == "-force" ]]; then
+                    local force="-f"
+                elif [[ $1 == "-u" || $1 == "-unstable" ]]; then
+                    local unstable="-u"
+                elif [[ $1 == "-r" || $1 == "-runtime" ]]; then
+                    local runtime=$2
+                    shift
+                elif [[ $1 == "-arch" ]]; then
+                    local arch=$2
+                    shift
+                    
+                    if [[ $arch != "x86" && $arch != "x64" ]]; then
+                        printf "%b\n" "${Red}Architecture must be x86 or x64.${RCol}" 
+                        return 1
+                    fi
+                    
+                    if [[ $arch == "x86" && $runtime == "coreclr" ]]; then
+                        printf "%b\n" "${Red}Core CLR doesn't currently have a 32 bit build. You must use x64."
+                        return 1
+                    fi
+                    
                 elif [[ -n $1 ]]; then
                     [[ -n $versionOrAlias ]] && echo "Invalid option $1" && __dnvm_help && return 1
                     local versionOrAlias=$1
                 fi
                 shift
             done
-            if [[ "$versionOrAlias" == "latest" ]]; then
-                echo "Determining latest version"
-                versionOrAlias=$(__dnvm_find_latest)
-                [[ $? == 1 ]] && echo "Error: Could not find latest version from feed $DNX_FEED" && return 1
-                echo "Latest version is $versionOrAlias"
+
+            if [ -z $unstable ]; then
+                DNX_ACTIVE_FEED="$DNX_FEED"
+                if [ -z "$DNX_ACTIVE_FEED" ]; then
+                    DNX_ACTIVE_FEED="$_DNVM_DEFAULT_FEED"
+                else
+                    printf "%b\n" "${Yel}Default stable feed ($_DNVM_DEFAULT_FEED) is being overridden by the value of the DNX_FEED variable ($DNX_FEED). ${RCol}"
+                fi
+            else
+                DNX_ACTIVE_FEED="$DNX_UNSTABLE_FEED"
+                if [ -z "$DNX_ACTIVE_FEED" ]; then
+                    DNX_ACTIVE_FEED="$_DNVM_DEFAULT_UNSTABLE_FEED"
+                else
+                    printf "%b\n" "${Yel}Default unstable feed ($_DNVM_DEFAULT_UNSTABLE_FEED) is being overridden by the value of the DNX_UNSTABLE_FEED variable ($DNX_UNSTABLE_FEED). ${RCol}"
+                fi
             fi
+
+            if [[ $runtime == "mono" ]] && ! __dnvm_has "mono"; then
+               printf "%b\n" "${Yel}It appears you don't have Mono available. Remember to get Mono before trying to run $DNVM_RUNTIME_SHORT_NAME application. ${RCol}" >&2;
+            fi
+
+            if [[ "$versionOrAlias" == "latest" ]]; then
+               echo "Determining latest version" 
+               versionOrAlias=$(__dnvm_find_latest "$runtime" "$arch")
+               [[ $? == 1 ]] && echo "Error: Could not find latest version from feed $DNX_ACTIVE_FEED" && return 1
+               printf "%b\n" "Latest version is ${Cya}$versionOrAlias ${RCol}"
+            fi
+
             if [[ "$versionOrAlias" == *.nupkg ]]; then
                 local runtimeFullName=$(basename $versionOrAlias | sed "s/\(.*\)\.nupkg/\1/")
                 local runtimeVersion=$(__dnvm_package_version "$runtimeFullName")
                 local runtimeFolder="$_DNVM_USER_PACKAGES/$runtimeFullName"
                 local runtimeFile="$runtimeFolder/$runtimeFullName.nupkg"
+                local runtimeClr=$(__dnvm_package_runtime "$runtimeFullName")
+
+                if [ -n "$force" ]; then
+                   printf "%b\n" "${Yel}Forcing download by deleting $runtimeFolder directory ${RCol}"
+                   rm -rf "$runtimeFolder"
+                fi
 
                 if [ -e "$runtimeFolder" ]; then
                   echo "$runtimeFullName already installed"
                 else
-                  mkdir "$runtimeFolder" > /dev/null 2>&1
+                  mkdir -p "$runtimeFolder" > /dev/null 2>&1
                   cp -a "$versionOrAlias" "$runtimeFile"
                   __dnvm_unpack "$runtimeFile" "$runtimeFolder"
                   [[ $? == 1 ]] && return 1
                 fi
-                $_DNVM_COMMAND_NAME use "$runtimeVersion" "$persistent"
+                $_DNVM_COMMAND_NAME use "$runtimeVersion" "$persistent" -r "$runtimeClr"
                 [[ -n $alias ]] && $_DNVM_COMMAND_NAME alias "$alias" "$runtimeVersion"
             else
-                local runtimeFullName="$(__dnvm_requested_version_or_alias $versionOrAlias)"
+                local runtimeFullName=$(__dnvm_requested_version_or_alias "$versionOrAlias" "$runtime" "$arch")
                 local runtimeFolder="$_DNVM_USER_PACKAGES/$runtimeFullName"
-                __dnvm_download "$runtimeFullName" "$runtimeFolder"
+                __dnvm_download "$runtimeFullName" "$runtimeFolder" "$force"
                 [[ $? == 1 ]] && return 1
-                $_DNVM_COMMAND_NAME use "$versionOrAlias" "$persistent"
+                $_DNVM_COMMAND_NAME use "$versionOrAlias" "$persistent" "-runtime" "$runtime" "-arch" "$arch"
                 [[ -n $alias ]] && $_DNVM_COMMAND_NAME alias "$alias" "$versionOrAlias"
             fi
         ;;
 
-        "use" )
-            [ $# -gt 3 ] && __dnvm_help && return
-            [ $# -lt 2 ] && __dnvm_help && return
+        "use"|"run"|"exec" )
+            [[ $1 == "use" && $# -lt 2 ]] && __dnvm_help && return
+
+            local cmd=$1
+            local persistent=
+            local arch=
+            local runtime=
 
             shift
-            local persistent=
-            while [ $# -ne 0 ]
-            do
-                if [[ $1 == "-p" || $1 == "-persistent" ]]; then
-                    local persistent="true"
-                elif [[ -n $1 ]]; then
-                    local versionOrAlias=$1
-                fi
+            if [ $cmd == "use" ]; then
+                local versionOrAlias=
+                while [ $# -ne 0 ]
+                do
+                    if [[ $1 == "-p" || $1 == "-persistent" ]]; then
+                        local persistent="true"
+                    elif [[ $1 == "-a" || $1 == "-arch" ]]; then
+                        local arch=$2
+                        shift
+                    elif [[ $1 == "-r" || $1 == "-runtime" ]]; then
+                        local runtime=$2
+                        shift
+                    elif [[ $1 == -* ]]; then
+                        echo "Invalid option $1" && __dnvm_help && return 1
+                    elif [[ -n $1 ]]; then
+                        [[ -n $versionOrAlias ]] && echo "Invalid option $1" && __dnvm_help && return 1
+                        local versionOrAlias=$1
+                    fi
+                    shift
+                done
+            else
+                local versionOrAlias=$1
                 shift
-            done
+            fi
 
-            if [[ $versionOrAlias == "none" ]]; then
+            if [[ $cmd == "use" && $versionOrAlias == "none" ]]; then
                 echo "Removing $_DNVM_RUNTIME_SHORT_NAME from process PATH"
                 # Strip other version from PATH
                 PATH=$(__dnvm_strip_path "$PATH" "/bin")
@@ -302,7 +529,7 @@ dnvm()
                 return 0
             fi
 
-            local runtimeFullName=$(__dnvm_requested_version_or_alias "$versionOrAlias")
+            local runtimeFullName=$(__dnvm_requested_version_or_alias "$versionOrAlias" "$runtime" "$arch")
             local runtimeBin=$(__dnvm_locate_runtime_bin_from_full_name "$runtimeFullName")
 
             if [[ -z $runtimeBin ]]; then
@@ -310,25 +537,44 @@ dnvm()
                 return 1
             fi
 
-            echo "Adding" $runtimeBin "to process PATH"
+            case $cmd in
+                "run")
+                    local hostpath="$runtimeBin/dnx"
+                    if [[ -e $hostpath ]]; then
+                        $hostpath $@
+                    else
+                        echo "Cannot find $_DNVM_RUNTIME_SHORT_NAME in $runtimeBin. It may have been corrupted. Use '$_DNVM_COMMAND_NAME install $versionOrAlias -f' to attempt to reinstall it"
+                    fi
+                ;;
+                "exec") 
+                    (
+                        PATH=$(__dnvm_strip_path "$PATH" "/bin")
+                        PATH=$(__dnvm_prepend_path "$PATH" "$runtimeBin")
+                        $@
+                    )
+                ;;
+                "use") 
+                    echo "Adding" $runtimeBin "to process PATH"
 
-            PATH=$(__dnvm_strip_path "$PATH" "/bin")
-            PATH=$(__dnvm_prepend_path "$PATH" "$runtimeBin")
+                    PATH=$(__dnvm_strip_path "$PATH" "/bin")
+                    PATH=$(__dnvm_prepend_path "$PATH" "$runtimeBin")
 
-            if [[ -n $persistent ]]; then
-                local runtimeVersion=$(__dnvm_package_version "$runtimeFullName")
-                $_DNVM_COMMAND_NAME alias default "$runtimeVersion"
-            fi
+                    if [[ -n $persistent ]]; then
+                        local runtimeVersion=$(__dnvm_package_version "$runtimeFullName")
+                        $_DNVM_COMMAND_NAME alias default "$runtimeVersion"
+                    fi
+                ;;
+            esac
         ;;
 
         "alias" )
-            [[ $# -gt 3 ]] && __dnvm_help && return
+            [[ $# -gt 7 ]] && __dnvm_help && return
 
             [[ ! -e "$_DNVM_ALIAS_DIR/" ]] && mkdir "$_DNVM_ALIAS_DIR/" > /dev/null
 
             if [[ $# == 1 ]]; then
                 echo ""
-                local format="%-20s %s\n"
+                local format="%-25s %s\n"
                 printf "$format" "Alias" "Name"
                 printf "$format" "-----" "----"
                 if [ -d "$_DNVM_ALIAS_DIR" ]; then
@@ -341,17 +587,32 @@ dnvm()
                 echo ""
                 return
             fi
+            shift
+            local name="$1"
 
-            local name="$2"
-
-            if [[ $# == 2 ]]; then
+            if [[ $# == 1 ]]; then
                 [[ ! -e "$_DNVM_ALIAS_DIR/$name.alias" ]] && echo "There is no alias called '$name'" && return
                 cat "$_DNVM_ALIAS_DIR/$name.alias"
                 echo ""
                 return
             fi
 
-            local runtimeFullName=$(__dnvm_requested_version_or_alias "$3")
+            shift
+            local versionOrAlias="$1"
+            shift
+            while [ $# -ne 0 ]
+                do
+                    if [[ $1 == "-a" || $1 == "-arch" ]]; then
+                        local arch=$2
+                        shift
+                    elif [[ $1 == "-r" || $1 == "-runtime" ]]; then
+                        local runtime=$2
+                        shift
+                    fi
+                    shift
+             done
+
+            local runtimeFullName=$(__dnvm_requested_version_or_alias "$versionOrAlias" "$runtime" "$arch")
 
             [[ ! -d "$_DNVM_USER_PACKAGES/$runtimeFullName" ]] && echo "$runtimeFullName is not an installed $_DNVM_RUNTIME_SHORT_NAME version" && return 1
 
@@ -398,29 +659,29 @@ dnvm()
                 done
             fi
 
-            local formatString="%-6s %-20s %-7s %-20s %s\n"
-            printf "$formatString" "Active" "Version" "Runtime" "Location" "Alias"
-            printf "$formatString" "------" "-------" "-------" "--------" "-----"
+            local formatString="%-6s %-20s %-7s %-4s %-20s %s\n"
+            printf "$formatString" "Active" "Version" "Runtime" "Arch" "Location" "Alias"
+            printf "$formatString" "------" "-------" "-------" "----" "--------" "-----"
 
             local formattedHome=`(echo $_DNVM_USER_PACKAGES | sed s=$HOME=~=g)`
             for f in $(find $_DNVM_USER_PACKAGES -name "$searchGlob" \( -type d -or -type l \) -prune -exec basename {} \;); do
                 local active=""
                 [[ $PATH == *"$_DNVM_USER_PACKAGES/$f/bin"* ]] && local active="  *"
-                local pkgName=$(__dnvm_package_runtime "$f")
+                local pkgRuntime=$(__dnvm_package_runtime "$f")
+                local pkgName=$(__dnvm_package_name "$f")
                 local pkgVersion=$(__dnvm_package_version "$f")
+                local pkgArch=$(__dnvm_package_arch "$f")
 
                 local alias=""
                 local delim=""
                 for i in "${arr[@]}"; do
-                    temp="$_DNVM_RUNTIME_PACKAGE_NAME-$pkgName.$pkgVersion"
-                    temp2="$_DNVM_RUNTIME_PACKAGE_NAME-$pkgName-x86.$pkgVersion"
-                    if [[ ${i#*/} == $temp || ${i#*/} == $temp2 ]]; then
+                    if [[ ${i#*/} == "$pkgName.$pkgVersion" ]]; then
                         alias+="$delim${i%/*}"
                         delim=", "
                     fi
                 done
 
-                printf "$formatString" "$active" "$pkgVersion" "$pkgName" "$formattedHome" "$alias"
+                printf "$formatString" "$active" "$pkgVersion" "$pkgRuntime" "$pkgArch" "$formattedHome" "$alias"
                 [[ $# == 2 ]] && echo "" &&  return 0
             done
 
