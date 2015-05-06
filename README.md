@@ -72,13 +72,24 @@ You should also be able to run `dnx` and see the help text of the `dnx` command.
 
 1. Clone the ASP.NET 5 Home repository: https://github.com/aspnet/home
 2. Change directory to the folder of the sample you want to run
-3. Run ```dnu restore``` to restore the packages required by that sample.
-4. You should see a bunch of output as all the dependencies of the app are downloaded from MyGet.
-5. Run the sample using the appropriate K command:
+3. Before you move to the restore of the required packages, make sure you have the correct certificates in place: 
+
+    ```
+    CERTMGR=/usr/bin/certmgr
+    sudo $CERTMGR -ssl -m https://go.microsoft.com
+    sudo $CERTMGR -ssl -m https://nugetgallery.blob.core.windows.net
+    sudo $CERTMGR -ssl -m https://nuget.org
+
+    mozroots --import --sync
+    ```
+
+4. Run ```dnu restore``` to restore the packages required by that sample.
+5. You should see a bunch of output as all the dependencies of the app are downloaded from MyGet.
+6. Run the sample using the appropriate K command:
     - For the console app run  `dnx . run`.
     - For the web apps run `dnx . web` on Windows or `dnx . kestrel` on OS X/Linux.
-6. You should see the output of the console app or a message that says the site is now started.
-7. You can navigate to the web apps in a browser by navigating to `http://localhost:5001` or `http://localhost:5004` if running on OS X/Linux.
+7. You should see the output of the console app or a message that says the site is now started.
+8. You can navigate to the web apps in a browser by navigating to `http://localhost:5001` or `http://localhost:5004` if running on OS X/Linux.
 
 # Documentation and Further Learning
 
