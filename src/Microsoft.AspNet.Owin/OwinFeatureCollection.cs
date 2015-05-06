@@ -15,12 +15,12 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Http.Features.Authentication;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Owin
 {
-    using Microsoft.Framework.Internal;
     using SendFileFunc = Func<string, long, long?, CancellationToken, Task>;
 
     public class OwinFeatureCollection :

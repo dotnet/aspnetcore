@@ -3,7 +3,7 @@
 
 using System.Threading;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Features
 {
     public interface IHttpRequestLifetimeFeature
     {

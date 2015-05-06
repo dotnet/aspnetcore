@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Features.Internal
 {
     public class HttpResponseFeature : IHttpResponseFeature
     {

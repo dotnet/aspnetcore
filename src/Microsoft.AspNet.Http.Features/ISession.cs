@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Features
 {
     public interface ISession
     {

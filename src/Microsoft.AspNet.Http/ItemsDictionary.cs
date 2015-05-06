@@ -4,7 +4,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Internal
 {
     public class ItemsDictionary : IDictionary<object, object>
     {

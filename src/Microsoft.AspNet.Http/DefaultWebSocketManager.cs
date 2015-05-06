@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http.Infrastructure;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Internal
 {
     public class DefaultWebSocketManager : WebSocketManager
     {

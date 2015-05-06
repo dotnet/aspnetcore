@@ -7,12 +7,12 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Collections;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Features.Internal
 {
     public class FormFeature : IFormFeature
     {

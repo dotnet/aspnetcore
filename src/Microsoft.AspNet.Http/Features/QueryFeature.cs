@@ -3,12 +3,11 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http.Collections;
-using Microsoft.AspNet.Http.Infrastructure;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Features.Internal
 {
     public class QueryFeature : IQueryFeature
     {

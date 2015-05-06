@@ -4,7 +4,7 @@
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Features
 {
     public interface IHttpWebSocketFeature
     {

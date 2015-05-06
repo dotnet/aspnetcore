@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Http.Authentication
+namespace Microsoft.AspNet.Http.Features.Authentication
 {
     public class ChallengeContext
     {

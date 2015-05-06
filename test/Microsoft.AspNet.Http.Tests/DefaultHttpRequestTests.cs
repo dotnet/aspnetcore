@@ -4,9 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.AspNet.Http.Features;
 using Xunit;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Internal
 {
     public class DefaultHttpRequestTests
     {

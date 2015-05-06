@@ -5,10 +5,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Http.Infrastructure;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Http.Collections
+namespace Microsoft.AspNet.Http.Internal
 {
     /// <summary>
     /// Represents a wrapper for owin.RequestHeaders and owin.ResponseHeaders.

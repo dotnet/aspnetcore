@@ -6,9 +6,10 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http.Infrastructure;
+using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Http.Features.Internal;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Internal
 {
     public class DefaultConnectionInfo : ConnectionInfo
     {

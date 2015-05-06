@@ -4,7 +4,7 @@
 using Microsoft.AspNet.Http;
 using Xunit;
 
-namespace Microsoft.AspNet.Builder
+namespace Microsoft.AspNet.Builder.Internal
 {
     public class ApplicationBuilderTests
     {

@@ -3,7 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder.Internal;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 using Shouldly;
 using Xunit;
 

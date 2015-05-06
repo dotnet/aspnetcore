@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Features
 {
     public interface IHttpRequestFeature
     {

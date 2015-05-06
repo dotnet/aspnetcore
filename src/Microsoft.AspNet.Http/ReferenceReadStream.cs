@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Internal
 {
     /// <summary>
     /// A Stream that wraps another stream starting at a certain offset and reading for the given length.

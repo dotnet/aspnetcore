@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Http.Collections
+namespace Microsoft.AspNet.Http.Internal
 {
     /// <summary>
     /// Contains the parsed form values.

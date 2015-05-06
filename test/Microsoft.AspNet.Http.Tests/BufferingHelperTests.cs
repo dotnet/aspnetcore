@@ -4,7 +4,7 @@
 using System.IO;
 using Xunit;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Internal
 {
     public class BufferingHelperTests
     {

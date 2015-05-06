@@ -7,10 +7,13 @@ using System.Security.Claims;
 using System.Threading;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Http.Collections;
-using Microsoft.AspNet.Http.Infrastructure;
+using Microsoft.AspNet.Http.Authentication.Internal;
+using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Http.Features.Authentication;
+using Microsoft.AspNet.Http.Features.Authentication.Internal;
+using Microsoft.AspNet.Http.Features.Internal;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Internal
 {
     public class DefaultHttpContext : HttpContext
     {

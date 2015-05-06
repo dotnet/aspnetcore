@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Features.Internal
 {
     public interface IItemsFeature
     {

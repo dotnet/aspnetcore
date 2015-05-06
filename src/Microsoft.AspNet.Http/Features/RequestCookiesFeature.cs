@@ -5,12 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http.Collections;
-using Microsoft.AspNet.Http.Infrastructure;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Features.Internal
 {
     public class RequestCookiesFeature : IRequestCookiesFeature
     {

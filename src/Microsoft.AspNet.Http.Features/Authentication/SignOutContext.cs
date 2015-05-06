@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Http.Authentication
+namespace Microsoft.AspNet.Http.Features.Authentication
 {
     public class SignOutContext
     {

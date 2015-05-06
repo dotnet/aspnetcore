@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 using Xunit;
 
 namespace Microsoft.AspNet.Owin

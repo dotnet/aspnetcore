@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Features.Internal
 {
     public interface IServiceProvidersFeature
     {

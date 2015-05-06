@@ -4,11 +4,11 @@
 using System;
 using System.IO;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http.Collections;
-using Microsoft.AspNet.Http.Infrastructure;
+using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Internal
 {
     public class DefaultHttpResponse : HttpResponse
     {

@@ -5,7 +5,7 @@ using Microsoft.AspNet.FeatureModel;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNet.Http.Features.Internal
 {
     public class QueryFeatureTests
     {

@@ -4,8 +4,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.AspNet.Http.Features;
 
-namespace Microsoft.AspNet.Http.Collections
+namespace Microsoft.AspNet.Http.Internal
 {
     public class SessionCollection : ISessionCollection
     {

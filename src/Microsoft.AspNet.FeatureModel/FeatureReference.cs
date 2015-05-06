@@ -1,11 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.FeatureModel;
-
-namespace Microsoft.AspNet.Http.Infrastructure
+namespace Microsoft.AspNet.FeatureModel
 {
-    internal struct FeatureReference<T>
+    public struct FeatureReference<T>
     {
         private T _feature;
         private int _revision;

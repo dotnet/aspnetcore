@@ -7,10 +7,12 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http.Infrastructure;
+using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Http.Features.Authentication;
+using Microsoft.AspNet.Http.Features.Authentication.Internal;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Http.Authentication
+namespace Microsoft.AspNet.Http.Authentication.Internal
 {
     public class DefaultAuthenticationManager : AuthenticationManager
     {

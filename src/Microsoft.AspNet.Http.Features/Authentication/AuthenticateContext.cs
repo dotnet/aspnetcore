@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Http.Authentication
+namespace Microsoft.AspNet.Http.Features.Authentication
 {
     public class AuthenticateContext
     {

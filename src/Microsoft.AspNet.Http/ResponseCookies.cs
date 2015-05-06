@@ -8,7 +8,7 @@ using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Http.Collections
+namespace Microsoft.AspNet.Http.Internal
 {
     /// <summary>
     /// A wrapper for the response Set-Cookie header

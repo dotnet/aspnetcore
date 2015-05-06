@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Xunit;
 
 namespace Microsoft.AspNet.Owin
