@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Razor
         {
             if (string.IsNullOrEmpty(sourceFileName))
             {
-                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "sourceFileName");
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(sourceFileName));
             }
 
             Host = host;

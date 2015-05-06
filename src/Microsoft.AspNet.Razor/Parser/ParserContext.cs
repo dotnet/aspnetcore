@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             if (activeParser != codeParser && activeParser != markupParser)
             {
-                throw new ArgumentException(RazorResources.ActiveParser_Must_Be_Code_Or_Markup_Parser, "activeParser");
+                throw new ArgumentException(RazorResources.ActiveParser_Must_Be_Code_Or_Markup_Parser, nameof(activeParser));
             }
 
             CaptureOwnerTask();

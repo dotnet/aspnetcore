@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Razor.Text
             var line = FindLine(absoluteIndex);
             if (line == null)
             {
-                throw new ArgumentOutOfRangeException("absoluteIndex");
+                throw new ArgumentOutOfRangeException(nameof(absoluteIndex));
             }
             var idx = absoluteIndex - line.Start;
             return new CharacterReference(line.Content[idx], new SourceLocation(absoluteIndex, line.Index, idx));
