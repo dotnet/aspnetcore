@@ -16,11 +16,19 @@ copy %CACHED_NUGET% .nuget\nuget.exe > nul
 
 :restore
 IF EXIST packages\KoreBuild goto run
-.nuget\NuGet.exe install KoreBuild -ExcludeVersion -o packages -nocache -pre
+IF DEFINED BUILDCMD_RELEASE (
+	.nuget\NuGet.exe install KoreBuild -version 0.2.1-%BUILDCMD_RELEASE% -ExcludeVersion -o packages -nocache -pre
+) ELSE (
+	.nuget\NuGet.exe install KoreBuild -ExcludeVersion -o packages -nocache -pre
+)
 .nuget\NuGet.exe install Sake -version 0.2 -o packages -ExcludeVersion
 
 IF "%SKIP_DNX_INSTALL%"=="1" goto run
-CALL packages\KoreBuild\build\dnvm upgrade -runtime CLR -arch x86
+IF DEFINED BUILDCMD_RELEASE (
+	CALL packages\KoreBuild\build\dnvm install 1.0.0-%BUILDCMD_RELEASE% -runtime CLR -arch x86 -a default
+) ELSE (
+	CALL packages\KoreBuild\build\dnvm upgrade -runtime CLR -arch x86 
+)
 CALL packages\KoreBuild\build\dnvm install default -runtime CoreCLR -arch x86
 
 :run

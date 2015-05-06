@@ -7,6 +7,7 @@ use namespace='System.IO'
 use namespace='System.Collections.Generic'
 use namespace='System.Net'
 use namespace='System.Linq'
+use namespace='System.Text'
 use namespace='System.Text.RegularExpressions'
 use namespace='System.Threading.Tasks'
 use import="BuildEnv"
@@ -203,12 +204,173 @@ var buildTarget = "compile"
             CloneOrUpdate(repo);
 
             GitCommand(repo, "checkout origin/release -B master");
-            File.Copy(Path.Combine("build-template", "NuGet.master.config"),
+
+            if(File.Exists(Path.Combine(repo, "NuGet.config")))
+            {
+                File.Copy(Path.Combine("build-template", "NuGet.master.config"),
                       Path.Combine(repo, "NuGet.config"),
                       overwrite: true);
-            GitCommand(repo, "commit -am \"Updating NuGet.config\"");
+                GitCommand(repo, "commit -am \"Updating NuGet.config\"");
+            }
 
             GitCommand(repo, "push origin master:master -f");
+        }
+    }
+
+#pin-version
+    -// Pin versions of packages in project.json and updated project.lock.json
+    -// More information https://github.com/aspnet/Universe/wiki/%23pin-version-:-Pinning-package-version-for-a-particular-release-in-project.json
+    @{
+        // NOTE: Before running update the below monikers as needed
+        var branch = Environment.GetEnvironmentVariable("BUILD_BRANCH");
+        var stableBranches = new[] {"master"};
+
+        var oldPreRelease = Environment.GetEnvironmentVariable("OLD_RELEASE");
+        var newPreRelease = Environment.GetEnvironmentVariable("NEW_RELEASE");
+        var excludeReposForJson = new[]
+            {
+              "Coherence",
+              "Coherence-Signed",
+              "dnvm",
+              "Entropy"
+            };
+
+        var oldCoreCLRBuild = Environment.GetEnvironmentVariable("CORECLR_RELEASE_BUILD_OLD");
+        var newCoreCLRBuild = Environment.GetEnvironmentVariable("CORECLR_RELEASE_BUILD_NEW");
+        var oldCoreCLRPrerelease = Environment.GetEnvironmentVariable("OLD_CORECLR_RELEASE");
+        var newCoreCLRPrerelease = Environment.GetEnvironmentVariable("NEW_CORECLR_RELEASE");
+
+        var oldRoslynPrerelease = Environment.GetEnvironmentVariable("OLD_ROSLYN_RELEASE");
+        var newRoslynPrerelease = Environment.GetEnvironmentVariable("NEW_ROSLYN_RELEASE");
+
+        foreach (var repo in GetAllRepos().Except(excludeReposForJson))
+        {
+            CloneOrUpdate(repo);
+
+            GitCommand(repo, string.Format("checkout {0}", branch));
+
+            if(File.Exists(Path.Combine(repo, "build.cmd")))
+            {
+                File.Copy(Path.Combine("build-template", "build.cmd"),
+                      Path.Combine(repo, "build.cmd"),
+                      overwrite: true);
+            }
+
+            // Process project.json files to pin version numbers
+            // Replace version in project.json
+            foreach(var file in Directory.GetFiles(repo,"project.json", SearchOption.AllDirectories))
+            {
+                var builder = new StringBuilder();
+                var contents = File.ReadAllLines(file);
+
+                foreach(var jsonEntry in contents)
+                {
+                    if(jsonEntry.Contains("\"System.") || jsonEntry.Contains("CSharp"))
+                    {
+                        var oldSearchExp = BuildVersionExpression(branch, oldCoreCLRPrerelease, oldCoreCLRBuild);
+                        var newReplaceExp = BuildVersionExpression(branch, newCoreCLRPrerelease, newCoreCLRBuild);
+
+                        builder.AppendLine(jsonEntry.Replace(oldSearchExp, newReplaceExp));
+                    }
+                    else if(jsonEntry.Contains("CodeAnalysis."))
+                    {
+                        var oldSearchExp = BuildVersionExpression(branch, oldRoslynPrerelease);
+                        var newReplaceExp = BuildVersionExpression(branch, newRoslynPrerelease);
+
+                        builder.AppendLine(jsonEntry.Replace(oldSearchExp, newReplaceExp));
+                    }
+                    else if(jsonEntry.Contains("IdentityModel"))
+                    {
+                        // IdentityModel packages don't have a stable build and are updated very frequently on the NuGet feed
+                        builder.AppendLine(jsonEntry);
+                    }
+                    else
+                    {
+                        var oldSearchExp = BuildVersionExpression(branch, oldPreRelease);
+                        var newReplaceExp = BuildVersionExpression(branch, newPreRelease);
+
+                        var newEntry = ProcessExcludesForPackages(jsonEntry, stableBranches.Contains(branch));
+
+                        builder.AppendLine(newEntry.Replace(oldSearchExp, newReplaceExp));
+                    }
+                }
+
+                File.WriteAllText(file, builder.ToString());
+            }
+
+            // Build projects to produce project.lock.json
+            Exec("build.cmd", "compile", repo);
+
+            // Replace lock=true in project.lock.json
+            foreach(var file in Directory.GetFiles(repo, "project.lock.json", SearchOption.AllDirectories))
+            {
+                var contents = File.ReadAllText(file);
+                var newContents = contents.Replace("\"locked\": false", "\"locked\": true");
+                File.WriteAllText(file, newContents);
+            }
+
+            // Add the project.json and project.lock.json files
+            foreach(var file in Directory.GetFiles(repo, "project*", SearchOption.AllDirectories))
+            {
+                var gitFilePath = file.Substring(file.IndexOf(repo) + repo.Length + 1);
+
+                // Check if this needs to be included
+                if(ShouldIncludeProjectJson(gitFilePath))
+                {
+                    GitCommand(repo, string.Format("add -f {0}", gitFilePath));
+                }
+            } 
+
+            GitCommand(repo, "commit -am \"Updating json files to pin versions and build.cmd to pin KoreBuild and DNX\""); 
+
+            GitCommand(repo, string.Format("push origin {0}:{0} -f", branch));
+        }
+    }
+
+#update-prerelease-tags
+    -// Update tags on each repo to have the latest release tag
+    @{
+        var newPreRelease = Environment.GetEnvironmentVariable("PRERELEASETAG");
+        if(string.IsNullOrEmpty(newPreRelease))
+        {
+            Log.Warn("No prerelease tag defined");
+            return;
+        }
+
+        var versionFile = "version.txt";
+
+        foreach (var repo in GetAllRepos())
+        {
+            CloneOrUpdate(repo);
+
+            GitCommand(repo, "checkout master");
+
+            GitCommand(repo, "pull --tags");
+
+            try
+            {
+                GitCommand(repo, string.Format("describe --tags > ..\\{0}", versionFile));
+            }
+            catch(Exception e)
+            {
+                Log.Warn(string.Format("{0} repo not tagged. Skipping....", repo));
+                continue;
+            }
+
+            var version = File.ReadAllText(versionFile);
+            File.Delete(versionFile);
+
+            Log.Info(string.Format("Current version on repo {0} is {1}", repo, version));
+
+            var majorVersion = version.Split(new string[]{"-"}, StringSplitOptions.None)[0];
+
+            var newVersion = majorVersion + string.Format("-{0}", newPreRelease);
+
+            Log.Info(string.Format("New version for repo is {0}", newVersion));
+
+            GitCommand(repo, string.Format("tag -f -a {0} -m \"Tag for new release {0}\"", newVersion));
+
+            GitCommand(repo, "push -f --tags ");
         }
     }
 
@@ -521,5 +683,62 @@ functions
                         .Replace("\r", "|r")
                         .Replace("\n", "|n")
                         .Replace("]", "|]");
+        }
+
+        // Currently there are two packages that need to be special cased. 
+        // TODO: Revisit as this is changed in the near future.
+        string ProcessExcludesForPackages(string jsonEntry, bool stable=false)
+        {
+            var newEntry = jsonEntry.Replace("Microsoft.Net.Http.Client\": \"1.0.0-*\"", "Microsoft.Net.Http.Client\": \"1.0.0-beta3\"");
+            newEntry = newEntry.Replace("Microsoft.AspNet.HttpFeature\": { \"version\": \"1.0.0-*\"", "Microsoft.AspNet.HttpFeature\": { \"version\": \"1.0.0-beta2\"");
+
+            return newEntry;
+        }
+
+        // Create a search replace expression based on branch, prerelease tag and buildNumber
+        string BuildVersionExpression(string branch, string preRelease = "", string buildNumber = "")
+        {
+            var stableBranches = new[] {"master"};
+            var builder = new StringBuilder();
+
+            // Add pre release version tag
+            if(!String.IsNullOrEmpty(preRelease))
+            {
+                builder.Append("-");
+                builder.Append(preRelease);
+            }
+
+            // If buildnumber is provided, append. 
+            // This for CORE CLR packages
+            if(!String.IsNullOrEmpty(buildNumber))
+            {
+                builder.Append("-");
+                builder.Append(buildNumber);
+            }
+            else if(!stableBranches.Contains(branch))
+            {
+                builder.Append("-*");
+            }
+
+            return builder.ToString();
+        }
+
+        // Verify if this is indeed the project.json or project.lock.json under project
+        bool ShouldIncludeProjectJson(string jsonPath)
+        {
+            // Should be under src, test or samples folders
+            if(!jsonPath.StartsWith("src") && !jsonPath.StartsWith("test") && !jsonPath.StartsWith("samples"))
+            {
+                return false;
+            }
+
+            // Within the specified folders, few projects generate under build folders. They can be excluded
+            if(jsonPath.Contains("bin") || jsonPath.Contains("Debug")
+             || jsonPath.Contains("artifacts") || jsonPath.Contains("node_modules") || !jsonPath.Contains(".json"))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
