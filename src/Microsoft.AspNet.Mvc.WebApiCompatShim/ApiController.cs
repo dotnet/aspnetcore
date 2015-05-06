@@ -417,13 +417,17 @@ namespace System.Web.Http
             var modelExplorer = MetadataProvider.GetModelExplorerForType(typeof(TEntity), entity);
 
             var modelValidationContext = new ModelValidationContext(
-                keyPrefix,
                 bindingSource: null,
                 validatorProvider: BindingContext.ValidatorProvider,
                 modelState: ModelState,
                 modelExplorer: modelExplorer);
 
-            ObjectValidator.Validate(modelValidationContext);
+            ObjectValidator.Validate(
+                modelValidationContext,
+                new ModelValidationNode(keyPrefix, modelExplorer.Metadata, entity)
+                {
+                    ValidateAllProperties = true
+                });
         }
 
         protected virtual void Dispose(bool disposing)

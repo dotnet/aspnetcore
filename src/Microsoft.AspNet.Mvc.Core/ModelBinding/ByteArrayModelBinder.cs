@@ -39,7 +39,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             try
             {
                 var model = Convert.FromBase64String(value);
-                return new ModelBindingResult(model, bindingContext.ModelName, isModelSet: true);
+
+                // We do not need to set an explict ModelValidationNode since CompositeModelBinder does that automatically.
+                return new ModelBindingResult(
+                    model,
+                    bindingContext.ModelName,
+                    isModelSet: true);
             }
             catch (Exception ex)
             {

@@ -231,7 +231,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         private static ModelValidationContext CreateValidationContext(ModelExplorer modelExplorer)
         {
             return new ModelValidationContext(
-                rootPrefix: null,
                 bindingSource: null,
                 modelState: null,
                 validatorProvider: null,

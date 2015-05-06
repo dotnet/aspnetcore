@@ -776,11 +776,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 "John Doe",
                 isModelSet: true,
                 key: "");
-
+            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
-            testableBinder.ProcessDto(bindingContext, dto);
+            testableBinder.ProcessDto(bindingContext, dto, modelValidationNode);
 
             // Assert
             var modelStateDictionary = bindingContext.ModelState;
@@ -827,10 +827,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 isModelSet: true,
                 key: "");
 
+            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
-            testableBinder.ProcessDto(bindingContext, dto);
+            testableBinder.ProcessDto(bindingContext, dto, modelValidationNode);
 
             // Assert
             var modelStateDictionary = bindingContext.ModelState;
@@ -888,8 +889,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 isModelSet: true,
                 key: "theModel.Age");
 
+            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
+
             // Act
-            testableBinder.ProcessDto(bindingContext, dto);
+            testableBinder.ProcessDto(bindingContext, dto, modelValidationNode);
 
             // Assert
             var modelStateDictionary = bindingContext.ModelState;
@@ -920,9 +923,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Set no properties though Age (a non-Nullable struct) and City (a class) properties are required.
             var dto = new ComplexModelDto(containerMetadata, containerMetadata.Properties);
             var testableBinder = new TestableMutableObjectModelBinder();
+            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
 
             // Act
-            testableBinder.ProcessDto(bindingContext, dto);
+            testableBinder.ProcessDto(bindingContext, dto, modelValidationNode);
 
             // Assert
             var modelStateDictionary = bindingContext.ModelState;
@@ -973,9 +977,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 null,
                 isModelSet: true,
                 key: "theModel.City");
+            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
 
             // Act
-            testableBinder.ProcessDto(bindingContext, dto);
+            testableBinder.ProcessDto(bindingContext, dto, modelValidationNode);
 
             // Assert
             var modelStateDictionary = bindingContext.ModelState;
@@ -1004,9 +1009,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Set no properties though ValueTypeRequired (a non-Nullable struct) property is required.
             var dto = new ComplexModelDto(containerMetadata, containerMetadata.Properties);
             var testableBinder = new TestableMutableObjectModelBinder();
+            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
 
             // Act
-            testableBinder.ProcessDto(bindingContext, dto);
+            testableBinder.ProcessDto(bindingContext, dto, modelValidationNode);
 
             // Assert
             var modelStateDictionary = bindingContext.ModelState;
@@ -1074,9 +1080,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model: null,
                 isModelSet: isModelSet,
                 key: "theModel." + nameof(Person.ValueTypeRequiredWithDefaultValue));
+            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
 
             // Act
-            testableBinder.ProcessDto(bindingContext, dto);
+            testableBinder.ProcessDto(bindingContext, dto, modelValidationNode);
 
             // Assert
             Assert.False(modelStateDictionary.IsValid);
@@ -1149,9 +1156,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model: null,
                 isModelSet: false,
                 key: "theModel." + nameof(Person.PropertyWithDefaultValue));
+            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
 
             // Act
-            testableBinder.ProcessDto(bindingContext, dto);
+            testableBinder.ProcessDto(bindingContext, dto, modelValidationNode);
 
             // Assert
             Assert.True(modelStateDictionary.IsValid);
@@ -1191,17 +1199,30 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var dobProperty = dto.PropertyMetadata.Single(o => o.PropertyName == "DateOfBirth");
             dto.Results[dobProperty] = null;
+            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
 
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
-            testableBinder.ProcessDto(bindingContext, dto);
+            testableBinder.ProcessDto(bindingContext, dto, modelValidationNode);
 
             // Assert
             Assert.Equal("John", model.FirstName);
             Assert.Equal("Doe", model.LastName);
             Assert.Equal(dob, model.DateOfBirth);
             Assert.True(bindingContext.ModelState.IsValid);
+
+            // Ensure that we add child nodes for all the nodes which have a result (irrespective of if they 
+            // are bound or not).
+            Assert.Equal(2, modelValidationNode.ChildNodes.Count());
+
+            var validationNode = modelValidationNode.ChildNodes[0];
+            Assert.Equal("", validationNode.Key);
+            Assert.Equal("John", validationNode.Model);
+
+            validationNode = modelValidationNode.ChildNodes[1];
+            Assert.Equal("", validationNode.Key);
+            Assert.Equal("Doe", validationNode.Model);
         }
 
         [Fact]

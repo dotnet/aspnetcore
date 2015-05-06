@@ -35,16 +35,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         }
 
         /// <inheritdoc />
-        public void Validate([NotNull] ModelValidationContext modelValidationContext)
+        public void Validate(
+            [NotNull] ModelValidationContext modelValidationContext,
+            [NotNull] ModelValidationNode validationNode)
         {
             var validationContext = new ValidationContext()
             {
                 ModelValidationContext = modelValidationContext,
                 Visited = new HashSet<object>(ReferenceEqualityComparer.Instance),
+                ValidationNode = validationNode
             };
 
             ValidateNonVisitedNodeAndChildren(
-                modelValidationContext.RootPrefix,
+                validationNode.Key,
                 validationContext,
                 validators: null);
         }
@@ -54,19 +57,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             ValidationContext validationContext,
             IList<IModelValidator> validators)
         {
-            var modelValidationContext = validationContext.ModelValidationContext;
-            var modelExplorer = modelValidationContext.ModelExplorer;
-
             // Recursion guard to avoid stack overflows
             RuntimeHelpers.EnsureSufficientExecutionStack();
 
+            var modelValidationContext = validationContext.ModelValidationContext;
+            var modelExplorer = modelValidationContext.ModelExplorer;
             var modelState = modelValidationContext.ModelState;
-
-            var bindingSource = modelValidationContext.BindingSource;
-            if (bindingSource != null && !bindingSource.IsFromRequest)
+            var currentValidationNode = validationContext.ValidationNode;
+            if (currentValidationNode.SuppressValidation)
             {
-                // Short circuit if the metadata represents something that was not bound using request data.
-                // For example model bound using [FromServices]. Treat such objects as skipped.
+                // Short circuit if the node is marked to be suppressed
                 var validationState = modelState.GetFieldValidationState(modelKey);
                 if (validationState == ModelValidationState.Unvalidated)
                 {
@@ -88,22 +88,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             {
                 // The validators are not null in the case of validating an array. Since the validators are
                 // the same for all the elements of the array, we do not do GetValidators for each element,
-                // instead we just pass them over. See ValidateElements function.
-                var validatorProvider = modelValidationContext.ValidatorProvider;
-                var validatorProviderContext = new ModelValidatorProviderContext(modelExplorer.Metadata);
-                validatorProvider.GetValidators(validatorProviderContext);
-
-                validators = validatorProviderContext.Validators;
+                // instead we just pass them over.
+                validators = GetValidators(modelValidationContext.ValidatorProvider, modelExplorer.Metadata);
             }
 
-            // We don't need to recursively traverse the graph for null values
-            if (modelExplorer.Model == null)
+            // We don't need to recursively traverse the graph if there are no child nodes.
+            if (currentValidationNode.ChildNodes.Count == 0 && !currentValidationNode.ValidateAllProperties)
             {
                 return ShallowValidate(modelKey, modelExplorer, validationContext, validators);
             }
 
             // We don't need to recursively traverse the graph for types that shouldn't be validated
-            var modelType = modelExplorer.Model.GetType();
+            var modelType = modelExplorer.ModelType;
             if (IsTypeExcludedFromValidation(_excludeFilters, modelType))
             {
                 var result = ShallowValidate(modelKey, modelExplorer, validationContext, validators);
@@ -112,24 +108,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             }
 
             // Check to avoid infinite recursion. This can happen with cycles in an object graph.
+            // Note that this is only applicable in case the model is pre-existing (like in case of TryUpdateModel).
             if (validationContext.Visited.Contains(modelExplorer.Model))
             {
                 return true;
             }
 
             validationContext.Visited.Add(modelExplorer.Model);
-
-            // Validate the children first - depth-first traversal
-            var enumerableModel = modelExplorer.Model as IEnumerable;
-            if (enumerableModel == null)
-            {
-                isValid = ValidateProperties(modelKey, modelExplorer, validationContext);
-            }
-            else
-            {
-                isValid = ValidateElements(modelKey, enumerableModel, validationContext);
-            }
-
+            isValid = ValidateChildNodes(modelKey, modelExplorer, validationContext);
             if (isValid)
             {
                 // Don't bother to validate this node if children failed.
@@ -166,80 +152,52 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             }
         }
 
-        private bool ValidateProperties(
+        private IList<IModelValidator> GetValidators(IModelValidatorProvider provider, ModelMetadata metadata)
+        {
+            var validatorProviderContext = new ModelValidatorProviderContext(metadata);
+            provider.GetValidators(validatorProviderContext);
+            return validatorProviderContext.Validators;
+        }
+
+        private bool ValidateChildNodes(
             string currentModelKey,
             ModelExplorer modelExplorer,
             ValidationContext validationContext)
         {
             var isValid = true;
+            ExpandValidationNode(validationContext, modelExplorer);
 
-            foreach (var property in modelExplorer.Metadata.Properties)
+            IList<IModelValidator> validators = null;
+            if (modelExplorer.Metadata.IsCollectionType && modelExplorer.Model != null)
             {
-                var propertyExplorer = modelExplorer.GetExplorerForProperty(property.PropertyName);
-                var propertyMetadata = propertyExplorer.Metadata;
+                var enumerableModel = (IEnumerable)modelExplorer.Model;
+                var elementType = GetElementType(enumerableModel.GetType());
+                var elementMetadata = _modelMetadataProvider.GetMetadataForType(elementType);
+                validators = GetValidators(validationContext.ModelValidationContext.ValidatorProvider, elementMetadata);
+            }
+
+            foreach (var childNode in validationContext.ValidationNode.ChildNodes)
+            {
+                var childModelExplorer = childNode.ModelMetadata.MetadataKind == Metadata.ModelMetadataKind.Type ?
+                    _modelMetadataProvider.GetModelExplorerForType(childNode.ModelMetadata.ModelType, childNode.Model) :
+                    modelExplorer.GetExplorerForProperty(childNode.ModelMetadata.PropertyName);
+
                 var propertyValidationContext = new ValidationContext()
                 {
                     ModelValidationContext = ModelValidationContext.GetChildValidationContext(
                         validationContext.ModelValidationContext,
-                        propertyExplorer),
-                    Visited = validationContext.Visited
+                        childModelExplorer),
+                    Visited = validationContext.Visited,
+                    ValidationNode = childNode
                 };
 
-                var propertyBindingName = propertyMetadata.BinderModelName ?? propertyMetadata.PropertyName;
-                var childKey = ModelNames.CreatePropertyModelName(currentModelKey, propertyBindingName);
-
                 if (!ValidateNonVisitedNodeAndChildren(
-                    childKey,
-                    propertyValidationContext,
-                    validators: null))
+                        childNode.Key,
+                        propertyValidationContext,
+                        validators))
                 {
                     isValid = false;
                 }
-            }
-
-            return isValid;
-        }
-
-        private bool ValidateElements(string currentKey, IEnumerable model, ValidationContext validationContext)
-        {
-            var elementType = GetElementType(model.GetType());
-            var elementMetadata = _modelMetadataProvider.GetMetadataForType(elementType);
-
-            var validatorProvider = validationContext.ModelValidationContext.ValidatorProvider;
-            var validatorProviderContext = new ModelValidatorProviderContext(elementMetadata);
-            validatorProvider.GetValidators(validatorProviderContext);
-
-            var validators = validatorProviderContext.Validators;
-
-            // If there are no validators or the object is null we bail out quickly
-            // when there are large arrays of null, this will save a significant amount of processing
-            // with minimal impact to other scenarios.
-            var anyValidatorsDefined = validators.Any();
-            var index = 0;
-            var isValid = true;
-            foreach (var element in model)
-            {
-                // If the element is non null, the recursive calls might find more validators.
-                // If it's null, then a shallow validation will be performed.
-                if (element != null || anyValidatorsDefined)
-                {
-                    var elementExplorer = new ModelExplorer(_modelMetadataProvider, elementMetadata, element);
-                    var elementKey = ModelNames.CreateIndexModelName(currentKey, index);
-                    var elementValidationContext = new ValidationContext()
-                    {
-                        ModelValidationContext = ModelValidationContext.GetChildValidationContext(
-                            validationContext.ModelValidationContext,
-                            elementExplorer),
-                        Visited = validationContext.Visited
-                    };
-
-                    if (!ValidateNonVisitedNodeAndChildren(elementKey, elementValidationContext, validators))
-                    {
-                        isValid = false;
-                    }
-                }
-
-                index++;
             }
 
             return isValid;
@@ -312,6 +270,54 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             return filters.Any(filter => filter.IsTypeExcluded(type));
         }
 
+        private void ExpandValidationNode(ValidationContext context, ModelExplorer modelExplorer)
+        {
+            var validationNode = context.ValidationNode;
+            if (validationNode.ChildNodes.Count != 0 ||
+                !validationNode.ValidateAllProperties ||
+                validationNode.Model == null)
+            {
+                return;
+            }
+
+            if (!modelExplorer.Metadata.IsCollectionType)
+            {
+                foreach (var property in validationNode.ModelMetadata.Properties)
+                {
+                    var propertyExplorer = modelExplorer.GetExplorerForProperty(property.PropertyName);
+                    var propertyBindingName = property.BinderModelName ?? property.PropertyName;
+                    var childKey = ModelNames.CreatePropertyModelName(validationNode.Key, propertyBindingName);
+                    var childNode = new ModelValidationNode(childKey, property, propertyExplorer.Model)
+                    {
+                        ValidateAllProperties = true
+                    };
+                    validationNode.ChildNodes.Add(childNode);
+                }
+            }
+            else
+            {
+                var enumerableModel = (IEnumerable)modelExplorer.Model;
+                var elementType = GetElementType(enumerableModel.GetType());
+                var elementMetadata = _modelMetadataProvider.GetMetadataForType(elementType);
+
+                // An integer index is incorrect in scenarios where there is a custom index provided by the user.
+                // However those scenarios are supported by createing a ModelValidationNode with the right keys.
+                var index = 0;
+                foreach (var element in enumerableModel)
+                {
+                    var elementExplorer = new ModelExplorer(_modelMetadataProvider, elementMetadata, element);
+                    var elementKey = ModelNames.CreateIndexModelName(validationNode.Key, index);
+                    var childNode = new ModelValidationNode(elementKey, elementMetadata, elementExplorer.Model)
+                    {
+                        ValidateAllProperties = true
+                    };
+
+                    validationNode.ChildNodes.Add(childNode);
+                    index++;
+                }
+            }
+        }
+
         private static Type GetElementType(Type type)
         {
             Debug.Assert(typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()));
@@ -337,6 +343,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             public ModelValidationContext ModelValidationContext { get; set; }
 
             public HashSet<object> Visited { get; set; }
+
+            public ModelValidationNode ValidationNode { get; set; }
         }
     }
 }

@@ -51,7 +51,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bindingContext = GetBindingContext(typeof(Person), binderType: typeof(TrueModelBinder));
 
             var model = new Person();
-            var innerModelBinder = new TrueModelBinder();
             var serviceProvider = new ServiceCollection()
                 .AddSingleton(typeof(IModelBinder))
                 .BuildServiceProvider();
@@ -67,6 +66,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var p = (Person)binderResult.Model;
             Assert.Equal(model.Age, p.Age);
             Assert.Equal(model.Name, p.Name);
+            Assert.NotNull(binderResult.ValidationNode);
+            Assert.Equal(bindingContext.ModelName, binderResult.ValidationNode.Key);
+            Assert.Same(binderResult.Model, binderResult.ValidationNode.Model);
         }
 
         [Fact]
@@ -138,7 +140,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
             {
-                return Task.FromResult(new ModelBindingResult(_model, bindingContext.ModelName, true));
+                var validationNode =
+                    new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, _model);
+                return Task.FromResult(new ModelBindingResult(_model, bindingContext.ModelName, true, validationNode));
             }
         }
     }

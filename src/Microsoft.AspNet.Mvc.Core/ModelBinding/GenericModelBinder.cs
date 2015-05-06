@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var result = await binder.BindModelAsync(bindingContext);
 
                 var modelBindingResult = result != null ?
-                    new ModelBindingResult(result.Model, result.Key, result.IsModelSet) :
+                    new ModelBindingResult(result.Model, result.Key, result.IsModelSet, result.ValidationNode) :
                     new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
 
                 // Were able to resolve a binder type.

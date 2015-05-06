@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             var mockValidatorProvider = new Mock<IObjectModelValidator>(MockBehavior.Strict);
             mockValidatorProvider
-                .Setup(o => o.Validate(It.IsAny<ModelValidationContext>()))
+                .Setup(o => o.Validate(It.IsAny<ModelValidationContext>(), It.IsAny<ModelValidationNode>()))
                 .Verifiable();
             var argumentBinder = GetArgumentBinder(mockValidatorProvider.Object);
 
@@ -164,7 +164,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Assert
             mockValidatorProvider.Verify(
-                o => o.Validate(It.IsAny<ModelValidationContext>()), Times.Once());
+                o => o.Validate(It.IsAny<ModelValidationContext>(), It.IsAny<ModelValidationNode>()), Times.Once());
         }
 
         [Fact]
@@ -197,8 +197,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             };
 
             var mockValidatorProvider = new Mock<IObjectModelValidator>(MockBehavior.Strict);
-            mockValidatorProvider.Setup(o => o.Validate(It.IsAny<ModelValidationContext>()))
-                                 .Verifiable();
+            mockValidatorProvider
+                .Setup(o => o.Validate(It.IsAny<ModelValidationContext>(), It.IsAny<ModelValidationNode>()))
+                .Verifiable();
             var argumentBinder = GetArgumentBinder(mockValidatorProvider.Object);
 
             // Act
@@ -206,7 +207,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 .BindActionArgumentsAsync(actionContext, actionBindingContext, new TestController());
 
             // Assert
-            mockValidatorProvider.Verify(o => o.Validate(It.IsAny<ModelValidationContext>()), Times.Never());
+            mockValidatorProvider.Verify(
+                o => o.Validate(It.IsAny<ModelValidationContext>(), It.IsAny<ModelValidationNode>()),
+                Times.Never());
         }
 
         [Fact]
@@ -226,7 +229,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             var mockValidatorProvider = new Mock<IObjectModelValidator>(MockBehavior.Strict);
             mockValidatorProvider
-                .Setup(o => o.Validate(It.IsAny<ModelValidationContext>()))
+                .Setup(o => o.Validate(It.IsAny<ModelValidationContext>(), It.IsAny<ModelValidationNode>()))
                 .Verifiable();
             var argumentBinder = GetArgumentBinder(mockValidatorProvider.Object);
 
@@ -236,7 +239,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
 
             // Assert
             mockValidatorProvider.Verify(
-                o => o.Validate(It.IsAny<ModelValidationContext>()), Times.Once());
+                o => o.Validate(It.IsAny<ModelValidationContext>(), It.IsAny<ModelValidationNode>()), Times.Once());
         }
 
         [Fact]
@@ -268,8 +271,10 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             };
 
             var mockValidatorProvider = new Mock<IObjectModelValidator>(MockBehavior.Strict);
-            mockValidatorProvider.Setup(o => o.Validate(It.IsAny<ModelValidationContext>()))
-                                 .Verifiable();
+            mockValidatorProvider
+                .Setup(o => o.Validate(It.IsAny<ModelValidationContext>(), It.IsAny<ModelValidationNode>()))
+                .Verifiable();
+
             var argumentBinder = GetArgumentBinder(mockValidatorProvider.Object);
 
             // Act
@@ -277,7 +282,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 .BindActionArgumentsAsync(actionContext, actionBindingContext, new TestController());
 
             // Assert
-            mockValidatorProvider.Verify(o => o.Validate(It.IsAny<ModelValidationContext>()), Times.Never());
+            mockValidatorProvider.Verify(
+                o => o.Validate(It.IsAny<ModelValidationContext>(), It.IsAny<ModelValidationNode>()),
+                Times.Never());
         }
 
         [Fact]
@@ -596,7 +603,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             if (validator == null)
             {
                 var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
-                mockValidator.Setup(o => o.Validate(It.IsAny<ModelValidationContext>()));
+                mockValidator.Setup(
+                    o => o.Validate(It.IsAny<ModelValidationContext>(), It.IsAny<ModelValidationNode>()));
                 validator = mockValidator.Object;
             }
 

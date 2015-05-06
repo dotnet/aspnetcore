@@ -13,6 +13,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         /// </summary>
         /// <param name="validationContext">The <see cref="ModelValidationContext"/> associated with the current call.
         /// </param>
-        void Validate(ModelValidationContext validationContext);
+        /// <param name="validationNode">The <see cref="ModelValidationNode"/> for the model which gets validated.
+        /// </param>
+        void Validate(ModelValidationContext validationContext, ModelValidationNode validationNode);
     }
 }

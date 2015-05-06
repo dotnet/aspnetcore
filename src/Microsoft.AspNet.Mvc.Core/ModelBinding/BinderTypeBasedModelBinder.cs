@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await modelBinder.BindModelAsync(bindingContext);
 
             var modelBindingResult = result != null ?
-                new ModelBindingResult(result.Model, result.Key, result.IsModelSet) :
+                new ModelBindingResult(result.Model, result.Key, result.IsModelSet, result.ValidationNode) :
                 new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
 
             // A model binder was specified by metadata and this binder handles all such cases.

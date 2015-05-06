@@ -16,10 +16,25 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="isModelSet">A value that represents if the model has been set by the
         /// <see cref="IModelBinder"/>.</param>
         public ModelBindingResult(object model, string key, bool isModelSet)
+            : this (model, key, isModelSet, validationNode: null)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="ModelBindingResult"/>.
+        /// </summary>
+        /// <param name="model">The model which was created by the <see cref="IModelBinder"/>.</param>
+        /// <param name="key">The key using which was used to attempt binding the model.</param>
+        /// <param name="isModelSet">A value that represents if the model has been set by the
+        /// <see cref="IModelBinder"/>.</param>
+        /// <param name="validationNode">A <see cref="ModelValidationNode"/> which captures the validation information.
+        /// </param>
+        public ModelBindingResult(object model, string key, bool isModelSet, ModelValidationNode validationNode)
         {
             Model = model;
             Key = key;
             IsModelSet = isModelSet;
+            ValidationNode = validationNode;
         }
 
         /// <summary>
@@ -47,5 +62,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </para>
         /// </summary>
         public bool IsModelSet { get; }
+
+        /// <summary>
+        /// A <see cref="ModelValidationNode"/> associated with the current <see cref="ModelBindingResult"/>.
+        /// </summary>
+        public ModelValidationNode ValidationNode { get; }
     }
 }

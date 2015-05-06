@@ -90,12 +90,11 @@ namespace Microsoft.AspNet.Mvc
                     modelBindingResult.Model);
 
                 var validationContext = new ModelValidationContext(
-                    key,
                     modelBindingContext.BindingSource,
                     operationContext.ValidatorProvider,
                     modelState,
                     modelExplorer);
-                _validator.Validate(validationContext);
+                _validator.Validate(validationContext, modelBindingResult.ValidationNode);
             }
 
             return modelBindingResult;

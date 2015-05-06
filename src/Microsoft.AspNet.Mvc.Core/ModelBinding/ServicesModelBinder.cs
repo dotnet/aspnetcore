@@ -26,7 +26,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             var requestServices = bindingContext.OperationBindingContext.HttpContext.RequestServices;
             var model = requestServices.GetRequiredService(bindingContext.ModelType);
-            return Task.FromResult(new ModelBindingResult(model, bindingContext.ModelName, isModelSet: true));
+            var validationNode =
+                new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, model)
+                {
+                    SuppressValidation = true
+                };
+
+            return Task.FromResult(new ModelBindingResult(
+                    model,
+                    bindingContext.ModelName,
+                    isModelSet: true,
+                    validationNode: validationNode));
         }
     }
 }

@@ -55,6 +55,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             bindingContext.OperationBindingContext.BodyBindingState =
                 newBindingContext.OperationBindingContext.BodyBindingState;
 
+            var bindingKey = bindingContext.ModelName;
             if (modelBindingResult.IsModelSet)
             {
                 // Update the model state key if we are bound using an empty prefix and it is a complex type.
@@ -78,15 +79,28 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     // In this case, for the model parameter the key would be SimpleType instead of model.SimpleType.
                     // (i.e here the prefix for the model key is empty).
                     // For the id parameter the key would be id.
-                    return modelBindingResult;
+                    bindingKey = string.Empty;
                 }
             }
 
-            // Fall through to update the ModelBindingResult's key.
+            // Update the model validation node if the model binding result was set but no validation node was provided.
+            // This would typically be the case where leaf level model binders, do not have to add a validation node
+            // for validation to take effect. The composite being the entry point for model binders, takes care or
+            // adding missing validation nodes.
+            var modelValidationNode = modelBindingResult.ValidationNode;
+            if (modelBindingResult.IsModelSet && modelValidationNode == null)
+            {
+                modelValidationNode = new ModelValidationNode(
+                    bindingKey,
+                    bindingContext.ModelMetadata,
+                    modelBindingResult.Model);
+            }
+
             return new ModelBindingResult(
                 modelBindingResult.Model,
-                bindingContext.ModelName,
-                modelBindingResult.IsModelSet);
+                bindingKey,
+                modelBindingResult.IsModelSet,
+                modelValidationNode);
         }
 
         private async Task<ModelBindingResult> TryBind(ModelBindingContext bindingContext)

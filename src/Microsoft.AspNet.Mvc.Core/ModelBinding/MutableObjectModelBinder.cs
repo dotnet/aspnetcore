@@ -44,12 +44,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             EnsureModel(bindingContext);
             var result = await CreateAndPopulateDto(bindingContext, mutableObjectBinderContext.PropertyMetadata);
 
+            var validationNode = new ModelValidationNode(
+                bindingContext.ModelName,
+                bindingContext.ModelMetadata,
+                bindingContext.Model);
+
             // post-processing, e.g. property setters and hooking up validation
-            ProcessDto(bindingContext, (ComplexModelDto)result.Model);
+            ProcessDto(bindingContext, (ComplexModelDto)result.Model, validationNode);
             return new ModelBindingResult(
                 bindingContext.Model,
                 bindingContext.ModelName,
-                isModelSet: true);
+                isModelSet: true,
+                validationNode: validationNode);
         }
 
         /// <summary>
@@ -359,11 +365,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return validationInfo;
         }
 
-        internal void ProcessDto(ModelBindingContext bindingContext, ComplexModelDto dto)
+        // Internal for testing.
+        internal ModelValidationNode ProcessDto(
+            ModelBindingContext bindingContext,
+            ComplexModelDto dto,
+            ModelValidationNode validationNode)
         {
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
             var modelExplorer = metadataProvider.GetModelExplorerForType(bindingContext.ModelType, bindingContext.Model);
-
             var validationInfo = GetPropertyValidationInfo(bindingContext);
 
             // Eliminate provided properties from requiredProperties; leaving just *missing* required properties.
@@ -415,8 +424,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         out requiredValidator);
 
                     SetProperty(bindingContext, modelExplorer, propertyMetadata, dtoResult, requiredValidator);
+
+                    var dtoValidationNode = dtoResult.ValidationNode;
+                    if (dtoValidationNode == null)
+                    {
+                        // Make sure that irrespective of if the properties of the model were bound with a value,
+                        // create a validation node so that these get validated.
+                        dtoValidationNode = new ModelValidationNode(dtoResult.Key, entry.Key, dtoResult.Model);
+                    }
+
+                    validationNode.ChildNodes.Add(dtoValidationNode);
                 }
             }
+
+            return validationNode;
         }
 
         /// <summary>

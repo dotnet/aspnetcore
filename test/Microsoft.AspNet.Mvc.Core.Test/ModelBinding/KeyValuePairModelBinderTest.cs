@@ -31,6 +31,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.NotNull(result);
             Assert.Null(result.Model);
             Assert.False(bindingContext.ModelState.IsValid);
+            Assert.Null(result.ValidationNode);
             Assert.Equal("someName", bindingContext.ModelName);
             var error = Assert.Single(bindingContext.ModelState["someName.Key"].Errors);
             Assert.Equal("A value is required.", error.ErrorMessage);
@@ -53,6 +54,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.NotNull(result);
             Assert.Null(result.Model);
             Assert.False(bindingContext.ModelState.IsValid);
+            Assert.Null(result.ValidationNode);
             Assert.Equal("someName", bindingContext.ModelName);
             Assert.Equal(bindingContext.ModelState["someName.Value"].Errors.First().ErrorMessage, "A value is required.");
         }
@@ -97,17 +99,31 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Assert
             Assert.NotNull(result);
             Assert.Equal(new KeyValuePair<int, string>(42, "some-value"), result.Model);
+            Assert.NotNull(result.ValidationNode);
+            Assert.Equal(new KeyValuePair<int, string>(42, "some-value"), result.ValidationNode.Model);
+            Assert.Equal("someName", result.ValidationNode.Key);
+
+            var validationNode = result.ValidationNode.ChildNodes[0];
+            Assert.Equal("someName.Key", validationNode.Key);
+            Assert.Equal(42, validationNode.Model);
+            Assert.Empty(validationNode.ChildNodes);
+
+            validationNode = result.ValidationNode.ChildNodes[1];
+            Assert.Equal("someName.Value", validationNode.Key);
+            Assert.Equal("some-value", validationNode.Model);
+            Assert.Empty(validationNode.ChildNodes);
         }
 
         [Fact]
         public async Task TryBindStrongModel_BinderExists_BinderReturnsCorrectlyTypedObject_ReturnsTrue()
         {
             // Arrange
-            ModelBindingContext bindingContext = GetBindingContext(new SimpleHttpValueProvider());
+            var bindingContext = GetBindingContext(new SimpleHttpValueProvider());
             var binder = new KeyValuePairModelBinder<int, string>();
+            var modelValidationNodeList = new List<ModelValidationNode>();
 
             // Act
-            var result = await binder.TryBindStrongModel<int>(bindingContext, "key");
+            var result = await binder.TryBindStrongModel<int>(bindingContext, "key", modelValidationNodeList);
 
             // Assert
             Assert.True(result.IsModelSet);
@@ -131,9 +147,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
 
             var binder = new KeyValuePairModelBinder<int, string>();
+            var modelValidationNodeList = new List<ModelValidationNode>();
 
             // Act
-            var result = await binder.TryBindStrongModel<int>(bindingContext, "key");
+            var result = await binder.TryBindStrongModel<int>(bindingContext, "key", modelValidationNodeList);
 
             // Assert
             Assert.True(result.IsModelSet);

@@ -374,6 +374,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var model = Assert.IsType<SimplePropertiesModel>(result.Model);
             Assert.Equal("firstName-value", model.FirstName);
             Assert.Equal("lastName-value", model.LastName);
+
+            Assert.NotNull(result.ValidationNode);
+            Assert.Equal(2, result.ValidationNode.ChildNodes.Count);
+            Assert.Equal("", result.ValidationNode.Key);
+            Assert.Equal(bindingContext.ModelMetadata, result.ValidationNode.ModelMetadata);
+            model = Assert.IsType<SimplePropertiesModel>(result.ValidationNode.Model);
+            Assert.Equal("firstName-value", model.FirstName);
+            Assert.Equal("lastName-value", model.LastName);
+
+            Assert.Equal(2, result.ValidationNode.ChildNodes.Count);
+
+            var validationNode = result.ValidationNode.ChildNodes[0];
+            Assert.Equal("FirstName", validationNode.Key);
+            Assert.Equal("firstName-value", validationNode.Model);
+            Assert.Empty(validationNode.ChildNodes);
+
+            validationNode = result.ValidationNode.ChildNodes[1];
+            Assert.Equal("LastName", validationNode.Key);
+            Assert.Equal("lastName-value", validationNode.Model);
+            Assert.Empty(validationNode.ChildNodes);
         }
 
         [Fact]
@@ -412,6 +432,79 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal("some other", model.Friends[1].FirstName);
             Assert.Equal("name", model.Friends[1].LastName);
             Assert.Equal(new byte[] { 227, 233, 133, 121, 58, 119, 180, 241 }, model.Resume);
+        }
+
+        [Fact]
+        public async Task BindModel_DoesNotAddAValidationNode_IfModelIsNotSet()
+        {
+            // Arrange
+            var valueProvider = new SimpleHttpValueProvider();
+            var mockBinder = new Mock<IModelBinder>();
+            mockBinder
+                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Returns(
+                    delegate (ModelBindingContext context)
+                    {
+                        return Task.FromResult(
+                            new ModelBindingResult(model: 42, key: "someName", isModelSet: false));
+                    });
+            var binder = CreateCompositeBinder(mockBinder.Object);
+            var bindingContext = CreateBindingContext(binder, valueProvider, typeof(SimplePropertiesModel));
+
+            // Act
+            var result = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            // The result is null because of issue #2473
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task BindModel_DoesNotAddAValidationNode_IfModelBindingResultIsNull()
+        {
+            // Arrange
+            var mockBinder = new Mock<IModelBinder>();
+            mockBinder
+                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Returns(Task.FromResult<ModelBindingResult>(null));
+            var binder = CreateCompositeBinder(mockBinder.Object);
+            var valueProvider = new SimpleHttpValueProvider();
+            var bindingContext = CreateBindingContext(binder, valueProvider, typeof(SimplePropertiesModel));
+
+            // Act
+            var result = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task BindModel_UsesTheValidationNodeOnModelBindingResult_IfPresent()
+        {
+            // Arrange
+            var valueProvider = new SimpleHttpValueProvider();
+            ModelValidationNode validationNode = null;
+
+            var mockBinder = new Mock<IModelBinder>();
+            mockBinder
+                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Returns(
+                    delegate (ModelBindingContext context)
+                    {
+                        validationNode = new ModelValidationNode("someName", context.ModelMetadata, 42);
+                        return Task.FromResult(
+                            new ModelBindingResult(42, "someName", isModelSet: true, validationNode: validationNode));
+                    });
+            var binder = CreateCompositeBinder(mockBinder.Object);
+            var bindingContext = CreateBindingContext(binder, valueProvider, typeof(SimplePropertiesModel));
+
+            // Act
+            var result = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.IsModelSet);
+            Assert.Same(validationNode, result.ValidationNode);
         }
 
         private static ModelBindingContext CreateBindingContext(IModelBinder binder,

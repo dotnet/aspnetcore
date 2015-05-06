@@ -50,6 +50,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             mockInputFormatter.Verify(v => v.ReadAsync(It.IsAny<InputFormatterContext>()), Times.Once);
             Assert.NotNull(binderResult);
             Assert.True(binderResult.IsModelSet);
+            Assert.NotNull(binderResult.ValidationNode);
+            Assert.True(binderResult.ValidationNode.ValidateAllProperties);
+            Assert.False(binderResult.ValidationNode.SuppressValidation);
+            Assert.Empty(binderResult.ValidationNode.ChildNodes);
+            Assert.Equal(binderResult.Key, binderResult.ValidationNode.Key);
+            Assert.Equal(bindingContext.ModelMetadata, binderResult.ValidationNode.ModelMetadata);
+            Assert.Same(binderResult.Model, binderResult.ValidationNode.Model);
         }
 
         [Fact]
@@ -71,6 +78,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Returns true because it understands the metadata type.
             Assert.NotNull(binderResult);
             Assert.False(binderResult.IsModelSet);
+            Assert.Null(binderResult.ValidationNode);
             Assert.Null(binderResult.Model);
             Assert.True(bindingContext.ModelState.ContainsKey("someName"));
         }
@@ -92,6 +100,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Assert
             Assert.NotNull(binderResult);
             Assert.False(binderResult.IsModelSet);
+            Assert.Null(binderResult.ValidationNode);
         }
 
         [Fact]
@@ -159,6 +168,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Returns true because it understands the metadata type.
             Assert.NotNull(binderResult);
             Assert.False(binderResult.IsModelSet);
+            Assert.Null(binderResult.ValidationNode);
             Assert.Null(binderResult.Model);
             Assert.True(bindingContext.ModelState.ContainsKey("someName"));
             var errorMessage = bindingContext.ModelState["someName"].Errors[0].Exception.Message;
@@ -192,6 +202,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.NotNull(binderResult);
             Assert.False(binderResult.IsModelSet);
             Assert.Null(binderResult.Model);
+            Assert.Null(binderResult.ValidationNode);
             Assert.True(bindingContext.ModelState.ContainsKey("someName"));
             var errorMessage = bindingContext.ModelState["someName"].Errors[0].ErrorMessage;
             Assert.Equal("Unsupported content type 'text/xyz'.", errorMessage);

@@ -281,7 +281,12 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         {
             public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
             {
-                return Task.FromResult(new ModelBindingResult("Success", bindingContext.ModelName, true));
+                var model = "Success";
+                var modelValidationNode = new ModelValidationNode(
+                    bindingContext.ModelName,
+                    bindingContext.ModelMetadata,
+                    model);
+                return Task.FromResult(new ModelBindingResult(model, bindingContext.ModelName, true, modelValidationNode));
             }
         }
 

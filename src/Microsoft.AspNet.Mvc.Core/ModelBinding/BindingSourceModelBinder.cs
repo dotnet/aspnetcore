@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var modelBindingResult =
                 result != null ?
-                    new ModelBindingResult(result.Model, result.Key, result.IsModelSet) :
+                    new ModelBindingResult(result.Model, result.Key, result.IsModelSet, result.ValidationNode) :
                     new ModelBindingResult(model: null, key: context.ModelName, isModelSet: false);
 
             // This model binder is the only handler for its binding source.
