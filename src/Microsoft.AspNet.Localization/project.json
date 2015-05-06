@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "description": "",
+  "description": "Middleware for automatically applying culture information to HTTP requests.",
 
   "dependencies": {
     "Microsoft.Framework.Localization.Abstractions": "1.0.0-*",

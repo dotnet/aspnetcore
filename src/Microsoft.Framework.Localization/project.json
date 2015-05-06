@@ -1,6 +1,6 @@
 ﻿{
   "version": "1.0.0-*",
-  "description": "",
+  "description": "Application localization services.",
 
   "dependencies": {
     "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
