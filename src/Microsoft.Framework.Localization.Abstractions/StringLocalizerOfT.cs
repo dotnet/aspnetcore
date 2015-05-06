@@ -4,6 +4,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.Localization
 {
@@ -19,7 +20,7 @@ namespace Microsoft.Framework.Localization
         /// Creates a new <see cref="StringLocalizer{TResourceSource}"/>.
         /// </summary>
         /// <param name="factory">The <see cref="IStringLocalizerFactory"/> to use.</param>
-        public StringLocalizer(IStringLocalizerFactory factory)
+        public StringLocalizer([NotNull] IStringLocalizerFactory factory)
         {
             _localizer = factory.Create(typeof(TResourceSource));
         }
@@ -28,16 +29,17 @@ namespace Microsoft.Framework.Localization
         public virtual IStringLocalizer WithCulture(CultureInfo culture) => _localizer.WithCulture(culture);
 
         /// <inheritdoc />
-        public virtual LocalizedString this[string key] => _localizer[key];
+        public virtual LocalizedString this[[NotNull] string key] => _localizer[key];
 
         /// <inheritdoc />
-        public virtual LocalizedString this[string key, params object[] arguments] => _localizer[key, arguments];
+        public virtual LocalizedString this[[NotNull] string key, params object[] arguments] =>
+            _localizer[key, arguments];
 
         /// <inheritdoc />
-        public virtual LocalizedString GetString(string key) => _localizer.GetString(key);
+        public virtual LocalizedString GetString([NotNull] string key) => _localizer.GetString(key);
 
         /// <inheritdoc />
-        public virtual LocalizedString GetString(string key, params object[] arguments) =>
+        public virtual LocalizedString GetString([NotNull] string key, params object[] arguments) =>
             _localizer.GetString(key, arguments);
 
         /// <inheritdoc />

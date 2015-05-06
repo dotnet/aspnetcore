@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Resources;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.Localization
 {
@@ -27,9 +28,9 @@ namespace Microsoft.Framework.Localization
         /// <param name="resourceAssembly">The <see cref="Assembly"/> that contains the strings as embedded resources.</param>
         /// <param name="baseName">The base name of the embedded resource in the <see cref="Assembly"/> that contains the strings.</param>
         public ResourceManagerStringLocalizer(
-                    ResourceManager resourceManager,
-                    Assembly resourceAssembly,
-                    string baseName)
+            [NotNull] ResourceManager resourceManager,
+            [NotNull] Assembly resourceAssembly,
+            [NotNull] string baseName)
         {
             ResourceManager = resourceManager;
             ResourceAssembly = resourceAssembly;
@@ -52,20 +53,20 @@ namespace Microsoft.Framework.Localization
         protected string ResourceBaseName { get; }
         
         /// <inheritdoc />
-        public virtual LocalizedString this[string name] => GetString(name);
+        public virtual LocalizedString this[[NotNull] string name] => GetString(name);
 
         /// <inheritdoc />
-        public virtual LocalizedString this[string name, params object[] arguments] => GetString(name, arguments);
+        public virtual LocalizedString this[[NotNull] string name, params object[] arguments] => GetString(name, arguments);
 
         /// <inheritdoc />
-        public virtual LocalizedString GetString(string name)
+        public virtual LocalizedString GetString([NotNull] string name)
         {
             var value = GetStringSafely(name, null);
             return new LocalizedString(name, value ?? name, resourceNotFound: value == null);
         }
 
         /// <inheritdoc />
-        public virtual LocalizedString GetString(string name, params object[] arguments)
+        public virtual LocalizedString GetString([NotNull] string name, params object[] arguments)
         {
             var format = GetStringSafely(name, null);
             var value = string.Format(format ?? name, arguments);
@@ -95,7 +96,7 @@ namespace Microsoft.Framework.Localization
         /// <param name="name">The name of the string resource.</param>
         /// <param name="culture">The <see cref="CultureInfo"/> to get the string for.</param>
         /// <returns>The resource string, or <c>null</c> if none was found.</returns>
-        protected string GetStringSafely(string name, CultureInfo culture)
+        protected string GetStringSafely([NotNull] string name, [NotNull] CultureInfo culture)
         {
             var cacheKey = new MissingManifestCacheKey(name, culture);
             if (_missingManifestCache.ContainsKey(cacheKey))
@@ -133,7 +134,7 @@ namespace Microsoft.Framework.Localization
         /// </summary>
         /// <param name="culture">The <see cref="CultureInfo"/> to get strings for.</param>
         /// <returns>The <see cref="IEnumerator{LocalizedString}"/>.</returns>
-        protected IEnumerator<LocalizedString> GetEnumerator(CultureInfo culture)
+        protected IEnumerator<LocalizedString> GetEnumerator([NotNull] CultureInfo culture)
         {
             // TODO: I'm sure something here should be cached, probably the whole result
             var resourceNames = GetResourceNamesFromCultureHierarchy(culture);

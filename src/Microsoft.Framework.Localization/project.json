@@ -5,6 +5,7 @@
   "dependencies": {
     "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
     "Microsoft.Framework.Localization.Abstractions": "1.0.0-*",
+    "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" },
     "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*",
     "System.Resources.ReaderWriter": "4.0.0-*"
   },

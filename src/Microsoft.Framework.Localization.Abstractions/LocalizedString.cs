@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
+using Microsoft.Framework.Internal;
+
 namespace Microsoft.Framework.Localization
 {
     /// <summary>
@@ -13,7 +15,7 @@ namespace Microsoft.Framework.Localization
         /// </summary>
         /// <param name="name">The name of the string in the resource it was loaded from.</param>
         /// <param name="value">The actual string.</param>
-        public LocalizedString(string name, string value)
+        public LocalizedString([NotNull] string name, [NotNull] string value)
             : this(name, value, resourceNotFound: false)
         {
 
@@ -25,7 +27,7 @@ namespace Microsoft.Framework.Localization
         /// <param name="name">The name of the string in the resource it was loaded from.</param>
         /// <param name="value">The actual string.</param>
         /// <param name="resourceNotFound">Whether the string was found in a resource. Set this to <c>false</c> to indicate an alternate string value was used.</param>
-        public LocalizedString(string name, string value, bool resourceNotFound)
+        public LocalizedString([NotNull] string name, [NotNull] string value, bool resourceNotFound)
         {
             Name = name;
             Value = value;

@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
+using Microsoft.Framework.Internal;
+
 namespace Microsoft.AspNet.Localization
 {
     /// <summary>
@@ -12,12 +14,16 @@ namespace Microsoft.AspNet.Localization
         /// Creates a new <see cref="RequestCultureFeature"/> with the specified <see cref="Localization.RequestCulture"/>.
         /// </summary>
         /// <param name="requestCulture">The <see cref="Localization.RequestCulture"/>.</param>
-        public RequestCultureFeature(RequestCulture requestCulture)
+        public RequestCultureFeature([NotNull] RequestCulture requestCulture, IRequestCultureStrategy strategy)
         {
             RequestCulture = requestCulture;
+            Strategy = strategy;
         }
 
         /// <inheritdoc />
         public RequestCulture RequestCulture { get; }
+
+        /// <inheritdoc />
+        public IRequestCultureStrategy Strategy { get; }
     }
 }

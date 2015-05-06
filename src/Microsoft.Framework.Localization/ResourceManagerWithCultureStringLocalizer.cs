@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Resources;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.Localization
 {
@@ -25,30 +26,30 @@ namespace Microsoft.Framework.Localization
         /// <param name="baseName">The base name of the embedded resource in the <see cref="Assembly"/> that contains the strings.</param>
         /// <param name="culture">The specific <see cref="CultureInfo"/> to use.</param>
         public ResourceManagerWithCultureStringLocalizer(
-            ResourceManager resourceManager,
-            Assembly assembly,
-            string baseName,
-            CultureInfo culture)
+            [NotNull] ResourceManager resourceManager,
+            [NotNull] Assembly assembly,
+            [NotNull] string baseName,
+            [NotNull] CultureInfo culture)
             : base(resourceManager, assembly, baseName)
         {
             _culture = culture;
         }
 
         /// <inheritdoc />
-        public override LocalizedString this[string name] => GetString(name);
+        public override LocalizedString this[[NotNull] string name] => GetString(name);
 
         /// <inheritdoc />
-        public override LocalizedString this[string name, params object[] arguments] => GetString(name, arguments);
+        public override LocalizedString this[[NotNull] string name, params object[] arguments] => GetString(name, arguments);
 
         /// <inheritdoc />
-        public override LocalizedString GetString(string name)
+        public override LocalizedString GetString([NotNull] string name)
         {
             var value = GetStringSafely(name, _culture);
             return new LocalizedString(name, value ?? name);
         }
 
         /// <inheritdoc />
-        public override LocalizedString GetString(string name, params object[] arguments)
+        public override LocalizedString GetString([NotNull] string name, params object[] arguments)
         {
             var format = GetStringSafely(name, _culture);
             var value = string.Format(_culture, format ?? name, arguments);

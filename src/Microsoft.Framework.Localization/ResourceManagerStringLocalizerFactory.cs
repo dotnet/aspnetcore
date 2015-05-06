@@ -4,6 +4,7 @@
 using System;
 using System.Reflection;
 using System.Resources;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Runtime;
 
 namespace Microsoft.Framework.Localization
@@ -19,7 +20,7 @@ namespace Microsoft.Framework.Localization
         /// Creates a new <see cref="ResourceManagerStringLocalizer"/>.
         /// </summary>
         /// <param name="applicationEnvironment"></param>
-        public ResourceManagerStringLocalizerFactory(IApplicationEnvironment applicationEnvironment)
+        public ResourceManagerStringLocalizerFactory([NotNull] IApplicationEnvironment applicationEnvironment)
         {
             _applicationEnvironment = applicationEnvironment;
         }
@@ -30,7 +31,7 @@ namespace Microsoft.Framework.Localization
         /// </summary>
         /// <param name="resourceSource">The <see cref="Type"/>.</param>
         /// <returns>The <see cref="ResourceManagerStringLocalizer"/>.</returns>
-        public IStringLocalizer Create(Type resourceSource)
+        public IStringLocalizer Create([NotNull] Type resourceSource)
         {
             var typeInfo = resourceSource.GetTypeInfo();
             var assembly = typeInfo.Assembly;
@@ -44,7 +45,7 @@ namespace Microsoft.Framework.Localization
         /// <param name="baseName">The base name of the resource to load strings from.</param>
         /// <param name="location">The location to load resources from.</param>
         /// <returns>The <see cref="ResourceManagerStringLocalizer"/>.</returns>
-        public IStringLocalizer Create(string baseName, string location)
+        public IStringLocalizer Create([NotNull] string baseName, [NotNull] string location)
         {
             var assembly = Assembly.Load(new AssemblyName(location ?? _applicationEnvironment.ApplicationName));
 

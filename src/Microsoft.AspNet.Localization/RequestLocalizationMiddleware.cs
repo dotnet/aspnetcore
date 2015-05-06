@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Localization
 {
@@ -16,14 +17,17 @@ namespace Microsoft.AspNet.Localization
     public class RequestLocalizationMiddleware
     {
         private readonly RequestDelegate _next;
-
+        private readonly RequestLocalizationMiddlewareOptions _options;
+        
         /// <summary>
         /// Creates a new <see cref="RequestLocalizationMiddleware"/>.
         /// </summary>
         /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
-        public RequestLocalizationMiddleware(RequestDelegate next)
+        /// <param name="options"></param>
+        public RequestLocalizationMiddleware([NotNull] RequestDelegate next, [NotNull] RequestLocalizationMiddlewareOptions options)
         {
             _next = next;
+            _options = options;
         }
 
         /// <summary>
@@ -31,42 +35,35 @@ namespace Microsoft.AspNet.Localization
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <returns>A <see cref="Task"/> that completes when the middleware has completed processing.</returns>
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke([NotNull] HttpContext context)
         {
-            // TODO: Make this read from Accept-Language header, cookie, app-provided delegate, etc.
-            if (context.Request.QueryString.HasValue)
+            var requestCulture = _options.DefaultRequestCulture ??
+                new RequestCulture(CultureInfo.DefaultThreadCurrentCulture, CultureInfo.DefaultThreadCurrentUICulture);
+
+            IRequestCultureStrategy winningStrategy = null;
+
+            if (_options.RequestCultureStrategies != null)
             {
-                var queryCulture = context.Request.Query["culture"];
-                if (!string.IsNullOrEmpty(queryCulture))
+                foreach (var strategy in _options.RequestCultureStrategies)
                 {
-                    var requestCulture = new RequestCulture(new CultureInfo(queryCulture));
-
-                    context.SetFeature<IRequestCultureFeature>(new RequestCultureFeature(requestCulture));
-
-                    var originalCulture = CultureInfo.CurrentCulture;
-                    var originalUICulture = CultureInfo.CurrentUICulture;
-
-                    SetCurrentCulture(requestCulture);
-
-                    await _next(context);
-
-                    return;
+                    var result = strategy.DetermineRequestCulture(context);
+                    if (result != null)
+                    {
+                        requestCulture = result;
+                        winningStrategy = strategy;
+                        break;
+                    }
                 }
             }
-            else
-            {
-                // NOTE: The below doesn't seem to be needed anymore now that DNX is correctly managing culture across
-                //       async calls but we'll need to verify properly.
-                // Forcibly set thread to en-US as sometimes previous threads have wrong culture across async calls, 
-                // see note above.
-                //var defaultRequestCulture = new RequestCulture(new CultureInfo("en-US"));
-                //SetCurrentCulture(defaultRequestCulture);
-            }
+
+            context.SetFeature<IRequestCultureFeature>(new RequestCultureFeature(requestCulture, winningStrategy));
+
+            SetCurrentThreadCulture(requestCulture);
 
             await _next(context);
         }
 
-        private void SetCurrentCulture(RequestCulture requestCulture)
+        private static void SetCurrentThreadCulture(RequestCulture requestCulture)
         {
 #if DNX451
             Thread.CurrentThread.CurrentCulture = requestCulture.Culture;

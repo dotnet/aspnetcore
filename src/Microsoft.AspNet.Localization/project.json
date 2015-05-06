@@ -4,6 +4,7 @@
 
   "dependencies": {
     "Microsoft.Framework.Localization.Abstractions": "1.0.0-*",
+    "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" },
     "Microsoft.AspNet.Http.Extensions": "1.0.0-*"
   },
 
@@ -13,6 +14,7 @@
       "dependencies": {
         "System.Collections": "4.0.10-*",
         "System.Linq": "4.0.0-*",
+        "System.Globalization": "4.0.10-*",
         "System.Threading": "4.0.10-*",
         "Microsoft.CSharp": "4.0.0-*"
       }
