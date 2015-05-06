@@ -13,6 +13,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Diagnostics
 {
@@ -31,16 +32,8 @@ namespace Microsoft.AspNet.Diagnostics
         /// <param name="next"></param>
         /// <param name="options"></param>
         /// <param name="isDevMode"></param>
-        public ErrorPageMiddleware(RequestDelegate next, ErrorPageOptions options, bool isDevMode)
+        public ErrorPageMiddleware([NotNull] RequestDelegate next, [NotNull] ErrorPageOptions options, bool isDevMode)
         {
-            if (next == null)
-            {
-                throw new ArgumentNullException("next");
-            }
-            if (options == null)
-            {
-                throw new ArgumentNullException("options");
-            }
             if (isDevMode)
             {
                 options.SetDefaultVisibility(isVisible: true);

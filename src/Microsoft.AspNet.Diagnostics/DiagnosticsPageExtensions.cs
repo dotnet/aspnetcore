@@ -6,6 +6,7 @@
 using System;
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Diagnostics;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -20,13 +21,8 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseDiagnosticsPage(this IApplicationBuilder builder, DiagnosticsPageOptions options)
+        public static IApplicationBuilder UseDiagnosticsPage([NotNull] this IApplicationBuilder builder, DiagnosticsPageOptions options)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException("builder");
-            }
-
             return builder.Use(next => new DiagnosticsPageMiddleware(next, options).Invoke);
         }
 
