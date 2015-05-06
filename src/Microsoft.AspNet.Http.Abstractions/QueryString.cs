@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Text;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 
@@ -31,16 +33,6 @@ namespace Microsoft.AspNet.Http
                 throw new ArgumentException("The leading '?' must be included for a non-empty query.", "value");
             }
             _value = value;
-        }
-
-        /// <summary>
-        /// Initialize a query string with a single given parameter name and value.
-        /// </summary>
-        /// <param name="name">The un-encoded parameter name</param>
-        /// <param name="value">The un-encoded parameter value</param>
-        public QueryString(string name, string value)
-        {
-            _value = "?" + UrlEncoder.Default.UrlEncode(name) + '=' + UrlEncoder.Default.UrlEncode(value);
         }
 
         /// <summary>
@@ -114,6 +106,67 @@ namespace Microsoft.AspNet.Http
             return new QueryString(queryValue);
         }
 
+        /// <summary>
+        /// Create a query string with a single given parameter name and value.
+        /// </summary>
+        /// <param name="name">The un-encoded parameter name</param>
+        /// <param name="value">The un-encoded parameter value</param>
+        public static QueryString Create(string name, string value)
+        {
+            return new QueryString("?" + UrlEncoder.Default.UrlEncode(name) + '=' + UrlEncoder.Default.UrlEncode(value));
+        }
+
+        /// <summary>
+        /// Creates a query string composed from the given name value pairs.
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public static QueryString Create(IEnumerable<KeyValuePair<string, string>> parameters)
+        {
+            var builder = new StringBuilder();
+            bool first = true;
+            foreach (var pair in parameters)
+            {
+                builder.Append(first ? "?" : "&");
+                first = false;
+                builder.Append(UrlEncoder.Default.UrlEncode(pair.Key));
+                builder.Append("=");
+                builder.Append(UrlEncoder.Default.UrlEncode(pair.Value));
+            }
+
+            return new QueryString(builder.ToString());
+        }
+
+        public QueryString Add(QueryString other)
+        {
+            if (!HasValue || Value.Equals("?", StringComparison.Ordinal))
+            {
+                return other;
+            }
+            if (!other.HasValue || other.Value.Equals("?", StringComparison.Ordinal))
+            {
+                return this;
+            }
+
+            // ?name1=value1 Add ?name2=value2 returns ?name1=value1&name2=value2
+            return new QueryString(_value + "&" + other.Value.Substring(1));
+        }
+
+        public QueryString Add(string name, string value)
+        {
+            if (!HasValue || Value.Equals("?", StringComparison.Ordinal))
+            {
+                return Create(name, value);
+            }
+
+            var builder = new StringBuilder(Value);
+            builder.Append("&");
+            builder.Append(UrlEncoder.Default.UrlEncode(name));
+            builder.Append("=");
+            builder.Append(UrlEncoder.Default.UrlEncode(value));
+            return new QueryString(builder.ToString());
+        }
+
         public bool Equals(QueryString other)
         {
             return string.Equals(_value, other._value);
@@ -141,6 +194,11 @@ namespace Microsoft.AspNet.Http
         public static bool operator !=(QueryString left, QueryString right)
         {
             return !left.Equals(right);
+        }
+
+        public static QueryString operator +(QueryString left, QueryString right)
+        {
+            return left.Add(right);
         }
     }
 }
