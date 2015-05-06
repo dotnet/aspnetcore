@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Routing.Constraints
             if (length < 0)
             {
                 var errorMessage = Resources.FormatArgumentMustBeGreaterThanOrEqualTo(0);
-                throw new ArgumentOutOfRangeException("length", length, errorMessage);
+                throw new ArgumentOutOfRangeException(nameof(length), length, errorMessage);
             }
 
             MinLength = MaxLength = length;
@@ -41,20 +41,20 @@ namespace Microsoft.AspNet.Routing.Constraints
             if (minLength < 0)
             {
                 var errorMessage = Resources.FormatArgumentMustBeGreaterThanOrEqualTo(0);
-                throw new ArgumentOutOfRangeException("minLength", minLength, errorMessage);
+                throw new ArgumentOutOfRangeException(nameof(minLength), minLength, errorMessage);
             }
 
             if (maxLength < 0)
             {
                 var errorMessage = Resources.FormatArgumentMustBeGreaterThanOrEqualTo(0);
-                throw new ArgumentOutOfRangeException("maxLength", maxLength, errorMessage);
+                throw new ArgumentOutOfRangeException(nameof(maxLength), maxLength, errorMessage);
             }
 
             if (minLength > maxLength)
             {
                 var errorMessage =
                     Resources.FormatRangeConstraint_MinShouldBeLessThanOrEqualToMax("minLength", "maxLength");
-                throw new ArgumentOutOfRangeException("minLength", minLength, errorMessage);
+                throw new ArgumentOutOfRangeException(nameof(minLength), minLength, errorMessage);
             }
 
             MinLength = minLength;

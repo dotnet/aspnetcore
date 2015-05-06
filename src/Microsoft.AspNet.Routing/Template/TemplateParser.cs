@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             if (IsInvalidRouteTemplate(routeTemplate))
             {
-                throw new ArgumentException(Resources.TemplateRoute_InvalidRouteTemplate, "routeTemplate");
+                throw new ArgumentException(Resources.TemplateRoute_InvalidRouteTemplate, nameof(routeTemplate));
             }
 
             var context = new TemplateParserContext(routeTemplate);
@@ -41,13 +41,13 @@ namespace Microsoft.AspNet.Routing.Template
                     // If we get here is means that there's a consecutive '/' character.
                     // Templates don't start with a '/' and parsing a segment consumes the separator.
                     throw new ArgumentException(Resources.TemplateRoute_CannotHaveConsecutiveSeparators,
-                                                "routeTemplate");
+                                                nameof(routeTemplate));
                 }
                 else
                 {
                     if (!ParseSegment(context, segments))
                     {
-                        throw new ArgumentException(context.Error, "routeTemplate");
+                        throw new ArgumentException(context.Error, nameof(routeTemplate));
                     }
                 }
             }
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Routing.Template
             }
             else
             {
-                throw new ArgumentException(context.Error, "routeTemplate");
+                throw new ArgumentException(context.Error, nameof(routeTemplate));
             }
         }
 

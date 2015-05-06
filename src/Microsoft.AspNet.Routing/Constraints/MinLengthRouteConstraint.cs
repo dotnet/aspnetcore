@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Routing.Constraints
             if (minLength < 0)
             {
                 var errorMessage = Resources.FormatArgumentMustBeGreaterThanOrEqualTo(0);
-                throw new ArgumentOutOfRangeException("minLength", minLength, errorMessage);
+                throw new ArgumentOutOfRangeException(nameof(minLength), minLength, errorMessage);
             }
 
             MinLength = minLength;

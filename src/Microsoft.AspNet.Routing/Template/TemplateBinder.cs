@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.AspNet.Http.Extensions;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing.Template
 {
@@ -16,13 +17,8 @@ namespace Microsoft.AspNet.Routing.Template
         private readonly IReadOnlyDictionary<string, object> _defaults;
         private readonly RouteTemplate _template;
 
-        public TemplateBinder(RouteTemplate template, IReadOnlyDictionary<string, object> defaults)
+        public TemplateBinder([NotNull] RouteTemplate template, IReadOnlyDictionary<string, object> defaults)
         {
-            if (template == null)
-            {
-                throw new ArgumentNullException("template");
-            }
-
             _template = template;
             _defaults = defaults;
         }
@@ -357,13 +353,8 @@ namespace Microsoft.AspNet.Routing.Template
 
             public TemplateBindingContext(
                 IReadOnlyDictionary<string, object> defaults,
-                IDictionary<string, object> values)
+                [NotNull] IDictionary<string, object> values)
             {
-                if (values == null)
-                {
-                    throw new ArgumentNullException("values");
-                }
-
                 _defaults = defaults;
 
                 _acceptedValues = new RouteValueDictionary();

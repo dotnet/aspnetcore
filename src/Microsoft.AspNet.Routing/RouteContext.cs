@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -27,13 +28,9 @@ namespace Microsoft.AspNet.Routing
             {
                 return _routeData;
             }
+            [param: NotNull]
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-
                 _routeData = value;
             }
         }

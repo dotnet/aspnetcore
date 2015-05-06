@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Routing.Constraints
             if (min > max)
             {
                 var errorMessage = Resources.FormatRangeConstraint_MinShouldBeLessThanOrEqualToMax("min", "max");
-                throw new ArgumentOutOfRangeException("min", min, errorMessage);
+                throw new ArgumentOutOfRangeException(nameof(min), min, errorMessage);
             }
 
             Min = min;

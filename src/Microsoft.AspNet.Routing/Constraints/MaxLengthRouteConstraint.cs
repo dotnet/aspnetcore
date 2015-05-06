@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Routing.Constraints
             if (maxLength < 0)
             {
                 var errorMessage = Resources.FormatArgumentMustBeGreaterThanOrEqualTo(0);
-                throw new ArgumentOutOfRangeException("maxLength", maxLength, errorMessage);
+                throw new ArgumentOutOfRangeException(nameof(maxLength), maxLength, errorMessage);
             }
 
             MaxLength = maxLength;
