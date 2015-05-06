@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if !DNXCORE50
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -19,12 +18,6 @@ namespace Microsoft.AspNet.Razor.Test
 {
     public class RazorTemplateEngineTest
     {
-        [Fact]
-        public void ConstructorRequiresNonNullHost()
-        {
-            Assert.Throws<ArgumentNullException>("host", () => new RazorTemplateEngine(null));
-        }
-
         [Fact]
         public void ConstructorInitializesHost()
         {

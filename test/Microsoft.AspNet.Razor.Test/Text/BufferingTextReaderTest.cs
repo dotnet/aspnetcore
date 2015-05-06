@@ -29,12 +29,6 @@ namespace Microsoft.AspNet.Razor.Test.Text
         }
 
         [Fact]
-        public void ConstructorRequiresNonNullSourceReader()
-        {
-            Assert.Throws<ArgumentNullException>("source", () => new BufferingTextReader(null));
-        }
-
-        [Fact]
         public void PeekReturnsCurrentCharacterWithoutAdvancingPosition()
         {
             RunPeekTest("abc", peekAt: 2);

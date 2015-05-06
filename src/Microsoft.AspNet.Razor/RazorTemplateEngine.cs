@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -28,14 +27,11 @@ namespace Microsoft.AspNet.Razor
         /// <summary>
         /// Constructs a new RazorTemplateEngine with the specified host
         /// </summary>
-        /// <param name="host">The host which defines the environment in which the generated template code will live</param>
-        public RazorTemplateEngine(RazorEngineHost host)
+        /// <param name="host">
+        /// The host which defines the environment in which the generated template code will live.
+        /// </param>
+        public RazorTemplateEngine([NotNull] RazorEngineHost host)
         {
-            if (host == null)
-            {
-                throw new ArgumentNullException("host");
-            }
-
             Host = host;
         }
 
@@ -44,7 +40,7 @@ namespace Microsoft.AspNet.Razor
         /// </summary>
         public RazorEngineHost Host { get; }
 
-        public ParserResults ParseTemplate(ITextBuffer input)
+        public ParserResults ParseTemplate([NotNull] ITextBuffer input)
         {
             return ParseTemplate(input, cancelToken: null);
         }
@@ -53,29 +49,32 @@ namespace Microsoft.AspNet.Razor
         /// Parses the template specified by the TextBuffer and returns it's result
         /// </summary>
         /// <remarks>
+        /// <para>
         /// IMPORTANT: This does NOT need to be called before GeneratedCode! GenerateCode will automatically
         /// parse the document first.
-        ///
+        /// </para>
+        /// <para>
         /// The cancel token provided can be used to cancel the parse.  However, please note
         /// that the parse occurs _synchronously_, on the callers thread.  This parameter is
         /// provided so that if the caller is in a background thread with a CancellationToken,
         /// it can pass it along to the parser.
+        /// </para>
         /// </remarks>
-        /// <param name="input">The input text to parse</param>
-        /// <param name="cancelToken">A token used to cancel the parser</param>
-        /// <returns>The resulting parse tree</returns>
+        /// <param name="input">The input text to parse.</param>
+        /// <param name="cancelToken">A token used to cancel the parser.</param>
+        /// <returns>The resulting parse tree.</returns>
         [SuppressMessage(
             "Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "Input object would be disposed if we dispose the wrapper.  We don't own the input so " +
             "we don't want to dispose it")]
-        public ParserResults ParseTemplate(ITextBuffer input, CancellationToken? cancelToken)
+        public ParserResults ParseTemplate([NotNull] ITextBuffer input, CancellationToken? cancelToken)
         {
             return ParseTemplateCore(input.ToDocument(), sourceFileName: null, cancelToken: cancelToken);
         }
 
         // See ParseTemplate(ITextBuffer, CancellationToken?),
         // this overload simply wraps a TextReader in a TextBuffer (see ITextBuffer and BufferingTextReader)
-        public ParserResults ParseTemplate(TextReader input, string sourceFileName)
+        public ParserResults ParseTemplate([NotNull] TextReader input, string sourceFileName)
         {
             return ParseTemplateCore(new SeekableTextReader(input), sourceFileName, cancelToken: null);
         }
@@ -85,13 +84,13 @@ namespace Microsoft.AspNet.Razor
             "CA2000:Dispose objects before losing scope",
             Justification = "Input object would be disposed if we dispose the wrapper. We don't own the input so " +
             "we don't want to dispose it")]
-        public ParserResults ParseTemplate(TextReader input, CancellationToken? cancelToken)
+        public ParserResults ParseTemplate([NotNull] TextReader input, CancellationToken? cancelToken)
         {
             return ParseTemplateCore(new SeekableTextReader(input), sourceFileName: null, cancelToken: cancelToken);
         }
 
         protected internal virtual ParserResults ParseTemplateCore(
-            ITextDocument input,
+            [NotNull] ITextDocument input,
             string sourceFileName,
             CancellationToken? cancelToken)
         {
@@ -101,12 +100,12 @@ namespace Microsoft.AspNet.Razor
             return parser.Parse(input);
         }
 
-        public GeneratorResults GenerateCode(ITextBuffer input)
+        public GeneratorResults GenerateCode([NotNull] ITextBuffer input)
         {
             return GenerateCode(input, className: null, rootNamespace: null, sourceFileName: null, cancelToken: null);
         }
 
-        public GeneratorResults GenerateCode(ITextBuffer input, CancellationToken? cancelToken)
+        public GeneratorResults GenerateCode([NotNull] ITextBuffer input, CancellationToken? cancelToken)
         {
             return GenerateCode(
                 input,
@@ -116,7 +115,11 @@ namespace Microsoft.AspNet.Razor
                 cancelToken: cancelToken);
         }
 
-        public GeneratorResults GenerateCode(ITextBuffer input, string className, string rootNamespace, string sourceFileName)
+        public GeneratorResults GenerateCode(
+            [NotNull] ITextBuffer input,
+            string className,
+            string rootNamespace,
+            string sourceFileName)
         {
             return GenerateCode(input, className, rootNamespace, sourceFileName, cancelToken: null);
         }
@@ -125,22 +128,34 @@ namespace Microsoft.AspNet.Razor
         /// Parses the template specified by the TextBuffer, generates code for it, and returns the constructed code.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// The cancel token provided can be used to cancel the parse.  However, please note
         /// that the parse occurs _synchronously_, on the callers thread.  This parameter is
         /// provided so that if the caller is in a background thread with a CancellationToken,
         /// it can pass it along to the parser.
-        ///
+        /// </para>
+        /// <para>
         /// The className, rootNamespace and sourceFileName parameters are optional and override the default
         /// specified by the Host.  For example, the WebPageRazorHost in System.Web.WebPages.Razor configures the
         /// Class Name, Root Namespace and Source File Name based on the virtual path of the page being compiled.
         /// However, the built-in RazorEngineHost class uses constant defaults, so the caller will likely want to
-        /// change them using these parameters
+        /// change them using these parameters.
+        /// </para>
         /// </remarks>
-        /// <param name="input">The input text to parse</param>
-        /// <param name="cancelToken">A token used to cancel the parser</param>
-        /// <param name="className">The name of the generated class, overriding whatever is specified in the Host.  The default value (defined in the Host) can be used by providing null for this argument</param>
-        /// <param name="rootNamespace">The namespace in which the generated class will reside, overriding whatever is specified in the Host.  The default value (defined in the Host) can be used by providing null for this argument</param>
-        /// <param name="sourceFileName">The file name to use in line pragmas, usually the original Razor file, overriding whatever is specified in the Host.  The default value (defined in the Host) can be used by providing null for this argument</param>
+        /// <param name="input">The input text to parse.</param>
+        /// <param name="cancelToken">A token used to cancel the parser.</param>
+        /// <param name="className">
+        /// The name of the generated class, overriding whatever is specified in the Host.  The default value (defined
+        /// in the Host) can be used by providing null for this argument.
+        /// </param>
+        /// <param name="rootNamespace">The namespace in which the generated class will reside, overriding whatever is
+        /// specified in the Host.  The default value (defined in the Host) can be used by providing null for this
+        /// argument.
+        /// </param>
+        /// <param name="sourceFileName">
+        /// The file name to use in line pragmas, usually the original Razor file, overriding whatever is specified in
+        /// the Host.  The default value (defined in the Host) can be used by providing null for this argument.
+        /// </param>
         /// <returns>The resulting parse tree AND generated code.</returns>
         [SuppressMessage(
             "Microsoft.Reliability",
@@ -148,7 +163,7 @@ namespace Microsoft.AspNet.Razor
             Justification = "Input object would be disposed if we dispose the wrapper. We don't own the input so " +
             "we don't want to dispose it")]
         public GeneratorResults GenerateCode(
-            ITextBuffer input,
+            [NotNull] ITextBuffer input,
             string className,
             string rootNamespace,
             string sourceFileName,
@@ -164,12 +179,12 @@ namespace Microsoft.AspNet.Razor
         }
 
         // See GenerateCode override which takes ITextBuffer, and BufferingTextReader for details.
-        public GeneratorResults GenerateCode(TextReader input)
+        public GeneratorResults GenerateCode([NotNull] TextReader input)
         {
             return GenerateCode(input, className: null, rootNamespace: null, sourceFileName: null, cancelToken: null);
         }
 
-        public GeneratorResults GenerateCode(TextReader input, CancellationToken? cancelToken)
+        public GeneratorResults GenerateCode([NotNull] TextReader input, CancellationToken? cancelToken)
         {
             return GenerateCode(
                 input,
@@ -180,7 +195,7 @@ namespace Microsoft.AspNet.Razor
         }
 
         public GeneratorResults GenerateCode(
-            TextReader input,
+            [NotNull] TextReader input,
             string className,
 
             string rootNamespace, string sourceFileName)
@@ -196,7 +211,9 @@ namespace Microsoft.AspNet.Razor
         /// <see cref="RazorEngineHost.DefaultClassName"/> (<c>Host.DefaultClassName</c>).</param>
         /// <param name="rootNamespace">The namespace in which the generated class will reside. When <c>null</c>,
         /// defaults to <see cref="RazorEngineHost.DefaultNamespace"/> (<c>Host.DefaultNamespace</c>).</param>
-        /// <param name="sourceFileName">The file name to use in line pragmas, usually the original Razor file.</param>
+        /// <param name="sourceFileName">
+        /// The file name to use in line pragmas, usually the original Razor file.
+        /// </param>
         /// <returns>A <see cref="GeneratorResults"/> that represents the results of parsing the content.</returns>
         /// <remarks>
         /// This overload calculates the checksum of the contents of <paramref name="inputStream"/> prior to code
@@ -264,7 +281,7 @@ namespace Microsoft.AspNet.Razor
             Justification = "Input object would be disposed if we dispose the wrapper. We don't own the input so " +
             "we don't want to dispose it")]
         public GeneratorResults GenerateCode(
-            TextReader input,
+            [NotNull] TextReader input,
             string className,
             string rootNamespace,
             string sourceFileName,
@@ -280,7 +297,7 @@ namespace Microsoft.AspNet.Razor
         }
 
         protected internal virtual GeneratorResults GenerateCodeCore(
-            ITextDocument input,
+            [NotNull] ITextDocument input,
             string className,
             string rootNamespace,
             string sourceFileName,

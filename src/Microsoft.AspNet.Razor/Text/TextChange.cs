@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.Framework.Internal;
 using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Text
@@ -23,7 +24,13 @@ namespace Microsoft.AspNet.Razor.Text
         {
         }
 
-        public TextChange(int oldPosition, int oldLength, ITextBuffer oldBuffer, int newPosition, int newLength, ITextBuffer newBuffer)
+        public TextChange(
+            int oldPosition,
+            int oldLength,
+            [NotNull] ITextBuffer oldBuffer,
+            int newPosition,
+            int newLength,
+            [NotNull] ITextBuffer newBuffer)
             : this()
         {
             if (oldPosition < 0)
@@ -41,14 +48,6 @@ namespace Microsoft.AspNet.Razor.Text
             if (newLength < 0)
             {
                 throw new ArgumentOutOfRangeException("newLength", CommonResources.FormatArgument_Must_Be_GreaterThanOrEqualTo(0));
-            }
-            if (oldBuffer == null)
-            {
-                throw new ArgumentNullException("oldBuffer");
-            }
-            if (newBuffer == null)
-            {
-                throw new ArgumentNullException("newBuffer");
             }
 
             OldPosition = oldPosition;

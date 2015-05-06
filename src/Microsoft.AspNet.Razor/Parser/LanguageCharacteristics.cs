@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.Razor.Parser
 {
     [SuppressMessage("Microsoft.Design", "CA1005:AvoidExcessiveParametersOnGenericTypes", Justification = "All generic type parameters are required")]
     public abstract class LanguageCharacteristics<TTokenizer, TSymbol, TSymbolType>
+        where TSymbolType : struct
         where TTokenizer : Tokenizer<TSymbol, TSymbolType>
         where TSymbol : SymbolBase<TSymbolType>
     {

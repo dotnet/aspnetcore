@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser;
 using Xunit;
@@ -10,19 +9,6 @@ namespace Microsoft.AspNet.Razor.Test
 {
     public class RazorEngineHostTest
     {
-        [Fact]
-        public void ConstructorRequiresNonNullCodeLanguage()
-        {
-            Assert.Throws<ArgumentNullException>("codeLanguage", () => new RazorEngineHost(null));
-            Assert.Throws<ArgumentNullException>("codeLanguage", () => new RazorEngineHost(null, () => new HtmlMarkupParser()));
-        }
-
-        [Fact]
-        public void ConstructorRequiresNonNullMarkupParser()
-        {
-            Assert.Throws<ArgumentNullException>("markupParserFactory", () => new RazorEngineHost(new CSharpRazorCodeLanguage(), null));
-        }
-
         [Fact]
         public void ConstructorWithCodeLanguageSetsPropertiesAppropriately()
         {
@@ -52,24 +38,6 @@ namespace Microsoft.AspNet.Razor.Test
             VerifyCommonDefaults(host);
             Assert.Same(language, host.CodeLanguage);
             Assert.Same(expected, host.CreateMarkupParser());
-        }
-
-        [Fact]
-        public void DecorateCodeParserRequiresNonNullCodeParser()
-        {
-            Assert.Throws<ArgumentNullException>("incomingCodeParser", () => CreateHost().DecorateCodeParser(null));
-        }
-
-        [Fact]
-        public void DecorateMarkupParserRequiresNonNullMarkupParser()
-        {
-            Assert.Throws<ArgumentNullException>("incomingMarkupParser", () => CreateHost().DecorateMarkupParser(null));
-        }
-
-        [Fact]
-        public void DecorateCodeGeneratorRequiresNonNullCodeGenerator()
-        {
-            Assert.Throws<ArgumentNullException>("incomingCodeGenerator", () => CreateHost().DecorateCodeGenerator(null));
         }
 
         [Fact]

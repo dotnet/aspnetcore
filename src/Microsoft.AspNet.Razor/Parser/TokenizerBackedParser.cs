@@ -11,6 +11,7 @@ namespace Microsoft.AspNet.Razor.Parser
 {
     [SuppressMessage("Microsoft.Design", "CA1005:AvoidExcessiveParametersOnGenericTypes", Justification = "All generic type parameters are required")]
     public abstract partial class TokenizerBackedParser<TTokenizer, TSymbol, TSymbolType> : ParserBase
+        where TSymbolType : struct
         where TTokenizer : Tokenizer<TSymbol, TSymbolType>
         where TSymbol : SymbolBase<TSymbolType>
     {
@@ -104,7 +105,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 PutBack(symbols[i]);
             }
 
-            // The PutBacks above will set CurrentSymbol to null. EnsureCurrent will set our CurrentSymbol to the 
+            // The PutBacks above will set CurrentSymbol to null. EnsureCurrent will set our CurrentSymbol to the
             // next symbol.
             EnsureCurrent();
 

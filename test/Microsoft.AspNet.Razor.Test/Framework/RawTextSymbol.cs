@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Globalization;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
@@ -16,11 +15,6 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         public RawTextSymbol(SourceLocation start, string content)
         {
-            if (content == null)
-            {
-                throw new ArgumentNullException("content");
-            }
-
             Start = start;
             Content = content;
         }
@@ -28,7 +22,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         public override bool Equals(object obj)
         {
             var other = obj as RawTextSymbol;
-            return Equals(Start, other.Start) && Equals(Content, other.Content);
+            return other != null && Equals(Start, other.Start) && Equals(Content, other.Content);
         }
 
         internal bool EquivalentTo(ISymbol sym)

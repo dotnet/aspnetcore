@@ -16,6 +16,7 @@ using Microsoft.AspNet.Razor.Utils;
 namespace Microsoft.AspNet.Razor.Parser
 {
     public abstract partial class TokenizerBackedParser<TTokenizer, TSymbol, TSymbolType> : ParserBase
+        where TSymbolType : struct
         where TTokenizer : Tokenizer<TSymbol, TSymbolType>
         where TSymbol : SymbolBase<TSymbolType>
     {

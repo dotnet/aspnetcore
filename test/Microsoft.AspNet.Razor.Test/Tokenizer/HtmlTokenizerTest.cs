@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using Microsoft.AspNet.Razor.Tokenizer;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 using Xunit;
 
@@ -10,12 +8,6 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
 {
     public class HtmlTokenizerTest : HtmlTokenizerTestBase
     {
-        [Fact]
-        public void Constructor_Throws_ArgNull_If_Null_Source_Provided()
-        {
-            Assert.Throws<ArgumentNullException>("source", () => new HtmlTokenizer(null));
-        }
-
         [Fact]
         public void Next_Returns_Null_When_EOF_Reached()
         {

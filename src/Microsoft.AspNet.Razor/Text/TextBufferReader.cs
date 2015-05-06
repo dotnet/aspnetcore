@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Utils;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Text
 {
@@ -12,13 +13,8 @@ namespace Microsoft.AspNet.Razor.Text
         private Stack<BacktrackContext> _bookmarks = new Stack<BacktrackContext>();
         private SourceLocationTracker _tracker = new SourceLocationTracker();
 
-        public TextBufferReader(ITextBuffer buffer)
+        public TextBufferReader([NotNull] ITextBuffer buffer)
         {
-            if (buffer == null)
-            {
-                throw new ArgumentNullException("buffer");
-            }
-
             InnerBuffer = buffer;
         }
 

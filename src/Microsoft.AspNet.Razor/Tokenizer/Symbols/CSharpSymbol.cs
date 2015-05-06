@@ -3,28 +3,39 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
 {
     public class CSharpSymbol : SymbolBase<CSharpSymbolType>
     {
         // Helper constructor
-        public CSharpSymbol(int offset, int line, int column, string content, CSharpSymbolType type)
+        public CSharpSymbol(int offset, int line, int column, [NotNull] string content, CSharpSymbolType type)
             : this(new SourceLocation(offset, line, column), content, type, Enumerable.Empty<RazorError>())
         {
         }
 
-        public CSharpSymbol(SourceLocation start, string content, CSharpSymbolType type)
+        public CSharpSymbol(SourceLocation start, [NotNull] string content, CSharpSymbolType type)
             : this(start, content, type, Enumerable.Empty<RazorError>())
         {
         }
 
-        public CSharpSymbol(int offset, int line, int column, string content, CSharpSymbolType type, IEnumerable<RazorError> errors)
+        public CSharpSymbol(
+            int offset,
+            int line,
+            int column,
+            [NotNull] string content,
+            CSharpSymbolType type,
+            IEnumerable<RazorError> errors)
             : base(new SourceLocation(offset, line, column), content, type, errors)
         {
         }
 
-        public CSharpSymbol(SourceLocation start, string content, CSharpSymbolType type, IEnumerable<RazorError> errors)
+        public CSharpSymbol(
+            SourceLocation start,
+            [NotNull] string content,
+            CSharpSymbolType type,
+            IEnumerable<RazorError> errors)
             : base(start, content, type, errors)
         {
         }

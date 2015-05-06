@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Generator
 {
@@ -11,19 +12,15 @@ namespace Microsoft.AspNet.Razor.Generator
     {
         private CodeGeneratorContext _context;
 
-        protected RazorCodeGenerator(string className, string rootNamespaceName, string sourceFileName, RazorEngineHost host)
+        protected RazorCodeGenerator(
+            string className,
+            [NotNull] string rootNamespaceName,
+            string sourceFileName,
+            [NotNull] RazorEngineHost host)
         {
             if (string.IsNullOrEmpty(className))
             {
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "className");
-            }
-            if (rootNamespaceName == null)
-            {
-                throw new ArgumentNullException("rootNamespaceName");
-            }
-            if (host == null)
-            {
-                throw new ArgumentNullException("host");
             }
 
             ClassName = className;

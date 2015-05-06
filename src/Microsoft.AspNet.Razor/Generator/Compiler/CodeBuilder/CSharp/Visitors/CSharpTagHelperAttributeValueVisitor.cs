@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
@@ -32,8 +33,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         /// <see cref="CSharpTagHelperAttributeValueVisitor"/> is writing the value.
         /// </param>
         public CSharpTagHelperAttributeValueVisitor(
-            CSharpCodeWriter writer,
-            CodeBuilderContext context,
+            [NotNull] CSharpCodeWriter writer,
+            [NotNull] CodeBuilderContext context,
             string attributeTypeName)
             : base(writer, context)
         {

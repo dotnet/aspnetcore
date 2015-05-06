@@ -7,6 +7,7 @@ using System.Diagnostics;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Tokenizer
 {
@@ -14,7 +15,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
     {
         private Dictionary<char, Func<CSharpSymbolType>> _operatorHandlers;
 
-        public CSharpTokenizer(ITextDocument source)
+        public CSharpTokenizer([NotNull] ITextDocument source)
             : base(source)
         {
             CurrentState = Data;

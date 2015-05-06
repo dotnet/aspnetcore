@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 
-using System;
 using Microsoft.AspNet.Razor.Utils;
 using Xunit;
 
@@ -10,12 +9,6 @@ namespace Microsoft.AspNet.Razor.Test.Utils
 {
     public class DisposableActionTest
     {
-        [Fact]
-        public void ConstructorRequiresNonNullAction()
-        {
-            Assert.Throws<ArgumentNullException>("action", () => new DisposableAction(null));
-        }
-
         [Fact]
         public void ActionIsExecutedOnDispose()
         {

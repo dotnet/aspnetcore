@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
@@ -13,7 +14,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 
         private bool _foundTagHelpers;
 
-        public CSharpUsingVisitor(CSharpCodeWriter writer, CodeBuilderContext context)
+        public CSharpUsingVisitor([NotNull] CSharpCodeWriter writer, [NotNull] CodeBuilderContext context)
             : base(writer, context)
         {
             ImportedUsings = new List<string>();

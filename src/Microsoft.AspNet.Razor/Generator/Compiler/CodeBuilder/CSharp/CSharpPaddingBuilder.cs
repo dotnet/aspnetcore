@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
 {
@@ -19,13 +20,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         }
 
         // Special case for statement padding to account for brace positioning in the editor.
-        public string BuildStatementPadding(Span target)
+        public string BuildStatementPadding([NotNull] Span target)
         {
-            if (target == null)
-            {
-                throw new ArgumentNullException("target");
-            }
-
             var padding = CalculatePadding(target, generatedStart: 0);
 
             // We treat statement padding specially so for brace positioning, so that in the following example:
@@ -52,20 +48,15 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             return BuildExpressionPadding(target, generatedStart: 0);
         }
 
-        public string BuildExpressionPadding(Span target, int generatedStart)
+        public string BuildExpressionPadding([NotNull] Span target, int generatedStart)
         {
             var padding = CalculatePadding(target, generatedStart);
 
             return BuildPaddingInternal(padding);
         }
 
-        internal int CalculatePadding(Span target, int generatedStart)
+        internal int CalculatePadding([NotNull] Span target, int generatedStart)
         {
-            if (target == null)
-            {
-                throw new ArgumentNullException("target");
-            }
-
             int padding;
 
             padding = CollectSpacesAndTabs(target, _host.TabSize) - generatedStart;

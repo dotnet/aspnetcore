@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.AspNet.Razor.Utils;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Text
 {
@@ -17,13 +18,8 @@ namespace Microsoft.AspNet.Razor.Text
         private int _currentCharacter;
         private SourceLocationTracker _locationTracker;
 
-        public BufferingTextReader(TextReader source)
+        public BufferingTextReader([NotNull] TextReader source)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException("source");
-            }
-
             InnerReader = source;
             _locationTracker = new SourceLocationTracker();
 

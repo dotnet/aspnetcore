@@ -43,21 +43,9 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         }
 
         [Fact]
-        public void ConstructorRequiresNonNullRootNamespaceName()
-        {
-            Assert.Throws<ArgumentNullException>("rootNamespaceName", () => new CSharpRazorCodeGenerator("Foo", null, TestPhysicalPath, CreateHost()));
-        }
-
-        [Fact]
         public void ConstructorAllowsEmptyRootNamespaceName()
         {
             new CSharpRazorCodeGenerator("Foo", string.Empty, TestPhysicalPath, CreateHost());
-        }
-
-        [Fact]
-        public void ConstructorRequiresNonNullHost()
-        {
-            Assert.Throws<ArgumentNullException>("host", () => new CSharpRazorCodeGenerator("Foo", TestRootNamespaceName, TestPhysicalPath, null));
         }
 
         [Theory]

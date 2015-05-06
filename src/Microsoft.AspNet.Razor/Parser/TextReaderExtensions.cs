@@ -5,63 +5,47 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Parser
 {
     internal static class TextReaderExtensions
     {
-        public static string ReadUntil(this TextReader reader, char terminator)
+        public static string ReadUntil([NotNull] this TextReader reader, char terminator)
         {
             return ReadUntil(reader, terminator, inclusive: false);
         }
 
-        public static string ReadUntil(this TextReader reader, char terminator, bool inclusive)
+        public static string ReadUntil([NotNull] this TextReader reader, char terminator, bool inclusive)
         {
-            if (reader == null)
-            {
-                throw new ArgumentNullException("reader");
-            }
-
             // Rather not allocate an array to use ReadUntil(TextReader, params char[]) so we'll just call the predicate version directly
-            return reader.ReadUntil(c => c == terminator, inclusive);
+            return ReadUntil(reader, c => c == terminator, inclusive);
         }
 
-        public static string ReadUntil(this TextReader reader, params char[] terminators)
+        public static string ReadUntil([NotNull] this TextReader reader, [NotNull] params char[] terminators)
         {
             // NOTE: Using named parameters would be difficult here, hence the inline comment
-            return reader.ReadUntil(inclusive: false, terminators: terminators);
+            return ReadUntil(reader, inclusive: false, terminators: terminators);
         }
 
-        public static string ReadUntil(this TextReader reader, bool inclusive, params char[] terminators)
+        public static string ReadUntil(
+            [NotNull] this TextReader reader,
+            bool inclusive,
+            [NotNull] params char[] terminators)
         {
-            if (reader == null)
-            {
-                throw new ArgumentNullException("reader");
-            }
-            if (terminators == null)
-            {
-                throw new ArgumentNullException("terminators");
-            }
-
-            return reader.ReadUntil(c => terminators.Any(tc => tc == c), inclusive: inclusive);
+            return ReadUntil(reader, c => terminators.Any(tc => tc == c), inclusive: inclusive);
         }
 
-        public static string ReadUntil(this TextReader reader, Predicate<char> condition)
+        public static string ReadUntil([NotNull] this TextReader reader, [NotNull] Predicate<char> condition)
         {
-            return reader.ReadUntil(condition, inclusive: false);
+            return ReadUntil(reader, condition, inclusive: false);
         }
 
-        public static string ReadUntil(this TextReader reader, Predicate<char> condition, bool inclusive)
+        public static string ReadUntil(
+            [NotNull] this TextReader reader,
+            [NotNull] Predicate<char> condition,
+            bool inclusive)
         {
-            if (reader == null)
-            {
-                throw new ArgumentNullException("reader");
-            }
-            if (condition == null)
-            {
-                throw new ArgumentNullException("condition");
-            }
-
             var builder = new StringBuilder();
             var ch = -1;
             while ((ch = reader.Peek()) != -1 && !condition((char)ch))
@@ -78,33 +62,27 @@ namespace Microsoft.AspNet.Razor.Parser
             return builder.ToString();
         }
 
-        public static string ReadWhile(this TextReader reader, Predicate<char> condition)
+        public static string ReadWhile([NotNull] this TextReader reader, [NotNull] Predicate<char> condition)
         {
-            return reader.ReadWhile(condition, inclusive: false);
+            return ReadWhile(reader, condition, inclusive: false);
         }
 
-        public static string ReadWhile(this TextReader reader, Predicate<char> condition, bool inclusive)
+        public static string ReadWhile(
+            [NotNull] this TextReader reader,
+            [NotNull] Predicate<char> condition,
+            bool inclusive)
         {
-            if (reader == null)
-            {
-                throw new ArgumentNullException("reader");
-            }
-            if (condition == null)
-            {
-                throw new ArgumentNullException("condition");
-            }
-
-            return reader.ReadUntil(ch => !condition(ch), inclusive);
+            return ReadUntil(reader, ch => !condition(ch), inclusive);
         }
 
-        public static string ReadWhiteSpace(this TextReader reader)
+        public static string ReadWhiteSpace([NotNull] this TextReader reader)
         {
-            return reader.ReadWhile(c => Char.IsWhiteSpace(c));
+            return ReadWhile(reader, c => Char.IsWhiteSpace(c));
         }
 
-        public static string ReadUntilWhiteSpace(this TextReader reader)
+        public static string ReadUntilWhiteSpace([NotNull] this TextReader reader)
         {
-            return reader.ReadUntil(c => Char.IsWhiteSpace(c));
+            return ReadUntil(reader, c => Char.IsWhiteSpace(c));
         }
     }
 }

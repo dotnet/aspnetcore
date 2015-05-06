@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if !DNXCORE50
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Razor.Parser;
@@ -15,25 +14,6 @@ namespace Microsoft.AspNet.Razor.Test.Parser
 {
     public class ParserVisitorExtensionsTest
     {
-        [Fact]
-        public void VisitThrowsOnNullVisitor()
-        {
-            ParserVisitor target = null;
-            var errorSink = new ErrorSink();
-            var results = new ParserResults(new BlockBuilder() { Type = BlockType.Comment }.Build(),
-                                            Enumerable.Empty<TagHelperDescriptor>(),
-                                            errorSink);
-
-            Assert.Throws<ArgumentNullException>("self", () => target.Visit(results));
-        }
-
-        [Fact]
-        public void VisitThrowsOnNullResults()
-        {
-            var target = new Mock<ParserVisitor>().Object;
-            Assert.Throws<ArgumentNullException>("result", () => target.Visit(null));
-        }
-
         [Fact]
         public void VisitSendsDocumentToVisitor()
         {

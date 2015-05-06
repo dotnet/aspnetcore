@@ -51,24 +51,17 @@ namespace Microsoft.AspNet.Razor
         /// Creates a host which uses the specified code language and the HTML markup language
         /// </summary>
         /// <param name="codeLanguage">The code language to use</param>
-        public RazorEngineHost(RazorCodeLanguage codeLanguage)
+        public RazorEngineHost([NotNull] RazorCodeLanguage codeLanguage)
             : this(codeLanguage, () => new HtmlMarkupParser())
         {
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "The code path is safe, it is a property setter and not dependent on other state")]
-        public RazorEngineHost(RazorCodeLanguage codeLanguage, Func<ParserBase> markupParserFactory)
+        public RazorEngineHost(
+            [NotNull] RazorCodeLanguage codeLanguage,
+            [NotNull] Func<ParserBase> markupParserFactory)
             : this()
         {
-            if (codeLanguage == null)
-            {
-                throw new ArgumentNullException("codeLanguage");
-            }
-            if (markupParserFactory == null)
-            {
-                throw new ArgumentNullException("markupParserFactory");
-            }
-
             CodeLanguage = codeLanguage;
             _markupParserFactory = markupParserFactory;
         }
@@ -173,8 +166,9 @@ namespace Microsoft.AspNet.Razor
         /// <param name="incomingRazorParser">The <see cref="RazorParser"/></param>
         /// <param name="sourceFileName">The file name of the Razor file being parsed.</param>
         /// <returns>Either the same code parser, after modifications, or a different code parser.</returns>
-        public virtual RazorParser DecorateRazorParser([NotNull] RazorParser incomingRazorParser,
-                                                       string sourceFileName)
+        public virtual RazorParser DecorateRazorParser(
+            [NotNull] RazorParser incomingRazorParser,
+            string sourceFileName)
         {
             return incomingRazorParser;
         }
@@ -184,12 +178,8 @@ namespace Microsoft.AspNet.Razor
         /// </summary>
         /// <param name="incomingCodeParser">The code parser</param>
         /// <returns>Either the same code parser, after modifications, or a different code parser</returns>
-        public virtual ParserBase DecorateCodeParser(ParserBase incomingCodeParser)
+        public virtual ParserBase DecorateCodeParser([NotNull] ParserBase incomingCodeParser)
         {
-            if (incomingCodeParser == null)
-            {
-                throw new ArgumentNullException("incomingCodeParser");
-            }
             return incomingCodeParser;
         }
 
@@ -198,12 +188,8 @@ namespace Microsoft.AspNet.Razor
         /// </summary>
         /// <param name="incomingMarkupParser">The markup parser</param>
         /// <returns>Either the same markup parser, after modifications, or a different markup parser</returns>
-        public virtual ParserBase DecorateMarkupParser(ParserBase incomingMarkupParser)
+        public virtual ParserBase DecorateMarkupParser([NotNull] ParserBase incomingMarkupParser)
         {
-            if (incomingMarkupParser == null)
-            {
-                throw new ArgumentNullException("incomingMarkupParser");
-            }
             return incomingMarkupParser;
         }
 
@@ -212,12 +198,8 @@ namespace Microsoft.AspNet.Razor
         /// </summary>
         /// <param name="incomingCodeGenerator">The code generator</param>
         /// <returns>Either the same code generator, after modifications, or a different code generator</returns>
-        public virtual RazorCodeGenerator DecorateCodeGenerator(RazorCodeGenerator incomingCodeGenerator)
+        public virtual RazorCodeGenerator DecorateCodeGenerator([NotNull] RazorCodeGenerator incomingCodeGenerator)
         {
-            if (incomingCodeGenerator == null)
-            {
-                throw new ArgumentNullException("incomingCodeGenerator");
-            }
             return incomingCodeGenerator;
         }
 
@@ -226,12 +208,10 @@ namespace Microsoft.AspNet.Razor
         /// </summary>
         /// <param name="incomingBuilder">The code builder</param>
         /// <returns>Either the same code builder, after modifications, or a different code builder.</returns>
-        public virtual CodeBuilder DecorateCodeBuilder(CodeBuilder incomingBuilder, CodeBuilderContext context)
+        public virtual CodeBuilder DecorateCodeBuilder(
+            [NotNull] CodeBuilder incomingBuilder,
+            CodeBuilderContext context)
         {
-            if (incomingBuilder == null)
-            {
-                throw new ArgumentNullException("incomingBuilder");
-            }
             return incomingBuilder;
         }
 

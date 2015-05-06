@@ -16,12 +16,6 @@ namespace Microsoft.AspNet.Razor.Test.Text
         }
 
         [Fact]
-        public void ConstructorRequiresNonNullTextBuffer()
-        {
-            Assert.Throws<ArgumentNullException>("buffer", () => new TextBufferReader(null));
-        }
-
-        [Fact]
         public void PeekReturnsCurrentCharacterWithoutAdvancingPosition()
         {
             RunPeekTest("abc", peekAt: 2);

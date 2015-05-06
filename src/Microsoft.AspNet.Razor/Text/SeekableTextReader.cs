@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Text
 {
@@ -18,12 +19,12 @@ namespace Microsoft.AspNet.Razor.Text
             UpdateState();
         }
 
-        public SeekableTextReader(TextReader source)
+        public SeekableTextReader([NotNull] TextReader source)
             : this(source.ReadToEnd())
         {
         }
 
-        public SeekableTextReader(ITextBuffer buffer)
+        public SeekableTextReader([NotNull] ITextBuffer buffer)
             : this(buffer.ReadToEnd())
         {
         }

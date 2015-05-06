@@ -13,6 +13,7 @@ using Xunit;
 namespace Microsoft.AspNet.Razor.Test.Tokenizer
 {
     public abstract class TokenizerTestBase<TSymbol, TSymbolType>
+        where TSymbolType : struct
         where TSymbol : SymbolBase<TSymbolType>
     {
         protected abstract TSymbol IgnoreRemaining { get; }

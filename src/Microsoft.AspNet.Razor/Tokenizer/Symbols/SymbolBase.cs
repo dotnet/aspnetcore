@@ -5,23 +5,20 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using Microsoft.Framework.Internal;
 using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
 {
     public abstract class SymbolBase<TType> : ISymbol
+        where TType: struct
     {
-        protected SymbolBase(SourceLocation start, string content, TType type, IEnumerable<RazorError> errors)
+        protected SymbolBase(
+            SourceLocation start,
+            [NotNull] string content,
+            TType type,
+            IEnumerable<RazorError> errors)
         {
-            if (content == null)
-            {
-                throw new ArgumentNullException("content");
-            }
-            if (type == null)
-            {
-                throw new ArgumentNullException("type");
-            }
-
             Start = start;
             Content = content;
             Type = type;

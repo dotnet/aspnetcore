@@ -6,6 +6,7 @@ using System.Diagnostics;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Tokenizer
 {
@@ -14,7 +15,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
     {
         private const char TransitionChar = '@';
 
-        public HtmlTokenizer(ITextDocument source)
+        public HtmlTokenizer([NotNull] ITextDocument source)
             : base(source)
         {
             CurrentState = Data;

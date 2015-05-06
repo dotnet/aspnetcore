@@ -22,12 +22,6 @@ namespace Microsoft.AspNet.Razor.Test.Editor
         private const string TestLinePragmaFileName = "C:\\This\\Path\\Is\\Just\\For\\Line\\Pragmas.cshtml";
 
         [Fact]
-        public void ConstructorRequiresNonNullHost()
-        {
-            Assert.Throws<ArgumentNullException>("host", () => new RazorEditorParser(null, TestLinePragmaFileName));
-        }
-
-        [Fact]
         public void ConstructorRequiresNonNullPhysicalPath()
         {
             Assert.Throws<ArgumentException>("sourceFileName", () => new RazorEditorParser(CreateHost(), null));

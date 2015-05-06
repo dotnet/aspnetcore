@@ -1,42 +1,33 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Generator.Compiler
 {
-    public abstract class ChunkVisitor<T> : IChunkVisitor where T : CodeWriter
+    public abstract class ChunkVisitor<TWriter> : IChunkVisitor
+        where TWriter : CodeWriter
     {
-        public ChunkVisitor(T writer, CodeBuilderContext context)
+        public ChunkVisitor([NotNull] TWriter writer, [NotNull] CodeBuilderContext context)
         {
             Writer = writer;
             Context = context;
         }
 
-        protected T Writer { get; private set; }
+        protected TWriter Writer { get; private set; }
         protected CodeBuilderContext Context { get; private set; }
 
-        public void Accept(IList<Chunk> chunks)
+        public void Accept([NotNull] IList<Chunk> chunks)
         {
-            if (chunks == null)
-            {
-                throw new ArgumentNullException("chunks");
-            }
-
             foreach (Chunk chunk in chunks)
             {
                 Accept(chunk);
             }
         }
 
-        public virtual void Accept(Chunk chunk)
+        public virtual void Accept([NotNull] Chunk chunk)
         {
-            if (chunk == null)
-            {
-                throw new ArgumentNullException("chunk");
-            }
-
             if (chunk is LiteralChunk)
             {
                 Visit((LiteralChunk)chunk);

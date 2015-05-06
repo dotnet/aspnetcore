@@ -47,18 +47,6 @@ namespace Microsoft.AspNet.Razor.Test.Text
         }
 
         [Fact]
-        public void ConstructorRequiresNonNullOldBuffer()
-        {
-            Assert.Throws<ArgumentNullException>("oldBuffer", () => new TextChange(0, 0, null, 0, 0, new Mock<ITextBuffer>().Object));
-        }
-
-        [Fact]
-        public void ConstructorRequiresNonNullNewBuffer()
-        {
-            Assert.Throws<ArgumentNullException>("newBuffer", () => new TextChange(0, 0, new Mock<ITextBuffer>().Object, 0, 0, null));
-        }
-
-        [Fact]
         public void ConstructorInitializesProperties()
         {
             // Act
