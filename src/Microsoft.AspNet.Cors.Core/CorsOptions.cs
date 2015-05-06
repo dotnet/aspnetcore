@@ -23,13 +23,9 @@ namespace Microsoft.AspNet.Cors.Core
                 return _defaultPolicyName;
             }
 
+            [param: NotNull]
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-
                 _defaultPolicyName = value;
             }
         }
