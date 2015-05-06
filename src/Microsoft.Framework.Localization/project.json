@@ -1,0 +1,26 @@
+﻿{
+  "version": "1.0.0-*",
+  "description": "",
+
+  "dependencies": {
+    "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
+    "Microsoft.Framework.Localization.Abstractions": "1.0.0-*",
+    "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*",
+    "System.Resources.ReaderWriter": "4.0.0-*"
+  },
+
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": {
+      "dependencies": {
+        "System.Collections": "4.0.10-*",
+        "System.Collections.Concurrent": "4.0.10-*",
+        "System.Globalization": "4.0.10-*",
+        "System.Linq": "4.0.0-*",
+        "System.Resources.ResourceManager": "4.0.0-*",
+        "System.Threading": "4.0.10-*",
+        "Microsoft.CSharp": "4.0.0-*"
+      }
+    }
+  }
+}
