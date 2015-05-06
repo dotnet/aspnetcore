@@ -20,6 +20,12 @@
                 "Moq": "4.2.1312.1622"
             }
         },
-        "dnxcore50": { }
+        "dnxcore50": { 
+            "dependencies": {
+                "System.ComponentModel.TypeConverter": "4.0.0-beta-*",
+                "System.Reflection.Extensions": "4.0.0-beta-*",
+                "System.Text.Encoding.Extensions": "4.0.10-beta-*"
+            }
+        }
     }
 }

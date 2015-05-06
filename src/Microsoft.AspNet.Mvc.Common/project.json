@@ -8,9 +8,7 @@
         "dnx451": { },
         "dnxcore50": {
             "dependencies": {
-		"System.ComponentModel.TypeConverter": "4.0.0-beta-*",
-                "System.Reflection.Extensions": "4.0.0-beta-*",
-                "System.Text.Encoding.Extensions": "4.0.10-beta-*"
+                "System.Runtime": "4.0.20-beta-*"
             }
         }
     }
