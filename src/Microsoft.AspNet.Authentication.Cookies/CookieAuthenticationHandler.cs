@@ -383,7 +383,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                         Request.Host +
                         Request.PathBase +
                         Options.LoginPath +
-                        new QueryString(Options.ReturnUrlParameter, currentUri);
+                        QueryString.Create(Options.ReturnUrlParameter, currentUri);
                 }
 
                 var redirectContext = new CookieApplyRedirectContext(Context, Options, loginUri);
