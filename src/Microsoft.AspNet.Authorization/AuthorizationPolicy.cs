@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Authorization
         public static AuthorizationPolicy Combine([NotNull] AuthorizationOptions options, [NotNull] IEnumerable<AuthorizeAttribute> attributes)
         {
             var policyBuilder = new AuthorizationPolicyBuilder();
-            bool any = false;
+            var any = false;
             foreach (var authorizeAttribute in attributes.OfType<AuthorizeAttribute>())
             {
                 any = true;
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Authorization
                     policyBuilder.RequireRole(rolesSplit);
                     requireAnyAuthenticated = false;
                 }
-                string[] authTypesSplit = authorizeAttribute.ActiveAuthenticationSchemes?.Split(',');
+                var authTypesSplit = authorizeAttribute.ActiveAuthenticationSchemes?.Split(',');
                 if (authTypesSplit != null && authTypesSplit.Any())
                 {
                     foreach (var authType in authTypesSplit)

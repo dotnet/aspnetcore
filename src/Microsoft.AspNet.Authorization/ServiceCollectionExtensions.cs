@@ -23,8 +23,6 @@ namespace Microsoft.Framework.DependencyInjection
         {
             services.AddOptions();
             services.TryAdd(ServiceDescriptor.Transient<IAuthorizationService, DefaultAuthorizationService>());
-            services.AddTransient<IAuthorizationHandler, ClaimsAuthorizationHandler>();
-            services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
             services.AddTransient<IAuthorizationHandler, PassThroughAuthorizationHandler>();
             return services;
         }

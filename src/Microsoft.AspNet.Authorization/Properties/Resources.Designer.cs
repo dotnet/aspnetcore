@@ -11,54 +11,6 @@ namespace Microsoft.AspNet.Authorization
             = new ResourceManager("Microsoft.AspNet.Authorization.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// The default data protection provider may only be used when the IApplicationBuilder.Properties contains an appropriate 'host.AppName' key.
-        /// </summary>
-        internal static string Exception_DefaultDpapiRequiresAppNameKey
-        {
-            get { return GetString("Exception_DefaultDpapiRequiresAppNameKey"); }
-        }
-
-        /// <summary>
-        /// The default data protection provider may only be used when the IApplicationBuilder.Properties contains an appropriate 'host.AppName' key.
-        /// </summary>
-        internal static string FormatException_DefaultDpapiRequiresAppNameKey()
-        {
-            return GetString("Exception_DefaultDpapiRequiresAppNameKey");
-        }
-
-        /// <summary>
-        /// The state passed to UnhookAuthentication may only be the return value from HookAuthentication.
-        /// </summary>
-        internal static string Exception_UnhookAuthenticationStateType
-        {
-            get { return GetString("Exception_UnhookAuthenticationStateType"); }
-        }
-
-        /// <summary>
-        /// The state passed to UnhookAuthentication may only be the return value from HookAuthentication.
-        /// </summary>
-        internal static string FormatException_UnhookAuthenticationStateType()
-        {
-            return GetString("Exception_UnhookAuthenticationStateType");
-        }
-
-        /// <summary>
-        /// The AuthenticationTokenProvider's required synchronous events have not been registered.
-        /// </summary>
-        internal static string Exception_AuthenticationTokenDoesNotProvideSyncMethods
-        {
-            get { return GetString("Exception_AuthenticationTokenDoesNotProvideSyncMethods"); }
-        }
-
-        /// <summary>
-        /// The AuthenticationTokenProvider's required synchronous events have not been registered.
-        /// </summary>
-        internal static string FormatException_AuthenticationTokenDoesNotProvideSyncMethods()
-        {
-            return GetString("Exception_AuthenticationTokenDoesNotProvideSyncMethods");
-        }
-
-        /// <summary>
         /// The AuthorizationPolicy named: '{0}' was not found.
         /// </summary>
         internal static string Exception_AuthorizationPolicyNotFound
@@ -72,6 +24,22 @@ namespace Microsoft.AspNet.Authorization
         internal static string FormatException_AuthorizationPolicyNotFound(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("Exception_AuthorizationPolicyNotFound"), p0);
+        }
+
+        /// <summary>
+        /// At least one role must be specified.
+        /// </summary>
+        internal static string Exception_RoleRequirementEmpty
+        {
+            get { return GetString("Exception_RoleRequirementEmpty"); }
+        }
+
+        /// <summary>
+        /// At least one role must be specified.
+        /// </summary>
+        internal static string FormatException_RoleRequirementEmpty()
+        {
+            return GetString("Exception_RoleRequirementEmpty");
         }
 
         private static string GetString(string name, params string[] formatterNames)

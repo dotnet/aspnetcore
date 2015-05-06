@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using Microsoft.AspNet.Authorization;
 using Xunit;
@@ -9,6 +10,12 @@ namespace Microsoft.AspNet.Authroization.Test
 {
     public class AuthorizationPolicyFacts
     {
+        [Fact]
+        public void RequireRoleThrowsIfEmpty()
+        {
+            Assert.Throws<InvalidOperationException>(() => new AuthorizationPolicyBuilder().RequireRole());
+        }
+
         [Fact]
         public void CanCombineAuthorizeAttributes()
         {
@@ -32,7 +39,8 @@ namespace Microsoft.AspNet.Authroization.Test
             Assert.True(combined.ActiveAuthenticationSchemes.Contains("roles"));
             Assert.Equal(4, combined.Requirements.Count());
             Assert.True(combined.Requirements.Any(r => r is DenyAnonymousAuthorizationRequirement));
-            Assert.Equal(3, combined.Requirements.OfType<ClaimsAuthorizationRequirement>().Count());
+            Assert.Equal(2, combined.Requirements.OfType<ClaimsAuthorizationRequirement>().Count());
+            Assert.Equal(1, combined.Requirements.OfType<RolesAuthorizationRequirement>().Count());
         }
     }
 }
