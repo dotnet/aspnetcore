@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
                 request =>
                 {
-                    request.QueryString = new QueryString("Address.Zip", "12345");
+                    request.QueryString = QueryString.Create("Address.Zip", "12345");
                     UpdateRequest(request, data, "Address.File");
                 });
 

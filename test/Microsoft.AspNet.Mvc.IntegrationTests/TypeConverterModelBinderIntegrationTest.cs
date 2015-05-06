@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
-                request.QueryString = new QueryString("CustomParameter.Address.Zip", "1");
+                request.QueryString = QueryString.Create("CustomParameter.Address.Zip", "1");
             });
 
             var modelState = new ModelStateDictionary();
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
-                request.QueryString = new QueryString("Address.Zip", "1");
+                request.QueryString = QueryString.Create("Address.Zip", "1");
             });
 
             var modelState = new ModelStateDictionary();
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
-                request.QueryString = new QueryString("Parameter1", "someValue");
+                request.QueryString = QueryString.Create("Parameter1", "someValue");
             });
 
             var modelState = new ModelStateDictionary();

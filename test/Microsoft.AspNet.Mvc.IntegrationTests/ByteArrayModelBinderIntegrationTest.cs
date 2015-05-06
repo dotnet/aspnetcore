@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
                 request =>
                 {
-                    request.QueryString = new QueryString(queryStringKey, value);
+                    request.QueryString = QueryString.Create(queryStringKey, value);
                 });
             var modelState = new ModelStateDictionary();
 
@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
                 request =>
                 {
-                    request.QueryString = new QueryString("CustomParameter", value);
+                    request.QueryString = QueryString.Create("CustomParameter", value);
                 });
 
             var modelState = new ModelStateDictionary();
