@@ -160,14 +160,14 @@ if(true) {
 #line default
 #line hidden
 
-                WriteLiteral(" checkbox ");
+                WriteLiteral("checkbox ");
 #line 18 "ComplexTagHelpers.cshtml"
 } else {
 
 #line default
 #line hidden
 
-                WriteLiteral(" anything ");
+                WriteLiteral("anything ");
 #line 18 "ComplexTagHelpers.cshtml"
 }
 

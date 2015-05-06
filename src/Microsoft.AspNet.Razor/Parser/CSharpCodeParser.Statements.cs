@@ -388,14 +388,14 @@ namespace Microsoft.AspNet.Razor.Parser
             Span.EditHandler.AcceptedCharacters = AcceptedCharacters.Any;
 
             // Accept whitespace but always keep the last whitespace node so we can put it back if necessary
-            var lastWs = AcceptWhiteSpaceInLines();
-            Debug.Assert(lastWs == null || (lastWs.Start.AbsoluteIndex + lastWs.Content.Length == CurrentLocation.AbsoluteIndex));
+            var lastWhitespace = AcceptWhiteSpaceInLines();
+            Debug.Assert(lastWhitespace == null || (lastWhitespace.Start.AbsoluteIndex + lastWhitespace.Content.Length == CurrentLocation.AbsoluteIndex));
 
             if (EndOfFile)
             {
-                if (lastWs != null)
+                if (lastWhitespace != null)
                 {
-                    Accept(lastWs);
+                    Accept(lastWhitespace);
                 }
                 return;
             }
@@ -411,16 +411,23 @@ namespace Microsoft.AspNet.Razor.Parser
             if (Context.DesignTimeMode || !isMarkup)
             {
                 // CODE owns whitespace, MARKUP owns it ONLY in DesignTimeMode.
-                if (lastWs != null)
+                if (lastWhitespace != null)
                 {
-                    Accept(lastWs);
+                    Accept(lastWhitespace);
                 }
             }
             else
             {
+                var nextSymbol = Lookahead(1);
+
                 // MARKUP owns whitespace EXCEPT in DesignTimeMode.
                 PutCurrentBack();
-                PutBack(lastWs);
+
+                // Don't putback the whitespace if it precedes a '<text>' tag.
+                if (nextSymbol != null && !nextSymbol.Content.Equals(SyntaxConstants.TextTagName))
+                {
+                    PutBack(lastWhitespace);
+                }
             }
 
             if (isMarkup)

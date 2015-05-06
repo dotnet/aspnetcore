@@ -578,7 +578,6 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            new StatementBlock(
                                Factory.Code("if (i > 0) {").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup(" "),
                                    new MarkupTagBlock(
                                         Factory.MarkupTransition("<text>").Accepts(AcceptedCharacters.None)),
                                    Factory.Markup(";").Accepts(AcceptedCharacters.None),
@@ -599,7 +598,6 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .AsStatement()
                                    .AutoCompleteWith(autoCompleteString: null),
                                new MarkupBlock(
-                                   Factory.Markup(" "),
                                    new MarkupTagBlock(
                                         Factory.MarkupTransition("<text>").Accepts(AcceptedCharacters.None)),
                                    Factory.Markup(";").Accepts(AcceptedCharacters.None),
@@ -639,7 +637,6 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    ),
                                Factory.Code($"    }}{Environment.NewLine}    foreach (var p in Enumerable.Range(1, 10)) {{{Environment.NewLine}").AsStatement(),
                                new MarkupBlock(
-                                   Factory.Markup("        "),
                                    new MarkupTagBlock(
                                         Factory.MarkupTransition("<text>").Accepts(AcceptedCharacters.None)),
                                    Factory.Markup("The number is ").Accepts(AcceptedCharacters.None),

@@ -4386,7 +4386,6 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.CodeTransition(),
                                     factory.Code("do { var foo = bar;").AsStatement(),
                                     new MarkupBlock(
-                                        factory.Markup(" "),
                                         new MarkupTagBlock(
                                             factory.MarkupTransition("<text>")),
                                         factory.Markup("Foo").Accepts(AcceptedCharacters.None),

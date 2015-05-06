@@ -186,7 +186,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 onResults(results);
             }
 
-            //// Verify code against baseline
+            // Verify code against baseline
             Assert.Equal(expectedOutput, textOutput);
 #endif
 

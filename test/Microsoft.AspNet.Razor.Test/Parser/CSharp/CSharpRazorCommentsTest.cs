@@ -126,7 +126,6 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                             .AsStatement()
                             .AutoCompleteWith("}"),
                         new MarkupBlock(
-                            Factory.Markup("    "),
                             new MarkupTagBlock(
                                 Factory.MarkupTransition("<text").Accepts(AcceptedCharacters.Any)),
                             Factory.Markup(Environment.NewLine + "    ").Accepts(AcceptedCharacters.None),

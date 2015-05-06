@@ -52,8 +52,8 @@ namespace TestOutput
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(211, 16, true);
-            WriteLiteral("    \r\n        <a");
+            Instrumentation.BeginContext(221, 12, true);
+            WriteLiteral("\r\n        <a");
             Instrumentation.EndContext();
             WriteAttribute("href", Tuple.Create(" href=\"", 233), Tuple.Create("\"", 245), Tuple.Create(Tuple.Create("", 240), Tuple.Create<System.Object, System.Int32>(Href("~/Foo"), 240), false));
             Instrumentation.BeginContext(246, 20, true);
