@@ -39,6 +39,10 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// The constraint order.
         /// </summary>
+        /// <remarks>
+        /// Constraints are grouped into stages by the value of <see cref="Order"/>. See remarks on
+        /// <see cref="IActionConstraint"/>.
+        /// </remarks>
         int Order { get; }
 
         /// <summary>
