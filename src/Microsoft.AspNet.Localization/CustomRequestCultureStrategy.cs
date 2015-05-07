@@ -16,9 +16,6 @@ namespace Microsoft.AspNet.Localization
             _strategy = strategy;
         }
 
-        public RequestCulture DetermineRequestCulture([NotNull] HttpContext httpContext)
-        {
-            return _strategy(httpContext);
-        }
+        public RequestCulture DetermineRequestCulture([NotNull] HttpContext httpContext) => _strategy(httpContext);
     }
 }

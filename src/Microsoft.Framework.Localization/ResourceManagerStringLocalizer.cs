@@ -119,15 +119,9 @@ namespace Microsoft.Framework.Localization
         /// Returns an <see cref="IEnumerator{LocalizedString}"/> for all strings in the current culture.
         /// </summary>
         /// <returns>The <see cref="IEnumerator{LocalizedString}"/>.</returns>
-        public virtual IEnumerator<LocalizedString> GetEnumerator()
-        {
-            return GetEnumerator(CultureInfo.CurrentUICulture);
-        }
+        public virtual IEnumerator<LocalizedString> GetEnumerator() => GetEnumerator(CultureInfo.CurrentUICulture);
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <summary>
         /// Returns an <see cref="IEnumerator{LocalizedString}"/> for all strings in the specified culture.
@@ -200,11 +194,8 @@ namespace Microsoft.Framework.Localization
 
             public CultureInfo CultureInfo { get; }
 
-            public bool Equals(MissingManifestCacheKey other)
-            {
-                return string.Equals(Name, other.Name, StringComparison.Ordinal)
-                    && CultureInfo == other.CultureInfo;
-            }
+            public bool Equals(MissingManifestCacheKey other) =>
+                string.Equals(Name, other.Name, StringComparison.Ordinal) && CultureInfo == other.CultureInfo;
 
             public override bool Equals(object obj)
             {
@@ -218,10 +209,7 @@ namespace Microsoft.Framework.Localization
                 return base.Equals(obj);
             }
 
-            public override int GetHashCode()
-            {
-                return _hashCode;
-            }
+            public override int GetHashCode() => _hashCode;
         }
     }
 }
