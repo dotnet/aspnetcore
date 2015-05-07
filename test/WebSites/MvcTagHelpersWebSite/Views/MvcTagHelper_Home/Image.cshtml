@@ -1,0 +1,22 @@
+﻿@addTagHelper "*, Microsoft.AspNet.Mvc.TagHelpers"
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Image</title>
+
+</head>
+<body>
+
+    <h2>Image Tag Helper Test</h2>
+    <!-- Plain image tag -->
+    <img src="~/images/red.png" alt="Red block" title="&lt;the title>">
+
+    <!-- Plain image  tag with file version -->
+    <img src="~/images/red.png" alt="Red versioned" title="Red versioned" asp-file-version="true" />
+
+    <!-- Plain image  tag with file version set to false -->
+    <img src="~/images/red.png" alt="Red explicitly not versioned" title="Red versioned" asp-file-version="false" />
+</body>
+</html>
