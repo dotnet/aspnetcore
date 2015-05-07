@@ -18,9 +18,6 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ViewExecutorTest
     {
-        // The buffer size of the StreamWriter used in ViewResult.
-        private const int ViewResultStreamWriterBufferSize = 1024;
-
         public static TheoryData<MediaTypeHeaderValue, string, byte[]> ViewExecutorSetsContentTypeAndEncodingData
         {
             get
@@ -85,39 +82,16 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(expectedContentData, memoryStream.ToArray());
         }
 
-        public static IEnumerable<object[]> ExecuteAsync_DoesNotWriteToResponse_OnceExceptionIsThrownData
-        {
-            get
-            {
-                yield return new object[] { 30, 0 };
-
-                if (TestPlatformHelper.IsMono)
-                {
-                    // The StreamWriter in Mono buffers 2x the buffer size before flushing.
-                    yield return new object[] { ViewResultStreamWriterBufferSize * 2 + 30, ViewResultStreamWriterBufferSize };
-                }
-                else
-                {
-                    yield return new object[] { ViewResultStreamWriterBufferSize + 30, ViewResultStreamWriterBufferSize };
-                }
-            }
-        }
-
-        // The StreamWriter used by ViewResult an internal buffer and consequently anything written to this buffer
-        // prior to it filling up will not be written to the underlying stream once an exception is thrown.
-        [Theory]
-        [MemberData(nameof(ExecuteAsync_DoesNotWriteToResponse_OnceExceptionIsThrownData))]
-        public async Task ExecuteAsync_DoesNotWriteToResponse_OnceExceptionIsThrown(int writtenLength, int expectedLength)
+        [Fact]
+        public async Task ExecuteAsync_DoesNotWriteToResponse_OnceExceptionIsThrown()
         {
             // Arrange
-            var longString = new string('a', writtenLength);
+            var expectedLength = 0;
 
             var view = new Mock<IView>();
             view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
                  .Callback((ViewContext v) =>
                  {
-                     view.ToString();
-                     v.Writer.Write(longString);
                      throw new Exception();
                  });
 

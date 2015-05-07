@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Mvc
         public async Task ExecuteResultAsync_UsesPassedInFormatter()
         {
             // Arrange
-            var expected = Enumerable.Concat(Encoding.UTF8.GetPreamble(), _abcdUTF8Bytes);
+            var expected = _abcdUTF8Bytes;
 
             var context = GetHttpContext();
             var actionContext = new ActionContext(context, new RouteData(), new ActionDescriptor());

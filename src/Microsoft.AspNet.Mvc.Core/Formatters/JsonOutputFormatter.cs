@@ -70,8 +70,7 @@ namespace Microsoft.AspNet.Mvc
             var response = context.ActionContext.HttpContext.Response;
             var selectedEncoding = context.SelectedEncoding;
 
-            using (var nonDisposableStream = new NonDisposableStream(response.Body))
-            using (var writer = new StreamWriter(nonDisposableStream, selectedEncoding, 1024, leaveOpen: true))
+            using (var writer = new HttpResponseStreamWriter(response.Body, selectedEncoding))
             {
                 WriteObject(writer, context.Object);
             }

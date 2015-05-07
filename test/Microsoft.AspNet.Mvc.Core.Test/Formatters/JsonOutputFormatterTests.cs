@@ -142,11 +142,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.Formatters
             var formattedContent = "\"" + content + "\"";
             var mediaType = string.Format("application/json; charset={0}", encodingAsString);
             var encoding = CreateOrGetSupportedEncoding(formatter, encodingAsString, isDefaultEncoding);
-            var preamble = encoding.GetPreamble();
-            var data = encoding.GetBytes(formattedContent);
-            var expectedData = new byte[preamble.Length + data.Length];
-            Buffer.BlockCopy(preamble, 0, expectedData, 0, preamble.Length);
-            Buffer.BlockCopy(data, 0, expectedData, preamble.Length, data.Length);
+            var expectedData = encoding.GetBytes(formattedContent);
 
             var memStream = new MemoryStream();
             var outputFormatterContext = new OutputFormatterContext
