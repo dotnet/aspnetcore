@@ -25,7 +25,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Http.Internal;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.WebListener

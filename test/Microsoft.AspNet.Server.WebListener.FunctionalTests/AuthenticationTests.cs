@@ -16,14 +16,12 @@
 // permissions and limitations under the License.
 
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http;
-using Microsoft.Net.Http.Server;
+using Microsoft.AspNet.Http.Internal;
 using Xunit;
 using AuthenticationSchemes = Microsoft.Net.Http.Server.AuthenticationSchemes;
 
