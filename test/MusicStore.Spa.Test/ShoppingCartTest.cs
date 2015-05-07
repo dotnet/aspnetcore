@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Collections;
+using Microsoft.AspNet.Http.Features.Internal;
+using Microsoft.AspNet.Http.Internal;
 using Xunit;
 
 namespace MusicStore.Models

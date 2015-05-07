@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Collections;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.WebUtilities;
 
 namespace MusicStore.Mocks.Google
