@@ -1391,6 +1391,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var actionName = nameof(MultipleRouteProviderOnActionAndControllerController.Delete);
+
             var provider = GetProvider(typeof(MultipleRouteProviderOnActionAndControllerController).GetTypeInfo());
 
             // Act

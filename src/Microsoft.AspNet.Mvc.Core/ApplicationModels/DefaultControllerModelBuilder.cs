@@ -76,10 +76,57 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// <returns>A <see cref="ControllerModel"/> for the given <see cref="TypeInfo"/>.</returns>
         protected virtual ControllerModel CreateControllerModel([NotNull] TypeInfo typeInfo)
         {
+            // For attribute routes on a controller, we want want to support 'overriding' routes on a derived
+            // class. So we need to walk up the hierarchy looking for the first class to define routes.
+            //
+            // Then we want to 'filter' the set of attributes, so that only the effective routes apply.
+            var currentTypeInfo = typeInfo;
+            var objectTypeInfo = typeof(object).GetTypeInfo();
+
+            IRouteTemplateProvider[] routeAttributes = null;
+
+            do
+            {
+                routeAttributes = currentTypeInfo
+                        .GetCustomAttributes(inherit: false)
+                        .OfType<IRouteTemplateProvider>()
+                        .ToArray();
+
+                if (routeAttributes.Length > 0)
+                {
+                    // Found 1 or more route attributes.
+                    break;
+                }
+
+                currentTypeInfo = currentTypeInfo.BaseType.GetTypeInfo();
+            }
+            while (currentTypeInfo != objectTypeInfo);
+
             // CoreCLR returns IEnumerable<Attribute> from GetCustomAttributes - the OfType<object>
             // is needed to so that the result of ToArray() is object
             var attributes = typeInfo.GetCustomAttributes(inherit: true).OfType<object>().ToArray();
+
+            // This is fairly complicated so that we maintain referential equality between items in
+            // ControllerModel.Attributes and ControllerModel.Attributes[*].Attribute.
+            var filteredAttributes = new List<object>();
+            foreach (var attribute in attributes)
+            {
+                if (attribute is IRouteTemplateProvider)
+                {
+                    // This attribute is a route-attribute, leave it out.
+                }
+                else
+                {
+                    filteredAttributes.Add(attribute);
+                }
+            }
+            filteredAttributes.AddRange(routeAttributes);
+
+            attributes = filteredAttributes.ToArray();
+
             var controllerModel = new ControllerModel(typeInfo, attributes);
+            AddRange(
+                controllerModel.AttributeRoutes, routeAttributes.Select(a => new AttributeRouteModel(a)));
 
             controllerModel.ControllerName =
                 typeInfo.Name.EndsWith("Controller", StringComparison.OrdinalIgnoreCase) ?
@@ -107,10 +154,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             {
                 controllerModel.Filters.Add(new AuthorizeFilter(policy));
             }
-
-            AddRange(
-                controllerModel.AttributeRoutes,
-                attributes.OfType<IRouteTemplateProvider>().Select(rtp => new AttributeRouteModel(rtp)));
 
             var apiVisibility = attributes.OfType<IApiDescriptionVisibilityProvider>().FirstOrDefault();
             if (apiVisibility != null)

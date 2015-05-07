@@ -152,6 +152,64 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Assert.Empty(model.Filters);
         }
 
+        [Fact]
+        public void BuildControllerModel_ClassWithInheritedRoutes()
+        {
+            // Arrange
+            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null), null);
+            var typeInfo = typeof(DerivedClassInheritingRoutesController).GetTypeInfo();
+
+            // Act
+            var model = builder.BuildControllerModel(typeInfo);
+
+            // Assert
+            Assert.Equal(2, model.AttributeRoutes.Count);
+            Assert.Equal(2, model.Attributes.Count);
+
+            var route = Assert.Single(model.AttributeRoutes, r => r.Template == "A");
+            Assert.Contains(route.Attribute, model.Attributes);
+
+            route = Assert.Single(model.AttributeRoutes, r => r.Template == "B");
+            Assert.Contains(route.Attribute, model.Attributes);
+        }
+
+        [Fact]
+        public void BuildControllerModel_ClassWithHiddenInheritedRoutes()
+        {
+            // Arrange
+            var builder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null), null);
+            var typeInfo = typeof(DerivedClassHidingRoutesController).GetTypeInfo();
+
+            // Act
+            var model = builder.BuildControllerModel(typeInfo);
+
+            // Assert
+            Assert.Equal(2, model.AttributeRoutes.Count);
+            Assert.Equal(2, model.Attributes.Count);
+
+            var route = Assert.Single(model.AttributeRoutes, r => r.Template == "C");
+            Assert.Contains(route.Attribute, model.Attributes);
+
+            route = Assert.Single(model.AttributeRoutes, r => r.Template == "D");
+            Assert.Contains(route.Attribute, model.Attributes);
+        }
+
+        [Route("A")]
+        [Route("B")]
+        private class BaseClassWithRoutesController
+        {
+        }
+
+        private class DerivedClassInheritingRoutesController : BaseClassWithRoutesController
+        {
+        }
+
+        [Route("C")]
+        [Route("D")]
+        private class DerivedClassHidingRoutesController : BaseClassWithRoutesController
+        {
+        }
+
         private class StoreController : Mvc.Controller
         {
         }
