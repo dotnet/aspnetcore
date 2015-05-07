@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Framework.Internal;
 
@@ -313,7 +314,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
         private static Type GetElementType(Type type)
         {
-            Debug.Assert(typeof(IEnumerable).IsAssignableFrom(type));
+            Debug.Assert(typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()));
             if (type.IsArray)
             {
                 return type.GetElementType();
@@ -321,7 +322,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             foreach (var implementedInterface in type.GetInterfaces())
             {
-                if (implementedInterface.IsGenericType() &&
+                if (implementedInterface.GetTypeInfo().IsGenericType &&
                     implementedInterface.GetGenericTypeDefinition() == typeof(IEnumerable<>))
                 {
                     return implementedInterface.GetGenericArguments()[0];

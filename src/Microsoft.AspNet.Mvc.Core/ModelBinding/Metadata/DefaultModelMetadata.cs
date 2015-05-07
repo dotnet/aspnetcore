@@ -343,7 +343,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                     }
                     else
                     {
-                        _isRequired = !ModelType.AllowsNullValue();
+                        _isRequired = !TypeHelper.AllowsNullValue(ModelType);
                     }
                 }
 

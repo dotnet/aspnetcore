@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
@@ -40,7 +41,8 @@ namespace Microsoft.AspNet.Mvc
         /// </param>
         public BindAttribute([NotNull] Type predicateProviderType)
         {
-            if (!typeof(IPropertyBindingPredicateProvider).IsAssignableFrom(predicateProviderType))
+            if (!typeof(IPropertyBindingPredicateProvider).GetTypeInfo()
+                    .IsAssignableFrom(predicateProviderType.GetTypeInfo()))
             {
                 var message = Resources.FormatPropertyBindingPredicateProvider_WrongType(
                     predicateProviderType.FullName,

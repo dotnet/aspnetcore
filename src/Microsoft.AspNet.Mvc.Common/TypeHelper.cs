@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Framework.Internal;
@@ -15,12 +15,13 @@ namespace Microsoft.AspNet.Mvc
     {
         private static readonly Type TaskGenericType = typeof(Task<>);
 
-        public static Type GetTaskInnerTypeOrNull([NotNull]Type type)
+        public static Type GetTaskInnerTypeOrNull([NotNull] Type type)
         {
-            if (type.GetTypeInfo().IsGenericType && !type.GetTypeInfo().IsGenericTypeDefinition)
+            var typeInfo = type.GetTypeInfo();
+            if (typeInfo.IsGenericType && !typeInfo.IsGenericTypeDefinition)
             {
-                var genericTypeDefinition = type.GetGenericTypeDefinition();
-                var genericArguments = type.GetGenericArguments();
+                var genericTypeDefinition = typeInfo.GetGenericTypeDefinition();
+                var genericArguments = typeInfo.GenericTypeArguments;
                 if (genericArguments.Length == 1 && TaskGenericType == genericTypeDefinition)
                 {
                     // Only Return if there is a single argument.
@@ -75,22 +76,39 @@ namespace Microsoft.AspNet.Mvc
                 type.Equals(typeof(Uri));
         }
 
-        public static bool HasStringConverter(Type type)
+        public static bool IsCompatibleWith([NotNull] Type type, object value)
         {
-            return TypeDescriptor.GetConverter(type).CanConvertFrom(typeof(string));
+            return (value == null && AllowsNullValue(type)) ||
+                (value != null && type.GetTypeInfo().IsAssignableFrom(value.GetType().GetTypeInfo()));
         }
 
-        public static bool IsCollectionType(Type type)
+        public static bool IsNullableValueType([NotNull] Type type)
         {
-            if (type == typeof(string))
-            {
-                // Even though string implements IEnumerable, we don't really think of it
-                // as a collection for the purposes of model binding.
-                return false;
-            }
+            return Nullable.GetUnderlyingType(type) != null;
+        }
 
-            // We only need to look for IEnumerable, because IEnumerable<T> extends it.
-            return typeof(IEnumerable).IsAssignableFrom(type);
+        public static bool AllowsNullValue([NotNull] Type type)
+        {
+            return !type.GetTypeInfo().IsValueType || IsNullableValueType(type);
+        }
+
+        public static TypeInfo ExtractGenericInterface([NotNull] Type queryType, Type interfaceType)
+        {
+            Func<TypeInfo, bool> matchesInterface =
+                typeInfo => typeInfo.IsGenericType && typeInfo.GetGenericTypeDefinition() == interfaceType;
+            var queryTypeInfo = queryType.GetTypeInfo();
+
+            if (matchesInterface(queryTypeInfo))
+            {
+                return queryTypeInfo;
+            }
+            else
+            {
+                return queryTypeInfo
+                    .ImplementedInterfaces
+                    .Select(type => type.GetTypeInfo())
+                    .FirstOrDefault(matchesInterface);
+            }
         }
     }
 }

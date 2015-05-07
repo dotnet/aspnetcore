@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -74,7 +75,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // "SelectExpressionNotEnumerable" InvalidOperationException during generation.
             // Metadata.IsCollectionType() is similar but does not take runtime type into account.
             var realModelType = For.ModelExplorer.ModelType;
-            var allowMultiple = typeof(string) != realModelType && typeof(IEnumerable).IsAssignableFrom(realModelType);
+            var allowMultiple = typeof(string) != realModelType &&
+                typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(realModelType.GetTypeInfo());
 
             // Ensure GenerateSelect() _never_ looks anything up in ViewData.
             var items = Items ?? Enumerable.Empty<SelectListItem>();

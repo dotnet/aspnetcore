@@ -70,12 +70,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return UnwrapPossibleArrayType(cultureToUse, value, type);
         }
 
-        public static bool CanConvertFromString(Type destinationType)
-        {
-            return TypeHelper.IsSimpleType(UnwrapNullableType(destinationType)) ||
-                   TypeHelper.HasStringConverter(destinationType);
-        }
-
         private object UnwrapPossibleArrayType(CultureInfo culture, object value, Type destinationType)
         {
             // array conversion results in four cases, as below
@@ -148,7 +142,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (!(canConvertFrom || converter.CanConvertTo(destinationType)))
             {
                 // EnumConverter cannot convert integer, so we verify manually
-                if (destinationType.IsEnum() && (value is int))
+                if (destinationType.GetTypeInfo().IsEnum && (value is int))
                 {
                     return Enum.ToObject(destinationType, (int)value);
                 }

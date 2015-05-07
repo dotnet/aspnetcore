@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
@@ -39,8 +40,8 @@ namespace Microsoft.AspNet.Mvc.Core
                   filterProviders,
                   inputFormatters,
                   outputFormatters,
-                  modelBinders, 
-                  modelValidatorProviders, 
+                  modelBinders,
+                  modelValidatorProviders,
                   valueProviderFactories,
                   actionBindingContextAccessor,
                   loggerFactory,
@@ -88,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         protected override Task<IDictionary<string, object>> BindActionArgumentsAsync(
-            ActionContext context, 
+            ActionContext context,
             ActionBindingContext bindingContext)
         {
             return _argumentBinder.BindActionArgumentsAsync(context, bindingContext, Instance);
@@ -116,7 +117,8 @@ namespace Microsoft.AspNet.Mvc.Core
 
             // Unwrap potential Task<T> types.
             var actualReturnType = TypeHelper.GetTaskInnerTypeOrNull(declaredReturnType) ?? declaredReturnType;
-            if (actionReturnValue == null && typeof(IActionResult).IsAssignableFrom(actualReturnType))
+            if (actionReturnValue == null &&
+                typeof(IActionResult).GetTypeInfo().IsAssignableFrom(actualReturnType.GetTypeInfo()))
             {
                 throw new InvalidOperationException(
                     Resources.FormatActionResult_ActionReturnValueCannotBeNull(actualReturnType));

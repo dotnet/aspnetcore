@@ -94,13 +94,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             // IsEnum et cetera
             var underlyingType = Nullable.GetUnderlyingType(context.Key.ModelType) ?? context.Key.ModelType;
-            if (underlyingType.IsEnum())
+            var underlyingTypeInfo = underlyingType.GetTypeInfo();
+
+            if (underlyingTypeInfo.IsEnum)
             {
                 // IsEnum
                 displayMetadata.IsEnum = true;
 
                 // IsFlagsEnum
-                var underlyingTypeInfo = underlyingType.GetTypeInfo();
                 displayMetadata.IsFlagsEnum =
                     underlyingTypeInfo.GetCustomAttribute<FlagsAttribute>(inherit: false) != null;
 

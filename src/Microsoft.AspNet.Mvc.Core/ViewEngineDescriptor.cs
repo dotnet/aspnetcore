@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Reflection;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.Internal;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="type">The <see cref="IViewEngine"/> type that the descriptor represents.</param>
         public ViewEngineDescriptor([NotNull] Type type)
         {
-            if (!typeof(IViewEngine).IsAssignableFrom(type))
+            if (!typeof(IViewEngine).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
             {
                 var message = Resources.FormatTypeMustDeriveFromType(type.FullName, typeof(IViewEngine).FullName);
                 throw new ArgumentException(message, nameof(type));

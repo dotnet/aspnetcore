@@ -69,10 +69,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private static Type GetKeyValuePairBinder(Type modelType)
         {
-            return ModelBindingHelper.GetPossibleBinderInstanceType(
-                        closedModelType: modelType,
-                        openModelType: typeof(KeyValuePair<,>),
-                        openBinderType: typeof(KeyValuePairModelBinder<,>));
+            var modelTypeInfo = modelType.GetTypeInfo();
+            if (modelTypeInfo.IsGenericType &&
+                modelTypeInfo.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
+            {
+                return typeof(KeyValuePairModelBinder<,>).MakeGenericType(modelTypeInfo.GenericTypeArguments);
+            }
+
+            return null;
         }
 
         /// <remarks>

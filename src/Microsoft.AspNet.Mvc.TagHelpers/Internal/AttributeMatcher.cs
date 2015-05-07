@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.Internal;
 
@@ -88,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             {
                 if (!context.AllAttributes.ContainsName(attribute) ||
                     context.AllAttributes[attribute] == null ||
-                    (typeof(string).IsAssignableFrom(context.AllAttributes[attribute].Value.GetType()) &&
+                    (context.AllAttributes[attribute].Value is string &&
                     string.IsNullOrWhiteSpace(context.AllAttributes[attribute].Value as string)))
                 {
                     // Missing attribute!

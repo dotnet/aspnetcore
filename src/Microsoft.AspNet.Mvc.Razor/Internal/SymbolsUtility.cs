@@ -12,6 +12,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Internal
     public class SymbolsUtility
     {
         private const string SymWriterGuid = "0AE2DEB0-F901-478b-BB9F-881EE8066788";
+        private static readonly Lazy<bool> _isMono = new Lazy<bool>(() => Type.GetType("Mono.Runtime") != null);
 
         /// <summary>
         /// Determines if the current platform supports symbols (pdb) generation.
@@ -19,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Internal
         /// <returns><c>true</c> if pdb generation is supported; <c>false</c> otherwise.</returns>
         public static bool SupportsSymbolsGeneration()
         {
-            if (PlatformHelper.IsMono)
+            if (_isMono.Value)
             {
                 return false;
             }

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -161,6 +162,8 @@ namespace Microsoft.AspNet.Mvc.Rendering.Internal
         {
             // Not returning type name here for IEnumerable<IFormFile> since we will be returning
             // a more specific name, IEnumerableOfIFormFileName.
+            var fieldTypeInfo = fieldType.GetTypeInfo();
+
             if (typeof(IEnumerable<IFormFile>) != fieldType)
             {
                 yield return fieldType.Name;
@@ -174,7 +177,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Internal
             else if (!modelMetadata.IsComplexType)
             {
                 // IsEnum is false for the Enum class itself
-                if (fieldType.IsEnum())
+                if (fieldTypeInfo.IsEnum)
                 {
                     // Same as fieldType.BaseType.Name in this case
                     yield return "Enum";
@@ -187,12 +190,12 @@ namespace Microsoft.AspNet.Mvc.Rendering.Internal
                 yield return "String";
                 yield break;
             }
-            else if (!fieldType.IsInterface())
+            else if (!fieldTypeInfo.IsInterface)
             {
                 var type = fieldType;
                 while (true)
                 {
-                    type = type.BaseType();
+                    type = type.GetTypeInfo().BaseType;
                     if (type == null || type == typeof(object))
                     {
                         break;
@@ -202,9 +205,9 @@ namespace Microsoft.AspNet.Mvc.Rendering.Internal
                 }
             }
 
-            if (typeof(IEnumerable).IsAssignableFrom(fieldType))
+            if (typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(fieldTypeInfo))
             {
-                if (typeof(IEnumerable<IFormFile>).IsAssignableFrom(fieldType))
+                if (typeof(IEnumerable<IFormFile>).GetTypeInfo().IsAssignableFrom(fieldTypeInfo))
                 {
                     yield return IEnumerableOfIFormFileName;
 
@@ -217,7 +220,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Internal
 
                 yield return "Collection";
             }
-            else if (typeof(IFormFile) != fieldType && typeof(IFormFile).IsAssignableFrom(fieldType))
+            else if (typeof(IFormFile) != fieldType && typeof(IFormFile).GetTypeInfo().IsAssignableFrom(fieldTypeInfo))
             {
                 yield return nameof(IFormFile);
             }

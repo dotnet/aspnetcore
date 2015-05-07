@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             ModelBindingHelper.ValidateBindingContext(bindingContext);
 
-            if (!TypeHelper.HasStringConverter(bindingContext.ModelType))
+            if (bindingContext.ModelMetadata.IsComplexType)
             {
                 // this type cannot be converted
                 return null;

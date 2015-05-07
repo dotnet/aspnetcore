@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         {
             Type[] actualTypes;
 
-            if (type.IsGenericType() &&
+            if (type.GetTypeInfo().IsGenericType &&
                 type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
             {
                 actualTypes = type.GenericTypeArguments;

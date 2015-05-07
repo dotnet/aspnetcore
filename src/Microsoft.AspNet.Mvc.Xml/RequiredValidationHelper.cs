@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             // is Dictionary<,> which implements IEnumerable<KeyValuePair<TKey, TValue>>) as the model
             // type here would be KeyValuePair<TKey, TValue> where Key and Value are public properties
             // which would also be probed for Required attribute validation.
-            if (modelType.IsGenericType())
+            if (modelType.GetTypeInfo().IsGenericType)
             {
                 var enumerableOfT = ClosedGenericMatcher.ExtractGenericInterface(modelType, typeof(IEnumerable<>));
                 if (enumerableOfT != null)
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.Xml
 
                 // Since DefaultObjectValidator can handle Required attribute validation for reference types,
                 // we only consider value types here.
-                if (propertyType.IsValueType() && !propertyType.IsNullableValueType())
+                if (propertyType.GetTypeInfo().IsValueType && !TypeHelper.IsNullableValueType(propertyType))
                 {
                     var validationError = GetValidationError(propertyInfo);
                     if (validationError != null)

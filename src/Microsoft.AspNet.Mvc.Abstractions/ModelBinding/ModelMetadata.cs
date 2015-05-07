@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Reflection;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.Framework.Internal;
 
@@ -273,7 +276,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <summary>
         /// Gets a collection of metadata items for validators.
         /// </summary>
-        public abstract IReadOnlyList<object> ValidatorMetadata { get;}
+        public abstract IReadOnlyList<object> ValidatorMetadata { get; }
 
         /// <summary>
         /// Gets a value indicating whether <see cref="ModelType"/> is a simple type.
@@ -288,7 +291,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 if (_isComplexType == null)
                 {
-                    _isComplexType = !TypeHelper.HasStringConverter(ModelType);
+                    _isComplexType = !TypeDescriptor.GetConverter(ModelType).CanConvertFrom(typeof(string));
                 }
 
                 return _isComplexType.Value;
@@ -300,7 +303,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         public bool IsNullableValueType
         {
-            get { return ModelType.IsNullableValueType(); }
+            get { return TypeHelper.IsNullableValueType(ModelType); }
         }
 
         /// <summary>
@@ -308,11 +311,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         /// <remarks>
         /// A collection type is defined as a <see cref="Type"/> which is assignable to
-        /// <see cref="System.Collections.IEnumerable"/>, and is not a <see cref="string"/>.
+        /// <see cref="IEnumerable"/>, and is not a <see cref="string"/>.
         /// </remarks>
         public bool IsCollectionType
         {
-            get { return TypeHelper.IsCollectionType(ModelType); }
+            get
+            {
+                if (ModelType == typeof(string))
+                {
+                    // Even though string implements IEnumerable, we don't really think of it
+                    // as a collection for the purposes of model binding.
+                    return false;
+                }
+
+                // We only need to look for IEnumerable, because IEnumerable<T> extends it.
+                return typeof(IEnumerable).IsAssignableFrom(ModelType);
+            }
         }
 
         /// <summary>
@@ -338,4 +352,4 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         public abstract Action<object, object> PropertySetter { get; }
     }
-} 
+}

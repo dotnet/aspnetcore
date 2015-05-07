@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using Microsoft.AspNet.Mvc.Razor.Host;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Generator;
@@ -128,7 +129,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                .Substring(typeName.Length);
 
             // ';' is optional
-            propertyName = StringHelper.TrimSpacesAndChars(propertyName, ';');
+            propertyName = TrimSpacesAndChars(propertyName, ';');
             Span.CodeGenerator = new InjectParameterGenerator(typeName.Trim(), propertyName);
 
             // Output the span and finish the block
@@ -139,6 +140,55 @@ namespace Microsoft.AspNet.Mvc.Razor
         private SpanCodeGenerator CreateModelCodeGenerator(string model)
         {
             return new ModelCodeGenerator(_baseType, model);
+        }
+
+        // Internal for unit testing
+        internal static string TrimSpacesAndChars(string value, params char[] chars)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return string.Empty;
+            }
+
+            if (chars == null || chars.Length == 0)
+            {
+                return value.Trim();
+            }
+
+            var firstIndex = 0;
+            for (; firstIndex < value.Length; firstIndex++)
+            {
+                var currentChar = value[firstIndex];
+                if (!char.IsWhiteSpace(currentChar) && !chars.Any(compareChar => compareChar == currentChar))
+                {
+                    break;
+                }
+            }
+
+            // We trimmed all the way
+            if (firstIndex == value.Length)
+            {
+                return string.Empty;
+            }
+
+            var lastIndex = value.Length - 1;
+            for (; lastIndex > firstIndex; lastIndex--)
+            {
+                var currentChar = value[lastIndex];
+                if (!char.IsWhiteSpace(currentChar) && !chars.Any(compareChar => compareChar == currentChar))
+                {
+                    break;
+                }
+            }
+
+            if (firstIndex == 0 && lastIndex == value.Length - 1)
+            {
+                return value;
+            }
+            else
+            {
+                return value.Substring(firstIndex, lastIndex - firstIndex + 1);
+            }
         }
     }
 }

@@ -511,7 +511,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return;
             }
 
-            if (value != null || property.PropertyType.AllowsNullValue())
+            if (value != null || TypeHelper.AllowsNullValue(property.PropertyType))
             {
                 try
                 {

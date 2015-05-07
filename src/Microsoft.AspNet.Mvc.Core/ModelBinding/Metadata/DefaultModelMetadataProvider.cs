@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
@@ -126,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
                 if (propertyHelper.Property.CanWrite &&
                     propertyHelper.Property.SetMethod?.IsPublic == true &&
-                    !key.ModelType.IsValueType())
+                    !key.ModelType.GetTypeInfo().IsValueType)
                 {
                     propertyEntry.PropertySetter = propertyHelper.ValueSetter;
                 }

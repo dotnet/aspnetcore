@@ -413,7 +413,7 @@ namespace Microsoft.AspNet.Mvc
 
         private static Type GetElementType(Type type)
         {
-            Debug.Assert(typeof(IEnumerable).IsAssignableFrom(type));
+            Debug.Assert(typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()));
             if (type.IsArray)
             {
                 return type.GetElementType();
@@ -421,7 +421,7 @@ namespace Microsoft.AspNet.Mvc
 
             foreach (var implementedInterface in type.GetInterfaces())
             {
-                if (implementedInterface.IsGenericType() &&
+                if (implementedInterface.GetTypeInfo().IsGenericType &&
                     implementedInterface.GetGenericTypeDefinition() == typeof(IEnumerable<>))
                 {
                     return implementedInterface.GetGenericArguments()[0];
@@ -471,14 +471,6 @@ namespace Microsoft.AspNet.Mvc
         internal static TModel CastOrDefault<TModel>(object model)
         {
             return (model is TModel) ? (TModel)model : default(TModel);
-        }
-
-        internal static Type GetPossibleBinderInstanceType(Type closedModelType,
-                                                           Type openModelType,
-                                                           Type openBinderType)
-        {
-            var typeArguments = TypeExtensions.GetTypeArgumentsIfMatch(closedModelType, openModelType);
-            return (typeArguments != null) ? openBinderType.MakeGenericType(typeArguments) : null;
         }
 
         internal static void ReplaceEmptyStringWithNull(ModelMetadata modelMetadata, ref object model)

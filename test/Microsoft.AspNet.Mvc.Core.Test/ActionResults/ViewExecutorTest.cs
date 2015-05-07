@@ -9,6 +9,7 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -90,7 +91,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 yield return new object[] { 30, 0 };
 
-                if (PlatformHelper.IsMono)
+                if (TestPlatformHelper.IsMono)
                 {
                     // The StreamWriter in Mono buffers 2x the buffer size before flushing.
                     yield return new object[] { ViewResultStreamWriterBufferSize * 2 + 30, ViewResultStreamWriterBufferSize };

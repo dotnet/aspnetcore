@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Xml
@@ -37,10 +37,11 @@ namespace Microsoft.AspNet.Mvc.Xml
             {
                 // Example: IEnumerable<SerializableError>
                 var declaredType = context.DeclaredType;
+                var declaredTypeInfo = declaredType.GetTypeInfo();
 
                 // We only wrap interfaces types(ex: IEnumerable<T>, IQueryable<T>, IList<T> etc.) and not
                 // concrete types like List<T>, Collection<T> which implement IEnumerable<T>.
-                if (declaredType != null && declaredType.IsInterface() && declaredType.IsGenericType())
+                if (declaredType != null && declaredTypeInfo.IsInterface && declaredTypeInfo.IsGenericType)
                 {
                     var enumerableOfT = ClosedGenericMatcher.ExtractGenericInterface(
                         declaredType,

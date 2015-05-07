@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
@@ -372,7 +373,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // IsCompatibleObject verifies if the value is either an instance of _declaredModelType or (if value is
             // null) that _declaredModelType is a nullable type.
-            var castWillSucceed = _declaredModelType.IsCompatibleWith(value);
+            var castWillSucceed = TypeHelper.IsCompatibleWith(_declaredModelType, value);
             if (!castWillSucceed)
             {
                 string message;

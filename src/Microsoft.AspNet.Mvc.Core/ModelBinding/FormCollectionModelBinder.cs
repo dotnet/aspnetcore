@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
@@ -29,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (request.HasFormContentType)
             {
                 var form = await request.ReadFormAsync();
-                if (bindingContext.ModelType.IsAssignableFrom(form.GetType()))
+                if (bindingContext.ModelType.GetTypeInfo().IsAssignableFrom(form.GetType().GetTypeInfo()))
                 {
                     model = form;
                 }

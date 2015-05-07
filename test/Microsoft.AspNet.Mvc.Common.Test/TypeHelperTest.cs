@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class TypeExtensionsTest
+    public class TypeHelperTests
     {
         [Theory]
         [InlineData(typeof(decimal))]
@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc
         public void IsCompatibleWithReturnsFalse_IfValueTypeIsNull(Type type)
         {
             // Act
-            bool result = TypeExtensions.IsCompatibleWith(type, value: null);
+            bool result = TypeHelper.IsCompatibleWith(type, value: null);
 
             // Assert
             Assert.False(result);
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc
         public void IsCompatibleWithReturnsFalse_IfValueIsMismatched(Type type)
         {
             // Act
-            bool result = TypeExtensions.IsCompatibleWith(type, value: "Hello world");
+            bool result = TypeHelper.IsCompatibleWith(type, value: "Hello world");
 
             // Assert
             Assert.False(result);
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Mvc
         public void IsCompatibleWithReturnsTrue_IfValueIsAssignable(Type type, object value)
         {
             // Act
-            bool result = TypeExtensions.IsCompatibleWith(type, value);
+            bool result = TypeHelper.IsCompatibleWith(type, value);
 
             // Assert
             Assert.True(result);

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.Framework.Internal;
 
@@ -94,7 +95,7 @@ namespace Microsoft.AspNet.Mvc
             [NotNull] Type filterType,
             int order)
         {
-            if (!typeof(IFilter).IsAssignableFrom(filterType))
+            if (!typeof(IFilter).GetTypeInfo().IsAssignableFrom(filterType.GetTypeInfo()))
             {
                 var message = Resources.FormatTypeMustDeriveFromType(filterType.FullName, typeof(IFilter).FullName);
                 throw new ArgumentException(message, nameof(filterType));

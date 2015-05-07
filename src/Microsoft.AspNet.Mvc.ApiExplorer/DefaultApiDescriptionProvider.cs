@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
@@ -361,7 +362,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
 
             // If the method is declared to return IActionResult or a derived class, that information
             // isn't valuable to the formatter.
-            if (typeof(IActionResult).IsAssignableFrom(unwrappedType))
+            if (typeof(IActionResult).GetTypeInfo().IsAssignableFrom(unwrappedType.GetTypeInfo()))
             {
                 return null;
             }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.Http;
 using Microsoft.AspNet.Mvc.ApplicationModels;
@@ -27,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                     {
                         // This has a binding behavior configured, just leave it alone.
                     }
-                    else if (ValueProviderResult.CanConvertFromString(parameter.ParameterInfo.ParameterType))
+                    else if (CanConvertFromString(parameter.ParameterInfo.ParameterType))
                     {
                         // Simple types are by-default from the URI.
                         parameter.BindingInfo = parameter.BindingInfo ?? new BindingInfo();
@@ -59,6 +60,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
         private bool IsConventionApplicable(ControllerModel controller)
         {
             return controller.Attributes.OfType<IUseWebApiParameterConventions>().Any();
+        }
+
+        private static bool CanConvertFromString(Type destinationType)
+        {
+            destinationType = Nullable.GetUnderlyingType(destinationType) ?? destinationType;
+            return TypeHelper.IsSimpleType(destinationType) ||
+                   TypeDescriptor.GetConverter(destinationType).CanConvertFrom(typeof(string));
         }
     }
 }

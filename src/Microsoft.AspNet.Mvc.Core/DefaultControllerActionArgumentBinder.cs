@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Mvc
                 if (propertyHelper.Property.CanWrite && propertyHelper.Property.SetMethod?.IsPublic == true)
                 {
                     // Handle settable property. Do not set the property if the type is a non-nullable type.
-                    if (source != null || propertyType.AllowsNullValue())
+                    if (source != null || TypeHelper.AllowsNullValue(propertyType))
                     {
                         propertyHelper.SetValue(controller, source);
                     }

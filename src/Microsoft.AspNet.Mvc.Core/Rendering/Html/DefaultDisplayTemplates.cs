@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 typeInCollection = genericEnumerableType.GenericTypeArguments[0];
             }
 
-            var typeInCollectionIsNullableValueType = typeInCollection.IsNullableValueType();
+            var typeInCollectionIsNullableValueType = TypeHelper.IsNullableValueType(typeInCollection);
 
             var oldPrefix = htmlHelper.ViewData.TemplateInfo.HtmlFieldPrefix;
 

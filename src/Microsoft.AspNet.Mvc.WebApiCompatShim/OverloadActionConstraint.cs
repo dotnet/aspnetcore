@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Net.Http.Formatting;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -101,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 
                 if ((source.CanAcceptDataFrom(BindingSource.Path) ||
                     source.CanAcceptDataFrom(BindingSource.Query)) &&
-                    ValueProviderResult.CanConvertFromString(parameter.ParameterType))
+                    CanConvertFromString(parameter.ParameterType))
                 {
                     if (optionalParameters != null)
                     {
@@ -153,6 +154,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             }
 
             return keys;
+        }
+
+        private static bool CanConvertFromString(Type destinationType)
+        {
+            destinationType = Nullable.GetUnderlyingType(destinationType) ?? destinationType;
+            return TypeHelper.IsSimpleType(destinationType) ||
+                   TypeDescriptor.GetConverter(destinationType).CanConvertFrom(typeof(string));
         }
 
         private class OverloadedParameter

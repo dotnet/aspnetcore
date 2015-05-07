@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using Newtonsoft.Json;
@@ -30,7 +31,7 @@ namespace Microsoft.AspNet.Mvc
                 // With the following settings here, if a value is not present on the wire for value types
                 // like primitive, struct etc., Json.net's serializer would throw exception which we catch
                 // and add it to model state.
-                if (propertyType.IsValueType() && !propertyType.IsNullableValueType())
+                if (propertyType.GetTypeInfo().IsValueType && !TypeHelper.IsNullableValueType(propertyType))
                 {
                     property.Required = Required.AllowNull;
                 }

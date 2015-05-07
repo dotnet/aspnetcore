@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return null; // the value doesn't exist
             }
 
-            if (!context.ModelType.IsCompatibleWith(valueProviderResult.RawValue))
+            if (!TypeHelper.IsCompatibleWith(context.ModelType, valueProviderResult.RawValue))
             {
                 return null; // value is of incompatible type
             }

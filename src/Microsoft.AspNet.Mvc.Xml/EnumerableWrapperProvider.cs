@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             var enumerableOfT = ClosedGenericMatcher.ExtractGenericInterface(
                 sourceEnumerableOfT,
                 typeof(IEnumerable<>));
-            if (!sourceEnumerableOfT.IsInterface() || enumerableOfT == null)
+            if (!sourceEnumerableOfT.GetTypeInfo().IsInterface || enumerableOfT == null)
             {
                 throw new ArgumentException(
                     Resources.FormatEnumerableWrapperProvider_InvalidSourceEnumerableOfT(typeof(IEnumerable<>).Name),

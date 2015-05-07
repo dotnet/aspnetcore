@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Mvc
                     }
                     else
                     {
-                        value = parameterInfo.ParameterType.IsValueType()
+                        value = parameterInfo.ParameterType.GetTypeInfo().IsValueType
                             ? Activator.CreateInstance(parameterInfo.ParameterType)
                             : null;
                     }
