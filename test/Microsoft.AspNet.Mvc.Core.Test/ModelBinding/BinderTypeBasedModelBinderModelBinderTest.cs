@@ -4,7 +4,7 @@
 #if DNX451
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.DependencyInjection;
 using Moq;

@@ -6,7 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Collections;
+using Microsoft.AspNet.Http.Features.Internal;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Xunit;
 

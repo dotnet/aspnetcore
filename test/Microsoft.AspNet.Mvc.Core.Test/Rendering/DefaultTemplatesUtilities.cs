@@ -8,7 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.DataProtection;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Routing;

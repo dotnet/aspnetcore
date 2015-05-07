@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.WebUtilities;
 using Moq;

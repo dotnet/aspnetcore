@@ -7,13 +7,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Collections;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.Net.Http.Headers;
-using Microsoft.AspNet.Mvc.Xml;
 using Moq;
 using Xunit;
-using System.Xml.Serialization;
 
 namespace Microsoft.AspNet.Mvc.Xml
 {

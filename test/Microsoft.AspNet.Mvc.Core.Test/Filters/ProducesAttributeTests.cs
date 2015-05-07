@@ -4,14 +4,13 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Routing;
 using Microsoft.Net.Http.Headers;
-using Xunit;
-
 #if DNX451
 using Moq;
 #endif
+using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Test
 {

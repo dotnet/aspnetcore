@@ -4,12 +4,11 @@
 #if DNX451
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Collections;
+using Microsoft.AspNet.Http.Internal;
 using Moq;
 using Xunit;
 

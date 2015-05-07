@@ -7,10 +7,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.DependencyInjection;
 using Moq;
-using Newtonsoft.Json.Utilities;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Test
