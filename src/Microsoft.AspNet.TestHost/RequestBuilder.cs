@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.TestHost
 {
@@ -26,13 +27,8 @@ namespace Microsoft.AspNet.TestHost
         /// <param name="server"></param>
         /// <param name="path"></param>
         [SuppressMessage("Microsoft.Usage", "CA2234:PassSystemUriObjectsInsteadOfStrings", Justification = "Not a full URI")]
-        public RequestBuilder(TestServer server, string path)
+        public RequestBuilder([NotNull] TestServer server, string path)
         {
-            if (server == null)
-            {
-                throw new ArgumentNullException("server");
-            }
-
             _server = server;
             _req = new HttpRequestMessage(HttpMethod.Get, path);
         }
@@ -42,13 +38,8 @@ namespace Microsoft.AspNet.TestHost
         /// </summary>
         /// <param name="configure"></param>
         /// <returns></returns>
-        public RequestBuilder And(Action<HttpRequestMessage> configure)
+        public RequestBuilder And([NotNull] Action<HttpRequestMessage> configure)
         {
-            if (configure == null)
-            {
-                throw new ArgumentNullException("configure");
-            }
-
             configure(_req);
             return this;
         }

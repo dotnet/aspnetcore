@@ -2,7 +2,8 @@
     "version": "1.0.0-*",
     "description": "ASP.NET 5 web server for writing and running tests.",
     "dependencies": {
-        "Microsoft.AspNet.Hosting": "1.0.0-*"
+        "Microsoft.AspNet.Hosting": "1.0.0-*",
+        "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
         "dnx451": {
