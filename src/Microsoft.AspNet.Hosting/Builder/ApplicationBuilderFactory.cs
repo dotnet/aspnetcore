@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Builder.Internal;
 
 namespace Microsoft.AspNet.Hosting.Builder
 {

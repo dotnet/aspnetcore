@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Builder.Internal;
 using Microsoft.AspNet.Hosting.Fakes;
 using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.Framework.DependencyInjection;
