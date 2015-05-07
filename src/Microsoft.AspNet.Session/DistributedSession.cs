@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.Framework.Caching.Distributed;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
