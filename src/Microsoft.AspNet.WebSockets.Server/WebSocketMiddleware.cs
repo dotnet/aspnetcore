@@ -8,6 +8,7 @@ using System.Net.WebSockets;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.WebSockets.Protocol;
 
 namespace Microsoft.AspNet.WebSockets.Server
