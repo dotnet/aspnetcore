@@ -98,7 +98,7 @@ namespace Microsoft.Framework.Localization
         /// <returns>The resource string, or <c>null</c> if none was found.</returns>
         protected string GetStringSafely([NotNull] string name, [NotNull] CultureInfo culture)
         {
-            var cacheKey = new MissingManifestCacheKey(name, culture);
+            var cacheKey = new MissingManifestCacheKey(name, culture ?? CultureInfo.CurrentUICulture);
             if (_missingManifestCache.ContainsKey(cacheKey))
             {
                 return null;
