@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.DataHandler.Encoder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.WebEncoders;

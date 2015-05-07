@@ -10,8 +10,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Http.Collections;
 using Microsoft.AspNet.Http.Extensions;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.WebUtilities;
 using Newtonsoft.Json.Linq;
 

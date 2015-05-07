@@ -4,7 +4,7 @@
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 using Shouldly;
 using Xunit;
 

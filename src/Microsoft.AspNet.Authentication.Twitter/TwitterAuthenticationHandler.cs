@@ -9,10 +9,10 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Collections;
-using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Authentication.Twitter.Messages;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Logging;
 
