@@ -706,6 +706,52 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Assert.Equal<string>(new string[] { "GET" }, action.HttpMethods);
         }
 
+        [Fact]
+        public void GetActions_InheritedAttributeRoutes()
+        {
+            // Arrange
+            var builder = CreateTestDefaultActionModelBuilder();
+            var typeInfo = typeof(DerivedClassInheritsAttributeRoutesController).GetTypeInfo();
+            var actionName = nameof(DerivedClassInheritsAttributeRoutesController.Edit);
+
+            // Act
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+
+            // Assert
+            Assert.Equal(2, actions.Count());
+
+            var action = Assert.Single(actions, a => a.AttributeRouteModel?.Template == "A");
+            Assert.Equal(1, action.Attributes.Count);
+            Assert.Contains(action.AttributeRouteModel.Attribute, action.Attributes);
+
+            action = Assert.Single(actions, a => a.AttributeRouteModel?.Template == "B");
+            Assert.Equal(1, action.Attributes.Count);
+            Assert.Contains(action.AttributeRouteModel.Attribute, action.Attributes);
+        }
+
+        [Fact]
+        public void GetActions_InheritedAttributeRoutesOverridden()
+        {
+            // Arrange
+            var builder = CreateTestDefaultActionModelBuilder();
+            var typeInfo = typeof(DerivedClassOverridesAttributeRoutesController).GetTypeInfo();
+            var actionName = nameof(DerivedClassOverridesAttributeRoutesController.Edit);
+
+            // Act
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+
+            // Assert
+            Assert.Equal(2, actions.Count());
+
+            var action = Assert.Single(actions, a => a.AttributeRouteModel?.Template == "C");
+            Assert.Equal(1, action.Attributes.Count);
+            Assert.Contains(action.AttributeRouteModel.Attribute, action.Attributes);
+
+            action = Assert.Single(actions, a => a.AttributeRouteModel?.Template == "D");
+            Assert.Equal(1, action.Attributes.Count);
+            Assert.Contains(action.AttributeRouteModel.Attribute, action.Attributes);
+        }
+
         private static DefaultActionModelBuilder CreateTestDefaultActionModelBuilder(
             AuthorizationOptions authOptions = null)
         {
@@ -728,6 +774,31 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             public new bool IsAction([NotNull] TypeInfo typeInfo, [NotNull]MethodInfo methodInfo)
             {
                 return base.IsAction(typeInfo, methodInfo);
+            }
+        }
+
+        private class BaseClassWithAttributeRoutesController
+        {
+            [Route("A")]
+            [Route("B")]
+            public virtual void Edit()
+            {
+            }
+        }
+
+        private class DerivedClassInheritsAttributeRoutesController : BaseClassWithAttributeRoutesController
+        {
+            public override void Edit()
+            {
+            }
+        }
+
+        private class DerivedClassOverridesAttributeRoutesController : BaseClassWithAttributeRoutesController
+        {
+            [Route("C")]
+            [Route("D")]
+            public override void Edit()
+            {
             }
         }
 

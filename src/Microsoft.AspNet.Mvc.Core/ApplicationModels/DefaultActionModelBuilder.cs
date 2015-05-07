@@ -37,9 +37,59 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                 return Enumerable.Empty<ActionModel>();
             }
 
+            // For attribute routes on a action, we want want to support 'overriding' routes on a
+            // virtual method, but allow 'overriding'. So we need to walk up the hierarchy looking
+            // for the first definition to define routes.
+            //
+            // Then we want to 'filter' the set of attributes, so that only the effective routes apply.
+            var currentMethodInfo = methodInfo;
+
+            IRouteTemplateProvider[] routeAttributes = null;
+
+            while (true)
+            {
+                routeAttributes = currentMethodInfo
+                        .GetCustomAttributes(inherit: false)
+                        .OfType<IRouteTemplateProvider>()
+                        .ToArray();
+
+                if (routeAttributes.Length > 0)
+                {
+                    // Found 1 or more route attributes.
+                    break;
+                }
+
+                // GetBaseDefinition returns 'this' when it gets to the bottom of the chain.
+                var nextMethodInfo = currentMethodInfo.GetBaseDefinition();
+                if (currentMethodInfo == nextMethodInfo)
+                {
+                    break;
+                }
+
+                currentMethodInfo = nextMethodInfo;
+            }
+
             // CoreCLR returns IEnumerable<Attribute> from GetCustomAttributes - the OfType<object>
             // is needed to so that the result of ToArray() is object
             var attributes = methodInfo.GetCustomAttributes(inherit: true).OfType<object>().ToArray();
+
+            // This is fairly complicated so that we maintain referential equality between items in
+            // ActionModel.Attributes and ActionModel.Attributes[*].Attribute.
+            var applicableAttributes = new List<object>();
+            foreach (var attribute in attributes)
+            {
+                if (attribute is IRouteTemplateProvider)
+                {
+                    // This attribute is a route-attribute, leave it out.
+                }
+                else
+                {
+                    applicableAttributes.Add(attribute);
+                }
+            }
+            applicableAttributes.AddRange(routeAttributes);
+
+            attributes = applicableAttributes.ToArray();
 
             // Route attributes create multiple actions, we want to split the set of
             // attributes based on these so each action only has the attributes that affect it.
