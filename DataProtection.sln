@@ -25,7 +25,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtec
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtection.Test.Shared", "test\Microsoft.AspNet.DataProtection.Test.Shared\Microsoft.AspNet.DataProtection.Test.Shared.xproj", "{4F14BA2A-4F04-4676-8586-EC380977EE2E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtection.Shared", "src\Microsoft.AspNet.DataProtection.Shared\Microsoft.AspNet.DataProtection.Shared.xproj", "{3277BB22-033F-4010-8131-A515B910CAAD}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtection.Sources", "src\Microsoft.AspNet.DataProtection.Sources\Microsoft.AspNet.DataProtection.Sources.xproj", "{3277BB22-033F-4010-8131-A515B910CAAD}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtection.SystemWeb", "src\Microsoft.AspNet.DataProtection.SystemWeb\Microsoft.AspNet.DataProtection.SystemWeb.xproj", "{E3552DEB-4173-43AE-BF69-3C10DFF3BAB6}"
 EndProject

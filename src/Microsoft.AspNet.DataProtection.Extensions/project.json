@@ -3,7 +3,7 @@
     "description": "Additional APIs for ASP.NET 5 data protection.",
     "dependencies": {
         "Microsoft.AspNet.DataProtection": "1.0.0-*",
-        "Microsoft.AspNet.DataProtection.Shared": { "type": "build", "version": "" },
+        "Microsoft.AspNet.DataProtection.Sources": { "type": "build", "version": "" },
         "Microsoft.Framework.DependencyInjection": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" }
     },
