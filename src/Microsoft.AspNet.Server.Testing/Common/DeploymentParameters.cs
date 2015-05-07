@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Server.Testing
         {
             if (string.IsNullOrEmpty(applicationPath))
             {
-                throw new ArgumentException("Value cannot be null.", "applicationPath");
+                throw new ArgumentException("Value cannot be null.", nameof(applicationPath));
             }
 
             if (!Directory.Exists(applicationPath))

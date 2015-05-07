@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Hosting.Server
         {
             if (string.IsNullOrEmpty(serverFactoryIdentifier))
             {
-                throw new ArgumentException(string.Empty, "serverFactoryIdentifier");
+                throw new ArgumentException(string.Empty, nameof(serverFactoryIdentifier));
             }
 
             var nameParts = HostingUtilities.SplitTypeName(serverFactoryIdentifier);
