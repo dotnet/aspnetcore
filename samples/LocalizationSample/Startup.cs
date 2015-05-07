@@ -20,7 +20,11 @@ namespace LocalizationSample
 
         public void Configure(IApplicationBuilder app, IStringLocalizer<Startup> SR)
         {
-            var options = new RequestLocalizationMiddlewareOptions();
+            var options = new RequestLocalizationMiddlewareOptions
+            {
+                // Set options here to change middleware behavior
+
+            };
             app.UseRequestLocalization(options);
 
             app.Run(async (context) =>
@@ -28,7 +32,8 @@ namespace LocalizationSample
                 context.Response.StatusCode = 200;
                 context.Response.ContentType = "text/html; charset=utf-8";
 
-                var requestCulture = context.GetFeature<IRequestCultureFeature>().RequestCulture;
+                var requestCultureFeature = context.GetFeature<IRequestCultureFeature>();
+                var requestCulture = requestCultureFeature.RequestCulture;
 
                 await context.Response.WriteAsync(
 $@"<!doctype html>
@@ -57,6 +62,7 @@ $@"<!doctype html>
                 await context.Response.WriteAsync("</form>");
                 await context.Response.WriteAsync("<br />");
                 await context.Response.WriteAsync("<table><tbody>");
+                await context.Response.WriteAsync($"<tr><th>Winning strategy:</th><td>{requestCultureFeature.Strategy.GetType().Name}</td></tr>");
                 await context.Response.WriteAsync($"<tr><th>{SR["Current request culture:"]}</th><td>{requestCulture.Culture.DisplayName} ({requestCulture.Culture})</td></tr>");
                 await context.Response.WriteAsync($"<tr><th>{SR["Current request UI culture:"]}</th><td>{requestCulture.UICulture.DisplayName} ({requestCulture.UICulture})</td></tr>");
                 await context.Response.WriteAsync($"<tr><th>{SR["Current thread culture:"]}</th><td>{CultureInfo.CurrentCulture.DisplayName} ({CultureInfo.CurrentCulture})</td></tr>");
@@ -69,6 +75,12 @@ $@"<!doctype html>
                 await context.Response.WriteAsync($"<tr><th>{SR["Current time (request):"]}</th><td>{DateTime.Now.ToString("T")}</td></tr>");
                 await context.Response.WriteAsync($"<tr><th>{SR["Big number (invariant):"]}</th><td>{(Math.Pow(2, 42) + 0.42).ToString("N", CultureInfo.InvariantCulture)}</td></tr>");
                 await context.Response.WriteAsync($"<tr><th>{SR["Big number (request):"]}</th><td>{(Math.Pow(2, 42) + 0.42).ToString("N")}</td></tr>");
+                await context.Response.WriteAsync($"<tr><th>{SR["Big number negative (invariant):"]}</th><td>{(-Math.Pow(2, 42) + 0.42).ToString("N", CultureInfo.InvariantCulture)}</td></tr>");
+                await context.Response.WriteAsync($"<tr><th>{SR["Big number negative (request):"]}</th><td>{(-Math.Pow(2, 42) + 0.42).ToString("N")}</td></tr>");
+                await context.Response.WriteAsync($"<tr><th>{SR["Money (invariant):"]}</th><td>{2199.50.ToString("C", CultureInfo.InvariantCulture)}</td></tr>");
+                await context.Response.WriteAsync($"<tr><th>{SR["Money (request):"]}</th><td>{2199.50.ToString("C")}</td></tr>");
+                await context.Response.WriteAsync($"<tr><th>{SR["Money negative (invariant):"]}</th><td>{(-2199.50).ToString("C", CultureInfo.InvariantCulture)}</td></tr>");
+                await context.Response.WriteAsync($"<tr><th>{SR["Money negative (request):"]}</th><td>{(-2199.50).ToString("C")}</td></tr>");
                 await context.Response.WriteAsync("</tbody></table>");
                 await context.Response.WriteAsync(
 @"</body>
