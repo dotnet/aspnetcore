@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Localization
         public async Task Invoke([NotNull] HttpContext context)
         {
             var requestCulture = _options.DefaultRequestCulture ??
-                new RequestCulture(CultureInfo.DefaultThreadCurrentCulture, CultureInfo.DefaultThreadCurrentUICulture);
+                new RequestCulture(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
 
             IRequestCultureStrategy winningStrategy = null;
 
@@ -53,6 +53,20 @@ namespace Microsoft.AspNet.Localization
                         winningStrategy = strategy;
                         break;
                     }
+                }
+            }
+
+            if (_options.SupportedCultures != null)
+            {
+                // Ensure that selected cultures are in the supported list and if not, set them to the default
+                if (!_options.SupportedCultures.Contains(requestCulture.Culture))
+                {
+                    requestCulture = new RequestCulture(_options.DefaultRequestCulture.Culture, requestCulture.UICulture);
+                }
+
+                if (!_options.SupportedUICultures.Contains(requestCulture.UICulture))
+                {
+                    requestCulture = new RequestCulture(requestCulture.Culture, _options.DefaultRequestCulture.UICulture);
                 }
             }
 

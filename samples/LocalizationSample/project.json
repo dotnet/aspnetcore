@@ -1,0 +1,38 @@
+{
+  "webroot": "wwwroot",
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "Microsoft.AspNet.Server.IIS": "1.0.0-*",
+    "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+    "Microsoft.AspNet.Localization": "1.0.0-*",
+    "Microsoft.Framework.Localization": "1.0.0-*"
+  },
+
+  "commands": {
+    "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5000"
+  },
+
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": {
+      "dependencies": {
+        "System.Globalization": "4.0.10-*",
+        "System.Globalization.Extensions": "4.0.0-*"
+      }
+    }
+  },
+
+  "publishExclude": [
+    "node_modules",
+    "bower_components",
+    "**.xproj",
+    "**.user",
+    "**.vspscc"
+  ],
+  "exclude": [
+    "wwwroot",
+    "node_modules",
+    "bower_components"
+  ]
+}
