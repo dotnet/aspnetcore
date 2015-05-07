@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.SqlServer;
+using Microsoft.Data.Entity.Relational;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using MusicStore.Spa;
@@ -21,7 +21,7 @@ namespace MusicStore.Models
         {
             using (var db = serviceProvider.GetService<MusicStoreContext>())
             {
-                var sqlServerDatabase = db.Database as SqlServerDatabase;
+                var sqlServerDatabase = db.Database as RelationalDatabase;
                 if (sqlServerDatabase != null)
                 {
                     if (await sqlServerDatabase.EnsureCreatedAsync())
