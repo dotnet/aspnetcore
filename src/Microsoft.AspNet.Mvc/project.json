@@ -12,8 +12,8 @@
         "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
         "Microsoft.Framework.Caching.Memory": "1.0.0-*",
         "Microsoft.Framework.DependencyInjection": "1.0.0-*",
-        "Microsoft.Framework.PropertyHelper.Internal": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type": "build" }
+        "Microsoft.Framework.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
         "dnx451": {},
