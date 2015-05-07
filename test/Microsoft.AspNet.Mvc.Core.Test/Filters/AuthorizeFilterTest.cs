@@ -61,11 +61,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
-            var authorizationContext = GetAuthorizationContext(services =>
-            {
-                services.AddAuthorization();
-                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
-            },
+            var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization(),
                 anonymous: true);
 
             authorizationContext.Filters.Add(new AllowAnonymousAttribute());
@@ -82,11 +78,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
-            var authorizationContext = GetAuthorizationContext(services =>
-            {
-                services.AddAuthorization();
-                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
-            });
+            var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization());
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
@@ -100,11 +92,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireClaim("Permission", "CanViewComment", "CanViewPage").Build());
-            var authorizationContext = GetAuthorizationContext(services =>
-            {
-                services.AddAuthorization();
-                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
-            });
+            var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization());
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
@@ -123,7 +111,6 @@ namespace Microsoft.AspNet.Mvc.Test
                 services.AddOptions();
                 services.AddTransient<IAuthorizationService, DefaultAuthorizationService>();
             });
-
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
 
@@ -136,11 +123,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireRole("Administrator").Build());
-            var authorizationContext = GetAuthorizationContext(services =>
-            {
-                services.AddAuthorization();
-                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
-            });
+            var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization());
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
@@ -154,11 +137,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireRole("Wut").Build());
-            var authorizationContext = GetAuthorizationContext(services =>
-            {
-                services.AddAuthorization();
-                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
-            });
+            var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization());
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
@@ -175,11 +154,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 .RequireRole("Administrator")
                 .RequireClaim("Permission", "CanViewComment")
                 .Build());
-            var authorizationContext = GetAuthorizationContext(services =>
-            {
-                services.AddAuthorization();
-                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
-            });
+            var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization());
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
@@ -195,11 +170,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder()
                 .RequireClaim("Permission", "CanViewComment")
                 .Build());
-            var authorizationContext = GetAuthorizationContext(services =>
-            {
-                services.AddAuthorization();
-                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
-            });
+            var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization());
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
@@ -245,11 +216,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder()
                 .RequireClaim("Permission", "CanViewComment")
                 .Build());
-            var authorizationContext = GetAuthorizationContext(services =>
-            {
-                services.AddAuthorization();
-                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
-            });
+            var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization());
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
@@ -266,11 +233,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 .RequireClaim("Permission", "CanViewComment")
                 .RequireClaim("Permission", "CupBearer")
                 .Build());
-            var authorizationContext = GetAuthorizationContext(services =>
-            {
-                services.AddAuthorization();
-                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
-            });
+            var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization());
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
@@ -286,11 +249,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder("Bearer")
                 .RequireClaim("Permission", "CanViewPage")
                 .Build());
-            var authorizationContext = GetAuthorizationContext(services =>
-            {
-                services.AddAuthorization();
-                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
-            });
+            var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization());
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
@@ -304,11 +263,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().Build());
-            var authorizationContext = GetAuthorizationContext(services =>
-            {
-                services.AddAuthorization();
-                services.AddTransient<IAuthorizationHandler, DenyAnonymousAuthorizationHandler>();
-            });
+            var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization());
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
