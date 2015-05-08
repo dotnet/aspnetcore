@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     Validates users before they are saved
+    /// Provides validation services for user classes.
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
     public class UserValidator<TUser> : IUserValidator<TUser> where TUser : class
@@ -58,7 +58,8 @@ namespace Microsoft.AspNet.Identity
             {
                 errors.Add(Describer.InvalidUserName(userName));
             }
-            else if (manager.Options.User.UserNameValidationRegex != null && !Regex.IsMatch(userName, manager.Options.User.UserNameValidationRegex))
+            else if (manager.Options.User.UserNameValidationRegex != null && 
+                !Regex.IsMatch(userName, manager.Options.User.UserNameValidationRegex, RegexOptions.CultureInvariant, manager.Options.User.UserNameValidationRegexTimeout))
             {
                 errors.Add(Describer.InvalidUserName(userName));
             }
