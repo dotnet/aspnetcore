@@ -15,6 +15,7 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -397,6 +398,29 @@ namespace Microsoft.AspNet.Mvc
             }
 
             return new JsonResult(data);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="JsonResult"/> object that serializes the specified <paramref name="data"/> object
+        /// to JSON.
+        /// </summary>
+        /// <param name="data">The object to serialize.</param>
+        /// <param name="serializerSettings">The <see cref="JsonSerializerSettings"/> to be used by
+        /// the formatter.</param>
+        /// <returns>The created <see cref="JsonResult"/> that serializes the specified <paramref name="data"/>
+        /// as JSON format for the response.</returns>
+        /// <remarks>Callers should cache an instance of <see cref="JsonSerializerSettings"/> to avoid
+        /// recreating cached data with each call.</remarks>
+        [NonAction]
+        public virtual JsonResult Json(object data, [NotNull] JsonSerializerSettings serializerSettings)
+        {
+            var disposableValue = data as IDisposable;
+            if (disposableValue != null)
+            {
+                Response.OnResponseCompleted(_ => disposableValue.Dispose(), state: null);
+            }
+
+            return new JsonResult(data, serializerSettings);
         }
 
         /// <summary>

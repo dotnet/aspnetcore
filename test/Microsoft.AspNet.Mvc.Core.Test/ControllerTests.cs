@@ -19,6 +19,7 @@ using Microsoft.AspNet.WebUtilities;
 #if DNX451
 using Moq;
 #endif
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Test
@@ -1029,6 +1030,24 @@ namespace Microsoft.AspNet.Mvc.Test
             // Assert
             Assert.IsType<JsonResult>(actualJsonResult);
             Assert.Same(data, actualJsonResult.Value);
+        }
+
+        [Fact]
+        public void Controller_Json_WithParameterValueAndSerializerSettings_SetsRespectiveValues()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var data = new object();
+            var serializerSettings = new JsonSerializerSettings();
+
+            // Act
+            var actualJsonResult = controller.Json(data, serializerSettings);
+
+            // Assert
+            Assert.IsType<JsonResult>(actualJsonResult);
+            Assert.Same(data, actualJsonResult.Value);
+            var jsonFormatter = actualJsonResult.Formatter as JsonOutputFormatter;
+            Assert.Same(serializerSettings, jsonFormatter.SerializerSettings);
         }
 
         [Fact]

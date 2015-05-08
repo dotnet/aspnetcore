@@ -3,12 +3,15 @@
 
 using Microsoft.AspNet.Mvc;
 using Microsoft.Net.Http.Headers;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 namespace BasicWebSite.Controllers
 {
     public class JsonResultController : Controller
     {
+        private static JsonSerializerSettings _customSerializerSettings;
+
         public JsonResult Plain()
         {
             return Json(new { Message = "hello" });
@@ -30,6 +33,19 @@ namespace BasicWebSite.Controllers
             var result = new JsonResult(new { Message = "hello" }, formatter);
             result.ContentTypes.Add(MediaTypeHeaderValue.Parse("application/message+json"));
             return result;
+        }
+
+        public JsonResult CustomSerializerSettings()
+        {
+            if (_customSerializerSettings == null)
+            {
+                _customSerializerSettings = new JsonSerializerSettings
+                {
+                    ContractResolver = new CamelCasePropertyNamesContractResolver()
+                };
+            }
+
+            return Json(new { Message = "hello" }, _customSerializerSettings);
         }
 
         public JsonResult Null()

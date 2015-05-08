@@ -9,6 +9,7 @@ using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -27,7 +28,7 @@ namespace Microsoft.AspNet.Mvc
         };
 
         /// <summary>
-        /// Creates a new <see cref="JsonResult"/> with the given <paramref name="data"/>.
+        /// Creates a new <see cref="JsonResult"/> with the given <paramref name="value"/>.
         /// </summary>
         /// <param name="value">The value to format as JSON.</param>
         public JsonResult(object value)
@@ -36,7 +37,18 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Creates a new <see cref="JsonResult"/> with the given <paramref name="data"/>.
+        /// Creates a new <see cref="JsonResult"/> with the given <paramref name="value"/>.
+        /// </summary>
+        /// <param name="value">The value to format as JSON.</param>
+        /// <param name="serializerSettings">The <see cref="JsonSerializerSettings"/> to be used by
+        /// the formatter.</param>
+        public JsonResult(object value, [NotNull] JsonSerializerSettings serializerSettings)
+            : this(value, formatter: new JsonOutputFormatter { SerializerSettings = serializerSettings })
+        {
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="JsonResult"/> with the given <paramref name="value"/>.
         /// </summary>
         /// <param name="value">The value to format as JSON.</param>
         /// <param name="formatter">The formatter to use, or <c>null</c> to choose a formatter dynamically.</param>

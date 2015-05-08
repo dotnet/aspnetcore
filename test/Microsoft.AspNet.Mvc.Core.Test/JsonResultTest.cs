@@ -15,6 +15,7 @@ using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
 using Moq;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -23,6 +24,9 @@ namespace Microsoft.AspNet.Mvc
     {
         private static readonly byte[] _abcdUTF8Bytes
             = new byte[] { 123, 34, 102, 111, 111, 34, 58, 34, 97, 98, 99, 100, 34, 125 };
+
+        private static readonly byte[] _abcdIndentedUTF8Bytes
+            = new byte[] { 123, 13, 10, 32, 32, 34, 102, 111, 111, 34, 58, 32, 34, 97, 98, 99, 100, 34, 13, 10, 125 };
 
         [Fact]
         public async Task ExecuteResultAsync_OptionsFormatter_WithoutBOM()
@@ -152,6 +156,29 @@ namespace Microsoft.AspNet.Mvc
             // Assert
             Assert.Equal(expected, written);
             Assert.Equal("application/hal+json; charset=utf-8", context.Response.ContentType);
+        }
+
+        [Fact]
+        public async Task ExecuteResultAsync_UsesPassedInSerializerSettings()
+        {
+            // Arrange
+            var expected = _abcdIndentedUTF8Bytes;
+
+            var context = GetHttpContext();
+            var actionContext = new ActionContext(context, new RouteData(), new ActionDescriptor());
+
+            var serializerSettings = new JsonSerializerSettings();
+            serializerSettings.Formatting = Formatting.Indented;
+
+            var result = new JsonResult(new { foo = "abcd" }, serializerSettings);
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+            var written = GetWrittenBytes(context);
+
+            // Assert
+            Assert.Equal(expected, written);
+            Assert.Equal("application/json; charset=utf-8", context.Response.ContentType);
         }
 
         // If no formatter in options can match the given content-types, then use the one registered

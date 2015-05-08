@@ -10,6 +10,7 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.WebUtilities;
 using Moq;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -194,7 +195,7 @@ namespace Microsoft.AspNet.Mvc
             var jsonResult = Assert.IsType<JsonResult>(result);
             Assert.NotNull(jsonResult.Value);
             Assert.Same(model, jsonResult.Value);
-            Assert.IsType(model.GetType(), jsonResult.Value);
+            Assert.IsType<MyModel>(jsonResult.Value);
 
             // Arrange
             controller = new TestabilityController();
@@ -207,6 +208,28 @@ namespace Microsoft.AspNet.Mvc
 
             jsonResult = Assert.IsType<JsonResult>(result);
             Assert.Null(jsonResult.Value);
+        }
+
+        [Fact]
+        public void ControllerJsonWithSerializerSettings_InvokedInUnitTests()
+        {
+            // Arrange
+            var controller = new TestabilityController();
+            var model = new MyModel() { Property1 = "Property_1" };
+            var serializerSettings = new JsonSerializerSettings();
+
+            // Act
+            var result = controller.JsonWithSerializerSettings_Action(model, serializerSettings);
+
+            // Assert
+            Assert.NotNull(result);
+
+            var jsonResult = Assert.IsType<JsonResult>(result);
+            Assert.NotNull(jsonResult.Value);
+            Assert.Same(model, jsonResult.Value);
+            Assert.IsType<MyModel>(jsonResult.Value);
+            var jsonFormatter = jsonResult.Formatter as JsonOutputFormatter;
+            Assert.Same(serializerSettings, jsonFormatter.SerializerSettings);
         }
 
         [Fact]
@@ -588,6 +611,11 @@ namespace Microsoft.AspNet.Mvc
             public IActionResult Json_Action(object data)
             {
                 return Json(data);
+            }
+
+            public IActionResult JsonWithSerializerSettings_Action(object data, JsonSerializerSettings serializerSettings)
+            {
+                return Json(data, serializerSettings);
             }
 
             public IActionResult Redirect_Action(string url)

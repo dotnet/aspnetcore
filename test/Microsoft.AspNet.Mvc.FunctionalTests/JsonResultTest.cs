@@ -162,6 +162,26 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task JsonResult_Uses_CustomSerializerSettings()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            var url = "http://localhost/JsonResult/CustomSerializerSettings";
+
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+            // Act
+            var response = await client.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("{\"message\":\"hello\"}", content);
+        }
+
+        [Fact]
         public async Task JsonResult_CustomContentType()
         {
             // Arrange
