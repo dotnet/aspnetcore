@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
-using Moq;
 using Xunit;
 
 namespace Microsoft.Framework.WebEncoders
@@ -14,7 +12,7 @@ namespace Microsoft.Framework.WebEncoders
         public void GetHtmlEncoder_ServiceProviderDoesNotHaveEncoder_UsesDefault()
         {
             // Arrange
-            var serviceProvider = new Mock<IServiceProvider>().Object;
+            var serviceProvider = new TestServiceProvider();
 
             // Act
             var retVal = serviceProvider.GetHtmlEncoder();
@@ -27,12 +25,11 @@ namespace Microsoft.Framework.WebEncoders
         public void GetHtmlEncoder_ServiceProviderHasEncoder_ReturnsRegisteredInstance()
         {
             // Arrange
-            var expectedEncoder = new Mock<IHtmlEncoder>().Object;
-            var mockServiceProvider = new Mock<IServiceProvider>();
-            mockServiceProvider.Setup(o => o.GetService(typeof(IHtmlEncoder))).Returns(expectedEncoder);
+            var expectedEncoder = new HtmlEncoder();
+            var serviceProvider = new TestServiceProvider() { Service = expectedEncoder };
 
             // Act
-            var retVal = mockServiceProvider.Object.GetHtmlEncoder();
+            var retVal = serviceProvider.GetHtmlEncoder();
 
             // Assert
             Assert.Same(expectedEncoder, retVal);
@@ -42,7 +39,7 @@ namespace Microsoft.Framework.WebEncoders
         public void GetJavaScriptStringEncoder_ServiceProviderDoesNotHaveEncoder_UsesDefault()
         {
             // Arrange
-            var serviceProvider = new Mock<IServiceProvider>().Object;
+            var serviceProvider = new TestServiceProvider();
 
             // Act
             var retVal = serviceProvider.GetJavaScriptStringEncoder();
@@ -55,12 +52,11 @@ namespace Microsoft.Framework.WebEncoders
         public void GetJavaScriptStringEncoder_ServiceProviderHasEncoder_ReturnsRegisteredInstance()
         {
             // Arrange
-            var expectedEncoder = new Mock<IJavaScriptStringEncoder>().Object;
-            var mockServiceProvider = new Mock<IServiceProvider>();
-            mockServiceProvider.Setup(o => o.GetService(typeof(IJavaScriptStringEncoder))).Returns(expectedEncoder);
+            var expectedEncoder = new JavaScriptStringEncoder();
+            var serviceProvider = new TestServiceProvider() { Service = expectedEncoder };
 
             // Act
-            var retVal = mockServiceProvider.Object.GetJavaScriptStringEncoder();
+            var retVal = serviceProvider.GetJavaScriptStringEncoder();
 
             // Assert
             Assert.Same(expectedEncoder, retVal);
@@ -70,7 +66,7 @@ namespace Microsoft.Framework.WebEncoders
         public void GetUrlEncoder_ServiceProviderDoesNotHaveEncoder_UsesDefault()
         {
             // Arrange
-            var serviceProvider = new Mock<IServiceProvider>().Object;
+            var serviceProvider = new TestServiceProvider();
 
             // Act
             var retVal = serviceProvider.GetUrlEncoder();
@@ -83,15 +79,24 @@ namespace Microsoft.Framework.WebEncoders
         public void GetUrlEncoder_ServiceProviderHasEncoder_ReturnsRegisteredInstance()
         {
             // Arrange
-            var expectedEncoder = new Mock<IUrlEncoder>().Object;
-            var mockServiceProvider = new Mock<IServiceProvider>();
-            mockServiceProvider.Setup(o => o.GetService(typeof(IUrlEncoder))).Returns(expectedEncoder);
+            var expectedEncoder = new UrlEncoder();
+            var serviceProvider = new TestServiceProvider() { Service = expectedEncoder };
 
             // Act
-            var retVal = mockServiceProvider.Object.GetUrlEncoder();
+            var retVal = serviceProvider.GetUrlEncoder();
 
             // Assert
             Assert.Same(expectedEncoder, retVal);
+        }
+
+        private class TestServiceProvider : IServiceProvider
+        {
+            public object Service { get; set; }
+
+            public object GetService(Type serviceType)
+            {
+                return Service;
+            }
         }
     }
 }

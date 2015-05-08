@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder.Internal;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
-using Shouldly;
 using Xunit;
 
 namespace Microsoft.AspNet.Builder.Extensions
@@ -98,7 +97,7 @@ namespace Microsoft.AspNet.Builder.Extensions
         [InlineData("/foo/cho/")]
         public void MatchPathWithTrailingSlashThrowsException(string matchPath)
         {
-            Should.Throw<ArgumentException>(() => new ApplicationBuilder(serviceProvider: null).Map(matchPath, map => { }).Build());
+            Assert.Throws<ArgumentException>(() => new ApplicationBuilder(serviceProvider: null).Map(matchPath, map => { }).Build());
         }
 
         [Theory]

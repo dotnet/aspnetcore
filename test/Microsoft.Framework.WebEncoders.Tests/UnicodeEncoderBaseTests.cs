@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using Moq;
 using Xunit;
 
 namespace Microsoft.Framework.WebEncoders
@@ -208,8 +207,9 @@ namespace Microsoft.Framework.WebEncoders
         public void Encode_CharArray_ZeroCount_DoesNotCallIntoTextWriter()
         {
             // Arrange
-            CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase();
-            TextWriter output = new Mock<TextWriter>(MockBehavior.Strict).Object;
+            var encoder = new CustomUnicodeEncoderBase();
+            var output = new StringWriter();
+            output.Dispose(); // Throws ODE if written to.
 
             // Act
             encoder.Encode("abc".ToCharArray(), 2, 0, output);
@@ -280,8 +280,9 @@ namespace Microsoft.Framework.WebEncoders
         public void Encode_StringSubstring_ZeroCount_DoesNotCallIntoTextWriter()
         {
             // Arrange
-            CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase();
-            TextWriter output = new Mock<TextWriter>(MockBehavior.Strict).Object;
+            var encoder = new CustomUnicodeEncoderBase();
+            var output = new StringWriter();
+            output.Dispose(); // Throws ODE if written to.
 
             // Act
             encoder.Encode("abc", 2, 0, output);
@@ -309,14 +310,13 @@ namespace Microsoft.Framework.WebEncoders
         {
             // Arrange
             CustomUnicodeEncoderBase encoder = new CustomUnicodeEncoderBase(UnicodeRanges.All);
-            var mockWriter = new Mock<TextWriter>(MockBehavior.Strict);
-            mockWriter.Setup(o => o.Write("abc")).Verifiable();
+            StringWriter output = new StringWriter();
 
             // Act
-            encoder.Encode("abc", 0, 3, mockWriter.Object);
+            encoder.Encode("abc", 0, 3, output);
 
             // Assert
-            mockWriter.Verify();
+            Assert.Equal("abc", output.ToString());
         }
 
         [Fact]

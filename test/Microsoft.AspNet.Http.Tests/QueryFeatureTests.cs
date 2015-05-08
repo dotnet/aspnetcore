@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.FeatureModel;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Http.Features.Internal
@@ -13,15 +12,12 @@ namespace Microsoft.AspNet.Http.Features.Internal
         public void QueryReturnsParsedQueryCollection()
         {
             // Arrange
-            var features = new Mock<IFeatureCollection>();
-            var request = new Mock<IHttpRequestFeature>();
-            request.SetupGet(r => r.QueryString).Returns("foo=bar");
+            var features = new FeatureCollection();
+            var request = new HttpRequestFeature();
+            request.QueryString = "foo=bar";
+            features.Add(typeof(IHttpRequestFeature), request);
 
-            object value = request.Object;
-            features.Setup(f => f.TryGetValue(typeof(IHttpRequestFeature), out value))
-                    .Returns(true);
-
-            var provider = new QueryFeature(features.Object);
+            var provider = new QueryFeature(features);
 
             // Act
             var queryCollection = provider.Query;

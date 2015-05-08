@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 using Xunit;
 
 namespace Microsoft.AspNet.Builder.Internal
@@ -14,13 +14,10 @@ namespace Microsoft.AspNet.Builder.Internal
             var builder = new ApplicationBuilder(null);
             var app = builder.Build();
 
-            var mockHttpContext = new Moq.Mock<HttpContext>();
-            var mockHttpResponse = new Moq.Mock<HttpResponse>();
-            mockHttpContext.SetupGet(x => x.Response).Returns(mockHttpResponse.Object);
-            mockHttpResponse.SetupProperty(x => x.StatusCode);
+            var httpContext = new DefaultHttpContext();
 
-            app.Invoke(mockHttpContext.Object);
-            Assert.Equal(mockHttpContext.Object.Response.StatusCode, 404);
+            app.Invoke(httpContext);
+            Assert.Equal(httpContext.Response.StatusCode, 404);
         }
     }
 }
