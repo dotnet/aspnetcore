@@ -669,6 +669,10 @@ namespace Microsoft.AspNet.Identity
         protected virtual async Task<PasswordVerificationResult> VerifyPasswordAsync(IUserPasswordStore<TUser> store, TUser user, string password)
         {
             var hash = await store.GetPasswordHashAsync(user, CancellationToken);
+            if (hash == null)
+            {
+                return PasswordVerificationResult.Failed;
+            }
             return PasswordHasher.VerifyHashedPassword(user, hash, password);
         }
 

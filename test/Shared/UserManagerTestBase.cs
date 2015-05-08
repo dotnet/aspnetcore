@@ -322,6 +322,7 @@ namespace Microsoft.AspNet.Identity.Test
             var user = await manager.FindByNameAsync(username);
             Assert.NotNull(user);
             Assert.False(await manager.HasPasswordAsync(user));
+            Assert.False(await manager.CheckPasswordAsync(user, "whatever"));
             var logins = await manager.GetLoginsAsync(user);
             Assert.NotNull(logins);
             Assert.Equal(0, logins.Count());
