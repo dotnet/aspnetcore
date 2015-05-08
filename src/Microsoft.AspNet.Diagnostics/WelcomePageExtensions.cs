@@ -5,6 +5,7 @@
 using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Diagnostics;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -19,13 +20,8 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseWelcomePage(this IApplicationBuilder builder, WelcomePageOptions options)
+        public static IApplicationBuilder UseWelcomePage([NotNull] this IApplicationBuilder builder, WelcomePageOptions options)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException("builder");
-            }
-
             return builder.Use(next => new WelcomePageMiddleware(next, options).Invoke);
         }
 

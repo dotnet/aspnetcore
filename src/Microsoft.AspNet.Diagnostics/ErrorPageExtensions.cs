@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Diagnostics;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -17,13 +18,8 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseErrorPage(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseErrorPage([NotNull] this IApplicationBuilder builder)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException("builder");
-            }
-
             return builder.UseErrorPage(new ErrorPageOptions());
         }
 
@@ -34,12 +30,8 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseErrorPage(this IApplicationBuilder builder, ErrorPageOptions options)
+        public static IApplicationBuilder UseErrorPage([NotNull] this IApplicationBuilder builder, ErrorPageOptions options)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException("builder");
-            }
             /* TODO: Development, Staging, or Production
             string appMode = new AppProperties(builder.Properties).Get<string>(Constants.HostAppMode);
             bool isDevMode = string.Equals(Constants.DevMode, appMode, StringComparison.Ordinal);*/
