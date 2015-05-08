@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Localization
         /// </summary>
         public RequestLocalizationMiddlewareOptions()
         {
-            DefaultRequestCulture = new RequestCulture(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
+            DefaultRequestCulture = RequestCulture.GetRequestCulture(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
 
             RequestCultureStrategies = new List<IRequestCultureStrategy>
             {

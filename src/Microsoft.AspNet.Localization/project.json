@@ -13,6 +13,7 @@
     "dnxcore50": {
       "dependencies": {
         "System.Collections": "4.0.10-*",
+        "System.Collections.Concurrent": "4.0.10-*",
         "System.Linq": "4.0.0-*",
         "System.Globalization": "4.0.10-*",
         "System.Threading": "4.0.10-*",

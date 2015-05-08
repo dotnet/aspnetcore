@@ -59,9 +59,15 @@ namespace Microsoft.AspNet.Localization
                 queryUICulture = queryCulture;
             }
 
-            return new RequestCulture(
-                CultureUtilities.GetCultureFromName(queryCulture),
-                CultureUtilities.GetCultureFromName(queryUICulture));
+            var culture = CultureInfoCache.GetCultureInfo(queryCulture);
+            var uiCulture = CultureInfoCache.GetCultureInfo(queryUICulture);
+
+            if (culture == null || uiCulture == null)
+            {
+                return null;
+            }
+
+            return RequestCulture.GetRequestCulture(culture, uiCulture);
         }
     }
 }

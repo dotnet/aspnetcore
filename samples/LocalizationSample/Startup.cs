@@ -27,8 +27,15 @@ namespace LocalizationSample
             };
             app.UseRequestLocalization(options);
 
-            app.Run(async (context) =>
+            app.Use(async (context, next) =>
             {
+                if (context.Request.Path.Value.EndsWith("favicon.ico"))
+                {
+                    // Pesky browsers
+                    context.Response.StatusCode = 404;
+                    return;
+                }
+
                 context.Response.StatusCode = 200;
                 context.Response.ContentType = "text/html; charset=utf-8";
 
@@ -39,12 +46,25 @@ namespace LocalizationSample
 $@"<!doctype html>
 <html>
 <head>
-    <title>Request Localization</title>
+    <title>{SR["Request Localization"]}</title>
     <style>
         body {{ font-family: 'Segoe UI', Helvetica, Sans-Serif }}
         h1, h2, h3, h4, th {{ font-family: 'Segoe UI Light', Helvetica, Sans-Serif }}
         th {{ text-align: left }}
     </style>
+    <script>
+        function useCookie() {{
+            var culture = document.getElementById('culture');
+            var uiCulture = document.getElementById('uiCulture');
+            var cookieValue = '{CookieRequestCultureStrategy.DefaultCookieName}=c='+culture.options[culture.selectedIndex].value+'|uic='+uiCulture.options[uiCulture.selectedIndex].value;
+            document.cookie = cookieValue;
+            window.location = window.location.href.split('?')[0];
+        }}
+
+        function clearCookie() {{
+            document.cookie='{CookieRequestCultureStrategy.DefaultCookieName}=""""';
+        }}
+    </script>
 </head>
 <body>");
                 await context.Response.WriteAsync($"<h1>{SR["Request Localization Sample"]}</h1>");
@@ -57,8 +77,9 @@ $@"<!doctype html>
                 await context.Response.WriteAsync("<select id=\"uiCulture\" name=\"ui-culture\">");
                 await WriteCultureSelectOptions(context);
                 await context.Response.WriteAsync("</select><br />");
-                await context.Response.WriteAsync("<input type=\"submit\" value=\"go\" /> ");
-                await context.Response.WriteAsync($"<a href=\"/\">{SR["reset"]}</a>");
+                await context.Response.WriteAsync("<input type=\"submit\" value=\"go QS\" /> ");
+                await context.Response.WriteAsync($"<input type=\"button\" value=\"go cookie\" onclick='useCookie();' /> ");
+                await context.Response.WriteAsync($"<a href=\"/\" onclick='clearCookie();'>{SR["reset"]}</a>");
                 await context.Response.WriteAsync("</form>");
                 await context.Response.WriteAsync("<br />");
                 await context.Response.WriteAsync("<table><tbody>");
@@ -102,6 +123,7 @@ $@"<!doctype html>
 #if DNX451
             await context.Response.WriteAsync($"    <option value=\"{new CultureInfo("zh-CHT").Name}\">{new CultureInfo("zh-CHT").DisplayName}</option>");
 #endif
+            await context.Response.WriteAsync($"    <option value=\"en-NOTREAL\">English (Not a real culture)</option>");
         }
     }
 }

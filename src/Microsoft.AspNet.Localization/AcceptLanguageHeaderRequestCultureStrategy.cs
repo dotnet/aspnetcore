@@ -13,9 +13,6 @@ namespace Microsoft.AspNet.Localization
     /// <summary>
     /// Determines the culture information for a request via the value of the Accept-Language header.
     /// </summary>
-    /// <remarks>
-    /// 
-    /// </remarks>
     public class AcceptLanguageHeaderRequestCultureStrategy : IRequestCultureStrategy
     {
         /// <summary>
@@ -53,11 +50,11 @@ namespace Microsoft.AspNet.Localization
                 // the CultureInfo ctor
                 if (language.Value != null)
                 {
-                    try
+                    var culture = CultureInfoCache.GetCultureInfo(language.Value);
+                    if (culture != null)
                     {
-                        return new RequestCulture(CultureUtilities.GetCultureFromName(language.Value));
+                        return RequestCulture.GetRequestCulture(culture);
                     }
-                    catch (CultureNotFoundException) { }
                 }
             }
 
