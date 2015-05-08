@@ -74,7 +74,7 @@ You should also be able to run `dnx` and see the help text of the `dnx` command.
 2. Change directory to the folder of the sample you want to run
 3. Run ```dnu restore``` to restore the packages required by that sample.
 4. You should see a bunch of output as all the dependencies of the app are downloaded from MyGet.
-5. Run the sample using the appropriate K command:
+5. Run the sample using the appropriate command:
     - For the console app run  `dnx . run`.
     - For the web apps run `dnx . web` on Windows or `dnx . kestrel` on OS X/Linux.
 6. You should see the output of the console app or a message that says the site is now started.

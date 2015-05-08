@@ -80,3 +80,17 @@ The NuGet.config file should look something like the following:
 </configuration>
 ```
 The important part of this is that you have a package source with aspnetvnext and nuget.org in it.
+
+# Add Certificates
+
+Before we can use the `dnu restore` command to download packages we have to add some certificates:
+```
+CERTMGR=/usr/bin/certmgr
+
+sudo $CERTMGR -ssl -m https://go.microsoft.com
+sudo $CERTMGR -ssl -m https://nugetgallery.blob.core.windows.net
+sudo $CERTMGR -ssl -m https://nuget.org
+sudo $CERTMGR -ssl -m https://www.myget.org/F/aspnetvnext/
+
+mozroots --import --sync
+```
