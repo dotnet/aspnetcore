@@ -5,6 +5,9 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Localization
 {
+    /// <summary>
+    /// Represents a strategy for determining the culture information of an <see cref="HttpRequest"/>.
+    /// </summary>
     public interface IRequestCultureStrategy
     {
         RequestCulture DetermineRequestCulture(HttpContext httpContext);
