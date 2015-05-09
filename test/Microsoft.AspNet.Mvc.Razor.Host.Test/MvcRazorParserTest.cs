@@ -177,87 +177,34 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        public static TheoryData TrimSpacesAndCharsData
-        {
-            get
-            {
-                // input, trimCharacters, expectedOutput
-                return new TheoryData<string, char[], string>
-                {
-                    { "abcd", new char[] {  }, "abcd" },
-                    { "  /.", new char[] { '/', '.' }, string.Empty },
-                    { string.Empty, new char[] {  }, string.Empty },
-                    { " ", new char[] {  }, string.Empty },
-                    { "  ", new char[] {  }, string.Empty },
-                    { "  / ", new char[] { '/' }, string.Empty },
-                    { "  \t ", new char[] { '/' }, string.Empty },
-                    { "   ", new char[] { '/' }, string.Empty },
-                    { "  ", new char[] { '/' }, string.Empty },
-                    { "/", new char[] { '/' }, string.Empty },
-                    { "//", new char[] { '/' }, string.Empty },
-                    { "//  ", new char[] { '/' }, string.Empty },
-                    { "/ ", new char[] { '/' }, string.Empty },
-                    { " a ", new char[] {  }, "a" },
-                    { " a", new char[] {  }, "a" },
-                    { "a ", new char[] {  }, "a" },
-                    { "  a  ", new char[] {  }, "a" },
-                    { " a \n\r", new char[] {  }, "a" },
-                    { "\t\r a ", new char[] {  }, "a" },
-                    { "\ta ", new char[] {  }, "a" },
-                    { " a a ", new char[] {  }, "a a" },
-                    { " a ", new char[] { '/' }, "a" },
-                    { " a", new char[] { '/' }, "a" },
-                    { "a ", new char[] { '/' }, "a" },
-                    { "  a  ", new char[] { '/' }, "a" },
-                    { " a \n\r", new char[] { '/' }, "a" },
-                    { "\t\r a ", new char[] { '/' }, "a" },
-                    { "\ta ", new char[] { '/' }, "a" },
-                    { " a a ", new char[] { '/' }, "a a" },
-                    { " a ", new char[] { '/', ' ' }, "a" },
-                    { " a", new char[] { '/', ' ' }, "a" },
-                    { "a ", new char[] { '/', ' ' }, "a" },
-                    { "  a  ", new char[] { '/', ' ' }, "a" },
-                    { " a \n\r", new char[] { '/', ' ' }, "a" },
-                    { "\t\r a ", new char[] { '/', ' ' }, "a" },
-                    { "\ta ", new char[] { '/', ' ' }, "a" },
-                    { " a a ", new char[] { '/', ' ' }, "a a" },
-                    { "/ a ", new char[] { '/' }, "a" },
-                    { " / a", new char[] { '/' }, "a" },
-                    { "a / /", new char[] { '/' }, "a" },
-                    { "  a  // //", new char[] { '/' }, "a" },
-                    { " a \n\r//", new char[] { '/' }, "a" },
-                    { "////\t\r a ", new char[] { '/' }, "a" },
-                    { "\ta /", new char[] { '/' }, "a" },
-                    { " a/ a ", new char[] { '/' }, "a/ a" },
-                    { "/ a ", new char[] { '/', ' ' }, "a" },
-                    { " / a", new char[] { '/', ' ' }, "a" },
-                    { "a / /", new char[] { '/', ' ' }, "a" },
-                    { "  a  // //", new char[] { '/', ' ' }, "a" },
-                    { " a \n\r//", new char[] { '/', ' ' }, "a" },
-                    { "////\t\r a ", new char[] { '/', ' ' }, "a" },
-                    { "\ta /", new char[] { '/', ' ' }, "a" },
-                    { " a/ a ", new char[] { '/', ' ' }, "a/ a" },
-                    { " a /.", new char[] { '/', '.' }, "a" },
-                    { " a", new char[] { '/', '.' }, "a" },
-                    { "/. ./a ", new char[] { '/', '.' }, "a" },
-                    { "  a  ", new char[] { '/', '.' }, "a" },
-                    { " a \n\r", new char[] { '/', '.' }, "a" },
-                    { "\t\r a ", new char[] { '/', '.' }, "a" },
-                    { "\ta ", new char[] { '/', '.' }, "a" },
-                    { "///..a/./a /. ./....", new char[] { '/', '.' }, "a/./a" },
-                };
-            }
-        }
-
         [Theory]
-        [MemberData(nameof(TrimSpacesAndCharsData))]
-        public void TrimSpacesAndChars_GeneratesExpectedOutput(
-            string input,
-            char[] trimCharacters,
-            string expectedOutput)
+        [InlineData("", "")]
+        [InlineData("   ;  ", "")]
+        [InlineData("    ", "")]
+        [InlineData(";;", "")]
+        [InlineData("a", "a")]
+        [InlineData("a;", "a")]
+        [InlineData("abcd", "abcd")]
+        [InlineData("abc;d", "abc;d")]
+        [InlineData("a bc d", "a bc d")]
+        [InlineData("a\t\tbc\td\t", "a\t\tbc\td")]
+        [InlineData("abc;", "abc")]
+        [InlineData("  abc;", "abc")]
+        [InlineData("\tabc;", "abc")]
+        [InlineData(";; abc;", ";; abc")]
+        [InlineData(";;\tabc;", ";;\tabc")]
+        [InlineData("\t;;abc;", ";;abc")]
+        [InlineData("abc;; ;", "abc")]
+        [InlineData("abc;;\t;", "abc")]
+        [InlineData("\tabc  \t;", "abc")]
+        [InlineData("abc;;\r\n;", "abc")]
+        [InlineData("abcd \n", "abcd")]
+        [InlineData("\r\n\r  \n\t  abcd \t \t \n  \r\n", "abcd")]
+        [InlineData("pqrs\r", "pqrs")]
+        public void RemoveWhitespaceAndTrailingSemicolons_ReturnsExpectedValues(string input, string expectedOutput)
         {
-            // Arrange & Act
-            var output = MvcRazorCodeParser.TrimSpacesAndChars(input, trimCharacters);
+            // Arrange and Act
+            var output = MvcRazorCodeParser.RemoveWhitespaceAndTrailingSemicolons(input);
 
             // Assert
             Assert.Equal(expectedOutput, output, StringComparer.Ordinal);
