@@ -37,11 +37,11 @@ namespace Microsoft.AspNet.Authentication.Facebook
         {
             if (string.IsNullOrWhiteSpace(Options.AppId))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "AppId"));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.AppId)));
             }
             if (string.IsNullOrWhiteSpace(Options.AppSecret))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "AppSecret"));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.AppSecret)));
             }
 
             if (Options.Notifications == null)

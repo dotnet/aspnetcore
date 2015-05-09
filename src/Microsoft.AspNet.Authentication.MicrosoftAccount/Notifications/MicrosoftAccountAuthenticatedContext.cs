@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Authentication.MicrosoftAccount
             JToken userId = User["id"];
             if (userId == null)
             {
-                throw new ArgumentException(Resources.Exception_MissingId, "user");
+                throw new ArgumentException(Resources.Exception_MissingId, nameof(user));
             }
 
             Id = userId.ToString();

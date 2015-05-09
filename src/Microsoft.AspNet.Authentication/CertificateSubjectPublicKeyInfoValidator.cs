@@ -36,12 +36,12 @@ namespace Microsoft.AspNet.Authentication
 
             if (_validBase64EncodedSubjectPublicKeyInfoHashes.Count == 0)
             {
-                throw new ArgumentOutOfRangeException("validBase64EncodedSubjectPublicKeyInfoHashes");
+                throw new ArgumentOutOfRangeException(nameof(validBase64EncodedSubjectPublicKeyInfoHashes));
             }
 
             if (_algorithm != SubjectPublicKeyInfoAlgorithm.Sha1 && _algorithm != SubjectPublicKeyInfoAlgorithm.Sha256)
             {
-                throw new ArgumentOutOfRangeException("algorithm");
+                throw new ArgumentOutOfRangeException(nameof(algorithm));
             }
 
             _algorithm = algorithm;

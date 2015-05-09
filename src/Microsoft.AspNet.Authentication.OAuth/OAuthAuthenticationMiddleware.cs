@@ -43,17 +43,17 @@ namespace Microsoft.AspNet.Authentication.OAuth
             // todo: review error handling
             if (string.IsNullOrWhiteSpace(Options.AuthenticationScheme))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "AuthenticationScheme"));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.AuthenticationScheme)));
             }
 
             if (string.IsNullOrWhiteSpace(Options.ClientId))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "ClientId"));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.ClientId)));
             }
 
             if (string.IsNullOrWhiteSpace(Options.ClientSecret))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "ClientSecret"));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.ClientSecret)));
             }
 
             if (string.IsNullOrWhiteSpace(Options.AuthorizationEndpoint))

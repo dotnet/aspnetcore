@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens;
 using System.Net.Http;
 using Microsoft.IdentityModel.Protocols;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authentication.OAuthBearer
 {
@@ -121,13 +122,9 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
                 return _securityTokenValidators;
             }
 
+            [param: NotNull]
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("SecurityTokenValidators");
-                }
-
                 _securityTokenValidators = value;
             }
         }

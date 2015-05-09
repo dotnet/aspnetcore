@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Authentication
 
             if (_validCertificateThumbprints.Count == 0)
             {
-                throw new ArgumentOutOfRangeException("validThumbprints");
+                throw new ArgumentOutOfRangeException(nameof(validThumbprints));
             }
         }
 
