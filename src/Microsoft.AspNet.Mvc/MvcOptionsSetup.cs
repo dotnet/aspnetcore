@@ -48,14 +48,14 @@ namespace Microsoft.AspNet.Mvc
             options.OutputFormatters.Add(new HttpNoContentOutputFormatter());
             options.OutputFormatters.Add(new StringOutputFormatter());
             options.OutputFormatters.Add(new StreamOutputFormatter());
-            options.OutputFormatters.Add(new JsonOutputFormatter());
+            options.OutputFormatters.Add(new JsonOutputFormatter(options.SerializerSettings));
 
             // Set up default mapping for json extensions to content type
             options.FormatterMappings.SetMediaTypeMappingForFormat("json", MediaTypeHeaderValue.Parse("application/json"));
 
             // Set up default input formatters.
-            options.InputFormatters.Add(new JsonInputFormatter());
-            options.InputFormatters.Add(new JsonPatchInputFormatter());
+            options.InputFormatters.Add(new JsonInputFormatter(options.SerializerSettings));
+            options.InputFormatters.Add(new JsonPatchInputFormatter(options.SerializerSettings));
 
             // Set up ValueProviders
             options.ValueProviderFactories.Add(new RouteValueValueProviderFactory());

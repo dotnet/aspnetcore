@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Core.Internal;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
@@ -13,31 +14,22 @@ namespace Microsoft.AspNet.Mvc
 {
     public class JsonInputFormatter : InputFormatter
     {
-        private const int DefaultMaxDepth = 32;
-        private JsonSerializerSettings _jsonSerializerSettings;
+        private JsonSerializerSettings _serializerSettings;
 
         public JsonInputFormatter()
+            : this(SerializerSettingsProvider.CreateSerializerSettings())
         {
+        }
+
+        public JsonInputFormatter([NotNull] JsonSerializerSettings serializerSettings)
+        {
+            _serializerSettings = serializerSettings;
+
             SupportedEncodings.Add(Encodings.UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(Encodings.UTF16EncodingLittleEndian);
 
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/json"));
-
-            _jsonSerializerSettings = new JsonSerializerSettings
-            {
-                MissingMemberHandling = MissingMemberHandling.Ignore,
-
-                // Limit the object graph we'll consume to a fixed depth. This prevents stackoverflow exceptions
-                // from deserialization errors that might occur from deeply nested objects.
-                MaxDepth = DefaultMaxDepth,
-
-                // Do not change this setting
-                // Setting this to None prevents Json.NET from loading malicious, unsafe, or security-sensitive types
-                TypeNameHandling = TypeNameHandling.None
-            };
-
-            _jsonSerializerSettings.ContractResolver = new JsonContractResolver();
         }
 
         /// <summary>
@@ -45,15 +37,14 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         public JsonSerializerSettings SerializerSettings
         {
-            get { return _jsonSerializerSettings; }
+            get
+            {
+                return _serializerSettings;
+            }
+            [param: NotNull]
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _jsonSerializerSettings = value;
+                _serializerSettings = value;
             }
         }
 

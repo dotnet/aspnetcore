@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Xml.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
@@ -206,6 +207,30 @@ namespace Microsoft.AspNet.Mvc
             var xmlNodeFilter = 
                      Assert.IsType<DefaultTypeNameBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++]);
             Assert.Equal(xmlNodeFilter.ExcludedTypeName, "System.Xml.XmlNode");
+        }
+
+        [Fact]
+        public void Setup_JsonFormattersUseSerializerSettings()
+        {
+            // Arrange
+            var mvcOptions = new MvcOptions();
+            var setup = new MvcOptionsSetup();
+
+            // Act
+            setup.Configure(mvcOptions);
+
+            // Assert
+            var jsonInputFormatters = mvcOptions.InputFormatters.OfType<JsonInputFormatter>();
+            foreach (var jsonInputFormatter in jsonInputFormatters)
+            {
+                Assert.Same(mvcOptions.SerializerSettings, jsonInputFormatter.SerializerSettings);
+            }
+
+            var jsonOuputFormatters = mvcOptions.OutputFormatters.OfType<JsonOutputFormatter>();
+            foreach (var jsonOuputFormatter in jsonOuputFormatters)
+            {
+                Assert.Same(mvcOptions.SerializerSettings, jsonOuputFormatter.SerializerSettings);
+            }
         }
     }
 }

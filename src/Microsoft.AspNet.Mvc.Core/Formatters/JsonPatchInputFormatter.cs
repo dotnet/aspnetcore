@@ -6,12 +6,20 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.JsonPatch;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
+using Microsoft.AspNet.Mvc.Core.Internal;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class JsonPatchInputFormatter : JsonInputFormatter
     {
         public JsonPatchInputFormatter()
+            : this(SerializerSettingsProvider.CreateSerializerSettings())
+        {
+        }
+
+        public JsonPatchInputFormatter([NotNull] JsonSerializerSettings serializerSettings)
+            : base(serializerSettings)
         {
             // Clear all values and only include json-patch+json value.
             SupportedMediaTypes.Clear();
@@ -23,7 +31,7 @@ namespace Microsoft.AspNet.Mvc
         public async override Task<object> ReadRequestBodyAsync([NotNull] InputFormatterContext context)
         {
             var jsonPatchDocument = (IJsonPatchDocument)(await base.ReadRequestBodyAsync(context));
-            if (jsonPatchDocument != null)
+            if (jsonPatchDocument != null && SerializerSettings.ContractResolver != null)
             {
                 jsonPatchDocument.ContractResolver = SerializerSettings.ContractResolver;
             }

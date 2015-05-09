@@ -34,10 +34,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <inheritdoc />
         public HtmlString Serialize(object value, [NotNull] JsonSerializerSettings serializerSettings)
         {
-            var jsonOutputFormatter = new JsonOutputFormatter
-            {
-                SerializerSettings = serializerSettings
-            };
+            var jsonOutputFormatter = new JsonOutputFormatter(serializerSettings);
 
             return SerializeInternal(jsonOutputFormatter, value);
         }

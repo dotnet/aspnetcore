@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="serializerSettings">The <see cref="JsonSerializerSettings"/> to be used by
         /// the formatter.</param>
         public JsonResult(object value, [NotNull] JsonSerializerSettings serializerSettings)
-            : this(value, formatter: new JsonOutputFormatter { SerializerSettings = serializerSettings })
+            : this(value, formatter: new JsonOutputFormatter(serializerSettings))
         {
         }
 

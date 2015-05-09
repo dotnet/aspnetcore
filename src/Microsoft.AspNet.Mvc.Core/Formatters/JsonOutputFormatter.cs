@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Core.Internal;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
@@ -16,13 +17,18 @@ namespace Microsoft.AspNet.Mvc
         private JsonSerializerSettings _serializerSettings;
 
         public JsonOutputFormatter()
+            : this(SerializerSettingsProvider.CreateSerializerSettings())
         {
+        }
+
+        public JsonOutputFormatter([NotNull] JsonSerializerSettings serializerSettings)
+        {
+            _serializerSettings = serializerSettings;
+
             SupportedEncodings.Add(Encodings.UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(Encodings.UTF16EncodingLittleEndian);
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/json"));
-
-            _serializerSettings = new JsonSerializerSettings();
         }
 
         /// <summary>
@@ -30,14 +36,13 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         public JsonSerializerSettings SerializerSettings
         {
-            get { return _serializerSettings; }
+            get
+            {
+                return _serializerSettings;
+            }
+            [param: NotNull]
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
                 _serializerSettings = value;
             }
         }

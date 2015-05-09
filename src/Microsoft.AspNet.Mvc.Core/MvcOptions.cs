@@ -5,9 +5,11 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Core.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -34,6 +36,7 @@ namespace Microsoft.AspNet.Mvc
             ModelValidatorProviders = new List<IModelValidatorProvider>();
             ClientModelValidatorProviders = new List<IClientModelValidatorProvider>();
             CacheProfiles = new Dictionary<string, CacheProfile>(StringComparer.OrdinalIgnoreCase);
+            SerializerSettings = SerializerSettingsProvider.CreateSerializerSettings();
         }
 
         /// <summary>
@@ -80,6 +83,11 @@ namespace Microsoft.AspNet.Mvc
         /// Gets a list of <see cref="IInputFormatter"/>s that are used by this application.
         /// </summary>
         public IList<IInputFormatter> InputFormatters { get; }
+
+        /// <summary>
+        /// Gets the <see cref="JsonSerializerSettings"/> that are used by this application.
+        /// </summary>
+        public JsonSerializerSettings SerializerSettings { get; }
 
         /// <summary>
         /// Gets a list of <see cref="IExcludeTypeValidationFilter"/>s that are used by this application.

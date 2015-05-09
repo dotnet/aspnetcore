@@ -257,10 +257,7 @@ namespace System.Web.Http
         [NonAction]
         public virtual JsonResult Json<T>([NotNull] T content, [NotNull] JsonSerializerSettings serializerSettings)
         {
-            var formatter = new JsonOutputFormatter()
-            {
-                SerializerSettings = serializerSettings,
-            };
+            var formatter = new JsonOutputFormatter(serializerSettings);
 
             return new JsonResult(content, formatter);
         }
@@ -279,10 +276,7 @@ namespace System.Web.Http
             [NotNull] JsonSerializerSettings serializerSettings,
             [NotNull] Encoding encoding)
         {
-            var formatter = new JsonOutputFormatter()
-            {
-                SerializerSettings = serializerSettings,
-            };
+            var formatter = new JsonOutputFormatter(serializerSettings);
 
             formatter.SupportedEncodings.Clear();
             formatter.SupportedEncodings.Add(encoding);

@@ -30,6 +30,17 @@ namespace Microsoft.AspNet.Mvc.Core.Test.Formatters
             Assert.NotNull(jsonFormatter.SerializerSettings);
         }
 
+        [Fact]
+        public void Constructor_UsesSerializerSettings()
+        {
+            // Arrange
+            // Act
+            var serializerSettings = new JsonSerializerSettings();
+            var jsonFormatter = new JsonInputFormatter(serializerSettings);
+
+            // Assert
+            Assert.Same(serializerSettings, jsonFormatter.SerializerSettings);
+        }
 
         [Fact]
         public async Task ChangesTo_DefaultSerializerSettings_TakesEffect()

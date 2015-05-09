@@ -133,6 +133,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
+
             var customer = JsonConvert.DeserializeObject<Customer>(body);
             Assert.Equal("Order0", customer.Orders[1].OrderName);
             Assert.Null(customer.Orders[0].OrderName);
