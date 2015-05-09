@@ -68,10 +68,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             var typeInCollection = typeof(string);
-            var genericEnumerableType = collection.GetType().ExtractGenericInterface(typeof(IEnumerable<>));
+            var genericEnumerableType = ClosedGenericMatcher.ExtractGenericInterface(
+                collection.GetType(),
+                typeof(IEnumerable<>));
             if (genericEnumerableType != null)
             {
-                typeInCollection = genericEnumerableType.GetGenericArguments()[0];
+                typeInCollection = genericEnumerableType.GenericTypeArguments[0];
             }
 
             var typeInCollectionIsNullableValueType = typeInCollection.IsNullableValueType();

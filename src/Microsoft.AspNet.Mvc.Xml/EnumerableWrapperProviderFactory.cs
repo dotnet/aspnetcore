@@ -8,7 +8,7 @@ using Microsoft.Framework.Internal;
 namespace Microsoft.AspNet.Mvc.Xml
 {
     /// <summary>
-    /// Creates an <see cref="EnumerableWrapperProvider"/> for interface types implementing the 
+    /// Creates an <see cref="EnumerableWrapperProvider"/> for interface types implementing the
     /// <see cref="IEnumerable{T}"/> type.
     /// </summary>
     public class EnumerableWrapperProviderFactory : IWrapperProviderFactory
@@ -42,16 +42,16 @@ namespace Microsoft.AspNet.Mvc.Xml
                 // concrete types like List<T>, Collection<T> which implement IEnumerable<T>.
                 if (declaredType != null && declaredType.IsInterface() && declaredType.IsGenericType())
                 {
-                    var enumerableOfT = declaredType.ExtractGenericInterface(typeof(IEnumerable<>));
+                    var enumerableOfT = ClosedGenericMatcher.ExtractGenericInterface(
+                        declaredType,
+                        typeof(IEnumerable<>));
                     if (enumerableOfT != null)
                     {
-                        var elementType = enumerableOfT.GetGenericArguments()[0];
+                        var elementType = enumerableOfT.GenericTypeArguments[0];
+                        var wrapperProviderContext = new WrapperProviderContext(elementType, context.IsSerialization);
 
-                        var wrapperProviderContext = new WrapperProviderContext(
-                                                                    elementType,
-                                                                    context.IsSerialization);
-
-                        var elementWrapperProvider = _wrapperProviderFactories.GetWrapperProvider(wrapperProviderContext);
+                        var elementWrapperProvider =
+                            _wrapperProviderFactories.GetWrapperProvider(wrapperProviderContext);
 
                         return new EnumerableWrapperProvider(enumerableOfT, elementWrapperProvider);
                     }

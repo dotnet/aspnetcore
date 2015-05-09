@@ -38,13 +38,13 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
                 _tryGetValueDelegateCacheLock.ExitReadLock();
             }
 
-            var dictionaryType = targetType.ExtractGenericInterface(typeof(IDictionary<,>));
+            var dictionaryType = ClosedGenericMatcher.ExtractGenericInterface(targetType, typeof(IDictionary<,>));
 
             // Just wrap a call to the underlying IDictionary<TKey, TValue>.TryGetValue() where string can be cast to
             // TKey.
             if (dictionaryType != null)
             {
-                var typeArguments = dictionaryType.GetGenericArguments();
+                var typeArguments = dictionaryType.GenericTypeArguments;
                 var keyType = typeArguments[0];
                 var returnType = typeArguments[1];
 

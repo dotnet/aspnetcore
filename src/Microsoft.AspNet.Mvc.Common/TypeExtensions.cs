@@ -45,15 +45,6 @@ namespace Microsoft.AspNet.Mvc
             return type.GetTypeInfo().BaseType;
         }
 
-        public static Type ExtractGenericInterface([NotNull] this Type queryType, Type interfaceType)
-        {
-            Func<Type, bool> matchesInterface =
-                t => t.IsGenericType() && t.GetGenericTypeDefinition() == interfaceType;
-            return (matchesInterface(queryType)) ?
-                queryType :
-                queryType.GetInterfaces().FirstOrDefault(matchesInterface);
-        }
-
 #if NETFX_CORE || DNXCORE50
         public static Type[] GetGenericArguments([NotNull] this Type type)
         {

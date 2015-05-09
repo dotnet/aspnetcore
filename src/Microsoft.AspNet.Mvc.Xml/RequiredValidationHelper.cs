@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.Xml
         {
             var visitedTypes = new HashSet<Type>();
 
-            // Every node maintains a dictionary of Type => Errors. 
+            // Every node maintains a dictionary of Type => Errors.
             // It's a dictionary as we want to avoid adding duplicate error messages.
             // Example:
             // In the following case, from the perspective of type 'Store', we should not see duplicate
@@ -83,16 +83,16 @@ namespace Microsoft.AspNet.Mvc.Xml
             HashSet<Type> visitedTypes,
             Dictionary<Type, List<string>> errors)
         {
-            // We don't need to code special handling for KeyValuePair (for example, when the model type 
-            // is Dictionary<,> which implements IEnumerable<KeyValuePair<TKey, TValue>>) as the model 
+            // We don't need to code special handling for KeyValuePair (for example, when the model type
+            // is Dictionary<,> which implements IEnumerable<KeyValuePair<TKey, TValue>>) as the model
             // type here would be KeyValuePair<TKey, TValue> where Key and Value are public properties
             // which would also be probed for Required attribute validation.
             if (modelType.IsGenericType())
             {
-                var enumerableOfT = modelType.ExtractGenericInterface(typeof(IEnumerable<>));
+                var enumerableOfT = ClosedGenericMatcher.ExtractGenericInterface(modelType, typeof(IEnumerable<>));
                 if (enumerableOfT != null)
                 {
-                    modelType = enumerableOfT.GetGenericArguments()[0];
+                    modelType = enumerableOfT.GenericTypeArguments[0];
                 }
             }
 
@@ -143,10 +143,10 @@ namespace Microsoft.AspNet.Mvc.Xml
                             typeof(DataMemberAttribute).FullName,
                             nameof(DataMemberAttribute.IsRequired),
                             bool.TrueString,
-                            validationError.PropertyName, 
+                            validationError.PropertyName,
                             validationError.ModelType.FullName));
                     }
-                    
+
                     // if the type is not primitve, then it could be a struct in which case
                     // we need to probe its properties for validation
                     if (propertyType.GetTypeInfo().IsPrimitive)

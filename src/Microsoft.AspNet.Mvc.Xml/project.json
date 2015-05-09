@@ -7,14 +7,15 @@
     "dependencies": {
         "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
         "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
-        "Microsoft.Framework.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" }
+        "Microsoft.Framework.ClosedGenericMatcher.Sources": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.Framework.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
         "dnx451": {
             "frameworkAssemblies": {
-                "System.Xml": "",
-                "System.Runtime.Serialization": ""
+                "System.Runtime.Serialization": "",
+                "System.Xml": ""
             }
         },
         "dnxcore50": {

@@ -151,8 +151,9 @@ namespace Microsoft.AspNet.Mvc
                 }
 
                 // Determine T if this is an ICollection<T> property.
-                var collectionTypeArguments = propertyType
-                    .ExtractGenericInterface(typeof(ICollection<>))
+                var collectionTypeArguments = ClosedGenericMatcher.ExtractGenericInterface(
+                        propertyType,
+                        typeof(ICollection<>))
                     ?.GenericTypeArguments;
                 if (collectionTypeArguments == null)
                 {

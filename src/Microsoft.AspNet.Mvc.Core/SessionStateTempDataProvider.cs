@@ -159,12 +159,14 @@ namespace Microsoft.AspNet.Mvc
 
                 // Accessing Session property will throw if the session middleware is not enabled.
                 var session = context.Session;
-                
+
                 using (var memoryStream = new MemoryStream())
-                using (var writer = new BsonWriter(memoryStream))
                 {
-                    _jsonSerializer.Serialize(writer, values);
-                    session[TempDataSessionStateKey] = memoryStream.ToArray();
+                    using (var writer = new BsonWriter(memoryStream))
+                    {
+                        _jsonSerializer.Serialize(writer, values);
+                        session[TempDataSessionStateKey] = memoryStream.ToArray();
+                    }
                 }
             }
             else if (IsSessionEnabled(context))
@@ -190,16 +192,19 @@ namespace Microsoft.AspNet.Mvc
             }
             else if (itemType.GetTypeInfo().IsGenericType)
             {
-                if (itemType.ExtractGenericInterface(typeof(IList<>)) != null)
+                if (ClosedGenericMatcher.ExtractGenericInterface(itemType, typeof(IList<>)) != null)
                 {
-                    var genericTypeArguments = itemType.GetGenericArguments();
+                    var genericTypeArguments = itemType.GenericTypeArguments;
                     Debug.Assert(genericTypeArguments.Length == 1, "IList<T> has one generic argument");
                     actualType = genericTypeArguments[0];
                 }
-                else if (itemType.ExtractGenericInterface(typeof(IDictionary<,>)) != null)
+                else if (ClosedGenericMatcher.ExtractGenericInterface(itemType, typeof(IDictionary<,>)) != null)
                 {
-                    var genericTypeArguments = itemType.GetGenericArguments();
-                    Debug.Assert(genericTypeArguments.Length == 2, "IDictionary<TKey, TValue> has two generic arguments");
+                    var genericTypeArguments = itemType.GenericTypeArguments;
+                    Debug.Assert(
+                        genericTypeArguments.Length == 2,
+                        "IDictionary<TKey, TValue> has two generic arguments");
+
                     // Throw if the key type of the dictionary is not string.
                     if (genericTypeArguments[0] != typeof(string))
                     {

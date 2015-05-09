@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering.Internal;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -106,10 +107,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             var typeInCollection = typeof(string);
-            var genericEnumerableType = collection.GetType().ExtractGenericInterface(typeof(IEnumerable<>));
+            var genericEnumerableType = ClosedGenericMatcher.ExtractGenericInterface(
+                collection.GetType(),
+                typeof(IEnumerable<>));
             if (genericEnumerableType != null)
             {
-                typeInCollection = genericEnumerableType.GetGenericArguments()[0];
+                typeInCollection = genericEnumerableType.GenericTypeArguments[0];
             }
 
             var typeInCollectionIsNullableValueType = typeInCollection.IsNullableValueType();
