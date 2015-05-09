@@ -30,6 +30,8 @@ namespace Asp
         [Microsoft.AspNet.Mvc.ActivateAttribute]
         public MyService<MyModel> Html2 { get; private set; }
         [Microsoft.AspNet.Mvc.ActivateAttribute]
+        public Microsoft.AspNet.Mvc.Rendering.IJsonHelper Json { get; private set; }
+        [Microsoft.AspNet.Mvc.ActivateAttribute]
         public Microsoft.AspNet.Mvc.IViewComponentHelper Component { get; private set; }
         [Microsoft.AspNet.Mvc.ActivateAttribute]
         public Microsoft.AspNet.Mvc.IUrlHelper Url { get; private set; }

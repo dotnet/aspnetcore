@@ -144,6 +144,7 @@ namespace Microsoft.Framework.DependencyInjection
             // View and rendering helpers
             services.TryAdd(ServiceDescriptor.Transient<IHtmlHelper, HtmlHelper>());
             services.TryAdd(ServiceDescriptor.Transient(typeof(IHtmlHelper<>), typeof(HtmlHelper<>)));
+            services.TryAdd(ServiceDescriptor.Transient<IJsonHelper, JsonHelper>());
             services.TryAdd(ServiceDescriptor.Scoped<IUrlHelper, UrlHelper>());
 
             // Only want one ITagHelperActivator so it can cache Type activation information. Types won't conflict.

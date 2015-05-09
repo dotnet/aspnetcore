@@ -33,6 +33,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private static readonly Chunk[] _defaultInheritedChunks = new[]
         {
             new InjectChunk("Microsoft.AspNet.Mvc.Rendering.IHtmlHelper<TModel>", HtmlHelperPropertyName),
+            new InjectChunk("Microsoft.AspNet.Mvc.Rendering.IJsonHelper", "Json"),
             new InjectChunk("Microsoft.AspNet.Mvc.IViewComponentHelper", "Component"),
             new InjectChunk("Microsoft.AspNet.Mvc.IUrlHelper", "Url"),
         };

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using BasicWebSite.Models;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.WebUtilities;
 
@@ -52,6 +53,28 @@ namespace BasicWebSite.Controllers
         {
             Response.Headers.Add("Message", new[] { "Hello, World!" });
             return Task.FromResult(true);
+        }
+
+        public IActionResult JsonHelperInView()
+        {
+            Person person = new Person
+            {
+                Id = 9000,
+                Name = "John <b>Smith</b>"
+            };
+
+            return View(person);
+        }
+
+        public IActionResult JsonHelperWithSettingsInView()
+        {
+            Person person = new Person
+            {
+                Id = 9000,
+                Name = "John <b>Smith</b>"
+            };
+
+            return View(person);
         }
 
         public IActionResult JsonTextInView()

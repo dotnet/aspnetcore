@@ -12,6 +12,7 @@ using BasicWebSite;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -200,6 +201,62 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             var response = await client.GetAsync("https://localhost/Home/JsonTextInView");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
+
+            var actualBody = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedBody, actualBody);
+        }
+
+        [Fact]
+        public async Task JsonHelper_RendersJson()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = new HttpClient(server.CreateHandler(), false);
+
+            var json = JsonConvert.SerializeObject(new BasicWebSite.Models.Person()
+            {
+                Id = 9000,
+                Name = "John <b>Smith</b>"
+            });
+
+            var expectedBody = string.Format(@"<script type=""text/javascript"">" + Environment.NewLine +
+                                             @"    var json = {0};" + Environment.NewLine +
+                                             @"</script>", json);
+
+            // Act
+            var response = await client.GetAsync("https://localhost/Home/JsonHelperInView");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
+
+            var actualBody = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedBody, actualBody);
+        }
+
+        [Fact]
+        public async Task JsonHelperWithSettings_RendersJson()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = new HttpClient(server.CreateHandler(), false);
+
+            var json = JsonConvert.SerializeObject(new BasicWebSite.Models.Person()
+            {
+                Id = 9000,
+                Name = "John <b>Smith</b>"
+            }, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+
+            var expectedBody = string.Format(@"<script type=""text/javascript"">" + Environment.NewLine +
+                                             @"    var json = {0};" + Environment.NewLine +
+                                             @"</script>", json);
+
+            // Act
+            var response = await client.GetAsync("https://localhost/Home/JsonHelperWithSettingsInView");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

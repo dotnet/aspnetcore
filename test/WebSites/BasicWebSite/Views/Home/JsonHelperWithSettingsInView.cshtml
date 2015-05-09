@@ -1,0 +1,5 @@
+﻿@using Newtonsoft.Json
+@using Newtonsoft.Json.Serialization
+<script type="text/javascript">
+    var json = @Json.Serialize(Model, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+</script>
