@@ -91,6 +91,21 @@ namespace Microsoft.AspNet.Hosting
         }
 
         [Fact]
+        public void HostingEngineNotifiesApplicationStarted()
+        {
+            var host = CreateBuilder()
+                .UseServer(this)
+                .Build();
+            var applicationLifetime = host.ApplicationServices.GetRequiredService<IApplicationLifetime>();
+
+            Assert.False(applicationLifetime.ApplicationStarted.IsCancellationRequested);
+            using (host.Start())
+            {
+                Assert.True(applicationLifetime.ApplicationStarted.IsCancellationRequested);
+            }
+        }
+
+        [Fact]
         public void HostingEngineInjectsHostingEnvironment()
         {
             var engine = CreateBuilder()

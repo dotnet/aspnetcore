@@ -79,6 +79,8 @@ namespace Microsoft.AspNet.Hosting.Internal
                     }
                 });
 
+            _applicationLifetime.NotifyStarted();
+
             return new Disposable(() =>
             {
                 _applicationLifetime.NotifyStopping();
