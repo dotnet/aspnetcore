@@ -131,8 +131,8 @@ namespace Microsoft.AspNet.Razor
             if (change.NewBuffer == null)
             {
                 throw new ArgumentException(RazorResources.FormatStructure_Member_CannotBeNull(
-                                                          "Buffer",
-                                                          "TextChange"), "change");
+                                                          nameof(change.NewBuffer),
+                                                          nameof(TextChange)), nameof(change));
             }
 
             var result = PartialParseResult.Rejected;

@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Razor.Generator
         {
             if (string.IsNullOrEmpty(className))
             {
-                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "className");
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(className));
             }
 
             ClassName = className;

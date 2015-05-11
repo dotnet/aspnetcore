@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Razor.Test.Editor
                         parser.CheckForStructureChanges(change);
                     }
                 });
-            ExceptionHelpers.ValidateArgumentException(parameterName, RazorResources.FormatStructure_Member_CannotBeNull("Buffer", "TextChange"), exception);
+            ExceptionHelpers.ValidateArgumentException(parameterName, RazorResources.FormatStructure_Member_CannotBeNull(nameof(change.NewBuffer), nameof(TextChange)), exception);
         }
 
         private static RazorEngineHost CreateHost()
