@@ -27,14 +27,19 @@ $remoteScript = {
     cd C:\$using:serverFolder\$using:projectName
     dir 
     $env:DNX_TRACE=1
-    $testResult = & .\test.cmd 2>&1
-    $testResult = & $lastexitcode
+    
+    $output = & .\test.cmd 2>&1
+    $output
+    $lastexitcode
 }
 
 Write-Host ">>>> Remote code execution started <<<<"
-$result = Invoke-Command -ComputerName $server -Credential $cred -ScriptBlock $remoteScript
-$result
+$remoteJob = Invoke-Command -ComputerName $server -Credential $cred -ScriptBlock $remoteScript -AsJob
+Wait-Job $remoteJob
 Write-Host "<<<< Remote execution code completed >>>>"
 
-$testExitCode = $result[$result.length-1];
-exit $testExitCode
+$remoteResult = Receive-Job $remoteJob
+$remoteResult
+
+$finalExitCode = $remoteResult[$remoteResult.Length-1]
+exit $finalExitCode
