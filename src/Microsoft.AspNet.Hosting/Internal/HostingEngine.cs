@@ -91,11 +91,12 @@ namespace Microsoft.AspNet.Hosting.Internal
 
         private void EnsureApplicationServices()
         {
-            EnsureStartup();
-
-            _applicationServiceCollection.AddInstance<IApplicationLifetime>(_applicationLifetime);
-
-            _applicationServices = Startup.ConfigureServicesDelegate(_applicationServiceCollection);
+            if (_applicationServices == null)
+            {
+                EnsureStartup();
+                _applicationServiceCollection.AddInstance<IApplicationLifetime>(_applicationLifetime);
+                _applicationServices = Startup.ConfigureServicesDelegate(_applicationServiceCollection);
+            }
         }
 
         private void EnsureStartup()

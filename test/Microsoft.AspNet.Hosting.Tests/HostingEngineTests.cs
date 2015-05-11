@@ -291,6 +291,38 @@ namespace Microsoft.AspNet.Hosting
             Assert.Same(requestIdentifierFeature, httpContext.GetFeature<IRequestIdentifierFeature>());
         }
 
+        [Fact]
+        public void HostingEngine_InvokesConfigureMethodsOnlyOnce()
+        {
+            var engine = CreateBuilder()
+                .UseServer(this)
+                .UseStartup<CountStartup>()
+                .Build();
+            using (engine.Start())
+            {
+                var services = engine.ApplicationServices;
+                var services2 = engine.ApplicationServices;
+                Assert.Equal(1, CountStartup.ConfigureCount);
+                Assert.Equal(1, CountStartup.ConfigureServicesCount);
+            }
+        }
+
+        public class CountStartup
+        {
+            public static int ConfigureServicesCount;
+            public static int ConfigureCount;
+
+            public void ConfigureServices(IServiceCollection services)
+            {
+                ConfigureServicesCount++;
+            }
+
+            public void Configure(IApplicationBuilder app)
+            {
+                ConfigureCount++;
+            }
+        }
+
         private IHostingEngine CreateHostingEngine(RequestDelegate requestDelegate)
         {
             var applicationBuilder = new Mock<IApplicationBuilder>();
