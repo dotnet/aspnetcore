@@ -34,9 +34,9 @@ namespace ServerComparison.FunctionalTests
             return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckContentLengthAsync);
         }
 
-        // [ConditionalTheory]
-        // [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        // TODO: Not supported [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5071/")]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5071/")]
         // https://github.com/aspnet/Helios/issues/148
         // TODO: Chunks anyways [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5073/")]
         // https://github.com/aspnet/WebListener/issues/113
@@ -155,8 +155,8 @@ namespace ServerComparison.FunctionalTests
                 var response = await client.GetAsync("connectionclose");
                 responseText = await response.Content.ReadAsStringAsync();
                 Assert.Equal("Connnection Close", responseText);
-                Assert.Null(response.Headers.TransferEncodingChunked);
                 Assert.True(response.Headers.ConnectionClose, "/connectionclose, closed?");
+                Assert.Null(response.Headers.TransferEncodingChunked);
                 Assert.Null(GetContentLength(response));
             }
             catch (XunitException)
