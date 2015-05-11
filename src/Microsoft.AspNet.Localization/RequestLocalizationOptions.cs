@@ -10,29 +10,22 @@ namespace Microsoft.AspNet.Localization
     /// <summary>
     /// Specifies options for the <see cref="RequestLocalizationMiddleware"/>.
     /// </summary>
-    public class RequestLocalizationMiddlewareOptions
+    public class RequestLocalizationOptions
     {
         /// <summary>
-        /// Creates a new <see cref="RequestLocalizationMiddlewareOptions"/> with default values.
+        /// Creates a new <see cref="RequestLocalizationOptions"/> with default values.
         /// </summary>
-        public RequestLocalizationMiddlewareOptions()
+        public RequestLocalizationOptions()
         {
             DefaultRequestCulture = RequestCulture.GetRequestCulture(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
 
             RequestCultureStrategies = new List<IRequestCultureStrategy>
             {
-                new QueryStringRequestCultureStrategy(),
-                new CookieRequestCultureStrategy(),
-                new AcceptLanguageHeaderRequestCultureStrategy { MaximumAcceptLanguageHeaderValuesToTry = MaximumAcceptLanguageHeaderValuesToTry }
+                new QueryStringRequestCultureStrategy { Options = this },
+                new CookieRequestCultureStrategy { Options = this },
+                new AcceptLanguageHeaderRequestCultureStrategy { Options = this }
             };
         }
-
-        /// <summary>
-        /// The maximum number of values in the Accept-Language header to attempt to create a <see cref="CultureInfo"/>
-        /// from for the current request.
-        /// Defaults to <c>3</c>.
-        /// </summary>
-        public int MaximumAcceptLanguageHeaderValuesToTry { get; set; } = 3;
 
         /// <summary>
         /// The default <see cref="RequestCulture"/> to use. This value will be used if none of the configured

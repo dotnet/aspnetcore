@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Localization
     /// <summary>
     /// Determines the culture information for a request via values in the query string.
     /// </summary>
-    public class QueryStringRequestCultureStrategy : IRequestCultureStrategy
+    public class QueryStringRequestCultureStrategy : RequestCultureStrategy
     {
         /// <summary>
         /// The key that contains the culture name.
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Localization
         public string UIQueryStringKey { get; set; } = "ui-culture";
 
         /// <inheritdoc />
-        public RequestCulture DetermineRequestCulture([NotNull] HttpContext httpContext)
+        public override RequestCulture DetermineRequestCulture([NotNull] HttpContext httpContext)
         {
             var request = httpContext.Request;
             if (!request.QueryString.HasValue)
@@ -67,7 +67,11 @@ namespace Microsoft.AspNet.Localization
                 return null;
             }
 
-            return RequestCulture.GetRequestCulture(culture, uiCulture);
+            var requestCulture = RequestCulture.GetRequestCulture(culture, uiCulture);
+
+            requestCulture = ValidateRequestCulture(requestCulture);
+
+            return requestCulture;
         }
     }
 }

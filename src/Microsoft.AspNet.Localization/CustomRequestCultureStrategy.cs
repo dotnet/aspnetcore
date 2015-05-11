@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Localization
     /// <summary>
     /// Determines the culture information for a request via the configured delegate.
     /// </summary>
-    public class CustomRequestCultureStrategy : IRequestCultureStrategy
+    public class CustomRequestCultureStrategy : RequestCultureStrategy
     {
         private readonly Func<HttpContext, RequestCulture> _strategy;
 
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Localization
         }
 
         /// <inheritdoc />
-        public RequestCulture DetermineRequestCulture([NotNull] HttpContext httpContext)
+        public override RequestCulture DetermineRequestCulture([NotNull] HttpContext httpContext)
         {
             return _strategy(httpContext);
         }

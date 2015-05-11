@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
@@ -20,10 +21,19 @@ namespace LocalizationSample
 
         public void Configure(IApplicationBuilder app, IStringLocalizer<Startup> SR)
         {
-            var options = new RequestLocalizationMiddlewareOptions
+            var options = new RequestLocalizationOptions
             {
                 // Set options here to change middleware behavior
-
+                //SupportedCultures = new List<CultureInfo>
+                //{
+                //    new CultureInfo("en-US"),
+                //    new CultureInfo("en-AU")
+                //},
+                //SupportedUICultures = new List<CultureInfo>
+                //{
+                //    new CultureInfo("en-US"),
+                //    new CultureInfo("en-AU")
+                //}
             };
             app.UseRequestLocalization(options);
 

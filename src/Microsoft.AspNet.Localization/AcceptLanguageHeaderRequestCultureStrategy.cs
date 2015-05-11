@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
-using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Localization.Internal;
@@ -13,7 +12,7 @@ namespace Microsoft.AspNet.Localization
     /// <summary>
     /// Determines the culture information for a request via the value of the Accept-Language header.
     /// </summary>
-    public class AcceptLanguageHeaderRequestCultureStrategy : IRequestCultureStrategy
+    public class AcceptLanguageHeaderRequestCultureStrategy : RequestCultureStrategy
     {
         /// <summary>
         /// The maximum number of values in the Accept-Language header to attempt to create a <see cref="CultureInfo"/>
@@ -23,7 +22,7 @@ namespace Microsoft.AspNet.Localization
         public int MaximumAcceptLanguageHeaderValuesToTry { get; set; } = 3;
 
         /// <inheritdoc />
-        public RequestCulture DetermineRequestCulture([NotNull] HttpContext httpContext)
+        public override RequestCulture DetermineRequestCulture([NotNull] HttpContext httpContext)
         {
             var acceptLanguageHeader = httpContext.Request.GetTypedHeaders().AcceptLanguage;
 
@@ -53,7 +52,14 @@ namespace Microsoft.AspNet.Localization
                     var culture = CultureInfoCache.GetCultureInfo(language.Value);
                     if (culture != null)
                     {
-                        return RequestCulture.GetRequestCulture(culture);
+                        var requestCulture = RequestCulture.GetRequestCulture(culture);
+
+                        requestCulture = ValidateRequestCulture(requestCulture);
+
+                        if (requestCulture != null)
+                        {
+                            return requestCulture;
+                        }
                     }
                 }
             }

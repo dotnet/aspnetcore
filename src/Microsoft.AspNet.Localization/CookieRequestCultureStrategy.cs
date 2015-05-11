@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Localization
     /// <summary>
     /// Determines the culture information for a request via the value of a cookie.
     /// </summary>
-    public class CookieRequestCultureStrategy : IRequestCultureStrategy
+    public class CookieRequestCultureStrategy : RequestCultureStrategy
     {
         private static readonly char[] _cookieSeparator = new[] { '|' };
         private static readonly string _culturePrefix = "c=";
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Localization
         public string CookieName { get; set; } = DefaultCookieName;
 
         /// <inheritdoc />
-        public RequestCulture DetermineRequestCulture([NotNull] HttpContext httpContext)
+        public override RequestCulture DetermineRequestCulture([NotNull] HttpContext httpContext)
         {
             var cookie = httpContext.Request.Cookies[CookieName];
 
@@ -33,7 +33,11 @@ namespace Microsoft.AspNet.Localization
                 return null;
             }
 
-            return ParseCookieValue(cookie);
+            var requestCulture = ParseCookieValue(cookie);
+
+            requestCulture = ValidateRequestCulture(requestCulture);
+
+            return requestCulture;
         }
 
         /// <summary>

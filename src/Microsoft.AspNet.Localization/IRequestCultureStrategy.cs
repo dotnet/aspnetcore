@@ -10,6 +10,14 @@ namespace Microsoft.AspNet.Localization
     /// </summary>
     public interface IRequestCultureStrategy
     {
+        /// <summary>
+        /// Implements the strategy to determine the culture of the given request.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="HttpContext"/> for the request.</param>
+        /// <returns>
+        ///     The determined <see cref="RequestCulture"/>.
+        ///     Returns <c>null</c> if the strategy couldn't determine a <see cref="RequestCulture"/>.
+        /// </returns>
         RequestCulture DetermineRequestCulture(HttpContext httpContext);
     }
 }

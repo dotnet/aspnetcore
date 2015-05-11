@@ -17,14 +17,14 @@ namespace Microsoft.AspNet.Localization
     public class RequestLocalizationMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly RequestLocalizationMiddlewareOptions _options;
+        private readonly RequestLocalizationOptions _options;
         
         /// <summary>
         /// Creates a new <see cref="RequestLocalizationMiddleware"/>.
         /// </summary>
         /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
         /// <param name="options"></param>
-        public RequestLocalizationMiddleware([NotNull] RequestDelegate next, [NotNull] RequestLocalizationMiddlewareOptions options)
+        public RequestLocalizationMiddleware([NotNull] RequestDelegate next, [NotNull] RequestLocalizationOptions options)
         {
             _next = next;
             _options = options;
@@ -53,20 +53,6 @@ namespace Microsoft.AspNet.Localization
                         winningStrategy = strategy;
                         break;
                     }
-                }
-            }
-
-            if (_options.SupportedCultures != null)
-            {
-                // Ensure that selected cultures are in the supported list and if not, set them to the default
-                if (!_options.SupportedCultures.Contains(requestCulture.Culture))
-                {
-                    requestCulture = RequestCulture.GetRequestCulture(_options.DefaultRequestCulture.Culture, requestCulture.UICulture);
-                }
-
-                if (!_options.SupportedUICultures.Contains(requestCulture.UICulture))
-                {
-                    requestCulture = RequestCulture.GetRequestCulture(requestCulture.Culture, _options.DefaultRequestCulture.UICulture);
                 }
             }
 
