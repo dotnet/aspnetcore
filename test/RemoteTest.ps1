@@ -28,7 +28,7 @@ $remoteScript = {
     dir 
     $env:DNX_TRACE=1
     $testResult = & .\test.cmd 2>&1
-    $testResult
+    $testResult = & $lastexitcode
 }
 
 Write-Host ">>>> Remote code execution started <<<<"
