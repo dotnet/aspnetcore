@@ -91,24 +91,5 @@ namespace Microsoft.AspNet.Mvc
         {
             return !type.GetTypeInfo().IsValueType || IsNullableValueType(type);
         }
-
-        public static TypeInfo ExtractGenericInterface([NotNull] Type queryType, Type interfaceType)
-        {
-            Func<TypeInfo, bool> matchesInterface =
-                typeInfo => typeInfo.IsGenericType && typeInfo.GetGenericTypeDefinition() == interfaceType;
-            var queryTypeInfo = queryType.GetTypeInfo();
-
-            if (matchesInterface(queryTypeInfo))
-            {
-                return queryTypeInfo;
-            }
-            else
-            {
-                return queryTypeInfo
-                    .ImplementedInterfaces
-                    .Select(type => type.GetTypeInfo())
-                    .FirstOrDefault(matchesInterface);
-            }
-        }
     }
 }
