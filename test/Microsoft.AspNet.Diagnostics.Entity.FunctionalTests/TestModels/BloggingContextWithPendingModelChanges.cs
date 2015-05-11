@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
 using Microsoft.Data.Entity.Metadata;
-using Microsoft.Data.Entity.Metadata.Builders;
+using Microsoft.Data.Entity.Metadata.ModelConventions;
 using Microsoft.Data.Entity.Relational.Migrations;
 using Microsoft.Data.Entity.Relational.Migrations.Builders;
 using Microsoft.Data.Entity.Relational.Migrations.Infrastructure;
@@ -22,7 +23,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         {
             public override IModel Model
             {
-                get { return new BasicModelBuilder().Model; }
+                get { return new ModelBuilder(new ConventionSet()).Model; }
             }
         }
 
@@ -41,7 +42,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             public override IModel Target
             {
-                get { return new BasicModelBuilder().Model; }
+                get { return new ModelBuilder(new ConventionSet()).Model; }
             }
 
             public override void Up(MigrationBuilder migrationBuilder)

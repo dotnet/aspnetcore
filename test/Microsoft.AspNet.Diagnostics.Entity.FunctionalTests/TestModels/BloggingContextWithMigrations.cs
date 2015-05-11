@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
 using Microsoft.Data.Entity.Metadata;
-using Microsoft.Data.Entity.Metadata.Builders;
+using Microsoft.Data.Entity.Metadata.ModelConventions;
 using Microsoft.Data.Entity.Relational.Migrations;
 using Microsoft.Data.Entity.Relational.Migrations.Builders;
 using Microsoft.Data.Entity.Relational.Migrations.Infrastructure;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             {
                 get
                 {
-                    var builder = new BasicModelBuilder();
+                    var builder = new ModelBuilder(new ConventionSet());
 
                     builder.Entity("Blogging.Models.Blog", b =>
                     {
