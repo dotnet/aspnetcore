@@ -8,6 +8,7 @@ using Microsoft.AspNet.Server.Testing;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Logging;
 using Xunit;
+using Xunit.Sdk;
 
 namespace ServerComparison.FunctionalTests
 {
@@ -101,7 +102,16 @@ namespace ServerComparison.FunctionalTests
                     }, logger, deploymentResult.HostShutdownToken);
 
                     var responseText = await response.Content.ReadAsStringAsync();
-                    Assert.Equal("Hello World", responseText);
+                    try
+                    {
+                        Assert.Equal("Hello World", responseText);
+                    }
+                    catch (XunitException)
+                    {
+                        logger.LogWarning(response.ToString());
+                        logger.LogWarning(responseText);
+                        throw;
+                    }
                 }
             }
         }

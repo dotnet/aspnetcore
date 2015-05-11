@@ -119,6 +119,7 @@ namespace ServerComparison.FunctionalTests
                     }
                     catch (XunitException)
                     {
+                        logger.LogWarning(response.ToString());
                         logger.LogWarning(responseText);
                         throw;
                     }
@@ -130,11 +131,10 @@ namespace ServerComparison.FunctionalTests
 
         private static async Task CheckContentLengthAsync(HttpClient client, ILogger logger)
         {
-            string responseText = string.Empty;
+            var response = await client.GetAsync("contentlength");
+            var responseText = await response.Content.ReadAsStringAsync();
             try
             {
-                var response = await client.GetAsync("contentlength");
-                responseText = await response.Content.ReadAsStringAsync();
                 Assert.Equal("Content Length", responseText);
                 Assert.Null(response.Headers.TransferEncodingChunked);
                 Assert.Null(response.Headers.ConnectionClose);
@@ -142,6 +142,7 @@ namespace ServerComparison.FunctionalTests
             }
             catch (XunitException)
             {
+                logger.LogWarning(response.ToString());
                 logger.LogWarning(responseText);
                 throw;
             }
@@ -149,11 +150,10 @@ namespace ServerComparison.FunctionalTests
 
         private static async Task CheckConnectionCloseAsync(HttpClient client, ILogger logger)
         {
-            string responseText = string.Empty;
+            var response = await client.GetAsync("connectionclose");
+            var responseText = await response.Content.ReadAsStringAsync();
             try
             {
-                var response = await client.GetAsync("connectionclose");
-                responseText = await response.Content.ReadAsStringAsync();
                 Assert.Equal("Connnection Close", responseText);
                 Assert.True(response.Headers.ConnectionClose, "/connectionclose, closed?");
                 Assert.Null(response.Headers.TransferEncodingChunked);
@@ -161,6 +161,7 @@ namespace ServerComparison.FunctionalTests
             }
             catch (XunitException)
             {
+                logger.LogWarning(response.ToString());
                 logger.LogWarning(responseText);
                 throw;
             }
@@ -168,11 +169,10 @@ namespace ServerComparison.FunctionalTests
 
         private static async Task CheckChunkedAsync(HttpClient client, ILogger logger)
         {
-            string responseText = string.Empty;
+            var response = await client.GetAsync("chunked");
+            var responseText = await response.Content.ReadAsStringAsync();
             try
             {
-                var response = await client.GetAsync("chunked");
-                responseText = await response.Content.ReadAsStringAsync();
                 Assert.Equal("Chunked", responseText);
                 Assert.True(response.Headers.TransferEncodingChunked, "/chunked, chunked?");
                 Assert.Null(response.Headers.ConnectionClose);
@@ -180,6 +180,7 @@ namespace ServerComparison.FunctionalTests
             }
             catch (XunitException)
             {
+                logger.LogWarning(response.ToString());
                 logger.LogWarning(responseText);
                 throw;
             }
@@ -187,11 +188,10 @@ namespace ServerComparison.FunctionalTests
 
         private static async Task CheckManuallyChunkedAsync(HttpClient client, ILogger logger)
         {
-            string responseText = string.Empty;
+            var response = await client.GetAsync("manuallychunked");
+            var responseText = await response.Content.ReadAsStringAsync();
             try
             {
-                var response = await client.GetAsync("manuallychunked");
-                responseText = await response.Content.ReadAsStringAsync();
                 Assert.Equal("Manually Chunked", responseText);
                 Assert.True(response.Headers.TransferEncodingChunked, "/manuallychunked, chunked?");
                 Assert.Null(response.Headers.ConnectionClose);
@@ -199,6 +199,7 @@ namespace ServerComparison.FunctionalTests
             }
             catch (XunitException)
             {
+                logger.LogWarning(response.ToString());
                 logger.LogWarning(responseText);
                 throw;
             }

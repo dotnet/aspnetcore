@@ -10,6 +10,7 @@ using Microsoft.AspNet.Server.Testing;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Logging;
 using Xunit;
+using Xunit.Sdk;
 
 namespace ServerComparison.FunctionalTests
 {
@@ -51,19 +52,28 @@ namespace ServerComparison.FunctionalTests
                     }, logger, deploymentResult.HostShutdownToken);
 
                     var responseText = await response.Content.ReadAsStringAsync();
-                    Assert.Equal("Hello World", responseText);
+                    try
+                    {
+                        Assert.Equal("Hello World", responseText);
 
-                    responseText = await httpClient.GetStringAsync("/Anonymous");
-                    Assert.Equal("Anonymous?True", responseText);
+                        responseText = await httpClient.GetStringAsync("/Anonymous");
+                        Assert.Equal("Anonymous?True", responseText);
 
-                    response = await httpClient.GetAsync("/Restricted");
-                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                    Assert.Contains("NTLM", response.Headers.WwwAuthenticate.ToString());
+                        response = await httpClient.GetAsync("/Restricted");
+                        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                        Assert.Contains("NTLM", response.Headers.WwwAuthenticate.ToString());
 
-                    httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
-                    httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
-                    responseText = await httpClient.GetStringAsync("/Restricted");
-                    Assert.Equal("NotAnonymous", responseText);
+                        httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
+                        httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
+                        responseText = await httpClient.GetStringAsync("/Restricted");
+                        Assert.Equal("NotAnonymous", responseText);
+                    }
+                    catch (XunitException)
+                    {
+                        logger.LogWarning(response.ToString());
+                        logger.LogWarning(responseText);
+                        throw;
+                    }
                 }
             }
         }
