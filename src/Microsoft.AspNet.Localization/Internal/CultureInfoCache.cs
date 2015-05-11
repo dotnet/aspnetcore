@@ -11,11 +11,11 @@ namespace Microsoft.AspNet.Localization.Internal
     {
         private static readonly ConcurrentDictionary<string, CacheEntry> _cache = new ConcurrentDictionary<string, CacheEntry>();
 
-        public static CultureInfo GetCultureInfo(string name, bool throwIfNotFound = false)
+        public static CultureInfo GetCultureInfo(string name)
         {
-            // Allow empty string values as they map to InvariantCulture, whereas null culture values will throw in
-            // the CultureInfo ctor
-            if (name == null)
+            // Allow only known culture names as this API is called with input from users (HTTP requests) and
+            // creating CultureInfo objects is expensive and we don't want it to throw either.
+            if (name == null || !CultureInfoList.KnownCultureNames.Contains(name))
             {
                 return null;
             }
@@ -26,16 +26,14 @@ namespace Microsoft.AspNet.Localization.Internal
                 {
                     return new CacheEntry(CultureInfo.ReadOnly(new CultureInfo(n)));
                 }
-                catch (CultureNotFoundException ex)
+                catch (CultureNotFoundException)
                 {
-                    return new CacheEntry(ex);
+                    // This can still throw as the list of culture names we have is generated from latest .NET Framework
+                    // on latest Windows and thus contains names that won't be supported on lower framework or OS versions.
+                    // We can just cache the null result in these cases as it's ultimately bound by the list anyway.
+                    return new CacheEntry(cultureInfo: null);
                 }
             });
-
-            if (entry.Exception != null && throwIfNotFound)
-            {
-                throw entry.Exception;
-            }
 
             return entry.CultureInfo;
         }
@@ -47,14 +45,7 @@ namespace Microsoft.AspNet.Localization.Internal
                 CultureInfo = cultureInfo;
             }
 
-            public CacheEntry(Exception exception)
-            {
-                Exception = exception;
-            }
-
             public CultureInfo CultureInfo { get; }
-
-            public Exception Exception { get; }
         }
     }
 }

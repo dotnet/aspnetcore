@@ -123,7 +123,8 @@ $@"<!doctype html>
 #if DNX451
             await context.Response.WriteAsync($"    <option value=\"{new CultureInfo("zh-CHT").Name}\">{new CultureInfo("zh-CHT").DisplayName}</option>");
 #endif
-            await context.Response.WriteAsync($"    <option value=\"en-NOTREAL\">English (Not a real culture)</option>");
+            await context.Response.WriteAsync($"    <option value=\"en-NOTREAL\">English (Not a real locale)</option>");
+            await context.Response.WriteAsync($"    <option value=\"pp-NOTREAL\">Made-up (Not a real anything)</option>");
         }
     }
 }
