@@ -20,9 +20,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
         internal static readonly string ScopeManagerVariableName = "__tagHelperScopeManager";
         internal static readonly string RunnerVariableName = "__tagHelperRunner";
 
-        private static readonly TagHelperAttributeDescriptorComparer AttributeDescriptorComparer =
-            new TagHelperAttributeDescriptorComparer();
-
         private readonly CSharpCodeWriter _writer;
         private readonly CodeBuilderContext _context;
         private readonly IChunkVisitor _bodyVisitor;
@@ -64,7 +61,7 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
             // multiple TargetElement attributes are on a TagHelper type and matches overlap for an HTML element.
             // Having more than one descriptor with the same TagHelper type results in generated code that runs
             // the same TagHelper X many times (instead of once) over a single HTML element.
-            var tagHelperDescriptors = chunk.Descriptors.Distinct(TypeNameTagHelperDescriptorComparer.Default);
+            var tagHelperDescriptors = chunk.Descriptors.Distinct(TypeBasedTagHelperDescriptorComparer.Default);
 
             RenderBeginTagHelperScope(chunk.TagName, chunk.SelfClosing, chunk.Children);
 
@@ -575,40 +572,6 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 {
                     return Context.Host.GeneratedClassContext.WriteLiteralToMethodName;
                 }
-            }
-        }
-
-        // This class is used to compare tag helper attributes by comparing only the HTML attribute name.
-        private class TagHelperAttributeDescriptorComparer : IEqualityComparer<TagHelperAttributeDescriptor>
-        {
-            public bool Equals(TagHelperAttributeDescriptor descriptorX, TagHelperAttributeDescriptor descriptorY)
-            {
-                return string.Equals(descriptorX.Name, descriptorY.Name, StringComparison.OrdinalIgnoreCase);
-            }
-
-            public int GetHashCode(TagHelperAttributeDescriptor descriptor)
-            {
-                return StringComparer.OrdinalIgnoreCase.GetHashCode(descriptor.Name);
-            }
-        }
-
-        private class TypeNameTagHelperDescriptorComparer : IEqualityComparer<TagHelperDescriptor>
-        {
-            public static readonly TypeNameTagHelperDescriptorComparer Default =
-                new TypeNameTagHelperDescriptorComparer();
-
-            private TypeNameTagHelperDescriptorComparer()
-            {
-            }
-
-            public bool Equals(TagHelperDescriptor descriptorX, TagHelperDescriptor descriptorY)
-            {
-                return string.Equals(descriptorX.TypeName, descriptorY.TypeName, StringComparison.Ordinal);
-            }
-
-            public int GetHashCode(TagHelperDescriptor descriptor)
-            {
-                return StringComparer.Ordinal.GetHashCode(descriptor.TypeName);
             }
         }
     }

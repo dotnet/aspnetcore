@@ -474,22 +474,5 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             return htmlSymbol.Type == HtmlSymbolType.DoubleQuote ||
                    htmlSymbol.Type == HtmlSymbolType.SingleQuote;
         }
-
-        // This class is used to compare tag helper attributes by comparing only the HTML attribute name.
-        private class TagHelperAttributeDescriptorComparer : IEqualityComparer<TagHelperAttributeDescriptor>
-        {
-            public static readonly TagHelperAttributeDescriptorComparer Default =
-                new TagHelperAttributeDescriptorComparer();
-
-            public bool Equals(TagHelperAttributeDescriptor descriptorX, TagHelperAttributeDescriptor descriptorY)
-            {
-                return string.Equals(descriptorX.Name, descriptorY.Name, StringComparison.OrdinalIgnoreCase);
-            }
-
-            public int GetHashCode(TagHelperAttributeDescriptor descriptor)
-            {
-                return StringComparer.OrdinalIgnoreCase.GetHashCode(descriptor.Name);
-            }
-        }
     }
 }

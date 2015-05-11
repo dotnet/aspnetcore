@@ -2,19 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 {
     internal class EquivalenceComparer : IEqualityComparer<SyntaxTreeNode>
     {
-        public bool Equals(SyntaxTreeNode x, SyntaxTreeNode y)
+        public bool Equals(SyntaxTreeNode nodeX, SyntaxTreeNode nodeY)
         {
-            return x.EquivalentTo(y);
+            if (nodeX == nodeY)
+            {
+                return true;
+            }
+
+            return nodeX != null && nodeX.EquivalentTo(nodeY);
         }
 
-        public int GetHashCode(SyntaxTreeNode obj)
+        public int GetHashCode([NotNull] SyntaxTreeNode node)
         {
-            return obj.GetEquivalenceHash();
+            return node.GetEquivalenceHash();
         }
     }
 }
