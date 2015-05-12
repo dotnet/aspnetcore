@@ -45,7 +45,8 @@
 
         <ItemGroup>
             <UnsignedPackages
-                Include="$(DropSource)**\EntityFramework*.nupkg;
+                Include="$(DropSource)**\CultureInfoGenerator*.nupkg;
+                         $(DropSource)**\EntityFramework*.nupkg;
                          $(DropSource)**\Microsoft.Data.Sqlite*.nupkg;
                          $(DropSource)**\Kestrel*.nupkg;
                          $(DropSource)**\dnx*.nupkg;
@@ -58,7 +59,8 @@
                          $(DropSource)**\StyleCop.KRules*.nupkg"
             />
             <SymbolPackages
-                Include="$(SymbolPackagePath)**\EntityFramework*.nupkg;
+                Include="$(SymbolPackagePath)**\CultureInfoGenerator*.nupkg;
+                         $(SymbolPackagePath)**\EntityFramework*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Data.Sqlite*.nupkg;
                          $(SymbolPackagePath)**\Kestrel*.nupkg;
                          $(SymbolPackagePath)**\KoreBuild*.nupkg;
@@ -88,6 +90,7 @@
         <ItemGroup>
             <_UnsignedPackageBinaries
                 Include="$(UnsignedPackagesPath)**\AspNet.Loader*.dll;
+                         $(UnsignedPackagesPath)**\CultureInfoGenerator*.dll;
                          $(UnsignedPackagesPath)**\EntityFramework*.dll;
                          $(UnsignedPackagesPath)**\EntityFramework.psd1;
                          $(UnsignedPackagesPath)**\EntityFramework.psm1;
@@ -166,7 +169,8 @@
 
     <Target Name="UpdateLicenseURLs" DependsOnTargets="SignFiles">
         <ItemGroup>
-            <NuSpecEULA Include="$(UnsignedPackagesPath)**\EntityFramework*.nuspec;
+            <NuSpecEULA Include="$(UnsignedPackagesPath)**\CultureInfoGenerator*.nuspec;
+                                 $(UnsignedPackagesPath)**\EntityFramework*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Data.Sqlite*.nuspec;
                                  $(UnsignedPackagesPath)**\Kestrel*.nuspec;
                                  $(UnsignedPackagesPath)**\dnvm.*.nuspec;
@@ -240,7 +244,8 @@
 
     <Target Name="PoliCheck" DependsOnTargets="FindLatestDropShare">
         <ItemGroup>
-            <PoliCheckPackages Include="$(SymbolPackagePath)EntityFramework.*.symbols.nupkg;
+            <PoliCheckPackages Include="$(SymbolPackagePath)CultureInfoGenerator.*.symbols.nupkg;
+                                        $(SymbolPackagePath)EntityFramework.*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Data.Sqlite.*.symbols.nupkg;
                                         $(SymbolPackagePath)Kestrel*.symbols.nupkg;
                                         $(SymbolPackagePath)dnx*.symbols.nupkg;
