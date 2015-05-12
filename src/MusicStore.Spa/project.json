@@ -42,10 +42,6 @@
     "Kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:5104",
     "run": "run server.urls=http://localhost:5103"
   },
-  /*"scripts": {
-    "postrestore": [ "npm install" ],
-    "prepare": [ "grunt bower:install" ]
-  },*/
   "frameworks": {
     "dnx451": {},
     "dnxcore50": {}
