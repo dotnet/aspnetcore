@@ -120,6 +120,11 @@ namespace WebApiCompatShimWebSite
             return Redirect(new Uri("api/Blog", UriKind.RelativeOrAbsolute));
         }
 
+        public IActionResult GetRedirectUrlUsingRouteName()
+        {
+            return RedirectToRoute("named-action", new { controller = "BasicApi", action = "WriteToHttpContext" });
+        }
+
         public IActionResult GetResponseMessage()
         {
             var response = new HttpResponseMessage(HttpStatusCode.OK);

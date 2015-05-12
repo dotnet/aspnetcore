@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var urlHelper = GetUrlHelper(context);
 
-            var destinationUrl = urlHelper.RouteUrl(RouteValues);
+            var destinationUrl = urlHelper.RouteUrl(RouteName, RouteValues);
             if (string.IsNullOrEmpty(destinationUrl))
             {
                 throw new InvalidOperationException(Resources.NoRoutesMatched);

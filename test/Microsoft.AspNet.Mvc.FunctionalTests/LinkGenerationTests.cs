@@ -26,9 +26,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly Assembly _resourcesAssembly = typeof(LinkGenerationTests).GetTypeInfo().Assembly;
 
         [Theory]
-        [InlineData("http://pingüino/Home/RedirectToActionReturningTaskAction")]
-        [InlineData("http://pingüino/Home/RedirectToRouteActionAsMethodAction")]
-        public async Task GeneratedLinksWithActionResults_AreRelativeLinks_WhenSetOnLocationHeader(string url)
+        [InlineData("http://pingüino/Home/RedirectToActionReturningTaskAction", "/Home/ActionReturningTask")]
+        [InlineData("http://pingüino/Home/RedirectToRouteActionAsMethodAction", "/Home/ActionReturningTask")]
+        [InlineData("http://pingüino/Home/RedirectToRouteUsingRouteName", "/api/orders/10")]
+        public async Task GeneratedLinksWithActionResults_AreRelativeLinks_WhenSetOnLocationHeader(
+            string url,
+            string expected)
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -43,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
 
-            Assert.Equal("/Home/ActionReturningTask", response.Headers.Location.ToString());
+            Assert.Equal(expected, response.Headers.Location.ToString());
         }
 
         [Fact]

@@ -327,19 +327,23 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("http://localhost/api/Users", response.Headers.Location.OriginalString);
         }
 
-        [Fact]
-        public async Task ApiController_RedirectUri()
+        [Theory]
+        [InlineData("http://localhost/api/Blog/ActionResult/GetRedirectUri", "api/Blog")]
+        [InlineData(
+            "http://localhost/api/Blog/ActionResult/GetRedirectUrlUsingRouteName",
+            "/api/Blog/BasicApi/WriteToHttpContext")]
+        public async Task ApiController_RedirectUri(string url, string expected)
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetRedirectUri");
+            var response = await client.GetAsync(url);
 
             // Assert
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-            Assert.Equal("api/Blog", response.Headers.Location.OriginalString);
+            Assert.Equal(expected, response.Headers.Location.OriginalString);
         }
 
         [Fact]
