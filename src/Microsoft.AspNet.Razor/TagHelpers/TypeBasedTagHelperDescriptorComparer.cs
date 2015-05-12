@@ -42,7 +42,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 return true;
             }
 
-            return string.Equals(descriptorX.AssemblyName, descriptorY.AssemblyName, StringComparison.Ordinal) &&
+            return descriptorX != null &&
+                string.Equals(descriptorX.AssemblyName, descriptorY.AssemblyName, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.TypeName, descriptorY.TypeName, StringComparison.Ordinal);
         }
 

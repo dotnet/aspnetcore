@@ -18,9 +18,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         public bool Equals(IReadOnlyTagHelperAttribute attributeX, IReadOnlyTagHelperAttribute attributeY)
         {
-            return
-                attributeX == attributeY ||
-                // Normal comparer doesn't care about the Name case, in tests we do.
+            if (attributeX == attributeY)
+            {
+                return true;
+            }
+
+            // Normal comparer (TagHelperAttribute.Equals()) doesn't care about the Name case, in tests we do.
+            return attributeX != null &&
                 string.Equals(attributeX.Name, attributeY.Name, StringComparison.Ordinal) &&
                 Equals(attributeX.Value, attributeY.Value);
         }
