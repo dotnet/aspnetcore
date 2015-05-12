@@ -8,7 +8,6 @@
         "Microsoft.AspNet.StaticFiles": "1.0.0-*"
     },
     "commands": {
-        /* Change the port number when you are self hosting this application */
         "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5000"
     },
     "frameworks": {
