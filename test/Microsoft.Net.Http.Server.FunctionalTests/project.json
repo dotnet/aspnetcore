@@ -9,7 +9,7 @@
     },
     "frameworks": {
         "dnx451": {
-            frameworkAssemblies: {
+            "frameworkAssemblies": {
                 "System.Net.Http": "",
                 "System.Net.Http.WebRequest": ""
             }
