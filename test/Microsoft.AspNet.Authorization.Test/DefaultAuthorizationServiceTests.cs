@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -47,7 +46,7 @@ namespace Microsoft.AspNet.Authorization.Test
             var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new Claim("Permission", "CanViewPage") }, "Basic"));
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, "Basic");
+            var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
 
             // Assert
             Assert.True(allowed);
@@ -67,7 +66,7 @@ namespace Microsoft.AspNet.Authorization.Test
             var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new Claim("Permission", "CanViewPage") }, "Basic"));
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, "Basic");
+            var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
 
             // Assert
             Assert.True(allowed);
@@ -94,7 +93,7 @@ namespace Microsoft.AspNet.Authorization.Test
                 );
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, "Basic");
+            var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
 
             // Assert
             Assert.True(allowed);
@@ -120,7 +119,7 @@ namespace Microsoft.AspNet.Authorization.Test
                 );
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, "Basic");
+            var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
 
             // Assert
             Assert.False(allowed);
@@ -146,7 +145,7 @@ namespace Microsoft.AspNet.Authorization.Test
                 );
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, "Basic");
+            var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
 
             // Assert
             Assert.False(allowed);
@@ -172,7 +171,7 @@ namespace Microsoft.AspNet.Authorization.Test
                 );
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, "Basic");
+            var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
 
             // Assert
             Assert.False(allowed);
@@ -196,7 +195,7 @@ namespace Microsoft.AspNet.Authorization.Test
                 );
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, "Basic");
+            var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
 
             // Assert
             Assert.False(allowed);
@@ -235,7 +234,7 @@ namespace Microsoft.AspNet.Authorization.Test
             var user = new ClaimsPrincipal(new ClaimsIdentity());
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, "Basic");
+            var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
 
             // Assert
             Assert.False(allowed);
@@ -261,7 +260,7 @@ namespace Microsoft.AspNet.Authorization.Test
                 );
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, "Basic");
+            var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
 
             // Assert
             Assert.True(allowed);
@@ -281,7 +280,7 @@ namespace Microsoft.AspNet.Authorization.Test
                 );
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, "Basic");
+            var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
 
             // Assert
             Assert.False(allowed);
@@ -304,7 +303,7 @@ namespace Microsoft.AspNet.Authorization.Test
                 );
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, policy.Build());
+            var allowed = await authorizationService.AuthorizeAsync(user, policy.Build());
 
             // Assert
             Assert.True(allowed);
@@ -325,7 +324,7 @@ namespace Microsoft.AspNet.Authorization.Test
                 );
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, policy.Build());
+            var allowed = await authorizationService.AuthorizeAsync(user, policy.Build());
 
             // Assert
             Assert.True(allowed);
@@ -342,7 +341,7 @@ namespace Microsoft.AspNet.Authorization.Test
                 );
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, policy.Build());
+            var allowed = await authorizationService.AuthorizeAsync(user, policy.Build());
 
             // Assert
             Assert.True(allowed);
@@ -375,7 +374,7 @@ namespace Microsoft.AspNet.Authorization.Test
                 new ClaimsIdentity(new Claim[] { new Claim(ClaimTypes.Role, "Users") }, "AuthType"));
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, policy.Build());
+            var allowed = await authorizationService.AuthorizeAsync(user, policy.Build());
 
             // Assert
             Assert.True(allowed);
@@ -396,7 +395,7 @@ namespace Microsoft.AspNet.Authorization.Test
                 );
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, policy.Build());
+            var allowed = await authorizationService.AuthorizeAsync(user, policy.Build());
 
             // Assert
             Assert.False(allowed);
@@ -421,36 +420,22 @@ namespace Microsoft.AspNet.Authorization.Test
                 );
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, "Basic");
+            var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
 
             // Assert
             Assert.False(allowed);
         }
 
         [Fact]
-        public async Task PolicyFailsWithNoRequirements()
+        public void PolicyThrowsWithNoRequirements()
         {
-            // Arrange
-            var authorizationService = BuildAuthorizationService(services =>
+            Assert.Throws<InvalidOperationException>(() => BuildAuthorizationService(services =>
             {
                 services.ConfigureAuthorization(options =>
                 {
                     options.AddPolicy("Basic", policy => { });
                 });
-            });
-            var user = new ClaimsPrincipal(
-                new ClaimsIdentity(
-                    new Claim[] {
-                        new Claim(ClaimTypes.Name, "Name"),
-                    },
-                    "AuthType")
-                );
-
-            // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, "Basic");
-
-            // Assert
-            Assert.False(allowed);
+            }));
         }
 
         [Fact]
@@ -473,7 +458,7 @@ namespace Microsoft.AspNet.Authorization.Test
                 );
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, "Any");
+            var allowed = await authorizationService.AuthorizeAsync(user, "Any");
 
             // Assert
             Assert.False(allowed);
@@ -499,7 +484,7 @@ namespace Microsoft.AspNet.Authorization.Test
                 );
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, "Hao");
+            var allowed = await authorizationService.AuthorizeAsync(user, "Hao");
 
             // Assert
             Assert.True(allowed);
@@ -521,7 +506,7 @@ namespace Microsoft.AspNet.Authorization.Test
             var user = new ClaimsPrincipal(identity);
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, "Hao");
+            var allowed = await authorizationService.AuthorizeAsync(user, "Hao");
 
             // Assert
             Assert.True(allowed);
@@ -543,7 +528,7 @@ namespace Microsoft.AspNet.Authorization.Test
             var user = new ClaimsPrincipal(identity);
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, null, "Hao");
+            var allowed = await authorizationService.AuthorizeAsync(user, "Hao");
 
             // Assert
             Assert.True(allowed);

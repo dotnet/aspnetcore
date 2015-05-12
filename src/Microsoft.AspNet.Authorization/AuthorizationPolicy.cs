@@ -10,8 +10,12 @@ namespace Microsoft.AspNet.Authorization
 {
     public class AuthorizationPolicy
     {
-        public AuthorizationPolicy(IEnumerable<IAuthorizationRequirement> requirements, IEnumerable<string> activeAuthenticationSchemes)
+        public AuthorizationPolicy([NotNull] IEnumerable<IAuthorizationRequirement> requirements, [NotNull] IEnumerable<string> activeAuthenticationSchemes)
         {
+            if (requirements.Count() == 0)
+            {
+                throw new InvalidOperationException(Resources.Exception_AuthorizationPolicyEmpty);
+            }
             Requirements = new List<IAuthorizationRequirement>(requirements).AsReadOnly();
             ActiveAuthenticationSchemes = new List<string>(activeAuthenticationSchemes).AsReadOnly();
         }

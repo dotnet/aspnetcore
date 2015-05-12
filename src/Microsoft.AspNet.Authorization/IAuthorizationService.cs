@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authorization
 {
@@ -18,7 +20,7 @@ namespace Microsoft.AspNet.Authorization
         /// <param name="resource"></param>
         /// <param name="requirements"></param>
         /// <returns></returns>
-        Task<bool> AuthorizeAsync(ClaimsPrincipal user, object resource, params IAuthorizationRequirement[] requirements);
+        Task<bool> AuthorizeAsync(ClaimsPrincipal user, object resource, [NotNull] IEnumerable<IAuthorizationRequirement> requirements);
 
         /// <summary>
         /// Checks if a user meets a specific set of requirements for the specified resource
@@ -27,7 +29,7 @@ namespace Microsoft.AspNet.Authorization
         /// <param name="resource"></param>
         /// <param name="requirements"></param>
         /// <returns></returns>
-        bool Authorize(ClaimsPrincipal user, object resource, params IAuthorizationRequirement[] requirements);
+        bool Authorize(ClaimsPrincipal user, object resource, [NotNull] IEnumerable<IAuthorizationRequirement> requirements);
 
         /// <summary>
         /// Checks if a user meets a specific authorization policy
@@ -36,7 +38,7 @@ namespace Microsoft.AspNet.Authorization
         /// <param name="resource">The resource the policy should be checked with.</param>
         /// <param name="policyName">The name of the policy to check against a specific context.</param>
         /// <returns><value>true</value> when the user fulfills the policy, <value>false</value> otherwise.</returns>
-        Task<bool> AuthorizeAsync(ClaimsPrincipal user, object resource, string policyName);
+        Task<bool> AuthorizeAsync(ClaimsPrincipal user, object resource, [NotNull] string policyName);
 
         /// <summary>
         /// Checks if a user meets a specific authorization policy
@@ -45,6 +47,6 @@ namespace Microsoft.AspNet.Authorization
         /// <param name="resource">The resource the policy should be checked with.</param>
         /// <param name="policyName">The name of the policy to check against a specific context.</param>
         /// <returns><value>true</value> when the user fulfills the policy, <value>false</value> otherwise.</returns>
-        bool Authorize(ClaimsPrincipal user, object resource, string policyName);
+        bool Authorize(ClaimsPrincipal user, object resource, [NotNull] string policyName);
     }
 }

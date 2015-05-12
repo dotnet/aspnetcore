@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Authorization
@@ -28,7 +29,7 @@ namespace Microsoft.AspNet.Authorization
                 : this.Authorize(user, resource, policy);
         }
 
-        public bool Authorize(ClaimsPrincipal user, object resource, params IAuthorizationRequirement[] requirements)
+        public bool Authorize(ClaimsPrincipal user, object resource, [NotNull] IEnumerable<IAuthorizationRequirement> requirements)
         {
             var authContext = new AuthorizationContext(requirements, user, resource);
             foreach (var handler in _handlers)
@@ -38,7 +39,7 @@ namespace Microsoft.AspNet.Authorization
             return authContext.HasSucceeded;
         }
 
-        public async Task<bool> AuthorizeAsync(ClaimsPrincipal user, object resource, params IAuthorizationRequirement[] requirements)
+        public async Task<bool> AuthorizeAsync(ClaimsPrincipal user, object resource, [NotNull] IEnumerable<IAuthorizationRequirement> requirements)
         {
             var authContext = new AuthorizationContext(requirements, user, resource);
             foreach (var handler in _handlers)

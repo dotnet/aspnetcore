@@ -27,6 +27,22 @@ namespace Microsoft.AspNet.Authorization
         }
 
         /// <summary>
+        /// AuthorizationPolicy must have at least one requirement.
+        /// </summary>
+        internal static string Exception_AuthorizationPolicyEmpty
+        {
+            get { return GetString("Exception_AuthorizationPolicyEmpty"); }
+        }
+
+        /// <summary>
+        /// AuthorizationPolicy must have at least one requirement.
+        /// </summary>
+        internal static string FormatException_AuthorizationPolicyEmpty(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_AuthorizationPolicyEmpty"), p0);
+        }
+
+        /// <summary>
         /// At least one role must be specified.
         /// </summary>
         internal static string Exception_RoleRequirementEmpty
