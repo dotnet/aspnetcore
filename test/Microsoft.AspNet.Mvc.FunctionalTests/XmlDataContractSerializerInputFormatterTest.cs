@@ -54,10 +54,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 data);
         }
 
-        // Verifies that even though all the required data is posted to an action, the model
-        // state has errors related to value types's Required attribute validation.
         [Fact]
-        public async Task RequiredDataIsProvided_AndModelIsBound_AndHasRequiredAttributeValidationErrors()
+        public async Task RequiredDataIsProvided_AndModelIsBound_NoValidationErrors()
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -67,13 +65,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                         "xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\"><Address><State>WA</State><Zipcode>" +
                         "98052</Zipcode></Address><Id>10</Id></Store>";
             var content = new StringContent(input, Encoding.UTF8, "application/xml-dcs");
-            var propertiesCollection = new List<KeyValuePair<string, string>>();
-            propertiesCollection.Add(new KeyValuePair<string, string>(nameof(Store.Id), typeof(Store).FullName));
-            propertiesCollection.Add(new KeyValuePair<string, string>(nameof(Address.Zipcode), typeof(Address).FullName));
-            var expectedErrorMessages = propertiesCollection.Select(kvp =>
-            {
-                return string.Format(errorMessageFormat, kvp.Key, kvp.Value);
-            });
 
             // Act
             var response = await client.PostAsync("http://localhost/Validation/CreateStore", content);
@@ -88,20 +79,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.NotNull(modelBindingInfo.Store.Address);
             Assert.Equal(98052, modelBindingInfo.Store.Address.Zipcode);
             Assert.Equal("WA", modelBindingInfo.Store.Address.State);
-            Assert.NotNull(modelBindingInfo.ModelStateErrorMessages);
-            Assert.Equal(expectedErrorMessages.Count(), modelBindingInfo.ModelStateErrorMessages.Count);
-            foreach (var expectedErrorMessage in expectedErrorMessages)
-            {
-                Assert.Contains(
-                modelBindingInfo.ModelStateErrorMessages,
-                (actualErrorMessage) => actualErrorMessage.Equals(expectedErrorMessage));
-            }
+            Assert.Empty(modelBindingInfo.ModelStateErrorMessages);
         }
 
-        // Verifies that the model state has errors related to body model validation(for reference types) and also for
-        // Required attribute validation (for value types).
+        // Verifies that the model state has errors related to body model validation.
         [Fact]
-        public async Task DataMissingForReferneceTypeProperties_AndModelIsBound_AndHasMixedValidationErrors()
+        public async Task DataMissingForRefereneceTypeProperties_AndModelIsBound_AndHasMixedValidationErrors()
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -111,13 +94,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                         " xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">" +
                         "<Address i:nil=\"true\"/><Id>10</Id></Store>";
             var content = new StringContent(input, Encoding.UTF8, "application/xml-dcs");
-            var propertiesCollection = new List<KeyValuePair<string, string>>();
-            propertiesCollection.Add(new KeyValuePair<string, string>(nameof(Store.Id), typeof(Store).FullName));
-            propertiesCollection.Add(new KeyValuePair<string, string>(nameof(Address.Zipcode), typeof(Address).FullName));
-            var expectedErrorMessages = propertiesCollection.Select(kvp =>
-            {
-                return string.Format(errorMessageFormat, kvp.Key, kvp.Value);
-            }).ToList();
+
+            var expectedErrorMessages = new List<string>();
             expectedErrorMessages.Add("Address:The Address field is required.");
 
             // Act
@@ -131,6 +109,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.NotNull(modelBindingInfo.Store);
             Assert.Equal(10, modelBindingInfo.Store.Id);
             Assert.NotNull(modelBindingInfo.ModelStateErrorMessages);
+
             Assert.Equal(expectedErrorMessages.Count(), modelBindingInfo.ModelStateErrorMessages.Count);
             foreach (var expectedErrorMessage in expectedErrorMessages)
             {
