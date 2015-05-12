@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public string Street { get; set; }
         }
 
-        [Fact(Skip = "Extra entries in model state #2446.")]
+        [Fact]
         public async Task FromBodyAndRequiredOnProperty_EmptyBody_AddsModelStateError()
         {
             // Arrange
@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public int Zip { get; set; }
         }
 
-        [Theory]
+        [Theory(Skip = "There should be entries for all model properties which are bound. #2445")]
         [InlineData("{ \"Zip\" : 123 }")]
         [InlineData("{}")]
         public async Task FromBodyOnTopLevelProperty_RequiredOnSubProperty_AddsModelStateError(string inputText)
@@ -213,6 +213,66 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Invalid, modelState[street].ValidationState);
             var error = Assert.Single(modelState[street].Errors);
             Assert.Equal("The Street field is required.", error.ErrorMessage);
+        }
+
+        private class Person3
+        {
+            [FromBody]
+            public Address3 Address { get; set; }
+        }
+
+        private class Address3
+        {
+            public string Street { get; set; }
+
+            [Required]
+            public int Zip { get; set; }
+        }
+
+        [Theory(Skip = "There should be entries for all model properties which are bound. #2445")]
+        [InlineData("{ \"Street\" : \"someStreet\" }")]
+        [InlineData("{}")]
+        public async Task FromBodyOnProperty_RequiredOnValueTypeSubProperty_AddsModelStateError(string inputText)
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                BindingInfo = new BindingInfo()
+                {
+                    BinderModelName = "CustomParameter",
+                },
+                ParameterType = typeof(Person3)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request =>
+                {
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes(inputText));
+                    request.ContentType = "application/json";
+                });
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+            var boundPerson = Assert.IsType<Person3>(modelBindingResult.Model);
+            Assert.NotNull(boundPerson);
+            Assert.False(modelState.IsValid);
+            var street = Assert.Single(modelState.Keys, k => k == "CustomParameter.Address.Street");
+            Assert.Equal(ModelValidationState.Valid, modelState[street].ValidationState);
+
+            // The error with an empty key is a bug(#2416) in our implementation which does not append the prefix and
+            // use that along with the path. The expected key here would be Address.
+            var zip = Assert.Single(modelState.Keys, k => k == "CustomParameter.Address.Zip");
+            Assert.Equal(ModelValidationState.Valid, modelState[zip].ValidationState);
+            var error = Assert.Single(modelState[""].Errors);
+            Assert.StartsWith(
+                "Required property 'Zip' not found in JSON. Path ''",
+                error.Exception.Message);
         }
     }
 }

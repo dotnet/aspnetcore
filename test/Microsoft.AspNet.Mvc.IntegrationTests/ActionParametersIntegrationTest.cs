@@ -28,20 +28,20 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public List<Address> Address { get; }
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task ActionParameter_NonSettableCollectionModel_EmptyPrefix_GetsBound()
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
             var parameter = new ParameterDescriptor()
             {
-                Name = "Address",
+                Name = "prefix",
                 ParameterType = typeof(Person3)
             };
 
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
-                request.QueryString = QueryString.Create("[0].Street", "SomeStreet");
+                request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
             var modelState = new ModelStateDictionary();
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.True(modelState.IsValid);
 
             Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "[0].Street");
+            var key = Assert.Single(modelState.Keys, k => k == "Address[0].Street");
             Assert.NotNull(modelState[key].Value);
             Assert.Equal("SomeStreet", modelState[key].Value.AttemptedValue);
             Assert.Equal("SomeStreet", modelState[key].Value.RawValue);
@@ -77,19 +77,19 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public CustomReadOnlyCollection<Address> Address { get; set; }
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task ActionParameter_ReadOnlyCollectionModel_EmptyPrefix_DoesNotGetBound()
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
             var parameter = new ParameterDescriptor()
             {
-                Name = "Address",
+                Name = "prefix",
                 ParameterType = typeof(Person6)
             };
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
-                request.QueryString = QueryString.Create("[0].Street", "SomeStreet");
+                request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
             var modelState = new ModelStateDictionary();
@@ -119,20 +119,20 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public Address[] Address { get; set; }
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task ActionParameter_SettableArrayModel_EmptyPrefix_GetsBound()
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
             var parameter = new ParameterDescriptor()
             {
-                Name = "Address",
+                Name = "prefix",
                 ParameterType = typeof(Person4)
             };
 
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
-                request.QueryString = QueryString.Create("[0].Street", "SomeStreet");
+                request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
             var modelState = new ModelStateDictionary();
@@ -147,6 +147,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // Model
             Assert.NotNull(modelBindingResult.Model);
             var boundModel = Assert.IsType<Person4>(modelBindingResult.Model);
+            Assert.NotNull(boundModel.Address);
             Assert.Equal(1, boundModel.Address.Count());
             Assert.Equal("SomeStreet", boundModel.Address[0].Street);
 
@@ -154,7 +155,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.True(modelState.IsValid);
 
             Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "[0].Street");
+            var key = Assert.Single(modelState.Keys, k => k == "Address[0].Street");
             Assert.NotNull(modelState[key].Value);
             Assert.Equal("SomeStreet", modelState[key].Value.AttemptedValue);
             Assert.Equal("SomeStreet", modelState[key].Value.RawValue);
@@ -167,20 +168,20 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public Address[] Address { get; } = new Address[] { };
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task ActionParameter_NonSettableArrayModel_EmptyPrefix_DoesNotGetBound()
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
             var parameter = new ParameterDescriptor()
             {
-                Name = "Address",
+                Name = "prefix",
                 ParameterType = typeof(Person5)
             };
 
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
-                request.QueryString = QueryString.Create("[0].Street", "SomeStreet");
+                request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
             var modelState = new ModelStateDictionary();
@@ -204,7 +205,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Empty(modelState.Keys);
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task ActionParameter_NonSettableCollectionModel_WithPrefix_GetsBound()
         {
             // Arrange
@@ -251,7 +252,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task ActionParameter_ReadOnlyCollectionModel_WithPrefix_DoesNotGetBound()
         {
             // Arrange
@@ -292,7 +293,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Empty(modelState.Keys);
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task ActionParameter_SettableArrayModel_WithPrefix_GetsBound()
         {
             // Arrange
@@ -339,7 +340,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task ActionParameter_NonSettableArrayModel_WithPrefix_DoesNotGetBound()
         {
             // Arrange
@@ -369,7 +370,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // Model
             Assert.NotNull(modelBindingResult.Model);
-            var boundModel = Assert.IsType<Person4>(modelBindingResult.Model);
+            var boundModel = Assert.IsType<Person5>(modelBindingResult.Model);
 
             // Arrays should not be updated.
             Assert.Equal(0, boundModel.Address.Count());

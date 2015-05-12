@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         // The scenario is interesting as we to bind the top level model we fallback to empty prefix,
         // and hence the model state keys have an empty prefix.
-        [Fact(Skip = "ModelState.Value not set due to #2445. ModelState should not have empty key #2466.")]
+        [Fact(Skip = "ModelState.Value not set due to #2445.")]
         public async Task BindPropertyFromHeader_WithData_WithEmptyPrefix_GetsBound()
         {
             // Arrange
@@ -160,8 +160,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("someValue", modelState[key].Value.AttemptedValue);
         }
 
-        [Theory(Skip = "Extra entries in model state #2446.")]
-        [InlineData(typeof(string[]), "value1, value2, value3")] 
+        [Theory(Skip = "Greedy Model Binders should add a value in model state #2445.")]
+        [InlineData(typeof(string[]), "value1, value2, value3")]
         [InlineData(typeof(string), "value")]
         public async Task BindParameterFromHeader_WithData_WithPrefix_ModelGetsBound(Type modelType, string value)
         {

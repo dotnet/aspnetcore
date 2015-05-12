@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
     // Note that CollectionModelBinder handles both ICollection{T} and IList{T}
     public class CollectionModelBinderIntegrationTest
     {
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task CollectionModelBinder_BindsListOfSimpleType_WithPrefix_Success()
         {
             // Arrange
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<List<int>>(modelBindingResult.Model);
             Assert.Equal(new List<int>() { 10, 11 }, model);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("11", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task CollectionModelBinder_BindsListOfSimpleType_WithExplicitPrefix_Success()
         {
             // Arrange
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<List<int>>(modelBindingResult.Model);
             Assert.Equal(new List<int>() { 10, 11 }, model);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("11", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task CollectionModelBinder_BindsCollectionOfSimpleType_EmptyPrefix_Success()
         {
             // Arrange
@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<List<int>>(modelBindingResult.Model);
             Assert.Equal(new List<int> { 10, 11 }, model);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public int Id { get; set; }
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task CollectionModelBinder_BindsListOfComplexType_WithPrefix_Success()
         {
             // Arrange
@@ -209,7 +209,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(10, model[0].Id);
             Assert.Equal(11, model[1].Id);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -222,7 +222,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("11", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task CollectionModelBinder_BindsListOfComplexType_WithExplicitPrefix_Success()
         {
             // Arrange
@@ -255,7 +255,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(10, model[0].Id);
             Assert.Equal(11, model[1].Id);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -268,7 +268,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("11", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task CollectionModelBinder_BindsCollectionOfComplexType_EmptyPrefix_Success()
         {
             // Arrange
@@ -276,7 +276,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
-                ParameterType = typeof(ICollection<int>)
+                ParameterType = typeof(List<Person>)
             };
 
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
@@ -297,7 +297,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(10, model[0].Id);
             Assert.Equal(11, model[1].Id);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -552,7 +552,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public string Street { get; set; }
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task CollectionModelBinder_UsesCustomIndexes()
         {
             // Arrange

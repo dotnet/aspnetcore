@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public int Zip { get; set; }
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task BindProperty_WithData_WithPrefix_GetsBound()
         {
             // Arrange
@@ -62,16 +62,16 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.True(modelState.IsValid);
 
             Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "CustomParameter.Address.Street");
+            var key = Assert.Single(modelState.Keys, k => k == "CustomParameter.Address.Zip");
             Assert.NotNull(modelState[key].Value);
             Assert.Equal("1", modelState[key].Value.AttemptedValue);
-            Assert.Equal(1, modelState[key].Value.RawValue);
+            Assert.Equal("1", modelState[key].Value.RawValue);
             Assert.NotNull(modelState[key].Value);
             Assert.Empty(modelState[key].Errors);
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task BindProperty_WithData_WithEmptyPrefix_GetsBound()
         {
             // Arrange
@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var key = Assert.Single(modelState.Keys, k => k == "Address.Zip");
             Assert.NotNull(modelState[key].Value);
             Assert.Equal("1", modelState[key].Value.AttemptedValue);
-            Assert.Equal(1, modelState[key].Value.RawValue);
+            Assert.Equal("1", modelState[key].Value.RawValue);
             Assert.NotNull(modelState[key].Value);
             Assert.Empty(modelState[key].Errors);
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);

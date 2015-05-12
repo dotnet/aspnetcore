@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public IFormFile File { get; set; }
         }
 
-        [Fact(Skip = "ModelState.Value not set due to #2445, Extra entries in model state #2446.")]
+        [Fact(Skip = "ModelState.Value not set due to #2445")]
         public async Task BindProperty_WithData_WithEmptyPrefix_GetsBound()
         {
             // Arrange
@@ -70,13 +70,13 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.True(modelState.IsValid);
             Assert.Equal(2, modelState.Count);
             Assert.Single(modelState.Keys, k => k == "Address.Zip");
-            var key = Assert.Single(modelState.Keys, k => k == "Address.File"); // Should be only one key. bug #2446
+            var key = Assert.Single(modelState.Keys, k => k == "Address.File");
             Assert.NotNull(modelState[key].Value); // should be non null bug #2445.
             Assert.Empty(modelState[key].Errors);
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
         }
 
-        [Fact(Skip = "Extra entries in model state #2446.")]
+        [Fact]
         public async Task BindParameter_WithData_GetsBound()
         {
             // Arrange
@@ -122,10 +122,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // Validation should be skipped because we do not validate any parameters and since IFormFile is not
             // IValidatableObject, we should have no entries in the model state dictionary.
-            Assert.Empty(modelState.Keys); // Enable when we fix #2446.
+            Assert.Empty(modelState.Keys);
         }
 
-        [Fact(Skip = "Extra entries in model state #2446.")]
+        [Fact(Skip = "FormFile Should not return null modelBindingResult for a type that matches. #2456")]
         public async Task BindParameter_NoData_DoesNotGetBound()
         {
             // Arrange

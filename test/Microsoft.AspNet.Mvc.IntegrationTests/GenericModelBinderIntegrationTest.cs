@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         //
         // In this example we choose IFormCollection - because IFormCollection has a dedicated
         // model  binder.
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task GenericModelBinder_BindsCollection_ElementTypeFromGreedyModelBinder_WithPrefix_Success()
         {
             // Arrange
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(1, model.Count);
             Assert.NotNull(model[0]);
 
-            Assert.Equal(0, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         //
         // In this example we choose IFormCollection - because IFormCollection has a dedicated
         // model  binder.
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task GenericModelBinder_BindsCollection_ElementTypeFromGreedyModelBinder_EmptyPrefix_Success()
         {
             // Arrange
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(1, model.Count);
             Assert.NotNull(model[0]);
 
-            Assert.Equal(0, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         // This isn't an especially useful scenario - but it exercises what happens when you
         // try to use a Collection of something that is bound greedily by binding source.
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task GenericModelBinder_BindsCollection_ElementTypeUsesGreedyModelBinder_WithPrefix_Success()
         {
             // Arrange
@@ -199,14 +199,14 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(1, model.Length);
             Assert.NotNull(model[0]);
 
-            Assert.Equal(0, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
 
         // This is part of a random sampling of scenarios where a GenericModelBinder is used
         // recursively.
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task GenericModelBinder_BindsArrayOfDictionary_WithPrefix_Success()
         {
             // Arrange
@@ -237,7 +237,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("key0", kvp.Key);
             Assert.Equal(10, kvp.Value);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -252,7 +252,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         // This is part of a random sampling of scenarios where a GenericModelBinder is used
         // recursively.
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task GenericModelBinder_BindsArrayOfDictionary_EmptyPrefix_Success()
         {
             // Arrange
@@ -283,7 +283,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("key0", kvp.Key);
             Assert.Equal(10, kvp.Value);
 
-            Assert.Equal(1, modelState.Count);  // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -334,7 +334,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         // This is part of a random sampling of scenarios where a GenericModelBinder is used
         // recursively.
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task GenericModelBinder_BindsCollectionOfKeyValuePair_WithPrefix_Success()
         {
             // Arrange
@@ -364,7 +364,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("key0", kvp.Key);
             Assert.Equal(10, kvp.Value);
 
-            Assert.Equal(2, modelState.Count); // Fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -379,7 +379,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         // This is part of a random sampling of scenarios where a GenericModelBinder is used
         // recursively.
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task GenericModelBinder_BindsCollectionOfKeyValuePair_EmptyPrefix_Success()
         {
             // Arrange
@@ -409,7 +409,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("key0", kvp.Key);
             Assert.Equal(10, kvp.Value);
 
-            Assert.Equal(2, modelState.Count); //Fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -460,7 +460,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         // This is part of a random sampling of scenarios where a GenericModelBinder is used
         // recursively.
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task GenericModelBinder_BindsDictionaryOfList_WithPrefix_Success()
         {
             // Arrange
@@ -491,7 +491,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("key0", kvp.Key);
             Assert.Equal(new List<int>() { 10, 11 }, kvp.Value);
 
-            Assert.Equal(3, modelState.Count); // Fails due to #2446
+            Assert.Equal(3, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -510,7 +510,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         // This is part of a random sampling of scenarios where a GenericModelBinder is used
         // recursively.
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task GenericModelBinder_BindsDictionaryOfList_EmptyPrefix_Success()
         {
             // Arrange
@@ -540,7 +540,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("key0", kvp.Key);
             Assert.Equal(new List<int>() { 10, 11 }, kvp.Value);
 
-            Assert.Equal(3, modelState.Count); // Fails due to #2446
+            Assert.Equal(3, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 

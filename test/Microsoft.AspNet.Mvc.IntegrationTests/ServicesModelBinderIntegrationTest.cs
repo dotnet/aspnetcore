@@ -61,17 +61,14 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(3, modelState.Keys.Count);
-            Assert.Single(modelState.Keys, k => k == "CustomParameter");
-            Assert.Single(modelState.Keys, k => k == "CustomParameter.Address");
-
+            Assert.Equal(1, modelState.Keys.Count);
             var key = Assert.Single(modelState.Keys, k => k == "CustomParameter.Address.OutputFormatter");
             Assert.Equal(ModelValidationState.Skipped, modelState[key].ValidationState);
             Assert.Null(modelState[key].Value);
             Assert.Empty(modelState[key].Errors);
         }
 
-        [Fact(Skip = "ModelState should not have empty key #2466.")]
+        [Fact(Skip = "Should be no entry for model bound using services. #2464")]
         public async Task BindPropertyFromService_WithData_WithEmptyPrefix_GetsBound()
         {
             // Arrange
@@ -102,10 +99,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // ModelState
             Assert.True(modelState.IsValid);
-            Assert.Equal(2, modelState.Keys.Count);
-            Assert.Single(modelState.Keys, k => k == "Address");
-            var key = Assert.Single(modelState.Keys, k => k == "Address.OutputFormatter");
-            Assert.Equal(ModelValidationState.Skipped, modelState[key].ValidationState);
+            Assert.Equal(1, modelState.Keys.Count);
+            var key = Assert.Single(modelState.Keys, k => k == "Address");
             Assert.Null(modelState[key].Value); // For non user bound models there should be no value.
             Assert.Empty(modelState[key].Errors);
         }

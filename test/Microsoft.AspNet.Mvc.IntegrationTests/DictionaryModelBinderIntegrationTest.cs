@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
     // Integration tests targeting the behavior of the DictionaryModelBinder with other model binders.
     public class DictionaryModelBinderIntegrationTest
     {
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task DictionaryModelBinder_BindsDictionaryOfSimpleType_WithPrefix_Success()
         {
             // Arrange
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<Dictionary<string, int>>(modelBindingResult.Model);
             Assert.Equal(new Dictionary<string, int>() { { "key0", 10 } }, model);
 
-            Assert.Equal(2, modelState.Count); // Fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("10", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task DictionaryModelBinder_BindsDictionaryOfSimpleType_WithExplicitPrefix_Success()
         {
             // Arrange
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<Dictionary<string, int>>(modelBindingResult.Model);
             Assert.Equal(new Dictionary<string, int>() { { "key0", 10 }, }, model);
 
-            Assert.Equal(2, modelState.Count); // Fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("10", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446, IsValue == false because of #2470")]
+        [Fact(Skip = "IsValid == false because of #2470")]
         public async Task DictionaryModelBinder_BindsDictionaryOfSimpleType_EmptyPrefix_Success()
         {
             // Arrange
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<Dictionary<string, int>>(modelBindingResult.Model);
             Assert.Equal(new Dictionary<string, int>() { { "key0", 10 }, }, model);
 
-            Assert.Equal(2, modelState.Count); // Fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid); // Fails due to #2470
 
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public int Id { get; set; }
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_WithPrefix_Success()
         {
             // Arrange
@@ -206,7 +206,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("key0", model.Keys.First());
             Assert.Equal(model.Values, model.Values);
 
-            Assert.Equal(2, modelState.Count); // Fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("10", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_WithExplicitPrefix_Success()
         {
             // Arrange
@@ -253,7 +253,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("key0", model.Keys.First());
             Assert.Equal(model.Values, model.Values);
 
-            Assert.Equal(2, modelState.Count); // Fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -266,7 +266,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("10", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446, IsValue == false because of #2470")]
+        [Fact(Skip = "IsValid == false because of #2470")]
         public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_EmptyPrefix_Success()
         {
             // Arrange
@@ -296,7 +296,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("key0", model.Keys.First());
             Assert.Equal(model.Values, model.Values);
 
-            Assert.Equal(2, modelState.Count); // Fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid); // Fails due to #2470
 

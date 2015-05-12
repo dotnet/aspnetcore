@@ -257,7 +257,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 }
             }
 
-            if (isValid)
+            // Add an entry only if there was an entry which was added by a model binder.
+            // This prevents adding spurious entries.
+            if (modelState.ContainsKey(modelKey) && isValid)
             {
                 validationContext.ModelValidationContext.ModelState.MarkFieldValid(modelKey);
             }

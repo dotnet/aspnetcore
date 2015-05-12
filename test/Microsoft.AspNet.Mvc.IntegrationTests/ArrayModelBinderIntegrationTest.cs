@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
     // Integration tests targeting the behavior of the ArrayModelBinder with other model binders.
     public class ArrayModelBinderIntegrationTest
     {
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task ArrayModelBinder_BindsArrayOfSimpleType_WithPrefix_Success()
         {
             // Arrange
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<int[]>(modelBindingResult.Model);
             Assert.Equal(new int[] { 10, 11 }, model);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("11", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task ArrayModelBinder_BindsArrayOfSimpleType_WithExplicitPrefix_Success()
         {
             // Arrange
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<int[]>(modelBindingResult.Model);
             Assert.Equal(new int[] { 10, 11 }, model);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("11", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task ArrayModelBinder_BindsArrayOfSimpleType_EmptyPrefix_Success()
         {
             // Arrange
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<int[]>(modelBindingResult.Model);
             Assert.Equal(new int[] { 10, 11 }, model);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -174,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public string Name { get; set; }
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task ArrayModelBinder_BindsArrayOfComplexType_WithPrefix_Success()
         {
             // Arrange
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("bill", model[0].Name);
             Assert.Equal("lang", model[1].Name);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -216,7 +216,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("lang", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task ArrayModelBinder_BindsArrayOfComplexType_WithExplicitPrefix_Success()
         {
             // Arrange
@@ -233,7 +233,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
-                request.QueryString = new QueryString("?prefix[0].Name=bill&prefix[1]=lang");
+                request.QueryString = new QueryString("?prefix[0].Name=bill&prefix[1].Name=lang");
             });
 
             var modelState = new ModelStateDictionary();
@@ -249,7 +249,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("bill", model[0].Name);
             Assert.Equal("lang", model[1].Name);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -262,7 +262,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("lang", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task ArrayModelBinder_BindsArrayOfComplexType_EmptyPrefix_Success()
         {
             // Arrange
@@ -291,7 +291,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("bill", model[0].Name);
             Assert.Equal("lang", model[1].Name);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 

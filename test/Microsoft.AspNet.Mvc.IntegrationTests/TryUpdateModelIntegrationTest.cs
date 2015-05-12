@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public string Street { get; set; }
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task TryUpdateModel_ExistingModel_EmptyPrefix_GetsOverWritten()
         {
             // Arrange
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task TryUpdateModel_ExistingModel_EmptyPrefix_GetsBound()
         {
             // Arrange
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public List<Address> Address { get; set; }
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task TryUpdateModel_SettableCollectionModel_EmptyPrefix_GetsBound()
         {
             // Arrange
@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public List<Address> Address { get; }
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task TryUpdateModel_NonSettableCollectionModel_EmptyPrefix_GetsBound()
         {
             // Arrange
@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public CustomReadOnlyCollection<Address> Address { get; set; }
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task TryUpdateModel_ReadOnlyCollectionModel_EmptyPrefix_DoesNotGetBound()
         {
             // Arrange
@@ -206,7 +206,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public Address[] Address { get; set; }
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task TryUpdateModel_SettableArrayModel_EmptyPrefix_GetsBound()
         {
             // Arrange
@@ -245,7 +245,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public Address[] Address { get; } = new Address[] { };
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task TryUpdateModel_NonSettableArrayModel_EmptyPrefix_GetsBound()
         {
             // Arrange
@@ -274,7 +274,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         }
 
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task TryUpdateModel_ExistingModel_WithPrefix_GetsOverWritten()
         {
             // Arrange
@@ -309,7 +309,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task TryUpdateModel_ExistingModel_WithPrefix_GetsBound()
         {
             // Arrange
@@ -341,7 +341,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task TryUpdateModel_SettableCollectionModel_WithPrefix_GetsBound()
         {
             // Arrange
@@ -353,7 +353,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelState = new ModelStateDictionary();
             var model = new Person2();
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
+            var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
 
             // Assert
             Assert.True(result);
@@ -375,7 +375,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task TryUpdateModel_NonSettableCollectionModel_WithPrefix_GetsBound()
         {
             // Arrange
@@ -409,7 +409,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task TryUpdateModel_ReadOnlyCollectionModel_WithPrefix_DoesNotGetBound()
         {
             // Arrange
@@ -437,7 +437,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Empty(modelState.Keys);
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task TryUpdateModel_SettableArrayModel_WithPrefix_GetsBound()
         {
             // Arrange
@@ -463,7 +463,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.True(modelState.IsValid);
 
             Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "Address[0].Street");
+            var key = Assert.Single(modelState.Keys, k => k == "prefix.Address[0].Street");
             Assert.NotNull(modelState[key].Value);
             Assert.Equal("SomeStreet", modelState[key].Value.AttemptedValue);
             Assert.Equal("SomeStreet", modelState[key].Value.RawValue);
@@ -471,7 +471,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
         }
 
-        [Fact(Skip = "Extra entries in model state dictionary. #2466")]
+        [Fact]
         public async Task TryUpdateModel_NonSettableArrayModel_WithPrefix_DoesNotGetBound()
         {
             // Arrange

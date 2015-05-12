@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public byte[] Token { get; set; }
         }
 
-        [Theory(Skip = "Extra entries in model state #2446, ModelState.Value not set due to #2445, #2447")]
+        [Theory(Skip = "ModelState.Value not set due to #2445, #2447")]
         [InlineData(true)]
         [InlineData(false)]
         public async Task BindProperty_WithData_GetsBound(bool fallBackScenario)
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(2, modelState.Keys.Count); // Should be only two keys. bug #2446
+            Assert.Equal(2, modelState.Keys.Count);
             Assert.Single(modelState.Keys, k => k == prefix);
             Assert.Single(modelState.Keys, k => k == queryStringKey);
 
@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Empty(modelState.Keys);
         }
 
-        [Fact(Skip = "ModelState.Value not set due to #2445, #2446")]
+        [Fact(Skip = "ModelState.Value not set due to #2445")]
         public async Task BindParameter_WithData_GetsBound()
         {
             // Arrange

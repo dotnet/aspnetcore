@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Skipped, modelState[key].ValidationState);
         }
 
-        [Fact(Skip = "CancellationToken should not be validated #2447,Extra entries in model state dictionary. #2466")]
+        [Fact(Skip = "CancellationToken should not be validated #2447")]
         public async Task BindProperty_WithData__WithEmptyPrefix_GetsBound()
         {
             // Arrange

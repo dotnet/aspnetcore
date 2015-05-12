@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public string CustomerName { get; set; }
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task Validation_RequiredAttribute_OnSimpleTypeProperty_WithData()
         {
             // Arrange
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<Order1>(modelBindingResult.Model);
             Assert.Equal("bill", model.CustomerName);
 
-            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Empty(entry.Errors);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task Validation_RequiredAttribute_OnSimpleTypeProperty_NoData()
         {
             // Arrange
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<Order1>(modelBindingResult.Model);
             Assert.Null(model.CustomerName);
 
-            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.Count);
             Assert.Equal(1, modelState.ErrorCount);
             Assert.False(modelState.IsValid);
 
@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public string Name { get; set; }
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task Validation_RequiredAttribute_OnPOCOProperty_WithData()
         {
             // Arrange
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.NotNull(model.Customer);
             Assert.Equal("bill", model.Customer.Name);
 
-            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -200,7 +200,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public string Name { get; set; }
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task Validation_RequiredAttribute_OnNestedSimpleTypeProperty_WithData()
         {
             // Arrange
@@ -229,7 +229,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.NotNull(model.Customer);
             Assert.Equal("bill", model.Customer.Name);
 
-            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -239,7 +239,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Empty(entry.Errors);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task Validation_RequiredAttribute_OnNestedSimpleTypeProperty_NoDataForRequiredProperty()
         {
             // Arrange
@@ -270,7 +270,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(17, model.Customer.Age);
             Assert.Null(model.Customer.Name);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(1, modelState.ErrorCount);
             Assert.False(modelState.IsValid);
 
@@ -293,7 +293,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public int ItemId { get; set; }
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task Validation_RequiredAttribute_OnCollectionProperty_WithData()
         {
             // Arrange
@@ -322,7 +322,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.NotNull(model.Items);
             Assert.Equal(17, Assert.Single(model.Items).ItemId);
 
-            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -381,7 +381,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public string Name { get; set; }
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task Validation_RequiredAttribute_OnPOCOPropertyOfBoundElement_WithData()
         {
             // Arrange
@@ -409,7 +409,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<List<Order5>>(modelBindingResult.Model);
             Assert.Equal(17, Assert.Single(model).ProductId);
 
-            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -468,7 +468,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public string Name { get; set; }
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task Validation_StringLengthAttribute_OnPropertyOfPOCO_Valid()
         {
             // Arrange
@@ -496,7 +496,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<Order6>(modelBindingResult.Model);
             Assert.Equal("bill", model.Name);
 
-            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -506,7 +506,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Empty(entry.Errors);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task Validation_StringLengthAttribute_OnPropertyOfPOCO_Invalid()
         {
             // Arrange
@@ -534,7 +534,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<Order6>(modelBindingResult.Model);
             Assert.Equal("billybob", model.Name);
 
-            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.Count);
             Assert.Equal(1, modelState.ErrorCount);
             Assert.False(modelState.IsValid);
 
@@ -558,7 +558,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public string Name { get; set; }
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task Validation_StringLengthAttribute_OnPropertyOfNestedPOCO_Valid()
         {
             // Arrange
@@ -586,7 +586,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<Order7>(modelBindingResult.Model);
             Assert.Equal("bill", model.Customer.Name);
 
-            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -596,7 +596,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Empty(entry.Errors);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task Validation_StringLengthAttribute_OnPropertyOfNestedPOCO_Invalid()
         {
             // Arrange
@@ -624,7 +624,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<Order7>(modelBindingResult.Model);
             Assert.Equal("billybob", model.Customer.Name);
 
-            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.Count);
             Assert.Equal(1, modelState.ErrorCount);
             Assert.False(modelState.IsValid);
 
@@ -637,7 +637,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Null(error.Exception);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task Validation_StringLengthAttribute_OnPropertyOfNestedPOCO_NoData()
         {
             // Arrange
@@ -665,7 +665,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<Order7>(modelBindingResult.Model);
             Assert.Null(model.Customer);
 
-            Assert.Equal(0, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
@@ -696,7 +696,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             }
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task Validation_CustomAttribute_OnPOCOProperty_Valid()
         {
             // Arrange
@@ -724,7 +724,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<Order8>(modelBindingResult.Model);
             Assert.Equal("bill", model.Customer.Name);
 
-            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -734,7 +734,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Empty(entry.Errors);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task Validation_CustomAttribute_OnPOCOProperty_Invalid()
         {
             // Arrange
@@ -762,7 +762,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<Order8>(modelBindingResult.Model);
             Assert.Equal("billybob", model.Customer.Name);
 
-            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(1, modelState.ErrorCount);
             Assert.False(modelState.IsValid);
 
@@ -804,7 +804,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             }
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task Validation_CustomAttribute_OnCollectionElement_Valid()
         {
             // Arrange
@@ -832,7 +832,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<Order9>(modelBindingResult.Model);
             Assert.Equal("bill", Assert.Single(model.Products).Name);
 
-            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -842,7 +842,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Empty(entry.Errors);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task Validation_CustomAttribute_OnCollectionElement_Invalid()
         {
             // Arrange
@@ -870,7 +870,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<Order9>(modelBindingResult.Model);
             Assert.Equal("billybob", Assert.Single(model.Products).Name);
 
-            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(1, modelState.ErrorCount);
             Assert.False(modelState.IsValid);
 
@@ -893,7 +893,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public string Name { get; set; }
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task Validation_StringLengthAttribute_OnProperyOfCollectionElement_Valid()
         {
             // Arrange
@@ -921,7 +921,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<List<Order10>>(modelBindingResult.Model);
             Assert.Equal("bill", Assert.Single(model).Name);
 
-            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -931,7 +931,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Empty(entry.Errors);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task Validation_StringLengthAttribute_OnProperyOfCollectionElement_Invalid()
         {
             // Arrange
@@ -959,7 +959,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<List<Order10>>(modelBindingResult.Model);
             Assert.Equal("billybob", Assert.Single(model).Name);
 
-            Assert.Equal(1, modelState.Count); // This fails due to #2446
+            Assert.Equal(1, modelState.Count);
             Assert.Equal(1, modelState.ErrorCount);
             Assert.False(modelState.IsValid);
 
@@ -972,7 +972,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Null(error.Exception);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446, Empty collection should be created by the collection model binder #1579")]
+        [Fact(Skip = "Empty collection should be created by the collection model binder #1579")]
         public async Task Validation_StringLengthAttribute_OnProperyOfCollectionElement_NoData()
         {
             // Arrange
@@ -1000,7 +1000,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<List<Order10>>(modelBindingResult.Model);
             Assert.Empty(model);
 
-            //Assert.Equal(0, modelState.Count); // This fails due to #2446
+            Assert.Equal(0, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.False(modelState.IsValid);
         }

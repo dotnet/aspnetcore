@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
     // Integration tests targeting the behavior of the KeyValuePairModelBinder with other model binders.
     public class KeyValuePairModelBinderIntegrationTest
     {
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task KeyValuePairModelBinder_BindsKeyValuePairOfSimpleType_WithPrefix_Success()
         {
             // Arrange
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<KeyValuePair<string, int>>(modelBindingResult.Model);
             Assert.Equal(new KeyValuePair<string, int>("key0", 10), model);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("10", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task KeyValuePairModelBinder_BindsKeyValuePairOfSimpleType_WithExplicitPrefix_Success()
         {
             // Arrange
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<KeyValuePair<string, int>>(modelBindingResult.Model);
             Assert.Equal(new KeyValuePair<string, int>("key0", 10), model);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("10", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task KeyValuePairModelBinder_BindsKeyValuePairOfSimpleType_EmptyPrefix_Success()
         {
             // Arrange
@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<KeyValuePair<string, int>>(modelBindingResult.Model);
             Assert.Equal(new KeyValuePair<string, int>("key0", 10), model);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public int Id { get; set; }
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task KeyValuePairModelBinder_BindsKeyValuePairOfComplexType_WithPrefix_Success()
         {
             // Arrange
@@ -205,7 +205,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("key0", model.Key);
             Assert.Equal(10, model.Value.Id);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -215,10 +215,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             entry = Assert.Single(modelState, kvp => kvp.Key == "parameter.Value.Id").Value;
             Assert.Equal("10", entry.Value.AttemptedValue);
-            Assert.Same(model.Value, entry.Value.RawValue);
+            Assert.Equal(model.Value.Id.ToString(), entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task KeyValuePairModelBinder_BindsKeyValuePairOfComplexType_WithExplicitPrefix_Success()
         {
             // Arrange
@@ -251,7 +251,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("key0", model.Key);
             Assert.Equal(10, model.Value.Id);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -264,7 +264,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("10", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Extra ModelState key because of #2446")]
+        [Fact]
         public async Task KeyValuePairModelBinder_BindsKeyValuePairOfComplexType_EmptyPrefix_Success()
         {
             // Arrange
@@ -293,7 +293,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("key0", model.Key);
             Assert.Equal(10, model.Value.Id);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2446
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
