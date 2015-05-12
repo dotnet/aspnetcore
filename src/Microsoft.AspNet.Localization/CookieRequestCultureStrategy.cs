@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Localization
                 return null;
             }
 
-            return RequestCulture.GetRequestCulture(culture, uiCulture);
+            return new RequestCulture(culture, uiCulture);
         }
     }
 }

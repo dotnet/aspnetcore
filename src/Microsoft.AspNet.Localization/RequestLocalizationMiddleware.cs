@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Localization
         public async Task Invoke([NotNull] HttpContext context)
         {
             var requestCulture = _options.DefaultRequestCulture ??
-                RequestCulture.GetRequestCulture(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
+                new RequestCulture(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
 
             IRequestCultureStrategy winningStrategy = null;
 

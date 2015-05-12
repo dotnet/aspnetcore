@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Localization
                 return null;
             }
 
-            var requestCulture = RequestCulture.GetRequestCulture(culture, uiCulture);
+            var requestCulture = new RequestCulture(culture, uiCulture);
 
             requestCulture = ValidateRequestCulture(requestCulture);
 

@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Localization
     public class AcceptLanguageHeaderRequestCultureStrategy : RequestCultureStrategy
     {
         /// <summary>
-        /// The maximum number of values in the Accept-Language header to attempt to create a <see cref="CultureInfo"/>
+        /// The maximum number of values in the Accept-Language header to attempt to create a <see cref="System.Globalization.CultureInfo"/>
         /// from for the current request.
         /// Defaults to <c>3</c>.
         /// </summary>
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Localization
                     var culture = CultureInfoCache.GetCultureInfo(language.Value);
                     if (culture != null)
                     {
-                        var requestCulture = RequestCulture.GetRequestCulture(culture);
+                        var requestCulture = new RequestCulture(culture);
 
                         requestCulture = ValidateRequestCulture(requestCulture);
 
