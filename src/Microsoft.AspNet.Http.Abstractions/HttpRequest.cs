@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Http
         /// Returns true if the owin.RequestScheme is https.
         /// </summary>
         /// <returns>true if this request is using https; otherwise, false.</returns>
-        public abstract bool IsHttps { get; }
+        public abstract bool IsHttps { get; set; }
 
         /// <summary>
         /// Gets or set the Host header. May include the port.
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Http
         /// Gets the query value collection parsed from owin.RequestQueryString.
         /// </summary>
         /// <returns>The query value collection parsed from owin.RequestQueryString.</returns>
-        public abstract IReadableStringCollection Query { get; }
+        public abstract IReadableStringCollection Query { get; set; }
 
         /// <summary>
         /// Gets or set the owin.RequestProtocol.
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Http
         /// Gets the collection of Cookies for this request.
         /// </summary>
         /// <returns>The collection of Cookies for this request.</returns>
-        public abstract IReadableStringCollection Cookies { get; }
+        public abstract IReadableStringCollection Cookies { get; set; }
 
         /// <summary>
         /// Gets or sets the Content-Length header

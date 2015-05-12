@@ -50,19 +50,37 @@ namespace Microsoft.AspNet.Http.Features.Internal
                     values = new string[0];
                 }
 
-                if (_cookiesCollection == null)
+                if (_cookieHeaders == null || !Enumerable.SequenceEqual(_cookieHeaders, values, StringComparer.Ordinal))
                 {
                     _cookieHeaders = values;
-                    _cookiesCollection = new RequestCookiesCollection();
-                    _cookiesCollection.Reparse(values);
-                }
-                else if (!Enumerable.SequenceEqual(_cookieHeaders, values, StringComparer.Ordinal))
-                {
-                    _cookieHeaders = values;
+                    if (_cookiesCollection == null)
+                    {
+                        _cookiesCollection = new RequestCookiesCollection();
+                        _cookies = _cookiesCollection;
+                    }
                     _cookiesCollection.Reparse(values);
                 }
 
-                return _cookiesCollection;
+                return _cookies;
+            }
+            set
+            {
+                _cookies = value;
+                _cookieHeaders = null;
+                _cookiesCollection = _cookies as RequestCookiesCollection;
+                if (_cookies != null && _features != null)
+                {
+                    var headers = new List<string>();
+                    foreach (var pair in _cookies)
+                    {
+                        foreach (var cookieValue in pair.Value)
+                        {
+                            headers.Add(new CookieHeaderValue(pair.Key, cookieValue).ToString());
+                        }
+                    }
+                    _cookieHeaders = headers.ToArray();
+                    _request.Fetch(_features).Headers[HeaderNames.Cookie] = _cookieHeaders;
+                }
             }
         }
     }

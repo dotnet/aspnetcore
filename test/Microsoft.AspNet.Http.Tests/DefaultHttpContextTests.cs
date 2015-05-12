@@ -1,14 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Http.Features.Authentication;
-using Microsoft.AspNet.Http.Features.Authentication.Internal;
+using Microsoft.AspNet.Http.Features.Internal;
 using Xunit;
 
 namespace Microsoft.AspNet.Http.Internal
@@ -44,91 +41,31 @@ namespace Microsoft.AspNet.Http.Internal
         }
 
         [Fact]
-        public async Task AuthenticateWithNoAuthMiddlewareThrows()
+        public void GetItems_DefaultCollectionProvided()
         {
-            var context = CreateContext();
-            Assert.Throws<InvalidOperationException>(() => context.Authentication.Authenticate("Foo"));
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => await context.Authentication.AuthenticateAsync("Foo"));
+            var context = new DefaultHttpContext(new FeatureCollection());
+            Assert.Null(context.GetFeature<IItemsFeature>());
+            var items = context.Items;
+            Assert.NotNull(context.GetFeature<IItemsFeature>());
+            Assert.NotNull(items);
+            Assert.Same(items, context.Items);
+            var item = new object();
+            context.Items["foo"] = item;
+            Assert.Same(item, context.Items["foo"]);
         }
 
         [Fact]
-        public void ChallengeWithNoAuthMiddlewareMayThrow()
+        public void SetItems_NewCollectionUsed()
         {
-            var context = CreateContext();
-            context.Authentication.Challenge();
-            Assert.Equal(401, context.Response.StatusCode);
-
-            Assert.Throws<InvalidOperationException>(() => context.Authentication.Challenge("Foo"));
-        }
-
-        [Fact]
-        public void SignInWithNoAuthMiddlewareThrows()
-        {
-            var context = CreateContext();
-            Assert.Throws<InvalidOperationException>(() => context.Authentication.SignIn("Foo", new ClaimsPrincipal()));
-        }
-
-        [Fact]
-        public void SignOutWithNoAuthMiddlewareMayThrow()
-        {
-            var context = CreateContext();
-            context.Authentication.SignOut();
-
-            Assert.Throws<InvalidOperationException>(() => context.Authentication.SignOut("Foo"));
-        }
-
-        [Fact]
-        public void SignInOutIn()
-        {
-            var context = CreateContext();
-            var handler = new AuthHandler();
-            context.SetFeature<IHttpAuthenticationFeature>(new HttpAuthenticationFeature() { Handler = handler });
-            var user = new ClaimsPrincipal();
-            context.Authentication.SignIn("ignored", user);
-            Assert.True(handler.SignedIn);
-            context.Authentication.SignOut("ignored");
-            Assert.False(handler.SignedIn);
-            context.Authentication.SignIn("ignored", user);
-            Assert.True(handler.SignedIn);
-            context.Authentication.SignOut("ignored", new AuthenticationProperties() { RedirectUri = "~/logout" });
-            Assert.False(handler.SignedIn);
-        }
-
-        private class AuthHandler : IAuthenticationHandler
-        {
-            public bool SignedIn { get; set; }
-
-            public void Authenticate(AuthenticateContext context)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task AuthenticateAsync(AuthenticateContext context)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Challenge(ChallengeContext context)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void GetDescriptions(DescribeSchemesContext context)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void SignIn(SignInContext context)
-            {
-                SignedIn = true;
-                context.Accept();
-            }
-
-            public void SignOut(SignOutContext context)
-            {
-                SignedIn = false;
-                context.Accept();
-            }
+            var context = new DefaultHttpContext(new FeatureCollection());
+            Assert.Null(context.GetFeature<IItemsFeature>());
+            var items = new Dictionary<object, object>();
+            context.Items = items;
+            Assert.NotNull(context.GetFeature<IItemsFeature>());
+            Assert.Same(items, context.Items);
+            var item = new object();
+            items["foo"] = item;
+            Assert.Same(item, context.Items["foo"]);
         }
 
         private HttpContext CreateContext()

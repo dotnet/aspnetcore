@@ -5,6 +5,6 @@ namespace Microsoft.AspNet.Http.Features.Internal
 {
     public interface IRequestCookiesFeature
     {
-        IReadableStringCollection Cookies { get; }
+        IReadableStringCollection Cookies { get; set; }
     }
 }

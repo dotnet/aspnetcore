@@ -101,6 +101,7 @@ namespace Microsoft.AspNet.Http.Internal
         public override bool IsHttps
         {
             get { return string.Equals(Constants.Https, Scheme, StringComparison.OrdinalIgnoreCase); }
+            set { Scheme = value ? Constants.Https : Constants.Http; }
         }
 
         public override HostString Host
@@ -112,6 +113,7 @@ namespace Microsoft.AspNet.Http.Internal
         public override IReadableStringCollection Query
         {
             get { return QueryFeature.Query; }
+            set { QueryFeature.Query = value; }
         }
 
         public override string Protocol
@@ -128,6 +130,7 @@ namespace Microsoft.AspNet.Http.Internal
         public override IReadableStringCollection Cookies
         {
             get { return RequestCookiesFeature.Cookies; }
+            set { RequestCookiesFeature.Cookies = value; }
         }
 
         public override string ContentType

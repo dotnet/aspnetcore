@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Http.Features
 {
     public interface IHttpRequestLifetimeFeature
     {
-        CancellationToken RequestAborted { get; }
+        CancellationToken RequestAborted { get; set; }
         void Abort();
     }
 }

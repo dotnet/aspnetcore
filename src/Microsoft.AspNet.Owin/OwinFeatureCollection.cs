@@ -247,6 +247,7 @@ namespace Microsoft.AspNet.Owin
         CancellationToken IHttpRequestLifetimeFeature.RequestAborted
         {
             get { return Prop<CancellationToken>(OwinConstants.CallCancelled); }
+            set { Prop(OwinConstants.CallCancelled, value); }
         }
 
         void IHttpRequestLifetimeFeature.Abort()

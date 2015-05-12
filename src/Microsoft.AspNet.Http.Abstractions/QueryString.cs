@@ -111,6 +111,7 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <param name="name">The un-encoded parameter name</param>
         /// <param name="value">The un-encoded parameter value</param>
+        /// <returns>The resulting QueryString</returns>
         public static QueryString Create(string name, string value)
         {
             return new QueryString("?" + UrlEncoder.Default.UrlEncode(name) + '=' + UrlEncoder.Default.UrlEncode(value));
@@ -120,7 +121,7 @@ namespace Microsoft.AspNet.Http
         /// Creates a query string composed from the given name value pairs.
         /// </summary>
         /// <param name="parameters"></param>
-        /// <returns></returns>
+        /// <returns>The resulting QueryString</returns>
         public static QueryString Create(IEnumerable<KeyValuePair<string, string>> parameters)
         {
             var builder = new StringBuilder();
@@ -132,6 +133,30 @@ namespace Microsoft.AspNet.Http
                 builder.Append(UrlEncoder.Default.UrlEncode(pair.Key));
                 builder.Append("=");
                 builder.Append(UrlEncoder.Default.UrlEncode(pair.Value));
+            }
+
+            return new QueryString(builder.ToString());
+        }
+
+        /// <summary>
+        /// Creates a query string composed from the given name value pairs.
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// <returns>The resulting QueryString</returns>
+        public static QueryString Create(IEnumerable<KeyValuePair<string, string[]>> parameters)
+        {
+            var builder = new StringBuilder();
+            bool first = true;
+            foreach (var pair in parameters)
+            {
+                foreach (var value in pair.Value)
+                {
+                    builder.Append(first ? "?" : "&");
+                    first = false;
+                    builder.Append(UrlEncoder.Default.UrlEncode(pair.Key));
+                    builder.Append("=");
+                    builder.Append(UrlEncoder.Default.UrlEncode(value));
+                }
             }
 
             return new QueryString(builder.ToString());

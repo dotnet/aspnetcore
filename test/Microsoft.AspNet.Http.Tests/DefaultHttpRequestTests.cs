@@ -115,6 +115,78 @@ namespace Microsoft.AspNet.Http.Internal
             Assert.Equal(expected, headers["Host"][0]);
         }
 
+        [Fact]
+        public void IsHttps_CorrectlyReflectsScheme()
+        {
+            var request = new DefaultHttpContext().Request;
+            Assert.Equal(string.Empty, request.Scheme);
+            Assert.False(request.IsHttps);
+            request.IsHttps = true;
+            Assert.Equal("https", request.Scheme);
+            request.IsHttps = false;
+            Assert.Equal("http", request.Scheme);
+            request.Scheme = "ftp";
+            Assert.False(request.IsHttps);
+            request.Scheme = "HTTPS";
+            Assert.True(request.IsHttps);
+        }
+
+        [Fact]
+        public void Query_GetAndSet()
+        {
+            var request = new DefaultHttpContext().Request;
+            var requestFeature = request.HttpContext.GetFeature<IHttpRequestFeature>();
+            Assert.Equal(string.Empty, requestFeature.QueryString);
+            Assert.Equal(QueryString.Empty, request.QueryString);
+            var query0 = request.Query;
+            Assert.NotNull(query0);
+            Assert.Equal(0, query0.Count);
+
+            requestFeature.QueryString = "?name0=value0&name1=value1";
+            var query1 = request.Query;
+            Assert.NotSame(query0, query1);
+            Assert.Equal(2, query1.Count);
+            Assert.Equal("value0", query1["name0"]);
+            Assert.Equal("value1", query1["name1"]);
+
+            var query2 = new ReadableStringCollection(new Dictionary<string, string[]>()
+            {
+                { "name2", new[] { "value2" } }
+            });
+
+            request.Query = query2;
+            Assert.Same(query2, request.Query);
+            Assert.Equal("?name2=value2", requestFeature.QueryString);
+            Assert.Equal(new QueryString("?name2=value2"), request.QueryString);
+        }
+
+        [Fact]
+        public void Cookies_GetAndSet()
+        {
+            var request = new DefaultHttpContext().Request;
+            var cookieHeaders = request.Headers.GetValues("Cookie");
+            Assert.Null(cookieHeaders);
+            var cookies0 = request.Cookies;
+            Assert.Equal(0, cookies0.Count);
+
+            request.Headers.SetValues("Cookie", new[] { "name0=value0", "name1=value1" });
+            var cookies1 = request.Cookies;
+            Assert.Same(cookies0, cookies1);
+            Assert.Equal(2, cookies1.Count);
+            Assert.Equal("value0", cookies1["name0"]);
+            Assert.Equal("value1", cookies1["name1"]);
+
+            var cookies2 = new ReadableStringCollection(new Dictionary<string, string[]>()
+            {
+                { "name2", new[] { "value2" } }
+            });
+            request.Cookies = cookies2;
+            Assert.Same(cookies2, request.Cookies);
+            Assert.Equal("value2", request.Cookies["name2"]);
+            cookieHeaders = request.Headers.GetValues("Cookie");
+            Assert.Equal(new[] { "name2=value2" }, cookieHeaders);
+        }
+
         private static HttpRequest CreateRequest(IDictionary<string, string[]> headers)
         {
             var context = new DefaultHttpContext();

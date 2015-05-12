@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Http.Internal
 
         private IHttpRequestLifetimeFeature LifetimeFeature
         {
-            get { return _lifetime.Fetch(_features); }
+            get { return _lifetime.Fetch(_features) ?? _lifetime.Update(_features, new HttpRequestLifetimeFeature()); }
         }
 
         private ISessionFeature SessionFeature
@@ -103,6 +103,7 @@ namespace Microsoft.AspNet.Http.Internal
         public override IDictionary<object, object> Items
         {
             get { return ItemsFeature.Items; }
+            set { ItemsFeature.Items = value; }
         }
 
         public override IServiceProvider ApplicationServices
@@ -117,19 +118,10 @@ namespace Microsoft.AspNet.Http.Internal
             set { ServiceProvidersFeature.RequestServices = value; }
         }
 
-        public int Revision { get { return _features.Revision; } }
-
         public override CancellationToken RequestAborted
         {
-            get
-            {
-                var lifetime = LifetimeFeature;
-                if (lifetime != null)
-                {
-                    return lifetime.RequestAborted;
-                }
-                return CancellationToken.None;
-            }
+            get { return LifetimeFeature.RequestAborted; }
+            set { LifetimeFeature.RequestAborted = value; }
         }
 
         public override ISessionCollection Session
@@ -167,11 +159,7 @@ namespace Microsoft.AspNet.Http.Internal
 
         public override void Abort()
         {
-            var lifetime = LifetimeFeature;
-            if (lifetime != null)
-            {
-                lifetime.Abort();
-            }
+            LifetimeFeature.Abort();
         }
 
         public override void Dispose()

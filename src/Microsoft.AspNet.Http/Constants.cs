@@ -5,7 +5,8 @@ namespace Microsoft.AspNet.Http.Internal
 {
     internal static class Constants
     {
-        internal const string Https = "HTTPS";
+        internal const string Http = "http";
+        internal const string Https = "https";
 
         internal static class BuilderProperties
         {

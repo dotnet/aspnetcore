@@ -7,6 +7,6 @@ namespace Microsoft.AspNet.Http.Features.Internal
 {
     public interface IItemsFeature
     {
-        IDictionary<object, object> Items { get; }
+        IDictionary<object, object> Items { get; set; }
     }
 }

@@ -17,21 +17,21 @@ namespace Microsoft.AspNet.Http
 
         public abstract ConnectionInfo Connection { get; }
 
+        public abstract WebSocketManager WebSockets { get; }
+
         public abstract AuthenticationManager Authentication { get; }
 
         public abstract ClaimsPrincipal User { get; set; }
 
-        public abstract IDictionary<object, object> Items { get; }
+        public abstract IDictionary<object, object> Items { get; set; }
 
         public abstract IServiceProvider ApplicationServices { get; set; }
 
         public abstract IServiceProvider RequestServices { get; set; }
 
-        public abstract CancellationToken RequestAborted { get; }
+        public abstract CancellationToken RequestAborted { get; set; }
 
         public abstract ISessionCollection Session { get; }
-
-        public abstract WebSocketManager WebSockets { get; }
 
         public abstract void Abort();
 

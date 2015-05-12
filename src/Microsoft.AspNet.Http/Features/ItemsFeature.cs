@@ -13,6 +13,6 @@ namespace Microsoft.AspNet.Http.Features.Internal
             Items = new ItemsDictionary();
         }
 
-        public IDictionary<object, object> Items { get; private set; }
+        public IDictionary<object, object> Items { get; set; }
     }
 }
