@@ -282,6 +282,10 @@
                 <term>Bengali</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Localization\Internal\CultureInfoList.cs">
+                <term>BS</term>
+                <Justification>Culture info</Justification>
+            </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs">
                 <term>butt</term>
                 <Justification>not our code, jquery scripts embedded in .cs file</Justification>
@@ -303,6 +307,10 @@
             <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs">
                 <term>FU</term>
                 <Justification>not our code, jquery scripts embedded in .cs file</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Localization\Internal\CultureInfoList.cs">
+                <term>FY</term>
+                <Justification>Culture info</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\NuGet.Packaging\PackageExtraction\PackagePathHelper.cs">
                 <term>hack</term>
@@ -360,9 +368,10 @@
                 <term>Tibetan</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs">
+            <SrcExclusions Include="$(PoliCheckPath)\**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs;
+                                    $(PoliCheckPath)\**\src\Microsoft.AspNet.Localization\Internal\CultureInfoList.cs">
                 <term>UK</term>
-                <Justification>text appears in base64 encoded string of an image</Justification>
+                <Justification>text appears in base64 encoded string of an image; Culture info</Justification>
             </SrcExclusions>
         </ItemGroup>
 
