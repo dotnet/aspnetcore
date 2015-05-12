@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             controller.ActionConstraints.Add(new HttpMethodConstraint(new string[] { "GET" }));
             controller.Application = new ApplicationModel();
             controller.ControllerName = "cool";
-            controller.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().Build()));
+            controller.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireClaim("whatever").Build()));
             controller.RouteConstraints.Add(new AreaAttribute("Admin"));
             controller.Properties.Add(new KeyValuePair<object, object>("test key", "test value"));
             controller.ControllerProperties.Add(

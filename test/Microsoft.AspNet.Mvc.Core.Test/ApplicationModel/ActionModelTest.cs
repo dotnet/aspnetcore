@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
             action.Controller = new ControllerModel(typeof(TestController).GetTypeInfo(),
                                                     new List<object>());
-            action.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().Build()));
+            action.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireClaim("whatever").Build()));
             action.HttpMethods.Add("GET");
             action.RouteConstraints.Add(new AreaAttribute("Admin"));
             action.Properties.Add(new KeyValuePair<object, object>("test key", "test value"));

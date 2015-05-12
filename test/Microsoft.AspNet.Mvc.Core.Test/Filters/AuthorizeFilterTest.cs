@@ -258,20 +258,6 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.NotNull(authorizationContext.Result);
         }
 
-        [Fact]
-        public async Task Invoke_EmptyPolicyWillFail()
-        {
-            // Arrange
-            var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().Build());
-            var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization());
-
-            // Act
-            await authorizeFilter.OnAuthorizationAsync(authorizationContext);
-
-            // Assert
-            Assert.NotNull(authorizationContext.Result);
-        }
-
         private AuthorizationContext GetAuthorizationContext(Action<ServiceCollection> registerServices, bool anonymous = false)
         {
             var basicPrincipal = new ClaimsPrincipal(
