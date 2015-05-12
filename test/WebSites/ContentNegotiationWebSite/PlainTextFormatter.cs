@@ -33,7 +33,7 @@ namespace ContentNegotiationWebSite
 
         public override async Task WriteResponseBodyAsync(OutputFormatterContext context)
         {
-            var response = context.ActionContext.HttpContext.Response;
+            var response = context.HttpContext.Response;
             response.ContentType = "text/plain;charset=utf-8";
             await response.WriteAsync(context.Object as string);
         }

@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc
         public override Task<object> ReadRequestBodyAsync([NotNull] InputFormatterContext context)
         {
             var type = context.ModelType;
-            var request = context.ActionContext.HttpContext.Request;
+            var request = context.HttpContext.Request;
             MediaTypeHeaderValue requestContentType = null;
             MediaTypeHeaderValue.TryParse(request.ContentType, out requestContentType);
 
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc
                 errorHandler = (sender, e) =>
                 {
                     var exception = e.ErrorContext.Error;
-                    context.ActionContext.ModelState.TryAddModelError(e.ErrorContext.Path, e.ErrorContext.Error);
+                    context.ModelState.TryAddModelError(e.ErrorContext.Path, e.ErrorContext.Error);
 
                     // Error must always be marked as handled
                     // Failure to do so can cause the exception to be rethrown at every recursive level and

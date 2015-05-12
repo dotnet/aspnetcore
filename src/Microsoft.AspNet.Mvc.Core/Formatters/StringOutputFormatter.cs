@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc
                 return;
             }
 
-            var response = context.ActionContext.HttpContext.Response;
+            var response = context.HttpContext.Response;
 
             await response.WriteAsync(valueAsString, context.SelectedEncoding);
         }

@@ -62,11 +62,13 @@ namespace Microsoft.AspNet.Mvc.Core.Test.Formatters
             await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext);
 
             // Assert
-            Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
-            outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
-            Assert.Equal(expectedOutput,
-                new StreamReader(outputFormatterContext.ActionContext.HttpContext.Response.Body, Encoding.UTF8)
-                        .ReadToEnd());
+            var body = outputFormatterContext.HttpContext.Response.Body;
+
+            Assert.NotNull(body);
+            body.Position = 0;
+
+            var content = new StreamReader(body, Encoding.UTF8).ReadToEnd();
+            Assert.Equal(expectedOutput, content);
         }
 
         [Fact]
@@ -93,11 +95,13 @@ namespace Microsoft.AspNet.Mvc.Core.Test.Formatters
             await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext);
 
             // Assert
-            Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
-            outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
+            var body = outputFormatterContext.HttpContext.Response.Body;
 
-            var streamReader = new StreamReader(outputFormatterContext.ActionContext.HttpContext.Response.Body, Encoding.UTF8);
-            Assert.Equal(expectedOutput, streamReader.ReadToEnd());
+            Assert.NotNull(body);
+            body.Position = 0;
+
+            var content = new StreamReader(body, Encoding.UTF8).ReadToEnd();
+            Assert.Equal(expectedOutput, content);
         }
 
         [Fact]
@@ -155,12 +159,14 @@ namespace Microsoft.AspNet.Mvc.Core.Test.Formatters
             var encoding = CreateOrGetSupportedEncoding(formatter, encodingAsString, isDefaultEncoding);
             var expectedData = encoding.GetBytes(formattedContent);
 
-            var memStream = new MemoryStream();
+
+            var body = new MemoryStream();
+            var actionContext = GetActionContext(MediaTypeHeaderValue.Parse(mediaType), body);
             var outputFormatterContext = new OutputFormatterContext
             {
                 Object = content,
                 DeclaredType = typeof(string),
-                ActionContext = GetActionContext(MediaTypeHeaderValue.Parse(mediaType), memStream),
+                HttpContext = actionContext.HttpContext,
                 SelectedEncoding = encoding
             };
 
@@ -168,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.Formatters
             await formatter.WriteResponseBodyAsync(outputFormatterContext);
 
             // Assert
-            var actualData = memStream.ToArray();
+            var actualData = body.ToArray();
             Assert.Equal(expectedData, actualData);
         }
 
@@ -200,11 +206,12 @@ namespace Microsoft.AspNet.Mvc.Core.Test.Formatters
         {
             var mediaTypeHeaderValue = MediaTypeHeaderValue.Parse(contentType);
 
+            var actionContext = GetActionContext(mediaTypeHeaderValue, responseStream);
             return new OutputFormatterContext
             {
                 Object = outputValue,
                 DeclaredType = outputType,
-                ActionContext = GetActionContext(mediaTypeHeaderValue, responseStream),
+                HttpContext = actionContext.HttpContext,
                 SelectedEncoding = Encoding.GetEncoding(mediaTypeHeaderValue.Charset)
             };
         }

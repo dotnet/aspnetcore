@@ -139,12 +139,12 @@ namespace Microsoft.AspNet.Mvc.Xml
         /// <inheritdoc />
         public override Task WriteResponseBodyAsync([NotNull] OutputFormatterContext context)
         {
-            var response = context.ActionContext.HttpContext.Response;
+            var response = context.HttpContext.Response;
 
             var tempWriterSettings = WriterSettings.Clone();
             tempWriterSettings.Encoding = context.SelectedEncoding;
 
-            var innerStream = context.ActionContext.HttpContext.Response.Body;
+            var innerStream = context.HttpContext.Response.Body;
 
             using (var outputStream = new NonDisposableStream(innerStream))
             using (var xmlWriter = CreateXmlWriter(outputStream, tempWriterSettings))

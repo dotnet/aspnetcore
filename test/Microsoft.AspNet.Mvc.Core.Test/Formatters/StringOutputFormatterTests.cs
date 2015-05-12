@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 Object = null,
                 DeclaredType = typeof(string),
-                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor()),
+                HttpContext = mockHttpContext.Object,
                 SelectedEncoding = encoding
             };
 

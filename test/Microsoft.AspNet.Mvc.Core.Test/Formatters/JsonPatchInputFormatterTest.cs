@@ -23,8 +23,9 @@ namespace Microsoft.AspNet.Mvc
             var content = "[{\"op\":\"add\",\"path\":\"Customer/Name\",\"value\":\"John\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
-            var actionContext = GetActionContext(contentBytes);
-            var context = new InputFormatterContext(actionContext, typeof(JsonPatchDocument<Customer>));
+            var modelState = new ModelStateDictionary();
+            var httpContext = GetHttpContext(contentBytes);
+            var context = new InputFormatterContext(httpContext, modelState, typeof(JsonPatchDocument<Customer>));
 
             // Act
             var model = await formatter.ReadAsync(context);
@@ -45,8 +46,9 @@ namespace Microsoft.AspNet.Mvc
                 "{\"op\": \"remove\", \"path\" : \"Customer/Name\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
-            var actionContext = GetActionContext(contentBytes);
-            var context = new InputFormatterContext(actionContext, typeof(JsonPatchDocument<Customer>));
+            var modelState = new ModelStateDictionary();
+            var httpContext = GetHttpContext(contentBytes);
+            var context = new InputFormatterContext(httpContext, modelState, typeof(JsonPatchDocument<Customer>));
 
             // Act
             var model = await formatter.ReadAsync(context);
@@ -72,8 +74,12 @@ namespace Microsoft.AspNet.Mvc
             var content = "[{\"op\": \"add\", \"path\" : \"Customer/Name\", \"value\":\"John\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
-            var actionContext = GetActionContext(contentBytes, contentType: requestContentType);
-            var formatterContext = new InputFormatterContext(actionContext, typeof(JsonPatchDocument<Customer>));
+            var modelState = new ModelStateDictionary();
+            var httpContext = GetHttpContext(contentBytes, contentType: requestContentType);
+            var formatterContext = new InputFormatterContext(
+                httpContext,
+                modelState,
+                typeof(JsonPatchDocument<Customer>));
 
             // Act
             var result = formatter.CanRead(formatterContext);
@@ -92,8 +98,9 @@ namespace Microsoft.AspNet.Mvc
             var content = "[{\"op\": \"add\", \"path\" : \"Customer/Name\", \"value\":\"John\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
-            var actionContext = GetActionContext(contentBytes, contentType: "application/json-patch+json");
-            var formatterContext = new InputFormatterContext(actionContext, modelType);
+            var modelState = new ModelStateDictionary();
+            var httpContext = GetHttpContext(contentBytes, contentType: "application/json-patch+json");
+            var formatterContext = new InputFormatterContext(httpContext, modelState, modelType);
 
             // Act
             var result = formatter.CanRead(formatterContext);
@@ -113,25 +120,20 @@ namespace Microsoft.AspNet.Mvc
             var content = "[{\"op\": \"add\", \"path\" : \"Customer/Name\", \"value\":\"John\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
-            var actionContext = GetActionContext(contentBytes, contentType: "application/json-patch+json");
-            var context = new InputFormatterContext(actionContext, typeof(Customer));
+            var modelState = new ModelStateDictionary();
+            var httpContext = GetHttpContext(contentBytes, contentType: "application/json-patch+json");
+
+            var context = new InputFormatterContext(httpContext, modelState, typeof(Customer));
 
             // Act
             var model = await formatter.ReadAsync(context);
 
             // Assert
-            Assert.Contains(exceptionMessage, actionContext.ModelState[""].Errors[0].Exception.Message);
+            Assert.Contains(exceptionMessage, modelState[""].Errors[0].Exception.Message);
         }
 
-        private static ActionContext GetActionContext(byte[] contentBytes,
-            string contentType = "application/json-patch+json")
-        {
-            return new ActionContext(GetHttpContext(contentBytes, contentType),
-                                     new AspNet.Routing.RouteData(),
-                                     new ActionDescriptor());
-        }
-
-        private static HttpContext GetHttpContext(byte[] contentBytes,
+        private static HttpContext GetHttpContext(
+            byte[] contentBytes,
             string contentType = "application/json-patch+json")
         {
             var request = new Mock<HttpRequest>();

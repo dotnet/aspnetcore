@@ -3,6 +3,7 @@
 
 using System;
 using System.Text;
+using Microsoft.AspNet.Http;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
@@ -24,9 +25,9 @@ namespace Microsoft.AspNet.Mvc
         public Type DeclaredType { get; set; }
 
         /// <summary>
-        /// Action context associated with the current call.
+        /// Gets or sets the <see cref="HttpContext"/> context associated with the current operation.
         /// </summary>
-        public ActionContext ActionContext { get; set; }
+        public HttpContext HttpContext { get; set; }
 
         /// <summary>
         /// The encoding which is chosen by the selected formatter.

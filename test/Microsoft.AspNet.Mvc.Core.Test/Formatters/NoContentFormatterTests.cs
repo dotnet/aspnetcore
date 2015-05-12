@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.Test
             {
                 Object = value,
                 DeclaredType = typeToUse,
-                ActionContext = null,
+                HttpContext = null,
             };
             var contetType = useNonNullContentType ? MediaTypeHeaderValue.Parse("text/plain") : null;
             var formatter = new HttpNoContentOutputFormatter();
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.Test
             {
                 Object = "Something non null.",
                 DeclaredType = declaredType,
-                ActionContext = null,
+                HttpContext = null,
             };
             var contetType = MediaTypeHeaderValue.Parse("text/plain");
             var formatter = new HttpNoContentOutputFormatter();
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Mvc.Test
             {
                 Object = value,
                 DeclaredType = typeof(string),
-                ActionContext = null,
+                HttpContext = null,
             };
 
             var contetType = MediaTypeHeaderValue.Parse("text/plain");
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var formatterContext = new OutputFormatterContext()
             {
                 Object = null,
-                ActionContext = new ActionContext(defaultHttpContext, new RouteData(), new ActionDescriptor())
+                HttpContext = defaultHttpContext,
             };
 
             var formatter = new HttpNoContentOutputFormatter();
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var formatterContext = new OutputFormatterContext()
             {
                 Object = null,
-                ActionContext = new ActionContext(defaultHttpContext, new RouteData(), new ActionDescriptor()),
+                HttpContext = defaultHttpContext,
                 StatusCode = StatusCodes.Status201Created
             };
 

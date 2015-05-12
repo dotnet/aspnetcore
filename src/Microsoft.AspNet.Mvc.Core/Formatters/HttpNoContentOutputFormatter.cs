@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc
 
         public Task WriteAsync(OutputFormatterContext context)
         {
-            var response = context.ActionContext.HttpContext.Response;
+            var response = context.HttpContext.Response;
             response.ContentLength = 0;
             response.StatusCode = context.StatusCode ?? StatusCodes.Status204NoContent;
             return Task.FromResult(true);

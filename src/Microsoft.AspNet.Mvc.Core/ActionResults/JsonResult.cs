@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Mvc
 
             var formatterContext = new OutputFormatterContext()
             {
-                ActionContext = context,
+                HttpContext = context.HttpContext,
                 DeclaredType = objectResult.DeclaredType,
                 Object = Value,
             };
@@ -125,7 +125,6 @@ namespace Microsoft.AspNet.Mvc
             {
                 // If no formatter was provided, then run Conneg with the formatters configured in options.
                 var formatters = formatterContext
-                    .ActionContext
                     .HttpContext
                     .RequestServices
                     .GetRequiredService<IOptions<MvcOptions>>()
@@ -140,7 +139,6 @@ namespace Microsoft.AspNet.Mvc
                     // If the available user-configured formatters can't write this type, then fall back to the
                     // 'global' one.
                     formatter = formatterContext
-                        .ActionContext
                         .HttpContext
                         .RequestServices
                         .GetRequiredService<JsonOutputFormatter>();

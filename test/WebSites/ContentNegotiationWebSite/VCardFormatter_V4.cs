@@ -42,7 +42,7 @@ namespace ContentNegotiationWebSite
             builder.AppendLine();
             builder.AppendLine("END:VCARD");
 
-            var responseStream = new NonDisposableStream(context.ActionContext.HttpContext.Response.Body);
+            var responseStream = new NonDisposableStream(context.HttpContext.Response.Body);
             using (var writer = new StreamWriter(responseStream, context.SelectedEncoding, bufferSize: 1024))
             {
                 await writer.WriteAsync(builder.ToString());

@@ -357,7 +357,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
 
             var context = new OutputFormatterContext()
             {
-                ActionContext = actionContext,
+                HttpContext = actionContext.HttpContext,
                 Object = input,
                 DeclaredType = typeof(string)
             };
@@ -530,7 +530,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
                                                       new ActionDescriptor());
             var formatterContext = new OutputFormatterContext()
             {
-                ActionContext = tempActionContext,
+                HttpContext = tempActionContext.HttpContext,
                 Object = nonStringValue,
                 DeclaredType = nonStringValue.GetType()
             };

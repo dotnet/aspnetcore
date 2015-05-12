@@ -56,8 +56,10 @@ namespace Microsoft.AspNet.Mvc.Xml
             var formatter = new XmlSerializerInputFormatter();
             var contentBytes = Encoding.UTF8.GetBytes("content");
 
-            var actionContext = GetActionContext(contentBytes, contentType: requestContentType);
-            var formatterContext = new InputFormatterContext(actionContext, typeof(string));
+            var modelState = new ModelStateDictionary();
+            var httpContext = GetHttpContext(contentBytes, contentType: requestContentType);
+
+            var formatterContext = new InputFormatterContext(httpContext, modelState, typeof(string));
 
             // Act
             var result = formatter.CanRead(formatterContext);
@@ -292,7 +294,7 @@ namespace Microsoft.AspNet.Mvc.Xml
 
             // Assert
             Assert.NotNull(model);
-            Assert.True(context.ActionContext.HttpContext.Request.Body.CanRead);
+            Assert.True(context.HttpContext.Request.Body.CanRead);
         }
 
         [Fact]
@@ -337,8 +339,11 @@ namespace Microsoft.AspNet.Mvc.Xml
                 "<DummyClass><SampleInt>1000</SampleInt></DummyClass>");
             
             var formatter = new XmlSerializerInputFormatter();
-            var actionContext = GetActionContext(inputBytes, contentType: "application/xml; charset=utf-16");
-            var context = new InputFormatterContext(actionContext, typeof(TestLevelOne));
+
+            var modelState = new ModelStateDictionary();
+            var httpContext = GetHttpContext(inputBytes, contentType: "application/xml; charset=utf-16");
+
+            var context = new InputFormatterContext(httpContext, modelState, typeof(TestLevelOne));
 
             // Act and Assert
             var ex = await Assert.ThrowsAsync(expectedException, () => formatter.ReadAsync(context));
@@ -392,8 +397,9 @@ namespace Microsoft.AspNet.Mvc.Xml
             var formatter = new XmlSerializerInputFormatter();
             var contentBytes = Encodings.UTF16EncodingLittleEndian.GetBytes(input);
 
-            var actionContext = GetActionContext(contentBytes, contentType: "application/xml; charset=utf-16");
-            var context = new InputFormatterContext(actionContext, typeof(TestLevelOne));
+            var modelState = new ModelStateDictionary();
+            var httpContext = GetHttpContext(contentBytes, contentType: "application/xml; charset=utf-16");
+            var context = new InputFormatterContext(httpContext, modelState, typeof(TestLevelOne));
 
             // Act
             var model = await formatter.ReadAsync(context);
@@ -410,21 +416,13 @@ namespace Microsoft.AspNet.Mvc.Xml
 
         private InputFormatterContext GetInputFormatterContext(byte[] contentBytes, Type modelType)
         {
-            var actionContext = GetActionContext(contentBytes);
-            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(modelType);
-            return new InputFormatterContext(actionContext, metadata.ModelType);
+            var httpContext = GetHttpContext(contentBytes);
+            return new InputFormatterContext(httpContext, new ModelStateDictionary(), modelType);
         }
 
-        private static ActionContext GetActionContext(byte[] contentBytes,
-                                                      string contentType = "application/xml")
-        {
-            return new ActionContext(GetHttpContext(contentBytes, contentType),
-                                     new AspNet.Routing.RouteData(),
-                                     new ActionDescriptor());
-        }
-
-        private static HttpContext GetHttpContext(byte[] contentBytes,
-                                                  string contentType = "application/xml")
+        private static HttpContext GetHttpContext(
+            byte[] contentBytes,
+            string contentType = "application/xml")
         {
             var request = new Mock<HttpRequest>();
             var headers = new Mock<IHeaderDictionary>();

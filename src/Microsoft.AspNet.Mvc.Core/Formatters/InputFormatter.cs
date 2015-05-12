@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc
                 return false;
             }
 
-            var contentType = context.ActionContext.HttpContext.Request.ContentType;
+            var contentType = context.HttpContext.Request.ContentType;
             MediaTypeHeaderValue requestContentType;
             if (!MediaTypeHeaderValue.TryParse(contentType, out requestContentType))
             {
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         public virtual async Task<object> ReadAsync(InputFormatterContext context)
         {
-            var request = context.ActionContext.HttpContext.Request;
+            var request = context.HttpContext.Request;
             if (request.ContentLength == 0)
             {
                 return GetDefaultValueForType(context.ModelType);

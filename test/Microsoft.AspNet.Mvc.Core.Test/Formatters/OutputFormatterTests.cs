@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.Test
             httpRequest.Headers["Accept-Charset"] = acceptCharsetHeaders;
             httpRequest.ContentType = "application/acceptCharset;charset=" + requestEncoding;
             mockHttpContext.SetupGet(o => o.Request).Returns(httpRequest);
-            var actionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor());
+
             var formatter = new TestOutputFormatter();
             foreach (string supportedEncoding in supportedEncodings)
             {
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var formatterContext = new OutputFormatterContext()
             {
                 Object = "someValue",
-                ActionContext = actionContext,
+                HttpContext = mockHttpContext.Object,
                 DeclaredType = typeof(string)
             };
 
@@ -85,8 +85,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var mockHttpContext = new Mock<HttpContext>();
             var httpRequest = new DefaultHttpContext().Request;
             mockHttpContext.SetupGet(o => o.Request).Returns(httpRequest);
-            var actionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor());
-            formatterContext.ActionContext = actionContext;
+            formatterContext.HttpContext = mockHttpContext.Object;
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(
@@ -108,8 +107,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var httpRequest = new DefaultHttpContext().Request;
             mockHttpContext.SetupGet(o => o.Request).Returns(httpRequest);
             mockHttpContext.SetupProperty(o => o.Response.ContentType);
-            var actionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor());
-            formatterContext.ActionContext = actionContext;
+            formatterContext.HttpContext = mockHttpContext.Object;
 
             // Act
             testFormatter.WriteResponseHeaders(formatterContext);
@@ -130,10 +128,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var mediaType = new MediaTypeHeaderValue("image/png");
             formatter.SupportedMediaTypes.Add(mediaType);
             var formatterContext = new OutputFormatterContext();
-            formatterContext.ActionContext = new ActionContext(
-                                    new DefaultHttpContext(), 
-                                    new RouteData(), 
-                                    new ActionDescriptor());
+            formatterContext.HttpContext = new DefaultHttpContext();
 
             // Act
             await formatter.WriteAsync(formatterContext);

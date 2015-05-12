@@ -3,7 +3,6 @@
 
 using System;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.Framework.DependencyInjection;
@@ -26,14 +25,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        protected async override Task<ModelBindingResult> BindModelCoreAsync([NotNull] ModelBindingContext bindingContext)
+        protected async override Task<ModelBindingResult> BindModelCoreAsync(
+            [NotNull] ModelBindingContext bindingContext)
         {
             var requestServices = bindingContext.OperationBindingContext.HttpContext.RequestServices;
 
-            var actionContext = requestServices.GetRequiredService<IScopedInstance<ActionContext>>().Value;
-            var formatters = requestServices.GetRequiredService<IScopedInstance<ActionBindingContext>>().Value.InputFormatters;
+            var httpContext = bindingContext.OperationBindingContext.HttpContext;
+            var formatters = requestServices
+                .GetRequiredService<IScopedInstance<ActionBindingContext>>().Value.InputFormatters;
 
-            var formatterContext = new InputFormatterContext(actionContext, bindingContext.ModelType);
+            var formatterContext = new InputFormatterContext(
+                httpContext, 
+                bindingContext.ModelState, 
+                bindingContext.ModelType);
             var formatter = formatters.FirstOrDefault(f => f.CanRead(formatterContext));
 
             if (formatter == null)

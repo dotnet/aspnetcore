@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             var tempWriterSettings = WriterSettings.Clone();
             tempWriterSettings.Encoding = context.SelectedEncoding;
 
-            var innerStream = context.ActionContext.HttpContext.Response.Body;
+            var innerStream = context.HttpContext.Response.Body;
 
             using (var outputStream = new NonDisposableStream(innerStream))
             using (var xmlWriter = CreateXmlWriter(outputStream, tempWriterSettings))

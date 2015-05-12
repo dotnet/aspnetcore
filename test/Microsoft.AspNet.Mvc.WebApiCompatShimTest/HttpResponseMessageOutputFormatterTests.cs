@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShimTest
             {
                 Object = outputValue,
                 DeclaredType = outputType,
-                ActionContext = new ActionContext(httpContext, routeData: null, actionDescriptor: null)
+                HttpContext = httpContext,
             };
         }
     }

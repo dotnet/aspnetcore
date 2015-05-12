@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc
             var formatterContext = new OutputFormatterContext()
             {
                 DeclaredType = DeclaredType,
-                ActionContext = context,
+                HttpContext = context.HttpContext,
                 Object = Value,
                 StatusCode = StatusCode
             };
@@ -83,8 +83,7 @@ namespace Microsoft.AspNet.Mvc
             OutputFormatterContext formatterContext,
             IEnumerable<IOutputFormatter> formatters)
         {
-            var logger = formatterContext.ActionContext.HttpContext.RequestServices
-                .GetRequiredService<ILogger<ObjectResult>>();
+            var logger = formatterContext.HttpContext.RequestServices.GetRequiredService<ILogger<ObjectResult>>();
 
             // Check if any content-type was explicitly set (for example, via ProducesAttribute 
             // or Url path extension mapping). If yes, then ignore content-negotiation and use this content-type.
@@ -108,7 +107,7 @@ namespace Microsoft.AspNet.Mvc
                 // which can write the type.
                 MediaTypeHeaderValue requestContentType = null;
                 MediaTypeHeaderValue.TryParse(
-                    formatterContext.ActionContext.HttpContext.Request.ContentType,
+                    formatterContext.HttpContext.Request.ContentType,
                     out requestContentType);
                 if (!sortedAcceptHeaderMediaTypes.Any() && requestContentType == null)
                 {
@@ -240,17 +239,18 @@ namespace Microsoft.AspNet.Mvc
         private IEnumerable<MediaTypeHeaderValue> GetSortedAcceptHeaderMediaTypes(
             OutputFormatterContext formatterContext)
         {
-            var request = formatterContext.ActionContext.HttpContext.Request;
+            var request = formatterContext.HttpContext.Request;
             var incomingAcceptHeaderMediaTypes = request.GetTypedHeaders().Accept ?? new MediaTypeHeaderValue[] { };
 
             // By default we want to ignore considering accept headers for content negotiation when
             // they have a media type like */* in them. Browsers typically have these media types.
             // In these cases we would want the first formatter in the list of output formatters to
             // write the response. This default behavior can be changed through options, so checking here.
-            var options = formatterContext.ActionContext.HttpContext
-                                                        .RequestServices
-                                                        .GetRequiredService<IOptions<MvcOptions>>()
-                                                        .Options;
+            var options = formatterContext
+                .HttpContext
+                .RequestServices
+                .GetRequiredService<IOptions<MvcOptions>>()
+                .Options;
 
             var respectAcceptHeader = true;
             if (options.RespectBrowserAcceptHeader == false

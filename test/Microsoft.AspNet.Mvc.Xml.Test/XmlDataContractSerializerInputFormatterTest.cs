@@ -79,8 +79,9 @@ namespace Microsoft.AspNet.Mvc.Xml
             var formatter = new XmlDataContractSerializerInputFormatter();
             var contentBytes = Encoding.UTF8.GetBytes("content");
 
-            var actionContext = GetActionContext(contentBytes, contentType: requestContentType);
-            var formatterContext = new InputFormatterContext(actionContext, typeof(string));
+            var modelState = new ModelStateDictionary();
+            var httpContext = GetHttpContext(contentBytes, contentType: requestContentType);
+            var formatterContext = new InputFormatterContext(httpContext, modelState, typeof(string));
 
             // Act
             var result = formatter.CanRead(formatterContext);
@@ -285,7 +286,7 @@ namespace Microsoft.AspNet.Mvc.Xml
 
             // Assert
             Assert.NotNull(model);
-            Assert.True(context.ActionContext.HttpContext.Request.Body.CanRead);
+            Assert.True(context.HttpContext.Request.Body.CanRead);
         }
 
         [Fact]
@@ -328,8 +329,11 @@ namespace Microsoft.AspNet.Mvc.Xml
                 "<DummyClass><SampleInt>1000</SampleInt></DummyClass>");
 
             var formatter = new XmlDataContractSerializerInputFormatter();
-            var actionContext = GetActionContext(inputBytes, contentType: "application/xml; charset=utf-16");
-            var context = new InputFormatterContext(actionContext, typeof(TestLevelOne));
+
+            var modelState = new ModelStateDictionary();
+            var httpContext = GetHttpContext(inputBytes, contentType: "application/xml; charset=utf-16");
+
+            var context = new InputFormatterContext(httpContext, modelState, typeof(TestLevelOne));
 
             // Act
             var ex = await Assert.ThrowsAsync(expectedException, () => formatter.ReadAsync(context));
@@ -381,8 +385,10 @@ namespace Microsoft.AspNet.Mvc.Xml
             var formatter = new XmlDataContractSerializerInputFormatter();
             var contentBytes = Encodings.UTF16EncodingLittleEndian.GetBytes(input);
 
-            var actionContext = GetActionContext(contentBytes, contentType: "application/xml; charset=utf-16");
-            var context = new InputFormatterContext(actionContext, typeof(TestLevelOne));
+            var modelState = new ModelStateDictionary();
+            var httpContext = GetHttpContext(contentBytes, contentType: "application/xml; charset=utf-16");
+
+            var context = new InputFormatterContext(httpContext, modelState, typeof(TestLevelOne));
             
             // Act
             var model = await formatter.ReadAsync(context);
@@ -530,10 +536,10 @@ namespace Microsoft.AspNet.Mvc.Xml
             Assert.Equal(98052, model[0].Zipcode);
             Assert.Equal(true, model[0].IsResidential);
 
-            Assert.Equal(1, context.ActionContext.ModelState.Keys.Count);
+            Assert.Equal(1, context.ModelState.Keys.Count);
             AssertModelStateErrorMessages(
                 typeof(Address).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                         string.Format(requiredErrorMessageFormat, nameof(Address.Zipcode), typeof(Address).FullName),
@@ -564,10 +570,10 @@ namespace Microsoft.AspNet.Mvc.Xml
             Assert.Equal(98052, model.Zipcode);
             Assert.Equal(true, model.IsResidential);
 
-            Assert.Equal(1, context.ActionContext.ModelState.Keys.Count);
+            Assert.Equal(1, context.ModelState.Keys.Count);
             AssertModelStateErrorMessages(
                 typeof(Address).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                         string.Format(requiredErrorMessageFormat, nameof(Address.Zipcode), typeof(Address).FullName),
@@ -603,10 +609,10 @@ namespace Microsoft.AspNet.Mvc.Xml
             Assert.Equal(98052, model.AddressProperty.Zipcode);
             Assert.Equal(true, model.AddressProperty.IsResidential);
 
-            Assert.Equal(1, context.ActionContext.ModelState.Keys.Count);
+            Assert.Equal(1, context.ModelState.Keys.Count);
             AssertModelStateErrorMessages(
                 typeof(Address).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                     string.Format(requiredErrorMessageFormat, nameof(Address.Zipcode), typeof(Address).FullName),
@@ -640,11 +646,11 @@ namespace Microsoft.AspNet.Mvc.Xml
             Assert.Equal(98052, model.Addresses[0].Zipcode);
             Assert.Equal(true, model.Addresses[0].IsResidential);
 
-            Assert.Equal(1, context.ActionContext.ModelState.Keys.Count);
+            Assert.Equal(1, context.ModelState.Keys.Count);
             AssertModelStateErrorMessages(
-                modelStateKey: typeof(Address).FullName,
-                actionContext: context.ActionContext,
-                expectedErrorMessages: new[]
+                typeof(Address).FullName,
+                context,
+                new[]
                 {
                     string.Format(requiredErrorMessageFormat, nameof(Address.Zipcode), typeof(Address).FullName),
                     string.Format(requiredErrorMessageFormat, nameof(Address.IsResidential), typeof(Address).FullName)
@@ -676,10 +682,10 @@ namespace Microsoft.AspNet.Mvc.Xml
             Assert.Equal(98052, model.Zipcode);
             Assert.Equal(true, model.IsResidential);
 
-            Assert.Equal(1, context.ActionContext.ModelState.Keys.Count);
+            Assert.Equal(1, context.ModelState.Keys.Count);
             AssertModelStateErrorMessages(
                 typeof(Address).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                     string.Format(requiredErrorMessageFormat, nameof(Address.Zipcode), typeof(Address).FullName),
@@ -710,7 +716,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             Assert.NotNull(model);
             Assert.Equal(expectedModel.Year, model.Year);
             Assert.Equal(expectedModel.ServicedYears, model.ServicedYears);
-            Assert.Empty(context.ActionContext.ModelState);
+            Assert.Empty(context.ModelState);
         }
 
         [Fact]
@@ -745,7 +751,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             Assert.NotNull(model.CarInfoProperty);
             Assert.Equal(expectedModel.CarInfoProperty.Year, model.CarInfoProperty.Year);
             Assert.Equal(expectedModel.CarInfoProperty.ServicedYears, model.CarInfoProperty.ServicedYears);
-            Assert.Empty(context.ActionContext.ModelState);
+            Assert.Empty(context.ModelState);
         }
 
         [Fact]
@@ -781,10 +787,10 @@ namespace Microsoft.AspNet.Mvc.Xml
             Assert.Equal(expectedModel.Manager.Name, model.Manager.Name);
             Assert.Null(model.Manager.Manager);
 
-            Assert.Equal(1, context.ActionContext.ModelState.Keys.Count);
+            Assert.Equal(1, context.ModelState.Keys.Count);
             AssertModelStateErrorMessages(
                 typeof(Employee).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                     string.Format(requiredErrorMessageFormat, nameof(Employee.Id), typeof(Employee).FullName)
@@ -810,7 +816,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             Assert.NotNull(model);
             Assert.Equal(10, model.Id);
             Assert.Equal(true, model.SupportsVirtualization);
-            Assert.Empty(context.ActionContext.ModelState);
+            Assert.Empty(context.ModelState);
         }
 
         [Fact]
@@ -833,7 +839,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             Assert.Equal(1, model.Count);
             Assert.Equal(10, model[0].Id);
             Assert.Equal(true, model[0].SupportsVirtualization);
-            Assert.Empty(context.ActionContext.ModelState);
+            Assert.Empty(context.ModelState);
         }
 
         [Fact]
@@ -855,10 +861,10 @@ namespace Microsoft.AspNet.Mvc.Xml
             Assert.NotNull(model);
             Assert.Equal(10, model.Id);
 
-            Assert.Equal(2, context.ActionContext.ModelState.Keys.Count);
+            Assert.Equal(2, context.ModelState.Keys.Count);
             AssertModelStateErrorMessages(
                 typeof(Product).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                     string.Format(requiredErrorMessageFormat, nameof(Product.Id), typeof(Product).FullName)
@@ -866,7 +872,7 @@ namespace Microsoft.AspNet.Mvc.Xml
 
             AssertModelStateErrorMessages(
                 typeof(Address).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                     string.Format(requiredErrorMessageFormat, nameof(Address.Zipcode), typeof(Address).FullName),
@@ -895,10 +901,10 @@ namespace Microsoft.AspNet.Mvc.Xml
             Assert.Equal(10, model[0].Id);
             Assert.Equal("Phone", model[0].Name);
 
-            Assert.Equal(2, context.ActionContext.ModelState.Keys.Count);
+            Assert.Equal(2, context.ModelState.Keys.Count);
             AssertModelStateErrorMessages(
                 typeof(Product).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                     string.Format(requiredErrorMessageFormat, nameof(Product.Id), typeof(Product).FullName)
@@ -906,7 +912,7 @@ namespace Microsoft.AspNet.Mvc.Xml
 
             AssertModelStateErrorMessages(
                 typeof(Address).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                     string.Format(requiredErrorMessageFormat, nameof(Address.Zipcode), typeof(Address).FullName),
@@ -931,10 +937,10 @@ namespace Microsoft.AspNet.Mvc.Xml
             // Assert
             Assert.Null(model);
 
-            Assert.Equal(3, context.ActionContext.ModelState.Keys.Count);
+            Assert.Equal(3, context.ModelState.Keys.Count);
             AssertModelStateErrorMessages(
                 typeof(Address).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                     string.Format(requiredErrorMessageFormat, nameof(Address.IsResidential), typeof(Address).FullName),
@@ -943,7 +949,7 @@ namespace Microsoft.AspNet.Mvc.Xml
 
             AssertModelStateErrorMessages(
                 typeof(Employee).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                     string.Format(requiredErrorMessageFormat, nameof(Employee.Id), typeof(Employee).FullName)
@@ -951,7 +957,7 @@ namespace Microsoft.AspNet.Mvc.Xml
 
             AssertModelStateErrorMessages(
                 typeof(Product).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                     string.Format(requiredErrorMessageFormat, nameof(Product.Id), typeof(Product).FullName)
@@ -976,17 +982,17 @@ namespace Microsoft.AspNet.Mvc.Xml
             // Assert
             Assert.Null(model);
 
-            Assert.Equal(3, context.ActionContext.ModelState.Keys.Count);
+            Assert.Equal(3, context.ModelState.Keys.Count);
             AssertModelStateErrorMessages(
                 typeof(School).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                     string.Format(requiredErrorMessageFormat, nameof(School.Id), typeof(School).FullName)
                 });
             AssertModelStateErrorMessages(
                 typeof(Website).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                     string.Format(requiredErrorMessageFormat, nameof(Website.Id), typeof(Website).FullName)
@@ -994,7 +1000,7 @@ namespace Microsoft.AspNet.Mvc.Xml
 
             AssertModelStateErrorMessages(
                 typeof(Student).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                     string.Format(requiredErrorMessageFormat, nameof(Student.Id), typeof(Student).FullName)
@@ -1019,10 +1025,10 @@ namespace Microsoft.AspNet.Mvc.Xml
             // Assert
             Assert.Null(model);
 
-            Assert.Equal(2, context.ActionContext.ModelState.Keys.Count);
+            Assert.Equal(2, context.ModelState.Keys.Count);
             AssertModelStateErrorMessages(
                 typeof(Point).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                     string.Format(requiredErrorMessageFormat, nameof(Point.X), typeof(Point).FullName),
@@ -1030,7 +1036,7 @@ namespace Microsoft.AspNet.Mvc.Xml
                 });
             AssertModelStateErrorMessages(
                 typeof(Address).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                     string.Format(requiredErrorMessageFormat, nameof(Address.IsResidential), typeof(Address).FullName),
@@ -1056,10 +1062,10 @@ namespace Microsoft.AspNet.Mvc.Xml
             // Assert
             Assert.Null(model);
 
-            Assert.Equal(3, context.ActionContext.ModelState.Keys.Count);
+            Assert.Equal(3, context.ModelState.Keys.Count);
             AssertModelStateErrorMessages(
                 typeof(Point).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                     string.Format(requiredErrorMessageFormat, nameof(Point.X), typeof(Point).FullName),
@@ -1067,7 +1073,7 @@ namespace Microsoft.AspNet.Mvc.Xml
                 });
             AssertModelStateErrorMessages(
                 typeof(GpsCoordinate).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                     string.Format(
@@ -1081,7 +1087,7 @@ namespace Microsoft.AspNet.Mvc.Xml
                 });
             AssertModelStateErrorMessages(
                 typeof(ValueTypePropertiesModel).FullName,
-                context.ActionContext,
+                context,
                 expectedErrorMessages: new[]
                 {
                     string.Format(
@@ -1105,11 +1111,11 @@ namespace Microsoft.AspNet.Mvc.Xml
 
         private void AssertModelStateErrorMessages(
             string modelStateKey,
-            ActionContext actionContext,
+            InputFormatterContext context,
             IEnumerable<string> expectedErrorMessages)
         {
             ModelState modelState;
-            actionContext.ModelState.TryGetValue(modelStateKey, out modelState);
+            context.ModelState.TryGetValue(modelStateKey, out modelState);
 
             Assert.NotNull(modelState);
             Assert.NotEmpty(modelState.Errors);
@@ -1140,20 +1146,13 @@ namespace Microsoft.AspNet.Mvc.Xml
 
         private InputFormatterContext GetInputFormatterContext(byte[] contentBytes, Type modelType)
         {
-            var actionContext = GetActionContext(contentBytes);
-            var metadata = new EmptyModelMetadataProvider().GetMetadataForType(modelType);
-            return new InputFormatterContext(actionContext, metadata.ModelType);
+            var httpContext = GetHttpContext(contentBytes);
+            return new InputFormatterContext(httpContext, new ModelStateDictionary(), modelType);
         }
 
-        private static ActionContext GetActionContext(byte[] contentBytes,
-                                                      string contentType = "application/xml")
-        {
-            return new ActionContext(GetHttpContext(contentBytes, contentType),
-                                     new AspNet.Routing.RouteData(),
-                                     new ActionDescriptor());
-        }
-        private static HttpContext GetHttpContext(byte[] contentBytes,
-                                                  string contentType = "application/xml")
+        private static HttpContext GetHttpContext(
+            byte[] contentBytes,
+            string contentType = "application/xml")
         {
             var request = new Mock<HttpRequest>();
             var headers = new Mock<IHeaderDictionary>();

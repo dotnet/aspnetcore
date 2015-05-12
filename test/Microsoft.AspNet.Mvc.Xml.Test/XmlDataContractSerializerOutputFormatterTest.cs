@@ -102,12 +102,11 @@ namespace Microsoft.AspNet.Mvc.Xml
             await formatter.WriteAsync(outputFormatterContext);
 
             // Assert
-            Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
-            outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
-            XmlAssert.Equal(expectedOutput,
-                new StreamReader(outputFormatterContext.ActionContext.HttpContext.Response.Body, Encoding.UTF8)
-                        .ReadToEnd());
-            Assert.True(outputFormatterContext.ActionContext.HttpContext.Response.Body.CanRead);
+            var body = outputFormatterContext.HttpContext.Response.Body;
+            body.Position = 0;
+
+            var content = new StreamReader(body).ReadToEnd();
+            XmlAssert.Equal(expectedOutput, content);
         }
 
         [Fact]
@@ -158,17 +157,22 @@ namespace Microsoft.AspNet.Mvc.Xml
 
             // Assert
             Assert.Same(writerSettings, formatter.WriterSettings);
-            var responseStream = formatterContext.ActionContext.HttpContext.Response.Body;
-            Assert.NotNull(responseStream);
-            responseStream.Position = 0;
-            var actualOutput = new StreamReader(responseStream, Encoding.UTF8).ReadToEnd();
-            XmlAssert.Equal(expectedOutput, actualOutput);
+
+            var body = formatterContext.HttpContext.Response.Body;
+            body.Position = 0;
+
+            var content = new StreamReader(body).ReadToEnd();
+            XmlAssert.Equal(expectedOutput, content);
         }
 
         [Fact]
         public async Task WriteAsync_WritesSimpleTypes()
         {
             // Arrange
+            var expectedOutput =
+                "<DummyClass xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">" +
+                "<SampleInt>10</SampleInt></DummyClass>";
+
             var sampleInput = new DummyClass { SampleInt = 10 };
             var formatter = new XmlDataContractSerializerOutputFormatter();
             var outputFormatterContext = GetOutputFormatterContext(sampleInput, sampleInput.GetType());
@@ -177,18 +181,23 @@ namespace Microsoft.AspNet.Mvc.Xml
             await formatter.WriteAsync(outputFormatterContext);
 
             // Assert
-            Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
-            outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
-            XmlAssert.Equal("<DummyClass xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">" +
-                "<SampleInt>10</SampleInt></DummyClass>",
-                new StreamReader(outputFormatterContext.ActionContext.HttpContext.Response.Body, Encoding.UTF8)
-                        .ReadToEnd());
+            var body = outputFormatterContext.HttpContext.Response.Body;
+            body.Position = 0;
+
+            var content = new StreamReader(body).ReadToEnd();
+            XmlAssert.Equal(expectedOutput, content);
         }
 
         [Fact]
         public async Task WriteAsync_WritesComplexTypes()
         {
             // Arrange
+            var expectedOutput = 
+                "<TestLevelTwo xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">" +
+                "<SampleString>TestString</SampleString>" +
+                "<TestOne><SampleInt>10</SampleInt><sampleString>TestLevelOne string</sampleString>" +
+                "</TestOne></TestLevelTwo>";
+
             var sampleInput = new TestLevelTwo
             {
                 SampleString = "TestString",
@@ -205,24 +214,26 @@ namespace Microsoft.AspNet.Mvc.Xml
             await formatter.WriteAsync(outputFormatterContext);
 
             // Assert
-            Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
-            outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
-            XmlAssert.Equal("<TestLevelTwo xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">" +
-                            "<SampleString>TestString</SampleString>" +
-                            "<TestOne><SampleInt>10</SampleInt><sampleString>TestLevelOne string</sampleString>" +
-                            "</TestOne></TestLevelTwo>",
-                new StreamReader(outputFormatterContext.ActionContext.HttpContext.Response.Body, Encoding.UTF8)
-                        .ReadToEnd());
+            var body = outputFormatterContext.HttpContext.Response.Body;
+            body.Position = 0;
+
+            var content = new StreamReader(body).ReadToEnd();
+            XmlAssert.Equal(expectedOutput, content);
         }
 
         [Fact]
         public async Task WriteAsync_WritesOnModifiedWriterSettings()
         {
             // Arrange
+            var expectedOutput =
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+                "<DummyClass xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">" +
+                "<SampleInt>10</SampleInt></DummyClass>";
+
             var sampleInput = new DummyClass { SampleInt = 10 };
             var outputFormatterContext = GetOutputFormatterContext(sampleInput, sampleInput.GetType());
             var formatter = new XmlDataContractSerializerOutputFormatter(
-                new System.Xml.XmlWriterSettings
+                new XmlWriterSettings
                 {
                     OmitXmlDeclaration = false,
                     CloseOutput = false
@@ -232,19 +243,22 @@ namespace Microsoft.AspNet.Mvc.Xml
             await formatter.WriteAsync(outputFormatterContext);
 
             // Assert
-            Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
-            outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
-            XmlAssert.Equal("<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-                "<DummyClass xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">" +
-                "<SampleInt>10</SampleInt></DummyClass>",
-                new StreamReader(outputFormatterContext.ActionContext.HttpContext.Response.Body,
-                Encoding.UTF8).ReadToEnd());
+            var body = outputFormatterContext.HttpContext.Response.Body;
+            body.Position = 0;
+
+            var content = new StreamReader(body).ReadToEnd();
+            XmlAssert.Equal(expectedOutput, content);
         }
 
         [Fact]
         public async Task WriteAsync_WritesUTF16Output()
         {
             // Arrange
+            var expectedOutput =
+                "<?xml version=\"1.0\" encoding=\"utf-16\"?>" +
+                "<DummyClass xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">" +
+                "<SampleInt>10</SampleInt></DummyClass>";
+
             var sampleInput = new DummyClass { SampleInt = 10 };
             var outputFormatterContext = GetOutputFormatterContext(sampleInput, sampleInput.GetType(),
                 "application/xml; charset=utf-16");
@@ -255,19 +269,21 @@ namespace Microsoft.AspNet.Mvc.Xml
             await formatter.WriteAsync(outputFormatterContext);
 
             // Assert
-            Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
-            outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
-            XmlAssert.Equal("<?xml version=\"1.0\" encoding=\"utf-16\"?>" +
-                            "<DummyClass xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">" +
-                            "<SampleInt>10</SampleInt></DummyClass>",
-                        new StreamReader(outputFormatterContext.ActionContext.HttpContext.Response.Body,
-                                Encodings.UTF16EncodingLittleEndian).ReadToEnd());
+            var body = outputFormatterContext.HttpContext.Response.Body;
+            body.Position = 0;
+
+            var content = new StreamReader(body).ReadToEnd();
+            XmlAssert.Equal(expectedOutput, content);
         }
 
         [Fact]
         public async Task WriteAsync_WritesIndentedOutput()
         {
             // Arrange
+            var expectedOutput =
+                "<DummyClass xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">" +
+                "\r\n  <SampleInt>10</SampleInt>\r\n</DummyClass>";
+
             var sampleInput = new DummyClass { SampleInt = 10 };
             var formatter = new XmlDataContractSerializerOutputFormatter();
             formatter.WriterSettings.Indent = true;
@@ -277,13 +293,11 @@ namespace Microsoft.AspNet.Mvc.Xml
             await formatter.WriteAsync(outputFormatterContext);
 
             // Assert
-            Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
-            outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
-            var outputString = new StreamReader(outputFormatterContext.ActionContext.HttpContext.Response.Body,
-                Encoding.UTF8).ReadToEnd();
-            XmlAssert.Equal("<DummyClass xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">" +
-                "\r\n  <SampleInt>10</SampleInt>\r\n</DummyClass>",
-                outputString);
+            var body = outputFormatterContext.HttpContext.Response.Body;
+            body.Position = 0;
+
+            var content = new StreamReader(body).ReadToEnd();
+            XmlAssert.Equal(expectedOutput, content);
         }
 
         [Fact]
@@ -298,8 +312,8 @@ namespace Microsoft.AspNet.Mvc.Xml
             await formatter.WriteAsync(outputFormatterContext);
 
             // Assert
-            Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
-            Assert.True(outputFormatterContext.ActionContext.HttpContext.Response.Body.CanRead);
+            var body = outputFormatterContext.HttpContext.Response.Body;
+            Assert.True(body.CanRead);
         }
 
         [Fact]
@@ -310,7 +324,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             var formatter = new XmlDataContractSerializerOutputFormatter();
             var outputFormatterContext = GetOutputFormatterContext(sampleInput, sampleInput.GetType());
 
-            var response = outputFormatterContext.ActionContext.HttpContext.Response;
+            var response = outputFormatterContext.HttpContext.Response;
             response.Body = FlushReportingStream.GetThrowingStream();
 
             // Act & Assert
@@ -447,11 +461,11 @@ namespace Microsoft.AspNet.Mvc.Xml
             await formatter.WriteAsync(outputFormatterContext);
 
             // Assert
-            Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
-            outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
-            var actualOutput = new StreamReader(
-                outputFormatterContext.ActionContext.HttpContext.Response.Body, Encoding.UTF8).ReadToEnd();
-            XmlAssert.Equal(expectedOutput, actualOutput);
+            var body = outputFormatterContext.HttpContext.Response.Body;
+            body.Position = 0;
+
+            var content = new StreamReader(body).ReadToEnd();
+            XmlAssert.Equal(expectedOutput, content);
         }
 
         [Fact]
@@ -491,11 +505,11 @@ namespace Microsoft.AspNet.Mvc.Xml
             await formatter.WriteAsync(outputFormatterContext);
 
             // Assert
-            Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
-            outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
-            var actualOutput = new StreamReader(
-                outputFormatterContext.ActionContext.HttpContext.Response.Body, Encoding.UTF8).ReadToEnd();
-            XmlAssert.Equal(expectedOutput, actualOutput);
+            var body = outputFormatterContext.HttpContext.Response.Body;
+            body.Position = 0;
+
+            var content = new StreamReader(body).ReadToEnd();
+            XmlAssert.Equal(expectedOutput, content);
         }
 
         [Fact]
@@ -535,11 +549,11 @@ namespace Microsoft.AspNet.Mvc.Xml
             await formatter.WriteAsync(outputFormatterContext);
 
             // Assert
-            Assert.NotNull(outputFormatterContext.ActionContext.HttpContext.Response.Body);
-            outputFormatterContext.ActionContext.HttpContext.Response.Body.Position = 0;
-            var actualOutput = new StreamReader(
-                outputFormatterContext.ActionContext.HttpContext.Response.Body, Encoding.UTF8).ReadToEnd();
-            XmlAssert.Equal(expectedOutput, actualOutput);
+            var body = outputFormatterContext.HttpContext.Response.Body;
+            body.Position = 0;
+
+            var content = new StreamReader(body).ReadToEnd();
+            XmlAssert.Equal(expectedOutput, content);
         }
 
         private OutputFormatterContext GetOutputFormatterContext(object outputValue, Type outputType,
@@ -549,23 +563,26 @@ namespace Microsoft.AspNet.Mvc.Xml
             {
                 Object = outputValue,
                 DeclaredType = outputType,
-                ActionContext = GetActionContext(contentType)
+                HttpContext = GetHttpContext(contentType)
             };
         }
 
-        private static ActionContext GetActionContext(string contentType)
+        private static HttpContext GetHttpContext(string contentType)
         {
             var request = new Mock<HttpRequest>();
+
             var headers = new HeaderDictionary(new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase));
             headers["Accept-Charset"] = MediaTypeHeaderValue.Parse(contentType).Charset;
             request.Setup(r => r.ContentType).Returns(contentType);
             request.SetupGet(r => r.Headers).Returns(headers);
+
             var response = new Mock<HttpResponse>();
             response.SetupGet(f => f.Body).Returns(new MemoryStream());
+
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.Request).Returns(request.Object);
             httpContext.SetupGet(c => c.Response).Returns(response.Object);
-            return new ActionContext(httpContext.Object, routeData: null, actionDescriptor: null);
+            return httpContext.Object;
         }
 
         private class TestXmlDataContractSerializerOutputFormatter : XmlDataContractSerializerOutputFormatter

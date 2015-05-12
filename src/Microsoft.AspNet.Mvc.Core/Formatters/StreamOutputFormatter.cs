@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc
         {
             using (var valueAsStream = ((Stream)context.Object))
             {
-                var response = context.ActionContext.HttpContext.Response;
+                var response = context.HttpContext.Response;
 
                 if (context.SelectedContentType != null)
                 {

@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>The <see cref="Encoding"/> to use when reading the request or writing the response.</returns>
         public virtual Encoding SelectCharacterEncoding([NotNull] OutputFormatterContext context)
         {
-            var request = context.ActionContext.HttpContext.Request;
+            var request = context.HttpContext.Request;
             var encoding = MatchAcceptCharacterEncoding(request.GetTypedHeaders().AcceptCharset);
             if (encoding == null)
             {
@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.Mvc
             selectedMediaType.Charset = selectedEncoding.WebName;
 
             context.SelectedContentType = context.SelectedContentType ?? selectedMediaType;
-            var response = context.ActionContext.HttpContext.Response;
+            var response = context.HttpContext.Response;
             response.ContentType = selectedMediaType.ToString();
         }
 

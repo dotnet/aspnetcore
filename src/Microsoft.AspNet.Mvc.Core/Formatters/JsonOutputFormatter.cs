@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Mvc
 
         public override Task WriteResponseBodyAsync(OutputFormatterContext context)
         {
-            var response = context.ActionContext.HttpContext.Response;
+            var response = context.HttpContext.Response;
             var selectedEncoding = context.SelectedEncoding;
 
             using (var writer = new HttpResponseStreamWriter(response.Body, selectedEncoding))

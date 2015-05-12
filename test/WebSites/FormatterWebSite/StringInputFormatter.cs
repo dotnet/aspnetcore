@@ -19,7 +19,7 @@ namespace FormatterWebSite
 
         public override Task<object> ReadRequestBodyAsync(InputFormatterContext context)
         {
-            var request = context.ActionContext.HttpContext.Request;
+            var request = context.HttpContext.Request;
             MediaTypeHeaderValue requestContentType = null;
             MediaTypeHeaderValue.TryParse(request.ContentType, out requestContentType);
             var effectiveEncoding = SelectCharacterEncoding(requestContentType);

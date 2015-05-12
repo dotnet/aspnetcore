@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         public Task WriteAsync(OutputFormatterContext context)
         {
-            var response = context.ActionContext.HttpContext.Response;
+            var response = context.HttpContext.Response;
             response.StatusCode = StatusCodes.Status406NotAcceptable;
             return Task.FromResult(true);
         }

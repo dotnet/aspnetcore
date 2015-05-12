@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 
         public async Task WriteAsync(OutputFormatterContext context)
         {
-            var response = context.ActionContext.HttpContext.Response;
+            var response = context.HttpContext.Response;
 
             var responseMessage = context.Object as HttpResponseMessage;
             if (responseMessage == null)
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 response.StatusCode = (int)responseMessage.StatusCode;
 
-                var responseFeature = context.ActionContext.HttpContext.GetFeature<IHttpResponseFeature>();
+                var responseFeature = context.HttpContext.GetFeature<IHttpResponseFeature>();
                 if (responseFeature != null)
                 {
                     responseFeature.ReasonPhrase = responseMessage.ReasonPhrase;

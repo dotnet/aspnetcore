@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Mvc.Xml
         /// <returns>Task which reads the input.</returns>
         public override Task<object> ReadRequestBodyAsync(InputFormatterContext context)
         {
-            var request = context.ActionContext.HttpContext.Request;
+            var request = context.HttpContext.Request;
 
             MediaTypeHeaderValue requestContentType;
             MediaTypeHeaderValue.TryParse(request.ContentType , out requestContentType);
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.Xml
 
                 _dataAnnotationRequiredAttributeValidation.Validate(
                     type, 
-                    context.ActionContext.ModelState);
+                    context.ModelState);
 
                 var serializer = GetCachedSerializer(type);
 
