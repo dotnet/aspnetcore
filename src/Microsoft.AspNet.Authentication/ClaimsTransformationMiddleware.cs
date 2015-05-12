@@ -15,10 +15,18 @@ namespace Microsoft.AspNet.Authentication
 
         public ClaimsTransformationMiddleware(
             [NotNull] RequestDelegate next,
-            [NotNull] IOptions<ClaimsTransformationOptions> options)
+            [NotNull] IOptions<ClaimsTransformationOptions> options,
+            ConfigureOptions<ClaimsTransformationOptions> configureOptions)
         {
-            // REVIEW: do we need to take ConfigureOptions<ClaimsTransformationOptions>??
-            Options = options.Options;
+            if (configureOptions != null)
+            {
+                Options = options.GetNamedOptions(configureOptions.Name);
+                configureOptions.Configure(Options, configureOptions.Name);
+            }
+            else
+            {
+                Options = options.Options;
+            }
             _next = next;
         }
 
