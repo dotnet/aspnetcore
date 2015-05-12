@@ -56,5 +56,52 @@ namespace Microsoft.AspNet.Authentication
             principal.Identities.Skip(1).First().Name.ShouldBe("Test2");
             principal.Identities.Skip(2).First().Name.ShouldBe("Test1");
         }
+
+        [Fact]
+        public void AddingPreservesNewIdentitiesAndDropsEmpty()
+        {
+            var context = new DefaultHttpContext();
+            var existingPrincipal = new ClaimsPrincipal(new ClaimsIdentity());
+            var identityNoAuthTypeWithClaim = new ClaimsIdentity();
+            identityNoAuthTypeWithClaim.AddClaim(new Claim("identityNoAuthTypeWithClaim", "yes"));
+            existingPrincipal.AddIdentity(identityNoAuthTypeWithClaim);
+            var identityEmptyWithAuthType = new ClaimsIdentity("empty");
+            existingPrincipal.AddIdentity(identityEmptyWithAuthType);
+            context.User = existingPrincipal;
+
+            context.User.Identity.IsAuthenticated.ShouldBe(false);
+
+            var newPrincipal = new ClaimsPrincipal();
+            var newEmptyIdentity = new ClaimsIdentity();
+            var identityTwo = new ClaimsIdentity("yep");
+            newPrincipal.AddIdentity(newEmptyIdentity);
+            newPrincipal.AddIdentity(identityTwo);
+
+            SecurityHelper.AddUserPrincipal(context, newPrincipal);
+
+            // Preserve newPrincipal order
+            context.User.Identity.IsAuthenticated.ShouldBe(false);
+            context.User.Identity.Name.ShouldBe(null);
+
+            var principal = context.User;
+            principal.Identities.Count().ShouldBe(4);
+            principal.Identities.Skip(0).First().ShouldBe(newEmptyIdentity);
+            principal.Identities.Skip(1).First().ShouldBe(identityTwo);
+            principal.Identities.Skip(2).First().ShouldBe(identityNoAuthTypeWithClaim);
+            principal.Identities.Skip(3).First().ShouldBe(identityEmptyWithAuthType);
+
+            // This merge should drop newEmptyIdentity since its empty
+            SecurityHelper.AddUserPrincipal(context, new GenericPrincipal(new GenericIdentity("Test3", "Gamma"), new string[0]));
+
+            context.User.Identity.AuthenticationType.ShouldBe("Gamma");
+            context.User.Identity.Name.ShouldBe("Test3");
+
+            principal = context.User;
+            principal.Identities.Count().ShouldBe(4);
+            principal.Identities.Skip(0).First().Name.ShouldBe("Test3");
+            principal.Identities.Skip(1).First().ShouldBe(identityTwo);
+            principal.Identities.Skip(2).First().ShouldBe(identityNoAuthTypeWithClaim);
+            principal.Identities.Skip(3).First().ShouldBe(identityEmptyWithAuthType);
+        }
     }
 }

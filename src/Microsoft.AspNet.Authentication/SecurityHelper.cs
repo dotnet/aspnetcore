@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
@@ -14,24 +15,23 @@ namespace Microsoft.AspNet.Authentication
     {
         /// <summary>
         /// Add all ClaimsIdenities from an additional ClaimPrincipal to the ClaimsPrincipal
+        /// Merges a new claims principal, placing all new identities first, and eliminating
+        /// any empty unauthenticated identities from context.User
         /// </summary>
         /// <param name="identity"></param>
         public static void AddUserPrincipal([NotNull] HttpContext context, [NotNull] ClaimsPrincipal principal)
         {
+            var newPrincipal = new ClaimsPrincipal();
+            // New principal identities go first
+            newPrincipal.AddIdentities(principal.Identities);
+
+            // Then add any existing non empty or authenticated identities
             var existingPrincipal = context.User;
             if (existingPrincipal != null)
             {
-                foreach (var existingClaimsIdentity in existingPrincipal.Identities)
-                {
-                    // REVIEW: No longer use auth type for anything, so we could remove this check, except for the default one HttpContext.user creates
-                    // REVIEW: Need to ignore any identities that did not come from an authentication scheme?
-                    if (existingClaimsIdentity.IsAuthenticated)
-                    {
-                        principal.AddIdentity(existingClaimsIdentity);
-                    }
-                }
+                newPrincipal.AddIdentities(existingPrincipal.Identities.Where(i => i.IsAuthenticated || i.Claims.Count() > 0));
             }
-            context.User = principal;
+            context.User = newPrincipal;
         }
     }
 }
