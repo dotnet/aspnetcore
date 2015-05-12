@@ -172,25 +172,13 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public void SaveAndLoad_SimpleTypesCanBeStoredAndLoaded()
+        public void SaveAndLoad_StringCanBeStoredAndLoaded()
         {
             // Arrange
             var testProvider = new SessionStateTempDataProvider();
-            var inputGuid = Guid.NewGuid();
-            var inputDictionary = new Dictionary<string, string>
-            {
-                { "Hello", "World" },
-            };
             var input = new Dictionary<string, object>
             {
-                { "string", "value" },
-                { "int", 10 },
-                { "bool", false },
-                { "DateTime", new DateTime() },
-                { "Guid", inputGuid },
-                { "List`string", new List<string> { "one", "two" } },
-                { "Dictionary", inputDictionary },
-                { "EmptyDictionary", new Dictionary<string, int>() }
+                { "string", "value" }
             };
             var context = GetHttpContext(new TestSessionCollection(), true);
 
@@ -201,20 +189,154 @@ namespace Microsoft.AspNet.Mvc
             // Assert
             var stringVal = Assert.IsType<string>(TempData["string"]);
             Assert.Equal("value", stringVal);
+        }
+
+        [Fact]
+        public void SaveAndLoad_IntCanBeStoredAndLoaded()
+        {
+            // Arrange
+            var testProvider = new SessionStateTempDataProvider();
+            var input = new Dictionary<string, object>
+            {
+                { "int", 10 }
+            };
+            var context = GetHttpContext(new TestSessionCollection(), true);
+
+            // Act
+            testProvider.SaveTempData(context, input);
+            var TempData = testProvider.LoadTempData(context);
+
+            // Assert
             var intVal = Convert.ToInt32(TempData["int"]);
             Assert.Equal(10, intVal);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void SaveAndLoad_BoolCanBeStoredAndLoaded(bool value)
+        {
+            // Arrange
+            var testProvider = new SessionStateTempDataProvider();
+            var input = new Dictionary<string, object>
+            {
+                { "bool", value }
+            };
+            var context = GetHttpContext(new TestSessionCollection(), true);
+
+            // Act
+            testProvider.SaveTempData(context, input);
+            var TempData = testProvider.LoadTempData(context);
+
+            // Assert
             var boolVal = Assert.IsType<bool>(TempData["bool"]);
-            Assert.Equal(false, boolVal);
-            var datetimeVal = Assert.IsType<DateTime>(TempData["DateTime"]);
-            Assert.Equal(new DateTime().ToString(), datetimeVal.ToString());
+            Assert.Equal(value, boolVal);
+        }
+
+        [Fact]
+        public void SaveAndLoad_DateTimeCanBeStoredAndLoaded()
+        {
+            // Arrange
+            var testProvider = new SessionStateTempDataProvider();
+            var inputDatetime = new DateTime(2010, 12, 12, 1, 2, 3, DateTimeKind.Local);
+            var input = new Dictionary<string, object>
+            {
+                { "DateTime", inputDatetime }
+            };
+            var context = GetHttpContext(new TestSessionCollection(), true);
+
+            // Act
+            testProvider.SaveTempData(context, input);
+            var TempData = testProvider.LoadTempData(context);
+
+            // Assert
+            var datetime = Assert.IsType<DateTime>(TempData["DateTime"]);
+            Assert.Equal(inputDatetime, datetime);
+        }
+
+        [Fact]
+        public void SaveAndLoad_GuidCanBeStoredAndLoaded()
+        {
+            // Arrange
+            var testProvider = new SessionStateTempDataProvider();
+            var inputGuid = Guid.NewGuid();
+            var input = new Dictionary<string, object>
+            {
+                { "Guid", inputGuid }
+            };
+            var context = GetHttpContext(new TestSessionCollection(), true);
+
+            // Act
+            testProvider.SaveTempData(context, input);
+            var TempData = testProvider.LoadTempData(context);
+
+            // Assert
             var guidVal = Assert.IsType<Guid>(TempData["Guid"]);
-            Assert.Equal(inputGuid.ToString(), guidVal.ToString());
+            Assert.Equal(inputGuid, guidVal);
+        }
+
+        [Fact]
+        public void SaveAndLoad_ListCanBeStoredAndLoaded()
+        {
+            // Arrange
+            var testProvider = new SessionStateTempDataProvider();
+            var input = new Dictionary<string, object>
+            {
+                { "List`string", new List<string> { "one", "two" } }
+            };
+            var context = GetHttpContext(new TestSessionCollection(), true);
+
+            // Act
+            testProvider.SaveTempData(context, input);
+            var TempData = testProvider.LoadTempData(context);
+
+            // Assert
             var list = (IList<string>)TempData["List`string"];
             Assert.Equal(2, list.Count);
             Assert.Equal("one", list[0]);
             Assert.Equal("two", list[1]);
+        }
+
+        [Fact]
+        public void SaveAndLoad_DictionaryCanBeStoredAndLoaded()
+        {
+            // Arrange
+            var testProvider = new SessionStateTempDataProvider();
+            var inputDictionary = new Dictionary<string, string>
+            {
+                { "Hello", "World" },
+            };
+            var input = new Dictionary<string, object>
+            {
+                { "Dictionary", inputDictionary }
+            };
+            var context = GetHttpContext(new TestSessionCollection(), true);
+
+            // Act
+            testProvider.SaveTempData(context, input);
+            var TempData = testProvider.LoadTempData(context);
+
+            // Assert
             var dictionary = Assert.IsType<Dictionary<string, string>>(TempData["Dictionary"]);
             Assert.Equal("World", dictionary["Hello"]);
+        }
+
+        [Fact]
+        public void SaveAndLoad_EmptyDictionary_RoundTripsAsNull()
+        {
+            // Arrange
+            var testProvider = new SessionStateTempDataProvider();
+            var input = new Dictionary<string, object>
+            {
+                { "EmptyDictionary", new Dictionary<string, int>() }
+            };
+            var context = GetHttpContext(new TestSessionCollection(), true);
+
+            // Act
+            testProvider.SaveTempData(context, input);
+            var TempData = testProvider.LoadTempData(context);
+
+            // Assert
             var emptyDictionary = (IDictionary<string, int>)TempData["EmptyDictionary"];
             Assert.Null(emptyDictionary);
         }
