@@ -63,6 +63,7 @@ namespace Microsoft.AspNet.Server.WebListener
         private X509Certificate2 _clientCert;
         private ClaimsPrincipal _user;
         private IAuthenticationHandler _authHandler;
+        private CancellationToken? _disconnectToken;
         private Stream _responseStream;
         private IDictionary<string, string[]> _responseHeaders;
 
@@ -375,7 +376,15 @@ namespace Microsoft.AspNet.Server.WebListener
 
         CancellationToken IHttpRequestLifetimeFeature.RequestAborted
         {
-            get { return _requestContext.DisconnectToken; }
+            get
+            {
+                if (!_disconnectToken.HasValue)
+                {
+                    _disconnectToken = _requestContext.DisconnectToken;
+                }
+                return _disconnectToken.Value;
+            }
+            set { _disconnectToken = value; }
         }
 
         void IHttpRequestLifetimeFeature.Abort()
