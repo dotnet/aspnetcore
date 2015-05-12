@@ -3,12 +3,9 @@
 
 using System;
 using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting.Internal;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Hosting
@@ -35,33 +32,12 @@ namespace Microsoft.AspNet.Hosting
             config.AddCommandLine(args);
 
             var host = new WebHostBuilder(_serviceProvider, config).Build();
-            var serverShutdown = host.Start();
-            var loggerFactory = host.ApplicationServices.GetRequiredService<ILoggerFactory>();
-            var appShutdownService = host.ApplicationServices.GetRequiredService<IApplicationShutdown>();
-            var shutdownHandle = new ManualResetEvent(false);
-
-            appShutdownService.ShutdownRequested.Register(() =>
+            using (host.Start())
             {
-                try
-                {
-                    serverShutdown.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    var logger = loggerFactory.CreateLogger<Program>();
-                    logger.LogError("Dispose threw an exception.", ex);
-                }
-                shutdownHandle.Set();
-            });
-
-            var ignored = Task.Run(() =>
-            {
-                Console.WriteLine("Started");
-                Console.ReadLine();
-                appShutdownService.RequestShutdown();
-            });
-
-            shutdownHandle.WaitOne();
+                var appShutdownService = host.ApplicationServices.GetRequiredService<IApplicationShutdown>();
+                Console.CancelKeyPress += delegate { appShutdownService.RequestShutdown(); };
+                appShutdownService.ShutdownRequested.WaitHandle.WaitOne();
+            }
         }
     }
 }
