@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Localization
             {
                 foreach (var strategy in _options.RequestCultureStrategies)
                 {
-                    var result = strategy.DetermineRequestCulture(context);
+                    var result = await strategy.DetermineRequestCulture(context);
                     if (result != null)
                     {
                         requestCulture = result;

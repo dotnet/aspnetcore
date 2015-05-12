@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
+using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Localization.Internal;
 using Microsoft.Framework.Internal;
@@ -26,12 +27,12 @@ namespace Microsoft.AspNet.Localization
         public string UIQueryStringKey { get; set; } = "ui-culture";
 
         /// <inheritdoc />
-        public override RequestCulture DetermineRequestCulture([NotNull] HttpContext httpContext)
+        public override Task<RequestCulture> DetermineRequestCulture([NotNull] HttpContext httpContext)
         {
             var request = httpContext.Request;
             if (!request.QueryString.HasValue)
             {
-                return null;
+                return Task.FromResult((RequestCulture)null);
             }
 
             string queryCulture = null;
@@ -50,7 +51,7 @@ namespace Microsoft.AspNet.Localization
             if (queryCulture == null && queryUICulture == null)
             {
                 // No values specified for either so no match
-                return null;
+                return Task.FromResult((RequestCulture)null);
             }
 
             if (queryCulture != null && queryUICulture == null)
@@ -64,14 +65,14 @@ namespace Microsoft.AspNet.Localization
 
             if (culture == null || uiCulture == null)
             {
-                return null;
+                return Task.FromResult((RequestCulture)null);
             }
 
             var requestCulture = new RequestCulture(culture, uiCulture);
 
             requestCulture = ValidateRequestCulture(requestCulture);
 
-            return requestCulture;
+            return Task.FromResult(requestCulture);
         }
     }
 }

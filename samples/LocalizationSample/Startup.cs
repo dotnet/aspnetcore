@@ -35,6 +35,14 @@ namespace LocalizationSample
                 //    new CultureInfo("en-AU")
                 //}
             };
+
+            // Optionally create an app-specific strategy with just a delegate, e.g. look up user preference from DB.
+            // Inserting it as position 0 ensures it has priority over any of the default strategies.
+            //options.RequestCultureStrategies.Insert(0, new CustomRequestCultureStrategy(async context =>
+            //{
+                
+            //}));
+
             app.UseRequestLocalization(options);
 
             app.Use(async (context, next) =>

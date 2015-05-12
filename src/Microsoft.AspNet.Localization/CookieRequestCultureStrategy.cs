@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Localization.Internal;
 using Microsoft.Framework.Internal;
@@ -24,20 +25,20 @@ namespace Microsoft.AspNet.Localization
         public string CookieName { get; set; } = DefaultCookieName;
 
         /// <inheritdoc />
-        public override RequestCulture DetermineRequestCulture([NotNull] HttpContext httpContext)
+        public override Task<RequestCulture> DetermineRequestCulture([NotNull] HttpContext httpContext)
         {
             var cookie = httpContext.Request.Cookies[CookieName];
 
             if (cookie == null)
             {
-                return null;
+                return Task.FromResult((RequestCulture)null);
             }
 
             var requestCulture = ParseCookieValue(cookie);
 
             requestCulture = ValidateRequestCulture(requestCulture);
 
-            return requestCulture;
+            return Task.FromResult(requestCulture);
         }
 
         /// <summary>

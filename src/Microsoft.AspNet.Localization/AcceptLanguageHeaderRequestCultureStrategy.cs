@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Localization.Internal;
 using Microsoft.Framework.Internal;
@@ -22,13 +23,13 @@ namespace Microsoft.AspNet.Localization
         public int MaximumAcceptLanguageHeaderValuesToTry { get; set; } = 3;
 
         /// <inheritdoc />
-        public override RequestCulture DetermineRequestCulture([NotNull] HttpContext httpContext)
+        public override Task<RequestCulture> DetermineRequestCulture([NotNull] HttpContext httpContext)
         {
             var acceptLanguageHeader = httpContext.Request.GetTypedHeaders().AcceptLanguage;
 
             if (acceptLanguageHeader == null || acceptLanguageHeader.Count == 0)
             {
-                return null;
+                return Task.FromResult((RequestCulture)null);
             }
 
             var languages = acceptLanguageHeader.AsEnumerable();
@@ -58,13 +59,13 @@ namespace Microsoft.AspNet.Localization
 
                         if (requestCulture != null)
                         {
-                            return requestCulture;
+                            return Task.FromResult(requestCulture);
                         }
                     }
                 }
             }
 
-            return null;
+            return Task.FromResult((RequestCulture)null);
         }
     }
 }
