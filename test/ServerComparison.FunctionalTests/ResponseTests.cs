@@ -37,9 +37,7 @@ namespace ServerComparison.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5071/")]
-        // https://github.com/aspnet/Helios/issues/148
-        // TODO: Chunks anyways [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5073/")]
-        // https://github.com/aspnet/WebListener/issues/113
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5073/")]
         public Task ResponseFormats_Windows_ConnectionClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckConnectionCloseAsync);
@@ -72,8 +70,7 @@ namespace ServerComparison.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5072/")]
-        // TODO: Not implemented [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5073/")]
-        // https://github.com/aspnet/WebListener/issues/112
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5073/")]
         public Task ResponseFormats_Windows_ManuallyChunk(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckManuallyChunkedAsync);
@@ -84,6 +81,22 @@ namespace ServerComparison.FunctionalTests
         public Task ResponseFormats_Kestrel_ManuallyChunk(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckManuallyChunkedAsync);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5076/")]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5077/")]
+        public Task ResponseFormats_Windows_ManuallyChunkAndClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        {
+            return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckManuallyChunkedAndCloseAsync);
+        }
+
+        [Theory]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5078/")]
+        public Task ResponseFormats_Kestrel_ManuallyChunkAndClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        {
+            return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckManuallyChunkedAndCloseAsync);
         }
 
         public async Task ResponseFormats(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, Func<HttpClient, ILogger, Task> scenario)
@@ -195,6 +208,25 @@ namespace ServerComparison.FunctionalTests
                 Assert.Equal("Manually Chunked", responseText);
                 Assert.True(response.Headers.TransferEncodingChunked, "/manuallychunked, chunked?");
                 Assert.Null(response.Headers.ConnectionClose);
+                Assert.Null(GetContentLength(response));
+            }
+            catch (XunitException)
+            {
+                logger.LogWarning(response.ToString());
+                logger.LogWarning(responseText);
+                throw;
+            }
+        }
+
+        private static async Task CheckManuallyChunkedAndCloseAsync(HttpClient client, ILogger logger)
+        {
+            var response = await client.GetAsync("manuallychunkedandclose");
+            var responseText = await response.Content.ReadAsStringAsync();
+            try
+            {
+                Assert.Equal("Manually Chunked and Close", responseText);
+                Assert.True(response.Headers.TransferEncodingChunked, "/manuallychunkedandclose, chunked?");
+                Assert.True(response.Headers.ConnectionClose, "/manuallychunkedandclose, closed?");
                 Assert.Null(GetContentLength(response));
             }
             catch (XunitException)

@@ -51,6 +51,16 @@ namespace ServerComparison.TestSites
                 });
             });
 
+            app.Map("/manuallychunkedandclose", subApp =>
+            {
+                subApp.Run(context =>
+                {
+                    context.Response.Headers[HeaderNames.Connection] = "close";
+                    context.Response.Headers[HeaderNames.TransferEncoding] = "chunked";
+                    return context.Response.WriteAsync("1A\r\nManually Chunked and Close\r\n0\r\n\r\n");
+                });
+            });
+
             app.Run(context =>
             {
                 return context.Response.WriteAsync("Running");
