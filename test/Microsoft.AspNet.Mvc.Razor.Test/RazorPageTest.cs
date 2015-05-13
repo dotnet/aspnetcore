@@ -272,7 +272,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void IsSectionDefined_ThrowsIfPreviousSectionWritersIsNotRegistered()
         {
             // Arrange
-            var page = CreatePage(v => 
+            var page = CreatePage(v =>
             {
                 v.Path = "/Views/TestPath/Test.cshtml";
             });
@@ -803,6 +803,89 @@ namespace Microsoft.AspNet.Mvc.Razor
                             postContent: null,
                             postElement: null),
                         "<p test=\"HtmlEncode[[testVal]]\" something=\"HtmlEncode[[  spaced  ]]\">Hello World!</p>"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "p",
+                            attributes:  new TagHelperAttributeList()
+                            {
+                                ["test"] = new TagHelperAttribute
+                                {
+                                    Name = "test",
+                                    Minimized = true
+                                },
+                            },
+                            selfClosing: false,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     "Hello World!",
+                            postContent: null,
+                            postElement: null),
+                        "<p test>Hello World!</p>"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "p",
+                            attributes:  new TagHelperAttributeList()
+                            {
+                                ["test"] = new TagHelperAttribute
+                                {
+                                    Name = "test",
+                                    Minimized = true
+                                },
+                                ["test2"] = new TagHelperAttribute
+                                {
+                                    Name = "test2",
+                                    Minimized = true
+                                },
+                            },
+                            selfClosing: false,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     "Hello World!",
+                            postContent: null,
+                            postElement: null),
+                        "<p test test2>Hello World!</p>"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "p",
+                            attributes:  new TagHelperAttributeList()
+                            {
+                                ["first"] = "unminimized",
+                                ["test"] = new TagHelperAttribute
+                                {
+                                    Name = "test",
+                                    Minimized = true
+                                },
+                            },
+                            selfClosing: false,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     "Hello World!",
+                            postContent: null,
+                            postElement: null),
+                        "<p first=\"HtmlEncode[[unminimized]]\" test>Hello World!</p>"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "p",
+                            attributes:  new TagHelperAttributeList()
+                            {
+                                ["test"] = new TagHelperAttribute
+                                {
+                                    Name = "test",
+                                    Minimized = true
+                                },
+                                ["last"] = "unminimized",
+                            },
+                            selfClosing: false,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     "Hello World!",
+                            postContent: null,
+                            postElement: null),
+                        "<p test last=\"HtmlEncode[[unminimized]]\">Hello World!</p>"
                     },
                     {
                         GetTagHelperOutput(

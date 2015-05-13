@@ -24,9 +24,9 @@
     <h3>Current Tag Cloud from Tag Helper</h3>
     <tag-cloud count="Model.TagsToShow" surround="div" />
     <h3>Current Tag Cloud from ViewComponentHelper:</h3>
-    <section>@await Component.InvokeAsync("Tags", 15)</section>
+    <section bold>@await Component.InvokeAsync("Tags", 15)</section>
 </div>
 
 @section footerContent {
-    <p condition="Model.Approved" surround="section">&copy; @Model.CopyrightYear - My ASP.NET Application</p>
+    <p condition="Model.Approved" bold surround="section">&copy; @Model.CopyrightYear - My ASP.NET Application</p>
 }
