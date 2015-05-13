@@ -289,9 +289,13 @@ namespace Microsoft.AspNet.Mvc.Razor
                 {
                     writer.Write(' ');
                     writer.Write(attribute.Name);
-                    writer.Write("=\"");
-                    WriteTo(writer, HtmlEncoder, attribute.Value, escapeQuotes: true);
-                    writer.Write('"');
+
+                    if (!attribute.Minimized)
+                    {
+                        writer.Write("=\"");
+                        WriteTo(writer, HtmlEncoder, attribute.Value, escapeQuotes: true);
+                        writer.Write('"');
+                    }
                 }
 
                 if (tagHelperOutput.SelfClosing)
