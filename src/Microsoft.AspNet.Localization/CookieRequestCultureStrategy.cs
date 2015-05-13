@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Localization.Internal;
+using Microsoft.Framework.Globalization;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Localization

@@ -1,21 +1,32 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
-using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 
-namespace Microsoft.AspNet.Localization.Internal
+namespace Microsoft.Framework.Globalization
 {
-    public static class CultureInfoCache
+    /// <summary>
+    /// Provides read-only cached instances of <see cref="CultureInfo"/>.
+    /// </summary>
+    public static partial class CultureInfoCache
     {
         private static readonly ConcurrentDictionary<string, CacheEntry> _cache = new ConcurrentDictionary<string, CacheEntry>();
 
+        /// <summary>
+        /// Gets a read-only cached <see cref="CultureInfo"/> for the specified name. Only names that exist in
+        /// <see cref="KnownCultureNames"/> will be used.
+        /// </summary>
+        /// <param name="name">The culture name.</param>
+        /// <returns>
+        /// A read-only cached <see cref="CultureInfo"/> or <c>null</c> a match wasn't found in
+        /// <see cref="KnownCultureNames"/>.
+        /// </returns>
         public static CultureInfo GetCultureInfo(string name)
         {
             // Allow only known culture names as this API is called with input from users (HTTP requests) and
             // creating CultureInfo objects is expensive and we don't want it to throw either.
-            if (name == null || !CultureInfoList.KnownCultureNames.Contains(name))
+            if (name == null || !KnownCultureNames.Contains(name))
             {
                 return null;
             }
