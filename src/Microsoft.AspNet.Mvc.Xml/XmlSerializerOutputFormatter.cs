@@ -133,7 +133,9 @@ namespace Microsoft.AspNet.Mvc.Xml
         public virtual XmlWriter CreateXmlWriter([NotNull] Stream writeStream,
                                                  [NotNull] XmlWriterSettings xmlWriterSettings)
         {
-            return XmlWriter.Create(writeStream, xmlWriterSettings);
+            return XmlWriter.Create(
+                new HttpResponseStreamWriter(writeStream, xmlWriterSettings.Encoding),
+                xmlWriterSettings);
         }
 
         /// <inheritdoc />
@@ -144,10 +146,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             var tempWriterSettings = WriterSettings.Clone();
             tempWriterSettings.Encoding = context.SelectedEncoding;
 
-            var innerStream = context.HttpContext.Response.Body;
-
-            using (var outputStream = new NonDisposableStream(innerStream))
-            using (var xmlWriter = CreateXmlWriter(outputStream, tempWriterSettings))
+            using (var xmlWriter = CreateXmlWriter(context.HttpContext.Response.Body, tempWriterSettings))
             {
                 var obj = context.Object;
                 var runtimeType = obj?.GetType();

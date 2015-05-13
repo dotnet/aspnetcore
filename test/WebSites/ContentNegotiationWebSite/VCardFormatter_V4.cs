@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using ContentNegotiationWebSite.Models;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Net.Http.Headers;
@@ -42,11 +43,7 @@ namespace ContentNegotiationWebSite
             builder.AppendLine();
             builder.AppendLine("END:VCARD");
 
-            var responseStream = new NonDisposableStream(context.HttpContext.Response.Body);
-            using (var writer = new StreamWriter(responseStream, context.SelectedEncoding, bufferSize: 1024))
-            {
-                await writer.WriteAsync(builder.ToString());
-            }
+            await context.HttpContext.Response.WriteAsync(builder.ToString(), context.SelectedEncoding);
         }
     }
 }
