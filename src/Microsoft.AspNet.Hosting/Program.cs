@@ -34,6 +34,7 @@ namespace Microsoft.AspNet.Hosting
             var host = new WebHostBuilder(_serviceProvider, config).Build();
             using (host.Start())
             {
+                Console.WriteLine("Started");
                 var appShutdownService = host.ApplicationServices.GetRequiredService<IApplicationShutdown>();
                 Console.CancelKeyPress += delegate { appShutdownService.RequestShutdown(); };
                 appShutdownService.ShutdownRequested.WaitHandle.WaitOne();
