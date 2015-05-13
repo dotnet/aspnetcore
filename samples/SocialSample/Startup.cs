@@ -15,6 +15,7 @@ using Newtonsoft.Json.Linq;
 
 namespace CookieSample
 {
+    /* Note all servers must use the same address and port because these are pre-registered with the various providers. */
     public class Startup
     {
         public void ConfigureServices(IServiceCollection services)
