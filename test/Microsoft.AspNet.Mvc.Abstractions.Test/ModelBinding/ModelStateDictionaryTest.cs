@@ -293,6 +293,45 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal(ModelValidationState.Valid, validationState);
         }
 
+        [Theory]
+        [InlineData("[0].foo.bar")]
+        [InlineData("[0].foo.bar[0]")]
+        public void GetFieldValidationState_IndexedPrefix_ReturnsInvalidIfKeyChildContainsErrors(string key)
+        {
+            // Arrange
+            var msd = new ModelStateDictionary();
+            msd.AddModelError(key, "error text");
+
+            // Act
+            var validationState = msd.GetFieldValidationState("[0].foo");
+
+            // Assert
+            Assert.Equal(ModelValidationState.Invalid, validationState);
+        }
+
+        [Theory]
+        [InlineData("[0].foo.bar")]
+        [InlineData("[0].foo.bar[0]")]
+        public void GetFieldValidationState_IndexedPrefix_ReturnsValidIfModelStateDoesNotContainErrors(string key)
+        {
+            // Arrange
+            var validState = new ModelState
+            {
+                Value = new ValueProviderResult(null, null, null),
+                ValidationState = ModelValidationState.Valid
+            };
+            var msd = new ModelStateDictionary
+            {
+                { key, validState }
+            };
+
+            // Act
+            var validationState = msd.GetFieldValidationState("[0].foo");
+
+            // Assert
+            Assert.Equal(ModelValidationState.Valid, validationState);
+        }
+
         [Fact]
         public void IsValidPropertyReturnsFalseIfErrors()
         {

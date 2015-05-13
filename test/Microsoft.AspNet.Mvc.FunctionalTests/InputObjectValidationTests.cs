@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task CheckIfExcludedField_IsValidatedForNonBodyBoundModels()
+        public async Task CheckIfExcludedField_IsNotValidatedForNonBodyBoundModels()
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             //Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("The Name field is required.", await response.Content.ReadAsStringAsync());
+            Assert.Equal("xyz", await response.Content.ReadAsStringAsync());
         }
 
         private class ErrorCollection

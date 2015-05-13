@@ -360,6 +360,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 .Validate(validationContext, topLevelValidationNode);
 
             // Assert
+            Assert.Equal(1, validationContext.ModelState.Count);
             Assert.Contains("Street", validationContext.ModelState.Keys);
             var streetState = validationContext.ModelState["Street"];
             Assert.Equal(2, streetState.Errors.Count);
@@ -427,7 +428,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             validator.Validate(validationContext, topLevelValidationNode);
 
             // Assert
-            Assert.Equal(new[] { "key1", "user.Password", "", "user.ConfirmPassword" },
+            Assert.Equal(new[] { "key1", "", "user.ConfirmPassword" },
                 validationContext.ModelState.Keys.ToArray());
             var modelState = validationContext.ModelState["user.ConfirmPassword"];
             Assert.Empty(modelState.Errors);
@@ -438,7 +439,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         }
 
         [Fact]
-        public void ForExcludedNonModelBoundType_Properties_NotMarkedAsSkiped()
+        public void ForExcludedNonModelBoundTypes_NoEntryInModelState()
         {
             // Arrange
             var user = new User()
@@ -468,11 +469,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             validator.Validate(validationContext, topLevelValidationNode);
 
             // Assert
-            Assert.False(validationContext.ModelState.ContainsKey("user.Password"));
-            Assert.False(validationContext.ModelState.ContainsKey("user.ConfirmPassword"));
-            var modelState = validationContext.ModelState["user"];
-            Assert.Empty(modelState.Errors);
-            Assert.Equal(modelState.ValidationState, ModelValidationState.Valid);
+            Assert.True(validationContext.ModelState.IsValid);
+            Assert.Empty(validationContext.ModelState);
         }
 
         [Fact]
@@ -511,13 +509,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             validator.Validate(validationContext, topLevelValidationNode);
 
             // Assert
-            var modelState = validationContext.ModelState["user.Password"];
-            Assert.Empty(modelState.Errors);
-            Assert.Equal(modelState.ValidationState, ModelValidationState.Skipped);
+            var entry = Assert.Single(validationContext.ModelState);
+            Assert.Equal("user.Password", entry.Key);
+            Assert.Empty(entry.Value.Errors);
+            Assert.Equal(entry.Value.ValidationState, ModelValidationState.Skipped);
+        }
 
-            modelState = validationContext.ModelState["user.ConfirmPassword"];
-            Assert.Empty(modelState.Errors);
-            Assert.Equal(modelState.ValidationState, ModelValidationState.Skipped);
+        private class Person2
+        {
+            public Address Address { get; set; }
         }
 
         [Fact]
@@ -525,22 +525,28 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         {
             // Arrange
             var testValidationContext = GetModelValidationContext(
-                new TestServiceProvider(),
-                typeof(TestServiceProvider));
-
+                new Person2()
+                {
+                    Address = new Address { Street = "GreaterThan5Characters" }
+                },
+                typeof(Person2));
             var validationContext = testValidationContext.ModelValidationContext;
+
+            // Create an entry like a model binder would.
+            validationContext.ModelState.Add("person.Address", new ModelState());
+
             var validator = new DefaultObjectValidator(
                 testValidationContext.ExcludeFilters, 
                 testValidationContext.ModelMetadataProvider);
             var modelExplorer = testValidationContext.ModelValidationContext.ModelExplorer;
             var topLevelValidationNode = new ModelValidationNode(
-                "serviceProvider",
+                "person",
                 modelExplorer.Metadata,
                 modelExplorer.Model);
 
-            var propertyExplorer = modelExplorer.GetExplorerForProperty("TestService");
+            var propertyExplorer = modelExplorer.GetExplorerForProperty("Address");
             var childNode = new ModelValidationNode(
-                "serviceProvider.TestService",
+                "person.Address",
                 propertyExplorer.Metadata,
                 propertyExplorer.Model)
             {
@@ -554,8 +560,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             // Assert
             Assert.True(validationContext.ModelState.IsValid);
-            var modelState = validationContext.ModelState["serviceProvider.TestService"];
-            Assert.Empty(modelState.Errors);
+            Assert.Equal(1, validationContext.ModelState.Count);
+            var modelState = validationContext.ModelState["person.Address"];
             Assert.Equal(modelState.ValidationState, ModelValidationState.Skipped);
         }
 
@@ -603,7 +609,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             // Assert
             Assert.True(validationContext.ModelState.IsValid);
-            var modelState = validationContext.ModelState["items"];
+            Assert.Equal(3, validationContext.ModelState.Count);
+            var modelState = validationContext.ModelState["items[0]"];
+            Assert.Equal(modelState.ValidationState, ModelValidationState.Valid);
+
+            modelState = validationContext.ModelState["items[1]"];
+            Assert.Equal(modelState.ValidationState, ModelValidationState.Valid);
+
+            modelState = validationContext.ModelState["items[2]"];
             Assert.Equal(modelState.ValidationState, ModelValidationState.Valid);
         }
 
@@ -653,16 +666,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             // Assert
             Assert.True(validationContext.ModelState.IsValid);
-            var modelState = validationContext.ModelState["items"];
-            Assert.Equal(modelState.ValidationState, ModelValidationState.Valid);
-            modelState = validationContext.ModelState["items[0].Key"];
-            Assert.Equal(modelState.ValidationState, ModelValidationState.Skipped);
+            Assert.Equal(4, validationContext.ModelState.Count);
+            var modelState = validationContext.ModelState["items[0].Key"];
+            Assert.Equal(ModelValidationState.Skipped, modelState.ValidationState);
             modelState = validationContext.ModelState["items[0].Value"];
-            Assert.Equal(modelState.ValidationState, ModelValidationState.Skipped);
+            Assert.Equal(ModelValidationState.Skipped, modelState.ValidationState);
             modelState = validationContext.ModelState["items[1].Key"];
-            Assert.Equal(modelState.ValidationState, ModelValidationState.Skipped);
+            Assert.Equal(ModelValidationState.Skipped, modelState.ValidationState);
             modelState = validationContext.ModelState["items[1].Value"];
-            Assert.Equal(modelState.ValidationState, ModelValidationState.Skipped);
+            Assert.Equal(ModelValidationState.Skipped, modelState.ValidationState);
         }
 
         [Fact]
@@ -690,8 +702,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             // Assert
             Assert.True(validationContext.ModelState.IsValid);
-            var key = Assert.Single(validationContext.ModelState.Keys);
-            Assert.Equal("person", key);
+
+            // Since Person is not IValidatable and we do not look at its properties, the state is empty.
+            Assert.Empty(validationContext.ModelState.Keys);
         }
 
         [Fact]

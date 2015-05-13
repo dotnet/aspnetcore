@@ -14,21 +14,59 @@ namespace ModelBindingWebSite.Controllers
         [FromServices]
         public ITestService ControllerService { get; set; }
 
-        public bool SkipValidation(Resident resident)
+        public object AvoidRecursive(SelfishPerson selfishPerson)
         {
-            return ModelState.IsValid;
+            return new SerializableModelStateDictionary(ModelState);
         }
 
-        public bool AvoidRecursive(SelfishPerson selfishPerson)
+        public object DoNotValidateParameter([FromServices] ITestService service)
         {
-            return ModelState.IsValid;
-        }
-
-        public bool DoNotValidateParameter([FromServices] ITestService service)
-        {
-            return ModelState.IsValid;
+            return ModelState;
         }
     }
+
+    public class SerializableModelStateDictionary : Dictionary<string, Entry>
+    {
+        public bool IsValid { get; set; }
+
+        public int ErrorCount { get; set; }
+
+        public SerializableModelStateDictionary(ModelStateDictionary modelState)
+        {
+            var errorCount = 0;
+            foreach (var keyModelStatePair in modelState)
+            {
+                var key = keyModelStatePair.Key;
+                var value = keyModelStatePair.Value;
+                errorCount += value.Errors.Count;
+                var entry = new Entry()
+                {
+                    Errors = value.Errors,
+                    RawValue = value.Value.RawValue,
+                    AttemptedValue = value.Value.AttemptedValue,
+                    ValidationState = value.ValidationState
+                };
+
+                Add(key, entry);
+            }
+
+            IsValid = modelState.IsValid;
+            ErrorCount = errorCount;
+        }
+    }
+
+    public class Entry
+    {
+        public ModelValidationState ValidationState { get; set; }
+
+        public ModelErrorCollection Errors { get; set; }
+
+        public object RawValue { get; set; }
+
+        public string AttemptedValue { get; set; }
+
+    }
+
 
     public class SelfishPerson
     {

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -596,6 +597,61 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             entry = Assert.Single(modelState, kvp => kvp.Key == "Addresses[Key2].Street").Value;
             Assert.Equal("Street2", entry.Value.AttemptedValue);
             Assert.Equal("Street2", entry.Value.RawValue);
+        }
+
+        private class Person5
+        {
+            public IList<Address5> Addresses { get; set; }
+        }
+
+        private class Address5
+        {
+            public int Zip { get; set; }
+
+            [StringLength(3)]
+            public string Street { get; set; }
+        }
+
+        [Fact]
+        public async Task CollectionModelBinder_UsesCustomIndexes_AddsErrorsWithCorrectKeys()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Person5)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                var formCollection = new FormCollection(new Dictionary<string, string[]>()
+                {
+                    { "Addresses.index", new [] { "Key1" } },
+                    { "Addresses[Key1].Street", new [] { "Street1" } },
+                });
+
+                request.Form = formCollection;
+                request.ContentType = "application/x-www-form-urlencoded";
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+            Assert.IsType<Person5>(modelBindingResult.Model);
+
+            Assert.Equal(1, modelState.Count);
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, kvp => kvp.Key == "Addresses[Key1].Street").Value;
+            var error = Assert.Single(entry.Errors);
+            Assert.Equal("The field Street must be a string with a maximum length of 3.", error.ErrorMessage);
         }
     }
 }

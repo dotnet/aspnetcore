@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
               request =>
               {
-                  request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ \"Id\":1234 }"));
+                  request.Body = new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
                   request.ContentType = "application/json";
               });
 
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task FromBodyOnActionParameter_EmptyBody_AddsModelStateError()
+        public async Task FromBodyOnActionParameter_EmptyBody_BindsToNullValue()
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
                 request =>
                 {
-                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ \"Id\":1234 }"));
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
                     request.ContentType = "application/json";
                 });
 
@@ -98,13 +98,9 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // Assert
             Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
-            var boundPerson = Assert.IsType<Person>(modelBindingResult.Model);
-            Assert.NotNull(boundPerson);
-            var key = Assert.Single(modelState.Keys);
-            Assert.Equal("Address", key);
-            Assert.False(modelState.IsValid);
-            var error = Assert.Single(modelState[key].Errors);
-            Assert.Equal("The Address field is required.",error.ErrorMessage);
+            Assert.Null(modelBindingResult.Model);
+            Assert.Empty(modelState.Keys);
+            Assert.True(modelState.IsValid);
         }
 
         private class Person4

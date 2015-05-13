@@ -46,7 +46,6 @@ namespace FormatterWebSite
         [HttpPost]
         public string GetDeveloperAlias(Developer developer)
         {
-            // Since validation exclusion is currently only effective in case of body bound models.
             if (ModelState.IsValid)
             {
                 return developer.Alias;

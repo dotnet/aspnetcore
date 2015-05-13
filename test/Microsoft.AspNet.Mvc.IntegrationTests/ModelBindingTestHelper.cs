@@ -49,21 +49,21 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             };
         }
 
-        public static DefaultControllerActionArgumentBinder GetArgumentBinder()
+        public static DefaultControllerActionArgumentBinder GetArgumentBinder(MvcOptions options = null)
         {
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             return new DefaultControllerActionArgumentBinder(
                 metadataProvider,
-                GetObjectValidator());
+                GetObjectValidator(options));
         }
 
-        public static IObjectModelValidator GetObjectValidator()
+        public static IObjectModelValidator GetObjectValidator(MvcOptions options = null)
         {
-            var options = new TestMvcOptions();
-            options.Options.MaxModelValidationErrors = 5;
+            options = options ?? new TestMvcOptions().Options;
+            options.MaxModelValidationErrors = 5;
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             return new DefaultObjectValidator(
-                    options.Options.ValidationExcludeFilters,
+                    options.ValidationExcludeFilters,
                     metadataProvider);
         }
 

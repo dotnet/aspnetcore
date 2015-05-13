@@ -273,7 +273,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public IScopedInstance<ActionBindingContext> BindingContext { get; set; }
         }
 
-        [Fact(Skip = "FromServices should not have an entry in model state #2464.")]
+        [Fact]
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithServicesModelBinder_WithPrefix_Success()
         {
             // Arrange
@@ -313,7 +313,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("bill", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "FromServices should not have an entry in model state #2464.")]
+        [Fact]
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithServicesModelBinder_WithEmptyPrefix_Success()
         {
             // Arrange
@@ -355,7 +355,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         // We don't provide enough data in this test for the 'Person' model to be created. So even though there is
         // a [FromServices], it won't be used.
-        [Fact(Skip = "FromServices should not have an entry in model state #2464.")]
+        [Fact]
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithServicesModelBinder_WithPrefix_PartialData()
         {
             // Arrange
@@ -427,7 +427,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<Order2>(modelBindingResult.Model);
             Assert.Null(model.Customer);
 
-            Assert.Equal(0, modelState.Count); // Fails due to #2464
+            Assert.Equal(0, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }

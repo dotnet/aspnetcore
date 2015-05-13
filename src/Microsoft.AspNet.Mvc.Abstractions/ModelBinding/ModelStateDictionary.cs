@@ -281,7 +281,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// state errors; <see cref="ModelValidationState.Valid"/> otherwise.</returns>
         public ModelValidationState GetFieldValidationState([NotNull] string key)
         {
-            var entries = FindKeysWithPrefix(this, key);
+            var entries = FindKeysWithPrefix(key);
             if (!entries.Any())
             {
                 return ModelValidationState.Unvalidated;
@@ -378,7 +378,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // If key is null or empty, clear all entries in the dictionary
             // else just clear the ones that have key as prefix
             var entries  = (string.IsNullOrEmpty(key)) ?
-                _innerDictionary : FindKeysWithPrefix(this, key);
+                _innerDictionary : FindKeysWithPrefix(key);
 
             foreach (var entry in entries)
             {
@@ -502,17 +502,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return GetEnumerator();
         }
 
-        private static IEnumerable<KeyValuePair<string, TValue>> FindKeysWithPrefix<TValue>(
-            [NotNull] IDictionary<string, TValue> dictionary,
-            [NotNull] string prefix)
+        public IEnumerable<KeyValuePair<string, ModelState>> FindKeysWithPrefix([NotNull] string prefix)
         {
-            TValue exactMatchValue;
-            if (dictionary.TryGetValue(prefix, out exactMatchValue))
+            ModelState exactMatchValue;
+            if (_innerDictionary.TryGetValue(prefix, out exactMatchValue))
             {
-                yield return new KeyValuePair<string, TValue>(prefix, exactMatchValue);
+                yield return new KeyValuePair<string, ModelState>(prefix, exactMatchValue);
             }
 
-            foreach (var entry in dictionary)
+            foreach (var entry in _innerDictionary)
             {
                 var key = entry.Key;
 
@@ -521,19 +519,30 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     continue;
                 }
 
-                if (key.StartsWith("[", StringComparison.OrdinalIgnoreCase))
-                {
-                    key = key.Substring(key.IndexOf('.') + 1);
-                    if (string.Equals(prefix, key, StringComparison.Ordinal))
-                    {
-                        yield return entry;
-                        continue;
-                    }
-                }
-
                 if (!key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                 {
-                    continue;
+
+                    if (key.StartsWith("[", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var subKey = key.Substring(key.IndexOf('.') + 1);
+
+                        if (!subKey.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
+                        if (string.Equals(prefix, subKey, StringComparison.Ordinal))
+                        {
+                            yield return entry;
+                            continue;
+                        }
+
+                        key = subKey;
+                    }
+                    else
+                    {
+                        continue;
+                    }
                 }
 
                 // Everything is prefixed by the empty string

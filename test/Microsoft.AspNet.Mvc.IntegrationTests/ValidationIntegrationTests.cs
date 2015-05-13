@@ -3,7 +3,9 @@
 
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -1003,6 +1005,82 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(0, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.False(modelState.IsValid);
+        }
+
+        private class Order11
+        {
+            public IEnumerable<Address> ShippingAddresses { get; set; }
+
+            public Address HomeAddress { get; set; }
+
+            [FromBody]
+            public Address OfficeAddress { get; set; }
+        }
+
+        private class Address
+        {
+            public int Street { get; set; }
+            public string State { get; set; }
+
+            [Range(10000, 99999)]
+            public int Zip { get; set; }
+
+            public Country Country { get; set; }
+        }
+
+        private class Country
+        {
+            public string Name { get; set; }
+        }
+        [Fact]
+        public async Task TypeBasedExclusion_ForBodyAndNonBodyBoundModels()
+        {
+            // Arrange
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order11)
+            };
+
+            MvcOptions testOptions = null;
+            var input = "{\"OfficeAddress.Zip\":\"45\"}";
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString =
+                    new QueryString("?HomeAddress.Country.Name=US&ShippingAddresses[0].Zip=45&HomeAddress.Zip=46");
+                request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
+                request.ContentType = "application/json";
+            },
+            options => {
+
+                options.ValidationExcludeFilters.Add(typeof(Address));
+                testOptions = options;
+            });
+
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(testOptions);
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            Assert.Equal(3, modelState.Count);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "HomeAddress.Country.Name").Value;
+            Assert.Equal("US", entry.Value.AttemptedValue);
+            Assert.Equal("US", entry.Value.RawValue);
+            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+
+            entry = Assert.Single(modelState, e => e.Key == "ShippingAddresses[0].Zip").Value;
+            Assert.Equal("45", entry.Value.AttemptedValue);
+            Assert.Equal("45", entry.Value.RawValue);
+            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+
+            entry = Assert.Single(modelState, e => e.Key == "HomeAddress.Zip").Value;
+            Assert.Equal("46", entry.Value.AttemptedValue);
+            Assert.Equal("46", entry.Value.RawValue);
+            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
         }
 
         private static void AssertRequiredError(string key, ModelError error)

@@ -11,7 +11,9 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
+using ModelBindingWebSite.Controllers;
 using ModelBindingWebSite.Models;
 using ModelBindingWebSite.ViewModels;
 using Newtonsoft.Json;
@@ -33,34 +35,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Act
-            var response = await client.GetAsync("http://localhost/Validation/DoNotValidateParameter");
+            var response = await client.GetStringAsync("http://localhost/Validation/DoNotValidateParameter");
 
             // Assert
-            var stringValue = await response.Content.ReadAsStringAsync();
-            var isModelStateValid = JsonConvert.DeserializeObject<bool>(stringValue);
-            Assert.True(isModelStateValid);
-        }
-
-        [Fact]
-        public async Task TypeBasedExclusion_ForBodyAndNonBodyBoundModels()
-        {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Make sure the body object gets created with an invalid zip.
-            var input = "{\"OfficeAddress.Zip\":\"45\"}";
-            var content = new StringContent(input, Encoding.UTF8, "application/json");
-
-            // Act
-            // Make sure the non body based object gets created with an invalid zip.
-            var response = await client.PostAsync(
-                "http://localhost/Validation/SkipValidation?ShippingAddresses[0].Zip=45&HomeAddress.Zip=46", content);
-
-            // Assert
-            var stringValue = await response.Content.ReadAsStringAsync();
-            var isModelStateValid = JsonConvert.DeserializeObject<bool>(stringValue);
-            Assert.True(isModelStateValid);
+            var modelState = JsonConvert.DeserializeObject<ModelStateDictionary>(response);
+            Assert.Empty(modelState);
+            Assert.True(modelState.IsValid);
         }
 
         [Fact]
@@ -76,8 +56,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var stringValue = await response.Content.ReadAsStringAsync();
-            var isModelStateValid = JsonConvert.DeserializeObject<bool>(stringValue);
-            Assert.True(isModelStateValid);
+            var json = JsonConvert.DeserializeObject<ModelStateDictionary>(stringValue);
+            Assert.True(json.IsValid);
         }
 
         [Theory]

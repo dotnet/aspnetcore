@@ -66,12 +66,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var currentValidationNode = validationContext.ValidationNode;
             if (currentValidationNode.SuppressValidation)
             {
-                // Short circuit if the node is marked to be suppressed
-                var validationState = modelState.GetFieldValidationState(modelKey);
-                if (validationState == ModelValidationState.Unvalidated)
-                {
-                    modelValidationContext.ModelState.MarkFieldSkipped(modelKey);
-                }
+                // Short circuit if the node is marked to be suppressed.
+                // If there are any sub entries which were model bound, they need to be marked as skipped,
+                // Otherwise they will remain as unvalidated and the model state would be Invalid.
+                MarkChildNodesAsSkipped(modelKey, modelExplorer.Metadata, validationContext);
 
                 // For validation purposes this model is valid.
                 return true;
@@ -103,7 +101,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             if (IsTypeExcludedFromValidation(_excludeFilters, modelType))
             {
                 var result = ShallowValidate(modelKey, modelExplorer, validationContext, validators);
-                MarkPropertiesAsSkipped(modelKey, modelExplorer.Metadata, validationContext);
+
+                // If there are any sub entries which were model bound, they need to be marked as skipped,
+                // Otherwise they will remain as unvalidated and the model state would be Invalid.
+                MarkChildNodesAsSkipped(modelKey, modelExplorer.Metadata, validationContext);
                 return result;
             }
 
@@ -127,7 +128,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             return isValid;
         }
 
-        private void MarkPropertiesAsSkipped(string currentModelKey, ModelMetadata metadata, ValidationContext validationContext)
+        private void MarkChildNodesAsSkipped(string currentModelKey, ModelMetadata metadata, ValidationContext validationContext)
         {
             var modelState = validationContext.ModelValidationContext.ModelState;
             var fieldValidationState = modelState.GetFieldValidationState(currentModelKey);
@@ -140,15 +141,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 return;
             }
 
-            foreach (var childMetadata in metadata.Properties)
+            // At this point we just want to mark all sub-entries present in the model state as skipped.
+            var entries = modelState.FindKeysWithPrefix(currentModelKey);
+            foreach (var entry in entries)
             {
-                var childKey = ModelNames.CreatePropertyModelName(currentModelKey, childMetadata.PropertyName);
-                var validationState = modelState.GetFieldValidationState(childKey);
-
-                if (validationState == ModelValidationState.Unvalidated)
-                {
-                    validationContext.ModelValidationContext.ModelState.MarkFieldSkipped(childKey);
-                }
+                entry.Value.ValidationState = ModelValidationState.Skipped;
             }
         }
 
