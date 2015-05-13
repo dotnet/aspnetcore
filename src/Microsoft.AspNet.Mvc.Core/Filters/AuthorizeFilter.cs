@@ -44,6 +44,11 @@ namespace Microsoft.AspNet.Mvc
                         newPrincipal.AddIdentities(result.Identities);
                     }
                 }
+                // If all schemes failed authentication, provide a default identity anyways
+                if (newPrincipal.Identity == null)
+                {
+                    newPrincipal.AddIdentity(new ClaimsIdentity());
+                }
                 context.HttpContext.User = newPrincipal;
             }
 
