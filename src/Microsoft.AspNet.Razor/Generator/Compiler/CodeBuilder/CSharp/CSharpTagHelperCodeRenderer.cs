@@ -200,7 +200,8 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                 if (matchingAttributes.Any())
                 {
                     // First attribute wins, even if there's duplicates.
-                    var attributeValueChunk = matchingAttributes.First().Value;
+                    var firstAttribute = matchingAttributes.First();
+                    var attributeValueChunk = firstAttribute.Value;
 
                     var attributeValueRecorded = htmlAttributeValues.ContainsKey(attributeDescriptor.Name);
 
@@ -293,12 +294,13 @@ namespace Microsoft.AspNet.Razor.Generator.Compiler.CSharp
                             continue;
                         }
 
+                        var attributeName = firstAttribute.Key;
                         // We need to inform the context of the attribute value.
                         _writer
                             .WriteStartInstanceMethodInvocation(
                                 ExecutionContextVariableName,
                                 _tagHelperContext.ExecutionContextAddTagHelperAttributeMethodName)
-                            .WriteStringLiteral(attributeDescriptor.Name)
+                            .WriteStringLiteral(attributeName)
                             .WriteParameterSeparator()
                             .Write(valueAccessor)
                             .WriteEndMethodInvocation();

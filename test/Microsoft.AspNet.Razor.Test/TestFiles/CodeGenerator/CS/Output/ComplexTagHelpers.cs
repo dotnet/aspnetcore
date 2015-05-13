@@ -1,4 +1,4 @@
-#pragma checksum "ComplexTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "e63f87bb14f278343a07e293df68e44e88600352"
+#pragma checksum "ComplexTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "5832e3fc8fa5fa77f49c7bdb26fb90a1dd2d6eb0"
 namespace TestOutput
 {
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -140,7 +140,7 @@ WriteLiteral(true ? "checkbox" : "anything");
 #line hidden
                 __tagHelperStringValueBuffer = EndTagHelperWritingScope();
                 __InputTagHelper.Type = __tagHelperStringValueBuffer.ToString();
-                __tagHelperExecutionContext.AddTagHelperAttribute("type", __InputTagHelper.Type);
+                __tagHelperExecutionContext.AddTagHelperAttribute("tYPe", __InputTagHelper.Type);
                 __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
                 __tagHelperExecutionContext.Add(__InputTagHelper2);
                 __InputTagHelper2.Type = __InputTagHelper.Type;
@@ -237,7 +237,7 @@ __InputTagHelper2.Checked = @object;
 
 #line default
 #line hidden
-                __tagHelperExecutionContext.AddTagHelperAttribute("checked", __InputTagHelper2.Checked);
+                __tagHelperExecutionContext.AddTagHelperAttribute("ChecKED", __InputTagHelper2.Checked);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();

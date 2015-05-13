@@ -70,7 +70,7 @@ WriteLiteral(DateTime.Now);
 #line hidden
                 __tagHelperStringValueBuffer = EndTagHelperWritingScope();
                 __MyTagHelper.BoundProperty = __tagHelperStringValueBuffer.ToString();
-                __tagHelperExecutionContext.AddTagHelperAttribute("BoundProperty", __MyTagHelper.BoundProperty);
+                __tagHelperExecutionContext.AddTagHelperAttribute("boundproperty", __MyTagHelper.BoundProperty);
                 StartTagHelperWritingScope();
                 WriteLiteral("Current Time: ");
 #line 9 "TagHelpersInSection.cshtml"

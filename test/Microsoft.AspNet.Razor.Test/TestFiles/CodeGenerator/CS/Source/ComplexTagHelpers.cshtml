@@ -14,13 +14,13 @@
             else
             {
                 <p>Current Time: <input type=@checkbox checked=true /></p>
-                <input type='@(true ? "checkbox" : "anything")' />
+                <input tYPe='@(true ? "checkbox" : "anything")' />
                 <input type='@if(true) { <text>checkbox</text> } else { <text>anything</text> }' />
             }
         </p>
         <p age="@DateTimeOffset.Now.Year - 1970">
             @{ var @object = false;}
-            <input checked="@(@object)" />
+            <input ChecKED="@(@object)" />
         </p>
         <p age="-1970 + @DateTimeOffset.Now.Year">
             <input checked="@(DateTimeOffset.Now.Year > 2014)" />
