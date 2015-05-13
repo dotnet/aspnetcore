@@ -4,6 +4,7 @@
 using System.Threading.Tasks;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -17,8 +18,19 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="value">The value to format as JSON text.</param>
         public JsonViewComponentResult(object value)
+            : this(value, formatter: null)
         {
-            Value = value;
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="JsonViewComponentResult"/>.
+        /// </summary>
+        /// <param name="value">The value to format as JSON text.</param>
+        /// <param name="serializerSettings">The <see cref="JsonSerializerSettings"/> to be used by
+        /// the formatter.</param>
+        public JsonViewComponentResult(object value, [NotNull] JsonSerializerSettings serializerSettings)
+            : this(value, new JsonOutputFormatter(serializerSettings))
+        {
         }
 
         /// <summary>

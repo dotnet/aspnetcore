@@ -1074,6 +1074,33 @@ namespace Microsoft.AspNet.Mvc.Test
                 Times.Once());
         }
 
+        [Fact]
+        public void Controller_JsonWithParameterValueAndSerializerSettings_IDisposableObject_RegistersForDispose()
+        {
+            // Arrange
+            var mockHttpContext = new Mock<DefaultHttpContext>();
+            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+
+            var controller = new TestableController()
+            {
+                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
+            };
+            var input = new DisposableObject();
+            var serializerSettings = new JsonSerializerSettings();
+
+            // Act
+            var result = controller.Json(input, serializerSettings);
+
+            // Assert
+            Assert.IsType<JsonResult>(result);
+            Assert.Same(input, result.Value);
+            var jsonFormatter = result.Formatter as JsonOutputFormatter;
+            Assert.Same(serializerSettings, jsonFormatter.SerializerSettings);
+            mockHttpContext.Verify(
+                x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()),
+                Times.Once());
+        }
+
         public static IEnumerable<object[]> RedirectTestData
         {
             get

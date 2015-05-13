@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Moq;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -34,6 +35,26 @@ namespace Microsoft.AspNet.Mvc
             // Assert
             Assert.Equal(expectedFormatter, result.Formatter);
             Assert.Equal("1", new StreamReader(buffer).ReadToEnd());
+        }
+
+        [Fact]
+        public void Execute_UsesFormatter_WithSpecifiedSerializerSettings()
+        {
+            // Arrange
+            var view = Mock.Of<IView>();
+            var buffer = new MemoryStream();
+            var viewComponentContext = GetViewComponentContext(view, buffer);
+
+            var serializerSettings = new JsonSerializerSettings();
+            serializerSettings.Formatting = Formatting.Indented;
+
+            var result = new JsonViewComponentResult("abc", serializerSettings);
+
+            // Act
+            result.Execute(viewComponentContext);
+
+            // Assert
+            Assert.Same(serializerSettings, result.Formatter.SerializerSettings);
         }
 
         [Fact]
