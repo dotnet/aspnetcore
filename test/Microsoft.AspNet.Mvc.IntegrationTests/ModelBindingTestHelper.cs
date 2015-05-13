@@ -41,6 +41,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             {
                 BodyBindingState = BodyBindingState.NotBodyBased,
                 HttpContext = httpContext,
+                InputFormatters = actionBindingContext.InputFormatters,
                 MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                 ValidatorProvider = actionBindingContext.ValidatorProvider,
                 ValueProvider = actionBindingContext.ValueProvider,

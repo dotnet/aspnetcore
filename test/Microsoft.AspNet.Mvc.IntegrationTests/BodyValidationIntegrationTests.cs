@@ -49,11 +49,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                   request.ContentType = "application/json";
               });
 
-            var actionContext = operationContext
-                .HttpContext
-                .RequestServices
-                .GetRequiredService<IScopedInstance<ActionContext>>().Value;
-            var modelState = actionContext.ModelState;
+            var modelState = new ModelStateDictionary();
 
             // Act
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
@@ -140,9 +136,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     request.ContentType = "application/json";
                 });
 
-            var httpContext = operationContext.HttpContext;
-            var actionContext = httpContext.RequestServices.GetRequiredService<IScopedInstance<ActionContext>>().Value;
-            var modelState = actionContext.ModelState;
+            var modelState = new ModelStateDictionary();
 
             // Act
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);

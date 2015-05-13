@@ -1050,6 +1050,7 @@ namespace Microsoft.AspNet.Mvc
                 MetadataProvider,
                 BindingContext.ModelBinder,
                 valueProvider,
+                BindingContext.InputFormatters,
                 ObjectValidator,
                 BindingContext.ValidatorProvider);
         }
@@ -1088,6 +1089,7 @@ namespace Microsoft.AspNet.Mvc
                 MetadataProvider,
                 BindingContext.ModelBinder,
                 BindingContext.ValueProvider,
+                BindingContext.InputFormatters,
                 ObjectValidator,
                 BindingContext.ValidatorProvider,
                 includeExpressions);
@@ -1126,6 +1128,7 @@ namespace Microsoft.AspNet.Mvc
                 MetadataProvider,
                 BindingContext.ModelBinder,
                 BindingContext.ValueProvider,
+                BindingContext.InputFormatters,
                 ObjectValidator,
                 BindingContext.ValidatorProvider,
                 predicate);
@@ -1167,6 +1170,7 @@ namespace Microsoft.AspNet.Mvc
                 MetadataProvider,
                 BindingContext.ModelBinder,
                 valueProvider,
+                BindingContext.InputFormatters,
                 ObjectValidator,
                 BindingContext.ValidatorProvider,
                 includeExpressions);
@@ -1207,6 +1211,7 @@ namespace Microsoft.AspNet.Mvc
                 MetadataProvider,
                 BindingContext.ModelBinder,
                 valueProvider,
+                BindingContext.InputFormatters,
                 ObjectValidator,
                 BindingContext.ValidatorProvider,
                 predicate);
@@ -1243,6 +1248,7 @@ namespace Microsoft.AspNet.Mvc
                 MetadataProvider,
                 BindingContext.ModelBinder,
                 BindingContext.ValueProvider,
+                BindingContext.InputFormatters,
                 ObjectValidator,
                 BindingContext.ValidatorProvider);
         }
@@ -1283,6 +1289,7 @@ namespace Microsoft.AspNet.Mvc
                 MetadataProvider,
                 BindingContext.ModelBinder,
                 valueProvider,
+                BindingContext.InputFormatters,
                 ObjectValidator,
                 BindingContext.ValidatorProvider,
                 predicate);

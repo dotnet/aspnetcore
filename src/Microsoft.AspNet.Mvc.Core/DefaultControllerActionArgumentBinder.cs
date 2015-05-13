@@ -209,6 +209,7 @@ namespace Microsoft.AspNet.Mvc
         {
             return new OperationBindingContext
             {
+                InputFormatters = bindingContext.InputFormatters,
                 ModelBinder = bindingContext.ModelBinder,
                 ValidatorProvider = bindingContext.ValidatorProvider,
                 MetadataProvider = _modelMetadataProvider,

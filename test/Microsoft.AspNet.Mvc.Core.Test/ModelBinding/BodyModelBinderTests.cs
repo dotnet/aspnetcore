@@ -234,7 +234,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 httpContext = new DefaultHttpContext();
             }
 
-            UpdateServiceProvider(httpContext, inputFormatters ?? Enumerable.Empty<IInputFormatter>());
+            if (inputFormatters == null)
+            {
+                inputFormatters = Enumerable.Empty<IInputFormatter>();
+            }
 
             if (metadataProvider == null)
             {
@@ -243,6 +246,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var operationBindingContext = new OperationBindingContext
             {
+                InputFormatters = inputFormatters.ToList(),
                 ModelBinder = new BodyModelBinder(),
                 MetadataProvider = metadataProvider,
                 HttpContext = httpContext,
@@ -259,26 +263,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             };
 
             return bindingContext;
-        }
-
-        private static void UpdateServiceProvider(
-            HttpContext httpContext,
-            IEnumerable<IInputFormatter> inputFormatters)
-        {
-            var serviceProvider = new ServiceCollection();
-            var bindingContext = new ActionBindingContext()
-            {
-                InputFormatters = inputFormatters.ToArray(),
-            };
-
-            var bindingContextAccessor = new MockScopedInstance<ActionBindingContext>()
-            {
-                Value = bindingContext,
-            };
-            serviceProvider.AddInstance<IScopedInstance<ActionBindingContext>>(bindingContextAccessor);
-            serviceProvider.AddInstance(CreateActionContext(httpContext));
-
-            httpContext.RequestServices = serviceProvider.BuildServiceProvider();
         }
 
         private static IScopedInstance<ActionContext> CreateActionContext(HttpContext context)

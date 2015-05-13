@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 
@@ -21,6 +22,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// Gets or sets the <see cref="HttpContext"/> for the current request.
         /// </summary>
         public HttpContext HttpContext { get; set; }
+
+        /// <summary>
+        /// Gets or sets the set of <see cref="IInputFormatter"/> instances associated with this context.
+        /// </summary>
+        public IList<IInputFormatter> InputFormatters { get; set; }
 
         /// <summary>
         /// Gets unaltered value provider collection.

@@ -35,6 +35,9 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
         /// <param name="modelBinder">The <see cref="IModelBinder"/> used for binding.</param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <param name="inputFormatters">
+        /// The set of <see cref="IInputFormatter"/> instances for deserializing the body.
+        /// </param>
         /// <param name="objectModelValidator">The <see cref="IObjectModelValidator"/> used for validating the
         /// bound values.</param>
         /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/> used for executing validation
@@ -48,6 +51,7 @@ namespace Microsoft.AspNet.Mvc
                 [NotNull] IModelMetadataProvider metadataProvider,
                 [NotNull] IModelBinder modelBinder,
                 [NotNull] IValueProvider valueProvider,
+                [NotNull] IList<IInputFormatter> inputFormatters,
                 [NotNull] IObjectModelValidator objectModelValidator,
                 [NotNull] IModelValidatorProvider validatorProvider)
             where TModel : class
@@ -61,6 +65,7 @@ namespace Microsoft.AspNet.Mvc
                 metadataProvider,
                 modelBinder,
                 valueProvider,
+                inputFormatters,
                 objectModelValidator,
                 validatorProvider,
                 predicate: (context, propertyName) => true);
@@ -81,6 +86,9 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
         /// <param name="modelBinder">The <see cref="IModelBinder"/> used for binding.</param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <param name="inputFormatters">
+        /// The set of <see cref="IInputFormatter"/> instances for deserializing the body.
+        /// </param>
         /// <param name="objectModelValidator">The <see cref="IObjectModelValidator"/> used for validating the
         /// bound values.</param>
         /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/> used for executing validation
@@ -97,6 +105,7 @@ namespace Microsoft.AspNet.Mvc
                [NotNull] IModelMetadataProvider metadataProvider,
                [NotNull] IModelBinder modelBinder,
                [NotNull] IValueProvider valueProvider,
+               [NotNull] IList<IInputFormatter> inputFormatters,
                [NotNull] IObjectModelValidator objectModelValidator,
                [NotNull] IModelValidatorProvider validatorProvider,
                [NotNull] params Expression<Func<TModel, object>>[] includeExpressions)
@@ -113,6 +122,7 @@ namespace Microsoft.AspNet.Mvc
                metadataProvider,
                modelBinder,
                valueProvider,
+               inputFormatters,
                objectModelValidator,
                validatorProvider,
                predicate: predicate);
@@ -133,6 +143,9 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
         /// <param name="modelBinder">The <see cref="IModelBinder"/> used for binding.</param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <param name="inputFormatters">
+        /// The set of <see cref="IInputFormatter"/> instances for deserializing the body.
+        /// </param>
         /// <param name="objectModelValidator">The <see cref="IObjectModelValidator"/> used for validating the
         /// bound values.</param>
         /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/> used for executing validation
@@ -148,6 +161,7 @@ namespace Microsoft.AspNet.Mvc
                [NotNull] IModelMetadataProvider metadataProvider,
                [NotNull] IModelBinder modelBinder,
                [NotNull] IValueProvider valueProvider,
+               [NotNull] IList<IInputFormatter> inputFormatters,
                [NotNull] IObjectModelValidator objectModelValidator,
                [NotNull] IModelValidatorProvider validatorProvider,
                [NotNull] Func<ModelBindingContext, string, bool> predicate)
@@ -162,6 +176,7 @@ namespace Microsoft.AspNet.Mvc
                metadataProvider,
                modelBinder,
                valueProvider,
+               inputFormatters,
                objectModelValidator,
                validatorProvider,
                predicate: predicate);
@@ -182,6 +197,9 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
         /// <param name="modelBinder">The <see cref="IModelBinder"/> used for binding.</param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <param name="inputFormatters">
+        /// The set of <see cref="IInputFormatter"/> instances for deserializing the body.
+        /// </param>
         /// <param name="objectModelValidator">The <see cref="IObjectModelValidator"/> used for validating the
         /// bound values.</param>
         /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/> used for executing validation
@@ -196,6 +214,7 @@ namespace Microsoft.AspNet.Mvc
                 [NotNull] IModelMetadataProvider metadataProvider,
                 [NotNull] IModelBinder modelBinder,
                 [NotNull] IValueProvider valueProvider,
+                [NotNull] IList<IInputFormatter> inputFormatters,
                 [NotNull] IObjectModelValidator objectModelValidator,
                 [NotNull] IModelValidatorProvider validatorProvider)
         {
@@ -209,6 +228,7 @@ namespace Microsoft.AspNet.Mvc
                 metadataProvider,
                 modelBinder,
                 valueProvider,
+                inputFormatters,
                 objectModelValidator,
                 validatorProvider,
                 predicate: (context, propertyName) => true);
@@ -229,6 +249,9 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
         /// <param name="modelBinder">The <see cref="IModelBinder"/> used for binding.</param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <param name="inputFormatters">
+        /// The set of <see cref="IInputFormatter"/> instances for deserializing the body.
+        /// </param>
         /// <param name="objectModelValidator">The <see cref="IObjectModelValidator"/> used for validating the
         /// bound values.</param>
         /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/> used for executing validation
@@ -245,6 +268,7 @@ namespace Microsoft.AspNet.Mvc
                [NotNull] IModelMetadataProvider metadataProvider,
                [NotNull] IModelBinder modelBinder,
                [NotNull] IValueProvider valueProvider,
+               [NotNull] IList<IInputFormatter> inputFormatters,
                [NotNull] IObjectModelValidator objectModelValidator,
                [NotNull] IModelValidatorProvider validatorProvider,
                [NotNull] Func<ModelBindingContext, string, bool> predicate)
@@ -264,6 +288,7 @@ namespace Microsoft.AspNet.Mvc
 
             var operationBindingContext = new OperationBindingContext
             {
+                InputFormatters = inputFormatters,
                 ModelBinder = modelBinder,
                 ValidatorProvider = validatorProvider,
                 MetadataProvider = metadataProvider,

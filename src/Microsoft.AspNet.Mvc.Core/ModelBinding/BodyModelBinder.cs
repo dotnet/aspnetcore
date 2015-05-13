@@ -28,11 +28,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected async override Task<ModelBindingResult> BindModelCoreAsync(
             [NotNull] ModelBindingContext bindingContext)
         {
-            var requestServices = bindingContext.OperationBindingContext.HttpContext.RequestServices;
-
             var httpContext = bindingContext.OperationBindingContext.HttpContext;
-            var formatters = requestServices
-                .GetRequiredService<IScopedInstance<ActionBindingContext>>().Value.InputFormatters;
+            var formatters = bindingContext.OperationBindingContext.InputFormatters;
 
             var formatterContext = new InputFormatterContext(
                 httpContext, 

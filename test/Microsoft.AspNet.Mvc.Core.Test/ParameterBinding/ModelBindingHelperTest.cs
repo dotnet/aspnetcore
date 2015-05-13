@@ -38,6 +38,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 metadataProvider,
                 GetCompositeBinder(binder.Object),
                 Mock.Of<IValueProvider>(),
+                new List<IInputFormatter>(),
                 new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider),
                 Mock.Of<IModelValidatorProvider>());
 
@@ -78,6 +79,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 modelMetadataProvider,
                 GetCompositeBinder(binders),
                 valueProvider,
+                new List<IInputFormatter>(),
                 new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], modelMetadataProvider),
                 validator);
 
@@ -118,6 +120,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 metadataProvider,
                 GetCompositeBinder(binders),
                 valueProvider,
+                new List<IInputFormatter>(),
                 new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider),
                 validator);
 
@@ -147,6 +150,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 metadataProvider,
                 GetCompositeBinder(binder.Object),
                 Mock.Of<IValueProvider>(),
+                new List<IInputFormatter>(),
                 Mock.Of<IObjectModelValidator>(),
                 Mock.Of<IModelValidatorProvider>(),
                 includePredicate);
@@ -202,6 +206,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 metadataProvider,
                 GetCompositeBinder(binders),
                 valueProvider,
+                new List<IInputFormatter>(),
                 new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider),
                 validator,
                 includePredicate);
@@ -233,6 +238,7 @@ namespace Microsoft.AspNet.Mvc.Test
                                                     metadataProvider,
                                                     GetCompositeBinder(binder.Object),
                                                     Mock.Of<IValueProvider>(),
+                                                    new List<IInputFormatter>(),
                                                     Mock.Of<IObjectModelValidator>(),
                                                     Mock.Of<IModelValidatorProvider>(),
                                                     m => m.IncludedProperty );
@@ -284,6 +290,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 TestModelMetadataProvider.CreateDefaultProvider(),
                 GetCompositeBinder(binders),
                 valueProvider,
+                new List<IInputFormatter>(),
                 new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider),
                 validator,
                 m => m.IncludedProperty,
@@ -336,6 +343,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 metadataProvider,
                 GetCompositeBinder(binders),
                 valueProvider,
+                new List<IInputFormatter>(),
                 new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider),
                 validator);
 
@@ -487,6 +495,7 @@ namespace Microsoft.AspNet.Mvc.Test
                                                     metadataProvider: metadataProvider,
                                                     modelBinder: GetCompositeBinder(binder.Object),
                                                     valueProvider: Mock.Of<IValueProvider>(),
+                                                    inputFormatters: new List<IInputFormatter>(),
                                                     objectModelValidator: Mock.Of<IObjectModelValidator>(),
                                                     validatorProvider: Mock.Of<IModelValidatorProvider>(),
                                                     predicate: includePredicate);
@@ -544,6 +553,7 @@ namespace Microsoft.AspNet.Mvc.Test
                                                     metadataProvider,
                                                     GetCompositeBinder(binders),
                                                     valueProvider,
+                                                    new List<IInputFormatter>(),
                                                     new DefaultObjectValidator(
                                                         new IExcludeTypeValidationFilter[0],
                                                         metadataProvider),
@@ -578,6 +588,7 @@ namespace Microsoft.AspNet.Mvc.Test
                                                     metadataProvider: metadataProvider,
                                                     modelBinder: GetCompositeBinder(binder.Object),
                                                     valueProvider: Mock.Of<IValueProvider>(),
+                                                    inputFormatters: new List<IInputFormatter>(),
                                                     objectModelValidator: Mock.Of<IObjectModelValidator>(),
                                                     validatorProvider: Mock.Of<IModelValidatorProvider>());
 
@@ -618,6 +629,7 @@ namespace Microsoft.AspNet.Mvc.Test
                                                     TestModelMetadataProvider.CreateDefaultProvider(),
                                                     GetCompositeBinder(binders),
                                                     valueProvider,
+                                                    new List<IInputFormatter>(),
                                                     new DefaultObjectValidator(
                                                         new IExcludeTypeValidationFilter[0],
                                                         metadataProvider),
@@ -652,6 +664,7 @@ namespace Microsoft.AspNet.Mvc.Test
                                                     metadataProvider,
                                                     GetCompositeBinder(binder.Object),
                                                     Mock.Of<IValueProvider>(),
+                                                    new List<IInputFormatter>(),
                                                     new DefaultObjectValidator(
                                                         new IExcludeTypeValidationFilter[0],
                                                         metadataProvider),
