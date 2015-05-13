@@ -400,20 +400,21 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
         private static SourceLocation GetAttributeNameStartLocation(SyntaxTreeNode node)
         {
             Span span;
+            var nodeStart = SourceLocation.Undefined;
 
             if (node.IsBlock)
             {
                 span = ((Block)node).FindFirstDescendentSpan();
+                nodeStart = span.Parent.Start;
             }
             else
             {
                 span = (Span)node;
+                nodeStart = span.Start;
             }
 
             // Span should never be null here, this should only ever be called if an attribute was successfully parsed.
             Debug.Assert(span != null);
-
-            var nodeStart = span.Parent.Start;
 
             // Attributes must have at least one non-whitespace character to represent the tagName (even if its a C#
             // expression).
