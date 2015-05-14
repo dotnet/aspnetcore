@@ -11,6 +11,7 @@ using JsonPatchWebSite.Models;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -302,6 +303,59 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             var body = await response.Content.ReadAsStringAsync();
             Assert.Equal("{\"\":[\"The input was not valid.\"]}", body);
+        }
+
+        [Fact]
+        public async Task JsonPatch_JsonConverterOnProperty_Success()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            var input = "[{ \"op\": \"add\", " +
+                "\"path\": \"Customer/Orders/2\", " +
+               "\"value\": { \"OrderType\": \"Type2\" }}]";
+            var request = new HttpRequestMessage
+            {
+                Content = new StringContent(input, Encoding.UTF8, "application/json-patch+json"),
+                Method = new HttpMethod("PATCH"),
+                RequestUri = new Uri("http://localhost/jsonpatch/JsonPatchWithoutModelState")
+            };
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            var body = await response.Content.ReadAsStringAsync();
+            dynamic d = JObject.Parse(body);
+            Assert.Equal("OrderTypeSetInConverter", (string)d.Orders[2].OrderType);
+        }
+
+        [Fact]
+        public async Task JsonPatch_JsonConverterOnClass_Success()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            var input = "[{ \"op\": \"add\", " +
+                "\"path\": \"Product/ProductCategory\", " +
+               "\"value\": { \"CategoryName\": \"Name2\" }}]";
+            var request = new HttpRequestMessage
+            {
+                Content = new StringContent(input, Encoding.UTF8, "application/json-patch+json"),
+                Method = new HttpMethod("PATCH"),
+                RequestUri = new Uri("http://localhost/jsonpatch/JsonPatchForProduct")
+            };
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            var body = await response.Content.ReadAsStringAsync();
+            dynamic d = JObject.Parse(body);
+            Assert.Equal("CategorySetInConverter", (string)d.ProductCategory.CategoryName);
+
         }
     }
 }

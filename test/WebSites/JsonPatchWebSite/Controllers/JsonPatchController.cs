@@ -60,6 +60,16 @@ namespace JsonPatchWebSite.Controllers
             return new ObjectResult(customer);
         }
 
+        [HttpPatch]
+        public IActionResult JsonPatchForProduct([FromBody] JsonPatchDocument<Product> patchDoc)
+        {
+            var product = new Product();
+
+            patchDoc.ApplyTo(product);
+
+            return new ObjectResult(product);
+        }
+
         private Customer CreateCustomer()
         {
             return new Customer
