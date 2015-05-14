@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.Core.Test
@@ -83,6 +84,16 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public string EchoWithException(string input)
         {
             throw new NotImplementedException();
+        }
+
+        public string EchoWithDefaultValue([DefaultValue("hello")] string input)
+        {
+            return input;
+        }
+
+        public string EchoWithDefaultValueAndAttribute([DefaultValue("hello")] string input = "world")
+        {
+            return input;
         }
 
         public dynamic ReturnTaskAsDynamicValue(int i, string s)

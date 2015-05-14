@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
@@ -125,9 +126,19 @@ namespace Microsoft.AspNet.Mvc
                     }
                     else
                     {
-                        value = parameterInfo.ParameterType.GetTypeInfo().IsValueType
-                            ? Activator.CreateInstance(parameterInfo.ParameterType)
-                            : null;
+                        var defaultValueAttribute = 
+                            parameterInfo.GetCustomAttribute<DefaultValueAttribute>(inherit: false);
+
+                        if (defaultValueAttribute?.Value == null)
+                        {
+                            value = parameterInfo.ParameterType.GetTypeInfo().IsValueType
+                                ? Activator.CreateInstance(parameterInfo.ParameterType)
+                                : null;
+                        }
+                        else
+                        {
+                            value = defaultValueAttribute.Value;
+                        }
                     }
                 }
 

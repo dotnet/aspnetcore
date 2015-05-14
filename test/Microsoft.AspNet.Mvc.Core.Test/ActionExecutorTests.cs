@@ -194,6 +194,70 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
+        public async Task ExecuteAsync_WithArgumentDictionary_DefaultValueAttributeUsed()
+        {
+            // Arrange
+            var syncMethod = new SyncMethod(_controller.EchoWithDefaultValue);
+
+            // Act
+            var result = await ControllerActionExecutor.ExecuteAsync(
+                syncMethod.GetMethodInfo(),
+                _controller,
+                new Dictionary<string, object>());
+
+            // Assert
+            Assert.Equal("hello", result);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_WithArgumentArray_DefaultValueAttributeIgnored()
+        {
+            // Arrange
+            var syncMethod = new SyncMethod(_controller.EchoWithDefaultValue);
+
+            // Act
+            var result = await ControllerActionExecutor.ExecuteAsync(
+                syncMethod.GetMethodInfo(),
+                _controller,
+                new object[] { null, });
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_WithArgumentDictionary_DefaultParameterValueUsed()
+        {
+            // Arrange
+            var syncMethod = new SyncMethod(_controller.EchoWithDefaultValueAndAttribute);
+
+            // Act
+            var result = await ControllerActionExecutor.ExecuteAsync(
+                syncMethod.GetMethodInfo(),
+                _controller,
+                new Dictionary<string, object>());
+
+            // Assert
+            Assert.Equal("world", result);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_WithArgumentDictionary_AnyValue_HasPrecedenceOverDefaults()
+        {
+            // Arrange
+            var syncMethod = new SyncMethod(_controller.EchoWithDefaultValueAndAttribute);
+
+            // Act
+            var result = await ControllerActionExecutor.ExecuteAsync(
+                syncMethod.GetMethodInfo(),
+                _controller,
+                new Dictionary<string, object>() { { "input", null } });
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
         public async Task AsyncAction_WithCustomTaskReturnTypeThrows()
         {
             // Arrange
