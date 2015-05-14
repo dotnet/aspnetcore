@@ -324,21 +324,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             };
         }
 
-        private static bool TryGetPropertyDefaultValue(PropertyInfo propertyInfo, out object value)
-        {
-            var attribute = propertyInfo.GetCustomAttribute<DefaultValueAttribute>();
-            if (attribute == null)
-            {
-                value = null;
-                return false;
-            }
-            else
-            {
-                value = attribute.Value;
-                return true;
-            }
-        }
-
         internal static PropertyValidationInfo GetPropertyValidationInfo(ModelBindingContext bindingContext)
         {
             var validationInfo = new PropertyValidationInfo();
@@ -473,15 +458,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return;
             }
 
-            object value;
-            var hasDefaultValue = false;
+            object value = null;
             if (dtoResult.IsModelSet)
             {
                 value = dtoResult.Model;
-            }
-            else
-            {
-                hasDefaultValue = TryGetPropertyDefaultValue(property, out value);
             }
 
             // 'Required' validators need to run first so that we can provide useful error messages if
@@ -504,7 +484,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
 
-            if (!dtoResult.IsModelSet && !hasDefaultValue)
+            if (!dtoResult.IsModelSet)
             {
                 // If we don't have a value, don't set it on the model and trounce a pre-initialized
                 // value.

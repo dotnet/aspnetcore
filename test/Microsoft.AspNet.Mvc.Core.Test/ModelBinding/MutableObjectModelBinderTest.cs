@@ -1057,8 +1057,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var dto = new ComplexModelDto(containerMetadata, containerMetadata.Properties);
             var testableBinder = new TestableMutableObjectModelBinder();
 
-            // ValueTypeRequiredWithDefaultValue value comes from [DefaultValue] when !isModelSet.
-            var expectedValue = isModelSet ? 0 : 42;
+            // The [DefaultValue] on ValueTypeRequiredWithDefaultValue is ignored by model binding.
+            var expectedValue = 0;
 
             // Make ValueTypeRequired invalid.
             var propertyMetadata = dto.PropertyMetadata.Single(p => p.PropertyName == nameof(Person.ValueTypeRequired));
@@ -1160,7 +1160,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Model gets provided values.
             Assert.Equal(41, model.ValueTypeRequired);
             Assert.Equal(57, model.ValueTypeRequiredWithDefaultValue);
-            Assert.Equal(123.456m, model.PropertyWithDefaultValue);     // from [DefaultValue]
+            Assert.Equal(0m, model.PropertyWithDefaultValue);     // [DefaultValue] has no effect
         }
 
         [Fact]
@@ -1205,7 +1205,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public void SetProperty_PropertyHasDefaultValue_SetsDefaultValue()
+        public void SetProperty_PropertyHasDefaultValue_DefaultValueAttributeDoesNothing()
         {
             // Arrange
             var model = new Person();
@@ -1238,7 +1238,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             var person = Assert.IsType<Person>(bindingContext.Model);
-            Assert.Equal(123.456m, person.PropertyWithDefaultValue);
+            Assert.Equal(0m, person.PropertyWithDefaultValue);
             Assert.True(bindingContext.ModelState.IsValid);
         }
 
@@ -1276,7 +1276,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public void SetProperty_PropertyIsPreinitialized_WithDefaultValue_NoValue_CallsSetter()
+        public void SetProperty_PropertyIsPreinitialized_DefaultValueAttributeDoesNothing()
         {
             // Arrange
             var model = new Person();
@@ -1304,7 +1304,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             var person = Assert.IsType<Person>(bindingContext.Model);
-            Assert.Equal("default", person.PropertyWithInitializedValueAndDefault);
+            Assert.Equal("preinitialized", person.PropertyWithInitializedValueAndDefault);
             Assert.True(bindingContext.ModelState.IsValid);
         }
 

@@ -87,18 +87,6 @@ namespace ModelBindingWebSite.Controllers
             };
         }
 
-        [HttpGet("BindToModelWithDefaultValue")]
-        public object BindToModelWithDefaultValue(BlogPostWithDefaultValue blogPost)
-        {
-            return new Result()
-            {
-                HeaderValue = blogPost.Title,
-                HeaderValues = blogPost.Tags,
-                ModelStateErrors = ModelState.Where(kvp => kvp.Value.Errors.Count > 0).Select(kvp => kvp.Key).ToArray(),
-            };
-        }
-
-
         private class Result
         {
             public string HeaderValue { get; set; }
@@ -141,20 +129,6 @@ namespace ModelBindingWebSite.Controllers
 
             [FromHeader]
             public string[] Tags { get; set; } = new string[] { "Cooking" };
-
-            public string Author { get; set; }
-        }
-
-        public class BlogPostWithDefaultValue
-        {
-            [Required]
-            [FromHeader]
-            [DefaultValue("How to Make Soup")]
-            public string Title { get; set; }
-
-            [FromHeader]
-            [DefaultValue(new string[] { "Cooking" })]
-            public string[] Tags { get; set; }
 
             public string Author { get; set; }
         }

@@ -325,39 +325,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("Title", error);
         }
 
-        // This model uses [DefaultValueAttribute(...)] for 'Title', and the model binder won't 
-        // trounce it.
-        //
-        // There's a validation error because we validate the value in the request (not present).
-        [Fact]
-        public async Task FromHeader_BindHeader_ToModel_NoValues_DefaultValueAttribute_ValidationError()
-        {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            var request = new HttpRequestMessage(
-                HttpMethod.Get,
-                "http://localhost/Blog/BindToModelWithDefaultValue?author=Marvin");
-
-            // Intentionally not setting a title or tags
-
-            // Act
-            var response = await client.SendAsync(request);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            var body = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<Result>(body);
-
-            Assert.Equal("How to Make Soup", result.HeaderValue);
-            Assert.Equal<string>(new[] { "Cooking" }, result.HeaderValues);
-
-            var error = Assert.Single(result.ModelStateErrors);
-            Assert.Equal("Title", error);
-        }
-
         private class Result
         {
             public string HeaderValue { get; set; }
