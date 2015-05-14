@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.Http;
+using System.Security.Claims;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Authentication.Twitter.Messages;
 
@@ -102,8 +103,16 @@ namespace Microsoft.AspNet.Authentication.Twitter
         public ISecureDataFormat<RequestToken> StateDataFormat { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="ITwitterAuthenticationProvider"/> used to handle authentication events.
+        /// Gets or sets the <see cref="ITwitterAuthenticationNotifications"/> used to handle authentication events.
         /// </summary>
         public ITwitterAuthenticationNotifications Notifications { get; set; }
+
+        /// <summary>
+        /// Defines whether access tokens should be stored in the
+        /// <see cref="ClaimsPrincipal"/> after a successful authentication.
+        /// This property is set to <c>false</c> by default to reduce
+        /// the size of the final authentication cookie.
+        /// </summary>
+        public bool SaveTokensAsClaims { get; set; }
     }
 }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.DataHandler.Encoder;
 using Microsoft.AspNet.Http;
@@ -19,9 +20,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Authentication.OAuth
 {
-    public class OAuthAuthenticationHandler<TOptions, TNotifications> : AuthenticationHandler<TOptions>
-        where TOptions : OAuthAuthenticationOptions<TNotifications>
-        where TNotifications : IOAuthAuthenticationNotifications
+    public class OAuthAuthenticationHandler<TOptions> : AuthenticationHandler<TOptions> where TOptions : OAuthAuthenticationOptions
     {
         private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
 
@@ -124,7 +123,33 @@ namespace Microsoft.AspNet.Authentication.OAuth
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);
                 }
 
-                return await GetUserInformationAsync(properties, tokens);
+                var identity = new ClaimsIdentity(Options.ClaimsIssuer);
+
+                if (Options.SaveTokensAsClaims)
+                {
+                    identity.AddClaim(new Claim("access_token", tokens.AccessToken,
+                                                ClaimValueTypes.String, Options.ClaimsIssuer));
+
+                    if (!string.IsNullOrEmpty(tokens.RefreshToken))
+                    {
+                        identity.AddClaim(new Claim("refresh_token", tokens.RefreshToken,
+                                                    ClaimValueTypes.String, Options.ClaimsIssuer));
+                    }
+
+                    if (!string.IsNullOrEmpty(tokens.TokenType))
+                    {
+                        identity.AddClaim(new Claim("token_type", tokens.TokenType,
+                                                    ClaimValueTypes.String, Options.ClaimsIssuer));
+                    }
+
+                    if (!string.IsNullOrEmpty(tokens.ExpiresIn))
+                    {
+                        identity.AddClaim(new Claim("expires_in", tokens.ExpiresIn,
+                                                    ClaimValueTypes.String, Options.ClaimsIssuer));
+                    }
+                }
+                
+                return await CreateTicketAsync(identity, properties, tokens);
             }
             catch (Exception ex)
             {
@@ -133,7 +158,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
             }
         }
 
-        protected virtual async Task<TokenResponse> ExchangeCodeAsync(string code, string redirectUri)
+        protected virtual async Task<OAuthTokenResponse> ExchangeCodeAsync(string code, string redirectUri)
         {
             var tokenRequestParameters = new Dictionary<string, string>()
             {
@@ -151,20 +176,27 @@ namespace Microsoft.AspNet.Authentication.OAuth
             requestMessage.Content = requestContent;
             var response = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
             response.EnsureSuccessStatusCode();
-            var oauthTokenResponse = await response.Content.ReadAsStringAsync();
+            var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
 
-            var oauth2Token = JObject.Parse(oauthTokenResponse);
-            return new TokenResponse(oauth2Token);
+            return new OAuthTokenResponse(payload);
         }
 
-        protected virtual async Task<AuthenticationTicket> GetUserInformationAsync(AuthenticationProperties properties, TokenResponse tokens)
+        protected virtual async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
         {
-            var context = new OAuthGetUserInformationContext(Context, Options, Backchannel, tokens)
+            var notification = new OAuthAuthenticatedContext(Context, Options, Backchannel, tokens)
             {
-                Properties = properties,
+                Principal = new ClaimsPrincipal(identity),
+                Properties = properties
             };
-            await Options.Notifications.GetUserInformationAsync(context);
-            return new AuthenticationTicket(context.Principal, context.Properties, Options.AuthenticationScheme);
+            
+            await Options.Notifications.Authenticated(notification);
+
+            if (notification.Principal?.Identity == null)
+            {
+                return null;
+            }
+
+            return new AuthenticationTicket(notification.Principal, notification.Properties, Options.AuthenticationScheme);
         }
 
         protected override Task<bool> HandleUnauthorizedAsync([NotNull] ChallengeContext context)

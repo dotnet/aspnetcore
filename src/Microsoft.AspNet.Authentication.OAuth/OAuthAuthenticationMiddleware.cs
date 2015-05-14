@@ -19,9 +19,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
     /// An ASP.NET middleware for authenticating users using OAuth services.
     /// </summary>
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Middleware are not disposable.")]
-    public class OAuthAuthenticationMiddleware<TOptions, TNotifications> : AuthenticationMiddleware<TOptions>
-        where TOptions : OAuthAuthenticationOptions<TNotifications>, new()
-        where TNotifications : IOAuthAuthenticationNotifications
+    public class OAuthAuthenticationMiddleware<TOptions> : AuthenticationMiddleware<TOptions> where TOptions : OAuthAuthenticationOptions, new()
     {
         /// <summary>
         /// Initializes a new <see cref="OAuthAuthenticationMiddleware"/>.
@@ -58,12 +56,12 @@ namespace Microsoft.AspNet.Authentication.OAuth
 
             if (string.IsNullOrWhiteSpace(Options.AuthorizationEndpoint))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "AuthorizationEndpoint"));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.AuthorizationEndpoint)));
             }
 
             if (string.IsNullOrWhiteSpace(Options.TokenEndpoint))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "TokenEndpoint"));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.TokenEndpoint)));
             }
 
             if (Options.StateDataFormat == null)
@@ -82,10 +80,6 @@ namespace Microsoft.AspNet.Authentication.OAuth
             {
                 Options.SignInScheme = externalOptions.Options.SignInScheme;
             }
-            if (string.IsNullOrEmpty(Options.SignInScheme))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, "SignInScheme"));
-            }
         }
 
         protected HttpClient Backchannel { get; private set; }
@@ -96,11 +90,11 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="OAuthAuthenticationOptions"/> supplied to the constructor.</returns>
         protected override AuthenticationHandler<TOptions> CreateHandler()
         {
-            return new OAuthAuthenticationHandler<TOptions, TNotifications>(Backchannel);
+            return new OAuthAuthenticationHandler<TOptions>(Backchannel);
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]
-        private static HttpMessageHandler ResolveHttpMessageHandler(OAuthAuthenticationOptions<TNotifications> options)
+        private static HttpMessageHandler ResolveHttpMessageHandler(OAuthAuthenticationOptions options)
         {
             HttpMessageHandler handler = options.BackchannelHttpHandler ??
 #if DNX451

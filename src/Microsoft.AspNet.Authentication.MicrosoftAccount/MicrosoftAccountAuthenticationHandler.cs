@@ -11,45 +11,52 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Authentication.MicrosoftAccount
 {
-    internal class MicrosoftAccountAuthenticationHandler : OAuthAuthenticationHandler<MicrosoftAccountAuthenticationOptions, IMicrosoftAccountAuthenticationNotifications>
+    internal class MicrosoftAccountAuthenticationHandler : OAuthAuthenticationHandler<MicrosoftAccountAuthenticationOptions>
     {
         public MicrosoftAccountAuthenticationHandler(HttpClient httpClient)
             : base(httpClient)
         {
         }
 
-        protected override async Task<AuthenticationTicket> GetUserInformationAsync(AuthenticationProperties properties, TokenResponse tokens)
+        protected override async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, Options.UserInformationEndpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
-            var graphResponse = await Backchannel.SendAsync(request, Context.RequestAborted);
-            graphResponse.EnsureSuccessStatusCode();
-            var accountString = await graphResponse.Content.ReadAsStringAsync();
-            var accountInformation = JObject.Parse(accountString);
 
-            var context = new MicrosoftAccountAuthenticatedContext(Context, Options, accountInformation, tokens);
-            context.Properties = properties;
-            var identity = new ClaimsIdentity(
-                new[]
-                    {
-                        new Claim(ClaimTypes.NameIdentifier, context.Id, ClaimValueTypes.String, Options.ClaimsIssuer),
-                        new Claim(ClaimTypes.Name, context.Name, ClaimValueTypes.String, Options.ClaimsIssuer),
-                        new Claim("urn:microsoftaccount:id", context.Id, ClaimValueTypes.String, Options.ClaimsIssuer),
-                        new Claim("urn:microsoftaccount:name", context.Name, ClaimValueTypes.String, Options.ClaimsIssuer)
-                    },
-                Options.ClaimsIssuer,
-                ClaimsIdentity.DefaultNameClaimType,
-                ClaimsIdentity.DefaultRoleClaimType);
+            var response = await Backchannel.SendAsync(request, Context.RequestAborted);
+            response.EnsureSuccessStatusCode();
 
-            if (!string.IsNullOrWhiteSpace(context.Email))
+            var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
+            
+            var notification = new OAuthAuthenticatedContext(Context, Options, Backchannel, tokens, payload)
             {
-                identity.AddClaim(new Claim(ClaimTypes.Email, context.Email, ClaimValueTypes.String, Options.ClaimsIssuer));
+                Properties = properties,
+                Principal = new ClaimsPrincipal(identity)
+            };
+
+            var identifier = MicrosoftAccountAuthenticationHelper.GetId(payload);
+            if (!string.IsNullOrEmpty(identifier))
+            {
+                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, identifier, ClaimValueTypes.String, Options.ClaimsIssuer));
+                identity.AddClaim(new Claim("urn:microsoftaccount:id", identifier, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
-            context.Principal = new ClaimsPrincipal(identity);
 
-            await Options.Notifications.Authenticated(context);
+            var name = MicrosoftAccountAuthenticationHelper.GetName(payload);
+            if (!string.IsNullOrEmpty(name))
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Name, name, ClaimValueTypes.String, Options.ClaimsIssuer));
+                identity.AddClaim(new Claim("urn:microsoftaccount:name", name, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
 
-            return new AuthenticationTicket(context.Principal, context.Properties, context.Options.AuthenticationScheme);
+            var email = MicrosoftAccountAuthenticationHelper.GetEmail(payload);
+            if (!string.IsNullOrWhiteSpace(email))
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Email, email, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            await Options.Notifications.Authenticated(notification);
+
+            return new AuthenticationTicket(notification.Principal, notification.Properties, notification.Options.AuthenticationScheme);
         }
     }
 }

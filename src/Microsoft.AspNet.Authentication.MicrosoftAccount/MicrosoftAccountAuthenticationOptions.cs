@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Authentication.MicrosoftAccount
     /// <summary>
     /// Configuration options for <see cref="MicrosoftAccountAuthenticationMiddleware"/>.
     /// </summary>
-    public class MicrosoftAccountAuthenticationOptions : OAuthAuthenticationOptions<IMicrosoftAccountAuthenticationNotifications>
+    public class MicrosoftAccountAuthenticationOptions : OAuthAuthenticationOptions
     {
         /// <summary>
         /// Initializes a new <see cref="MicrosoftAccountAuthenticationOptions"/>.
@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.Authentication.MicrosoftAccount
             AuthorizationEndpoint = MicrosoftAccountAuthenticationDefaults.AuthorizationEndpoint;
             TokenEndpoint = MicrosoftAccountAuthenticationDefaults.TokenEndpoint;
             UserInformationEndpoint = MicrosoftAccountAuthenticationDefaults.UserInformationEndpoint;
+            SaveTokensAsClaims = false;
         }
     }
 }

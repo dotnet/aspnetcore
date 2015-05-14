@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.DataHandler;
+using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
@@ -198,7 +199,7 @@ namespace Microsoft.AspNet.Authentication.Google
             {
                 options.ClientId = "Test Id";
                 options.ClientSecret = "Test Secret";
-                options.Notifications = new GoogleAuthenticationNotifications
+                options.Notifications = new OAuthAuthenticationNotifications
                 {
                     OnApplyRedirect = context =>
                         {
@@ -414,14 +415,14 @@ namespace Microsoft.AspNet.Authentication.Google
                         return null;
                     }
                 };
-                options.Notifications = new GoogleAuthenticationNotifications()
+                options.Notifications = new OAuthAuthenticationNotifications
                 {
                     OnAuthenticated = context =>
-                        {
-                            var refreshToken = context.RefreshToken;
-                            context.Principal.AddIdentity(new ClaimsIdentity(new Claim[] { new Claim("RefreshToken", refreshToken, ClaimValueTypes.String, "Google") }, "Google"));
-                            return Task.FromResult<object>(null);
-                        }
+                    {
+                        var refreshToken = context.RefreshToken;
+                        context.Principal.AddIdentity(new ClaimsIdentity(new Claim[] { new Claim("RefreshToken", refreshToken, ClaimValueTypes.String, "Google") }, "Google"));
+                        return Task.FromResult<object>(null);
+                    }
                 };
             });
             var properties = new AuthenticationProperties();

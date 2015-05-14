@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
@@ -27,7 +28,7 @@ namespace CookieSessionSample
 
             app.Run(async context =>
             {
-                if (string.IsNullOrEmpty(context.User.Identity.Name))
+                if (!context.User.Identities.Any(identity => identity.IsAuthenticated))
                 {
                     // Make a large identity
                     var claims = new List<Claim>(1001);
@@ -36,7 +37,10 @@ namespace CookieSessionSample
                     {
                         claims.Add(new Claim(ClaimTypes.Role, "SomeRandomGroup" + i, ClaimValueTypes.String, "IssuedByBob", "OriginalIssuerJoe"));
                     }
-                    await context.Authentication.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity(claims)));
+
+                    await context.Authentication.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                        new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)));
+
                     context.Response.ContentType = "text/plain";
                     await context.Response.WriteAsync("Hello First timer");
                     return;

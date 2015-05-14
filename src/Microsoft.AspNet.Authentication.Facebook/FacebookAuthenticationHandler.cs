@@ -17,14 +17,14 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Authentication.Facebook
 {
-    internal class FacebookAuthenticationHandler : OAuthAuthenticationHandler<FacebookAuthenticationOptions, IFacebookAuthenticationNotifications>
+    internal class FacebookAuthenticationHandler : OAuthAuthenticationHandler<FacebookAuthenticationOptions>
     {
         public FacebookAuthenticationHandler(HttpClient httpClient)
             : base(httpClient)
         {
         }
 
-        protected override async Task<TokenResponse> ExchangeCodeAsync(string code, string redirectUri)
+        protected override async Task<OAuthTokenResponse> ExchangeCodeAsync(string code, string redirectUri)
         {
             var queryBuilder = new QueryBuilder()
             {
@@ -35,70 +35,78 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 { "client_secret", Options.AppSecret },
             };
 
-            var tokenResponse = await Backchannel.GetAsync(Options.TokenEndpoint + queryBuilder.ToString(), Context.RequestAborted);
-            tokenResponse.EnsureSuccessStatusCode();
-            var oauthTokenResponse = await tokenResponse.Content.ReadAsStringAsync();
+            var response = await Backchannel.GetAsync(Options.TokenEndpoint + queryBuilder.ToString(), Context.RequestAborted);
+            response.EnsureSuccessStatusCode();
 
-            var form = new FormCollection(FormReader.ReadForm(oauthTokenResponse));
-            var response = new JObject();
+            var form = new FormCollection(FormReader.ReadForm(await response.Content.ReadAsStringAsync()));
+            var payload = new JObject();
             foreach (string key in form.Keys)
             {
-                response.Add(string.Equals(key, "expires", StringComparison.OrdinalIgnoreCase) ? "expires_in" : key, form[key]);
+                payload.Add(string.Equals(key, "expires", StringComparison.OrdinalIgnoreCase) ? "expires_in" : key, form[key]);
             }
+
             // The refresh token is not available.
-            return new TokenResponse(response);
+            return new OAuthTokenResponse(payload);
         }
 
-        protected override async Task<AuthenticationTicket> GetUserInformationAsync(AuthenticationProperties properties, TokenResponse tokens)
+        protected override async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
         {
-            var graphAddress = Options.UserInformationEndpoint + "?access_token=" + UrlEncoder.UrlEncode(tokens.AccessToken);
+            var endpoint = Options.UserInformationEndpoint + "?access_token=" + UrlEncoder.UrlEncode(tokens.AccessToken);
             if (Options.SendAppSecretProof)
             {
-                graphAddress += "&appsecret_proof=" + GenerateAppSecretProof(tokens.AccessToken);
+                endpoint += "&appsecret_proof=" + GenerateAppSecretProof(tokens.AccessToken);
             }
 
-            var graphResponse = await Backchannel.GetAsync(graphAddress, Context.RequestAborted);
-            graphResponse.EnsureSuccessStatusCode();
-            var text = await graphResponse.Content.ReadAsStringAsync();
-            var user = JObject.Parse(text);
+            var response = await Backchannel.GetAsync(endpoint, Context.RequestAborted);
+            response.EnsureSuccessStatusCode();
 
-            var context = new FacebookAuthenticatedContext(Context, Options, user, tokens);
-            var identity = new ClaimsIdentity(
-                Options.ClaimsIssuer,
-                ClaimsIdentity.DefaultNameClaimType,
-                ClaimsIdentity.DefaultRoleClaimType);
-            if (!string.IsNullOrEmpty(context.Id))
+            var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
+            
+            var notification = new OAuthAuthenticatedContext(Context, Options, Backchannel, tokens, payload)
             {
-                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, context.Id, ClaimValueTypes.String, Options.ClaimsIssuer));
+                Properties = properties,
+                Principal = new ClaimsPrincipal(identity)
+            };
+
+            var identifier = FacebookAuthenticationHelper.GetId(payload);
+            if (!string.IsNullOrEmpty(identifier))
+            {
+                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, identifier, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
-            if (!string.IsNullOrEmpty(context.UserName))
+
+            var userName = FacebookAuthenticationHelper.GetUserName(payload);
+            if (!string.IsNullOrEmpty(userName))
             {
-                identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, context.UserName, ClaimValueTypes.String, Options.ClaimsIssuer));
+                identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, userName, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
-            if (!string.IsNullOrEmpty(context.Email))
+
+            var email = FacebookAuthenticationHelper.GetEmail(payload);
+            if (!string.IsNullOrEmpty(email))
             {
-                identity.AddClaim(new Claim(ClaimTypes.Email, context.Email, ClaimValueTypes.String, Options.ClaimsIssuer));
+                identity.AddClaim(new Claim(ClaimTypes.Email, email, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
-            if (!string.IsNullOrEmpty(context.Name))
+
+            var name = FacebookAuthenticationHelper.GetName(payload);
+            if (!string.IsNullOrEmpty(name))
             {
-                identity.AddClaim(new Claim("urn:facebook:name", context.Name, ClaimValueTypes.String, Options.ClaimsIssuer));
+                identity.AddClaim(new Claim("urn:facebook:name", name, ClaimValueTypes.String, Options.ClaimsIssuer));
 
                 // Many Facebook accounts do not set the UserName field.  Fall back to the Name field instead.
-                if (string.IsNullOrEmpty(context.UserName))
+                if (string.IsNullOrEmpty(userName))
                 {
-                    identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, context.Name, ClaimValueTypes.String, Options.ClaimsIssuer));
+                    identity.AddClaim(new Claim(identity.NameClaimType, name, ClaimValueTypes.String, Options.ClaimsIssuer));
                 }
             }
-            if (!string.IsNullOrEmpty(context.Link))
+
+            var link = FacebookAuthenticationHelper.GetLink(payload);
+            if (!string.IsNullOrEmpty(link))
             {
-                identity.AddClaim(new Claim("urn:facebook:link", context.Link, ClaimValueTypes.String, Options.ClaimsIssuer));
+                identity.AddClaim(new Claim("urn:facebook:link", link, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
-            context.Properties = properties;
-            context.Principal = new ClaimsPrincipal(identity);
 
-            await Options.Notifications.Authenticated(context);
+            await Options.Notifications.Authenticated(notification);
 
-            return new AuthenticationTicket(context.Principal, context.Properties, context.Options.AuthenticationScheme);
+            return new AuthenticationTicket(notification.Principal, notification.Properties, notification.Options.AuthenticationScheme);
         }
 
         private string GenerateAppSecretProof(string accessToken)

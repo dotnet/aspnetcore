@@ -4,6 +4,7 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
@@ -33,7 +34,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
                     {
                         options.AppId = "Test App Id";
                         options.AppSecret = "Test App Secret";
-                        options.Notifications = new FacebookAuthenticationNotifications
+                        options.Notifications = new OAuthAuthenticationNotifications
                         {
                             OnApplyRedirect = context =>
                             {

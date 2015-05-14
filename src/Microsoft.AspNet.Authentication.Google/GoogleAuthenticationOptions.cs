@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Authentication.Google
     /// <summary>
     /// Configuration options for <see cref="GoogleAuthenticationMiddleware"/>.
     /// </summary>
-    public class GoogleAuthenticationOptions : OAuthAuthenticationOptions<IGoogleAuthenticationNotifications>
+    public class GoogleAuthenticationOptions : OAuthAuthenticationOptions
     {
         /// <summary>
         /// Initializes a new <see cref="GoogleAuthenticationOptions"/>.
@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.Authentication.Google
             AuthorizationEndpoint = GoogleAuthenticationDefaults.AuthorizationEndpoint;
             TokenEndpoint = GoogleAuthenticationDefaults.TokenEndpoint;
             UserInformationEndpoint = GoogleAuthenticationDefaults.UserInformationEndpoint;
+            SaveTokensAsClaims = false;
         }
 
         /// <summary>

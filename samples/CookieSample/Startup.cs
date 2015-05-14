@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.AspNet.Builder;
@@ -25,10 +26,11 @@ namespace CookieSample
 
             app.Run(async context =>
             {
-                if (string.IsNullOrEmpty(context.User.Identity.Name))
+                if (!context.User.Identities.Any(identity => identity.IsAuthenticated))
                 {
-                    var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "bob") }));
+                    var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "bob") }, CookieAuthenticationDefaults.AuthenticationScheme));
                     await context.Authentication.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, user);
+
                     context.Response.ContentType = "text/plain";
                     await context.Response.WriteAsync("Hello First timer");
                     return;

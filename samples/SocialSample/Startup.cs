@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -110,6 +111,7 @@ namespace CookieSample
                 options.Caption = "MicrosoftAccount - Requires project changes";
                 options.ClientId = "00000000480FF62E";
                 options.ClientSecret = "bLw2JIvf8Y1TaToipPEqxTVlOeJwCUsr";
+                options.Scope.Add("wl.emails");
             });
 
             // https://github.com/settings/applications/
@@ -131,48 +133,53 @@ namespace CookieSample
                 options.TokenEndpoint = "https://github.com/login/oauth/access_token";
                 options.UserInformationEndpoint = "https://api.github.com/user";
                 options.ClaimsIssuer = "OAuth2-Github";
+                options.SaveTokensAsClaims = false;
                 // Retrieving user information is unique to each provider.
-                options.Notifications = new OAuthAuthenticationNotifications()
+                options.Notifications = new OAuthAuthenticationNotifications
                 {
-                    OnGetUserInformationAsync = async (context) =>
+                    OnAuthenticated = async notification =>
                     {
                         // Get the GitHub user
-                        var userRequest = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
-                        userRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
-                        userRequest.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                        var userResponse = await context.Backchannel.SendAsync(userRequest, context.HttpContext.RequestAborted);
-                        userResponse.EnsureSuccessStatusCode();
-                        var text = await userResponse.Content.ReadAsStringAsync();
-                        var user = JObject.Parse(text);
+                        var request = new HttpRequestMessage(HttpMethod.Get, notification.Options.UserInformationEndpoint);
+                        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", notification.AccessToken);
+                        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                        var identity = new ClaimsIdentity(
-                            context.Options.AuthenticationScheme,
-                            ClaimsIdentity.DefaultNameClaimType,
-                            ClaimsIdentity.DefaultRoleClaimType);
+                        var response = await notification.Backchannel.SendAsync(request, notification.HttpContext.RequestAborted);
+                        response.EnsureSuccessStatusCode();
 
-                        JToken value;
-                        var id = user.TryGetValue("id", out value) ? value.ToString() : null;
-                        if (!string.IsNullOrEmpty(id))
+                        var user = JObject.Parse(await response.Content.ReadAsStringAsync());
+                        
+                        var identifier = user.Value<string>("id");
+                        if (!string.IsNullOrEmpty(identifier))
                         {
-                            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, id, ClaimValueTypes.String, context.Options.ClaimsIssuer));
+                            notification.Identity.AddClaim(new Claim(
+                                ClaimTypes.NameIdentifier, identifier,
+                                ClaimValueTypes.String, notification.Options.ClaimsIssuer));
                         }
-                        var userName = user.TryGetValue("login", out value) ? value.ToString() : null;
+
+                        var userName = user.Value<string>("login");
                         if (!string.IsNullOrEmpty(userName))
                         {
-                            identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, userName, ClaimValueTypes.String, context.Options.ClaimsIssuer));
-                        }
-                        var name = user.TryGetValue("name", out value) ? value.ToString() : null;
-                        if (!string.IsNullOrEmpty(name))
-                        {
-                            identity.AddClaim(new Claim("urn:github:name", name, ClaimValueTypes.String, context.Options.ClaimsIssuer));
-                        }
-                        var link = user.TryGetValue("url", out value) ? value.ToString() : null;
-                        if (!string.IsNullOrEmpty(link))
-                        {
-                            identity.AddClaim(new Claim("urn:github:url", link, ClaimValueTypes.String, context.Options.ClaimsIssuer));
+                            notification.Identity.AddClaim(new Claim(
+                                ClaimsIdentity.DefaultNameClaimType, userName,
+                                ClaimValueTypes.String, notification.Options.ClaimsIssuer));
                         }
 
-                        context.Principal = new ClaimsPrincipal(identity);
+                        var name = user.Value<string>("name");
+                        if (!string.IsNullOrEmpty(name))
+                        {
+                            notification.Identity.AddClaim(new Claim(
+                                "urn:github:name", name,
+                                ClaimValueTypes.String, notification.Options.ClaimsIssuer));
+                        }
+
+                        var link = user.Value<string>("url");
+                        if (!string.IsNullOrEmpty(link))
+                        {
+                            notification.Identity.AddClaim(new Claim(
+                                "urn:github:url", link,
+                                ClaimValueTypes.String, notification.Options.ClaimsIssuer));
+                        }
                     },
                 };
             });
@@ -207,8 +214,8 @@ namespace CookieSample
             {
                 signoutApp.Run(async context =>
                 {
-                    await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     context.Response.ContentType = "text/html";
+                    await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     await context.Response.WriteAsync("<html><body>");
                     await context.Response.WriteAsync("You have been logged out. Goodbye " + context.User.Identity.Name + "<br>");
                     await context.Response.WriteAsync("<a href=\"/\">Home</a>");
@@ -219,7 +226,7 @@ namespace CookieSample
             // Deny anonymous request beyond this point.
             app.Use(async (context, next) =>
             {
-                if (string.IsNullOrEmpty(context.User.Identity.Name))
+                if (!context.User.Identities.Any(identity => identity.IsAuthenticated))
                 {
                     // The cookie middleware will intercept this 401 and redirect to /login
                     await context.Authentication.ChallengeAsync();
@@ -233,7 +240,7 @@ namespace CookieSample
             {
                 context.Response.ContentType = "text/html";
                 await context.Response.WriteAsync("<html><body>");
-                await context.Response.WriteAsync("Hello " + context.User.Identity.Name + "<br>");
+                await context.Response.WriteAsync("Hello " + (context.User.Identity.Name ?? "anonymous") + "<br>");
                 foreach (var claim in context.User.Claims)
                 {
                     await context.Response.WriteAsync(claim.Type + ": " + claim.Value + "<br>");

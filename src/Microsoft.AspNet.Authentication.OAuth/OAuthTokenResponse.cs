@@ -5,9 +5,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Authentication.OAuth
 {
-    public class TokenResponse
+    public class OAuthTokenResponse
     {
-        public TokenResponse(JObject response)
+        public OAuthTokenResponse(JObject response)
         {
             Response = response;
             AccessToken = response.Value<string>("access_token");

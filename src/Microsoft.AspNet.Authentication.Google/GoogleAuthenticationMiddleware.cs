@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Authentication.Google
     /// An ASP.NET middleware for authenticating users using Google OAuth 2.0.
     /// </summary>
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Middleware are not disposable.")]
-    public class GoogleAuthenticationMiddleware : OAuthAuthenticationMiddleware<GoogleAuthenticationOptions, IGoogleAuthenticationNotifications>
+    public class GoogleAuthenticationMiddleware : OAuthAuthenticationMiddleware<GoogleAuthenticationOptions>
     {
         /// <summary>
         /// Initializes a new <see cref="GoogleAuthenticationMiddleware"/>.
@@ -35,11 +35,6 @@ namespace Microsoft.AspNet.Authentication.Google
             ConfigureOptions<GoogleAuthenticationOptions> configureOptions = null)
             : base(next, dataProtectionProvider, loggerFactory, encoder, externalOptions, options, configureOptions)
         {
-            if (Options.Notifications == null)
-            {
-                Options.Notifications = new GoogleAuthenticationNotifications();
-            }
-
             if (Options.Scope.Count == 0)
             {
                 // Google OAuth 2.0 asks for non-empty scope. If user didn't set it, set default scope to 

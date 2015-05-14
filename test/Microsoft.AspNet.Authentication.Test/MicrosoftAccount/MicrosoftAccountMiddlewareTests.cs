@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.DataHandler;
 using Microsoft.AspNet.Authentication.MicrosoftAccount;
+using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
@@ -31,7 +32,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                 {
                     options.ClientId = "Test Client Id";
                     options.ClientSecret = "Test Client Secret";
-                    options.Notifications = new MicrosoftAccountAuthenticationNotifications
+                    options.Notifications = new OAuthAuthenticationNotifications
                     {
                         OnApplyRedirect = context =>
                         {
@@ -143,7 +144,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                             return null;
                         }
                     };
-                    options.Notifications = new MicrosoftAccountAuthenticationNotifications
+                    options.Notifications = new OAuthAuthenticationNotifications
                     {
                         OnAuthenticated = context =>
                         {

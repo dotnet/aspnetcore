@@ -19,20 +19,16 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method.</param>
         /// <param name="options">The middleware configuration options.</param>
         /// <returns>The updated <see cref="IApplicationBuilder"/>.</returns>
-        public static IApplicationBuilder UseOAuthAuthentication([NotNull] this IApplicationBuilder app, [NotNull] string authenticationScheme, Action<OAuthAuthenticationOptions<IOAuthAuthenticationNotifications>> configureOptions = null)
+        public static IApplicationBuilder UseOAuthAuthentication([NotNull] this IApplicationBuilder app, [NotNull] string authenticationScheme, Action<OAuthAuthenticationOptions> configureOptions = null)
         {
-            return app.UseMiddleware<OAuthAuthenticationMiddleware<OAuthAuthenticationOptions<IOAuthAuthenticationNotifications>, IOAuthAuthenticationNotifications>>(
-                new ConfigureOptions<OAuthAuthenticationOptions<IOAuthAuthenticationNotifications>>(options =>
+            return app.UseMiddleware<OAuthAuthenticationMiddleware<OAuthAuthenticationOptions>>(
+                new ConfigureOptions<OAuthAuthenticationOptions>(options =>
                 {
                     options.AuthenticationScheme = authenticationScheme;
                     options.Caption = authenticationScheme;
                     if (configureOptions != null)
                     {
                         configureOptions(options);
-                    }
-                    if (options.Notifications == null)
-                    {
-                        options.Notifications = new OAuthAuthenticationNotifications();
                     }
                 }) 
                 {

@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
     /// <summary>
     /// An ASP.NET middleware for authenticating users using Facebook.
     /// </summary>
-    public class FacebookAuthenticationMiddleware : OAuthAuthenticationMiddleware<FacebookAuthenticationOptions, IFacebookAuthenticationNotifications>
+    public class FacebookAuthenticationMiddleware : OAuthAuthenticationMiddleware<FacebookAuthenticationOptions>
     {
         /// <summary>
         /// Initializes a new <see cref="FacebookAuthenticationMiddleware"/>.
@@ -42,11 +42,6 @@ namespace Microsoft.AspNet.Authentication.Facebook
             if (string.IsNullOrWhiteSpace(Options.AppSecret))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.AppSecret)));
-            }
-
-            if (Options.Notifications == null)
-            {
-                Options.Notifications = new FacebookAuthenticationNotifications();
             }
         }
 

@@ -82,24 +82,6 @@ namespace Microsoft.AspNet.Authentication.Twitter
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);
                 }
 
-                var accessToken = await ObtainAccessTokenAsync(Options.ConsumerKey, Options.ConsumerSecret, requestToken, oauthVerifier);
-
-                var context = new TwitterAuthenticatedContext(Context, accessToken.UserId, accessToken.ScreenName, accessToken.Token, accessToken.TokenSecret);
-
-                context.Principal = new ClaimsPrincipal(
-                    new ClaimsIdentity(
-                        new[]
-                        {
-                            new Claim(ClaimTypes.NameIdentifier, accessToken.UserId, "http://www.w3.org/2001/XMLSchema#string", Options.ClaimsIssuer),
-                            new Claim(ClaimTypes.Name, accessToken.ScreenName, "http://www.w3.org/2001/XMLSchema#string", Options.ClaimsIssuer),
-                            new Claim("urn:twitter:userid", accessToken.UserId, "http://www.w3.org/2001/XMLSchema#string", Options.ClaimsIssuer),
-                            new Claim("urn:twitter:screenname", accessToken.ScreenName, "http://www.w3.org/2001/XMLSchema#string", Options.ClaimsIssuer)
-                        },
-                        Options.ClaimsIssuer,
-                        ClaimsIdentity.DefaultNameClaimType,
-                        ClaimsIdentity.DefaultRoleClaimType));
-                context.Properties = requestToken.Properties;
-
                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
@@ -108,9 +90,23 @@ namespace Microsoft.AspNet.Authentication.Twitter
 
                 Response.Cookies.Delete(StateCookie, cookieOptions);
 
-                await Options.Notifications.Authenticated(context);
+                var accessToken = await ObtainAccessTokenAsync(Options.ConsumerKey, Options.ConsumerSecret, requestToken, oauthVerifier);
+                
+                var identity = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, accessToken.UserId, ClaimValueTypes.String, Options.ClaimsIssuer),
+                    new Claim(ClaimTypes.Name, accessToken.ScreenName, ClaimValueTypes.String, Options.ClaimsIssuer),
+                    new Claim("urn:twitter:userid", accessToken.UserId, ClaimValueTypes.String, Options.ClaimsIssuer),
+                    new Claim("urn:twitter:screenname", accessToken.ScreenName, ClaimValueTypes.String, Options.ClaimsIssuer)
+                },
+                Options.ClaimsIssuer);
 
-                return new AuthenticationTicket(context.Principal, context.Properties, Options.AuthenticationScheme);
+                if (Options.SaveTokensAsClaims)
+                {
+                    identity.AddClaim(new Claim("access_token", accessToken.Token, ClaimValueTypes.String, Options.ClaimsIssuer));
+                }
+                
+                return await CreateTicketAsync(identity, properties, accessToken);
             }
             catch (Exception ex)
             {
@@ -118,6 +114,25 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 return new AuthenticationTicket(properties, Options.AuthenticationScheme);
             }
         }
+
+        protected virtual async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, AccessToken token)
+        {
+            var notification = new TwitterAuthenticatedContext(Context, token.UserId, token.ScreenName, token.Token, token.TokenSecret)
+            {
+                Principal = new ClaimsPrincipal(identity),
+                Properties = properties
+            };
+
+            await Options.Notifications.Authenticated(notification);
+            
+            if (notification.Principal?.Identity == null)
+            {
+                return null;
+            }
+
+            return new AuthenticationTicket(notification.Principal, notification.Properties, Options.AuthenticationScheme);
+        }
+
         protected override async Task<bool> HandleUnauthorizedAsync([NotNull] ChallengeContext context)
         {
             var properties = new AuthenticationProperties(context.Properties);

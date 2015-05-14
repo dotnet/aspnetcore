@@ -14,65 +14,69 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Authentication.Google
 {
-    internal class GoogleAuthenticationHandler : OAuthAuthenticationHandler<GoogleAuthenticationOptions, IGoogleAuthenticationNotifications>
+    internal class GoogleAuthenticationHandler : OAuthAuthenticationHandler<GoogleAuthenticationOptions>
     {
         public GoogleAuthenticationHandler(HttpClient httpClient)
             : base(httpClient)
         {
         }
 
-        protected override async Task<AuthenticationTicket> GetUserInformationAsync(AuthenticationProperties properties, TokenResponse tokens)
+        protected override async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
         {
             // Get the Google user
             var request = new HttpRequestMessage(HttpMethod.Get, Options.UserInformationEndpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
-            var graphResponse = await Backchannel.SendAsync(request, Context.RequestAborted);
-            graphResponse.EnsureSuccessStatusCode();
-            var text = await graphResponse.Content.ReadAsStringAsync();
-            var user = JObject.Parse(text);
 
-            var context = new GoogleAuthenticatedContext(Context, Options, user, tokens);
-            var identity = new ClaimsIdentity(
-                Options.ClaimsIssuer,
-                ClaimsIdentity.DefaultNameClaimType,
-                ClaimsIdentity.DefaultRoleClaimType);
+            var response = await Backchannel.SendAsync(request, Context.RequestAborted);
+            response.EnsureSuccessStatusCode();
 
-            if (!string.IsNullOrEmpty(context.Id))
+            var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
+            
+            var notification = new OAuthAuthenticatedContext(Context, Options, Backchannel, tokens, payload)
             {
-                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, context.Id,
-                    ClaimValueTypes.String, Options.ClaimsIssuer));
-            }
-            if (!string.IsNullOrEmpty(context.GivenName))
-            {
-                identity.AddClaim(new Claim(ClaimTypes.GivenName, context.GivenName,
-                    ClaimValueTypes.String, Options.ClaimsIssuer));
-            }
-            if (!string.IsNullOrEmpty(context.FamilyName))
-            {
-                identity.AddClaim(new Claim(ClaimTypes.Surname, context.FamilyName,
-                    ClaimValueTypes.String, Options.ClaimsIssuer));
-            }
-            if (!string.IsNullOrEmpty(context.Name))
-            {
-                identity.AddClaim(new Claim(ClaimTypes.Name, context.Name, ClaimValueTypes.String,
-                    Options.ClaimsIssuer));
-            }
-            if (!string.IsNullOrEmpty(context.Email))
-            {
-                identity.AddClaim(new Claim(ClaimTypes.Email, context.Email, ClaimValueTypes.String,
-                    Options.ClaimsIssuer));
-            }
-            if (!string.IsNullOrEmpty(context.Profile))
-            {
-                identity.AddClaim(new Claim("urn:google:profile", context.Profile, ClaimValueTypes.String,
-                    Options.ClaimsIssuer));
-            }
-            context.Properties = properties;
-            context.Principal = new ClaimsPrincipal(identity);
+                Properties = properties,
+                Principal = new ClaimsPrincipal(identity)
+            };
 
-            await Options.Notifications.Authenticated(context);
+            var identifier = GoogleAuthenticationHelper.GetId(payload);
+            if (!string.IsNullOrEmpty(identifier))
+            {
+                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, identifier, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
 
-            return new AuthenticationTicket(context.Principal, context.Properties, context.Options.AuthenticationScheme);
+            var givenName = GoogleAuthenticationHelper.GetGivenName(payload);
+            if (!string.IsNullOrEmpty(givenName))
+            {
+                identity.AddClaim(new Claim(ClaimTypes.GivenName, givenName, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            var familyName = GoogleAuthenticationHelper.GetFamilyName(payload);
+            if (!string.IsNullOrEmpty(familyName))
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Surname, familyName, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            var name = GoogleAuthenticationHelper.GetName(payload);
+            if (!string.IsNullOrEmpty(name))
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Name, name, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            var email = GoogleAuthenticationHelper.GetEmail(payload);
+            if (!string.IsNullOrEmpty(email))
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Email, email, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            var profile = GoogleAuthenticationHelper.GetProfile(payload);
+            if (!string.IsNullOrEmpty(profile))
+            {
+                identity.AddClaim(new Claim("urn:google:profile", profile, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            await Options.Notifications.Authenticated(notification);
+
+            return new AuthenticationTicket(notification.Principal, notification.Properties, notification.Options.AuthenticationScheme);
         }
 
         // TODO: Abstract this properties override pattern into the base class?

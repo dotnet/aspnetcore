@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Authentication;
 
 namespace Microsoft.AspNet.Authentication.OAuth
 {
@@ -12,21 +14,21 @@ namespace Microsoft.AspNet.Authentication.OAuth
     {
         /// <summary>
         /// Invoked after the provider successfully authenticates a user. This can be used to retrieve user information.
-        /// This notification may not be invoked by sub-classes of OAuthAuthenticationHandler if they override GetUserInformationAsync.
+        /// This notification may not be invoked by sub-classes of OAuthAuthenticationHandler if they override CreateTicketAsync.
         /// </summary>
         /// <param name="context">Contains information about the login session.</param>
         /// <returns>A <see cref="Task"/> representing the completed operation.</returns>
-        Task GetUserInformationAsync(OAuthGetUserInformationContext context);
+        Task Authenticated(OAuthAuthenticatedContext context);
 
         /// <summary>
-        /// Invoked prior to the <see cref="System.Security.Claims.ClaimsIdentity"/> being saved in a local cookie and the browser being redirected to the originally requested URL.
+        /// Invoked prior to the <see cref="ClaimsIdentity"/> being saved in a local cookie and the browser being redirected to the originally requested URL.
         /// </summary>
         /// <param name="context"></param>
         /// <returns>A <see cref="Task"/> representing the completed operation.</returns>
         Task ReturnEndpoint(OAuthReturnEndpointContext context);
 
         /// <summary>
-        /// Called when a Challenge causes a redirect to authorize endpoint in the Microsoft middleware.
+        /// Called when a Challenge causes a redirect to the authorize endpoint.
         /// </summary>
         /// <param name="context">Contains redirect URI and <see cref="AuthenticationProperties"/> of the challenge.</param>
         void ApplyRedirect(OAuthApplyRedirectContext context);

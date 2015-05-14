@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Security.Claims;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Authentication.OAuth;
 
@@ -9,7 +10,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
     /// <summary>
     /// Configuration options for <see cref="FacebookAuthenticationMiddleware"/>.
     /// </summary>
-    public class FacebookAuthenticationOptions : OAuthAuthenticationOptions<IFacebookAuthenticationNotifications>
+    public class FacebookAuthenticationOptions : OAuthAuthenticationOptions
     {
         /// <summary>
         /// Initializes a new <see cref="FacebookAuthenticationOptions"/>.
@@ -23,6 +24,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
             AuthorizationEndpoint = FacebookAuthenticationDefaults.AuthorizationEndpoint;
             TokenEndpoint = FacebookAuthenticationDefaults.TokenEndpoint;
             UserInformationEndpoint = FacebookAuthenticationDefaults.UserInformationEndpoint;
+            SaveTokensAsClaims = false;
         }
 
         // Facebook uses a non-standard term for this field.

@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Security.Claims;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authentication.OAuth
 {
@@ -14,15 +16,6 @@ namespace Microsoft.AspNet.Authentication.OAuth
     /// </summary>
     public class OAuthAuthenticationOptions : AuthenticationOptions
     {
-        /// <summary>
-        /// Initializes a new <see cref="OAuthAuthenticationOptions"/>.
-        /// </summary>
-        public OAuthAuthenticationOptions()
-        {
-            Scope = new List<string>();
-            BackchannelTimeout = TimeSpan.FromSeconds(60);
-        }
-
         /// <summary>
         /// Gets or sets the provider-assigned client id.
         /// </summary>
@@ -46,7 +39,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// <summary>
         /// Gets or sets the URI the middleware will access to obtain the user information.
         /// This value is not used in the default implementation, it is for use in custom implementations of
-        /// IOAuthAuthenticationNotifications.GetUserInformationAsync or OAuthAuthenticationHandler.GetUserInformationAsync.
+        /// IOAuthAuthenticationNotifications.Authenticated or OAuthAuthenticationHandler.CreateTicketAsync.
         /// </summary>
         public string UserInformationEndpoint { get; set; }
 
@@ -62,6 +55,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// validating the subject name and if the signing chain is a trusted party.</remarks>
         public ICertificateValidator BackchannelCertificateValidator { get; set; }
 #endif
+
         /// <summary>
         /// Get or sets the text that the user can display on a sign in user interface.
         /// </summary>
@@ -77,7 +71,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// <value>
         /// The back channel timeout.
         /// </value>
-        public TimeSpan BackchannelTimeout { get; set; }
+        public TimeSpan BackchannelTimeout { get; set; } = TimeSpan.FromSeconds(60);
 
         /// <summary>
         /// The HttpMessageHandler used to communicate with the auth provider.
@@ -87,9 +81,14 @@ namespace Microsoft.AspNet.Authentication.OAuth
         public HttpMessageHandler BackchannelHttpHandler { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="IOAuthAuthenticationNotifications"/> used to handle authentication events.
+        /// </summary>
+        public IOAuthAuthenticationNotifications Notifications { get; [param: NotNull] set; } = new OAuthAuthenticationNotifications();
+
+        /// <summary>
         /// A list of permissions to request.
         /// </summary>
-        public IList<string> Scope { get; private set; }
+        public IList<string> Scope { get; } = new List<string>();
 
         /// <summary>
         /// The request path within the application's base path where the user-agent will be returned.
@@ -109,5 +108,13 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// Gets or sets the type used to secure data handled by the middleware.
         /// </summary>
         public ISecureDataFormat<AuthenticationProperties> StateDataFormat { get; set; }
+
+        /// <summary>
+        /// Defines whether access and refresh tokens should be stored in the
+        /// <see cref="ClaimsPrincipal"/> after a successful authentication.
+        /// You can set this property to <c>false</c> to reduce the size of the final
+        /// authentication cookie. Note that social providers set this property to <c>false</c> by default.
+        /// </summary>
+        public bool SaveTokensAsClaims { get; set; } = true;
     }
 }

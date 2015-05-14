@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Authentication.MicrosoftAccount
     /// <summary>
     /// An ASP.NET middleware for authenticating users using the Microsoft Account service.
     /// </summary>
-    public class MicrosoftAccountAuthenticationMiddleware : OAuthAuthenticationMiddleware<MicrosoftAccountAuthenticationOptions, IMicrosoftAccountAuthenticationNotifications>
+    public class MicrosoftAccountAuthenticationMiddleware : OAuthAuthenticationMiddleware<MicrosoftAccountAuthenticationOptions>
     {
         /// <summary>
         /// Initializes a new <see cref="MicrosoftAccountAuthenticationMiddleware"/>.
@@ -33,10 +33,6 @@ namespace Microsoft.AspNet.Authentication.MicrosoftAccount
             ConfigureOptions<MicrosoftAccountAuthenticationOptions> configureOptions = null)
             : base(next, dataProtectionProvider, loggerFactory, encoder, externalOptions, options, configureOptions)
         {
-            if (Options.Notifications == null)
-            {
-                Options.Notifications = new MicrosoftAccountAuthenticationNotifications();
-            }
             if (Options.Scope.Count == 0)
             {
                 // LiveID requires a scope string, so if the user didn't set one we go for the least possible.
