@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -72,7 +73,21 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.Equal(expectedOutput, await response.Content.ReadAsStringAsync());
+
+            var actualContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedOutput, actualContent);
+
+            var modelStateErrors = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(actualContent);
+            Assert.Equal(2, modelStateErrors.Count);
+
+            var errors = Assert.Single(modelStateErrors, kvp => kvp.Key == "Id").Value;
+
+            var error = Assert.Single(errors);
+            Assert.Equal("The field Id must be between 10 and 100.", error);
+
+            errors = Assert.Single(modelStateErrors, kvp => kvp.Key == "Name").Value;
+            error = Assert.Single(errors);
+            Assert.Equal("The field Name must be a string or array type with a minimum length of '15'.", error);
         }
     }
 }
