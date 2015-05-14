@@ -110,5 +110,5 @@ A description of all the repos is [here](https://github.com/aspnet/Home/wiki/Rep
 
 # Feedback
 
-Check out the [contributing](https://github.com/aspnet/Home/blob/release/CONTRIBUTING.md) page to see the best places to log issues and start discussions.
+Check out the [contributing](CONTRIBUTING.md) page to see the best places to log issues and start discussions.
 
