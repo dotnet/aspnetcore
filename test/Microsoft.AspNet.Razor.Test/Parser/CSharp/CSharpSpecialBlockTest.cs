@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                ),
                            new RazorError(
                                RazorResources.ParseError_InheritsKeyword_Must_Be_Followed_By_TypeName,
-                               new SourceLocation(8, 0, 8)));
+                               new SourceLocation(0, 0, 0), 8));
         }
 
         [Fact]
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.Code("               " + Environment.NewLine)
                                    .AsBaseType(string.Empty)
                                ),
-                           new RazorError(RazorResources.ParseError_InheritsKeyword_Must_Be_Followed_By_TypeName, 24, 0, 24));
+                           new RazorError(RazorResources.ParseError_InheritsKeyword_Must_Be_Followed_By_TypeName, 0, 0, 0, 8));
         }
 
         [Fact]
@@ -165,7 +165,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                ),
                            new RazorError(
                                RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", "}", "{"),
-                               SourceLocation.Zero));
+                               new SourceLocation(10, 0, 10)));
         }
 
         [Fact]

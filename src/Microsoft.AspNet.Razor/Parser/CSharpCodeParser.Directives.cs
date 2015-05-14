@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
@@ -57,15 +55,19 @@ namespace Microsoft.AspNet.Razor.Parser
 
             // Verify we're on "section" and accept
             AssertDirective(SyntaxConstants.CSharp.SectionKeyword);
+            var startLocation = CurrentLocation;
             AcceptAndMoveNext();
 
             if (nested)
             {
-                Context.OnError(CurrentLocation, RazorResources.FormatParseError_Sections_Cannot_Be_Nested(RazorResources.SectionExample_CS));
+                Context.OnError(
+                    startLocation,
+                    RazorResources.FormatParseError_Sections_Cannot_Be_Nested(RazorResources.SectionExample_CS),
+                    Span.GetContent().Value.Length);
                 errorReported = true;
             }
 
-            IEnumerable<CSharpSymbol> ws = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: false));
+            var whitespace = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: false));
 
             // Get the section name
             var sectionName = string.Empty;
@@ -79,19 +81,19 @@ namespace Microsoft.AspNet.Razor.Parser
                 }
 
                 PutCurrentBack();
-                PutBack(ws);
+                PutBack(whitespace);
                 AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: false));
             }
             else
             {
-                Accept(ws);
+                Accept(whitespace);
                 sectionName = CurrentSymbol.Content;
                 AcceptAndMoveNext();
             }
             Context.CurrentBlock.CodeGenerator = new SectionCodeGenerator(sectionName);
 
             var errorLocation = CurrentLocation;
-            ws = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: false));
+            whitespace = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: false));
 
             // Get the starting brace
             var sawStartingBrace = At(CSharpSymbolType.LeftBrace);
@@ -104,7 +106,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 }
 
                 PutCurrentBack();
-                PutBack(ws);
+                PutBack(whitespace);
                 AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: false));
                 Optional(CSharpSymbolType.NewLine);
                 Output(SpanKind.MetaCode);
@@ -113,7 +115,7 @@ namespace Microsoft.AspNet.Razor.Parser
             }
             else
             {
-                Accept(ws);
+                Accept(whitespace);
             }
 
             // Set up edit handler
@@ -184,7 +186,7 @@ namespace Microsoft.AspNet.Razor.Parser
             if (!At(CSharpSymbolType.RightBrace))
             {
                 editHandler.AutoCompleteString = "}";
-                Context.OnError(block.Start, RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(block.Name, "}", "{"));
+                Context.OnError(blockStart, RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(block.Name, "}", "{"));
                 CompleteBlock();
                 Output(SpanKind.Code);
             }
@@ -225,11 +227,15 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected void BaseTypeDirective(string noTypeNameError, Func<string, SpanCodeGenerator> createCodeGenerator)
         {
+            var keywordStartLocation = Span.Start;
+
             // Set the block type
             Context.CurrentBlock.Type = BlockType.Directive;
 
+            var keywordLength = Span.GetContent().Value.Length;
+
             // Accept whitespace
-            var remainingWs = AcceptSingleWhiteSpaceCharacter();
+            var remainingWhitespace = AcceptSingleWhiteSpaceCharacter();
 
             if (Span.Symbols.Count > 1)
             {
@@ -238,15 +244,19 @@ namespace Microsoft.AspNet.Razor.Parser
 
             Output(SpanKind.MetaCode);
 
-            if (remainingWs != null)
+            if (remainingWhitespace != null)
             {
-                Accept(remainingWs);
+                Accept(remainingWhitespace);
             }
+
             AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
 
             if (EndOfFile || At(CSharpSymbolType.WhiteSpace) || At(CSharpSymbolType.NewLine))
             {
-                Context.OnError(CurrentLocation, noTypeNameError);
+                Context.OnError(
+                    keywordStartLocation,
+                    noTypeNameError,
+                    keywordLength);
             }
 
             // Parse to the end of the line
@@ -271,12 +281,15 @@ namespace Microsoft.AspNet.Razor.Parser
         private void TagHelperDirective(string keyword, Func<string, ISpanCodeGenerator> buildCodeGenerator)
         {
             AssertDirective(keyword);
+            var keywordStartLocation = CurrentLocation;
 
             // Accept the directive name
             AcceptAndMoveNext();
 
             // Set the block type
             Context.CurrentBlock.Type = BlockType.Directive;
+
+            var keywordLength = Span.GetContent().Value.Length;
 
             var foundWhitespace = At(CSharpSymbolType.WhiteSpace);
             AcceptWhile(CSharpSymbolType.WhiteSpace);
@@ -287,7 +300,10 @@ namespace Microsoft.AspNet.Razor.Parser
 
             if (EndOfFile || At(CSharpSymbolType.NewLine))
             {
-                Context.OnError(CurrentLocation, RazorResources.FormatParseError_DirectiveMustHaveValue(keyword));
+                Context.OnError(
+                    keywordStartLocation,
+                    RazorResources.FormatParseError_DirectiveMustHaveValue(keyword),
+                    keywordLength);
             }
             else
             {
@@ -318,8 +334,10 @@ namespace Microsoft.AspNet.Razor.Parser
                 if (!startsWithQuote ||
                     !rawValue.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
                 {
-                    Context.OnError(startLocation,
-                                    RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(keyword));
+                    Context.OnError(
+                        startLocation,
+                        RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(keyword),
+                        rawValue.Length);
                 }
             }
 

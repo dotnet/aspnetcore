@@ -272,7 +272,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .AutoCompleteWith("}")),
                            new RazorError(
                                RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", '}', '{'),
-                               SourceLocation.Zero));
+                               new SourceLocation(10, 0, 10)));
         }
 
         [Fact]

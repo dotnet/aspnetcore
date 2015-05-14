@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Razor
         /// <param name="message">A message describing the error.</param>
         public void OnError(SourceLocation location, string message)
         {
-            _errors.Add(new RazorError(message, location));
+            OnError(location, message, RazorError.DefaultErrorLength);
         }
 
         /// <summary>

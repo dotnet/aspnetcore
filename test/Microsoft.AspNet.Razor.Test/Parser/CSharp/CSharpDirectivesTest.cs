@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                  new RazorError(
                     RazorResources.FormatParseError_DirectiveMustHaveValue(
                         SyntaxConstants.CSharp.TagHelperPrefixKeyword),
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17));
+                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 15));
         }
 
         [Fact]
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                 new RazorError(
                     RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.TagHelperPrefixKeyword),
-                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17));
+                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4));
         }
 
         [Fact]
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                  new RazorError(
                      RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.TagHelperPrefixKeyword),
-                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17));
+                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4));
         }
 
         [Fact]
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                  new RazorError(
                      RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.TagHelperPrefixKeyword),
-                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17));
+                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 3));
         }
 
         [Fact]
@@ -153,7 +153,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                  new RazorError(
                     RazorResources.FormatParseError_DirectiveMustHaveValue(
                         SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17));
+                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 15));
         }
 
         [Fact]
@@ -172,7 +172,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                  new RazorError(
                      RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17));
+                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4));
         }
 
         [Fact]
@@ -192,7 +192,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                  new RazorError(
                      RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17));
+                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4));
         }
 
         [Fact]
@@ -209,7 +209,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                  new RazorError(
                      RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17));
+                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 3));
         }
 
         [Fact]
@@ -249,7 +249,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         .Accepts(AcceptedCharacters.AnyExceptNewline)),
                  new RazorError(
                     RazorResources.FormatParseError_DirectiveMustHaveValue(SyntaxConstants.CSharp.AddTagHelperKeyword),
-                    absoluteIndex: 14, lineIndex: 0, columnIndex: 14));
+                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 12));
         }
 
         [Fact]
@@ -268,7 +268,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                  new RazorError(
                      RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.AddTagHelperKeyword),
-                        absoluteIndex: 14, lineIndex: 0, columnIndex: 14));
+                        absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 4));
         }
 
         [Fact]
@@ -288,7 +288,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                  new RazorError(
                      RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.AddTagHelperKeyword),
-                        absoluteIndex: 14, lineIndex: 0, columnIndex: 14));
+                        absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 4));
         }
 
         [Fact]
@@ -305,7 +305,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                  new RazorError(
                      RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.AddTagHelperKeyword),
-                        absoluteIndex: 14, lineIndex: 0, columnIndex: 14));
+                        absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 3));
         }
 
         [Fact]

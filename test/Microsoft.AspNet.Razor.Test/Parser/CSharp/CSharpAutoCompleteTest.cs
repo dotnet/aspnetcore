@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                        AutoCompleteString = "}"
                                    })),
                            new RazorError(RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", "}", "{"),
-                                          1, 0, 1));
+                                          10, 0, 10));
         }
 
         [Fact]
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                        AutoCompleteString = "}"
                                    })),
                            new RazorError(RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", "}", "{"),
-                                          1, 0, 1));
+                                          10, 0, 10));
         }
 
         [Fact]

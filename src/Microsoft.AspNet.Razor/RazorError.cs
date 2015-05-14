@@ -9,13 +9,15 @@ namespace Microsoft.AspNet.Razor
 {
     public class RazorError : IEquatable<RazorError>
     {
+        internal const int DefaultErrorLength = 1;
+
         public RazorError()
             : this(message: string.Empty, location: SourceLocation.Undefined)
         {
         }
 
         public RazorError(string message, SourceLocation location)
-            : this(message, location, 1)
+            : this(message, location, DefaultErrorLength)
         {
         }
 
@@ -77,7 +79,8 @@ namespace Microsoft.AspNet.Razor
         {
             return other != null &&
                 string.Equals(other.Message, Message, StringComparison.Ordinal) &&
-                Location.Equals(other.Location);
+                Location.Equals(other.Location) &&
+                Length.Equals(other.Length);
         }
     }
 }

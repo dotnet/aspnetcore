@@ -208,6 +208,14 @@ namespace Microsoft.AspNet.Razor.Parser
             _errorSink.OnError(location, message);
         }
 
+        public void OnError(SourceLocation location, string message, int length)
+        {
+            EnusreNotTerminated();
+            AssertOnOwnerTask();
+
+            _errorSink.OnError(location, message, length);
+        }
+
         public void OnError(SourceLocation location, string message, params object[] args)
         {
             EnusreNotTerminated();
