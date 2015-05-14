@@ -4,8 +4,6 @@
 using System;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
-using Microsoft.Data.Entity.Metadata;
-using Microsoft.Data.Entity.Metadata.ModelConventions;
 using Microsoft.Data.Entity.Relational.Migrations;
 using Microsoft.Data.Entity.Relational.Migrations.Builders;
 using Microsoft.Data.Entity.Relational.Migrations.Infrastructure;
@@ -21,9 +19,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [ContextType(typeof(BloggingContextWithPendingModelChanges))]
         public class BloggingModelSnapshot : ModelSnapshot
         {
-            public override IModel Model
+            public override void BuildModel(ModelBuilder modelBuilder)
             {
-                get { return new ModelBuilder(new ConventionSet()).Model; }
             }
         }
 
@@ -40,9 +37,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 get { return CurrentProductVersion; }
             }
 
-            public override IModel Target
+            public override void BuildTargetModel(ModelBuilder modelBuilder)
             {
-                get { return new ModelBuilder(new ConventionSet()).Model; }
             }
 
             public override void Up(MigrationBuilder migrationBuilder)

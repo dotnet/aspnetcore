@@ -3,11 +3,11 @@
 
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
-using Microsoft.Data.Entity.Metadata;
 using Microsoft.Data.Entity.Relational.Migrations;
 using Microsoft.Data.Entity.Relational.Migrations.Builders;
 using Microsoft.Data.Entity.Relational.Migrations.Infrastructure;
 using System;
+
 
 namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 {
@@ -20,12 +20,9 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [ContextType(typeof(BloggingContextWithSnapshotThatThrows))]
         public class BloggingContextWithSnapshotThatThrowsModelSnapshot : ModelSnapshot
         {
-            public override IModel Model
+            public override void BuildModel(ModelBuilder modelBuilder)
             {
-                get
-                {
-                    throw new Exception("Welcome to the invalid snapshot!");
-                }
+                throw new Exception("Welcome to the invalid snapshot!");
             }
         }
 
@@ -42,9 +39,9 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 get { return CurrentProductVersion; }
             }
 
-            public override IModel Target
+            public override void BuildTargetModel(ModelBuilder modelBuilder)
             {
-                get { return new BloggingContextWithSnapshotThatThrowsModelSnapshot().Model; }
+                new BloggingContextWithSnapshotThatThrowsModelSnapshot().BuildModel(modelBuilder);
             }
 
             public override void Up(MigrationBuilder migrationBuilder)

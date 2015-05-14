@@ -4,8 +4,6 @@
 using System;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
-using Microsoft.Data.Entity.Metadata;
-using Microsoft.Data.Entity.Metadata.ModelConventions;
 using Microsoft.Data.Entity.Relational.Migrations;
 using Microsoft.Data.Entity.Relational.Migrations.Builders;
 using Microsoft.Data.Entity.Relational.Migrations.Infrastructure;
@@ -31,22 +29,15 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [ContextType(typeof(BloggingContextWithMigrations))]
         public class BloggingContextWithMigrationsModelSnapshot : ModelSnapshot
         {
-            public override IModel Model
+            public override void BuildModel(ModelBuilder builder)
             {
-                get
+                builder.Entity("Blogging.Models.Blog", b =>
                 {
-                    var builder = new ModelBuilder(new ConventionSet());
-
-                    builder.Entity("Blogging.Models.Blog", b =>
-                    {
-                        b.Property<int>("BlogId");
-                        b.Property<int>("BlogId").GenerateValueOnAdd();
-                        b.Property<string>("Name");
-                        b.Key("BlogId");
-                    });
-
-                    return builder.Model;
-                }
+                    b.Property<int>("BlogId");
+                    b.Property<int>("BlogId").GenerateValueOnAdd();
+                    b.Property<string>("Name");
+                    b.Key("BlogId");
+                });
             }
         }
 
@@ -63,9 +54,9 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 get { return CurrentProductVersion; }
             }
 
-            public override IModel Target
+            public override void BuildTargetModel(ModelBuilder modelBuilder)
             {
-                get { return new BloggingContextWithMigrationsModelSnapshot().Model; }
+                new BloggingContextWithMigrationsModelSnapshot().BuildModel(modelBuilder);
             }
 
             public override void Up(MigrationBuilder migrationBuilder)
@@ -98,9 +89,9 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 get { return CurrentProductVersion; }
             }
 
-            public override IModel Target
+            public override void BuildTargetModel(ModelBuilder modelBuilder)
             {
-                get { return new BloggingContextWithMigrationsModelSnapshot().Model; }
+                new BloggingContextWithMigrationsModelSnapshot().BuildModel(modelBuilder);
             }
 
             public override void Up(MigrationBuilder migrationBuilder)
