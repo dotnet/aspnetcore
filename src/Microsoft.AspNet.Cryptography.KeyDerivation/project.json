@@ -11,7 +11,9 @@
         "dnxcore50": {
             "dependencies": {
                 "System.Runtime.Extensions": "4.0.10-beta-*",
-                "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*"
+                "System.Security.Cryptography.Hashing": "4.0.0-beta-*",
+                "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*",
+                "System.Text.Encoding.Extensions": "4.0.10-beta-*"
             }
         }
     },
