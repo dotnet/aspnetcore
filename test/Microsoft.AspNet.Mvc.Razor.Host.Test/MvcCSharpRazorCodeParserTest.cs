@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var expectedErrors = new[]
             {
                 new RazorError("The 'model' keyword must be followed by a type name on the same line.",
-                               new SourceLocation(9, 0, 9), 1)
+                               new SourceLocation(1, 0, 1), 5)
             };
             Assert.Equal(expectedSpans, spans);
             Assert.Equal(expectedErrors, errors);
@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var expectedErrors = new[]
             {
                 new RazorError("Only one 'model' statement is allowed in a file.",
-                                new SourceLocation(18, 1, 6), 1)
+                                new SourceLocation(13, 1, 1), 5)
             };
 
             // Act
@@ -394,7 +394,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var expectedErrors = new[]
             {
                 new RazorError("The 'inject' keyword must be followed by a type name on the same line.",
-                                new SourceLocation(11, 0, 11), 1)
+                                new SourceLocation(1, 0, 1), 6)
             };
 
             // Act
@@ -427,7 +427,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var expectedErrors = new[]
             {
                  new RazorError("The 'inject' keyword must be followed by a type name on the same line.",
-                                new SourceLocation(11, 0, 11), 1)
+                                new SourceLocation(1, 0, 1), 6)
             };
 
             // Act
@@ -462,7 +462,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 new RazorError("A property name must be specified when using the 'inject' statement. " +
                                "Format for a 'inject' statement is '@inject <Type Name> <Property Name>'.",
-                                new SourceLocation(20, 0, 20), 1)
+                                new SourceLocation(1, 0, 1), 21)
             };
 
             // Act
@@ -496,7 +496,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 new RazorError("A property name must be specified when using the 'inject' statement. " +
                                "Format for a 'inject' statement is '@inject <Type Name> <Property Name>'.",
-                                new SourceLocation(19, 0, 19), 1)
+                                new SourceLocation(1, 0, 1), 21)
             };
 
             // Act

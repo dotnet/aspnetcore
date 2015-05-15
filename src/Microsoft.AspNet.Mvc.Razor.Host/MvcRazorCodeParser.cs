@@ -50,17 +50,18 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Verify we're on the right keyword and accept
             AssertDirective(ModelKeyword);
+            var startModelLocation = CurrentLocation;
             AcceptAndMoveNext();
 
-            var endModelLocation = CurrentLocation;
 
             BaseTypeDirective(Resources.FormatMvcRazorCodeParser_KeywordMustBeFollowedByTypeName(ModelKeyword),
                               CreateModelCodeGenerator);
 
             if (_modelStatementFound)
             {
-                Context.OnError(endModelLocation,
-                                Resources.FormatMvcRazorCodeParser_OnlyOneModelStatementIsAllowed(ModelKeyword));
+                Context.OnError(startModelLocation,
+                                Resources.FormatMvcRazorCodeParser_OnlyOneModelStatementIsAllowed(ModelKeyword),
+                                ModelKeyword.Length);
             }
 
             _modelStatementFound = true;
@@ -72,22 +73,25 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // @inject MyApp.MyService MyServicePropertyName
             AssertDirective(InjectKeyword);
+            var startLocation = CurrentLocation;
             AcceptAndMoveNext();
 
             Context.CurrentBlock.Type = BlockType.Directive;
 
             // Accept whitespace
-            var remainingWs = AcceptSingleWhiteSpaceCharacter();
+            var remainingWhitespace = AcceptSingleWhiteSpaceCharacter();
+            var keywordwithSingleWhitespaceLength = Span.GetContent().Value.Length;
             if (Span.Symbols.Count > 1)
             {
                 Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
             }
             Output(SpanKind.MetaCode);
 
-            if (remainingWs != null)
+            if (remainingWhitespace != null)
             {
-                Accept(remainingWs);
+                Accept(remainingWhitespace);
             }
+            var remainingWhitespaceLength = Span.GetContent().Value.Length;
 
             // Consume any other whitespace tokens.
             AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
@@ -95,8 +99,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             var hasTypeError = !At(CSharpSymbolType.Identifier);
             if (hasTypeError)
             {
-                Context.OnError(CurrentLocation,
-                                Resources.FormatMvcRazorCodeParser_KeywordMustBeFollowedByTypeName(InjectKeyword));
+                Context.OnError(
+                    startLocation,
+                    Resources.FormatMvcRazorCodeParser_KeywordMustBeFollowedByTypeName(InjectKeyword),
+                    InjectKeyword.Length);
             }
 
             // Accept 'MyApp.MyService'
@@ -105,14 +111,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             // typeName now contains the token 'MyApp.MyService'
             var typeName = Span.GetContent().Value;
 
-            var propertyStartLocation = CurrentLocation;
             AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
 
             if (!hasTypeError && (EndOfFile || At(CSharpSymbolType.NewLine)))
             {
                 // Add an error for the property name only if we successfully read the type name
-                Context.OnError(propertyStartLocation,
-                                Resources.FormatMvcRazorCodeParser_InjectDirectivePropertyNameRequired(InjectKeyword));
+                Context.OnError(startLocation,
+                                Resources.FormatMvcRazorCodeParser_InjectDirectivePropertyNameRequired(InjectKeyword),
+                                keywordwithSingleWhitespaceLength + remainingWhitespaceLength + typeName.Length);
             }
 
             // Read until end of line. Span now contains 'MyApp.MyService MyServiceName'.

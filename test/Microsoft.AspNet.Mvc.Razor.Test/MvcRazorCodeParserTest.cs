@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
             };
             var expectedErrors = new[]
             {
-                new RazorError("The 'model' keyword must be followed by a type name on the same line.", new SourceLocation(9, 0, 9), 1)
+                new RazorError("The 'model' keyword must be followed by a type name on the same line.", new SourceLocation(1, 0, 1), 5)
             };
             Assert.Equal(expectedSpans, spans.ToArray());
             Assert.Equal(expectedErrors, errors.ToArray());
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
 
             var expectedErrors = new[]
             {
-                new RazorError("Only one 'model' statement is allowed in a file.", new SourceLocation(18, 1, 6), 1)
+                new RazorError("Only one 'model' statement is allowed in a file.", new SourceLocation(13, 1, 1), 5)
             };
             expectedSpans.Zip(spans, (exp, span) => new { expected = exp, span = span }).ToList().ForEach(i => Assert.Equal(i.expected, i.span));
             Assert.Equal(expectedSpans, spans.ToArray());
