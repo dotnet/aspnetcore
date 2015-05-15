@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Hosting.Internal
         internal static Tuple<string, string> SplitTypeName(string identifier)
         {
             string typeName = null;
-            string assemblyName = identifier.Trim();
+            var assemblyName = identifier.Trim();
             var parts = identifier.Split(new[] { ',' }, 2);
             if (parts.Length == 2)
             {

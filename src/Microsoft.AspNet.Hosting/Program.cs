@@ -3,6 +3,8 @@
 
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting.Internal;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;

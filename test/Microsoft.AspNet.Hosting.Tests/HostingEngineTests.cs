@@ -323,6 +323,23 @@ namespace Microsoft.AspNet.Hosting
             }
         }
 
+        [Fact]
+        public void HostingEngine_ThrowsForBadConfigureServiceSignature()
+        {
+            var engine = CreateBuilder()
+                .UseServer(this)
+                .UseStartup<BadConfigureServicesStartup>()
+                .Build();
+            var ex = Assert.Throws<InvalidOperationException>(() => engine.Start());
+            Assert.True(ex.Message.Contains("ConfigureServices"));
+        }
+
+        public class BadConfigureServicesStartup
+        {
+            public void ConfigureServices(IServiceCollection services, int gunk) { }
+            public void Configure(IApplicationBuilder app) { }
+        }
+
         private IHostingEngine CreateHostingEngine(RequestDelegate requestDelegate)
         {
             var applicationBuilder = new Mock<IApplicationBuilder>();

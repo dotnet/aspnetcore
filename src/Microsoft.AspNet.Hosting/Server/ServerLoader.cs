@@ -26,8 +26,8 @@ namespace Microsoft.AspNet.Hosting.Server
             }
 
             var nameParts = HostingUtilities.SplitTypeName(serverFactoryIdentifier);
-            string typeName = nameParts.Item1;
-            string assemblyName = nameParts.Item2;
+            var typeName = nameParts.Item1;
+            var assemblyName = nameParts.Item2;
 
             var assembly = Assembly.Load(new AssemblyName(assemblyName));
             if (assembly == null)

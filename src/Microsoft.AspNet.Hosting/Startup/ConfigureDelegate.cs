@@ -20,10 +20,7 @@ namespace Microsoft.AspNet.Hosting.Startup
 
         public MethodInfo MethodInfo { get; }
 
-        public Action<IApplicationBuilder> Build(object instance)
-        {
-            return builder => Invoke(instance, builder);
-        }
+        public Action<IApplicationBuilder> Build(object instance) => builder => Invoke(instance, builder);
 
         private void Invoke(object instance, IApplicationBuilder builder)
         {

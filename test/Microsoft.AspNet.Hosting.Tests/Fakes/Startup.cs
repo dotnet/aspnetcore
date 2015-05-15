@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Hosting.Fakes
             return services.BuildServiceProvider();
         }
 
-        public IServiceProvider ConfigureProviderArgsServices(IApplicationBuilder me)
+        public IServiceProvider ConfigureProviderArgsServices()
         {
             var services = new ServiceCollection().AddOptions();
             services.Configure<FakeOptions>(o =>

@@ -39,7 +39,6 @@ namespace Microsoft.AspNet.Hosting.Internal
         private IServiceProvider PriorRequestServices { get; set; }
         private IServiceScope Scope { get; set; }
 
-
         // CONSIDER: this could be an extension method on HttpContext instead
         public static RequestServicesContainer EnsureRequestServices(HttpContext httpContext, IServiceProvider services)
         {
