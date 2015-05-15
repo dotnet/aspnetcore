@@ -16,8 +16,10 @@
                 "Microsoft.Win32.Primitives": "4.0.0-beta-*",
                 "System.Diagnostics.Debug": "4.0.10-beta-*",
                 "System.IO.FileSystem": "4.0.0-beta-*",
+                "System.Security.Claims": "4.0.0-beta-*",
                 "System.Security.Cryptography.X509Certificates": "4.0.0-beta-*",
-                "System.Security.Principal.Windows": "4.0.0-beta-*"
+                "System.Security.Principal.Windows": "4.0.0-beta-*",
+                "System.Threading.Overlapped": "4.0.0-beta-*"
             }
         }
     }
