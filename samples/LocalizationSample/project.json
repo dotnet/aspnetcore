@@ -3,9 +3,9 @@
   "version": "1.0.0-*",
 
   "dependencies": {
+    "Microsoft.AspNet.Localization": "1.0.0-*",
     "Microsoft.AspNet.Server.IIS": "1.0.0-*",
     "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-    "Microsoft.AspNet.Localization": "1.0.0-*",
     "Microsoft.Framework.Localization": "1.0.0-*"
   },
 

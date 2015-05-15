@@ -10,11 +10,11 @@
     "dnx451": { },
     "dnxcore50": {
       "dependencies": {
+        "Microsoft.CSharp": "4.0.0-*",
         "System.Collections": "4.0.10-*",
         "System.Globalization": "4.0.10-*",
         "System.Reflection": "4.0.10-*",
-        "System.Runtime": "4.0.20-*",
-        "Microsoft.CSharp": "4.0.0-*"
+        "System.Runtime": "4.0.20-*"
       }
     }
   }
