@@ -36,24 +36,24 @@ namespace Microsoft.Framework.Localization
         }
 
         /// <inheritdoc />
-        public override LocalizedString this[[NotNull] string name] => GetString(name);
-
-        /// <inheritdoc />
-        public override LocalizedString this[[NotNull] string name, params object[] arguments] => GetString(name, arguments);
-
-        /// <inheritdoc />
-        public override LocalizedString GetString([NotNull] string name)
+        public override LocalizedString this[[NotNull] string name]
         {
-            var value = GetStringSafely(name, _culture);
-            return new LocalizedString(name, value ?? name);
+            get
+            {
+                var value = GetStringSafely(name, _culture);
+                return new LocalizedString(name, value ?? name);
+            }
         }
 
         /// <inheritdoc />
-        public override LocalizedString GetString([NotNull] string name, params object[] arguments)
+        public override LocalizedString this[[NotNull] string name, params object[] arguments]
         {
-            var format = GetStringSafely(name, _culture);
-            var value = string.Format(_culture, format ?? name, arguments);
-            return new LocalizedString(name, value ?? name, resourceNotFound: format == null);
+            get
+            {
+                var format = GetStringSafely(name, _culture);
+                var value = string.Format(_culture, format ?? name, arguments);
+                return new LocalizedString(name, value ?? name, resourceNotFound: format == null);
+            }
         }
 
         /// <inheritdoc />

@@ -51,26 +51,26 @@ namespace Microsoft.Framework.Localization
         /// The base name of the embedded resource in the <see cref="Assembly"/> that contains the strings.
         /// </summary>
         protected string ResourceBaseName { get; }
-        
-        /// <inheritdoc />
-        public virtual LocalizedString this[[NotNull] string name] => GetString(name);
 
         /// <inheritdoc />
-        public virtual LocalizedString this[[NotNull] string name, params object[] arguments] => GetString(name, arguments);
-
-        /// <inheritdoc />
-        public virtual LocalizedString GetString([NotNull] string name)
+        public virtual LocalizedString this[[NotNull] string name]
         {
-            var value = GetStringSafely(name, null);
-            return new LocalizedString(name, value ?? name, resourceNotFound: value == null);
+            get
+            {
+                var value = GetStringSafely(name, null);
+                return new LocalizedString(name, value ?? name, resourceNotFound: value == null);
+            }
         }
 
         /// <inheritdoc />
-        public virtual LocalizedString GetString([NotNull] string name, params object[] arguments)
+        public virtual LocalizedString this[[NotNull] string name, params object[] arguments]
         {
-            var format = GetStringSafely(name, null);
-            var value = string.Format(format ?? name, arguments);
-            return new LocalizedString(name, value, resourceNotFound: format == null);
+            get
+            {
+                var format = GetStringSafely(name, null);
+                var value = string.Format(format ?? name, arguments);
+                return new LocalizedString(name, value, resourceNotFound: format == null);
+            }
         }
 
         /// <summary>
