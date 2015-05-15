@@ -91,9 +91,17 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
             Parallel.For(0, filesToProcess.Count, parallelOptions, index =>
             {
                 var file = filesToProcess[index];
-                var cacheEntry = PreCompilationCache.GetOrSet(file.RelativePath,
-                                                              file,
-                                                              OnCacheMiss);
+
+                PrecompilationCacheEntry cacheEntry;
+                if(!PreCompilationCache.TryGetValue(file.RelativePath, out cacheEntry))
+                {
+                    cacheEntry = GetCacheEntry(file);
+                    PreCompilationCache.Set(
+                        file.RelativePath,
+                        cacheEntry,
+                        GetMemoryCacheEntryOptions(file, cacheEntry));
+                }
+
                 if (cacheEntry != null)
                 {
                     if (cacheEntry.Success)
@@ -190,21 +198,17 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
             };
         }
 
-        private PrecompilationCacheEntry OnCacheMiss(ICacheSetContext cacheSetContext)
+        private MemoryCacheEntryOptions GetMemoryCacheEntryOptions(
+            RelativeFileInfo fileInfo,
+            PrecompilationCacheEntry cacheEntry)
         {
-            var fileInfo = (RelativeFileInfo)cacheSetContext.State;
-            var entry = GetCacheEntry(fileInfo);
-
-            if (entry != null)
+            var options = new MemoryCacheEntryOptions();
+            options.AddExpirationTrigger(FileProvider.Watch(fileInfo.RelativePath));
+            foreach (var path in ViewHierarchyUtility.GetViewImportsLocations(fileInfo.RelativePath))
             {
-                cacheSetContext.AddExpirationTrigger(FileProvider.Watch(fileInfo.RelativePath));
-                foreach (var path in ViewHierarchyUtility.GetViewImportsLocations(fileInfo.RelativePath))
-                {
-                    cacheSetContext.AddExpirationTrigger(FileProvider.Watch(path));
-                }
+                options.AddExpirationTrigger(FileProvider.Watch(path));
             }
-
-            return entry;
+            return options;
         }
 
         private void GetFileInfosRecursive(string root, List<RelativeFileInfo> razorFiles)

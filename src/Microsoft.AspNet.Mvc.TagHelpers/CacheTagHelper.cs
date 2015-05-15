@@ -106,10 +106,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public TimeSpan? ExpiresSliding { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="CachePreservationPriority"/> policy for the cache entry.
+        /// Gets or sets the <see cref="CacheItemPriority"/> policy for the cache entry.
         /// </summary>
         [HtmlAttributeName(CachePriorityAttributeName)]
-        public CachePreservationPriority? Priority { get; set; }
+        public CacheItemPriority? Priority { get; set; }
 
         /// <summary>
         /// Gets or sets the value which determines if the tag helper is enabled or not.
@@ -126,19 +126,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 var key = GenerateKey(context);
                 if (!MemoryCache.TryGetValue(key, out result))
                 {
-                    // Create an EntryLink and flow it so that it is accessible via the ambient
-                    // EntryLinkHelpers.ContextLink for user code.
-                    var entryLink = new EntryLink();
-                    using (entryLink.FlowContext())
+                    // Create an entry link scope and flow it so that any triggers related to the cache entries
+                    // created within this scope get copied to this scope.
+                    using (var link = MemoryCache.CreateLinkingScope())
                     {
                         result = await context.GetChildContentAsync();
-                    }
 
-                    MemoryCache.Set(key, cacheSetContext =>
-                    {
-                        UpdateCacheContext(cacheSetContext, entryLink);
-                        return result;
-                    });
+                        MemoryCache.Set(key, result, GetMemoryCacheEntryOptions(link));
+                    }
                 }
             }
 
@@ -197,29 +192,31 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         // Internal for unit testing
-        internal void UpdateCacheContext(ICacheSetContext cacheSetContext, EntryLink entryLink)
+        internal MemoryCacheEntryOptions GetMemoryCacheEntryOptions(IEntryLink entryLink)
         {
+            var options = new MemoryCacheEntryOptions();
             if (ExpiresOn != null)
             {
-                cacheSetContext.SetAbsoluteExpiration(ExpiresOn.Value);
+                options.SetAbsoluteExpiration(ExpiresOn.Value);
             }
 
             if (ExpiresAfter != null)
             {
-                cacheSetContext.SetAbsoluteExpiration(ExpiresAfter.Value);
+                options.SetAbsoluteExpiration(ExpiresAfter.Value);
             }
 
             if (ExpiresSliding != null)
             {
-                cacheSetContext.SetSlidingExpiration(ExpiresSliding.Value);
+                options.SetSlidingExpiration(ExpiresSliding.Value);
             }
 
             if (Priority != null)
             {
-                cacheSetContext.SetPriority(Priority.Value);
+                options.SetPriority(Priority.Value);
             }
 
-            cacheSetContext.AddEntryLink(entryLink);
+            options.AddEntryLink(entryLink);
+            return options;
         }
 
         private static void AddStringCollectionKey(StringBuilder builder,

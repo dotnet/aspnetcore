@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
     {
         private static readonly MemoryCacheOptions MemoryCacheOptions = new MemoryCacheOptions
         {
-            ListenForMemoryPressure = false
+            CompactOnMemoryPressure = false
         };
         private static readonly TimeSpan SlidingExpirationDuration = TimeSpan.FromMinutes(1);
         private readonly IFileProvider _fileProvider;
@@ -43,22 +43,25 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         public CodeTree GetOrAdd([NotNull] string pagePath,
                                  [NotNull] Func<IFileInfo, CodeTree> getCodeTree)
         {
-            return _codeTreeCache.GetOrSet(pagePath, getCodeTree, OnCacheMiss);
-        }
+            CodeTree codeTree;
+            if (!_codeTreeCache.TryGetValue(pagePath, out codeTree))
+            {
+                // GetOrAdd is invoked for each _GlobalImport that might potentially exist in the path.
+                // We can avoid performing file system lookups for files that do not exist by caching
+                // negative results and adding a Watch for that file.
 
-        private CodeTree OnCacheMiss(ICacheSetContext cacheSetContext)
-        {
-            var pagePath = cacheSetContext.Key;
-            var getCodeTree = (Func<IFileInfo, CodeTree>)cacheSetContext.State;
+                var options = new MemoryCacheEntryOptions()
+                    .AddExpirationTrigger(_fileProvider.Watch(pagePath))
+                    .SetSlidingExpiration(SlidingExpirationDuration);
 
-            // GetOrAdd is invoked for each _ViewImports that might potentially exist in the path.
-            // We can avoid performing file system lookups for files that do not exist by caching
-            // negative results and adding a Watch for that file.
-            cacheSetContext.AddExpirationTrigger(_fileProvider.Watch(pagePath));
-            cacheSetContext.SetSlidingExpiration(SlidingExpirationDuration);
+                var file = _fileProvider.GetFileInfo(pagePath);
+                codeTree = file.Exists ? getCodeTree(file) : null;
 
-            var file = _fileProvider.GetFileInfo(pagePath);
-            return file.Exists ? getCodeTree(file) : null;
+
+                _codeTreeCache.Set(pagePath, codeTree, options);
+            }
+
+            return codeTree;
         }
     }
 }

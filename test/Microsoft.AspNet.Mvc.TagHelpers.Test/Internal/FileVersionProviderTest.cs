@@ -141,21 +141,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             object cacheValue = null;
             var cache = new Mock<IMemoryCache>();
             cache.CallBase = true;
-            cache.Setup(c => c.TryGetValue(It.IsAny<string>(), It.IsAny<IEntryLink>(), out cacheValue))
+            cache.Setup(c => c.TryGetValue(It.IsAny<string>(), out cacheValue))
                 .Returns(cacheValue != null);
-            var cacheSetContext = new Mock<ICacheSetContext>();
-            cacheSetContext.Setup(c => c.AddExpirationTrigger(trigger.Object)).Verifiable();
             cache.Setup(c => c.Set(
                 /*key*/ filePath,
-                /*link*/ It.IsAny<IEntryLink>(),
-                /*state*/ It.IsAny<object>(),
-                /*create*/ It.IsAny<Func<ICacheSetContext, object>>()))
-                .Returns<string, IEntryLink, object, Func<ICacheSetContext, object>>(
-                    (key, link, state, create) =>
-                    {
-                        cacheSetContext.Setup(c => c.State).Returns(state);
-                        return create(cacheSetContext.Object);
-                    })
+                /*value*/ It.IsAny<object>(),
+                /*options*/ It.IsAny<MemoryCacheEntryOptions>()))
+                .Returns(new object())
                 .Verifiable();
             var fileVersionProvider = new FileVersionProvider(
                 hostingEnvironment.WebRootFileProvider,
@@ -167,7 +159,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 
             // Assert
             Assert.Equal(filePath + "?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", result);
-            cacheSetContext.VerifyAll();
             cache.VerifyAll();
         }
 
@@ -211,29 +202,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         {
             var cache = new Mock<IMemoryCache>();
             cache.CallBase = true;
-                cache.Setup(c => c.TryGetValue(It.IsAny<string>(), It.IsAny<IEntryLink>(), out result))
+                cache.Setup(c => c.TryGetValue(It.IsAny<string>(), out result))
                     .Returns(result != null);
 
-            var cacheSetContext = new Mock<ICacheSetContext>();
-            cacheSetContext.Setup(c => c.AddExpirationTrigger(It.IsAny<IExpirationTrigger>()));
             cache
                 .Setup(
                     c => c.Set(
                         /*key*/ It.IsAny<string>(),
-                        /*link*/ It.IsAny<IEntryLink>(),
-                        /*state*/ It.IsAny<object>(),
-                        /*create*/ It.IsAny<Func<ICacheSetContext, object>>()))
-                .Returns((
-                    string input,
-                    IEntryLink entryLink,
-                    object state,
-                    Func<ICacheSetContext, object> create) =>
-                {
-                    {
-                        cacheSetContext.Setup(c => c.State).Returns(state);
-                        return create(cacheSetContext.Object);
-                    }
-                });
+                        /*value*/ It.IsAny<object>(),
+                        /*options*/ It.IsAny<MemoryCacheEntryOptions>()))
+                .Returns(new object());
             return cache.Object;
         }
 

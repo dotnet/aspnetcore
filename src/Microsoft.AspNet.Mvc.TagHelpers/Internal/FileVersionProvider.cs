@@ -65,12 +65,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                 }
             }
 
-            return _cache.GetOrSet(path, cacheGetOrSetContext =>
+            string value;
+            if(!_cache.TryGetValue(path, out value))
             {
-                var trigger = _fileProvider.Watch(resolvedPath);
-                cacheGetOrSetContext.AddExpirationTrigger(trigger);
-                return QueryHelpers.AddQueryString(path, VersionKey, GetHashForFile(fileInfo));
-            });
+                value = QueryHelpers.AddQueryString(path, VersionKey, GetHashForFile(fileInfo));
+                _cache.Set(
+                    path,
+                    value,
+                    new MemoryCacheEntryOptions().AddExpirationTrigger(_fileProvider.Watch(resolvedPath)));
+            }
+
+            return value;
         }
 
         private string GetHashForFile(IFileInfo fileInfo)

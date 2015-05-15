@@ -842,29 +842,18 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             var cache = new Mock<IMemoryCache>();
             cache.CallBase = true;
-            cache.Setup(c => c.TryGetValue(It.IsAny<string>(), It.IsAny<IEntryLink>(), out result))
+            cache.Setup(c => c.TryGetValue(It.IsAny<string>(), out result))
                 .Returns(result != null);
 
-            var cacheSetContext = new Mock<ICacheSetContext>();
-            cacheSetContext.Setup(c => c.AddExpirationTrigger(It.IsAny<IExpirationTrigger>()));
+            var cacheEntryOptions = new MemoryCacheEntryOptions();
+            cacheEntryOptions.AddExpirationTrigger(new Mock<IExpirationTrigger>().Object);
             cache
                 .Setup(
                     c => c.Set(
                         /*key*/ It.IsAny<string>(),
-                        /*link*/ It.IsAny<IEntryLink>(),
-                        /*state*/ It.IsAny<object>(),
-                        /*create*/ It.IsAny<Func<ICacheSetContext, object>>()))
-                .Returns((
-                    string input,
-                    IEntryLink entryLink,
-                    object state,
-                    Func<ICacheSetContext, object> create) =>
-                {
-                    {
-                        cacheSetContext.Setup(c => c.State).Returns(state);
-                        return create(cacheSetContext.Object);
-                    }
-                });
+                        /*value*/ It.IsAny<object>(),
+                        /*options*/ cacheEntryOptions))
+                .Returns(result);
             return cache.Object;
         }
     }

@@ -101,16 +101,21 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             if (Cache != null)
             {
                 var cacheKey = $"{nameof(GlobbingUrlBuilder)}-inc:{include}-exc:{exclude}";
-                return Cache.GetOrSet(cacheKey, cacheSetContext =>
+                IEnumerable<string> files;
+                if (!Cache.TryGetValue(cacheKey, out files))
                 {
+                    var options = new MemoryCacheEntryOptions();
                     foreach (var pattern in includePatterns)
                     {
                         var trigger = FileProvider.Watch(pattern);
-                        cacheSetContext.AddExpirationTrigger(trigger);
+                        options.AddExpirationTrigger(trigger);
                     }
 
-                    return FindFiles(includePatterns, excludePatterns);
-                });
+                    files = FindFiles(includePatterns, excludePatterns);
+
+                    Cache.Set(cacheKey, files, options);
+                }
+                return files;
             }
 
             return FindFiles(includePatterns, excludePatterns);
@@ -175,7 +180,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                     // Only extension differs so just compare the extension
                     var xExt = xExtIndex >= 0 ? x.Substring(xExtIndex) : string.Empty;
                     var yExt = yExtIndex >= 0 ? y.Substring(yExtIndex) : string.Empty;
-                    
                     return string.Compare(xExt, yExt, StringComparison.Ordinal);
                 }
 
