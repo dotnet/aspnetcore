@@ -162,14 +162,13 @@ namespace Microsoft.AspNet.Server.WebListener
         }
 
         [Fact]
-        public async Task ResponseSendFile_Chunked_Chunked()
+        public async Task ResponseSendFile_Unspecified_Chunked()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
-                httpContext.Response.Headers["Transfer-EncodinG"] = "CHUNKED";
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
@@ -183,14 +182,13 @@ namespace Microsoft.AspNet.Server.WebListener
         }
 
         [Fact]
-        public async Task ResponseSendFile_MultipleChunks_Chunked()
+        public async Task ResponseSendFile_MultipleWrites_Chunked()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
-                httpContext.Response.Headers["Transfer-EncodinG"] = "CHUNKED";
                 sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None).Wait();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
@@ -205,7 +203,7 @@ namespace Microsoft.AspNet.Server.WebListener
         }
 
         [Fact]
-        public async Task ResponseSendFile_ChunkedHalfOfFile_Chunked()
+        public async Task ResponseSendFile_HalfOfFile_Chunked()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, env =>
@@ -225,7 +223,7 @@ namespace Microsoft.AspNet.Server.WebListener
         }
 
         [Fact]
-        public async Task ResponseSendFile_ChunkedOffsetOutOfRange_Throws()
+        public async Task ResponseSendFile_OffsetOutOfRange_Throws()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, env =>
@@ -241,7 +239,7 @@ namespace Microsoft.AspNet.Server.WebListener
         }
 
         [Fact]
-        public async Task ResponseSendFile_ChunkedCountOutOfRange_Throws()
+        public async Task ResponseSendFile_CountOutOfRange_Throws()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, env =>
@@ -257,7 +255,7 @@ namespace Microsoft.AspNet.Server.WebListener
         }
 
         [Fact]
-        public async Task ResponseSendFile_ChunkedCount0_Chunked()
+        public async Task ResponseSendFile_Count0_Chunked()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, env =>

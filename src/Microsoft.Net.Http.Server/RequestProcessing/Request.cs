@@ -263,6 +263,11 @@ namespace Microsoft.Net.Http.Server
             get { return _httpMethod; }
         }
 
+        public bool IsHeadMethod
+        {
+            get { return string.Equals(_httpMethod, "HEAD", StringComparison.OrdinalIgnoreCase); }
+        }
+
         public Stream Body
         {
             get
@@ -413,7 +418,7 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                return Headers.Get(HttpKnownHeaderNames.ContentLength);
+                return Headers.Get(HttpKnownHeaderNames.ContentType);
             }
         }
 

@@ -84,7 +84,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Fact]
-        public async Task ResponseSendFile_Chunked_Chunked()
+        public async Task ResponseSendFile_Unspecified_Chunked()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
@@ -92,7 +92,6 @@ namespace Microsoft.Net.Http.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
-                context.Response.Headers["Transfer-EncodinG"] = "CHUNKED";
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 context.Dispose();
 
@@ -106,7 +105,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Fact]
-        public async Task ResponseSendFile_MultipleChunks_Chunked()
+        public async Task ResponseSendFile_MultipleWrites_Chunked()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
@@ -114,7 +113,6 @@ namespace Microsoft.Net.Http.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
-                context.Response.Headers["Transfer-EncodinG"] = "CHUNKED";
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 context.Dispose();
@@ -129,7 +127,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Fact]
-        public async Task ResponseSendFile_ChunkedHalfOfFile_Chunked()
+        public async Task ResponseSendFile_HalfOfFile_Chunked()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
@@ -150,7 +148,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Fact]
-        public async Task ResponseSendFile_ChunkedOffsetOutOfRange_Throws()
+        public async Task ResponseSendFile_OffsetOutOfRange_Throws()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
@@ -167,7 +165,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Fact]
-        public async Task ResponseSendFile_ChunkedCountOutOfRange_Throws()
+        public async Task ResponseSendFile_CountOutOfRange_Throws()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
@@ -184,7 +182,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Fact]
-        public async Task ResponseSendFile_ChunkedCount0_Chunked()
+        public async Task ResponseSendFile_Count0_Chunked()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))

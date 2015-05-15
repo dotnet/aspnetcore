@@ -28,6 +28,8 @@ namespace Microsoft.Net.Http.Server
         None = 0,
         Chunked = 1, // Transfer-Encoding: chunked
         ContentLength = 2, // Content-Length: XXX
-        Invalid = 3,
+        Close = 3, // Connection: close
+        PassThrough = 4, // The application is handling the boundary themselves (e.g. chunking themselves).
+        Invalid = 5,
     }
 }

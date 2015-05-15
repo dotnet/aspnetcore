@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -37,7 +38,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Fact]
-        public async Task ResponseBody_WriteChunked_Chunked()
+        public async Task ResponseBody_WriteChunked_ManuallyChunked()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
@@ -45,11 +46,10 @@ namespace Microsoft.Net.Http.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
-                context.Request.Headers["transfeR-Encoding"] = " CHunked ";
+                context.Response.Headers["transfeR-Encoding"] = " CHunked ";
                 Stream stream = context.Response.Body;
-                stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
-                stream.Write(new byte[10], 0, 10);
-                await stream.WriteAsync(new byte[10], 0, 10);
+                var responseBytes = Encoding.ASCII.GetBytes("10\r\nManually Chunked\r\n0\r\n\r\n");
+                await stream.WriteAsync(responseBytes, 0, responseBytes.Length);
                 context.Dispose();
 
                 HttpResponseMessage response = await responseTask;
@@ -58,7 +58,7 @@ namespace Microsoft.Net.Http.Server
                 IEnumerable<string> ignored;
                 Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
                 Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
-                Assert.Equal(new byte[30], await response.Content.ReadAsByteArrayAsync());
+                Assert.Equal("Manually Chunked", await response.Content.ReadAsStringAsync());
             }
         }
 
@@ -88,43 +88,28 @@ namespace Microsoft.Net.Http.Server
                 Assert.Equal(new byte[30], await response.Content.ReadAsByteArrayAsync());
             }
         }
-        /* TODO: response protocol
+
         [Fact]
-        public async Task ResponseBody_Http10WriteNoHeaders_DefaultsConnectionClose()
+        public async Task ResponseBody_WriteContentLengthNoneWritten_Aborts()
         {
-            using (Utilities.CreateHttpServer(env =>
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
             {
-                env["owin.ResponseProtocol"] = "HTTP/1.0";
-                env.Get<Stream>("owin.ResponseBody").Write(new byte[10], 0, 10);
-                return env.Get<Stream>("owin.ResponseBody").WriteAsync(new byte[10], 0, 10);
-            }))
-            {
-                HttpResponseMessage response = await SendRequestAsync(Address);
-                Assert.Equal(200, (int)response.StatusCode);
-                Assert.Equal(new Version(1, 1), response.Version); // Http.Sys won't transmit 1.0
-                IEnumerable<string> ignored;
-                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
-                Assert.Null(response.Headers.TransferEncodingChunked);
-                Assert.Equal(new byte[20], await response.Content.ReadAsByteArrayAsync());
-            }
-        }
-        */
-        /* TODO: Why does this test time out?
-        [Fact]
-        public async Task ResponseBody_WriteContentLengthNoneWritten_Throws()
-        {
-            using (var server = Utilities.CreateHttpServer())
-            {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(Address);
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
-                context.Response.Headers["Content-lenGth"] = new[] { " 20 " };
+                context.Response.Headers["Content-lenGth"] = " 20 ";
+                context.Dispose();
+
+                // HttpClient retries the request because it didn't get a response.
+                context = await server.GetContextAsync();
+                context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Dispose();
 
                 await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
             }
         }
-        */
+
         [Fact]
         public async Task ResponseBody_WriteContentLengthNotEnoughWritten_Throws()
         {

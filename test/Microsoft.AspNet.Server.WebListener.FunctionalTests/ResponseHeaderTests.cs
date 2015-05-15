@@ -16,9 +16,11 @@
 // permissions and limitations under the License.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http.Features;
@@ -134,6 +136,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 var responseInfo = httpContext.GetFeature<IHttpResponseFeature>();
                 var responseHeaders = responseInfo.Headers;
                 responseHeaders["Connection"] = new string[] { "Close" };
+                httpContext.Response.Body.Flush(); // Http.Sys adds the Content-Length: header for us if we don't flush
                 return Task.FromResult(0);
             }))
             {
@@ -141,47 +144,12 @@ namespace Microsoft.AspNet.Server.WebListener
                 response.EnsureSuccessStatusCode();
                 Assert.True(response.Headers.ConnectionClose.Value);
                 Assert.Equal(new string[] { "close" }, response.Headers.GetValues("Connection"));
-            }
-        }
-        /* TODO:
-        [Fact]
-        public async Task ResponseHeaders_SendsHttp10_Gets11Close()
-        {
-            string address;
-            using (Utilities.CreateHttpServer(out address, env =>
-            {
-                env["owin.ResponseProtocol"] = "HTTP/1.0";
-                return Task.FromResult(0);
-            }))
-            {
-                HttpResponseMessage response = await SendRequestAsync(address);
-                response.EnsureSuccessStatusCode();
-                Assert.Equal(new Version(1, 1), response.Version);
-                Assert.True(response.Headers.ConnectionClose.Value);
-                Assert.Equal(new string[] { "close" }, response.Headers.GetValues("Connection"));
-            }
-        }
-
-        [Fact]
-        public async Task ResponseHeaders_SendsHttp10WithBody_Gets11Close()
-        {
-            string address;
-            using (Utilities.CreateHttpServer(out address, env =>
-            {
-                env["owin.ResponseProtocol"] = "HTTP/1.0";
-                return env.Get<Stream>("owin.ResponseBody").WriteAsync(new byte[10], 0, 10);
-            }))
-            {
-                HttpResponseMessage response = await SendRequestAsync(address);
-                response.EnsureSuccessStatusCode();
-                Assert.Equal(new Version(1, 1), response.Version);
                 Assert.False(response.Headers.TransferEncodingChunked.HasValue);
-                Assert.False(response.Content.Headers.Contains("Content-Length"));
-                Assert.True(response.Headers.ConnectionClose.Value);
-                Assert.Equal(new string[] { "close" }, response.Headers.GetValues("Connection"));
+                IEnumerable<string> values;
+                var result = response.Content.Headers.TryGetValues("Content-Length", out values);
+                Assert.False(result);
             }
         }
-        */
 
         [Fact]
         public async Task ResponseHeaders_HTTP10Request_Gets11Close()
@@ -201,12 +169,13 @@ namespace Microsoft.AspNet.Server.WebListener
                     Assert.Equal(new Version(1, 1), response.Version);
                     Assert.True(response.Headers.ConnectionClose.Value);
                     Assert.Equal(new string[] { "close" }, response.Headers.GetValues("Connection"));
+                    Assert.False(response.Headers.TransferEncodingChunked.HasValue);
                 }
             }
         }
 
         [Fact]
-        public async Task ResponseHeaders_HTTP10Request_RemovesChunkedHeader()
+        public async Task ResponseHeaders_HTTP10RequestWithChunkedHeader_ManualChunking()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, env =>
@@ -215,7 +184,8 @@ namespace Microsoft.AspNet.Server.WebListener
                 var responseInfo = httpContext.GetFeature<IHttpResponseFeature>();
                 var responseHeaders = responseInfo.Headers;
                 responseHeaders["Transfer-Encoding"] = new string[] { "chunked" };
-                return responseInfo.Body.WriteAsync(new byte[10], 0, 10);
+                var responseBytes = Encoding.ASCII.GetBytes("10\r\nManually Chunked\r\n0\r\n\r\n");
+                return responseInfo.Body.WriteAsync(responseBytes, 0, responseBytes.Length);
             }))
             {
                 using (HttpClient client = new HttpClient())
@@ -225,10 +195,11 @@ namespace Microsoft.AspNet.Server.WebListener
                     HttpResponseMessage response = await client.SendAsync(request);
                     response.EnsureSuccessStatusCode();
                     Assert.Equal(new Version(1, 1), response.Version);
-                    Assert.False(response.Headers.TransferEncodingChunked.HasValue);
+                    Assert.True(response.Headers.TransferEncodingChunked.HasValue);
                     Assert.False(response.Content.Headers.Contains("Content-Length"));
                     Assert.True(response.Headers.ConnectionClose.Value);
                     Assert.Equal(new string[] { "close" }, response.Headers.GetValues("Connection"));
+                    Assert.Equal("Manually Chunked", await response.Content.ReadAsStringAsync());
                 }
             }
         }

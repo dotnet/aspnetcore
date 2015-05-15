@@ -231,7 +231,7 @@ namespace Microsoft.Net.Http.Server
                 }
                 else if (_requestContext.Response.BoundaryType == BoundaryType.ContentLength)
                 {
-                    _leftToWrite = _requestContext.Response.CalculatedLength;
+                    _leftToWrite = _requestContext.Response.ExpectedBodyLength;
                 }
                 else
                 {
@@ -764,7 +764,7 @@ namespace Microsoft.Net.Http.Server
                     if (_leftToWrite > 0 && !_inOpaqueMode)
                     {
                         _requestContext.Abort();
-                        // TODO: Reduce this to a logged warning, it is thrown too late to be visible in user code.
+                        // This is logged rather than thrown because it is too late for an exception to be visible in user code.
                         LogHelper.LogError(_requestContext.Logger, "ResponseStream::Dispose", "Fewer bytes were written than were specified in the Content-Length.");
                         return;
                     }
@@ -775,9 +775,12 @@ namespace Microsoft.Net.Http.Server
                     }
 
                     uint statusCode = 0;
-                    if ((_requestContext.Response.BoundaryType == BoundaryType.Chunked || _requestContext.Response.BoundaryType == BoundaryType.None) && (String.Compare(_requestContext.Request.Method, "HEAD", StringComparison.OrdinalIgnoreCase) != 0))
+                    if ((_requestContext.Response.BoundaryType == BoundaryType.Chunked
+                        || _requestContext.Response.BoundaryType == BoundaryType.Close
+                        || _requestContext.Response.BoundaryType == BoundaryType.PassThrough)
+                        && !_requestContext.Request.IsHeadMethod)
                     {
-                        if (_requestContext.Response.BoundaryType == BoundaryType.None)
+                        if (_requestContext.Response.BoundaryType == BoundaryType.Close)
                         {
                             flags |= UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
                         }

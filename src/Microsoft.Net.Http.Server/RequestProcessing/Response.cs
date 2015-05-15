@@ -38,13 +38,13 @@ namespace Microsoft.Net.Http.Server
 {
     public sealed unsafe class Response
     {
-        private static readonly string[] ZeroContentLength = new[] { "0" };
+        private static readonly string[] ZeroContentLength = new[] { Constants.Zero };
 
         private ResponseState _responseState;
         private HeaderCollection _headers;
         private string _reasonPhrase;
         private ResponseStream _nativeStream;
-        private long _contentLength;
+        private long _expectedBodyLength;
         private BoundaryType _boundaryType;
         private UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_V2 _nativeResponse;
         private IList<Tuple<Action<object>, object>> _onSendingHeadersActions;
@@ -166,11 +166,11 @@ namespace Microsoft.Net.Http.Server
             get { return _headers; }
         }
 
-        internal long CalculatedLength
+        internal long ExpectedBodyLength
         {
             get
             {
-                return _contentLength;
+                return _expectedBodyLength;
             }
         }
 
@@ -184,7 +184,7 @@ namespace Microsoft.Net.Http.Server
                 if (!string.IsNullOrWhiteSpace(contentLengthString))
                 {
                     contentLengthString = contentLengthString.Trim();
-                    if (string.Equals("0", contentLengthString, StringComparison.Ordinal))
+                    if (string.Equals(Constants.Zero, contentLengthString, StringComparison.Ordinal))
                     {
                         return 0;
                     }
@@ -225,7 +225,7 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                return Headers.Get(HttpKnownHeaderNames.ContentLength);
+                return Headers.Get(HttpKnownHeaderNames.ContentType);
             }
             set
             {
@@ -239,44 +239,6 @@ namespace Microsoft.Net.Http.Server
                     Headers[HttpKnownHeaderNames.ContentType] = value;
                 }
             }
-        }
-
-        private Version GetProtocolVersion()
-        {
-            /*
-            Version requestVersion = Request.ProtocolVersion;
-            Version responseVersion = requestVersion;
-            string protocolVersion = RequestContext.Environment.Get<string>(Constants.HttpResponseProtocolKey);
-
-            // Optional
-            if (!string.IsNullOrWhiteSpace(protocolVersion))
-            {
-                if (string.Equals("HTTP/1.1", protocolVersion, StringComparison.OrdinalIgnoreCase))
-                {
-                    responseVersion = Constants.V1_1;
-                }
-                if (string.Equals("HTTP/1.0", protocolVersion, StringComparison.OrdinalIgnoreCase))
-                {
-                    responseVersion = Constants.V1_0;
-                }
-                else
-                {
-                    // TODO: Just log? It's too late to get this to user code.
-                    throw new ArgumentException(string.Empty, Constants.HttpResponseProtocolKey);
-                }
-            }
-
-            if (requestVersion == responseVersion)
-            {
-                return requestVersion;
-            }
-
-            // Return the lesser of the two versions. There are only two, so it it will always be 1.0.
-            return Constants.V1_0;*/
-
-            // TODO: IHttpResponseInformation does not define a response protocol version. Http.Sys doesn't let
-            // us send anything but 1.1 anyways, but we could at least use it to set things like the connection header.
-            return Request.ProtocolVersion;
         }
 
         // should only be called from RequestContext
@@ -476,119 +438,85 @@ namespace Microsoft.Net.Http.Server
                 RequestContext.Server.AuthenticationManager.SetAuthenticationChallenge(RequestContext);
             }
 
-            UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE;
+            var flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE;
             Debug.Assert(!ComputedHeaders, "HttpListenerResponse::ComputeHeaders()|ComputedHeaders is true.");
             _responseState = ResponseState.ComputedHeaders;
-            /*
-            // here we would check for BoundaryType.Raw, in this case we wouldn't need to do anything
-            if (m_BoundaryType==BoundaryType.Raw) {
-                return flags;
-            }
-            */
 
-            // Check the response headers to determine the correct keep alive and boundary type.
-            Version responseVersion = GetProtocolVersion();
-            _nativeResponse.Response_V1.Version.MajorVersion = (ushort)responseVersion.Major;
-            _nativeResponse.Response_V1.Version.MinorVersion = (ushort)responseVersion.Minor;
-            bool keepAlive = responseVersion >= Constants.V1_1;
-            string connectionString = Headers.Get(HttpKnownHeaderNames.Connection);
-            string keepAliveString = Headers.Get(HttpKnownHeaderNames.KeepAlive);
-            bool closeSet = false;
-            bool keepAliveSet = false;
+            // Gather everything from the request that affects the response:
+            var requestVersion = Request.ProtocolVersion;
+            var requestConnectionString = Request.Headers.Get(HttpKnownHeaderNames.Connection);
+            var isHeadRequest = Request.IsHeadMethod;
+            var requestCloseSet = Matches(Constants.Close, requestConnectionString);
 
-            if (!string.IsNullOrWhiteSpace(connectionString) && string.Equals("close", connectionString.Trim(), StringComparison.OrdinalIgnoreCase))
+            // Gather everything the app may have set on the response:
+            // Http.Sys does not allow us to specify the response protocol version, assume this is a HTTP/1.1 response when making decisions.
+            var responseConnectionString = Headers.Get(HttpKnownHeaderNames.Connection);
+            var transferEncodingString = Headers.Get(HttpKnownHeaderNames.TransferEncoding);
+            var responseContentLength = ContentLength;
+            var responseCloseSet = Matches(Constants.Close, responseConnectionString);
+            var responseChunkedSet = Matches(Constants.Chunked, transferEncodingString);
+            var statusCanHaveBody = CanSendResponseBody(_requestContext.Response.StatusCode);
+
+            // Determine if the connection will be kept alive or closed.
+            var keepConnectionAlive = true;
+            if (requestVersion <= Constants.V1_0 // Http.Sys does not support "Keep-Alive: true" or "Connection: Keep-Alive"
+                || (requestVersion == Constants.V1_1 && requestCloseSet)
+                || responseCloseSet)
             {
-                keepAlive = false;
-                closeSet = true;
-            }
-            else if (!string.IsNullOrWhiteSpace(keepAliveString) && string.Equals("true", keepAliveString.Trim(), StringComparison.OrdinalIgnoreCase))
-            {
-                keepAlive = true;
-                keepAliveSet = true;
+                keepConnectionAlive = false;
             }
 
-            // Content-Length takes priority
-            long? contentLength = ContentLength;
-            string transferEncodingString = Headers.Get(HttpKnownHeaderNames.TransferEncoding);
-
-            if (responseVersion == Constants.V1_0 && !string.IsNullOrEmpty(transferEncodingString)
-                && string.Equals("chunked", transferEncodingString.Trim(), StringComparison.OrdinalIgnoreCase))
+            // Determine the body format. If the user asks to do something, let them, otherwise choose a good default for the scenario.
+            if (responseContentLength.HasValue)
             {
-                // A 1.0 client can't process chunked responses.
-                Headers.Remove(HttpKnownHeaderNames.TransferEncoding);
-                transferEncodingString = null;
-            }
-
-            if (contentLength.HasValue)
-            {
-                _contentLength = contentLength.Value;
                 _boundaryType = BoundaryType.ContentLength;
-                if (_contentLength == 0)
-                {
-                    flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE;
-                }
+                // ComputeLeftToWrite checks for HEAD requests when setting _leftToWrite
+                _expectedBodyLength = responseContentLength.Value;
             }
-            else if (!string.IsNullOrWhiteSpace(transferEncodingString)
-                && string.Equals("chunked", transferEncodingString.Trim(), StringComparison.OrdinalIgnoreCase))
+            else if (responseChunkedSet)
             {
-                // Then Transfer-Encoding: chunked
+                // The application is performing it's own chunking.
+                _boundaryType = BoundaryType.PassThrough;
+            }
+            else if (endOfRequest && !(isHeadRequest && statusCanHaveBody)) // HEAD requests always end without a body. Assume a GET response would have a body.
+            {
+                if (statusCanHaveBody)
+                {
+                    Headers[HttpKnownHeaderNames.ContentLength] = Constants.Zero;
+                }
+                _boundaryType = BoundaryType.ContentLength;
+                _expectedBodyLength = 0;
+            }
+            else if (keepConnectionAlive && requestVersion == Constants.V1_1)
+            {
                 _boundaryType = BoundaryType.Chunked;
-            }
-            else if (endOfRequest)
-            {
-                // The request is ending without a body, add a Content-Length: 0 header.
-                Headers[HttpKnownHeaderNames.ContentLength] = "0";
-                _boundaryType = BoundaryType.ContentLength;
-                _contentLength = 0;
-                flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE;
+                Headers[HttpKnownHeaderNames.TransferEncoding] = Constants.Chunked;
             }
             else
             {
-                // Then fall back to Connection:Close transparent mode.
-                _boundaryType = BoundaryType.None;
-                flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE; // seems like HTTP_SEND_RESPONSE_FLAG_MORE_DATA but this hangs the app;
-                if (responseVersion == Constants.V1_0)
-                {
-                    keepAlive = false;
-                }
-                else
-                {
-                    Headers[HttpKnownHeaderNames.TransferEncoding] = "chunked";
-                    _boundaryType = BoundaryType.Chunked;
-                }
-
-                if (CanSendResponseBody(_requestContext.Response.StatusCode))
-                {
-                    _contentLength = -1;
-                }
-                else
-                {
-                    Headers[HttpKnownHeaderNames.ContentLength] = "0";
-                    _contentLength = 0;
-                    _boundaryType = BoundaryType.ContentLength;
-                }
+                // The length cannot be determined, so we must close the connection
+                keepConnectionAlive = false;
+                _boundaryType = BoundaryType.Close;
             }
 
-            // Also, Keep-Alive vs Connection Close
-            if (!keepAlive)
+            // Managed connection lifetime
+            if (!keepConnectionAlive)
             {
-                if (!closeSet)
+                // All Http.Sys responses are v1.1, so use 1.1 response headers
+                // Note that if we don't add this header, Http.Sys will often do it for us.
+                if (!responseCloseSet)
                 {
-                    Headers.Append(HttpKnownHeaderNames.Connection, "close");
+                    Headers.Append(HttpKnownHeaderNames.Connection, Constants.Close);
                 }
-                if (flags == UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE)
-                {
-                    flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
-                }
+                flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
             }
-            else
-            {
-                if (Request.ProtocolVersion.Minor == 0 && !keepAliveSet)
-                {
-                    Headers[HttpKnownHeaderNames.KeepAlive] = "true";
-                }
-            }
+
             return flags;
+        }
+
+        private static bool Matches(string knownValue, string input)
+        {
+            return string.Equals(knownValue, input?.Trim(), StringComparison.OrdinalIgnoreCase);
         }
 
         private List<GCHandle> SerializeHeaders(bool isOpaqueUpgrade)

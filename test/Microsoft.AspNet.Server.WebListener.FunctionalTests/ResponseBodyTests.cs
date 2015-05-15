@@ -99,28 +99,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 Assert.Equal(new byte[30], await response.Content.ReadAsByteArrayAsync());
             }
         }
-        /* TODO: response protocol
-        [Fact]
-        public async Task ResponseBody_Http10WriteNoHeaders_DefaultsConnectionClose()
-        {
-            string address;
-            using (Utilities.CreateHttpServer(out address, env =>
-            {
-                env["owin.ResponseProtocol"] = "HTTP/1.0";
-                env.Get<Stream>("owin.ResponseBody").Write(new byte[10], 0, 10);
-                return env.Get<Stream>("owin.ResponseBody").WriteAsync(new byte[10], 0, 10);
-            }))
-            {
-                HttpResponseMessage response = await SendRequestAsync(address);
-                Assert.Equal(200, (int)response.StatusCode);
-                Assert.Equal(new Version(1, 1), response.Version); // Http.Sys won't transmit 1.0
-                IEnumerable<string> ignored;
-                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
-                Assert.Null(response.Headers.TransferEncodingChunked);
-                Assert.Equal(new byte[20], await response.Content.ReadAsByteArrayAsync());
-            }
-        }
-        */
+
         [Fact]
         public async Task ResponseBody_WriteContentLengthNoneWritten_Throws()
         {
