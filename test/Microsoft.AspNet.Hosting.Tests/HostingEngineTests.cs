@@ -140,15 +140,15 @@ namespace Microsoft.AspNet.Hosting
         }
 
         [Fact]
-        public void EnvDefaultsToDevelopmentIfNoConfig()
+        public void EnvDefaultsToProductionIfNoConfig()
         {
             var engine = CreateBuilder().Build();
             var env = engine.ApplicationServices.GetRequiredService<IHostingEnvironment>();
-            Assert.Equal("Development", env.EnvironmentName);
+            Assert.Equal("Production", env.EnvironmentName);
         }
 
         [Fact]
-        public void EnvDefaultsToDevelopmentConfigValueIfSpecifiedWithOldKey()
+        public void EnvDefaultsToConfigValueIfSpecifiedWithOldKey()
         {
             var vals = new Dictionary<string, string>
             {
@@ -164,7 +164,7 @@ namespace Microsoft.AspNet.Hosting
         }
 
         [Fact]
-        public void EnvDefaultsToDevelopmentConfigValueIfSpecified()
+        public void EnvDefaultsToConfigValueIfSpecified()
         {
             var vals = new Dictionary<string, string>
             {
@@ -195,8 +195,8 @@ namespace Microsoft.AspNet.Hosting
             using (engine.Start())
             {
                 var env = engine.ApplicationServices.GetRequiredService<IHostingEnvironment>();
-                Assert.True(env.IsEnvironment("Development"));
-                Assert.True(env.IsEnvironment("developMent"));
+                Assert.True(env.IsEnvironment("Production"));
+                Assert.True(env.IsEnvironment("producTion"));
             }
         }
 

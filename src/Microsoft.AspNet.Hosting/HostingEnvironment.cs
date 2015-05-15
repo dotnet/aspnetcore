@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Hosting
 {
     public class HostingEnvironment : IHostingEnvironment
     {
-        internal const string DefaultEnvironmentName = "Development";
+        internal const string DefaultEnvironmentName = "Production";
 
         public string EnvironmentName { get; set; } = DefaultEnvironmentName;
 
