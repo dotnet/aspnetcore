@@ -86,7 +86,12 @@ namespace BasicWebSite.Controllers
         {
             return View();
         }
-        
+
+        public IActionResult ViewWithPrefixedAttributeValue()
+        {
+            return View();
+        }
+
         public string GetApplicationDescription()
         {
             var actionDescriptor = (ControllerActionDescriptor)ActionContext.ActionDescriptor;

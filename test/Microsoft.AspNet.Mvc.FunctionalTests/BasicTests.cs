@@ -77,6 +77,24 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task ViewWithAttributePrefix_RendersWithoutIgnoringPrefix()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+            var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
+                "compiler/resources/BasicWebSite.Home.ViewWithPrefixedAttributeValue.html");
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Home/ViewWithPrefixedAttributeValue");
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedContent, responseContent);
+        }
+
+        [Fact]
         public async Task CanReturn_ResultsWithoutContent()
         {
             // Arrange

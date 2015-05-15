@@ -548,7 +548,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                         WritePositionTaggedLiteral(writer, prefix);
                         first = false;
                     }
-                    else
+
+                    if (!string.IsNullOrEmpty(attrVal.Prefix))
                     {
                         WritePositionTaggedLiteral(writer, attrVal.Prefix);
                     }

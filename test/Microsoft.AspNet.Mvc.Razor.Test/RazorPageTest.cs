@@ -667,6 +667,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             var sequence = new MockSequence();
             context.InSequence(sequence).Setup(f => f.BeginContext(0, 6, true)).Verifiable();
             context.InSequence(sequence).Setup(f => f.EndContext()).Verifiable();
+            context.InSequence(sequence).Setup(f => f.BeginContext(0, 6, true)).Verifiable();
+            context.InSequence(sequence).Setup(f => f.EndContext()).Verifiable();
             context.InSequence(sequence).Setup(f => f.BeginContext(8, 14, true)).Verifiable();
             context.InSequence(sequence).Setup(f => f.EndContext()).Verifiable();
             context.InSequence(sequence).Setup(f => f.BeginContext(22, 7, true)).Verifiable();
