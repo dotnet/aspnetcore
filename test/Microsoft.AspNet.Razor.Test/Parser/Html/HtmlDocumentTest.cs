@@ -72,7 +72,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
             ParseDocumentTest("<div ><p class = 'bar'> Foo </p></div >",
                 new MarkupBlock(
                     BlockFactory.MarkupTagBlock("<div >"),
-                    BlockFactory.MarkupTagBlock("<p class = 'bar'>"),
+                    new MarkupTagBlock(
+                        Factory.Markup("<p"),
+                        new MarkupBlock(
+                            Factory.Markup(" class")),
+                        Factory.Markup(" = 'bar'>")),
                     Factory.Markup(" Foo "),
                     BlockFactory.MarkupTagBlock("</p>"),
                     BlockFactory.MarkupTagBlock("</div >")));

@@ -303,6 +303,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             if (actual == null)
             {
                 AddNullActualError(collector, actual, expected);
+                return;
             }
 
             if (actual.IsBlock != expected.IsBlock)
@@ -335,7 +336,14 @@ namespace Microsoft.AspNet.Razor.Test.Framework
                 collector.AddMessage("{0} - PASSED :: Attribute names match", expected.Key);
             }
 
-            EvaluateSyntaxTreeNode(collector, actual.Value, expected.Value);
+            if (actual.Value == null && expected.Value == null)
+            {
+                collector.AddMessage("{0} - PASSED :: Minimized attribute values match", expected.Key);
+            }
+            else
+            {
+                EvaluateSyntaxTreeNode(collector, actual.Value, expected.Value);
+            }
         }
 
         private static void EvaluateSpan(ErrorCollector collector, Span actual, Span expected)

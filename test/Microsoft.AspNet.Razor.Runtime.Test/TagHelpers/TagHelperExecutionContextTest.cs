@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Arrange & Act
             var executionContext = new TagHelperExecutionContext("p", selfClosing);
 
-            // Assert 
+            // Assert
             Assert.Equal(selfClosing, executionContext.SelfClosing);
         }
 
@@ -194,6 +194,54 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             executionContext.AddHtmlAttribute("class", "btn");
             executionContext.AddHtmlAttribute("foo", "bar");
+
+            // Assert
+            Assert.Equal(
+                expectedAttributes,
+                executionContext.HTMLAttributes,
+                CaseSensitiveTagHelperAttributeComparer.Default);
+        }
+
+        [Fact]
+        public void AddMinimizedHtmlAttribute_MaintainsHTMLAttributes()
+        {
+            // Arrange
+            var executionContext = new TagHelperExecutionContext("input", selfClosing: true);
+            var expectedAttributes = new TagHelperAttributeList
+            {
+                ["checked"] = new TagHelperAttribute { Name = "checked", Minimized = true },
+                ["visible"] = new TagHelperAttribute { Name = "visible", Minimized = true }
+            };
+
+            // Act
+            executionContext.AddMinimizedHtmlAttribute("checked");
+            executionContext.AddMinimizedHtmlAttribute("visible");
+
+            // Assert
+            Assert.Equal(
+                expectedAttributes,
+                executionContext.HTMLAttributes,
+                CaseSensitiveTagHelperAttributeComparer.Default);
+        }
+
+        [Fact]
+        public void AddMinimizedHtmlAttribute_MaintainsHTMLAttributes_SomeMinimized()
+        {
+            // Arrange
+            var executionContext = new TagHelperExecutionContext("input", selfClosing: true);
+            var expectedAttributes = new TagHelperAttributeList
+            {
+                { "class", "btn" },
+                { "foo", "bar" }
+            };
+            expectedAttributes.Add(new TagHelperAttribute { Name = "checked", Minimized = true });
+            expectedAttributes.Add(new TagHelperAttribute { Name = "visible", Minimized = true });
+
+            // Act
+            executionContext.AddHtmlAttribute("class", "btn");
+            executionContext.AddHtmlAttribute("foo", "bar");
+            executionContext.AddMinimizedHtmlAttribute("checked");
+            executionContext.AddMinimizedHtmlAttribute("visible");
 
             // Assert
             Assert.Equal(

@@ -70,7 +70,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                         new MarkupBlock(new AttributeBlockCodeGenerator(name: "href", prefix: new LocationTagged<string>(" href=", 2, 0, 2), suffix: new LocationTagged<string>(string.Empty, 11, 0, 11)),
                             Factory.Markup(" href=").With(SpanCodeGenerator.Null),
                             Factory.Markup("Foo").With(new LiteralAttributeCodeGenerator(prefix: new LocationTagged<string>(string.Empty, 8, 0, 8), value: new LocationTagged<string>("Foo", 8, 0, 8)))),
-                        Factory.Markup(" Bar Baz />").Accepts(AcceptedCharacters.None))));
+                        new MarkupBlock(Factory.Markup(" Bar")),
+                        new MarkupBlock(Factory.Markup(" Baz")),
+                        Factory.Markup(" />").Accepts(AcceptedCharacters.None))));
         }
 
         [Fact]
