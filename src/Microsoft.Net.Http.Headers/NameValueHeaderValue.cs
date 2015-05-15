@@ -54,6 +54,19 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Provides a copy of this object without the cost of re-validating the values.
+        /// </summary>
+        /// <returns>A copy.</returns>
+        public NameValueHeaderValue Clone()
+        {
+            return new NameValueHeaderValue()
+            {
+                _name = _name,
+                _value = _value
+            };
+        }
+
         public override int GetHashCode()
         {
             Contract.Assert(_name != null);

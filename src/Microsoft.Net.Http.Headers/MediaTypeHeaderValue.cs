@@ -248,6 +248,27 @@ namespace Microsoft.Net.Http.Headers
             return true;
         }
 
+        /// <summary>
+        /// Performs a deep copy of this object and all of it's NameValueHeaderValue sub components,
+        /// while avoiding the cost of revalidating the components.
+        /// </summary>
+        /// <returns>A deep copy.</returns>
+        public MediaTypeHeaderValue Clone()
+        {
+            var other = new MediaTypeHeaderValue();
+            other._mediaType = _mediaType;
+
+            if (_parameters != null)
+            {
+                other._parameters = new ObjectCollection<NameValueHeaderValue>();
+                foreach (var pair in _parameters)
+                {
+                    other._parameters.Add(pair.Clone());
+                }
+            }
+            return other;
+        }
+
         public override string ToString()
         {
             return _mediaType + NameValueHeaderValue.ToString(_parameters, ';', true);

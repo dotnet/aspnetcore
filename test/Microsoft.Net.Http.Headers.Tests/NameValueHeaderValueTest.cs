@@ -60,6 +60,32 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
+        public void Clone_NameOnly_SuccesfullyCopied()
+        {
+            var pair0 = new NameValueHeaderValue("name");
+            var pair1 = pair0.Clone();
+            Assert.NotSame(pair0, pair1);
+            Assert.Same(pair0.Name, pair1.Name);
+            Assert.Null(pair0.Value);
+            Assert.Null(pair1.Value);
+        }
+
+        [Fact]
+        public void Clone_NameAndValue_SuccesfullyCopied()
+        {
+            var pair0 = new NameValueHeaderValue("name", "value");
+            var pair1 = pair0.Clone();
+            Assert.NotSame(pair0, pair1);
+            Assert.Same(pair0.Name, pair1.Name);
+            Assert.Same(pair0.Value, pair1.Value);
+
+            // Change one value and verify the other is unchanged.
+            pair1.Value = "othervalue";
+            Assert.Equal("value", pair0.Value);
+            Assert.Equal("othervalue", pair1.Value);
+        }
+
+        [Fact]
         public void Value_CallSetterWithInvalidValues_Throw()
         {
             // Just verify that the setter calls the same validation the ctor invokes.

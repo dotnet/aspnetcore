@@ -65,6 +65,34 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
+        public void Clone_SimpleMediaType_Copied()
+        {
+            var mediaType0 = new MediaTypeHeaderValue("text/plain");
+            var mediaType1 = mediaType0.Clone();
+            Assert.NotSame(mediaType0, mediaType1);
+            Assert.Same(mediaType0.MediaType, mediaType1.MediaType);
+            Assert.NotSame(mediaType0.Parameters, mediaType1.Parameters);
+            Assert.Equal(mediaType0.Parameters.Count, mediaType1.Parameters.Count);
+        }
+
+        [Fact]
+        public void Clone_WithParameters_Copied()
+        {
+            var mediaType0 = new MediaTypeHeaderValue("text/plain");
+            mediaType0.Parameters.Add(new NameValueHeaderValue("name", "value"));
+            var mediaType1 = mediaType0.Clone();
+            Assert.NotSame(mediaType0, mediaType1);
+            Assert.Same(mediaType0.MediaType, mediaType1.MediaType);
+            Assert.NotSame(mediaType0.Parameters, mediaType1.Parameters);
+            Assert.Equal(mediaType0.Parameters.Count, mediaType1.Parameters.Count);
+            var pair0 = mediaType0.Parameters.First();
+            var pair1 = mediaType1.Parameters.First();
+            Assert.NotSame(pair0, pair1);
+            Assert.Same(pair0.Name, pair1.Name);
+            Assert.Same(pair0.Value, pair1.Value);
+        }
+
+        [Fact]
         public void MediaType_SetAndGetMediaType_MatchExpectations()
         {
             var mediaType = new MediaTypeHeaderValue("text/plain");
