@@ -14,10 +14,10 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 {
     public class CSharpTagHelperRenderingTest : TagHelperTestBase
     {
-        private static IEnumerable<TagHelperDescriptor> DefaultPAndInputTagHelperDescriptors
-            => BuildPAndInputTagHelperDescriptors(prefix: string.Empty);
-        private static IEnumerable<TagHelperDescriptor> PrefixedPAndInputTagHelperDescriptors
-            => BuildPAndInputTagHelperDescriptors("THS");
+        private static IEnumerable<TagHelperDescriptor> DefaultPAndInputTagHelperDescriptors { get; }
+            = BuildPAndInputTagHelperDescriptors(prefix: string.Empty);
+        private static IEnumerable<TagHelperDescriptor> PrefixedPAndInputTagHelperDescriptors { get; }
+            = BuildPAndInputTagHelperDescriptors(prefix: "THS");
 
         private static IEnumerable<TagHelperDescriptor> MinimizedTagHelpers_Descriptors
         {
@@ -609,6 +609,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             var pAgePropertyInfo = typeof(TestType).GetProperty("Age");
             var inputTypePropertyInfo = typeof(TestType).GetProperty("Type");
             var checkedPropertyInfo = typeof(TestType).GetProperty("Checked");
+
             return new[]
             {
                 new TagHelperDescriptor(

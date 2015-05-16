@@ -24,13 +24,17 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 return true;
             }
 
+            // Normal comparer doesn't care about case, in tests we do. Also double-check IsStringProperty though
+            // it is inferred from TypeName.
             return base.Equals(descriptorX, descriptorY) &&
-                // Normal comparer doesn't care about case, in tests we do.
+                descriptorX.IsStringProperty == descriptorY.IsStringProperty &&
                 string.Equals(descriptorX.Name, descriptorY.Name, StringComparison.Ordinal);
         }
 
         public override int GetHashCode(TagHelperAttributeDescriptor descriptor)
         {
+            // Rarely if ever hash TagHelperAttributeDescriptor. If we do, ignore IsStringProperty since it should
+            // not vary for a given TypeName i.e. will not change the bucket.
             return HashCodeCombiner.Start()
                 .Add(base.GetHashCode(descriptor))
                 .Add(descriptor.Name, StringComparer.Ordinal)

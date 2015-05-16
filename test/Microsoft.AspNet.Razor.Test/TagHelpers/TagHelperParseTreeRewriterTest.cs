@@ -3356,6 +3356,95 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         }
                     },
                     {
+                        "<p bar='false  <strong'",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "bar",
+                                        new MarkupBlock(
+                                            factory.Markup("false"),
+                                            factory.Markup("  <strong")))
+                                })),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero)
+                        }
+                    },
+                    {
+                        "<p bar=false'",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "bar",
+                                        factory.Markup("false"))
+                                })),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                "TagHelper attributes must be welformed.",
+                                absoluteIndex: 12,
+                                lineIndex: 0,
+                                columnIndex: 12)
+                        }
+                    },
+                    {
+                        "<p bar=\"false'",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "bar",
+                                        factory.Markup("false'"))
+                                })),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero)
+                        }
+                    },
+                    {
+                        "<p bar=\"false' ></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "bar",
+                                        new MarkupBlock(
+                                            factory.Markup("false'"),
+                                            factory.Markup(" ></p>")))
+                                })),
+                        new []
+                        {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
+                                SourceLocation.Zero)
+                        }
+                    },
+                    {
                         "<p foo bar<strong>",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",

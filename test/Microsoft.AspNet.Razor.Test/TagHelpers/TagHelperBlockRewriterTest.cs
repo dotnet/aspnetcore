@@ -712,13 +712,19 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 {
                     new TagHelperDescriptor(
                         tagName: "input",
-                        typeName: "InputTagHelper",
+                        typeName: "InputTagHelper1",
                         assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
+                        attributes: new[]
+                        {
+                            new TagHelperAttributeDescriptor(
+                                "bound-required-string",
+                                "BoundRequiredString",
+                                typeof(string).FullName)
+                        },
                         requiredAttributes: new[] { "unbound-required" }),
                     new TagHelperDescriptor(
                         tagName: "input",
-                        typeName: "InputTagHelper",
+                        typeName: "InputTagHelper1",
                         assemblyName: "SomeAssembly",
                         attributes: new[]
                         {
@@ -730,7 +736,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         requiredAttributes: new[] { "bound-required-string" }),
                     new TagHelperDescriptor(
                         tagName: "input",
-                        typeName: "InputTagHelper",
+                        typeName: "InputTagHelper2",
                         assemblyName: "SomeAssembly",
                         attributes: new[]
                         {

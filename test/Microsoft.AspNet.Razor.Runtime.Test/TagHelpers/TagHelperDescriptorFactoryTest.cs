@@ -289,8 +289,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     typeof(InheritedOverriddenAttributeTagHelper).FullName,
                     AssemblyName,
                     new[] {
-                        new TagHelperAttributeDescriptor("valid-attribute1",
-                                                         validProperty1),
+                        new TagHelperAttributeDescriptor("valid-attribute1", validProperty1),
                         new TagHelperAttributeDescriptor("Something-Else", validProperty2)
                     })
             };
@@ -363,14 +362,18 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var errorSink = new ErrorSink();
-            var intProperty = typeof(InheritedSingleAttributeTagHelper).GetProperty(
-                nameof(InheritedSingleAttributeTagHelper.IntAttribute));
+
+            // Also confirm isStringProperty is calculated correctly.
             var expectedDescriptor = new TagHelperDescriptor(
                 "inherited-single-attribute",
                 typeof(InheritedSingleAttributeTagHelper).FullName,
                 AssemblyName,
                 new[] {
-                    new TagHelperAttributeDescriptor("int-attribute", intProperty)
+                    new TagHelperAttributeDescriptor(
+                        "int-attribute",
+                        nameof(InheritedSingleAttributeTagHelper.IntAttribute),
+                        typeof(int).FullName,
+                        isStringProperty: false)
                 });
 
             // Act
@@ -450,8 +453,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 typeof(NonPublicAccessorTagHelper).FullName,
                 AssemblyName,
                 new[] {
-                    new TagHelperAttributeDescriptor(
-                        "valid-attribute", validProperty)
+                    new TagHelperAttributeDescriptor("valid-attribute", validProperty)
                 });
 
             // Act
@@ -471,15 +473,19 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var errorSink = new ErrorSink();
-            var boundProperty = typeof(NotBoundAttributeTagHelper).GetProperty(
-                nameof(NotBoundAttributeTagHelper.BoundProperty));
+
+            // Also confirm isStringProperty is calculated correctly.
             var expectedDescriptor = new TagHelperDescriptor(
                 "not-bound-attribute",
                 typeof(NotBoundAttributeTagHelper).FullName,
                 AssemblyName,
                 new[]
                 {
-                    new TagHelperAttributeDescriptor("bound-property", boundProperty)
+                    new TagHelperAttributeDescriptor(
+                        "bound-property",
+                        nameof(NotBoundAttributeTagHelper.BoundProperty),
+                        typeof(object).FullName,
+                        isStringProperty: false)
                 });
 
             // Act
@@ -516,21 +522,30 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var errorSink = new ErrorSink();
-            var validProp = typeof(MultiTagTagHelper).GetProperty(nameof(MultiTagTagHelper.ValidAttribute));
+
+            // Also confirm isStringProperty is calculated correctly.
             var expectedDescriptors = new[] {
                 new TagHelperDescriptor(
                     "div",
                     typeof(MultiTagTagHelper).FullName,
                     AssemblyName,
                     new[] {
-                        new TagHelperAttributeDescriptor("valid-attribute", validProp)
+                        new TagHelperAttributeDescriptor(
+                            "valid-attribute",
+                            nameof(MultiTagTagHelper.ValidAttribute),
+                            typeof(string).FullName,
+                            isStringProperty: true)
                     }),
                 new TagHelperDescriptor(
                     "p",
                     typeof(MultiTagTagHelper).FullName,
                     AssemblyName,
                     new[] {
-                        new TagHelperAttributeDescriptor("valid-attribute", validProp)
+                        new TagHelperAttributeDescriptor(
+                            "valid-attribute",
+                            nameof(MultiTagTagHelper.ValidAttribute),
+                            typeof(string).FullName,
+                            isStringProperty: true)
                     })
             };
 
@@ -1104,7 +1119,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         private class NotBoundAttributeTagHelper
         {
-            public string BoundProperty { get; set; }
+            public object BoundProperty { get; set; }
 
             [HtmlAttributeNotBound]
             public string NotBoundProperty { get; set; }
