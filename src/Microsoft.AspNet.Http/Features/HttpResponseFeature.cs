@@ -9,8 +9,8 @@ namespace Microsoft.AspNet.Http.Features.Internal
 {
     public class HttpResponseFeature : IHttpResponseFeature
     {
-	    public HttpResponseFeature()
-	    {
+        public HttpResponseFeature()
+        {
             StatusCode = 200;
             Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
             Body = Stream.Null;
