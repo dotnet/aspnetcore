@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Identity
         {
             if (securityToken == null)
             {
-                throw new ArgumentNullException("securityToken");
+                throw new ArgumentNullException(nameof(securityToken));
             }
 
             // Allow a variance of no greater than 90 seconds in either direction
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Identity
         {
             if (securityToken == null)
             {
-                throw new ArgumentNullException("securityToken");
+                throw new ArgumentNullException(nameof(securityToken));
             }
 
             // Allow a variance of no greater than 90 seconds in either direction

@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Identity
         {
             if (store == null)
             {
-                throw new ArgumentNullException("store");
+                throw new ArgumentNullException(nameof(store));
             }
             Store = store;
             KeyNormalizer = keyNormalizer ?? new UpperInvariantLookupNormalizer();

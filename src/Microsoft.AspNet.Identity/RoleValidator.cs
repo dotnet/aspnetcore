@@ -31,11 +31,11 @@ namespace Microsoft.AspNet.Identity
         {
             if (manager == null)
             {
-                throw new ArgumentNullException("manager");
+                throw new ArgumentNullException(nameof(manager));
             }
             if (role == null)
             {
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
             }
             var errors = new List<IdentityError>();
             await ValidateRoleName(manager, role, errors);

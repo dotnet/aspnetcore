@@ -32,11 +32,11 @@ namespace Microsoft.AspNet.Identity
         {
             if (userManager == null)
             {
-                throw new ArgumentNullException("userManager");
+                throw new ArgumentNullException(nameof(userManager));
             }
             if (roleManager == null)
             {
-                throw new ArgumentNullException("roleManager");
+                throw new ArgumentNullException(nameof(roleManager));
             }
             if (optionsAccessor == null || optionsAccessor.Options == null)
             {

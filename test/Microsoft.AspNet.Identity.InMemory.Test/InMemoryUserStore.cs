@@ -368,7 +368,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         {
             if (String.IsNullOrEmpty(roleName))
             {
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(roleName));
             }
 
             return Task.FromResult<IList<TUser>>(Users.Where(u => (u.Roles.Where(x => x.RoleId == roleName).Count() > 0)).Select(x => x).ToList());
@@ -378,7 +378,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         {
             if (claim == null)
             {
-                throw new ArgumentNullException("claim");
+                throw new ArgumentNullException(nameof(claim));
             }
 
             var query = from user in Users

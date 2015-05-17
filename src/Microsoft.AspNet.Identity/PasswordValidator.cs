@@ -32,11 +32,11 @@ namespace Microsoft.AspNet.Identity
         {
             if (password == null)
             {
-                throw new ArgumentNullException("password");
+                throw new ArgumentNullException(nameof(password));
             }
             if (manager == null)
             {
-                throw new ArgumentNullException("manager");
+                throw new ArgumentNullException(nameof(manager));
             }
             var errors = new List<IdentityError>();
             var options = manager.Options.Password;

@@ -36,11 +36,11 @@ namespace Microsoft.AspNet.Identity
         {
             if (manager == null)
             {
-                throw new ArgumentNullException("manager");
+                throw new ArgumentNullException(nameof(manager));
             }
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
             var errors = new List<IdentityError>();
             await ValidateUserName(manager, user, errors);
