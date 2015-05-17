@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Identity.Test
 
             var services = new ServiceCollection();
             services.AddIdentity<TestUser,TestRole>();
-            services.ConfigureIdentity(config.GetSubKey("identity"));
+            services.ConfigureIdentity(config.GetConfigurationSection("identity"));
             var accessor = services.BuildServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(accessor);
             var options = accessor.Options;
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Identity.Test
             };
             var config = new Configuration(new MemoryConfigurationSource(dic));
             var services = new ServiceCollection();
-            services.ConfigureIdentity(config.GetSubKey("identity"));
+            services.ConfigureIdentity(config.GetConfigurationSection("identity"));
             services.AddIdentity<TestUser, TestRole>(o => { o.User.RequireUniqueEmail = false; o.Lockout.MaxFailedAccessAttempts++; });
             var accessor = services.BuildServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(accessor);
