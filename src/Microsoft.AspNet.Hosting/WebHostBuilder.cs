@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Hosting
             return UseStartup(configureApp, configureServices: null);
         }
 
-        public WebHostBuilder UseStartup([NotNull] Action<IApplicationBuilder> configureApp, ConfigureServicesDelegate configureServices)
+        public WebHostBuilder UseStartup([NotNull] Action<IApplicationBuilder> configureApp, Func<IServiceCollection, IServiceProvider> configureServices)
         {
             _startup = new StartupMethods(configureApp, configureServices);
             return this;

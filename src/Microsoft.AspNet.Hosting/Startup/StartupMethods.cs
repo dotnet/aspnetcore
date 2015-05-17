@@ -9,19 +9,20 @@ namespace Microsoft.AspNet.Hosting.Startup
 {
     public class StartupMethods
     {
-        internal static ConfigureServicesDelegate DefaultBuildServiceProvider = s => s.BuildServiceProvider();
+        internal static Func<IServiceCollection, IServiceProvider> DefaultBuildServiceProvider = s => s.BuildServiceProvider();
 
-        public StartupMethods(Action<IApplicationBuilder> configure) 
-            : this(configure, configureServices: null) { }
+        public StartupMethods(Action<IApplicationBuilder> configure)
+            : this(configure, configureServices: null)
+        {
+        }
 
-        // TODO: switch to ConfigureDelegate eventually
-        public StartupMethods(Action<IApplicationBuilder> configure, ConfigureServicesDelegate configureServices)
+        public StartupMethods(Action<IApplicationBuilder> configure, Func<IServiceCollection, IServiceProvider> configureServices)
         {
             ConfigureDelegate = configure;
             ConfigureServicesDelegate = configureServices ?? DefaultBuildServiceProvider;
         }
 
-        public ConfigureServicesDelegate ConfigureServicesDelegate { get; }
+        public Func<IServiceCollection, IServiceProvider> ConfigureServicesDelegate { get; }
         public Action<IApplicationBuilder> ConfigureDelegate { get; }
 
     }

@@ -9,8 +9,6 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Hosting.Startup
 {
-    public delegate IServiceProvider ConfigureServicesDelegate(IServiceCollection services);
-
     public class ConfigureServicesBuilder
     {
         public ConfigureServicesBuilder([NotNull] MethodInfo configureServices)
@@ -28,7 +26,7 @@ namespace Microsoft.AspNet.Hosting.Startup
 
         public MethodInfo MethodInfo { get; }
 
-        public ConfigureServicesDelegate Build(object instance) => services => Invoke(instance, services);
+        public Func<IServiceCollection, IServiceProvider> Build(object instance) => services => Invoke(instance, services);
 
         private IServiceProvider Invoke(object instance, [NotNull] IServiceCollection exportServices)
         {
