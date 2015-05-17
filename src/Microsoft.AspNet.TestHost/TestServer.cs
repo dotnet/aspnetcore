@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.TestHost
             return Create(services: null, config: null, configureApp: configureApp, configureServices: configureServices);
         }
 
-        public static TestServer Create(IServiceProvider services, Action<IApplicationBuilder> configureApp, ConfigureServicesDelegate configureServices)
+        public static TestServer Create(IServiceProvider services, Action<IApplicationBuilder> configureApp, Func<IServiceCollection, IServiceProvider> configureServices)
         {
             return new TestServer(CreateBuilder(services, config: null, configureApp: configureApp, configureServices: configureServices));
         }
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.TestHost
                 });
         }
 
-        public static WebHostBuilder CreateBuilder(IServiceProvider services, IConfiguration config, Action<IApplicationBuilder> configureApp, ConfigureServicesDelegate configureServices)
+        public static WebHostBuilder CreateBuilder(IServiceProvider services, IConfiguration config, Action<IApplicationBuilder> configureApp, Func<IServiceCollection, IServiceProvider> configureServices)
         {
             return CreateBuilder(services, config).UseStartup(configureApp, configureServices);
         }
