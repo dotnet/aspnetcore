@@ -1,4 +1,4 @@
-﻿#pragma checksum "CodeBlockWithTextElement.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "740b5af27dd6c6ff0e88b39a02d4bf1a38fcdc0b"
+﻿#pragma checksum "CodeBlockWithTextElement.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "13e48ff59aab8106ceb68dd4a10b0bdf10c322fc"
 namespace TestOutput
 {
     using System;
@@ -21,14 +21,16 @@ namespace TestOutput
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(26, 1, false);
+            Instrumentation.BeginContext(25, 3, true);
+            WriteLiteral("foo");
+            Instrumentation.EndContext();
 #line 2 "CodeBlockWithTextElement.cshtml"
-               Write(a);
+                               		
 
 #line default
 #line hidden
-            Instrumentation.EndContext();
-            Instrumentation.BeginContext(34, 2, true);
+
+            Instrumentation.BeginContext(38, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
 #line 3 "CodeBlockWithTextElement.cshtml"
@@ -37,22 +39,28 @@ namespace TestOutput
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(60, 1, false);
+            Instrumentation.BeginContext(63, 4, true);
+            WriteLiteral("bar ");
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(69, 3, false);
 #line 3 "CodeBlockWithTextElement.cshtml"
-               Write(b);
+                    Write(a+b);
 
 #line default
 #line hidden
             Instrumentation.EndContext();
-            Instrumentation.BeginContext(68, 2, true);
-            WriteLiteral("\r\n");
-            Instrumentation.EndContext();
+#line 3 "CodeBlockWithTextElement.cshtml"
+                                     
+
+#line default
+#line hidden
+
 #line 4 "CodeBlockWithTextElement.cshtml"
 
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(71, 2, true);
+            Instrumentation.BeginContext(83, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
         }

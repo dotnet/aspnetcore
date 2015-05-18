@@ -495,7 +495,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     Factory.Markup(" Baz"),
                     new MarkupTagBlock(
                         Factory.MarkupTransition("</text>")),
-                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)
+                    Factory.CodeMarkup(" ").With(new StatementCodeGenerator()).Accepts(AcceptedCharacters.None)
                 ));
         }
 
@@ -516,7 +516,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                         Factory.Markup("</text>").Accepts(AcceptedCharacters.None)),
                     new MarkupTagBlock(
                         Factory.MarkupTransition("</text>")),
-                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)
+                    Factory.CodeMarkup(" ").With(new StatementCodeGenerator()).Accepts(AcceptedCharacters.None)
                 ));
         }
 

@@ -1039,7 +1039,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 {
                     tags.Pop();
                 }
-                Tuple<HtmlSymbol, SourceLocation> tag = tags.Pop();
+                var tag = tags.Pop();
                 Context.OnError(tag.Item2, RazorResources.FormatParseError_MissingEndTag(tag.Item1.Content));
             }
             else if (complete)
@@ -1049,7 +1049,21 @@ namespace Microsoft.AspNet.Razor.Parser
             tags.Clear();
             if (!Context.DesignTimeMode)
             {
-                AcceptWhile(HtmlSymbolType.WhiteSpace);
+                if (Context.LastSpan.Kind == SpanKind.Transition)
+                {
+                    // Output current span content as markup.
+                    Output(SpanKind.Markup);
+
+                    // Accept and mark the whitespace at the end of a <text> tag as code.
+                    AcceptWhile(HtmlSymbolType.WhiteSpace);
+                    Span.CodeGenerator = new StatementCodeGenerator();
+                    Output(SpanKind.Code);
+                }
+                else
+                {
+                    AcceptWhile(HtmlSymbolType.WhiteSpace);
+                }
+
                 if (!EndOfFile && CurrentSymbol.Type == HtmlSymbolType.NewLine)
                 {
                     AcceptAndMoveNext();

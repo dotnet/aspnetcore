@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             Assert.Equal(expectedOutput, textOutput);
 #endif
 
-            IEnumerable<Span> generatedSpans = results.Document.Flatten();
+            var generatedSpans = results.Document.Flatten();
 
             foreach (var span in generatedSpans)
             {

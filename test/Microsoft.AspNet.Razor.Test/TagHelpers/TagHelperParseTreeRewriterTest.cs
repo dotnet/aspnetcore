@@ -4496,7 +4496,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                         factory.Markup("Foo").Accepts(AcceptedCharacters.None),
                                         new MarkupTagBlock(
                                             factory.MarkupTransition("</text>")),
-                                        factory.Markup(" ").Accepts(AcceptedCharacters.None)),
+                                        factory.CodeMarkup(" ").With(new StatementCodeGenerator()).Accepts(AcceptedCharacters.None)),
                                     factory.Code("foo++; } while (foo<bar>);").AsStatement().Accepts(AcceptedCharacters.None)));
 
                 var currentFormattedString = "<p class=\"{0}\" style='{0}'></p>";
