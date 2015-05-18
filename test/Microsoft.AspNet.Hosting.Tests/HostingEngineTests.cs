@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.Hosting
         {
             var engine = CreateBuilder().Build();
             var env = engine.ApplicationServices.GetRequiredService<IHostingEnvironment>();
-            Assert.Equal("Production", env.EnvironmentName);
+            Assert.Equal(EnvironmentName.Production, env.EnvironmentName);
         }
 
         [Fact]
@@ -199,7 +199,7 @@ namespace Microsoft.AspNet.Hosting
             using (engine.Start())
             {
                 var env = engine.ApplicationServices.GetRequiredService<IHostingEnvironment>();
-                Assert.True(env.IsEnvironment("Production"));
+                Assert.True(env.IsEnvironment(EnvironmentName.Production));
                 Assert.True(env.IsEnvironment("producTion"));
             }
         }

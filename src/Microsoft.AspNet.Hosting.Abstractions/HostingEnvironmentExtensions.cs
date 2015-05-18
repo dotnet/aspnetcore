@@ -9,9 +9,6 @@ namespace Microsoft.AspNet.Hosting
 {
     public static class HostingEnvironmentExtensions
     {
-        private const string DevelopmentEnvironmentName = "Development";
-        private const string ProductionEnvironmentName = "Production";
-
         /// <summary>
         /// Checks if the current hosting environment name is development.
         /// </summary>
@@ -19,7 +16,7 @@ namespace Microsoft.AspNet.Hosting
         /// <returns>True if the environment name is Development, otherwise false.</returns>
         public static bool IsDevelopment([NotNull]this IHostingEnvironment hostingEnvironment)
         {
-            return hostingEnvironment.IsEnvironment(DevelopmentEnvironmentName);
+            return hostingEnvironment.IsEnvironment(EnvironmentName.Development);
         }
 
         /// <summary>
@@ -29,7 +26,7 @@ namespace Microsoft.AspNet.Hosting
         /// <returns>True if the environment name is Production, otherwise false.</returns>
         public static bool IsProduction([NotNull]this IHostingEnvironment hostingEnvironment)
         {
-            return hostingEnvironment.IsEnvironment(ProductionEnvironmentName);
+            return hostingEnvironment.IsEnvironment(EnvironmentName.Production);
         }
 
         /// <summary>
