@@ -106,25 +106,25 @@
         // Globbed script tag with existing file and static src should dedupe
     </script>
 
-    <script src="~/blank.js" asp-fallback-src="~/site.js" asp-fallback-test="false" asp-file-version="true">
+    <script src="~/blank.js" asp-fallback-src="~/site.js" asp-fallback-test="false" asp-append-version="true">
         // TagHelper script with comment in body, and file version.
     </script>
 
-    <script src="~/blank.js" asp-fallback-src-include="**/site.js" asp-fallback-test="false" asp-file-version="true">
+    <script src="~/blank.js" asp-fallback-src-include="**/site.js" asp-fallback-test="false" asp-append-version="true">
         // Fallback to globbed src with file version.
     </script>
 
-    <script src="~/site.js" asp-file-version="true">
+    <script src="~/site.js" asp-append-version="true">
         // Regular script with comment in body, and file version.
     </script>
 
     <!-- Globbed script tag with existing files and version -->
-    <script asp-src-include="**/*.js" asp-file-version="true">
+    <script asp-src-include="**/*.js" asp-append-version="true">
         // This comment shouldn't be emitted
     </script>
 
     <!-- Globbed script tag with existing file, exclude and version -->
-    <script asp-src-include="**/*.js" asp-src-exclude="**/site3.js" asp-file-version="true">
+    <script asp-src-include="**/*.js" asp-src-exclude="**/site3.js" asp-append-version="true">
         // This comment shouldn't be emitted
     </script>
 </body>

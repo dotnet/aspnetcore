@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { "data-extra", new HtmlString("something") },                    
                     { "title", new HtmlString("Image title") },
                     { "src", "testimage.png" },
-                    { "asp-file-version", "true" }
+                    { "asp-append-version", "true" }
                 });
             var output = MakeImageTagHelperOutput(
                 attributes: new TagHelperAttributeList
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 ViewContext = viewContext,
                 Src = "testimage.png",
-                FileVersion = true,
+                AppendVersion = true,
             };
 
             // Act
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "alt", new HtmlString("Alt image text") },
                     { "src", "/images/test-image.png" },
-                    { "asp-file-version", "true" }
+                    { "asp-append-version", "true" }
                 });
             var output = MakeImageTagHelperOutput(attributes: new TagHelperAttributeList
             {
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 ViewContext = viewContext,
                 Src = "/images/test-image.png",
-                FileVersion = true,
+                AppendVersion = true
             };
 
             // Act
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "alt", new HtmlString("Alt image text") },
                     { "src", "/images/test-image.png" },
-                    { "asp-file-version", "false" }
+                    { "asp-append-version", "false" }
                 });
             var output = MakeImageTagHelperOutput(attributes: new TagHelperAttributeList
             {
@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 ViewContext = viewContext,
                 Src = "/images/test-image.png",
-                FileVersion = false,
+                AppendVersion = false
             };
 
             // Act
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "alt", new HtmlString("alt text") },
                     { "src", "/bar/images/image.jpg" },
-                    { "asp-file-version", "true" },
+                    { "asp-append-version", "true" },
                 });
             var output = MakeImageTagHelperOutput(attributes: new TagHelperAttributeList
             {
@@ -174,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 ViewContext = viewContext,
                 Src = "/bar/images/image.jpg",
-                FileVersion = true,
+                AppendVersion = true
             };
 
             // Act

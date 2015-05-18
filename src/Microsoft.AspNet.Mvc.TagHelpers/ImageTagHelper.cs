@@ -15,12 +15,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <remarks>
     /// The tag helper won't process for cases with just the 'src' attribute.
     /// </remarks>
-    [TargetElement("img", Attributes = FileVersionAttributeName + "," + SrcAttributeName)]
+    [TargetElement("img", Attributes = AppendVersionAttributeName + "," + SrcAttributeName)]
     public class ImageTagHelper : TagHelper
     {
         private static readonly string Namespace = typeof(ImageTagHelper).Namespace;
 
-        private const string FileVersionAttributeName = "asp-file-version";
+        private const string AppendVersionAttributeName = "asp-append-version";
         private const string SrcAttributeName = "src";
 
         private FileVersionProvider _fileVersionProvider;
@@ -51,8 +51,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <remarks>
         /// If <c>true</c> then a query string "v" with the encoded content of the file is added.
         /// </remarks>
-        [HtmlAttributeName(FileVersionAttributeName)]
-        public bool FileVersion { get; set; }
+        [HtmlAttributeName(AppendVersionAttributeName)]
+        public bool AppendVersion { get; set; }
 
         protected IHostingEnvironment HostingEnvironment { get; }
 
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <inheritdoc />
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            if (FileVersion)
+            if (AppendVersion)
             {
                 EnsureFileVersionProvider();
                 output.Attributes[SrcAttributeName] = _fileVersionProvider.AddFileVersionToPath(Src);

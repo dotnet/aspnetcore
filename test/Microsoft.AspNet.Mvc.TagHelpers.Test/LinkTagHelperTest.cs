@@ -196,23 +196,23 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-file-version"] = "true"
+                            ["asp-append-version"] = "true"
                         },
                         tagHelper =>
                         {
-                            tagHelper.FileVersion = true;
+                            tagHelper.AppendVersion = true;
                         }
                     },
                     {
                         new TagHelperAttributeList
                         {
                             ["asp-href-include"] = "*.css",
-                            ["asp-file-version"] = "true"
+                            ["asp-append-version"] = "true"
                         },
                         tagHelper =>
                         {
                             tagHelper.HrefInclude = "*.css";
-                            tagHelper.FileVersion = true;
+                            tagHelper.AppendVersion = true;
                         }
                     },
                     {
@@ -220,13 +220,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         {
                             ["asp-href-include"] = "*.css",
                             ["asp-href-exclude"] = "*.min.css",
-                            ["asp-file-version"] = "true"
+                            ["asp-append-version"] = "true"
                         },
                         tagHelper =>
                         {
                             tagHelper.HrefInclude = "*.css";
                             tagHelper.HrefExclude = "*.min.css";
-                            tagHelper.FileVersion = true;
+                            tagHelper.AppendVersion = true;
                         }
                     },
                     {
@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                             ["asp-fallback-test-class"] = "hidden",
                             ["asp-fallback-test-property"] = "visibility",
                             ["asp-fallback-test-value"] = "hidden",
-                            ["asp-file-version"] = "true"
+                            ["asp-append-version"] = "true"
                         },
                         tagHelper =>
                         {
@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                             tagHelper.FallbackTestClass = "hidden";
                             tagHelper.FallbackTestProperty = "visibility";
                             tagHelper.FallbackTestValue = "hidden";
-                            tagHelper.FileVersion = true;
+                            tagHelper.AppendVersion = true;
                         }
                     },
                     {
@@ -254,7 +254,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                             ["asp-fallback-test-class"] = "hidden",
                             ["asp-fallback-test-property"] = "visibility",
                             ["asp-fallback-test-value"] = "hidden",
-                            ["asp-file-version"] = "true"
+                            ["asp-append-version"] = "true"
                         },
                         tagHelper =>
                         {
@@ -262,7 +262,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                             tagHelper.FallbackTestClass = "hidden";
                             tagHelper.FallbackTestProperty = "visibility";
                             tagHelper.FallbackTestValue = "hidden";
-                            tagHelper.FileVersion = true;
+                            tagHelper.AppendVersion = true;
                         }
                     }
                 };
@@ -581,7 +581,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "rel", new HtmlString("stylesheet") },
                     { "href", "/css/site.css" },
-                    { "asp-file-version", "true" }
+                    { "asp-append-version", "true" }
                 });
             var output = MakeTagHelperOutput("link", attributes: new TagHelperAttributeList
             {
@@ -601,7 +601,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 ViewContext = viewContext,
                 Href = "/css/site.css",
                 HrefInclude = "**/*.css",
-                FileVersion = true,
+                AppendVersion = true
             };
 
             // Act
@@ -622,7 +622,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "rel", new HtmlString("stylesheet") },
                     { "href", "/bar/css/site.css" },
-                    { "asp-file-version", "true" },
+                    { "asp-append-version", "true" },
                 });
             var output = MakeTagHelperOutput("link", attributes: new TagHelperAttributeList
             {
@@ -642,7 +642,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 ViewContext = viewContext,
                 Href = "/bar/css/site.css",
                 HrefInclude = "**/*.css",
-                FileVersion = true,
+                AppendVersion = true
             };
 
             // Act
@@ -664,7 +664,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { "rel", new HtmlString("stylesheet") },
                     { "href", "/css/site.css" },
                     { "asp-href-include", "**/*.css" },
-                    { "asp-file-version", "true" },
+                    { "asp-append-version", "true" },
                 });
             var output = MakeTagHelperOutput("link", attributes: new TagHelperAttributeList
             {
@@ -688,7 +688,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 ViewContext = viewContext,
                 Href = "/css/site.css",
                 HrefInclude = "**/*.css",
-                FileVersion = true,
+                AppendVersion = true
             };
 
             // Act

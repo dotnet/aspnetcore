@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     [TargetElement("script", Attributes = FallbackSrcIncludeAttributeName)]
     [TargetElement("script", Attributes = FallbackSrcExcludeAttributeName)]
     [TargetElement("script", Attributes = FallbackTestExpressionAttributeName)]
-    [TargetElement("script", Attributes = FileVersionAttributeName)]
+    [TargetElement("script", Attributes = AppendVersionAttributeName)]
     public class ScriptTagHelper : TagHelper
     {
         private const string SrcIncludeAttributeName = "asp-src-include";
@@ -37,13 +37,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string FallbackSrcExcludeAttributeName = "asp-fallback-src-exclude";
         private const string FallbackTestExpressionAttributeName = "asp-fallback-test";
         private const string SrcAttributeName = "src";
-        private const string FileVersionAttributeName = "asp-file-version";
+        private const string AppendVersionAttributeName = "asp-append-version";
 
         private FileVersionProvider _fileVersionProvider;
 
         private static readonly ModeAttributes<Mode>[] ModeDetails = new[] {
             // Regular src with file version alone
-            ModeAttributes.Create(Mode.FileVersion, new[] { FileVersionAttributeName }),
+            ModeAttributes.Create(Mode.AppendVersion, new[] { AppendVersionAttributeName }),
             // Globbed src (include only)
             ModeAttributes.Create(Mode.GlobbedSrc, new [] { SrcIncludeAttributeName }),
             // Globbed src (include & exclude)
@@ -128,8 +128,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <remarks>
         /// A query string "v" with the encoded content of the file is added.
         /// </remarks>
-        [HtmlAttributeName(FileVersionAttributeName)]
-        public bool? FileVersion { get; set; }
+        [HtmlAttributeName(AppendVersionAttributeName)]
+        public bool? AppendVersion { get; set; }
 
         /// <summary>
         /// A comma separated list of globbed file patterns of JavaScript scripts to fallback to in the case the
@@ -199,7 +199,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var builder = new DefaultTagHelperContent();
             var originalContent = await context.GetChildContentAsync();
 
-            if (mode == Mode.Fallback && string.IsNullOrEmpty(SrcInclude) || mode == Mode.FileVersion)
+            if (mode == Mode.Fallback && string.IsNullOrEmpty(SrcInclude) || mode == Mode.AppendVersion)
             {
                 // No globbing to do, just build a <script /> tag to match the original one in the source file
                 // Or just add file version to the script tag.
@@ -288,7 +288,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         {
                             // Ignore attribute.Value; use src instead.
                             var attributeValue = src;
-                            if (FileVersion == true)
+                            if (AppendVersion == true)
                             {
                                 attributeValue = _fileVersionProvider.AddFileVersionToPath(attributeValue);
                             }
@@ -340,7 +340,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             foreach (var attribute in attributes)
             {
                 var attributeValue = attribute.Value;
-                if (FileVersion == true &&
+                if (AppendVersion == true &&
                     string.Equals(attribute.Name, SrcAttributeName, StringComparison.OrdinalIgnoreCase))
                 {
                     // "src" values come from bound attributes and globbing. So anything but a non-null string is
@@ -389,7 +389,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             /// <summary>
             /// Just adding a file version for the generated urls.
             /// </summary>
-            FileVersion = 0,
+            AppendVersion = 0,
 
             /// <summary>
             /// Just performing file globbing search for the src, rendering a separate &lt;script&gt; for each match.

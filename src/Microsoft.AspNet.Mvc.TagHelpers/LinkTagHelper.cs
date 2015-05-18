@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     [TargetElement("link", Attributes = FallbackTestClassAttributeName)]
     [TargetElement("link", Attributes = FallbackTestPropertyAttributeName)]
     [TargetElement("link", Attributes = FallbackTestValueAttributeName)]
-    [TargetElement("link", Attributes = FileVersionAttributeName)]
+    [TargetElement("link", Attributes = AppendVersionAttributeName)]
     public class LinkTagHelper : TagHelper
     {
         private static readonly string Namespace = typeof(LinkTagHelper).Namespace;
@@ -43,14 +43,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string FallbackTestPropertyAttributeName = "asp-fallback-test-property";
         private const string FallbackTestValueAttributeName = "asp-fallback-test-value";
         private readonly string FallbackJavaScriptResourceName = Namespace + ".compiler.resources.LinkTagHelper_FallbackJavaScript.js";
-        private const string FileVersionAttributeName = "asp-file-version";
+        private const string AppendVersionAttributeName = "asp-append-version";
         private const string HrefAttributeName = "href";
 
         private FileVersionProvider _fileVersionProvider;
 
         private static readonly ModeAttributes<Mode>[] ModeDetails = new[] {
             // Regular src with file version alone
-            ModeAttributes.Create(Mode.FileVersion, new[] { FileVersionAttributeName }),
+            ModeAttributes.Create(Mode.AppendVersion, new[] { AppendVersionAttributeName }),
             // Globbed Href (include only) no static href
             ModeAttributes.Create(Mode.GlobbedHref, new [] { HrefIncludeAttributeName }),
             // Globbed Href (include & exclude), no static href
@@ -141,8 +141,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <remarks>
         /// If <c>true</c> then a query string "v" with the encoded content of the file is added.
         /// </remarks>
-        [HtmlAttributeName(FileVersionAttributeName)]
-        public bool? FileVersion { get; set; }
+        [HtmlAttributeName(AppendVersionAttributeName)]
+        public bool? AppendVersion { get; set; }
 
         /// <summary>
         /// A comma separated list of globbed file patterns of CSS stylesheets to fallback to in the case the primary
@@ -229,7 +229,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var builder = new DefaultTagHelperContent();
 
-            if (mode == Mode.Fallback && string.IsNullOrEmpty(HrefInclude) || mode == Mode.FileVersion)
+            if (mode == Mode.Fallback && string.IsNullOrEmpty(HrefInclude) || mode == Mode.AppendVersion)
             {
                 // No globbing to do, just build a <link /> tag to match the original one in the source file.
                 // Or just add file version to the link tag.
@@ -274,7 +274,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             if (fallbackHrefs.Length > 0)
             {
-                if (FileVersion == true)
+                if (AppendVersion == true)
                 {
                     for (var i=0; i < fallbackHrefs.Length; i++)
                     {
@@ -338,7 +338,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             foreach (var attribute in attributes)
             {
                 var attributeValue = attribute.Value;
-                if (FileVersion == true &&
+                if (AppendVersion == true &&
                     string.Equals(attribute.Name, HrefAttributeName, StringComparison.OrdinalIgnoreCase))
                 {
                     // "href" values come from bound attributes and globbing. So anything but a non-null string is
@@ -366,7 +366,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             /// <summary>
             /// Just adding a file version for the generated urls.
             /// </summary>
-            FileVersion = 0,
+            AppendVersion = 0,
 
             /// <summary>
             /// Just performing file globbing search for the href, rendering a separate &lt;link&gt; for each match.

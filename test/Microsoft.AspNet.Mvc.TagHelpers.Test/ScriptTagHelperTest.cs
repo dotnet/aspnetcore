@@ -162,23 +162,23 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-file-version"] = "true"
+                            ["asp-append-version"] = "true"
                         },
                         tagHelper =>
                         {
-                            tagHelper.FileVersion = true;
+                            tagHelper.AppendVersion = true;
                         }
                     },
                     {
                         new TagHelperAttributeList
                         {
                             ["asp-src-include"] = "*.js",
-                            ["asp-file-version"] = "true"
+                            ["asp-append-version"] = "true"
                         },
                         tagHelper =>
                         {
                             tagHelper.SrcInclude = "*.js";
-                            tagHelper.FileVersion = true;
+                            tagHelper.AppendVersion = true;
                         }
                     },
                     {
@@ -186,13 +186,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         {
                             ["asp-src-include"] = "*.js",
                             ["asp-src-exclude"] = "*.min.js",
-                            ["asp-file-version"] = "true"
+                            ["asp-append-version"] = "true"
                         },
                         tagHelper =>
                         {
                             tagHelper.SrcInclude = "*.js";
                             tagHelper.SrcExclude = "*.min.js";
-                            tagHelper.FileVersion = true;
+                            tagHelper.AppendVersion = true;
                         }
                     },
                     {
@@ -200,13 +200,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         {
                             ["asp-fallback-src"] = "test.js",
                             ["asp-fallback-test"] = "isavailable()",
-                            ["asp-file-version"] = "true"
+                            ["asp-append-version"] = "true"
                         },
                         tagHelper =>
                         {
                             tagHelper.FallbackSrc = "test.js";
                             tagHelper.FallbackTestExpression = "isavailable()";
-                            tagHelper.FileVersion = true;
+                            tagHelper.AppendVersion = true;
                         }
                     },
                     {
@@ -214,13 +214,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         {
                             ["asp-fallback-src-include"] = "*.js",
                             ["asp-fallback-test"] = "isavailable()",
-                            ["asp-file-version"] = "true"
+                            ["asp-append-version"] = "true"
                         },
                         tagHelper =>
                         {
                             tagHelper.FallbackSrcInclude = "*.css";
                             tagHelper.FallbackTestExpression = "isavailable()";
-                            tagHelper.FileVersion = true;
+                            tagHelper.AppendVersion = true;
                         }
                     },
                     {
@@ -229,14 +229,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                             ["asp-fallback-src"] = "test.js",
                             ["asp-fallback-src-include"] = "*.js",
                             ["asp-fallback-test"] = "isavailable()",
-                            ["asp-file-version"] = "true"
+                            ["asp-append-version"] = "true"
                         },
                         tagHelper =>
                         {
                             tagHelper.FallbackSrc = "test.js";
                             tagHelper.FallbackSrcInclude = "*.css";
                             tagHelper.FallbackTestExpression = "isavailable()";
-                            tagHelper.FileVersion = true;
+                            tagHelper.AppendVersion = true;
                         }
                     },
                     {
@@ -245,14 +245,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                             ["asp-fallback-src-include"] = "*.js",
                             ["asp-fallback-src-exclude"] = "*.min.js",
                             ["asp-fallback-test"] = "isavailable()",
-                            ["asp-file-version"] = "true"
+                            ["asp-append-version"] = "true"
                         },
                         tagHelper =>
                         {
                             tagHelper.FallbackSrcInclude = "*.css";
                             tagHelper.FallbackSrcExclude = "*.min.css";
                             tagHelper.FallbackTestExpression = "isavailable()";
-                            tagHelper.FileVersion = true;
+                            tagHelper.AppendVersion = true;
                         }
                     }
                 };
@@ -625,7 +625,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 attributes: new TagHelperAttributeList
                 {
                     ["src"] = "/js/site.js",
-                    ["asp-file-version"] = "true"
+                    ["asp-append-version"] = "true"
                 });
             var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
 
@@ -641,7 +641,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 new CommonTestEncoder())
             {
                 ViewContext = viewContext,
-                FileVersion = true,
+                AppendVersion = true,
                 Src = "/js/site.js",
             };
 
@@ -662,7 +662,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 attributes: new TagHelperAttributeList
                 {
                     ["src"] = "/bar/js/site.js",
-                    ["asp-file-version"] = "true"
+                    ["asp-append-version"] = "true"
                 });
             var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
 
@@ -678,7 +678,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 new CommonTestEncoder())
             {
                 ViewContext = viewContext,
-                FileVersion = true,
+                AppendVersion = true,
                 Src = "/bar/js/site.js",
             };
 
@@ -701,7 +701,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     ["src"] = "/js/site.js",
                     ["asp-fallback-src-include"] = "fallback.js",
                     ["asp-fallback-test"] = "isavailable()",
-                    ["asp-file-version"] = "true"
+                    ["asp-append-version"] = "true"
                 });
             var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
 
@@ -719,7 +719,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 ViewContext = viewContext,
                 FallbackSrc = "fallback.js",
                 FallbackTestExpression = "isavailable()",
-                FileVersion = true,
+                AppendVersion = true,
                 Src = "/js/site.js",
             };
 
@@ -743,7 +743,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     ["src"] = "/js/site.js",
                     ["asp-src-include"] = "*.js",
-                    ["asp-file-version"] = "true"
+                    ["asp-append-version"] = "true"
                 });
             var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
             var logger = new Mock<ILogger<ScriptTagHelper>>();
@@ -763,7 +763,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 GlobbingUrlBuilder = globbingUrlBuilder.Object,
                 ViewContext = viewContext,
                 SrcInclude = "*.js",
-                FileVersion = true,
+                AppendVersion = true,
                 Src = "/js/site.js",
             };
 
