@@ -26,17 +26,16 @@ namespace CookieSessionSample
 
         public Task RenewAsync(string key, AuthenticationTicket ticket)
         {
-            _cache.Set(key, ticket, context =>
+            var options = new MemoryCacheEntryOptions();
+            var expiresUtc = ticket.Properties.ExpiresUtc;
+            if (expiresUtc.HasValue)
             {
-                var expiresUtc = ticket.Properties.ExpiresUtc;
-                if (expiresUtc.HasValue)
-                {
-                    context.SetAbsoluteExpiration(expiresUtc.Value);
-                }
-                context.SetSlidingExpiration(TimeSpan.FromHours(1)); // TODO: configurable.
+                options.SetAbsoluteExpiration(expiresUtc.Value);
+            }
+            options.SetSlidingExpiration(TimeSpan.FromHours(1)); // TODO: configurable.
 
-                return (AuthenticationTicket)context.State;
-            });
+            _cache.Set(key, ticket, options);
+
             return Task.FromResult(0);
         }
 
