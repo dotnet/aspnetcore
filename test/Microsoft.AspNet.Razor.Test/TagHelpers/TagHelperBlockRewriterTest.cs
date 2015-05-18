@@ -14,6 +14,165 @@ namespace Microsoft.AspNet.Razor.TagHelpers
 {
     public class TagHelperBlockRewriterTest : TagHelperRewritingTestBase
     {
+        public static TheoryData DataDashAttributeData_Document
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var dateTimeNowString = "@DateTime.Now";
+                var dateTimeNow = new ExpressionBlock(
+                    factory.CodeTransition(),
+                        factory.Code("DateTime.Now")
+                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                            .Accepts(AcceptedCharacters.NonWhiteSpace));
+
+                // documentContent, expectedOutput
+                return new TheoryData<string, MarkupBlock>
+                {
+                    {
+                        $"<input data-required='{dateTimeNowString}' />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "input",
+                                selfClosing: true,
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "data-required",
+                                        new MarkupBlock(dateTimeNow)),
+                                }))
+                    },
+                    {
+                        "<input data-required='value' />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "input",
+                                selfClosing: true,
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>("data-required", factory.Markup("value")),
+                                }))
+                    },
+                    {
+                        $"<input data-required='prefix {dateTimeNowString}' />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "input",
+                                selfClosing: true,
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "data-required",
+                                        new MarkupBlock(factory.Markup("prefix "), dateTimeNow)),
+                                }))
+                    },
+                    {
+                        $"<input data-required='{dateTimeNowString} suffix' />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "input",
+                                selfClosing: true,
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "data-required",
+                                        new MarkupBlock(dateTimeNow, factory.Markup(" suffix"))),
+                                }))
+                    },
+                    {
+                        $"<input data-required='prefix {dateTimeNowString} suffix' />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "input",
+                                selfClosing: true,
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "data-required",
+                                        new MarkupBlock(
+                                            factory.Markup("prefix "),
+                                            dateTimeNow,
+                                            factory.Markup(" suffix"))),
+                                }))
+                    },
+                    {
+                        $"<input pre-attribute data-required='prefix {dateTimeNowString} suffix' post-attribute />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "input",
+                                selfClosing: true,
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>("pre-attribute", value: null),
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "data-required",
+                                        new MarkupBlock(
+                                            factory.Markup("prefix "),
+                                            dateTimeNow,
+                                            factory.Markup(" suffix"))),
+                                    new KeyValuePair<string, SyntaxTreeNode>("post-attribute", value: null),
+                                }))
+                    },
+                    {
+                        $"<input data-required='{dateTimeNowString} middle {dateTimeNowString}' />",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "input",
+                                selfClosing: true,
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "data-required",
+                                        new MarkupBlock(
+                                            dateTimeNow,
+                                            factory.Markup(" middle "),
+                                            dateTimeNow)),
+                                }))
+                    },
+                };
+            }
+        }
+
+        public static TheoryData DataDashAttributeData_CSharpBlock
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var documentData = DataDashAttributeData_Document;
+                Func<Func<MarkupBlock>, MarkupBlock> buildStatementBlock = (insideBuilder) =>
+                {
+                    return new MarkupBlock(
+                        factory.EmptyHtml(),
+                        new StatementBlock(
+                            factory.CodeTransition(),
+                            factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                            insideBuilder(),
+                            factory.EmptyCSharp().AsStatement(),
+                            factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                        factory.EmptyHtml());
+                };
+
+                foreach (var data in documentData)
+                {
+                    data[0] = $"@{{{data[0]}}}";
+                    data[1] = buildStatementBlock(() => data[1] as MarkupBlock);
+                }
+
+                return documentData;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DataDashAttributeData_Document))]
+        [MemberData(nameof(DataDashAttributeData_CSharpBlock))]
+        public void Rewrite_GeneratesExpectedOutputForUnboundDataDashAttributes(
+            string documentContent,
+            MarkupBlock expectedOutput)
+        {
+            // Act & Assert
+            RunParseTreeRewriterTest(documentContent, expectedOutput, Enumerable.Empty<RazorError>(), "input");
+        }
+
         public static TheoryData MinimizedAttributeData_Document
         {
             get

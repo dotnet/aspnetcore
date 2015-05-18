@@ -553,8 +553,15 @@ namespace Microsoft.AspNet.Razor.Parser
             }
             else
             {
+                // Output the attribute name, the equals and optional quote. Ex: foo="
+                Output(SpanKind.Markup);
+
                 // Not a "conditional" attribute, so just read the value
                 SkipToAndParseCode(sym => IsEndOfAttributeValue(quote, sym));
+
+                // Output the attribute value (will include everything in-between the attribute's quotes).
+                Output(SpanKind.Markup);
+
                 if (quote != HtmlSymbolType.Unknown)
                 {
                     Optional(quote);

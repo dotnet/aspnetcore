@@ -1,4 +1,4 @@
-#pragma checksum "BasicTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "90382b3c748e0f948dfb6b452b775ba3024b2fe6"
+#pragma checksum "BasicTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "d83a512ddca8f28897c27630e252991c84555533"
 namespace TestOutput
 {
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -25,8 +25,8 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             __tagHelperRunner = __tagHelperRunner ?? new TagHelperRunner();
-            Instrumentation.BeginContext(33, 49, true);
-            WriteLiteral("\r\n<div class=\"randomNonTagHelperAttribute\">\r\n    ");
+            Instrumentation.BeginContext(33, 71, true);
+            WriteLiteral("\r\n<div data-animation=\"fade\" class=\"randomNonTagHelperAttribute\">\r\n    ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", false, "test", async() => {
                 WriteLiteral("\r\n        ");
@@ -49,6 +49,16 @@ namespace TestOutput
                 __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
                 __tagHelperExecutionContext.Add(__InputTagHelper2);
                 __InputTagHelper2.Type = __InputTagHelper.Type;
+                StartTagHelperWritingScope();
+                WriteLiteral("2000 + ");
+#line 6 "BasicTagHelpers.cshtml"
+Write(ViewBag.DefaultInterval);
+
+#line default
+#line hidden
+                WriteLiteral(" + 1");
+                __tagHelperStringValueBuffer = EndTagHelperWritingScope();
+                __tagHelperExecutionContext.AddHtmlAttribute("data-interval", Html.Raw(__tagHelperStringValueBuffer.ToString()));
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
@@ -78,10 +88,11 @@ namespace TestOutput
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
             __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw("Hello World"));
+            __tagHelperExecutionContext.AddHtmlAttribute("data-delay", Html.Raw("1000"));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(212, 8, true);
+            Instrumentation.BeginContext(304, 8, true);
             WriteLiteral("\r\n</div>");
             Instrumentation.EndContext();
         }
