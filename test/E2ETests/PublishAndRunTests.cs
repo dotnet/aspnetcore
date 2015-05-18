@@ -13,10 +13,10 @@ namespace E2ETests
     // Uses ports ranging 5025 - 5039.
     public class PublishAndRunTests_OnX64
     {
-        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
+        // https://github.com/aspnet/MusicStore/issues/487
+        // [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-	// https://github.com/aspnet/MusicStore/issues/487
-        //[InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5025/", false)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5025/", false)]
         //https://github.com/aspnet/KRuntime/issues/642
         //[InlineData(ServerType.Helios, RuntimeFlavor.CoreClr, RuntimeArchitecture.amd64, "http://localhost:5026/")]
         public async Task Publish_And_Run_Tests_On_AMD64(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, bool noSource)
@@ -28,18 +28,19 @@ namespace E2ETests
 
     public class PublishAndRunTests_OnX86
     {
-        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
+        // https://github.com/aspnet/MusicStore/issues/487
+        // [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-	// https://github.com/aspnet/MusicStore/issues/487
-       //[InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5027/", false)]
-       //[InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5028/", true)]
+        //[InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5027/", false)]
+        //[InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5028/", true)]
         public async Task Publish_And_Run_Tests_On_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, bool noSource)
         {
             var testRunner = new PublishAndRunTests();
             await testRunner.Publish_And_Run_Tests(serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
         }
 
-        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
+        // https://github.com/aspnet/MusicStore/issues/487
+        // [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.CLR | RuntimeFrameworks.CoreCLR)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5029/", false)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5030/", true)]
