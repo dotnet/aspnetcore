@@ -153,7 +153,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         {
             var validatorProviderContext = new ModelValidatorProviderContext(metadata);
             provider.GetValidators(validatorProviderContext);
-            return validatorProviderContext.Validators;
+
+            return validatorProviderContext
+                .Validators
+                .OrderBy(v => v, ValidatorOrderComparer.Instance)
+                .ToList();
         }
 
         private bool ValidateChildNodes(
@@ -344,6 +348,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             public HashSet<object> Visited { get; set; }
 
             public ModelValidationNode ValidationNode { get; set; }
+        }
+
+        // Sorts validators based on whether or not they are 'required'. We want to run
+        // 'required' validators first so that we get the best possible error message.
+        private class ValidatorOrderComparer : IComparer<IModelValidator>
+        {
+            public static readonly ValidatorOrderComparer Instance = new ValidatorOrderComparer();
+
+            public int Compare(IModelValidator x, IModelValidator y)
+            {
+                var xScore = x.IsRequired ? 0 : 1;
+                var yScore = y.IsRequired ? 0 : 1;
+                return xScore.CompareTo(yScore);
+            }
         }
     }
 }

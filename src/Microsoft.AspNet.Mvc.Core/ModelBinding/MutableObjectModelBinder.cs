@@ -349,17 +349,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     validationInfo.RequiredProperties.Add(propertyName);
                 }
-
-                var validatorProviderContext = new ModelValidatorProviderContext(propertyMetadata);
-                bindingContext.OperationBindingContext.ValidatorProvider.GetValidators(validatorProviderContext);
-
-                var requiredValidator = validatorProviderContext.Validators
-                    .FirstOrDefault(v => v != null && v.IsRequired);
-                if (requiredValidator != null)
-                {
-                    validationInfo.RequiredValidators[propertyName] = requiredValidator;
-                    validationInfo.RequiredProperties.Add(propertyName);
-                }
             }
 
             return validationInfo;
@@ -393,15 +382,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     bindingContext.ModelName,
                     propertyName);
 
-                // Execute validator (if any) to get custom error message.
-                IModelValidator validator;
-                if (validationInfo.RequiredValidators.TryGetValue(missingRequiredProperty, out validator))
+                // Get the first 'required' validator (if any) to get custom error message.
+                var validatorProviderContext = new ModelValidatorProviderContext(propertyExplorer.Metadata);
+                bindingContext.OperationBindingContext.ValidatorProvider.GetValidators(validatorProviderContext);
+                var validator = validatorProviderContext.Validators.FirstOrDefault(v => v.IsRequired);
+
+                if (validator != null)
                 {
                     addedError = RunValidator(validator, bindingContext, propertyExplorer, modelStateKey);
                 }
 
-                // Fall back to default message if BindingBehaviorAttribute required this property or validator
-                // (oddly) succeeded.
+                // Fall back to default message if BindingBehaviorAttribute required this property and we have no
+                // actual validator for it.
                 if (!addedError)
                 {
                     bindingContext.ModelState.TryAddModelError(
@@ -418,12 +410,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 if (dtoResult != null)
                 {
                     var propertyMetadata = entry.Key;
-                    IModelValidator requiredValidator;
-                    validationInfo.RequiredValidators.TryGetValue(
-                        propertyMetadata.PropertyName,
-                        out requiredValidator);
-
-                    SetProperty(bindingContext, modelExplorer, propertyMetadata, dtoResult, requiredValidator);
+                    SetProperty(bindingContext, modelExplorer, propertyMetadata, dtoResult);
 
                     var dtoValidationNode = dtoResult.ValidationNode;
                     if (dtoValidationNode == null)
@@ -458,8 +445,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             [NotNull] ModelBindingContext bindingContext,
             [NotNull] ModelExplorer modelExplorer,
             [NotNull] ModelMetadata propertyMetadata,
-            [NotNull] ModelBindingResult dtoResult,
-            IModelValidator requiredValidator)
+            [NotNull] ModelBindingResult dtoResult)
         {
             var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase;
             var property = bindingContext.ModelType.GetProperty(
@@ -485,26 +471,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 value = dtoResult.Model;
             }
 
-            // 'Required' validators need to run first so that we can provide useful error messages if
-            // the property setters throw, e.g. if we're setting entity keys to null.
-            if (value == null)
-            {
-                var modelStateKey = dtoResult.Key;
-                var validationState = bindingContext.ModelState.GetFieldValidationState(modelStateKey);
-                if (validationState == ModelValidationState.Unvalidated)
-                {
-                    if (requiredValidator != null)
-                    {
-                        var propertyExplorer = modelExplorer.GetExplorerForExpression(propertyMetadata, model: null);
-                        var validationContext = new ModelValidationContext(bindingContext, propertyExplorer);
-                        foreach (var validationResult in requiredValidator.Validate(validationContext))
-                        {
-                            bindingContext.ModelState.TryAddModelError(modelStateKey, validationResult.Message);
-                        }
-                    }
-                }
-            }
-
             if (!dtoResult.IsModelSet)
             {
                 // If we don't have a value, don't set it on the model and trounce a pre-initialized
@@ -512,31 +478,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return;
             }
 
-            if (value != null || TypeHelper.AllowsNullValue(property.PropertyType))
+            try
             {
-                try
-                {
-                    propertyMetadata.PropertySetter(bindingContext.Model, value);
-                }
-                catch (Exception exception)
-                {
-                    AddModelError(exception, bindingContext, dtoResult);
-                }
+                propertyMetadata.PropertySetter(bindingContext.Model, value);
             }
-            else
+            catch (Exception exception)
             {
-                // trying to set a non-nullable value type to null, need to make sure there's a message
-                var modelStateKey = dtoResult.Key;
-                var validationState = bindingContext.ModelState.GetFieldValidationState(modelStateKey);
-                if (validationState == ModelValidationState.Unvalidated)
-                {
-                    var errorMessage = Resources.ModelBinding_ValueRequired;
-                    bindingContext.ModelState.TryAddModelError(modelStateKey, errorMessage);
-                }
+                AddModelError(exception, bindingContext, dtoResult);
             }
         }
 
-        // Neither [DefaultValue] nor [Required] is relevant for a non-settable collection.
         private void AddToProperty(
             ModelBindingContext bindingContext,
             ModelExplorer modelExplorer,
@@ -642,13 +593,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             public PropertyValidationInfo()
             {
                 RequiredProperties = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                RequiredValidators = new Dictionary<string, IModelValidator>(StringComparer.OrdinalIgnoreCase);
                 SkipProperties = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             }
 
             public HashSet<string> RequiredProperties { get; private set; }
-
-            public Dictionary<string, IModelValidator> RequiredValidators { get; private set; }
 
             public HashSet<string> SkipProperties { get; private set; }
         }

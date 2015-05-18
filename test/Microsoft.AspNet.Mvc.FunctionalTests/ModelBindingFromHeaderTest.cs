@@ -295,9 +295,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         // This model sets a value for 'Title', and the model binder won't trounce it.
         //
-        // There's a validation error because we validate the value in the request (not present).
+        // There's no validation error because we validate the value on the model.
         [Fact]
-        public async Task FromHeader_BindHeader_ToModel_NoValues_InitializedValue_ValidationError()
+        public async Task FromHeader_BindHeader_ToModel_NoValues_InitializedValue_NoValidationError()
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -321,8 +321,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("How to Make Soup", result.HeaderValue);
             Assert.Equal<string>(new[] { "Cooking" }, result.HeaderValues);
 
-            var error = Assert.Single(result.ModelStateErrors);
-            Assert.Equal("Title", error);
+            Assert.Empty(result.ModelStateErrors);
         }
 
         private class Result

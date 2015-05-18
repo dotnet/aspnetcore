@@ -21,7 +21,7 @@ namespace TagHelpersWebSite.Models
 
         [Required]
         [DataType(DataType.Date)]
-        public DateTimeOffset JoinDate { get; set; }
+        public DateTimeOffset? JoinDate { get; set; }
 
         [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
