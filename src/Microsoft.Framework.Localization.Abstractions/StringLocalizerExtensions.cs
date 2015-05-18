@@ -3,7 +3,7 @@
 
 namespace Microsoft.Framework.Localization
 {
-    public static class IStringLocalizerExtensions
+    public static class StringLocalizerExtensions
     {
         /// <summary>
         /// Gets the string resource with the given name.
