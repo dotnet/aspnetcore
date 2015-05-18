@@ -38,6 +38,7 @@ namespace Microsoft.AspNet.Server.WebListener
         IHttpResponseFeature,
         IHttpSendFileFeature,
         ITlsConnectionFeature,
+        ITlsTokenBindingFeature,
         IHttpRequestLifetimeFeature,
         IHttpWebSocketFeature,
         IHttpAuthenticationFeature,
@@ -103,6 +104,7 @@ namespace Microsoft.AspNet.Server.WebListener
             if (Request.IsSecureConnection)
             {
                 _features.Add(typeof(ITlsConnectionFeature), this);
+                _features.Add(typeof(ITlsTokenBindingFeature), this);
             }
 
             // Win8+
@@ -314,6 +316,16 @@ namespace Microsoft.AspNet.Server.WebListener
                 _clientCert = await Request.GetClientCertificateAsync(cancellationToken);
             }
             return _clientCert;
+        }
+
+        byte[] ITlsTokenBindingFeature.GetProvidedTokenBindingId()
+        {
+            return Request.GetProvidedTokenBindingId();
+        }
+
+        byte[] ITlsTokenBindingFeature.GetReferredTokenBindingId()
+        {
+            return Request.GetReferredTokenBindingId();
         }
 
         Stream IHttpResponseFeature.Body

@@ -28,7 +28,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Net.Http.Server
 {
-    internal static class UnsafeNclNativeMethods
+    internal static unsafe class UnsafeNclNativeMethods
     {
         private const string HTTPAPI = "httpapi.dll";
 
@@ -38,12 +38,15 @@ namespace Microsoft.Net.Http.Server
         private const string api_ms_win_core_io_LIB = "api-ms-win-core-io-l1-1-1.dll";
         private const string api_ms_win_core_handle_LIB = "api-ms-win-core-handle-l1-1-0.dll";
         private const string api_ms_win_core_libraryloader_LIB = "api-ms-win-core-libraryloader-l1-1-0.dll";
+        private const string api_ms_win_core_heap_LIB = "api-ms-win-core-heap-L1-2-0.dll";
         private const string api_ms_win_core_heap_obsolete_LIB = "api-ms-win-core-heap-obsolete-L1-1-0.dll";
         private const string api_ms_win_core_kernel32_legacy_LIB = "api-ms-win-core-kernel32-legacy-l1-1-0.dll";
 #else
         private const string KERNEL32 = "kernel32.dll";
         private const string SECUR32 = "secur32.dll";
 #endif
+        private const string TOKENBINDING = "tokenbinding.dll";
+
         // CONSIDER: Make this an enum, requires changing a lot of types from uint to ErrorCodes.
         internal static class ErrorCodes
         {
@@ -87,6 +90,34 @@ namespace Microsoft.Net.Http.Server
             SkipCompletionPortOnSuccess = 1,
             SkipSetEventOnHandle = 2
         }
+
+        [DllImport(TOKENBINDING, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.StdCall)]
+        public static extern int TokenBindingVerifyMessage(
+            [In] byte* tokenBindingMessage,
+            [In] uint tokenBindingMessageSize,
+            [In] char* keyType,
+            [In] byte* tlsUnique,
+            [In] uint tlsUniqueSize,
+            [Out] out HeapAllocHandle resultList);
+
+        // http://msdn.microsoft.com/en-us/library/windows/desktop/aa366569(v=vs.85).aspx
+#if DNXCORE50
+        [DllImport(api_ms_win_core_heap_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+#else
+        [DllImport(KERNEL32, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+#endif
+        internal static extern IntPtr GetProcessHeap();
+
+        // http://msdn.microsoft.com/en-us/library/windows/desktop/aa366701(v=vs.85).aspx
+#if DNXCORE50
+        [DllImport(api_ms_win_core_heap_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+#else
+        [DllImport(KERNEL32, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+#endif
+        internal static extern bool HeapFree(
+            [In] IntPtr hHeap,
+            [In] uint dwFlags,
+            [In] IntPtr lpMem);
 
         internal static class SafeNetHandles
         {
@@ -248,6 +279,9 @@ namespace Microsoft.Net.Http.Server
             internal enum HTTP_REQUEST_INFO_TYPE
             {
                 HttpRequestInfoTypeAuth,
+                HttpRequestInfoTypeChannelBind,
+                HttpRequestInfoTypeSslProtocol,
+                HttpRequestInfoTypeSslTokenBinding
             }
 
             internal enum HTTP_RESPONSE_INFO_TYPE
@@ -705,6 +739,18 @@ namespace Microsoft.Net.Http.Server
             {
                 ushort RealmLength;
                 char*  Realm;
+            }
+
+            [StructLayout(LayoutKind.Sequential)]
+            internal struct HTTP_REQUEST_TOKEN_BINDING_INFO
+            {
+                public byte* TokenBinding;
+                public uint TokenBindingSize;
+
+                public byte* TlsUnique;
+                public uint TlsUniqueSize;
+
+                public char* KeyType;
             }
 
             [StructLayout(LayoutKind.Sequential)]
@@ -1203,6 +1249,60 @@ namespace Microsoft.Net.Http.Server
                 }
 
                 return null;
+            }
+        }
+
+        // from tokenbinding.h
+        internal static class TokenBinding
+        {
+            [StructLayout(LayoutKind.Sequential)]
+            internal unsafe struct TOKENBINDING_RESULT_DATA
+            {
+                public uint identifierSize;
+                public TOKENBINDING_IDENTIFIER* identifierData;
+                public TOKENBINDING_EXTENSION_FORMAT extensionFormat;
+                public uint extensionSize;
+                public IntPtr extensionData;
+            }
+
+            [StructLayout(LayoutKind.Sequential)]
+            internal struct TOKENBINDING_IDENTIFIER
+            {
+                // Note: If the layout of these fields changes, be sure to make the
+                // corresponding change to TokenBindingUtil.ExtractIdentifierBlob.
+
+                public TOKENBINDING_TYPE bindingType;
+                public TOKENBINDING_HASH_ALGORITHM hashAlgorithm;
+                public TOKENBINDING_SIGNATURE_ALGORITHM signatureAlgorithm;
+            }
+
+            internal enum TOKENBINDING_TYPE : byte
+            {
+                TOKENBINDING_TYPE_PROVIDED = 0,
+                TOKENBINDING_TYPE_REFERRED = 1,
+            }
+
+            internal enum TOKENBINDING_HASH_ALGORITHM : byte
+            {
+                TOKENBINDING_HASH_ALGORITHM_SHA256 = 4,
+            }
+
+            internal enum TOKENBINDING_SIGNATURE_ALGORITHM : byte
+            {
+                TOKENBINDING_SIGNATURE_ALGORITHM_RSA = 1,
+                TOKENBINDING_SIGNATURE_ALGORITHM_ECDSAP256 = 3,
+            }
+
+            internal enum TOKENBINDING_EXTENSION_FORMAT
+            {
+                TOKENBINDING_EXTENSION_FORMAT_UNDEFINED = 0,
+            }
+
+            [StructLayout(LayoutKind.Sequential)]
+            internal unsafe struct TOKENBINDING_RESULT_LIST
+            {
+                public uint resultCount;
+                public TOKENBINDING_RESULT_DATA* resultData;
             }
         }
 

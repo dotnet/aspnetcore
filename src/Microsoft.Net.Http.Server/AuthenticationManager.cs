@@ -167,14 +167,18 @@ namespace Microsoft.Net.Http.Server
             return false;
         }
 
-        internal static unsafe ClaimsPrincipal GetUser(UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO* requestInfo)
+        internal static unsafe ClaimsPrincipal GetUser(UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO* requestInfo, int infoCount)
         {
-            if (requestInfo != null
-                && requestInfo->InfoType == UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
-                && requestInfo->pInfo->AuthStatus == UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+            for (int i = 0; i < infoCount; i++)
             {
-                return new WindowsPrincipal(new WindowsIdentity(requestInfo->pInfo->AccessToken,
-                    GetAuthTypeFromRequest(requestInfo->pInfo->AuthType).ToString()));
+                var info = &requestInfo[i];
+                if (requestInfo != null
+                    && info->InfoType == UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
+                    && info->pInfo->AuthStatus == UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                {
+                    return new WindowsPrincipal(new WindowsIdentity(info->pInfo->AccessToken,
+                        GetAuthTypeFromRequest(info->pInfo->AuthType).ToString()));
+                }
             }
             return new ClaimsPrincipal(new ClaimsIdentity()); // Anonymous / !IsAuthenticated
         }

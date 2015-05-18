@@ -60,6 +60,8 @@ namespace Microsoft.Net.Http.Server
         private string _path;
 
         private X509Certificate2 _clientCert;
+        private byte[] _providedTokenBindingId;
+        private byte[] _referredTokenBindingId;
 
         private HeaderCollection _headers;
         private BoundaryType _contentBoundaryType;
@@ -142,8 +144,10 @@ namespace Microsoft.Net.Http.Server
             _httpMethod = UnsafeNclNativeMethods.HttpApi.GetVerb(RequestBuffer, OriginalBlobAddress);
             _headers = new HeaderCollection(new RequestHeaders(_nativeRequestContext));
 
-            UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_V2* requestV2 = (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_V2*)memoryBlob.RequestBlob;
-            _user = AuthenticationManager.GetUser(requestV2->pRequestInfo);
+            var requestV2 = (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_V2*)memoryBlob.RequestBlob;
+            _user = AuthenticationManager.GetUser(requestV2->pRequestInfo, requestV2->RequestInfoCount);
+
+            GetTlsTokenBindingInfo();
 
             // TODO: Verbose log parameters
 
@@ -468,6 +472,38 @@ namespace Microsoft.Net.Http.Server
                 throw;
             }
             return _clientCert;
+        }
+
+        public byte[] GetProvidedTokenBindingId()
+        {
+            return _providedTokenBindingId;
+        }
+
+        public byte[] GetReferredTokenBindingId()
+        {
+            return _referredTokenBindingId;
+        }
+
+        // Only call from the constructor so we can directly access the native request blob.
+        // This requires Windows 10 and the following reg key:
+        // Set Key: HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\HTTP\Parameters to Value: EnableSslTokenBinding = 1 [DWORD]
+        // Then for IE to work you need to set these:
+        // Key: HKLM\Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_TOKEN_BINDING
+        // Value: "iexplore.exe"=dword:0x00000001
+        // Key: HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_TOKEN_BINDING
+        // Value: "iexplore.exe"=dword:00000001
+        private unsafe void GetTlsTokenBindingInfo()
+        {
+            var nativeRequest = (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_V2*)_nativeRequestContext.RequestBlob;
+            for (int i = 0; i < nativeRequest->RequestInfoCount; i++)
+            {
+                var pThisInfo = &nativeRequest->pRequestInfo[i];
+                if (pThisInfo->InfoType == UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeSslTokenBinding)
+                {
+                    var pTokenBindingInfo = (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_TOKEN_BINDING_INFO*)pThisInfo->pInfo;
+                    _providedTokenBindingId = TokenBindingUtil.GetProvidedTokenIdFromBindingInfo(pTokenBindingInfo, out _referredTokenBindingId);
+                }
+            }
         }
 
         // Use this to save the blob from dispose if this object was never used (never given to a user) and is about to be
