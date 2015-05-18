@@ -47,7 +47,7 @@ namespace MusicStore
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<AppSettings>(Configuration.GetSubKey("AppSettings"));
+            services.Configure<AppSettings>(Configuration.GetConfigurationSection("AppSettings"));
 
             var useInMemoryStore = _platform.IsRunningOnMono || _platform.IsRunningOnNanoServer;
 
