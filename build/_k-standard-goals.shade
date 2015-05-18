@@ -137,7 +137,7 @@ default Configuration='${E("Configuration")}'
 
 #xunit-test target='test' if='Directory.Exists("test")'
   @{
-    var projectFiles = Files.Include("test/**/project.json").ToList();
+    var projectFiles = Files.Include("test/**/project.json").Exclude("**/bin/*/app/project.json").ToList();
     if (ShouldRunInParallel)
     {
         Parallel.ForEach(projectFiles, projectFile => DnxTest(projectFile, testParallel: true));
