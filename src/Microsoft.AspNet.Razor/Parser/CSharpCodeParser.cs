@@ -388,7 +388,32 @@ namespace Microsoft.AspNet.Razor.Parser
                     }
                     return MethodCallOrArrayIndex(acceptedCharacters);
                 }
-                if (CurrentSymbol.Type == CSharpSymbolType.Dot)
+                if (At(CSharpSymbolType.QuestionMark))
+                {
+                    var next = Lookahead(count: 1);
+
+                    if (next != null)
+                    {
+                        if (next.Type == CSharpSymbolType.Dot)
+                        {
+                            // Accept null conditional dot operator (?.).
+                            AcceptAndMoveNext();
+                            AcceptAndMoveNext();
+
+                            // If the next piece after the ?. is a keyword or identifier then we want to continue.
+                            return At(CSharpSymbolType.Identifier) || At(CSharpSymbolType.Keyword);
+                        }
+                        else if (next.Type == CSharpSymbolType.LeftBracket)
+                        {
+                            // We're at the ? for a null conditional bracket operator (?[).
+                            AcceptAndMoveNext();
+
+                            // Accept the [ and any content inside (it will attempt to balance).
+                            return MethodCallOrArrayIndex(acceptedCharacters);
+                        }
+                    }
+                }
+                else if (At(CSharpSymbolType.Dot))
                 {
                     var dot = CurrentSymbol;
                     if (NextToken())

@@ -49,6 +49,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         }
 
         [Theory]
+        [InlineData("NullConditionalExpressions")]
         [InlineData("NestedCodeBlocks")]
         [InlineData("CodeBlock")]
         [InlineData("ExplicitExpression")]
@@ -70,6 +71,31 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         public void CSharpCodeGeneratorCorrectlyGeneratesRunTimeCode(string testType)
         {
             RunTest(testType);
+        }
+
+        [Fact]
+        public void CSharpCodeGeneratorCorrectlyGeneratesMappingsForNullConditionalOperator()
+        {
+            RunTest("NullConditionalExpressions",
+                    "NullConditionalExpressions.DesignTime",
+                    designTimeMode: true,
+                    tabTest: TabTest.NoTabs,
+                    expectedDesignTimePragmas: new List<LineMapping>()
+                    {
+                        BuildLineMapping(2, 0, 564, 22, 2, 6),
+                        BuildLineMapping(9, 1, 5, 656, 29, 6, 13),
+                        BuildLineMapping(22, 1, 766, 34, 18, 6),
+                        BuildLineMapping(29, 2, 5, 858, 41, 6, 22),
+                        BuildLineMapping(51, 2, 986, 46, 27, 6),
+                        BuildLineMapping(58, 3, 5, 1078, 53, 6, 26),
+                        BuildLineMapping(84, 3, 1214, 58, 31, 6),
+                        BuildLineMapping(91, 4, 5, 1306, 65, 6, 41),
+                        BuildLineMapping(132, 4, 1472, 70, 46, 2),
+                        BuildLineMapping(140, 7, 1, 1558, 76, 6, 13),
+                        BuildLineMapping(156, 8, 1, 1656, 81, 6, 22),
+                        BuildLineMapping(181, 9, 1, 1764, 86, 6, 26),
+                        BuildLineMapping(210, 10, 1, 1876, 91, 6, 41)
+                    });
         }
 
         [Fact]

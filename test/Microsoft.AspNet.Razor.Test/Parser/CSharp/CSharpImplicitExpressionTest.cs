@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
@@ -15,6 +16,96 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         public override ParserBase CreateCodeParser()
         {
             return new CSharpCodeParser();
+        }
+
+        public static TheoryData NullConditionalOperatorData_Bracket
+        {
+            get
+            {
+                var noErrors = new RazorError[0];
+                Func<int, RazorError[]> missingEndParenError = (index) =>
+                    new RazorError[1]
+                    {
+                        new RazorError("An opening \"(\" is missing the corresponding closing \")\".", index, 0, index)
+                    };
+                Func<int, RazorError[]> missingEndBracketError = (index) =>
+                    new RazorError[1]
+                    {
+                        new RazorError("An opening \"[\" is missing the corresponding closing \"]\".", index, 0, index)
+                    };
+
+                // implicitExpression, expectedImplicitExpression, acceptedCharacters, expectedErrors
+                return new TheoryData<string, string, AcceptedCharacters, RazorError[]>
+                {
+                    { "val??[", "val", AcceptedCharacters.NonWhiteSpace, noErrors },
+                    { "val??[0", "val", AcceptedCharacters.NonWhiteSpace, noErrors },
+                    { "val?[", "val?[", AcceptedCharacters.Any, missingEndBracketError(5) },
+                    { "val?(", "val", AcceptedCharacters.NonWhiteSpace, noErrors },
+                    { "val?[more", "val?[more", AcceptedCharacters.Any, missingEndBracketError(5) },
+                    { "val?[0]", "val?[0]", AcceptedCharacters.NonWhiteSpace, noErrors },
+                    { "val?[<p>", "val?[", AcceptedCharacters.Any, missingEndBracketError(5) },
+                    { "val?[more.<p>", "val?[more.", AcceptedCharacters.Any, missingEndBracketError(5) },
+                    { "val??[more<p>", "val", AcceptedCharacters.NonWhiteSpace, noErrors },
+                    { "val?[-1]?", "val?[-1]", AcceptedCharacters.NonWhiteSpace, noErrors },
+                    { "val?[abc]?[def", "val?[abc]?[def", AcceptedCharacters.Any, missingEndBracketError(11) },
+                    { "val?[abc]?[2]", "val?[abc]?[2]", AcceptedCharacters.NonWhiteSpace, noErrors },
+                    { "val?[abc]?.more?[def]", "val?[abc]?.more?[def]", AcceptedCharacters.NonWhiteSpace, noErrors },
+                    { "val?[abc]?.more?.abc", "val?[abc]?.more?.abc", AcceptedCharacters.NonWhiteSpace, noErrors },
+                    { "val?[null ?? true]", "val?[null ?? true]", AcceptedCharacters.NonWhiteSpace, noErrors },
+                    { "val?[abc?.gef?[-1]]", "val?[abc?.gef?[-1]]", AcceptedCharacters.NonWhiteSpace, noErrors },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NullConditionalOperatorData_Bracket))]
+        public void ParseBlockMethodParsesNullConditionalOperatorImplicitExpression_Bracket(
+            string implicitExpresison,
+            string expectedImplicitExpression,
+            AcceptedCharacters acceptedCharacters,
+            RazorError[] expectedErrors)
+        {
+            // Act & Assert
+            ImplicitExpressionTest(
+                implicitExpresison,
+                expectedImplicitExpression,
+                acceptedCharacters,
+                expectedErrors);
+        }
+
+        public static TheoryData NullConditionalOperatorData_Dot
+        {
+            get
+            {
+                // implicitExpression, expectedImplicitExpression
+                return new TheoryData<string, string>
+                {
+                    { "val?", "val" },
+                    { "val??", "val" },
+                    { "val??more", "val" },
+                    { "val?!", "val" },
+                    { "val?.", "val?." },
+                    { "val??.", "val" },
+                    { "val?.(abc)", "val?." },
+                    { "val?.<p>", "val?." },
+                    { "val?.more", "val?.more" },
+                    { "val?.more<p>", "val?.more" },
+                    { "val??.more<p>", "val" },
+                    { "val?.more(false)?.<p>", "val?.more(false)?." },
+                    { "val?.more(false)?.abc", "val?.more(false)?.abc" },
+                    { "val?.more(null ?? true)?.abc", "val?.more(null ?? true)?.abc" },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NullConditionalOperatorData_Dot))]
+        public void ParseBlockMethodParsesNullConditionalOperatorImplicitExpression_Dot(
+            string implicitExpresison,
+            string expectedImplicitExpression)
+        {
+            // Act & Assert
+            ImplicitExpressionTest(implicitExpresison, expectedImplicitExpression);
         }
 
         [Fact]
