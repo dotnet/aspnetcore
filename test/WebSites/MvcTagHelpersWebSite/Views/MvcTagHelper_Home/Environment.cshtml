@@ -11,10 +11,10 @@
     <h2>Environment Tag Helper Test</h2>
 
     <ul>
-        <environment names="Development">
+        <environment names="Production">
             <li>This will show</li>
         </environment>
-        <environment names="development">
+        <environment names="production">
             <li>This will show</li>
         </environment>
         <environment names="Development,  Production">
@@ -26,7 +26,7 @@
         <environment names="Local,Development, Production">
             <li>This will show</li>
         </environment>
-        <environment names="Development,">
+        <environment names="Production,">
             <li>This will show</li>
         </environment>
         <environment>
@@ -38,10 +38,10 @@
         <environment names=" ">
             <li>This will show</li>
         </environment>
-        <environment names="Production">
+        <environment names="Development">
             <li>FAIL: This should NOT show</li>
         </environment>
-        <environment names="Staging,Production">
+        <environment names="Staging,Development">
             <li>FAIL: This should NOT show</li>
         </environment>
     </ul>
