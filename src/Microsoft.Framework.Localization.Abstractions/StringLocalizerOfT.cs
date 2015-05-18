@@ -29,18 +29,18 @@ namespace Microsoft.Framework.Localization
         public virtual IStringLocalizer WithCulture(CultureInfo culture) => _localizer.WithCulture(culture);
 
         /// <inheritdoc />
-        public virtual LocalizedString this[[NotNull] string key] => _localizer[key];
+        public virtual LocalizedString this[[NotNull] string name] => _localizer[name];
 
         /// <inheritdoc />
-        public virtual LocalizedString this[[NotNull] string key, params object[] arguments] =>
-            _localizer[key, arguments];
+        public virtual LocalizedString this[[NotNull] string name, params object[] arguments] =>
+            _localizer[name, arguments];
 
         /// <inheritdoc />
-        public virtual LocalizedString GetString([NotNull] string key) => _localizer.GetString(key);
+        public virtual LocalizedString GetString([NotNull] string name) => _localizer.GetString(name);
 
         /// <inheritdoc />
-        public virtual LocalizedString GetString([NotNull] string key, params object[] arguments) =>
-            _localizer.GetString(key, arguments);
+        public virtual LocalizedString GetString([NotNull] string name, params object[] arguments) =>
+            _localizer.GetString(name, arguments);
 
         /// <inheritdoc />
         public IEnumerator<LocalizedString> GetEnumerator() => _localizer.GetEnumerator();
