@@ -98,10 +98,10 @@ namespace Microsoft.AspNet.Session
         {
             if (!_loaded)
             {
-                Stream data;
-                if (_cache.TryGetValue(_sessionId, out data))
+                var data = _cache.Get(_sessionId);
+                if (data != null)
                 {
-                    Deserialize(data);
+                    Deserialize(new MemoryStream(data));
                 }
                 else if (!_isNewSessionKey)
                 {
@@ -115,16 +115,19 @@ namespace Microsoft.AspNet.Session
         {
             if (_isModified)
             {
-                Stream data;
-                if (_logger.IsEnabled(LogLevel.Information) && !_cache.TryGetValue(_sessionId, out data))
+                var data = _cache.Get(_sessionId);
+                if (_logger.IsEnabled(LogLevel.Information) && data == null)
                 {
                     _logger.LogInformation("Session {0} started", _sessionId);
                 }
                 _isModified = false;
-                _cache.Set(_sessionId, context => {
-                    context.SetSlidingExpiration(_idleTimeout);
-                    Serialize(context.Data);
-                });
+
+                var stream = new MemoryStream();
+                Serialize(stream);
+                _cache.Set(
+                    _sessionId,
+                    stream.ToArray(),
+                    new DistributedCacheEntryOptions().SetSlidingExpiration(_idleTimeout));
             }
         }
 
@@ -165,9 +168,9 @@ namespace Microsoft.AspNet.Session
             for (int i = 0; i < expectedEntries; i++)
             {
                 int keyLength = DeserializeNumFrom2Bytes(content);
-                var key = new EncodedKey(content.ReadBytes(keyLength));
+                var key = new EncodedKey(ReadBytes(content, keyLength));
                 int dataLength = DeserializeNumFrom4Bytes(content);
-                _store[key] = content.ReadBytes(dataLength);
+                _store[key] = ReadBytes(content, dataLength);
             }
         }
 
@@ -217,6 +220,22 @@ namespace Microsoft.AspNet.Session
         private int DeserializeNumFrom4Bytes(Stream content)
         {
             return content.ReadByte() << 24 | content.ReadByte() << 16 | content.ReadByte() << 8 | content.ReadByte();
+        }
+
+        private byte[] ReadBytes(Stream stream, int count)
+        {
+            var output = new byte[count];
+            int total = 0;
+            while (total < count)
+            {
+                var read = stream.Read(output, total, count - total);
+                if (read == 0)
+                {
+                    throw new EndOfStreamException();
+                }
+                total += read;
+            }
+            return output;
         }
 
         // Keys are stored in their utf-8 encoded state.
