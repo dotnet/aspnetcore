@@ -60,18 +60,24 @@ namespace MusicStore.Areas.Admin.Controllers
         {
             var cacheKey = GetCacheKey(id);
 
-            var album = await Cache.GetOrSet(cacheKey, async context =>
+            Album album;
+            if(!Cache.TryGetValue(cacheKey, out album))
             {
-                //Remove it from cache if not retrieved in last 10 minutes.
-                context.SetSlidingExpiration(TimeSpan.FromMinutes(10));
+                album = await DbContext.Albums
+                        .Where(a => a.AlbumId == id)
+                        .Include(a => a.Artist)
+                        .Include(a => a.Genre)
+                        .FirstOrDefaultAsync();
 
-                //If this returns null how do we prevent the cache to store this.
-                return await DbContext.Albums
-                    .Where(a => a.AlbumId == id)
-                    .Include(a => a.Artist)
-                    .Include(a => a.Genre)
-                    .FirstOrDefaultAsync();
-            });
+                if (album != null)
+                {
+                    //Remove it from cache if not retrieved in last 10 minutes.
+                    Cache.Set(
+                        cacheKey,
+                        album,
+                        new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)));
+                }
+            }
 
             if (album == null)
             {

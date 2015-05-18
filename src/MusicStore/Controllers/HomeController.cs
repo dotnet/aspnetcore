@@ -22,13 +22,24 @@ namespace MusicStore.Controllers
         public async Task<IActionResult> Index()
         {
             // Get most popular albums
-            var albums = await Cache.GetOrSet("topselling", async context =>
+            var cacheKey = "topselling";
+            List<Album> albums;
+            if(!Cache.TryGetValue(cacheKey, out albums))
             {
-                //Refresh it every 10 minutes. Let this be the last item to be removed by cache if cache GC kicks in.
-                context.SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
-                context.SetPriority(CachePreservationPriority.High);
-                return await GetTopSellingAlbums(6);
-            });
+                albums = await GetTopSellingAlbumsAsync(6);
+
+                if (albums != null && albums.Count > 0)
+                {
+                    // Refresh it every 10 minutes.
+                    // Let this be the last item to be removed by cache if cache GC kicks in.
+                    Cache.Set(
+                        cacheKey,
+                        albums,
+                        new MemoryCacheEntryOptions()
+                            .SetAbsoluteExpiration(TimeSpan.FromMinutes(10))
+                            .SetPriority(CacheItemPriority.High));
+                }
+            }
 
             return View(albums);
         }
@@ -43,7 +54,7 @@ namespace MusicStore.Controllers
             return View("~/Views/Shared/StatusCodePage.cshtml");
         }
 
-        private async Task<List<Album>> GetTopSellingAlbums(int count)
+        private async Task<List<Album>> GetTopSellingAlbumsAsync(int count)
         {
             // Group the order details by album and return
             // the albums with the highest count

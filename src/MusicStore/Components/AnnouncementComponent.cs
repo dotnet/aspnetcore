@@ -34,11 +34,20 @@ namespace MusicStore.Components
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var latestAlbum = await Cache.GetOrSet("latestAlbum", async context =>
+            var cacheKey = "latestAlbum";
+            Album latestAlbum;
+            if(!Cache.TryGetValue(cacheKey, out latestAlbum))
             {
-                context.SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
-                return await GetLatestAlbum();
-            });
+                latestAlbum = await GetLatestAlbum();
+
+                if (latestAlbum != null)
+                {
+                    Cache.Set(
+                        cacheKey,
+                        latestAlbum,
+                        new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(10)));
+                }
+            }
 
             return View(latestAlbum);
         }

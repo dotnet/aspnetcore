@@ -45,17 +45,25 @@ namespace MusicStore.Controllers
 
         public async Task<IActionResult> Details(int id)
         {
-            var album = await Cache.GetOrSet(string.Format("album_{0}", id), async context =>
+            var cacheKey = string.Format("album_{0}", id);
+            Album album;
+            if(!Cache.TryGetValue(cacheKey, out album))
             {
-                //Remove it from cache if not retrieved in last 10 minutes
-                context.SetSlidingExpiration(TimeSpan.FromMinutes(10));
+                album = await DbContext.Albums
+                                .Where(a => a.AlbumId == id)
+                                .Include(a => a.Artist)
+                                .Include(a => a.Genre)
+                                .FirstOrDefaultAsync();
 
-                return await DbContext.Albums
-                    .Where(a => a.AlbumId == id)
-                    .Include(a => a.Artist)
-                    .Include(a => a.Genre)
-                    .FirstOrDefaultAsync();
-            });
+                if (album != null)
+                {
+                    //Remove it from cache if not retrieved in last 10 minutes
+                    Cache.Set(
+                        cacheKey,
+                        album,
+                        new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)));
+                }
+            }
 
             if (album == null)
             {
