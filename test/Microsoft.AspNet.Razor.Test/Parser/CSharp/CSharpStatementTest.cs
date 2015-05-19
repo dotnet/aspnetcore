@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            new DirectiveBlock(
                                Factory.CodeTransition(),
                                Factory.Code("using StringDictionary = System.Collections.Generic.Dictionary<string, string>")
-                                   .AsNamespaceImport(" StringDictionary = System.Collections.Generic.Dictionary<string, string>", 5)
+                                   .AsNamespaceImport(" StringDictionary = System.Collections.Generic.Dictionary<string, string>")
                                    .Accepts(AcceptedCharacters.AnyExceptNewline)
                                ));
         }
@@ -179,7 +179,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            new DirectiveBlock(
                                Factory.CodeTransition(),
                                Factory.Code("using System.Text.Encoding.ASCIIEncoding")
-                                   .AsNamespaceImport(" System.Text.Encoding.ASCIIEncoding", 5)
+                                   .AsNamespaceImport(" System.Text.Encoding.ASCIIEncoding")
                                    .Accepts(AcceptedCharacters.AnyExceptNewline)
                                ));
         }

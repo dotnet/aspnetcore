@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Razor.Generator
                     { new RazorCommentCodeGenerator(), new TemplateBlockCodeGenerator() },
                     {
                         new RazorCommentCodeGenerator(),
-                        new AddImportCodeGenerator(ns: "Fred", namespaceKeywordLength: 0)
+                        new AddImportCodeGenerator(ns: "Fred")
                     },
                 };
             }

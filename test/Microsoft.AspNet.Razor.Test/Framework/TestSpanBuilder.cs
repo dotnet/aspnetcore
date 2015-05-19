@@ -298,9 +298,9 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             return _self.With(new TypeMemberCodeGenerator());
         }
 
-        public SpanConstructor AsNamespaceImport(string ns, int namespaceKeywordLength)
+        public SpanConstructor AsNamespaceImport(string ns)
         {
-            return _self.With(new AddImportCodeGenerator(ns, namespaceKeywordLength));
+            return _self.With(new AddImportCodeGenerator(ns));
         }
 
         public SpanConstructor Hidden()

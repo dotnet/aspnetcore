@@ -8,21 +8,18 @@ namespace Microsoft.AspNet.Razor.Generator
 {
     public class AddImportCodeGenerator : SpanCodeGenerator
     {
-        public AddImportCodeGenerator(string ns, int namespaceKeywordLength)
+        public AddImportCodeGenerator(string ns)
         {
             Namespace = ns;
-            NamespaceKeywordLength = namespaceKeywordLength;
         }
 
         public string Namespace { get; }
-
-        public int NamespaceKeywordLength { get; set; }
 
         public override void GenerateCode(Span target, CodeGeneratorContext context)
         {
             var ns = Namespace;
 
-            if (!string.IsNullOrEmpty(ns) && Char.IsWhiteSpace(ns[0]))
+            if (!string.IsNullOrEmpty(ns) && char.IsWhiteSpace(ns[0]))
             {
                 ns = ns.Substring(1);
             }
@@ -32,15 +29,14 @@ namespace Microsoft.AspNet.Razor.Generator
 
         public override string ToString()
         {
-            return "Import:" + Namespace + ";KwdLen:" + NamespaceKeywordLength;
+            return "Import:" + Namespace + ";";
         }
 
         public override bool Equals(object obj)
         {
             var other = obj as AddImportCodeGenerator;
             return other != null &&
-                string.Equals(Namespace, other.Namespace, StringComparison.Ordinal) &&
-                NamespaceKeywordLength == other.NamespaceKeywordLength;
+                string.Equals(Namespace, other.Namespace, StringComparison.Ordinal);
         }
 
         public override int GetHashCode()

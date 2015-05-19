@@ -370,7 +370,7 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
             ParseBlockTest("using Foo   ",
                            new DirectiveBlock(
                                Factory.Code("using Foo")
-                                   .AsNamespaceImport(" Foo", CSharpCodeParser.UsingKeywordLength)
+                                   .AsNamespaceImport(" Foo")
                                    .Accepts(AcceptedCharacters.NonWhiteSpace | AcceptedCharacters.WhiteSpace)));
         }
 
@@ -1099,7 +1099,7 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
             ParseBlockTest(content,
                            new DirectiveBlock(
                                Factory.Code(content)
-                                   .AsNamespaceImport(expectedNS, CSharpCodeParser.UsingKeywordLength)
+                                   .AsNamespaceImport(expectedNS)
                                    .Accepts(acceptedCharacters)),
                            errors);
         }

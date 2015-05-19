@@ -14,12 +14,12 @@ namespace Microsoft.AspNet.Razor.Generator
                 return new TheoryData<AddImportCodeGenerator, AddImportCodeGenerator>
                 {
                     {
-                        new AddImportCodeGenerator(ns: null, namespaceKeywordLength: 3),
-                        new AddImportCodeGenerator(ns: null, namespaceKeywordLength: 3)
+                        new AddImportCodeGenerator(ns: null),
+                        new AddImportCodeGenerator(ns: null)
                     },
                     {
-                        new AddImportCodeGenerator(ns: "Fred", namespaceKeywordLength: 23),
-                        new AddImportCodeGenerator(ns: "Fred", namespaceKeywordLength: 23)
+                        new AddImportCodeGenerator(ns: "Fred"),
+                        new AddImportCodeGenerator(ns: "Fred")
                     },
                 };
             }
@@ -32,40 +32,35 @@ namespace Microsoft.AspNet.Razor.Generator
                 return new TheoryData<AddImportCodeGenerator, object>
                 {
                     {
-                        new AddImportCodeGenerator(ns: null, namespaceKeywordLength: 0),
+                        new AddImportCodeGenerator(ns: null),
                         null
                     },
                     {
-                        new AddImportCodeGenerator(ns: "Fred", namespaceKeywordLength: 23),
+                        new AddImportCodeGenerator(ns: "Fred"),
                         null
                     },
                     {
-                        new AddImportCodeGenerator(ns: "Fred", namespaceKeywordLength: 23),
+                        new AddImportCodeGenerator(ns: "Fred"),
                         new object()
                     },
                     {
-                        new AddImportCodeGenerator(ns: "Fred", namespaceKeywordLength: 23),
+                        new AddImportCodeGenerator(ns: "Fred"),
                         SpanCodeGenerator.Null
                     },
                     {
-                        new AddImportCodeGenerator(ns: "Fred", namespaceKeywordLength: 23),
+                        new AddImportCodeGenerator(ns: "Fred"),
                         new StatementCodeGenerator()
                     },
                     {
                         // Different Namespace.
-                        new AddImportCodeGenerator(ns: "Fred", namespaceKeywordLength: 3),
-                        new AddImportCodeGenerator(ns: "Ginger", namespaceKeywordLength: 3)
+                        new AddImportCodeGenerator(ns: "Fred"),
+                        new AddImportCodeGenerator(ns: "Ginger")
                     },
                     {
                         // Different Namespace (case sensitive).
-                        new AddImportCodeGenerator(ns: "fred", namespaceKeywordLength: 9),
-                        new AddImportCodeGenerator(ns: "FRED", namespaceKeywordLength: 9)
-                    },
-                    {
-                        // Different NamespaceKeywordLength.
-                        new AddImportCodeGenerator(ns: null, namespaceKeywordLength: 0),
-                        new AddImportCodeGenerator(ns: null, namespaceKeywordLength: 23)
-                    },
+                        new AddImportCodeGenerator(ns: "fred"),
+                        new AddImportCodeGenerator(ns: "FRED")
+                    }
                 };
             }
         }

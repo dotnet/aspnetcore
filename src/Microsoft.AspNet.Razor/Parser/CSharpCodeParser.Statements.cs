@@ -150,8 +150,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
             Span.EditHandler.AcceptedCharacters = AcceptedCharacters.AnyExceptNewline;
             Span.CodeGenerator = new AddImportCodeGenerator(
-                Span.GetContent(syms => syms.Skip(1)), // Skip "using"
-                SyntaxConstants.CSharp.UsingKeywordLength);
+                Span.GetContent(syms => syms.Skip(1)));
 
             // Optional ";"
             if (EnsureCurrent())
