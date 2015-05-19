@@ -49,7 +49,7 @@ brew install dnvm
 ```
 Note that on Windows the .NET Framework is already installed, whereas on OS X the brew formula uses a particular version of [Mono](http://www.mono-project.com/) that we know works with ASP.NET 5.
 
-Execute ```dnvm``` to verify that everything works. Should that fail with ```-bash: dnvm: command not found``` run the command ```source dnvm.sh```. This means that ```dnvm``` will be available in this session. To make it sure for every session, add it to your ```~/.bashrc``` with the following command ```echo "source dnvm.sh" >> ~/.bashrc```.  
+Execute `dnvm` to verify that everything works. Should that fail with `-bash: dnvm: command not found` run the command `source dnvm.sh`. This means that `dnvm` will be available in this session. To make sure `dnvm` is available for *every* session, add the command to your `~/.bashrc` with the following command `echo "source dnvm.sh" >> ~/.bashrc`.  
 
 ## Linux
 
