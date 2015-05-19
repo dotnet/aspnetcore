@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
@@ -146,6 +147,53 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .AsStatement()
                                    .Accepts(AcceptedCharacters.None)
                                ));
+        }
+
+        public static TheoryData StaticUsingData
+        {
+            get
+            {
+                var factory = SpanFactory.CreateCsHtml();
+                Func<string, string, DirectiveBlock> createUsing = (code, import) =>
+                    new DirectiveBlock(
+                        factory.CodeTransition(),
+                        factory.Code(code)
+                            .AsNamespaceImport(import)
+                            .Accepts(AcceptedCharacters.AnyExceptNewline));
+
+                // document, expectedResult
+                return new TheoryData<string, DirectiveBlock>
+                {
+                    { "@using static", createUsing("using static", " static") },
+                    { "@using static    ", createUsing("using static    ", " static    ") },
+                    { "@using         static    ", createUsing("using         static    ", "         static    ") },
+                    { "@using static System", createUsing("using static System", " static System") },
+                    {
+                        "@using static         System",
+                        createUsing("using static         System", " static         System")
+                    },
+                    {
+                        "@using static System.Console",
+                        createUsing("using static System.Console", " static System.Console")
+                    },
+                    {
+                        "@using static global::System.Console",
+                        createUsing("using static global::System.Console", " static global::System.Console")
+                    },
+                    {
+                        "@using   static   global::System.Console  ",
+                        createUsing("using   static   global::System.Console", "   static   global::System.Console")
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(StaticUsingData))]
+        public void StaticUsingImport(string document, DirectiveBlock expectedResult)
+        {
+            // Act & Assert
+            ParseBlockTest(document, expectedResult);
         }
 
         [Fact]

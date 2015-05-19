@@ -18,6 +18,24 @@ using System
 #line default
 #line hidden
     ;
+#line 5 "Imports.cshtml"
+using static System
+
+#line default
+#line hidden
+    ;
+#line 6 "Imports.cshtml"
+using static System.Console
+
+#line default
+#line hidden
+    ;
+#line 7 "Imports.cshtml"
+using static global::System.Text.Encoding
+
+#line default
+#line hidden
+    ;
     using System.Threading.Tasks;
 
     public class Imports
@@ -36,12 +54,12 @@ using System
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-#line 5 "Imports.cshtml"
+#line 9 "Imports.cshtml"
                        __o = typeof(Path).FullName;
 
 #line default
 #line hidden
-#line 6 "Imports.cshtml"
+#line 10 "Imports.cshtml"
                              __o = typeof(Foo).FullName;
 
 #line default

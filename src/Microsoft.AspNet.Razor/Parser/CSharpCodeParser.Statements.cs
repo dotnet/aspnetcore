@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 // using ( ==> Using Statement
                 UsingStatement(block);
             }
-            else if (At(CSharpSymbolType.Identifier))
+            else if (At(CSharpSymbolType.Identifier) || At(CSharpKeyword.Static))
             {
                 // using Identifier ==> Using Declaration
                 if (!topLevel)
@@ -126,31 +126,40 @@ namespace Microsoft.AspNet.Razor.Parser
             // Set block type to directive
             Context.CurrentBlock.Type = BlockType.Directive;
 
-            // Parse a type name
-            Assert(CSharpSymbolType.Identifier);
-            NamespaceOrTypeName();
-            IEnumerable<CSharpSymbol> ws = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
-            if (At(CSharpSymbolType.Assign))
+            if (At(CSharpSymbolType.Identifier))
             {
-                // Alias
-                Accept(ws);
-                Assert(CSharpSymbolType.Assign);
-                AcceptAndMoveNext();
-
-                AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
-
-                // One more namespace or type name
+                // non-static using
                 NamespaceOrTypeName();
+                var whitespace = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+                if (At(CSharpSymbolType.Assign))
+                {
+                    // Alias
+                    Accept(whitespace);
+                    Assert(CSharpSymbolType.Assign);
+                    AcceptAndMoveNext();
+
+                    AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+
+                    // One more namespace or type name
+                    NamespaceOrTypeName();
+                }
+                else
+                {
+                    PutCurrentBack();
+                    PutBack(whitespace);
+                }
             }
-            else
+            else if (At(CSharpKeyword.Static))
             {
-                PutCurrentBack();
-                PutBack(ws);
+                // static using
+                AcceptAndMoveNext();
+                AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
+                NamespaceOrTypeName();
             }
 
             Span.EditHandler.AcceptedCharacters = AcceptedCharacters.AnyExceptNewline;
             Span.CodeGenerator = new AddImportCodeGenerator(
-                Span.GetContent(syms => syms.Skip(1)));
+                Span.GetContent(symbols => symbols.Skip(1)));
 
             // Optional ";"
             if (EnsureCurrent())

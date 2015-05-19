@@ -176,8 +176,11 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 BuildLineMapping(1, 0, 1, 51, 3, 0, 15),
                 BuildLineMapping(19, 1, 1, 132, 9, 0, 32),
                 BuildLineMapping(54, 2, 1, 230, 15, 0, 12),
-                BuildLineMapping(99, 4, 772, 39, 29, 21),
-                BuildLineMapping(161, 5, 888, 44, 35, 20)
+                BuildLineMapping(71, 4, 1, 308, 21, 0, 19),
+                BuildLineMapping(93, 5, 1, 393, 27, 0, 27),
+                BuildLineMapping(123, 6, 1, 486, 33, 0, 41),
+                BuildLineMapping(197, 8, 1057, 57, 29, 21),
+                BuildLineMapping(259, 9, 1174, 62, 35, 20)
             });
         }
 
