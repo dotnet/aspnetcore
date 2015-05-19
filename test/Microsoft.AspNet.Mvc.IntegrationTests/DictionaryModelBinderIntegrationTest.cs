@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("10", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Empty collection should be created by the collection model binder #1579")]
+        [Fact]
         public async Task DictionaryModelBinder_BindsDictionaryOfSimpleType_NoData()
         {
             // Arrange
@@ -162,8 +162,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);  // This fails due to #1579
-            Assert.False(modelBindingResult.IsModelSet);
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
             Assert.Empty(Assert.IsType<Dictionary<string, int>>(modelBindingResult.Model));
 
             Assert.Equal(0, modelState.Count);
@@ -309,7 +309,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("10", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Empty collection should be created by the collection model binder #1579")]
+        [Fact]
         public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_NoData()
         {
             // Arrange
@@ -331,8 +331,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);  // This fails due to #1579
-            Assert.False(modelBindingResult.IsModelSet);
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
             Assert.Empty(Assert.IsType<Dictionary<string, Person>>(modelBindingResult.Model));
 
             Assert.Equal(0, modelState.Count);

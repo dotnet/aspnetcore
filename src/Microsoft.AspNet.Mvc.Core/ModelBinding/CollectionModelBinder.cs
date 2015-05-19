@@ -23,8 +23,31 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             ModelBindingHelper.ValidateBindingContext(bindingContext);
 
+            object model;
+
             if (!await bindingContext.ValueProvider.ContainsPrefixAsync(bindingContext.ModelName))
             {
+                // If this is the fallback case, and we failed to find data as a top-level model, then generate a
+                // default 'empty' model and return it.
+                var isTopLevelObject = bindingContext.ModelMetadata.ContainerType == null;
+                var hasExplicitAlias = bindingContext.BinderModelName != null;
+
+                if (isTopLevelObject && (hasExplicitAlias || bindingContext.ModelName == string.Empty))
+                {
+                    model = CreateEmptyCollection();
+
+                    var validationNode = new ModelValidationNode(
+                        bindingContext.ModelName,
+                        bindingContext.ModelMetadata,
+                        model);
+
+                    return new ModelBindingResult(
+                        model,
+                        bindingContext.ModelName,
+                        isModelSet: true,
+                        validationNode: validationNode);
+                }
+
                 return null;
             }
 
@@ -46,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 boundCollection = result.Model;
             }
 
-            var model = bindingContext.Model;
+            model = bindingContext.Model;
             if (model == null)
             {
                 model = GetModel(boundCollection);
@@ -62,6 +85,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 bindingContext.ModelName,
                 isModelSet: true,
                 validationNode: result?.ValidationNode);
+        }
+
+        // Called when we're creating a default 'empty' model for a top level bind.
+        protected virtual object CreateEmptyCollection()
+        {
+            return new List<TElement>();
         }
 
         // Used when the ValueProvider contains the collection to be bound as a single element, e.g. the raw value
@@ -164,8 +193,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
                 var didBind = false;
                 object boundValue = null;
-
-                var modelType = bindingContext.ModelType;
 
                 var result =
                     await bindingContext.OperationBindingContext.ModelBinder.BindModelAsync(childBindingContext);

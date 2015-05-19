@@ -974,7 +974,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Null(error.Exception);
         }
 
-        [Fact(Skip = "Empty collection should be created by the collection model binder #1579")]
+        [Fact]
         public async Task Validation_StringLengthAttribute_OnProperyOfCollectionElement_NoData()
         {
             // Arrange
@@ -997,14 +997,14 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // Assert
             Assert.NotNull(modelBindingResult);
-            Assert.False(modelBindingResult.IsModelSet);
+            Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<List<Order10>>(modelBindingResult.Model);
             Assert.Empty(model);
 
             Assert.Equal(0, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
-            Assert.False(modelState.IsValid);
+            Assert.True(modelState.IsValid);
         }
 
         private class Order11

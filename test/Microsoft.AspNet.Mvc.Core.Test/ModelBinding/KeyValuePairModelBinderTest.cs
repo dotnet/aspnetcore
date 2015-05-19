@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Moq;
 using Xunit;
@@ -158,6 +159,126 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Empty(bindingContext.ModelState);
         }
 
+        [Fact]
+        public async Task KeyValuePairModelBinder_DoesNotCreateCollection_ForTopLevelModel_OnFirstPass()
+        {
+            // Arrange
+            var binder = new KeyValuePairModelBinder<string, string>();
+
+            var context = CreateContext();
+            context.ModelName = "param";
+
+            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(KeyValuePair<string, string>));
+
+            context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+
+            // Act
+            var result = await binder.BindModelAsync(context);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task KeyValuePairModelBinder_CreatesEmptyCollection_ForTopLevelModel_OnFallback()
+        {
+            // Arrange
+            var binder = new KeyValuePairModelBinder<string, string>();
+
+            var context = CreateContext();
+            context.ModelName = string.Empty;
+
+            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(KeyValuePair<string, string>));
+
+            context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+
+            // Act
+            var result = await binder.BindModelAsync(context);
+
+            // Assert
+            Assert.NotNull(result);
+
+            Assert.Equal(default(KeyValuePair<string, string>), Assert.IsType<KeyValuePair<string, string>>(result.Model));
+            Assert.Equal(string.Empty, result.Key);
+            Assert.True(result.IsModelSet);
+
+            Assert.Equal(result.ValidationNode.Model, result.Model);
+            Assert.Same(result.ValidationNode.Key, result.Key);
+            Assert.Same(result.ValidationNode.ModelMetadata, context.ModelMetadata);
+        }
+
+        [Fact]
+        public async Task KeyValuePairModelBinder_CreatesEmptyCollection_ForTopLevelModel_WithExplicitPrefix()
+        {
+            // Arrange
+            var binder = new KeyValuePairModelBinder<string, string>();
+
+            var context = CreateContext();
+            context.ModelName = "prefix";
+            context.BinderModelName = "prefix";
+
+            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(KeyValuePair<string, string>));
+
+            context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+
+            // Act
+            var result = await binder.BindModelAsync(context);
+
+            // Assert
+            Assert.NotNull(result);
+
+            Assert.Equal(default(KeyValuePair<string, string>), Assert.IsType<KeyValuePair<string, string>>(result.Model));
+            Assert.Equal("prefix", result.Key);
+            Assert.True(result.IsModelSet);
+
+            Assert.Equal(result.ValidationNode.Model, result.Model);
+            Assert.Same(result.ValidationNode.Key, result.Key);
+            Assert.Same(result.ValidationNode.ModelMetadata, context.ModelMetadata);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("param")]
+        public async Task KeyValuePairModelBinder_DoesNotCreateCollection_ForNonTopLevelModel(string prefix)
+        {
+            // Arrange
+            var binder = new KeyValuePairModelBinder<string, string>();
+
+            var context = CreateContext();
+            context.ModelName = ModelNames.CreatePropertyModelName(prefix, "KeyValuePairProperty");
+
+            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            context.ModelMetadata = metadataProvider.GetMetadataForProperty(
+                typeof(ModelWithKeyValuePairProperty),
+                nameof(ModelWithKeyValuePairProperty.KeyValuePairProperty));
+
+            context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+
+            // Act
+            var result = await binder.BindModelAsync(context);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        private static ModelBindingContext CreateContext()
+        {
+            var modelBindingContext = new ModelBindingContext()
+            {
+                OperationBindingContext = new OperationBindingContext()
+                {
+                    HttpContext = new DefaultHttpContext(),
+                    MetadataProvider = new TestModelMetadataProvider(),
+                    ModelBinder = new TypeMatchModelBinder(),
+                }
+            };
+
+            return modelBindingContext;
+        }
+
         private static ModelBindingContext GetBindingContext(
             IValueProvider valueProvider,
             IModelBinder innerBinder = null,
@@ -209,6 +330,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     return Task.FromResult<ModelBindingResult>(null);
                 });
             return mockStringBinder.Object;
+        }
+
+        private class ModelWithKeyValuePairProperty
+        {
+            public KeyValuePair<string, string> KeyValuePairProperty { get; set; }
         }
     }
 }

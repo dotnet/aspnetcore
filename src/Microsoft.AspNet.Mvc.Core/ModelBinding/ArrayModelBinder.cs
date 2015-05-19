@@ -25,6 +25,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return base.BindModelAsync(bindingContext);
         }
 
+        protected override object CreateEmptyCollection()
+        {
+            return new TElement[0];
+        }
+
         /// <inheritdoc />
         protected override object GetModel(IEnumerable<TElement> newCollection)
         {

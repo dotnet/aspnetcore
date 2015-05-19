@@ -62,8 +62,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
             else
             {
-                // Caller (GenericModelBinder) was able to resolve a binder type and will create a ModelBindingResult
-                // that exits current ModelBinding loop.
+                // If this is the fallback case, and we failed to find data as a top-level model, then generate a
+                // default 'empty' model and return it.
+                var isTopLevelObject = bindingContext.ModelMetadata.ContainerType == null;
+                var hasExplicitAlias = bindingContext.BinderModelName != null;
+
+                if (isTopLevelObject && (hasExplicitAlias || bindingContext.ModelName == string.Empty))
+                {
+                    var model = new KeyValuePair<TKey, TValue>();
+
+                    var validationNode = new ModelValidationNode(
+                        bindingContext.ModelName,
+                        bindingContext.ModelMetadata,
+                        model);
+
+                    return new ModelBindingResult(
+                        model,
+                        bindingContext.ModelName,
+                        isModelSet: true,
+                        validationNode: validationNode);
+                }
+
                 return null;
             }
         }

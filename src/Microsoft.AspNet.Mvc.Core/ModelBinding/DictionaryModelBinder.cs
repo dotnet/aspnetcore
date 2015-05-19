@@ -18,5 +18,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             return newCollection?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
+
+        protected override object CreateEmptyCollection()
+        {
+            return new Dictionary<TKey, TValue>();
+        }
     }
 }

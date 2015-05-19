@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         //
         // In this example we choose IFormCollection - because IFormCollection has a dedicated
         // model  binder.
-        [Fact(Skip = "Empty collection should be created by the collection model binder #1579")]
+        [Fact]
         public async Task GenericModelBinder_BindsCollection_ElementTypeFromGreedyModelBinder_NoData()
         {
             // Arrange
@@ -122,8 +122,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult); // This fails due to #1579
-            Assert.False(modelBindingResult.IsModelSet);
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<List<IFormCollection>>(modelBindingResult.Model);
             Assert.Empty(model);
@@ -298,7 +298,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         // This is part of a random sampling of scenarios where a GenericModelBinder is used
         // recursively.
-        [Fact(Skip = "Empty collection should be created by the collection model binder #1579")]
+        [Fact]
         public async Task GenericModelBinder_BindsArrayOfDictionary_NoData()
         {
             // Arrange
@@ -320,8 +320,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult); // This fails due to #1579
-            Assert.False(modelBindingResult.IsModelSet);
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<Dictionary<string, int>[]>(modelBindingResult.Model);
             Assert.NotNull(model);
@@ -424,7 +424,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         // This is part of a random sampling of scenarios where a GenericModelBinder is used
         // recursively.
-        [Fact(Skip = "Empty collection should be created by the collection model binder #1579")]
+        [Fact]
         public async Task GenericModelBinder_BindsCollectionOfKeyValuePair_NoData()
         {
             // Arrange
@@ -446,8 +446,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult); // Fails due to #1579
-            Assert.False(modelBindingResult.IsModelSet);
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<Collection<KeyValuePair<string, int>>>(modelBindingResult.Model);
             Assert.NotNull(model);
@@ -559,7 +559,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         // This is part of a random sampling of scenarios where a GenericModelBinder is used
         // recursively.
-        [Fact(Skip = "Empty collection should be created by the collection model binder #1579")]
+        [Fact]
         public async Task GenericModelBinder_BindsDictionaryOfList_NoData()
         {
             // Arrange
@@ -581,8 +581,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult); // Fails due to #1579
-            Assert.False(modelBindingResult.IsModelSet);
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<Dictionary<string, List<int>>>(modelBindingResult.Model);
             Assert.NotNull(model);

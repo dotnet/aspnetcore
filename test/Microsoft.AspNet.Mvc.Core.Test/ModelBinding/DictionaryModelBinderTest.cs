@@ -4,6 +4,7 @@
 #if DNX451
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Internal;
 using Moq;
 using Xunit;
 
@@ -63,6 +64,125 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal("eighty-four", dictionary[84]);
         }
 
+        [Fact]
+        public async Task DictionaryModelBinder_DoesNotCreateCollection_ForTopLevelModel_OnFirstPass()
+        {
+            // Arrange
+            var binder = new DictionaryModelBinder<string, string>();
+
+            var context = CreateContext();
+            context.ModelName = "param";
+
+            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(Dictionary<string, string>));
+
+            context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+
+            // Act
+            var result = await binder.BindModelAsync(context);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task DictionaryModelBinder_CreatesEmptyCollection_ForTopLevelModel_OnFallback()
+        {
+            // Arrange
+            var binder = new DictionaryModelBinder<string, string>();
+
+            var context = CreateContext();
+            context.ModelName = string.Empty;
+
+            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(Dictionary<string, string>));
+
+            context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+
+            // Act
+            var result = await binder.BindModelAsync(context);
+
+            // Assert
+            Assert.NotNull(result);
+
+            Assert.Empty(Assert.IsType<Dictionary<string, string>>(result.Model));
+            Assert.Equal(string.Empty, result.Key);
+            Assert.True(result.IsModelSet);
+
+            Assert.Same(result.ValidationNode.Model, result.Model);
+            Assert.Same(result.ValidationNode.Key, result.Key);
+            Assert.Same(result.ValidationNode.ModelMetadata, context.ModelMetadata);
+        }
+
+        [Fact]
+        public async Task DictionaryModelBinder_CreatesEmptyCollection_ForTopLevelModel_WithExplicitPrefix()
+        {
+            // Arrange
+            var binder = new DictionaryModelBinder<string, string>();
+
+            var context = CreateContext();
+            context.ModelName = "prefix";
+            context.BinderModelName = "prefix";
+
+            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(Dictionary<string, string>));
+
+            context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+
+            // Act
+            var result = await binder.BindModelAsync(context);
+
+            // Assert
+            Assert.NotNull(result);
+
+            Assert.Empty(Assert.IsType<Dictionary<string, string>>(result.Model));
+            Assert.Equal("prefix", result.Key);
+            Assert.True(result.IsModelSet);
+
+            Assert.Same(result.ValidationNode.Model, result.Model);
+            Assert.Same(result.ValidationNode.Key, result.Key);
+            Assert.Same(result.ValidationNode.ModelMetadata, context.ModelMetadata);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("param")]
+        public async Task DictionaryModelBinder_DoesNotCreateCollection_ForNonTopLevelModel(string prefix)
+        {
+            // Arrange
+            var binder = new DictionaryModelBinder<string, string>();
+
+            var context = CreateContext();
+            context.ModelName = ModelNames.CreatePropertyModelName(prefix, "ListProperty");
+
+            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            context.ModelMetadata = metadataProvider.GetMetadataForProperty(
+                typeof(ModelWithDictionaryProperty),
+                nameof(ModelWithDictionaryProperty.DictionaryProperty));
+
+            context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+
+            // Act
+            var result = await binder.BindModelAsync(context);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        private static ModelBindingContext CreateContext()
+        {
+            var modelBindingContext = new ModelBindingContext()
+            {
+                OperationBindingContext = new OperationBindingContext()
+                {
+                    HttpContext = new DefaultHttpContext(),
+                    MetadataProvider = new TestModelMetadataProvider(),
+                }
+            };
+
+            return modelBindingContext;
+        }
+
         private static ModelBindingContext GetModelBindingContext(bool isReadOnly)
         {
             var metadataProvider = new TestModelMetadataProvider();
@@ -104,6 +224,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     return null;
                 });
             return mockKvpBinder.Object;
+        }
+
+        private class ModelWithDictionaryProperty
+        {
+            public Dictionary<string, string> DictionaryProperty { get; set; }
         }
     }
 }

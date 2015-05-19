@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("11", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Empty collection should be created by the collection model binder #1579")]
+        [Fact]
         public async Task CollectionModelBinder_BindsListOfSimpleType_NoData()
         {
             // Arrange
@@ -167,8 +167,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);  // This fails due to #1579
-            Assert.False(modelBindingResult.IsModelSet);
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
             Assert.Empty(Assert.IsType<List<int>>(modelBindingResult.Model));
 
             Assert.Equal(0, modelState.Count);
@@ -311,7 +311,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("11", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Empty collection should be created by the collection model binder #1579")]
+        [Fact]
         public async Task CollectionModelBinder_BindsListOfComplexType_NoData()
         {
             // Arrange
@@ -333,8 +333,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);  // This fails due to #1579
-            Assert.False(modelBindingResult.IsModelSet);
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
             Assert.Empty(Assert.IsType<List<Person>>(modelBindingResult.Model));
 
             Assert.Equal(0, modelState.Count);
@@ -510,7 +510,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
         }
 
-        [Fact(Skip = "Empty collection should be created by the collection model binder #1579")]
+        [Fact]
         public async Task CollectionModelBinder_BindsListOfComplexType_WithRequiredProperty_NoData()
         {
             // Arrange
@@ -532,8 +532,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);  // This fails due to #1579
-            Assert.False(modelBindingResult.IsModelSet);
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
             Assert.Empty(Assert.IsType<List<Person2>>(modelBindingResult.Model));
 
             Assert.Equal(0, modelState.Count);

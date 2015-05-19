@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("11", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Empty collection should be created by the collection model binder #1579")]
+        [Fact]
         public async Task ArrayModelBinder_BindsArrayOfSimpleType_NoData()
         {
             // Arrange
@@ -160,8 +160,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);  // This fails due to #1579
-            Assert.False(modelBindingResult.IsModelSet);
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
             Assert.Empty(Assert.IsType<int[]>(modelBindingResult.Model));
 
             Assert.Equal(0, modelState.Count);
@@ -304,7 +304,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("lang", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Empty collection should be created by the collection model binder #1579")]
+        [Fact]
         public async Task ArrayModelBinder_BindsArrayOfComplexType_NoData()
         {
             // Arrange
@@ -326,8 +326,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);  // This fails due to #1579
-            Assert.False(modelBindingResult.IsModelSet);
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
             Assert.Empty(Assert.IsType<Person[]>(modelBindingResult.Model));
 
             Assert.Equal(0, modelState.Count);
