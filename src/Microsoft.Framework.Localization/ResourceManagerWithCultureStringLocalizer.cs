@@ -70,9 +70,6 @@ namespace Microsoft.Framework.Localization
         }
 
         /// <inheritdoc />
-        public override IEnumerator<LocalizedString> GetEnumerator()
-        {
-            return GetEnumerator(_culture);
-        }
+        public override IEnumerator<LocalizedString> GetEnumerator() => GetEnumerator(_culture);
     }
 }

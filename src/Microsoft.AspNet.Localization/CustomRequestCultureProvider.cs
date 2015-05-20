@@ -26,8 +26,6 @@ namespace Microsoft.AspNet.Localization
 
         /// <inheritdoc />
         public override Task<RequestCulture> DetermineRequestCulture([NotNull] HttpContext httpContext)
-        {
-            return _provider(httpContext);
-        }
+            => _provider(httpContext);
     }
 }

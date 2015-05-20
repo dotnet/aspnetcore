@@ -124,15 +124,9 @@ namespace Microsoft.Framework.Localization
         /// Returns an <see cref="IEnumerator{LocalizedString}"/> for all strings in the current culture.
         /// </summary>
         /// <returns>The <see cref="IEnumerator{LocalizedString}"/>.</returns>
-        public virtual IEnumerator<LocalizedString> GetEnumerator()
-        {
-            return GetEnumerator(CultureInfo.CurrentUICulture);
-        }
+        public virtual IEnumerator<LocalizedString> GetEnumerator() => GetEnumerator(CultureInfo.CurrentUICulture);
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <summary>
         /// Returns an <see cref="IEnumerator{LocalizedString}"/> for all strings in the specified culture.
