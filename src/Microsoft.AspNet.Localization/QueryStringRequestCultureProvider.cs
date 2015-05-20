@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Localization
     /// <summary>
     /// Determines the culture information for a request via values in the query string.
     /// </summary>
-    public class QueryStringRequestCultureStrategy : RequestCultureStrategy
+    public class QueryStringRequestCultureProvider : RequestCultureProvider
     {
         /// <summary>
         /// The key that contains the culture name.

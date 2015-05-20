@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Resources;
-using Moq;
+using Microsoft.Framework.Localization.Internal;
 using Xunit;
 
 namespace Microsoft.Framework.Localization.Test
@@ -18,19 +18,11 @@ namespace Microsoft.Framework.Localization.Test
         {
             // Arrange
             ResourceManagerStringLocalizer.ClearResourceNamesCache();
-            var resourceManager = new Mock<ResourceManager>();
-            var resourceAssembly = new Mock<TestAssembly1>();
-            resourceAssembly.Setup(rm => rm.GetManifestResourceStream(It.IsAny<string>()))
-                .Returns(() => MakeResourceStream());
             var baseName = "test";
-            var localizer1 = new ResourceManagerStringLocalizer(
-                resourceManager.Object,
-                resourceAssembly.Object,
-                baseName);
-            var localizer2 = new ResourceManagerStringLocalizer(
-                resourceManager.Object,
-                resourceAssembly.Object,
-                baseName);
+            var resourceAssembly = new TestAssemblyWrapper();
+            var resourceManager = new TestResourceManager(baseName, resourceAssembly.Assembly);
+            var localizer1 = new ResourceManagerStringLocalizer(resourceManager, resourceAssembly, baseName);
+            var localizer2 = new ResourceManagerStringLocalizer(resourceManager, resourceAssembly, baseName);
 
             // Act
             for (int i = 0; i < 5; i++)
@@ -41,9 +33,7 @@ namespace Microsoft.Framework.Localization.Test
 
             // Assert
             var expectedCallCount = GetCultureInfoDepth(CultureInfo.CurrentUICulture);
-            resourceAssembly.Verify(
-                rm => rm.GetManifestResourceStream(It.IsAny<string>()),
-                Times.Exactly(expectedCallCount));
+            Assert.Equal(expectedCallCount, resourceAssembly.GetManifestResourceStreamCallCount);
         }
 
         [Fact]
@@ -51,24 +41,13 @@ namespace Microsoft.Framework.Localization.Test
         {
             // Arrange
             ResourceManagerStringLocalizer.ClearResourceNamesCache();
-            var resourceManager = new Mock<ResourceManager>();
-            var resourceAssembly1 = new Mock<TestAssembly1>();
-            resourceAssembly1.CallBase = true;
-            var resourceAssembly2 = new Mock<TestAssembly2>();
-            resourceAssembly2.CallBase = true;
-            resourceAssembly1.Setup(rm => rm.GetManifestResourceStream(It.IsAny<string>()))
-                .Returns(() => MakeResourceStream());
-            resourceAssembly2.Setup(rm => rm.GetManifestResourceStream(It.IsAny<string>()))
-                .Returns(() => MakeResourceStream());
             var baseName = "test";
-            var localizer1 = new ResourceManagerStringLocalizer(
-                resourceManager.Object,
-                resourceAssembly1.Object,
-                baseName);
-            var localizer2 = new ResourceManagerStringLocalizer(
-                resourceManager.Object,
-                resourceAssembly2.Object,
-                baseName);
+            var resourceAssembly1 = new TestAssemblyWrapper("Assembly1");
+            var resourceAssembly2 = new TestAssemblyWrapper("Assembly2");
+            var resourceManager1 = new TestResourceManager(baseName, resourceAssembly1.Assembly);
+            var resourceManager2 = new TestResourceManager(baseName, resourceAssembly2.Assembly);
+            var localizer1 = new ResourceManagerStringLocalizer(resourceManager1, resourceAssembly1, baseName);
+            var localizer2 = new ResourceManagerStringLocalizer(resourceManager2, resourceAssembly2, baseName);
 
             // Act
             localizer1.ToList();
@@ -76,12 +55,8 @@ namespace Microsoft.Framework.Localization.Test
 
             // Assert
             var expectedCallCount = GetCultureInfoDepth(CultureInfo.CurrentUICulture);
-            resourceAssembly1.Verify(
-                rm => rm.GetManifestResourceStream(It.IsAny<string>()),
-                Times.Exactly(expectedCallCount));
-            resourceAssembly2.Verify(
-                rm => rm.GetManifestResourceStream(It.IsAny<string>()),
-                Times.Exactly(expectedCallCount));
+            Assert.Equal(expectedCallCount, resourceAssembly1.GetManifestResourceStreamCallCount);
+            Assert.Equal(expectedCallCount, resourceAssembly2.GetManifestResourceStreamCallCount);
         }
 
         private static Stream MakeResourceStream()
@@ -114,25 +89,35 @@ namespace Microsoft.Framework.Localization.Test
             return result;
         }
 
-        public class TestAssembly1 : Assembly
+        public class TestResourceManager : ResourceManager
         {
-            public override string FullName
+            public TestResourceManager(string baseName, Assembly assembly)
+                : base(baseName, assembly)
             {
-                get
-                {
-                    return nameof(TestAssembly1);
-                }
+
             }
+
+            public override string GetString(string name, CultureInfo culture) => null;
         }
 
-        public class TestAssembly2 : Assembly
+        public class TestAssemblyWrapper : AssemblyWrapper
         {
-            public override string FullName
+            private readonly string _name;
+
+            public TestAssemblyWrapper(string name = nameof(TestAssemblyWrapper))
+                : base(typeof(TestAssemblyWrapper).GetTypeInfo().Assembly)
             {
-                get
-                {
-                    return nameof(TestAssembly2);
-                }
+                _name = name;
+            }
+
+            public int GetManifestResourceStreamCallCount { get; private set; }
+
+            public override string FullName => _name;
+
+            public override Stream GetManifestResourceStream(string name)
+            {
+                GetManifestResourceStreamCallCount++;
+                return MakeResourceStream();
             }
         }
     }

@@ -1,12 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Resources;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Localization.Internal;
 
 namespace Microsoft.Framework.Localization
 {
@@ -31,6 +31,19 @@ namespace Microsoft.Framework.Localization
             [NotNull] string baseName,
             [NotNull] CultureInfo culture)
             : base(resourceManager, assembly, baseName)
+        {
+            _culture = culture;
+        }
+
+        /// <summary>
+        /// Intended for testing purposes only.
+        /// </summary>
+        public ResourceManagerWithCultureStringLocalizer(
+            [NotNull] ResourceManager resourceManager,
+            [NotNull] AssemblyWrapper assemblyWrapper,
+            [NotNull] string baseName,
+            [NotNull] CultureInfo culture)
+            : base(resourceManager, assemblyWrapper, baseName)
         {
             _culture = culture;
         }

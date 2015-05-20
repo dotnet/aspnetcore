@@ -1,16 +1,17 @@
 {
-    "dependencies": {
-        "Moq": "4.2.1502.911",
-        "xunit": "2.1.0-*",
-        "xunit.runner.dnx": "2.1.0-*",
-        "Microsoft.Framework.Localization": "1.0.0-*"
-    },
+  "dependencies": {
+    "xunit": "2.1.0-*",
+    "xunit.runner.dnx": "2.1.0-*",
+    "Microsoft.Framework.Localization": "1.0.0-*",
+    "System.Reflection": "4.0.10-*"
+  },
 
-    "commands": {
-        "test": "xunit.runner.dnx"
-    },
+  "commands": {
+    "test": "xunit.runner.dnx"
+  },
 
-    "frameworks": {
-        "dnx451": { }
-    }
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": { }
+  }
 }

@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Resources;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Localization.Internal;
 
 namespace Microsoft.Framework.Localization
 {
@@ -18,12 +19,16 @@ namespace Microsoft.Framework.Localization
     /// </summary>
     public class ResourceManagerStringLocalizer : IStringLocalizer
     {
+        private static readonly ConcurrentDictionary<string, IList<string>> _resourceNamesCache =
+            new ConcurrentDictionary<string, IList<string>>();
+
         private readonly ConcurrentDictionary<string, object> _missingManifestCache =
             new ConcurrentDictionary<string, object>();
 
-        private static readonly ConcurrentDictionary<string, IList<string>> _resourceNamesCache =
-            new ConcurrentDictionary<string, IList<string>>();
-        
+        private readonly ResourceManager _resourceManager;
+        private readonly AssemblyWrapper _resourceAssemblyWrapper;
+        private readonly string _resourceBaseName;
+
         /// <summary>
         /// Creates a new <see cref="ResourceManagerStringLocalizer"/>.
         /// </summary>
@@ -34,26 +39,23 @@ namespace Microsoft.Framework.Localization
             [NotNull] ResourceManager resourceManager,
             [NotNull] Assembly resourceAssembly,
             [NotNull] string baseName)
+            : this(resourceManager, new AssemblyWrapper(resourceAssembly), baseName)
         {
-            ResourceManager = resourceManager;
-            ResourceAssembly = resourceAssembly;
-            ResourceBaseName = baseName;
+            
         }
 
         /// <summary>
-        /// The <see cref="System.Resources.ResourceManager"/> to read strings from.
+        /// Intended for testing purposes only.
         /// </summary>
-        protected ResourceManager ResourceManager { get; }
-
-        /// <summary>
-        /// The <see cref="Assembly"/> that contains the strings as embedded resources.
-        /// </summary>
-        protected Assembly ResourceAssembly { get; }
-
-        /// <summary>
-        /// The base name of the embedded resource in the <see cref="Assembly"/> that contains the strings.
-        /// </summary>
-        protected string ResourceBaseName { get; }
+        public ResourceManagerStringLocalizer(
+            [NotNull] ResourceManager resourceManager,
+            [NotNull] AssemblyWrapper resourceAssemblyWrapper,
+            [NotNull] string baseName)
+        {
+            _resourceAssemblyWrapper = resourceAssemblyWrapper;
+            _resourceManager = resourceManager;
+            _resourceBaseName = baseName;
+        }
 
         /// <inheritdoc />
         public virtual LocalizedString this[[NotNull] string name]
@@ -84,16 +86,15 @@ namespace Microsoft.Framework.Localization
         public IStringLocalizer WithCulture(CultureInfo culture)
         {
             return culture == null
-                ? new ResourceManagerStringLocalizer(ResourceManager, ResourceAssembly, ResourceBaseName)
-                : new ResourceManagerWithCultureStringLocalizer(
-                    ResourceManager,
-                    ResourceAssembly,
-                    ResourceBaseName,
+                ? new ResourceManagerStringLocalizer(_resourceManager, _resourceAssemblyWrapper, _resourceBaseName)
+                : new ResourceManagerWithCultureStringLocalizer(_resourceManager,
+                    _resourceAssemblyWrapper,
+                    _resourceBaseName,
                     culture);
         }
 
         /// <summary>
-        /// Gets a resource string from the <see cref="ResourceManager"/> and returns <c>null</c> instead of
+        /// Gets a resource string from the <see cref="_resourceManager"/> and returns <c>null</c> instead of
         /// throwing exceptions if a match isn't found.
         /// </summary>
         /// <param name="name">The name of the string resource.</param>
@@ -110,7 +111,7 @@ namespace Microsoft.Framework.Localization
 
             try
             {
-                return culture == null ? ResourceManager.GetString(name) : ResourceManager.GetString(name, culture);
+                return culture == null ? _resourceManager.GetString(name) : _resourceManager.GetString(name, culture);
             }
             catch (MissingManifestResourceException)
             {
@@ -150,10 +151,7 @@ namespace Microsoft.Framework.Localization
         }
 
         // Internal to allow testing
-        internal static void ClearResourceNamesCache()
-        {
-            _resourceNamesCache.Clear();
-        }
+        internal static void ClearResourceNamesCache() => _resourceNamesCache.Clear();
 
         private IEnumerable<string> GetResourceNamesFromCultureHierarchy(CultureInfo startingCulture)
         {
@@ -186,19 +184,19 @@ namespace Microsoft.Framework.Localization
 
         private IList<string> GetResourceNamesForCulture(CultureInfo culture)
         {
-            var resourceStreamName = ResourceBaseName;
+            var resourceStreamName = _resourceBaseName;
             if (!string.IsNullOrEmpty(culture.Name))
             {
                 resourceStreamName += "." + culture.Name;
             }
             resourceStreamName += ".resources";
 
-            var cacheKey = $"assembly={ResourceAssembly.FullName};resourceStreamName={resourceStreamName}";
+            var cacheKey = $"assembly={_resourceAssemblyWrapper.FullName};resourceStreamName={resourceStreamName}";
 
             var cultureResourceNames = _resourceNamesCache.GetOrAdd(cacheKey, key =>
             {
                 var names = new List<string>();
-                using (var cultureResourceStream = ResourceAssembly.GetManifestResourceStream(key))
+                using (var cultureResourceStream = _resourceAssemblyWrapper.GetManifestResourceStream(key))
                 using (var resources = new ResourceReader(cultureResourceStream))
                 {
                     foreach (DictionaryEntry entry in resources)

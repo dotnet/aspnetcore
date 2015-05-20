@@ -36,9 +36,9 @@ namespace LocalizationSample
                 //}
             };
 
-            // Optionally create an app-specific strategy with just a delegate, e.g. look up user preference from DB.
-            // Inserting it as position 0 ensures it has priority over any of the default strategies.
-            //options.RequestCultureStrategies.Insert(0, new CustomRequestCultureStrategy(async context =>
+            // Optionally create an app-specific provider with just a delegate, e.g. look up user preference from DB.
+            // Inserting it as position 0 ensures it has priority over any of the default providers.
+            //options.RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(async context =>
             //{
                 
             //}));
@@ -74,13 +74,13 @@ $@"<!doctype html>
         function useCookie() {{
             var culture = document.getElementById('culture');
             var uiCulture = document.getElementById('uiCulture');
-            var cookieValue = '{CookieRequestCultureStrategy.DefaultCookieName}=c='+culture.options[culture.selectedIndex].value+'|uic='+uiCulture.options[uiCulture.selectedIndex].value;
+            var cookieValue = '{CookieRequestCultureProvider.DefaultCookieName}=c='+culture.options[culture.selectedIndex].value+'|uic='+uiCulture.options[uiCulture.selectedIndex].value;
             document.cookie = cookieValue;
             window.location = window.location.href.split('?')[0];
         }}
 
         function clearCookie() {{
-            document.cookie='{CookieRequestCultureStrategy.DefaultCookieName}=""""';
+            document.cookie='{CookieRequestCultureProvider.DefaultCookieName}=""""';
         }}
     </script>
 </head>
@@ -101,7 +101,7 @@ $@"<!doctype html>
                 await context.Response.WriteAsync("</form>");
                 await context.Response.WriteAsync("<br />");
                 await context.Response.WriteAsync("<table><tbody>");
-                await context.Response.WriteAsync($"<tr><th>Winning strategy:</th><td>{requestCultureFeature.Strategy.GetType().Name}</td></tr>");
+                await context.Response.WriteAsync($"<tr><th>Winning provider:</th><td>{requestCultureFeature.Provider.GetType().Name}</td></tr>");
                 await context.Response.WriteAsync($"<tr><th>{SR["Current request culture:"]}</th><td>{requestCulture.Culture.DisplayName} ({requestCulture.Culture})</td></tr>");
                 await context.Response.WriteAsync($"<tr><th>{SR["Current request UI culture:"]}</th><td>{requestCulture.UICulture.DisplayName} ({requestCulture.UICulture})</td></tr>");
                 await context.Response.WriteAsync($"<tr><th>{SR["Current thread culture:"]}</th><td>{CultureInfo.CurrentCulture.DisplayName} ({CultureInfo.CurrentCulture})</td></tr>");

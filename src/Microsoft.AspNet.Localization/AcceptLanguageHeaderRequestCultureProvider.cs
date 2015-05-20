@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Localization
     /// <summary>
     /// Determines the culture information for a request via the value of the Accept-Language header.
     /// </summary>
-    public class AcceptLanguageHeaderRequestCultureStrategy : RequestCultureStrategy
+    public class AcceptLanguageHeaderRequestCultureProvider : RequestCultureProvider
     {
         /// <summary>
         /// The maximum number of values in the Accept-Language header to attempt to create a <see cref="System.Globalization.CultureInfo"/>

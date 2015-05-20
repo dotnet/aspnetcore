@@ -14,10 +14,10 @@ namespace Microsoft.AspNet.Localization
         RequestCulture RequestCulture { get; }
 
         /// <summary>
-        /// The <see cref="IRequestCultureStrategy"/> that determined the request's culture information.
-        /// If the value is <c>null</c> then no strategy was used and the request's culture was set to the value of
+        /// The <see cref="IRequestCultureProvider"/> that determined the request's culture information.
+        /// If the value is <c>null</c> then no provider was used and the request's culture was set to the value of
         /// <see cref="RequestLocalizationOptions.DefaultRequestCulture"/>.
         /// </summary>
-        IRequestCultureStrategy Strategy { get; }
+        IRequestCultureProvider Provider { get; }
     }
 }

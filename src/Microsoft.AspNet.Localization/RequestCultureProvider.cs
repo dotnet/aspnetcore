@@ -3,14 +3,13 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Localization
 {
     /// <summary>
-    /// An abstract base class strategy for determining the culture information of an <see cref="HttpRequest"/>.
+    /// An abstract base class provider for determining the culture information of an <see cref="HttpRequest"/>.
     /// </summary>
-    public abstract class RequestCultureStrategy : IRequestCultureStrategy
+    public abstract class RequestCultureProvider : IRequestCultureProvider
     {
         /// <summary>
         /// The current options for the <see cref="RequestLocalizationMiddleware"/>.

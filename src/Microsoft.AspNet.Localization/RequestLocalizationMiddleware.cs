@@ -40,23 +40,23 @@ namespace Microsoft.AspNet.Localization
             var requestCulture = _options.DefaultRequestCulture ??
                 new RequestCulture(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
 
-            IRequestCultureStrategy winningStrategy = null;
+            IRequestCultureProvider winningProvider = null;
 
-            if (_options.RequestCultureStrategies != null)
+            if (_options.RequestCultureProviders != null)
             {
-                foreach (var strategy in _options.RequestCultureStrategies)
+                foreach (var provider in _options.RequestCultureProviders)
                 {
-                    var result = await strategy.DetermineRequestCulture(context);
+                    var result = await provider.DetermineRequestCulture(context);
                     if (result != null)
                     {
                         requestCulture = result;
-                        winningStrategy = strategy;
+                        winningProvider = provider;
                         break;
                     }
                 }
             }
 
-            context.SetFeature<IRequestCultureFeature>(new RequestCultureFeature(requestCulture, winningStrategy));
+            context.SetFeature<IRequestCultureFeature>(new RequestCultureFeature(requestCulture, winningProvider));
 
             SetCurrentThreadCulture(requestCulture);
 

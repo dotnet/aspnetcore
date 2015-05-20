@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Localization
     /// <summary>
     /// Determines the culture information for a request via the value of a cookie.
     /// </summary>
-    public class CookieRequestCultureStrategy : RequestCultureStrategy
+    public class CookieRequestCultureProvider : RequestCultureProvider
     {
         private static readonly char[] _cookieSeparator = new[] { '|' };
         private static readonly string _culturePrefix = "c=";

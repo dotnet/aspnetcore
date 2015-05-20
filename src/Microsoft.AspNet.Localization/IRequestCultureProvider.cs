@@ -7,17 +7,17 @@ using Microsoft.AspNet.Http;
 namespace Microsoft.AspNet.Localization
 {
     /// <summary>
-    /// Represents a strategy for determining the culture information of an <see cref="HttpRequest"/>.
+    /// Represents a provider for determining the culture information of an <see cref="HttpRequest"/>.
     /// </summary>
-    public interface IRequestCultureStrategy
+    public interface IRequestCultureProvider
     {
         /// <summary>
-        /// Implements the strategy to determine the culture of the given request.
+        /// Implements the provider to determine the culture of the given request.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> for the request.</param>
         /// <returns>
         ///     The determined <see cref="RequestCulture"/>.
-        ///     Returns <c>null</c> if the strategy couldn't determine a <see cref="RequestCulture"/>.
+        ///     Returns <c>null</c> if the provider couldn't determine a <see cref="RequestCulture"/>.
         /// </returns>
         Task<RequestCulture> DetermineRequestCulture(HttpContext httpContext);
     }

@@ -5,6 +5,7 @@ using System;
 using System.Reflection;
 using System.Resources;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Localization.Internal;
 using Microsoft.Framework.Runtime;
 
 namespace Microsoft.Framework.Localization
@@ -34,7 +35,7 @@ namespace Microsoft.Framework.Localization
         public IStringLocalizer Create([NotNull] Type resourceSource)
         {
             var typeInfo = resourceSource.GetTypeInfo();
-            var assembly = typeInfo.Assembly;
+            var assembly = new AssemblyWrapper(typeInfo.Assembly);
             var baseName = typeInfo.FullName;
             return new ResourceManagerStringLocalizer(new ResourceManager(resourceSource), assembly, baseName);
         }
@@ -49,7 +50,10 @@ namespace Microsoft.Framework.Localization
         {
             var assembly = Assembly.Load(new AssemblyName(location ?? _applicationEnvironment.ApplicationName));
 
-            return new ResourceManagerStringLocalizer(new ResourceManager(baseName, assembly), assembly, baseName);
+            return new ResourceManagerStringLocalizer(
+                new ResourceManager(baseName, assembly),
+                new AssemblyWrapper(assembly),
+                baseName);
         }
     }
 }

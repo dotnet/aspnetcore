@@ -11,23 +11,23 @@ namespace Microsoft.AspNet.Localization
     /// <summary>
     /// Determines the culture information for a request via the configured delegate.
     /// </summary>
-    public class CustomRequestCultureStrategy : RequestCultureStrategy
+    public class CustomRequestCultureProvider : RequestCultureProvider
     {
-        private readonly Func<HttpContext, Task<RequestCulture>> _strategy;
+        private readonly Func<HttpContext, Task<RequestCulture>> _provider;
 
         /// <summary>
-        /// Creates a new <see cref="CustomRequestCultureStrategy"/> using the specified delegate.
+        /// Creates a new <see cref="CustomRequestCultureProvider"/> using the specified delegate.
         /// </summary>
-        /// <param name="strategy">The strategy delegate.</param>
-        public CustomRequestCultureStrategy([NotNull] Func<HttpContext, Task<RequestCulture>> strategy)
+        /// <param name="provider">The provider delegate.</param>
+        public CustomRequestCultureProvider([NotNull] Func<HttpContext, Task<RequestCulture>> provider)
         {
-            _strategy = strategy;
+            _provider = provider;
         }
 
         /// <inheritdoc />
         public override Task<RequestCulture> DetermineRequestCulture([NotNull] HttpContext httpContext)
         {
-            return _strategy(httpContext);
+            return _provider(httpContext);
         }
     }
 }

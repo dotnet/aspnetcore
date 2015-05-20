@@ -19,17 +19,17 @@ namespace Microsoft.AspNet.Localization
         {
             DefaultRequestCulture = new RequestCulture(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
 
-            RequestCultureStrategies = new List<IRequestCultureStrategy>
+            RequestCultureProviders = new List<IRequestCultureProvider>
             {
-                new QueryStringRequestCultureStrategy { Options = this },
-                new CookieRequestCultureStrategy { Options = this },
-                new AcceptLanguageHeaderRequestCultureStrategy { Options = this }
+                new QueryStringRequestCultureProvider { Options = this },
+                new CookieRequestCultureProvider { Options = this },
+                new AcceptLanguageHeaderRequestCultureProvider { Options = this }
             };
         }
 
         /// <summary>
         /// The default <see cref="RequestCulture"/> to use. This value will be used if none of the configured
-        /// <see cref="IRequestCultureStrategy"/> options result in a non-<c>null</c> result.
+        /// <see cref="IRequestCultureProvider"/> options result in a non-<c>null</c> result.
         /// Defaults to <see cref="RequestCulture.Culture"/> set to <see cref="CultureInfo.DefaultThreadCurrentCulture"/>
         /// and <see cref="RequestCulture.UICulture"/> set to <see cref="CultureInfo.DefaultThreadCurrentUICulture"/>.
         /// </summary>
@@ -54,16 +54,16 @@ namespace Microsoft.AspNet.Localization
         public IList<CultureInfo> SupportedUICultures { get; set; }
 
         /// <summary>
-        /// An ordered list of strategies used to determine a request's culture information. The first strategy that
+        /// An ordered list of providers used to determine a request's culture information. The first provider that
         /// returns a non-<c>null</c> result for a given request will be used.
         /// Defaults to the following:
         /// <list type="number">
-        ///     <item><description><see cref="QueryStringRequestCultureStrategy"/></description></item>
-        ///     <item><description><see cref="CookieRequestCultureStrategy"/></description></item>
-        ///     <item><description><see cref="AcceptLanguageHeaderRequestCultureStrategy"/></description></item>
+        ///     <item><description><see cref="QueryStringRequestCultureProvider"/></description></item>
+        ///     <item><description><see cref="CookieRequestCultureProvider"/></description></item>
+        ///     <item><description><see cref="AcceptLanguageHeaderRequestCultureProvider"/></description></item>
         /// </list>
         /// </summary>
         [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Improves usability")]
-        public IList<IRequestCultureStrategy> RequestCultureStrategies { get; set; }
+        public IList<IRequestCultureProvider> RequestCultureProviders { get; set; }
     }
 }
