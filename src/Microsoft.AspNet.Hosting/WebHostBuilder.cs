@@ -7,7 +7,7 @@ using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Hosting.Internal;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Hosting
         private string _serverFactoryLocation;
         private IServerFactory _serverFactory;
 
-        public WebHostBuilder([NotNull] IServiceProvider services) : this(services, config: new Configuration()) { }
+        public WebHostBuilder([NotNull] IServiceProvider services) : this(services, config: new ConfigurationSection()) { }
 
         public WebHostBuilder([NotNull] IServiceProvider services, [NotNull] IConfiguration config)
         {

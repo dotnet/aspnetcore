@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime.Infrastructure;
@@ -34,7 +34,10 @@ namespace Microsoft.AspNet.TestHost
             var services = new ServiceCollection().BuildServiceProvider();
 
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => TestServer.Create(services, new Configuration(), new Startup().Configure, configureServices: null));
+            Assert.Throws<InvalidOperationException>(
+                () => TestServer.Create(
+                    services,
+                    new ConfigurationSection(), new Startup().Configure, configureServices: null));
         }
 
         [Fact]

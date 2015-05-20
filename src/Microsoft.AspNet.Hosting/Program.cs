@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting.Internal;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime;
 
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Hosting
 
         public void Main(string[] args)
         {
-            var config = new Configuration();
+            var config = new ConfigurationSection();
             if (File.Exists(HostingIniFile))
             {
                 config.AddIniFile(HostingIniFile);

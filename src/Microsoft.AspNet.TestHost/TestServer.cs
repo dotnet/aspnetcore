@@ -10,7 +10,7 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime.Infrastructure;
 
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.TestHost
         {
             return new WebHostBuilder(
                 services ?? CallContextServiceLocator.Locator.ServiceProvider,
-                config ?? new Configuration());
+                config ?? new ConfigurationSection());
         }
 
         public static WebHostBuilder CreateBuilder()

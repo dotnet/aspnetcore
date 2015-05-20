@@ -14,7 +14,7 @@ using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Hosting
                 { "server", "Microsoft.AspNet.Hosting.Tests" }
             };
 
-            var config = new Configuration()
+            var config = new ConfigurationSection()
                 .Add(new MemoryConfigurationSource(vals));
             var host = CreateBuilder(config).Build();
             host.Start();
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Hosting
                 { "Hosting:Server", "Microsoft.AspNet.Hosting.Tests" }
             };
 
-            var config = new Configuration()
+            var config = new ConfigurationSection()
                 .Add(new MemoryConfigurationSource(vals));
             var host = CreateBuilder(config).Build();
             host.Start();
@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Hosting
                 { "ASPNET_ENV", "Staging" }
             };
 
-            var config = new Configuration()
+            var config = new ConfigurationSection()
                 .Add(new MemoryConfigurationSource(vals));
 
             var engine = CreateBuilder(config).Build();
@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.Hosting
                 { "Hosting:Environment", "Staging" }
             };
 
-            var config = new Configuration()
+            var config = new ConfigurationSection()
                 .Add(new MemoryConfigurationSource(vals));
 
             var engine = CreateBuilder(config).Build();
@@ -380,7 +380,9 @@ namespace Microsoft.AspNet.Hosting
 
         private WebHostBuilder CreateBuilder(IConfiguration config = null)
         {
-            return new WebHostBuilder(CallContextServiceLocator.Locator.ServiceProvider, config ?? new Configuration());
+            return new WebHostBuilder(
+                CallContextServiceLocator.Locator.ServiceProvider,
+                config ?? new ConfigurationSection());
         }
 
         public IServerInformation Initialize(IConfiguration configuration)
