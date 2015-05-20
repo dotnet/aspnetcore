@@ -2,10 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Hosting.Internal;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime;
@@ -15,6 +11,7 @@ namespace Microsoft.AspNet.Hosting
     public class Program
     {
         private const string HostingIniFile = "Microsoft.AspNet.Hosting.ini";
+        private const string ConfigFileKey = "config";
 
         private readonly IServiceProvider _serviceProvider;
 
@@ -25,11 +22,13 @@ namespace Microsoft.AspNet.Hosting
 
         public void Main(string[] args)
         {
-            var config = new ConfigurationSection();
-            if (File.Exists(HostingIniFile))
-            {
-                config.AddIniFile(HostingIniFile);
-            }
+            // Allow the location of the ini file to be specfied via a --config command line arg
+            var tempConfig = new ConfigurationSection().AddCommandLine(args);
+            var configFilePath = tempConfig[ConfigFileKey] ?? HostingIniFile;
+
+            var appBasePath = _serviceProvider.GetRequiredService<IApplicationEnvironment>().ApplicationBasePath;
+            var config = new ConfigurationSection(appBasePath);
+            config.AddIniFile(configFilePath, optional: true);
             config.AddEnvironmentVariables();
             config.AddCommandLine(args);
 
