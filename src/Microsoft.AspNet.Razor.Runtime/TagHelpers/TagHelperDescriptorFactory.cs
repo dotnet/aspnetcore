@@ -38,7 +38,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </summary>
         /// <param name="assemblyName">The assembly name that contains <paramref name="type"/>.</param>
         /// <param name="type">The type to create a <see cref="TagHelperDescriptor"/> from.</param>
-        /// <returns>A <see cref="TagHelperDescriptor"/> that describes the given <paramref name="type"/>.</returns>
+        /// <returns>
+        /// A collection of <see cref="TagHelperDescriptor"/>s that describe the given <paramref name="type"/>.
+        /// </returns>
         public static IEnumerable<TagHelperDescriptor> CreateDescriptors(
             string assemblyName,
             [NotNull] Type type,
@@ -209,48 +211,195 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var accessibleProperties = type.GetRuntimeProperties().Where(IsAccessibleProperty);
             var attributeDescriptors = new List<TagHelperAttributeDescriptor>();
 
+            // Keep indexer descriptors separate to avoid sorting the combined list later.
+            var indexerDescriptors = new List<TagHelperAttributeDescriptor>();
+
             foreach (var property in accessibleProperties)
             {
-                var descriptor = ToAttributeDescriptor(property);
+                var attributeNameAttribute = property.GetCustomAttribute<HtmlAttributeNameAttribute>(inherit: false);
+                var descriptor = ToAttributeDescriptor(property, attributeNameAttribute);
                 if (ValidateTagHelperAttributeDescriptor(descriptor, type, errorSink))
                 {
+                    bool isInvalid;
+                    var indexerDescriptor = ToIndexerAttributeDescriptor(
+                        property,
+                        attributeNameAttribute,
+                        parentType: type,
+                        errorSink: errorSink,
+                        defaultPrefix: descriptor.Name + "-",
+                        isInvalid: out isInvalid);
+
+                    if (indexerDescriptor != null &&
+                        !ValidateTagHelperAttributeDescriptor(indexerDescriptor, type, errorSink))
+                    {
+                        isInvalid = true;
+                    }
+
+                    if (isInvalid)
+                    {
+                        // HtmlAttributeNameAttribute was not valid. Ignore this property completely.
+                        continue;
+                    }
+
                     attributeDescriptors.Add(descriptor);
+                    if (indexerDescriptor != null)
+                    {
+                        indexerDescriptors.Add(indexerDescriptor);
+                    }
                 }
             }
+
+            attributeDescriptors.AddRange(indexerDescriptors);
 
             return attributeDescriptors;
         }
 
-        private static bool ValidateTagHelperAttributeDescriptor(
+        // Internal for testing.
+        internal static bool ValidateTagHelperAttributeDescriptor(
             TagHelperAttributeDescriptor attributeDescriptor,
             Type parentType,
             ErrorSink errorSink)
         {
+            var nameOrPrefix = attributeDescriptor.IsIndexer ?
+                Resources.TagHelperDescriptorFactory_Prefix :
+                Resources.TagHelperDescriptorFactory_Name;
+            return ValidateTagHelperAttributeNameOrPrefix(
+                attributeDescriptor.Name,
+                parentType,
+                attributeDescriptor.PropertyName,
+                errorSink,
+                nameOrPrefix);
+        }
+
+        private static bool ValidateTagHelperAttributeNameOrPrefix(
+            string attributeNameOrPrefix,
+            Type parentType,
+            string propertyName,
+            ErrorSink errorSink,
+            string nameOrPrefix)
+        {
+            if (string.IsNullOrEmpty(attributeNameOrPrefix))
+            {
+                // HtmlAttributeNameAttribute validates Name is non-null and non-empty. Both are valid for
+                // DictionaryAttributePrefix. (Empty DictionaryAttributePrefix is a corner case which would bind every
+                // attribute of a target element. Likely not particularly useful but unclear what minimum length
+                // should be required and what scenarios a minimum length would break.)
+                return true;
+            }
+
+            if (string.IsNullOrWhiteSpace(attributeNameOrPrefix))
+            {
+                // Provide a single error if the entire name is whitespace, not an error per character.
+                errorSink.OnError(
+                    SourceLocation.Zero,
+                    Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameOrPrefixWhitespace(
+                        parentType.FullName,
+                        propertyName,
+                        nameOrPrefix));
+
+                return false;
+            }
+
             // data-* attributes are explicitly not implemented by user agents and are not intended for use on
             // the server; therefore it's invalid for TagHelpers to bind to them.
-            if (attributeDescriptor.Name.StartsWith(DataDashPrefix, StringComparison.OrdinalIgnoreCase))
+            if (attributeNameOrPrefix.StartsWith(DataDashPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 errorSink.OnError(
                     SourceLocation.Zero,
-                    Resources.FormatTagHelperDescriptorFactory_InvalidBoundAttributeName(
-                        attributeDescriptor.PropertyName,
+                    Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameOrPrefixStart(
                         parentType.FullName,
+                        propertyName,
+                        nameOrPrefix,
+                        attributeNameOrPrefix,
                         DataDashPrefix));
 
                 return false;
             }
 
-            return true;
+            var isValid = true;
+            foreach (var character in attributeNameOrPrefix)
+            {
+                if (char.IsWhiteSpace(character) || InvalidNonWhitespaceNameCharacters.Contains(character))
+                {
+                    errorSink.OnError(
+                        SourceLocation.Zero,
+                        Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameOrPrefixCharacter(
+                            parentType.FullName,
+                            propertyName,
+                            nameOrPrefix,
+                            attributeNameOrPrefix,
+                            character));
+
+                    isValid = false;
+                }
+            }
+
+            return isValid;
         }
 
-        private static TagHelperAttributeDescriptor ToAttributeDescriptor(PropertyInfo property)
+        private static TagHelperAttributeDescriptor ToAttributeDescriptor(
+            PropertyInfo property,
+            HtmlAttributeNameAttribute attributeNameAttribute)
         {
-            var attributeNameAttribute = property.GetCustomAttribute<HtmlAttributeNameAttribute>(inherit: false);
             var attributeName = attributeNameAttribute != null ?
                                 attributeNameAttribute.Name :
                                 ToHtmlCase(property.Name);
 
-            return new TagHelperAttributeDescriptor(attributeName, property.Name, property.PropertyType.FullName);
+            return new TagHelperAttributeDescriptor(
+                attributeName,
+                property.Name,
+                property.PropertyType.FullName,
+                isIndexer: false);
+        }
+
+        private static TagHelperAttributeDescriptor ToIndexerAttributeDescriptor(
+            PropertyInfo property,
+            HtmlAttributeNameAttribute attributeNameAttribute,
+            Type parentType,
+            ErrorSink errorSink,
+            string defaultPrefix,
+            out bool isInvalid)
+        {
+            isInvalid = false;
+            var dictionaryTypeArguments = ClosedGenericMatcher.ExtractGenericInterface(
+                    property.PropertyType,
+                    typeof(IDictionary<,>))
+                ?.GenericTypeArguments;
+            if (dictionaryTypeArguments?[0] != typeof(string))
+            {
+                if (attributeNameAttribute?.DictionaryAttributePrefix != null)
+                {
+                    // DictionaryAttributePrefix is not supported unless associated with an
+                    // IDictionary<string, TValue> property.
+                    isInvalid = true;
+                    errorSink.OnError(
+                        SourceLocation.Zero,
+                        Resources.FormatTagHelperDescriptorFactory_InvalidAttributePrefix(
+                            parentType.FullName,
+                            property.Name,
+                            nameof(HtmlAttributeNameAttribute),
+                            nameof(HtmlAttributeNameAttribute.DictionaryAttributePrefix),
+                            "IDictionary<string, TValue>"));
+                }
+
+                return null;
+            }
+
+            // Potential prefix case. Use default prefix (based on name)?
+            var useDefault = attributeNameAttribute == null || !attributeNameAttribute.DictionaryAttributePrefixSet;
+
+            var prefix = useDefault ? defaultPrefix : attributeNameAttribute.DictionaryAttributePrefix;
+            if (prefix == null)
+            {
+                // DictionaryAttributePrefix explicitly set to null. Ignore.
+                return null;
+            }
+
+            return new TagHelperAttributeDescriptor(
+                name: prefix,
+                propertyName: property.Name,
+                typeName: dictionaryTypeArguments[1].FullName,
+                isIndexer: true);
         }
 
         private static bool IsAccessibleProperty(PropertyInfo property)

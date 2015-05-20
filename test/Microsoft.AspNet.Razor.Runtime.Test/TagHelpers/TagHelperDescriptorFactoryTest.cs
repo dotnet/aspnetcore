@@ -221,7 +221,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         [Theory]
         [MemberData(nameof(HtmlCaseData))]
-        public void CreateDescriptor_HtmlCasesTagNameAndAttributeName(
+        public void CreateDescriptors_HtmlCasesTagNameAndAttributeName(
             Type tagHelperType,
             string expectedTagName,
             string expectedAttributeName)
@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void CreateDescriptor_OverridesAttributeNameFromAttribute()
+        public void CreateDescriptors_OverridesAttributeNameFromAttribute()
         {
             // Arrange
             var errorSink = new ErrorSink();
@@ -273,11 +273,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Empty(errorSink.Errors);
-            Assert.Equal(expectedDescriptors, descriptors.ToArray(), CaseSensitiveTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
-        public void CreateDescriptor_DoesNotInheritOverridenAttributeName()
+        public void CreateDescriptors_DoesNotInheritOverridenAttributeName()
         {
             // Arrange
             var errorSink = new ErrorSink();
@@ -306,11 +306,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Empty(errorSink.Errors);
-            Assert.Equal(expectedDescriptors, descriptors.ToArray(), CaseSensitiveTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
-        public void CreateDescriptor_AllowsOverridenAttributeNameOnUnimplementedVirtual()
+        public void CreateDescriptors_AllowsOverridenAttributeNameOnUnimplementedVirtual()
         {
             // Arrange
             var errorSink = new ErrorSink();
@@ -343,7 +343,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void CreateDescriptor_BuildsDescriptorsFromSimpleTypes()
+        public void CreateDescriptors_BuildsDescriptorsFromSimpleTypes()
         {
             // Arrange
             var errorSink = new ErrorSink();
@@ -364,7 +364,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void CreateDescriptor_BuildsDescriptorsWithInheritedProperties()
+        public void CreateDescriptors_BuildsDescriptorsWithInheritedProperties()
         {
             // Arrange
             var errorSink = new ErrorSink();
@@ -380,6 +380,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         "int-attribute",
                         nameof(InheritedSingleAttributeTagHelper.IntAttribute),
                         typeof(int).FullName,
+                        isIndexer: false,
                         isStringProperty: false)
                 });
 
@@ -396,7 +397,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void CreateDescriptor_BuildsDescriptorsWithConventionNames()
+        public void CreateDescriptors_BuildsDescriptorsWithConventionNames()
         {
             // Arrange
             var errorSink = new ErrorSink();
@@ -423,7 +424,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void CreateDescriptor_OnlyAcceptsPropertiesWithGetAndSet()
+        public void CreateDescriptors_OnlyAcceptsPropertiesWithGetAndSet()
         {
             // Arrange
             var errorSink = new ErrorSink();
@@ -451,7 +452,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void CreateDescriptor_OnlyAcceptsPropertiesWithPublicGetAndSet()
+        public void CreateDescriptors_OnlyAcceptsPropertiesWithPublicGetAndSet()
         {
             // Arrange
             var errorSink = new ErrorSink();
@@ -479,7 +480,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void CreateDescriptor_DoesNotIncludePropertiesWithNotBound()
+        public void CreateDescriptors_DoesNotIncludePropertiesWithNotBound()
         {
             // Arrange
             var errorSink = new ErrorSink();
@@ -495,6 +496,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         "bound-property",
                         nameof(NotBoundAttributeTagHelper.BoundProperty),
                         typeof(object).FullName,
+                        isIndexer: false,
                         isStringProperty: false)
                 });
 
@@ -511,7 +513,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact(Skip = "#364")]
-        public void CreateDescriptor_AddsErrorForTagHelperWithDuplicateAttributeNames()
+        public void CreateDescriptors_AddsErrorForTagHelperWithDuplicateAttributeNames()
         {
             // Arrange
             var errorSink = new ErrorSink();
@@ -528,7 +530,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void CreateDescriptor_ResolvesMultipleTagHelperDescriptorsFromSingleType()
+        public void CreateDescriptors_ResolvesMultipleTagHelperDescriptorsFromSingleType()
         {
             // Arrange
             var errorSink = new ErrorSink();
@@ -546,6 +548,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             "valid-attribute",
                             nameof(MultiTagTagHelper.ValidAttribute),
                             typeof(string).FullName,
+                            isIndexer: false,
                             isStringProperty: true)
                     }),
                 new TagHelperDescriptor(
@@ -558,6 +561,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             "valid-attribute",
                             nameof(MultiTagTagHelper.ValidAttribute),
                             typeof(string).FullName,
+                            isIndexer: false,
                             isStringProperty: true)
                     })
             };
@@ -579,7 +583,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void CreateDescriptor_DoesntResolveInheritedTagNames()
+        public void CreateDescriptors_DoesNotResolveInheritedTagNames()
         {
             // Arrange
             var errorSink = new ErrorSink();
@@ -606,7 +610,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void CreateDescriptor_IgnoresDuplicateTagNamesFromAttribute()
+        public void CreateDescriptors_IgnoresDuplicateTagNamesFromAttribute()
         {
             // Arrange
             var errorSink = new ErrorSink();
@@ -639,7 +643,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void CreateDescriptor_OverridesTagNameFromAttribute()
+        public void CreateDescriptors_OverridesTagNameFromAttribute()
         {
             // Arrange
             var errorSink = new ErrorSink();
@@ -658,215 +662,23 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Empty(errorSink.Errors);
-            Assert.Equal(expectedDescriptors, descriptors.ToArray(), CaseSensitiveTagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
-        public static TheoryData InvalidNameData
+        // name, expectedErrorMessages
+        public static TheoryData<string, string[]> InvalidNameData
         {
             get
             {
-                var invalidNameError =
-                    "Tag helpers cannot target {0} name '{1}' because it contains a '{2}' character.";
-                var nullOrWhitespaceNameError =
-                    "{0} name cannot be null or whitespace.";
-                Func<string, string, string> onNameError = (invalidText, invalidCharacter) =>
-                    string.Format(invalidNameError, "tag", invalidText, invalidCharacter);
+                Func<string, string, string> onNameError =
+                    (invalidText, invalidCharacter) => $"Tag helpers cannot target tag name '{ invalidText }' " +
+                        $"because it contains a '{ invalidCharacter }' character.";
+                var whitespaceErrorString = "Tag name cannot be null or whitespace.";
 
-                // name, expectedErrorMessages
-                return new TheoryData<string, string[]>
-                {
-                    { "!", new[] {  onNameError("!", "!") } },
-                    { "hello!", new[] { onNameError("hello!", "!") } },
-                    { "!hello", new[] { onNameError("!hello", "!") } },
-                    { "he!lo", new[] { onNameError("he!lo", "!") } },
-                    {
-                        "!he!lo!",
-                        new[]
-                        {
-                            onNameError("!he!lo!", "!"),
-                            onNameError("!he!lo!", "!"),
-                            onNameError("!he!lo!", "!")
-                        }
-                    },
-                    { "@", new[] { onNameError("@", "@") } },
-                    { "hello@", new[] { onNameError("hello@", "@") } },
-                    { "@hello", new[] { onNameError("@hello", "@") } },
-                    { "he@lo", new[] { onNameError("he@lo", "@") } },
-                    {
-                        "@he@lo@",
-                        new[]
-                        {
-                            onNameError("@he@lo@", "@"),
-                            onNameError("@he@lo@", "@"),
-                            onNameError("@he@lo@", "@")
-                        }
-                    },
-                    { "/", new[] { onNameError("/", "/") } },
-                    { "hello/", new[] { onNameError("hello/", "/") } },
-                    { "/hello", new[] { onNameError("/hello", "/") } },
-                    { "he/lo", new[] { onNameError("he/lo", "/") } },
-                    {
-                        "/he/lo/",
-                        new[]
-                        {
-                            onNameError("/he/lo/", "/"),
-                            onNameError("/he/lo/", "/"),
-                            onNameError("/he/lo/", "/")
-                        }
-                    },
-                    { "<", new[] { onNameError("<", "<") } },
-                    { "hello<", new[] { onNameError("hello<", "<") } },
-                    { "<hello", new[] { onNameError("<hello", "<") } },
-                    { "he<lo", new[] { onNameError("he<lo", "<") } },
-                    {
-                        "<he<lo<",
-                        new[]
-                        {
-                            onNameError("<he<lo<", "<"),
-                            onNameError("<he<lo<", "<"),
-                            onNameError("<he<lo<", "<")
-                        }
-                    },
-                    { "?", new[] { onNameError("?", "?") } },
-                    { "hello?", new[] { onNameError("hello?", "?") } },
-                    { "?hello", new[] { onNameError("?hello", "?") } },
-                    { "he?lo", new[] { onNameError("he?lo", "?") } },
-                    {
-                        "?he?lo?",
-                        new[]
-                        {
-                            onNameError("?he?lo?", "?"),
-                            onNameError("?he?lo?", "?"),
-                            onNameError("?he?lo?", "?")
-                        }
-                    },
-                    { "[", new[] { onNameError("[", "[") } },
-                    { "hello[", new[] { onNameError("hello[", "[") } },
-                    { "[hello", new[] { onNameError("[hello", "[") } },
-                    { "he[lo", new[] { onNameError("he[lo", "[") } },
-                    {
-                        "[he[lo[",
-                        new[]
-                        {
-                            onNameError("[he[lo[", "["),
-                            onNameError("[he[lo[", "["),
-                            onNameError("[he[lo[", "[")
-                        }
-                    },
-                    { ">", new[] { onNameError(">", ">") } },
-                    { "hello>", new[] { onNameError("hello>", ">") } },
-                    { ">hello", new[] { onNameError(">hello", ">") } },
-                    { "he>lo", new[] { onNameError("he>lo", ">") } },
-                    {
-                        ">he>lo>",
-                        new[]
-                        {
-                            onNameError(">he>lo>", ">"),
-                            onNameError(">he>lo>", ">"),
-                            onNameError(">he>lo>", ">")
-                        }
-                    },
-                    { "]", new[] { onNameError("]", "]") } },
-                    { "hello]", new[] { onNameError("hello]", "]") } },
-                    { "]hello", new[] { onNameError("]hello", "]") } },
-                    { "he]lo", new[] { onNameError("he]lo", "]") } },
-                    {
-                        "]he]lo]",
-                        new[]
-                        {
-                            onNameError("]he]lo]", "]"),
-                            onNameError("]he]lo]", "]"),
-                            onNameError("]he]lo]", "]")
-                        }
-                    },
-                    { "=", new[] { onNameError("=", "=") } },
-                    { "hello=", new[] { onNameError("hello=", "=") } },
-                    { "=hello", new[] { onNameError("=hello", "=") } },
-                    { "he=lo", new[] { onNameError("he=lo", "=") } },
-                    {
-                        "=he=lo=",
-                        new[]
-                        {
-                            onNameError("=he=lo=", "="),
-                            onNameError("=he=lo=", "="),
-                            onNameError("=he=lo=", "=")
-                        }
-                    },
-                    { "\"", new[] { onNameError("\"", "\"") } },
-                    { "hello\"", new[] { onNameError("hello\"", "\"") } },
-                    { "\"hello", new[] { onNameError("\"hello", "\"") } },
-                    { "he\"lo", new[] { onNameError("he\"lo", "\"") } },
-                    {
-                        "\"he\"lo\"",
-                        new[]
-                        {
-                            onNameError("\"he\"lo\"", "\""),
-                            onNameError("\"he\"lo\"", "\""),
-                            onNameError("\"he\"lo\"", "\"")
-                        }
-                    },
-                    { "'", new[] { onNameError("'", "'") } },
-                    { "hello'", new[] { onNameError("hello'", "'") } },
-                    { "'hello", new[] { onNameError("'hello", "'") } },
-                    { "he'lo", new[] { onNameError("he'lo", "'") } },
-                    {
-                        "'he'lo'",
-                        new[]
-                        {
-                            onNameError("'he'lo'", "'"),
-                            onNameError("'he'lo'", "'"),
-                            onNameError("'he'lo'", "'")
-                        }
-                    },
-                    { string.Empty, new[] { string.Format(nullOrWhitespaceNameError, "Tag") } },
-                    { Environment.NewLine, new[] { string.Format(nullOrWhitespaceNameError, "Tag") } },
-                    { "\t", new[] { string.Format(nullOrWhitespaceNameError, "Tag") } },
-                    { " \t ", new[] { string.Format(nullOrWhitespaceNameError, "Tag") } },
-                    { " ", new[] { string.Format(nullOrWhitespaceNameError, "Tag") } },
-                    { Environment.NewLine + " ", new[] { string.Format(nullOrWhitespaceNameError, "Tag") } },
-                    {
-                        "! \t\r\n@/<>?[]=\"'",
-                        new[]
-                        {
-                            onNameError("! \t\r\n@/<>?[]=\"'", "!"),
-                            onNameError("! \t\r\n@/<>?[]=\"'", " "),
-                            onNameError("! \t\r\n@/<>?[]=\"'", "\t"),
-                            onNameError("! \t\r\n@/<>?[]=\"'", "\r"),
-                            onNameError("! \t\r\n@/<>?[]=\"'", "\n"),
-                            onNameError("! \t\r\n@/<>?[]=\"'", "@"),
-                            onNameError("! \t\r\n@/<>?[]=\"'", "/"),
-                            onNameError("! \t\r\n@/<>?[]=\"'", "<"),
-                            onNameError("! \t\r\n@/<>?[]=\"'", ">"),
-                            onNameError("! \t\r\n@/<>?[]=\"'", "?"),
-                            onNameError("! \t\r\n@/<>?[]=\"'", "["),
-                            onNameError("! \t\r\n@/<>?[]=\"'", "]"),
-                            onNameError("! \t\r\n@/<>?[]=\"'", "="),
-                            onNameError("! \t\r\n@/<>?[]=\"'", "\""),
-                            onNameError("! \t\r\n@/<>?[]=\"'", "'"),
-                        }
-                    },
-                    {
-                        "! \tv\ra\nl@i/d<>?[]=\"'",
-                        new[]
-                        {
-                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "!"),
-                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", " "),
-                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "\t"),
-                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "\r"),
-                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "\n"),
-                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "@"),
-                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "/"),
-                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "<"),
-                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", ">"),
-                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "?"),
-                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "["),
-                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "]"),
-                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "="),
-                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "\""),
-                            onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "'"),
-                        }
-                    },
-                };
+                var data = GetInvalidNameOrPrefixData(onNameError, whitespaceErrorString, onDataError: null);
+                data.Add(string.Empty, new[] { whitespaceErrorString });
+
+                return data;
             }
         }
 
@@ -884,10 +696,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             var errors = errorSink.Errors.ToArray();
-            for (var i = 0; i < errors.Length; i++)
+            Assert.Equal(expectedErrorMessages.Length, errors.Length);
+            for (var i = 0; i < expectedErrorMessages.Length; i++)
             {
-                Assert.Equal(expectedErrorMessages[i], errors[i].Message);
+                Assert.Equal(1, errors[i].Length);
                 Assert.Equal(SourceLocation.Zero, errors[i].Location);
+                Assert.Equal(expectedErrorMessages[i], errors[i].Message, StringComparer.Ordinal);
             }
         }
 
@@ -943,7 +757,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             get
             {
                 var errorFormat = "Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML " +
-                    "attributes beginning with 'data-'.";
+                    "attributes with name '{2}' because name starts with 'data-'.";
 
                 // type, expectedAttributeDescriptors, expectedErrors
                 return new TheoryData<Type, IEnumerable<TagHelperAttributeDescriptor>, string[]>
@@ -955,8 +769,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         {
                             string.Format(
                                 errorFormat,
+                                typeof(InvalidBoundAttribute).FullName,
                                 nameof(InvalidBoundAttribute.DataSomething),
-                                typeof(InvalidBoundAttribute).FullName)
+                                "data-something")
                         }
                     },
                     {
@@ -972,8 +787,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         {
                             string.Format(
                                 errorFormat,
+                                typeof(InvalidBoundAttributeWithValid).FullName,
                                 nameof(InvalidBoundAttributeWithValid.DataSomething),
-                                typeof(InvalidBoundAttributeWithValid).FullName)
+                                "data-something")
                         }
                     },
                     {
@@ -994,8 +810,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         {
                             string.Format(
                                 errorFormat,
+                                typeof(OverriddenValidBoundAttributeWithInvalid).FullName,
                                 nameof(OverriddenValidBoundAttributeWithInvalid.ValidSomething),
-                                typeof(OverriddenValidBoundAttributeWithInvalid).FullName)
+                                "data-something")
                         }
                     },
                     {
@@ -1005,8 +822,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         {
                             string.Format(
                                 errorFormat,
+                                typeof(OverriddenValidBoundAttributeWithInvalidUpperCase).FullName,
                                 nameof(OverriddenValidBoundAttributeWithInvalidUpperCase.ValidSomething),
-                                typeof(OverriddenValidBoundAttributeWithInvalidUpperCase).FullName)
+                                "DATA-SOMETHING")
                         }
                     },
                 };
@@ -1015,7 +833,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         [Theory]
         [MemberData(nameof(InvalidTagHelperAttributeDescriptorData))]
-        public void CreateDescriptor_DoesNotAllowDataDashAttributes(
+        public void CreateDescriptors_DoesNotAllowDataDashAttributes(
             Type type,
             IEnumerable<TagHelperAttributeDescriptor> expectedAttributeDescriptors,
             string[] expectedErrors)
@@ -1035,7 +853,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 var actualError = actualErrors[i];
                 Assert.Equal(1, actualError.Length);
                 Assert.Equal(SourceLocation.Zero, actualError.Location);
-                Assert.Equal(expectedErrors[i], actualError.Message);
+                Assert.Equal(expectedErrors[i], actualError.Message, StringComparer.Ordinal);
             }
 
             var actualDescriptor = Assert.Single(descriptors);
@@ -1043,6 +861,584 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 expectedAttributeDescriptors,
                 actualDescriptor.Attributes,
                 CaseSensitiveTagHelperAttributeDescriptorComparer.Default);
+        }
+
+        // tagTelperType, expectedAttributeDescriptors, expectedErrorMessages
+        public static TheoryData<Type, IEnumerable<TagHelperAttributeDescriptor>, string[]> TagHelperWithPrefixData
+        {
+            get
+            {
+                Func<string, string, string> onError = (typeName, propertyName) =>
+                    $"Invalid tag helper bound property '{ typeName }.{ propertyName }'. " +
+                    $"'{ nameof(HtmlAttributeNameAttribute) }." +
+                    $"{ nameof(HtmlAttributeNameAttribute.DictionaryAttributePrefix) }' must be null unless " +
+                    "property type implements 'IDictionary<string, TValue>'.";
+
+                // tagTelperType, expectedAttributeDescriptors, expectedErrorMessages
+                return new TheoryData<Type, IEnumerable<TagHelperAttributeDescriptor>, string[]>
+                {
+                    {
+                        typeof(DefaultValidHtmlAttributePrefix),
+                        new[]
+                        {
+                            new TagHelperAttributeDescriptor(
+                                name: "dictionary-property",
+                                propertyName: nameof(DefaultValidHtmlAttributePrefix.DictionaryProperty),
+                                typeName: typeof(IDictionary<string, string>).FullName,
+                                isIndexer: false,
+                                isStringProperty: false),
+                            new TagHelperAttributeDescriptor(
+                                name: "dictionary-property-",
+                                propertyName: nameof(DefaultValidHtmlAttributePrefix.DictionaryProperty),
+                                typeName: typeof(string).FullName,
+                                isIndexer: true,
+                                isStringProperty: true),
+                        },
+                        new string[0]
+                    },
+                    {
+                        typeof(SingleValidHtmlAttributePrefix),
+                        new[]
+                        {
+                            new TagHelperAttributeDescriptor(
+                                name: "valid-name",
+                                propertyName: nameof(SingleValidHtmlAttributePrefix.DictionaryProperty),
+                                typeName: typeof(IDictionary<string, string>).FullName,
+                                isIndexer: false,
+                                isStringProperty: false),
+                            new TagHelperAttributeDescriptor(
+                                name: "valid-prefix",
+                                propertyName: nameof(SingleValidHtmlAttributePrefix.DictionaryProperty),
+                                typeName: typeof(string).FullName,
+                                isIndexer: true,
+                                isStringProperty: true),
+                        },
+                        new string[0]
+                    },
+                    {
+                        typeof(MultipleValidHtmlAttributePrefix),
+                        new[]
+                        {
+                            new TagHelperAttributeDescriptor(
+                                name: "valid-name1",
+                                propertyName: nameof(MultipleValidHtmlAttributePrefix.DictionaryProperty),
+                                typeName: typeof(Dictionary<string, object>).FullName,
+                                isIndexer: false,
+                                isStringProperty: false),
+                            new TagHelperAttributeDescriptor(
+                                name: "valid-name2",
+                                propertyName: nameof(MultipleValidHtmlAttributePrefix.DictionarySubclassProperty),
+                                typeName: typeof(DictionarySubclass).FullName,
+                                isIndexer: false,
+                                isStringProperty: false),
+                            new TagHelperAttributeDescriptor(
+                                name: "valid-name3",
+                                propertyName: nameof(MultipleValidHtmlAttributePrefix.DictionaryWithoutParameterlessConstructorProperty),
+                                typeName: typeof(DictionaryWithoutParameterlessConstructor).FullName,
+                                isIndexer: false,
+                                isStringProperty: false),
+                            new TagHelperAttributeDescriptor(
+                                name: "valid-name4",
+                                propertyName: nameof(MultipleValidHtmlAttributePrefix.GenericDictionarySubclassProperty),
+                                typeName: typeof(GenericDictionarySubclass<object>).FullName,
+                                isIndexer: false,
+                                isStringProperty: false),
+                            new TagHelperAttributeDescriptor(
+                                name: "valid-name5",
+                                propertyName: nameof(MultipleValidHtmlAttributePrefix.SortedDictionaryProperty),
+                                typeName: typeof(SortedDictionary<string, int>).FullName,
+                                isIndexer: false,
+                                isStringProperty: false),
+                            new TagHelperAttributeDescriptor(
+                                name: "valid-name6",
+                                propertyName: nameof(MultipleValidHtmlAttributePrefix.StringProperty),
+                                typeName: typeof(string).FullName,
+                                isIndexer: false,
+                                isStringProperty: true),
+                            new TagHelperAttributeDescriptor(
+                                name: "valid-prefix1-",
+                                propertyName: nameof(MultipleValidHtmlAttributePrefix.DictionaryProperty),
+                                typeName: typeof(object).FullName,
+                                isIndexer: true,
+                                isStringProperty: false),
+                            new TagHelperAttributeDescriptor(
+                                name: "valid-prefix2-",
+                                propertyName: nameof(MultipleValidHtmlAttributePrefix.DictionarySubclassProperty),
+                                typeName: typeof(string).FullName,
+                                isIndexer: true,
+                                isStringProperty: true),
+                            new TagHelperAttributeDescriptor(
+                                name: "valid-prefix3-",
+                                propertyName: nameof(MultipleValidHtmlAttributePrefix.DictionaryWithoutParameterlessConstructorProperty),
+                                typeName: typeof(string).FullName,
+                                isIndexer: true,
+                                isStringProperty: true),
+                            new TagHelperAttributeDescriptor(
+                                name: "valid-prefix4-",
+                                propertyName: nameof(MultipleValidHtmlAttributePrefix.GenericDictionarySubclassProperty),
+                                typeName: typeof(object).FullName,
+                                isIndexer: true,
+                                isStringProperty: false),
+                            new TagHelperAttributeDescriptor(
+                                name: "valid-prefix5-",
+                                propertyName: nameof(MultipleValidHtmlAttributePrefix.SortedDictionaryProperty),
+                                typeName: typeof(int).FullName,
+                                isIndexer: true,
+                                isStringProperty: false),
+                        },
+                        new string[0]
+                    },
+                    {
+                        typeof(SingleInvalidHtmlAttributePrefix),
+                        Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                        new[]
+                        {
+                            onError(
+                                typeof(SingleInvalidHtmlAttributePrefix).FullName,
+                                nameof(SingleInvalidHtmlAttributePrefix.StringProperty)),
+                        }
+                    },
+                    {
+                        typeof(MultipleInvalidHtmlAttributePrefix),
+                        new[]
+                        {
+                            new TagHelperAttributeDescriptor(
+                                name: "valid-name1",
+                                propertyName: nameof(MultipleInvalidHtmlAttributePrefix.LongProperty),
+                                typeName: typeof(long).FullName,
+                                isIndexer: false,
+                                isStringProperty: false),
+                        },
+                        new[]
+                        {
+                            onError(
+                                typeof(MultipleInvalidHtmlAttributePrefix).FullName,
+                                nameof(MultipleInvalidHtmlAttributePrefix.DictionaryOfIntProperty)),
+                            onError(
+                                typeof(MultipleInvalidHtmlAttributePrefix).FullName,
+                                nameof(MultipleInvalidHtmlAttributePrefix.ReadOnlyDictionaryProperty)),
+                            onError(
+                                typeof(MultipleInvalidHtmlAttributePrefix).FullName,
+                                nameof(MultipleInvalidHtmlAttributePrefix.IntProperty)),
+                            onError(
+                                typeof(MultipleInvalidHtmlAttributePrefix).FullName,
+                                nameof(MultipleInvalidHtmlAttributePrefix.DictionaryOfIntSubclassProperty)),
+                        }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(TagHelperWithPrefixData))]
+        public void CreateDescriptors_WithPrefixes_ReturnsExpectedAttributeDescriptors(
+            Type tagHelperType,
+            IEnumerable<TagHelperAttributeDescriptor> expectedAttributeDescriptors,
+            string[] expectedErrorMessages)
+        {
+            // Arrange
+            var errorSink = new ErrorSink();
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(AssemblyName, tagHelperType, errorSink);
+
+            // Assert
+            var errors = errorSink.Errors.ToArray();
+            Assert.Equal(expectedErrorMessages.Length, errors.Length);
+
+            for (var i = 0; i < errors.Length; i++)
+            {
+                Assert.Equal(1, errors[i].Length);
+                Assert.Equal(SourceLocation.Zero, errors[i].Location);
+                Assert.Equal(expectedErrorMessages[i], errors[i].Message, StringComparer.Ordinal);
+            }
+
+            var descriptor = Assert.Single(descriptors);
+            Assert.Equal(
+                expectedAttributeDescriptors,
+                descriptor.Attributes,
+                CaseSensitiveTagHelperAttributeDescriptorComparer.Default);
+        }
+
+        public static TheoryData<string> ValidAttributeNameOrPrefixData
+        {
+            get
+            {
+                return new TheoryData<string>
+                {
+                    null,
+                    string.Empty,
+                    "data",
+                    "dataa-",
+                    "ValidName",
+                    "valid-name",
+                    "--valid--name--",
+                    ",,--__..oddly.valid::;;",
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ValidAttributeNameOrPrefixData))]
+        public void ValidateTagHelperAttributeDescriptor_WithValidName_ReturnsTrue(string name)
+        {
+            // Arrange
+            var descriptor = new TagHelperAttributeDescriptor(
+                name,
+                propertyName: "ValidProperty",
+                typeName: "PropertyType",
+                isIndexer: false);
+            var errorSink = new ErrorSink();
+
+            // Act
+            var result = TagHelperDescriptorFactory.ValidateTagHelperAttributeDescriptor(
+                descriptor,
+                typeof(MultiTagTagHelper),
+                errorSink);
+
+            // Assert
+            Assert.True(result);
+            Assert.Empty(errorSink.Errors);
+        }
+
+        [Theory]
+        [MemberData(nameof(ValidAttributeNameOrPrefixData))]
+        public void ValidateTagHelperAttributeDescriptor_WithValidPrefix_ReturnsTrue(string prefix)
+        {
+            // Arrange
+            var descriptor = new TagHelperAttributeDescriptor(
+                name: prefix,
+                propertyName: "ValidProperty",
+                typeName: "PropertyType",
+                isIndexer: true);
+            var errorSink = new ErrorSink();
+
+            // Act
+            var result = TagHelperDescriptorFactory.ValidateTagHelperAttributeDescriptor(
+                descriptor,
+                typeof(MultiTagTagHelper),
+                errorSink);
+
+            // Assert
+            Assert.True(result);
+            Assert.Empty(errorSink.Errors);
+        }
+
+        // name, expectedErrorMessages
+        public static TheoryData<string, string[]> InvalidAttributeNameData
+        {
+            get
+            {
+                Func<string, string, string> onNameError = (invalidText, invalidCharacter) => "Invalid tag helper " +
+                    $"bound property '{ typeof(MultiTagTagHelper).FullName }.InvalidProperty'. Tag helpers cannot " +
+                    $"bind to HTML attributes with name '{ invalidText }' because name contains a " +
+                    $"'{ invalidCharacter }' character.";
+                var whitespaceErrorString = "Invalid tag helper bound property " +
+                    $"'{ typeof(MultiTagTagHelper).FullName }.InvalidProperty'. Tag helpers cannot bind to HTML " +
+                    "attributes with a whitespace name.";
+                Func<string, string> onDataError = invalidText => "Invalid tag helper bound property " +
+                    $"'{ typeof(MultiTagTagHelper).FullName }.InvalidProperty'. Tag helpers cannot bind to HTML " +
+                    $"attributes with name '{ invalidText }' because name starts with 'data-'.";
+
+                return GetInvalidNameOrPrefixData(onNameError, whitespaceErrorString, onDataError);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidAttributeNameData))]
+        public void ValidateTagHelperAttributeDescriptor_WithInvalidName_AddsExpectedErrors(
+            string name,
+            string[] expectedErrorMessages)
+        {
+            // Arrange
+            var descriptor = new TagHelperAttributeDescriptor(
+                name,
+                propertyName: "InvalidProperty",
+                typeName: "PropertyType",
+                isIndexer: false);
+            var errorSink = new ErrorSink();
+
+            // Act
+            var result = TagHelperDescriptorFactory.ValidateTagHelperAttributeDescriptor(
+                descriptor,
+                typeof(MultiTagTagHelper),
+                errorSink);
+
+            // Assert
+            Assert.False(result);
+
+            var errors = errorSink.Errors.ToArray();
+            Assert.Equal(expectedErrorMessages.Length, errors.Length);
+            for (var i = 0; i < expectedErrorMessages.Length; i++)
+            {
+                Assert.Equal(1, errors[i].Length);
+                Assert.Equal(SourceLocation.Zero, errors[i].Location);
+                Assert.Equal(expectedErrorMessages[i], errors[i].Message, StringComparer.Ordinal);
+            }
+        }
+
+        // prefix, expectedErrorMessages
+        public static TheoryData<string, string[]> InvalidAttributePrefixData
+        {
+            get
+            {
+                Func<string, string, string> onPrefixError = (invalidText, invalidCharacter) => "Invalid tag helper " +
+                    $"bound property '{ typeof(MultiTagTagHelper).FullName }.InvalidProperty'. Tag helpers cannot " +
+                    $"bind to HTML attributes with prefix '{ invalidText }' because prefix contains a " +
+                    $"'{ invalidCharacter }' character.";
+                var whitespaceErrorString = "Invalid tag helper bound property " +
+                    $"'{ typeof(MultiTagTagHelper).FullName }.InvalidProperty'. Tag helpers cannot bind to HTML " +
+                    "attributes with a whitespace prefix.";
+                Func<string, string> onDataError = invalidText => "Invalid tag helper bound property " +
+                    $"'{ typeof(MultiTagTagHelper).FullName }.InvalidProperty'. Tag helpers cannot bind to HTML " +
+                    $"attributes with prefix '{ invalidText }' because prefix starts with 'data-'.";
+
+                return GetInvalidNameOrPrefixData(onPrefixError, whitespaceErrorString, onDataError);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidAttributePrefixData))]
+        public void ValidateTagHelperAttributeDescriptor_WithInvalidPrefix_AddsExpectedErrors(
+            string prefix,
+            string[] expectedErrorMessages)
+        {
+            // Arrange
+            var descriptor = new TagHelperAttributeDescriptor(
+                name: prefix,
+                propertyName: "InvalidProperty",
+                typeName: "ValuesType",
+                isIndexer: true);
+            var errorSink = new ErrorSink();
+
+            // Act
+            var result = TagHelperDescriptorFactory.ValidateTagHelperAttributeDescriptor(
+                descriptor,
+                typeof(MultiTagTagHelper),
+                errorSink);
+
+            // Assert
+            Assert.False(result);
+
+            var errors = errorSink.Errors.ToArray();
+            Assert.Equal(expectedErrorMessages.Length, errors.Length);
+            for (var i = 0; i < expectedErrorMessages.Length; i++)
+            {
+                Assert.Equal(1, errors[i].Length);
+                Assert.Equal(SourceLocation.Zero, errors[i].Location);
+                Assert.Equal(expectedErrorMessages[i], errors[i].Message, StringComparer.Ordinal);
+            }
+        }
+
+        private static TheoryData<string, string[]> GetInvalidNameOrPrefixData(
+            Func<string, string, string> onNameError,
+            string whitespaceErrorString,
+            Func<string, string> onDataError)
+        {
+            // name, expectedErrorMessages
+            var data = new TheoryData<string, string[]>
+            {
+                { "!", new[] {  onNameError("!", "!") } },
+                { "hello!", new[] { onNameError("hello!", "!") } },
+                { "!hello", new[] { onNameError("!hello", "!") } },
+                { "he!lo", new[] { onNameError("he!lo", "!") } },
+                {
+                    "!he!lo!",
+                    new[]
+                    {
+                        onNameError("!he!lo!", "!"),
+                        onNameError("!he!lo!", "!"),
+                        onNameError("!he!lo!", "!"),
+                    }
+                },
+                { "@", new[] { onNameError("@", "@") } },
+                { "hello@", new[] { onNameError("hello@", "@") } },
+                { "@hello", new[] { onNameError("@hello", "@") } },
+                { "he@lo", new[] { onNameError("he@lo", "@") } },
+                {
+                    "@he@lo@",
+                    new[]
+                    {
+                        onNameError("@he@lo@", "@"),
+                        onNameError("@he@lo@", "@"),
+                        onNameError("@he@lo@", "@"),
+                    }
+                },
+                { "/", new[] { onNameError("/", "/") } },
+                { "hello/", new[] { onNameError("hello/", "/") } },
+                { "/hello", new[] { onNameError("/hello", "/") } },
+                { "he/lo", new[] { onNameError("he/lo", "/") } },
+                {
+                    "/he/lo/",
+                    new[]
+                    {
+                        onNameError("/he/lo/", "/"),
+                        onNameError("/he/lo/", "/"),
+                        onNameError("/he/lo/", "/"),
+                    }
+                },
+                { "<", new[] { onNameError("<", "<") } },
+                { "hello<", new[] { onNameError("hello<", "<") } },
+                { "<hello", new[] { onNameError("<hello", "<") } },
+                { "he<lo", new[] { onNameError("he<lo", "<") } },
+                {
+                    "<he<lo<",
+                    new[]
+                    {
+                        onNameError("<he<lo<", "<"),
+                        onNameError("<he<lo<", "<"),
+                        onNameError("<he<lo<", "<"),
+                    }
+                },
+                { "?", new[] { onNameError("?", "?") } },
+                { "hello?", new[] { onNameError("hello?", "?") } },
+                { "?hello", new[] { onNameError("?hello", "?") } },
+                { "he?lo", new[] { onNameError("he?lo", "?") } },
+                {
+                    "?he?lo?",
+                    new[]
+                    {
+                        onNameError("?he?lo?", "?"),
+                        onNameError("?he?lo?", "?"),
+                        onNameError("?he?lo?", "?"),
+                    }
+                },
+                { "[", new[] { onNameError("[", "[") } },
+                { "hello[", new[] { onNameError("hello[", "[") } },
+                { "[hello", new[] { onNameError("[hello", "[") } },
+                { "he[lo", new[] { onNameError("he[lo", "[") } },
+                {
+                    "[he[lo[",
+                    new[]
+                    {
+                        onNameError("[he[lo[", "["),
+                        onNameError("[he[lo[", "["),
+                        onNameError("[he[lo[", "["),
+                    }
+                },
+                { ">", new[] { onNameError(">", ">") } },
+                { "hello>", new[] { onNameError("hello>", ">") } },
+                { ">hello", new[] { onNameError(">hello", ">") } },
+                { "he>lo", new[] { onNameError("he>lo", ">") } },
+                {
+                    ">he>lo>",
+                    new[]
+                    {
+                        onNameError(">he>lo>", ">"),
+                        onNameError(">he>lo>", ">"),
+                        onNameError(">he>lo>", ">"),
+                    }
+                },
+                { "]", new[] { onNameError("]", "]") } },
+                { "hello]", new[] { onNameError("hello]", "]") } },
+                { "]hello", new[] { onNameError("]hello", "]") } },
+                { "he]lo", new[] { onNameError("he]lo", "]") } },
+                {
+                    "]he]lo]",
+                    new[]
+                    {
+                        onNameError("]he]lo]", "]"),
+                        onNameError("]he]lo]", "]"),
+                        onNameError("]he]lo]", "]"),
+                    }
+                },
+                { "=", new[] { onNameError("=", "=") } },
+                { "hello=", new[] { onNameError("hello=", "=") } },
+                { "=hello", new[] { onNameError("=hello", "=") } },
+                { "he=lo", new[] { onNameError("he=lo", "=") } },
+                {
+                    "=he=lo=",
+                    new[]
+                    {
+                        onNameError("=he=lo=", "="),
+                        onNameError("=he=lo=", "="),
+                        onNameError("=he=lo=", "="),
+                    }
+                },
+                { "\"", new[] { onNameError("\"", "\"") } },
+                { "hello\"", new[] { onNameError("hello\"", "\"") } },
+                { "\"hello", new[] { onNameError("\"hello", "\"") } },
+                { "he\"lo", new[] { onNameError("he\"lo", "\"") } },
+                {
+                    "\"he\"lo\"",
+                    new[]
+                    {
+                        onNameError("\"he\"lo\"", "\""),
+                        onNameError("\"he\"lo\"", "\""),
+                        onNameError("\"he\"lo\"", "\""),
+                    }
+                },
+                { "'", new[] { onNameError("'", "'") } },
+                { "hello'", new[] { onNameError("hello'", "'") } },
+                { "'hello", new[] { onNameError("'hello", "'") } },
+                { "he'lo", new[] { onNameError("he'lo", "'") } },
+                {
+                    "'he'lo'",
+                    new[]
+                    {
+                        onNameError("'he'lo'", "'"),
+                        onNameError("'he'lo'", "'"),
+                        onNameError("'he'lo'", "'"),
+                    }
+                },
+                { Environment.NewLine, new[] { whitespaceErrorString } },
+                { "\t", new[] { whitespaceErrorString } },
+                { " \t ", new[] { whitespaceErrorString } },
+                { " ", new[] { whitespaceErrorString } },
+                { Environment.NewLine + " ", new[] { whitespaceErrorString } },
+                {
+                    "! \t\r\n@/<>?[]=\"'",
+                    new[]
+                    {
+                        onNameError("! \t\r\n@/<>?[]=\"'", "!"),
+                        onNameError("! \t\r\n@/<>?[]=\"'", " "),
+                        onNameError("! \t\r\n@/<>?[]=\"'", "\t"),
+                        onNameError("! \t\r\n@/<>?[]=\"'", "\r"),
+                        onNameError("! \t\r\n@/<>?[]=\"'", "\n"),
+                        onNameError("! \t\r\n@/<>?[]=\"'", "@"),
+                        onNameError("! \t\r\n@/<>?[]=\"'", "/"),
+                        onNameError("! \t\r\n@/<>?[]=\"'", "<"),
+                        onNameError("! \t\r\n@/<>?[]=\"'", ">"),
+                        onNameError("! \t\r\n@/<>?[]=\"'", "?"),
+                        onNameError("! \t\r\n@/<>?[]=\"'", "["),
+                        onNameError("! \t\r\n@/<>?[]=\"'", "]"),
+                        onNameError("! \t\r\n@/<>?[]=\"'", "="),
+                        onNameError("! \t\r\n@/<>?[]=\"'", "\""),
+                        onNameError("! \t\r\n@/<>?[]=\"'", "'"),
+                    }
+                },
+                {
+                    "! \tv\ra\nl@i/d<>?[]=\"'",
+                    new[]
+                    {
+                        onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "!"),
+                        onNameError("! \tv\ra\nl@i/d<>?[]=\"'", " "),
+                        onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "\t"),
+                        onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "\r"),
+                        onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "\n"),
+                        onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "@"),
+                        onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "/"),
+                        onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "<"),
+                        onNameError("! \tv\ra\nl@i/d<>?[]=\"'", ">"),
+                        onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "?"),
+                        onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "["),
+                        onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "]"),
+                        onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "="),
+                        onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "\""),
+                        onNameError("! \tv\ra\nl@i/d<>?[]=\"'", "'"),
+                    }
+                },
+            };
+
+            if (onDataError != null)
+            {
+                data.Add("data-", new[] { onDataError("data-") });
+                data.Add("data-something", new[] { onDataError("data-something") });
+                data.Add("Data-Something", new[] { onDataError("Data-Something") });
+                data.Add("DATA-SOMETHING", new[] { onDataError("DATA-SOMETHING") });
+            }
+
+            return data;
         }
 
         [TargetElement(Attributes = "class")]
@@ -1231,6 +1627,82 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             [HtmlAttributeName("DATA-SOMETHING")]
             public string ValidSomething { get; set; }
+        }
+
+        private class DefaultValidHtmlAttributePrefix : TagHelper
+        {
+            public IDictionary<string, string> DictionaryProperty { get; set; }
+        }
+
+        private class SingleValidHtmlAttributePrefix : TagHelper
+        {
+            [HtmlAttributeName("valid-name", DictionaryAttributePrefix = "valid-prefix")]
+            public IDictionary<string, string> DictionaryProperty { get; set; }
+        }
+
+        private class MultipleValidHtmlAttributePrefix : TagHelper
+        {
+            [HtmlAttributeName("valid-name1", DictionaryAttributePrefix = "valid-prefix1-")]
+            public Dictionary<string, object> DictionaryProperty { get; set; }
+
+            [HtmlAttributeName("valid-name2", DictionaryAttributePrefix = "valid-prefix2-")]
+            public DictionarySubclass DictionarySubclassProperty { get; set; }
+
+            [HtmlAttributeName("valid-name3", DictionaryAttributePrefix = "valid-prefix3-")]
+            public DictionaryWithoutParameterlessConstructor DictionaryWithoutParameterlessConstructorProperty { get; set; }
+
+            [HtmlAttributeName("valid-name4", DictionaryAttributePrefix = "valid-prefix4-")]
+            public GenericDictionarySubclass<object> GenericDictionarySubclassProperty { get; set; }
+
+            [HtmlAttributeName("valid-name5", DictionaryAttributePrefix = "valid-prefix5-")]
+            public SortedDictionary<string, int> SortedDictionaryProperty { get; set; }
+
+            [HtmlAttributeName("valid-name6")]
+            public string StringProperty { get; set; }
+        }
+
+        private class SingleInvalidHtmlAttributePrefix : TagHelper
+        {
+            [HtmlAttributeName("valid-name", DictionaryAttributePrefix = "valid-prefix")]
+            public string StringProperty { get; set; }
+        }
+
+        private class MultipleInvalidHtmlAttributePrefix : TagHelper
+        {
+            [HtmlAttributeName("valid-name1")]
+            public long LongProperty { get; set; }
+
+            [HtmlAttributeName("valid-name2", DictionaryAttributePrefix = "valid-prefix2-")]
+            public Dictionary<int, string> DictionaryOfIntProperty { get; set; }
+
+            [HtmlAttributeName("valid-name3", DictionaryAttributePrefix = "valid-prefix3-")]
+            public IReadOnlyDictionary<string, object> ReadOnlyDictionaryProperty { get; set; }
+
+            [HtmlAttributeName("valid-name4", DictionaryAttributePrefix = "valid-prefix4-")]
+            public int IntProperty { get; set; }
+
+            [HtmlAttributeName("valid-name5", DictionaryAttributePrefix = "valid-prefix5-")]
+            public DictionaryOfIntSubclass DictionaryOfIntSubclassProperty { get; set; }
+        }
+
+        private class DictionarySubclass : Dictionary<string, string>
+        {
+        }
+
+        private class DictionaryWithoutParameterlessConstructor : Dictionary<string, string>
+        {
+            public DictionaryWithoutParameterlessConstructor(int count)
+                : base()
+            {
+            }
+        }
+
+        private class DictionaryOfIntSubclass : Dictionary<int, string>
+        {
+        }
+
+        private class GenericDictionarySubclass<TValue> : Dictionary<string, TValue>
+        {
         }
     }
 }

@@ -4,6 +4,7 @@
     "dependencies": {
         "Microsoft.AspNet.Razor": "4.0.0-*",
         "Microsoft.Framework.BufferEntryCollection.Sources": { "type": "build", "version": "1.0.0-*" },
+        "Microsoft.Framework.ClosedGenericMatcher.Sources": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Framework.CopyOnWriteDictionary.Sources": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" }
     },

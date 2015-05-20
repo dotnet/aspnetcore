@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -65,20 +64,39 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 // Only want to track the attribute if we succeeded in parsing its corresponding Block/Span.
                 if (result != null)
                 {
+                    SourceLocation? errorLocation = null;
+
                     // Check if it's a bound attribute that is minimized or if it's a bound non-string attribute that
                     // is null or whitespace.
                     if ((result.IsBoundAttribute && result.AttributeValueNode == null) ||
                         (result.IsBoundNonStringAttribute &&
                          IsNullOrWhitespaceAttributeValue(result.AttributeValueNode)))
                     {
-                        var errorLocation = GetAttributeNameStartLocation(child);
+                        errorLocation = GetAttributeNameStartLocation(child);
 
                         errorSink.OnError(
-                            errorLocation,
+                            errorLocation.Value,
                             RazorResources.FormatRewriterError_EmptyTagHelperBoundAttribute(
                                 result.AttributeName,
                                 tagName,
                                 GetPropertyType(result.AttributeName, descriptors)),
+                            result.AttributeName.Length);
+                    }
+
+                    // Check if the attribute was a prefix match for a tag helper dictionary property but the
+                    // dictionary key would be the empty string.
+                    if (result.IsMissingDictionaryKey)
+                    {
+                        if (!errorLocation.HasValue)
+                        {
+                            errorLocation = GetAttributeNameStartLocation(child);
+                        }
+
+                        errorSink.OnError(
+                            errorLocation.Value,
+                            RazorResources.FormatTagHelperBlockRewriter_IndexerAttributeNameMustIncludeKey(
+                                result.AttributeName,
+                                tagName),
                             result.AttributeName.Length);
                     }
 
@@ -224,24 +242,19 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 {
                     errorSink.OnError(
                         span.Start,
-                        RazorResources.TagHelperBlockRewriter_TagHelperAttributeListMustBeWelformed,
+                        RazorResources.TagHelperBlockRewriter_TagHelperAttributeListMustBeWellFormed,
                         span.Content.Length);
                 }
 
                 return null;
             }
 
-            bool isBoundNonStringAttribute;
-            var result = new TryParseResult
-            {
-                IsBoundAttribute = IsBoundAttribute(name, descriptors, out isBoundNonStringAttribute),
-                AttributeName = name,
-            };
-            result.IsBoundNonStringAttribute = isBoundNonStringAttribute;
+            var result = CreateTryParseResult(name, descriptors);
 
             // If we're not after an equal then we should treat the value as if it were a minimized attribute.
             var attributeValueBuilder = afterEquals ? builder : null;
-            result.AttributeValueNode = CreateMarkupAttribute(name, attributeValueBuilder, isBoundNonStringAttribute);
+            result.AttributeValueNode =
+                CreateMarkupAttribute(name, attributeValueBuilder, result.IsBoundNonStringAttribute);
 
             return result;
         }
@@ -286,13 +299,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             }
 
             // Have a name now. Able to determine correct isBoundNonStringAttribute value.
-            bool isBoundNonStringAttribute;
-            var result = new TryParseResult
-            {
-                IsBoundAttribute = IsBoundAttribute(name, descriptors, out isBoundNonStringAttribute),
-                AttributeName = name,
-            };
-            result.IsBoundNonStringAttribute = isBoundNonStringAttribute;
+            var result = CreateTryParseResult(name, descriptors);
 
             // Remove first child i.e. foo="
             builder.Children.RemoveAt(0);
@@ -324,13 +331,13 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             if (block.Children.Count() == 1)
             {
                 var child = block.Children.First() as Span;
-
                 if (child != null)
                 {
                     // After pulling apart the block we just have a value span.
                     var spanBuilder = new SpanBuilder(child);
 
-                    result.AttributeValueNode = CreateMarkupAttribute(name, spanBuilder, isBoundNonStringAttribute);
+                    result.AttributeValueNode =
+                        CreateMarkupAttribute(name, spanBuilder, result.IsBoundNonStringAttribute);
 
                     return result;
                 }
@@ -485,17 +492,23 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             return firstBoundAttribute?.TypeName;
         }
 
-        // Determines whether an attribute with the given name is bound to a non-string tag helper property.
-        private static bool IsBoundAttribute(
-            string name,
-            IEnumerable<TagHelperDescriptor> descriptors,
-            out bool isBoundNonStringAttribute)
+        // Create a TryParseResult for given name, filling in binding details.
+        private static TryParseResult CreateTryParseResult(string name, IEnumerable<TagHelperDescriptor> descriptors)
         {
             var firstBoundAttribute = FindFirstBoundAttribute(name, descriptors);
             var isBoundAttribute = firstBoundAttribute != null;
-            isBoundNonStringAttribute = isBoundAttribute && !firstBoundAttribute.IsStringProperty;
+            var isBoundNonStringAttribute = isBoundAttribute && !firstBoundAttribute.IsStringProperty;
+            var isMissingDictionaryKey = isBoundAttribute &&
+                firstBoundAttribute.IsIndexer &&
+                name.Length == firstBoundAttribute.Name.Length;
 
-            return isBoundAttribute;
+            return new TryParseResult
+            {
+                AttributeName = name,
+                IsBoundAttribute = isBoundAttribute,
+                IsBoundNonStringAttribute = isBoundNonStringAttribute,
+                IsMissingDictionaryKey = isMissingDictionaryKey,
+            };
         }
 
         // Finds first TagHelperAttributeDescriptor matching given name.
@@ -503,9 +516,13 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             string name,
             IEnumerable<TagHelperDescriptor> descriptors)
         {
-            return descriptors
+            // Non-indexers (exact HTML attribute name matches) have higher precedence than indexers (prefix matches).
+            // Attributes already sorted to ensure this precedence.
+            var firstBoundAttribute = descriptors
                 .SelectMany(descriptor => descriptor.Attributes)
-                .FirstOrDefault(attribute => string.Equals(attribute.Name, name, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(attributeDescriptor => attributeDescriptor.IsNameMatch(name));
+
+            return firstBoundAttribute;
         }
 
         private static bool IsQuote(HtmlSymbol htmlSymbol)
@@ -523,6 +540,8 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             public bool IsBoundAttribute { get; set; }
 
             public bool IsBoundNonStringAttribute { get; set; }
+
+            public bool IsMissingDictionaryKey { get; set; }
         }
     }
 }

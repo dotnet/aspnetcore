@@ -34,7 +34,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                             new TagHelperAttributeDescriptor(
                                 "catchall-bound-string",
                                 "BoundRequiredString",
-                                typeof(string).FullName),
+                                typeof(string).FullName,
+                                isIndexer: false),
                         },
                         requiredAttributes: new[] { "catchall-unbound-required" }),
                     new TagHelperDescriptor(
@@ -46,11 +47,13 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                             new TagHelperAttributeDescriptor(
                                 "input-bound-required-string",
                                 "BoundRequiredString",
-                                typeof(string).FullName),
+                                typeof(string).FullName,
+                                isIndexer: false),
                             new TagHelperAttributeDescriptor(
                                 "input-bound-string",
                                 "BoundString",
-                                typeof(string).FullName)
+                                typeof(string).FullName,
+                                isIndexer: false)
                         },
                         requiredAttributes: new[] { "input-bound-required-string", "input-unbound-required" }),
                 };
@@ -148,6 +151,80 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                         assemblyName: "SomeAssembly",
                         attributes: new TagHelperAttributeDescriptor[0],
                         requiredAttributes: new[] { "catchAll" })
+                };
+            }
+        }
+
+        private static IEnumerable<TagHelperDescriptor> PrefixedAttributeTagHelperDescriptors
+        {
+            get
+            {
+                return new[]
+                {
+                    new TagHelperDescriptor(
+                        tagName: "input",
+                        typeName: "InputTagHelper1",
+                        assemblyName: "SomeAssembly",
+                        attributes: new[]
+                        {
+                            new TagHelperAttributeDescriptor(
+                                name: "int-prefix-grabber",
+                                propertyName: "IntProperty",
+                                typeName: typeof(int).FullName,
+                                isIndexer: false),
+                            new TagHelperAttributeDescriptor(
+                                name: "int-dictionary",
+                                propertyName: "IntDictionaryProperty",
+                                typeName: typeof(IDictionary<string, int>).FullName,
+                                isIndexer: false),
+                            new TagHelperAttributeDescriptor(
+                                name: "string-dictionary",
+                                propertyName: "StringDictionaryProperty",
+                                typeName: "Namespace.DictionaryWithoutParameterlessConstructor<string, string>",
+                                isIndexer: false),
+                            new TagHelperAttributeDescriptor(
+                                name: "string-prefix-grabber",
+                                propertyName: "StringProperty",
+                                typeName: typeof(string).FullName,
+                                isIndexer: false),
+                            new TagHelperAttributeDescriptor(
+                                name: "int-prefix-",
+                                propertyName: "IntDictionaryProperty",
+                                typeName: typeof(int).FullName,
+                                isIndexer: true),
+                            new TagHelperAttributeDescriptor(
+                                name: "string-prefix-",
+                                propertyName: "StringDictionaryProperty",
+                                typeName: typeof(string).FullName,
+                                isIndexer: true),
+                        }),
+                    new TagHelperDescriptor(
+                        tagName: "input",
+                        typeName: "InputTagHelper2",
+                        assemblyName: "SomeAssembly",
+                        attributes: new[]
+                        {
+                            new TagHelperAttributeDescriptor(
+                                name: "int-dictionary",
+                                propertyName: "IntDictionaryProperty",
+                                typeName: typeof(IDictionary<string, int>).FullName,
+                                isIndexer: false),
+                            new TagHelperAttributeDescriptor(
+                                name: "string-dictionary",
+                                propertyName: "StringDictionaryProperty",
+                                typeName: "Namespace.DictionaryWithoutParameterlessConstructor<string, string>",
+                                isIndexer: false),
+                            new TagHelperAttributeDescriptor(
+                                name: "int-prefix-",
+                                propertyName: "IntDictionaryProperty",
+                                typeName: typeof(int).FullName,
+                                isIndexer: true),
+                            new TagHelperAttributeDescriptor(
+                                name: "string-prefix-",
+                                propertyName: "StringDictionaryProperty",
+                                typeName: typeof(string).FullName,
+                                isIndexer: true),
+                        }),
                 };
             }
         }
@@ -498,6 +575,101 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                              contentLength: 4)
                         }
                     },
+                    {
+                        "PrefixedAttributeTagHelpers",
+                        "PrefixedAttributeTagHelpers.DesignTime",
+                        PrefixedAttributeTagHelperDescriptors,
+                        new List<LineMapping>
+                        {
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 14,
+                                documentLineIndex: 0,
+                                generatedAbsoluteIndex: 499,
+                                generatedLineIndex: 15,
+                                characterOffsetIndex: 14,
+                                contentLength: 17),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 37,
+                                documentLineIndex: 2,
+                                generatedAbsoluteIndex: 996,
+                                generatedLineIndex: 34,
+                                characterOffsetIndex: 2,
+                                contentLength: 242),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 370,
+                                documentLineIndex: 15,
+                                generatedAbsoluteIndex: 1430,
+                                generatedLineIndex: 50,
+                                characterOffsetIndex: 43,
+                                contentLength: 13),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 404,
+                                documentLineIndex: 15,
+                                generatedAbsoluteIndex: 1601,
+                                generatedLineIndex: 55,
+                                characterOffsetIndex: 77,
+                                contentLength: 16),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 468,
+                                documentLineIndex: 16,
+                                generatedAbsoluteIndex: 2077,
+                                generatedLineIndex: 64,
+                                characterOffsetIndex: 43,
+                                contentLength: 13),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 502,
+                                documentLineIndex: 16,
+                                generatedAbsoluteIndex: 2248,
+                                generatedLineIndex: 69,
+                                characterOffsetIndex: 77,
+                                contentLength: 2),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 526,
+                                documentLineIndex: 16,
+                                generatedAbsoluteIndex: 2432,
+                                generatedLineIndex: 74,
+                                characterOffsetIndex: 101,
+                                contentLength: 2),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 590,
+                                documentLineIndex: 18,
+                                documentCharacterOffsetIndex: 31,
+                                generatedAbsoluteIndex: 2994,
+                                generatedLineIndex: 84,
+                                generatedCharacterOffsetIndex: 32,
+                                contentLength: 2),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 611,
+                                documentLineIndex: 18,
+                                generatedAbsoluteIndex: 3129,
+                                generatedLineIndex: 89,
+                                characterOffsetIndex: 52,
+                                contentLength: 2),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 634,
+                                documentLineIndex: 18,
+                                generatedAbsoluteIndex: 3287,
+                                generatedLineIndex: 94,
+                                characterOffsetIndex: 75,
+                                contentLength: 2),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 783,
+                                documentLineIndex: 20,
+                                documentCharacterOffsetIndex: 42,
+                                generatedAbsoluteIndex: 3521,
+                                generatedLineIndex: 101,
+                                generatedCharacterOffsetIndex: 6,
+                                contentLength: 8),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 826,
+                                documentLineIndex: 21,
+                                documentCharacterOffsetIndex: 29,
+                                generatedAbsoluteIndex: 4552,
+                                generatedLineIndex: 115,
+                                generatedCharacterOffsetIndex: 51,
+                                contentLength: 2),
+                        }
+                    },
                 };
             }
         }
@@ -523,28 +695,36 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             {
                 // Test resource name, expected TagHelperDescriptors
                 // Note: The baseline resource name is equivalent to the test resource name.
-                return new TheoryData<string, IEnumerable<TagHelperDescriptor>>
+                return new TheoryData<string, string, IEnumerable<TagHelperDescriptor>>
                 {
-                    { "SingleTagHelper", DefaultPAndInputTagHelperDescriptors },
-                    { "BasicTagHelpers", DefaultPAndInputTagHelperDescriptors },
-                    { "BasicTagHelpers.RemoveTagHelper", DefaultPAndInputTagHelperDescriptors },
-                    { "BasicTagHelpers.Prefixed", PrefixedPAndInputTagHelperDescriptors },
-                    { "ComplexTagHelpers", DefaultPAndInputTagHelperDescriptors },
-                    { "DuplicateTargetTagHelper", DuplicateTargetTagHelperDescriptors },
-                    { "EmptyAttributeTagHelpers", DefaultPAndInputTagHelperDescriptors },
-                    { "EscapedTagHelpers", DefaultPAndInputTagHelperDescriptors },
-                    { "AttributeTargetingTagHelpers", AttributeTargetingTagHelperDescriptors },
+                    { "SingleTagHelper", null, DefaultPAndInputTagHelperDescriptors },
+                    { "BasicTagHelpers", null, DefaultPAndInputTagHelperDescriptors },
+                    { "BasicTagHelpers.RemoveTagHelper", null, DefaultPAndInputTagHelperDescriptors },
+                    { "BasicTagHelpers.Prefixed", null, PrefixedPAndInputTagHelperDescriptors },
+                    { "ComplexTagHelpers", null, DefaultPAndInputTagHelperDescriptors },
+                    { "DuplicateTargetTagHelper", null, DuplicateTargetTagHelperDescriptors },
+                    { "EmptyAttributeTagHelpers", null, DefaultPAndInputTagHelperDescriptors },
+                    { "EscapedTagHelpers", null, DefaultPAndInputTagHelperDescriptors },
+                    { "AttributeTargetingTagHelpers", null, AttributeTargetingTagHelperDescriptors },
+                    { "PrefixedAttributeTagHelpers", null, PrefixedAttributeTagHelperDescriptors },
+                    {
+                        "PrefixedAttributeTagHelpers",
+                        "PrefixedAttributeTagHelpers.Reversed",
+                        PrefixedAttributeTagHelperDescriptors.Reverse()
+                    },
                 };
             }
         }
 
         [Theory]
         [MemberData(nameof(RuntimeTimeTagHelperTestData))]
-        public void TagHelpers_GenerateExpectedRuntimeOutput(string testName,
-                                                             IEnumerable<TagHelperDescriptor> tagHelperDescriptors)
+        public void TagHelpers_GenerateExpectedRuntimeOutput(
+            string testName,
+            string baseLineName,
+            IEnumerable<TagHelperDescriptor> tagHelperDescriptors)
         {
-            // Act & Assert
-            RunTagHelperTest(testName, tagHelperDescriptors: tagHelperDescriptors);
+            // Arrange & Act & Assert
+            RunTagHelperTest(testName, baseLineName, tagHelperDescriptors: tagHelperDescriptors);
         }
 
         [Fact]

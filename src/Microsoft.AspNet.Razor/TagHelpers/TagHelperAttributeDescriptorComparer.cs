@@ -29,9 +29,11 @@ namespace Microsoft.AspNet.Razor.TagHelpers
 
         /// <inheritdoc />
         /// <remarks>
-        /// Determines equality based on <see cref="TagHelperAttributeDescriptor.Name"/>,
-        /// <see cref="TagHelperAttributeDescriptor.PropertyName"/>,
-        /// and <see cref="TagHelperAttributeDescriptor.TypeName"/>.
+        /// Determines equality based on <see cref="TagHelperAttributeDescriptor.IsIndexer"/>,
+        /// <see cref="TagHelperAttributeDescriptor.Name"/>, <see cref="TagHelperAttributeDescriptor.PropertyName"/>,
+        /// and <see cref="TagHelperAttributeDescriptor.TypeName"/>. Ignores
+        /// <see cref="TagHelperAttributeDescriptor.IsStringProperty"/> because it can be inferred directly from
+        /// <see cref="TagHelperAttributeDescriptor.TypeName"/>.
         /// </remarks>
         public virtual bool Equals(TagHelperAttributeDescriptor descriptorX, TagHelperAttributeDescriptor descriptorY)
         {
@@ -40,7 +42,11 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 return true;
             }
 
+            // Check Name and TypeName though each property in a particular tag helper has at most two
+            // TagHelperAttributeDescriptors (one for the indexer and one not). May be comparing attributes between
+            // tag helpers and should be as specific as we can.
             return descriptorX != null &&
+                descriptorX.IsIndexer == descriptorY.IsIndexer &&
                 string.Equals(descriptorX.Name, descriptorY.Name, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(descriptorX.PropertyName, descriptorY.PropertyName, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.TypeName, descriptorY.TypeName, StringComparison.Ordinal);
@@ -49,7 +55,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <inheritdoc />
         public virtual int GetHashCode([NotNull] TagHelperAttributeDescriptor descriptor)
         {
+            // Rarely if ever hash TagHelperAttributeDescriptor. If we do, include the Name and TypeName since context
+            // information is not available in the hash.
             return HashCodeCombiner.Start()
+                .Add(descriptor.IsIndexer)
                 .Add(descriptor.Name, StringComparer.OrdinalIgnoreCase)
                 .Add(descriptor.PropertyName, StringComparer.Ordinal)
                 .Add(descriptor.TypeName, StringComparer.Ordinal)

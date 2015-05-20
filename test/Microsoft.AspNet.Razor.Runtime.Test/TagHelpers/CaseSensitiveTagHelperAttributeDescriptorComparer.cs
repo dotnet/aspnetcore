@@ -24,8 +24,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 return true;
             }
 
-            // Normal comparer doesn't care about case, in tests we do. Also double-check IsStringProperty though
-            // it is inferred from TypeName.
+            // Base comparer does not care about Name case but in tests we do. Also double-check IsStringProperty
+            // though it is inferred from TypeName.
             return base.Equals(descriptorX, descriptorY) &&
                 descriptorX.IsStringProperty == descriptorY.IsStringProperty &&
                 string.Equals(descriptorX.Name, descriptorY.Name, StringComparison.Ordinal);
@@ -33,8 +33,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         public override int GetHashCode(TagHelperAttributeDescriptor descriptor)
         {
-            // Rarely if ever hash TagHelperAttributeDescriptor. If we do, ignore IsStringProperty since it should
-            // not vary for a given TypeName i.e. will not change the bucket.
+            // Ignore IsStringProperty because it is directly inferred from TypeName and thus won't vary the hash
+            // bucket. Base comparer does not care about Name case in its hash code but in tests we do.
             return HashCodeCombiner.Start()
                 .Add(base.GetHashCode(descriptor))
                 .Add(descriptor.Name, StringComparer.Ordinal)

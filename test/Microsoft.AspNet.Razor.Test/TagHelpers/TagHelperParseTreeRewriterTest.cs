@@ -921,7 +921,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new TagHelperAttributeDescriptor(
                                 name: "bound",
                                 propertyName: "Bound",
-                                typeName: typeof(bool).FullName),
+                                typeName: typeof(bool).FullName,
+                                isIndexer: false),
                         },
                         requiredAttributes: Enumerable.Empty<string>())
                 };
@@ -944,7 +945,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new TagHelperAttributeDescriptor(
                                 name: "bound",
                                 propertyName: "Bound",
-                                typeName: typeof(bool).FullName),
+                                typeName: typeof(bool).FullName,
+                                isIndexer: false),
                         },
                         requiredAttributes: Enumerable.Empty<string>())
                 };
@@ -1508,11 +1510,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new TagHelperAttributeDescriptor(
                                 name: "bound",
                                 propertyName: "Bound",
-                                typeName: typeof(bool).FullName),
+                                typeName: typeof(bool).FullName,
+                                isIndexer: false),
                             new TagHelperAttributeDescriptor(
                                 name: "name",
                                 propertyName: "Name",
-                                typeName: typeof(string).FullName)
+                                typeName: typeof(string).FullName,
+                                isIndexer: false)
                         })
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
@@ -3396,7 +3400,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
                                 SourceLocation.Zero),
                             new RazorError(
-                                "TagHelper attributes must be welformed.",
+                                "TagHelper attributes must be well-formed.",
                                 absoluteIndex: 12,
                                 lineIndex: 0,
                                 columnIndex: 12)
@@ -3962,9 +3966,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                 new TagHelperDescriptor("person", "PersonTagHelper", "personAssembly",
                     attributes: new[]
                     {
-                        new TagHelperAttributeDescriptor("age", "Age", typeof(int).FullName),
-                        new TagHelperAttributeDescriptor("birthday", "BirthDay", typeof(DateTime).FullName),
-                        new TagHelperAttributeDescriptor("name", "Name", typeof(string).FullName),
+                        new TagHelperAttributeDescriptor("age", "Age", typeof(int).FullName, isIndexer: false),
+                        new TagHelperAttributeDescriptor(
+                            "birthday",
+                            "BirthDay",
+                            typeof(DateTime).FullName,
+                            isIndexer: false),
+                        new TagHelperAttributeDescriptor("name", "Name", typeof(string).FullName, isIndexer: false),
                     })
             };
             var providerContext = new TagHelperDescriptorProvider(descriptors);

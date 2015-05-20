@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.Razor.Generator
             ExecutionContextAddMinimizedHtmlAttributeMethodName = "AddMinimizedHtmlAttribute";
             ExecutionContextAddHtmlAttributeMethodName = "AddHtmlAttribute";
             ExecutionContextOutputPropertyName = "Output";
+            FormatInvalidIndexerAssignmentMethodName = "FormatInvalidIndexerAssignment";
             MarkAsHtmlEncodedMethodName = "Html.Raw";
             StartTagHelperWritingScopeMethodName = "StartTagHelperWritingScope";
             EndTagHelperWritingScopeMethodName = "EndTagHelperWritingScope";
@@ -77,6 +78,21 @@ namespace Microsoft.AspNet.Razor.Generator
         /// The property accessor for the tag helper's output.
         /// </summary>
         public string ExecutionContextOutputPropertyName { get; set; }
+
+        /// <summary>
+        /// The name of the method used to format an error message about using an indexer when the tag helper property
+        /// is <c>null</c>.
+        /// </summary>
+        /// <remarks>
+        /// Method signature should be
+        /// <code>
+        /// public string FormatInvalidIndexerAssignment(
+        ///     string attributeName,       // Name of the HTML attribute associated with the indexer.
+        ///     string tagHelperTypeName,   // Full name of the tag helper type.
+        ///     string propertyName)        // Dictionary property in the tag helper.
+        /// </code>
+        /// </remarks>
+        public string FormatInvalidIndexerAssignmentMethodName { get; set; }
 
         /// <summary>
         /// The name of the method used to wrap a <see cref="string"/> value and mark it as HTML-encoded.

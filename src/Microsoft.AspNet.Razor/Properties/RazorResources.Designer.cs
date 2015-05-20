@@ -1367,19 +1367,35 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// TagHelper attributes must be welformed.
+        /// TagHelper attributes must be well-formed.
         /// </summary>
-        internal static string TagHelperBlockRewriter_TagHelperAttributeListMustBeWelformed
+        internal static string TagHelperBlockRewriter_TagHelperAttributeListMustBeWellFormed
         {
-            get { return GetString("TagHelperBlockRewriter_TagHelperAttributeListMustBeWelformed"); }
+            get { return GetString("TagHelperBlockRewriter_TagHelperAttributeListMustBeWellFormed"); }
         }
 
         /// <summary>
-        /// TagHelper attributes must be welformed.
+        /// TagHelper attributes must be well-formed.
         /// </summary>
-        internal static string FormatTagHelperBlockRewriter_TagHelperAttributeListMustBeWelformed()
+        internal static string FormatTagHelperBlockRewriter_TagHelperAttributeListMustBeWellFormed()
         {
-            return GetString("TagHelperBlockRewriter_TagHelperAttributeListMustBeWelformed");
+            return GetString("TagHelperBlockRewriter_TagHelperAttributeListMustBeWellFormed");
+        }
+
+        /// <summary>
+        /// The tag helper attribute '{0}' in element '{1}' is missing a key. The syntax is '&lt;{1} {0}{{ key }}="value"&gt;'.
+        /// </summary>
+        internal static string TagHelperBlockRewriter_IndexerAttributeNameMustIncludeKey
+        {
+            get { return GetString("TagHelperBlockRewriter_IndexerAttributeNameMustIncludeKey"); }
+        }
+
+        /// <summary>
+        /// The tag helper attribute '{0}' in element '{1}' is missing a key. The syntax is '&lt;{1} {0}{{ key }}="value"&gt;'.
+        /// </summary>
+        internal static string FormatTagHelperBlockRewriter_IndexerAttributeNameMustIncludeKey(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperBlockRewriter_IndexerAttributeNameMustIncludeKey"), p0, p1);
         }
 
         /// <summary>
