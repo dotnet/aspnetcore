@@ -607,7 +607,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         BlockFactory.MarkupTagBlock("</html>", AcceptedCharacters.None)),
                     Factory.EmptyCSharp().AsStatement(),
                     Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
-                expectedErrors: new[] {
+                expectedErrors: new[]
+                {
                     new RazorError(
                         RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                         14, 0, 14)

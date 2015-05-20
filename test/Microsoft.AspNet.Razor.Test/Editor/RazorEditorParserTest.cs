@@ -52,7 +52,10 @@ namespace Microsoft.AspNet.Razor.Test.Editor
             var oldBuffer = new StringTextBuffer("<p>@</p>");
             var newBuffer = new StringTextBuffer("<p>@f</p>");
             Assert.True(BackgroundParser.TreesAreDifferent(
-                original, modified, new[] {
+                original,
+                modified,
+                new[]
+                {
                     new TextChange(position: 4, oldLength: 0, oldBuffer: oldBuffer, newLength: 1, newBuffer: newBuffer)
                 }));
         }
@@ -81,7 +84,10 @@ namespace Microsoft.AspNet.Razor.Test.Editor
             var oldBuffer = new StringTextBuffer("<p>@f</p>");
             var newBuffer = new StringTextBuffer("<p>@foo</p>");
             Assert.False(BackgroundParser.TreesAreDifferent(
-                original, modified, new[] {
+                original,
+                modified,
+                new[]
+                {
                     new TextChange(position: 5, oldLength: 0, oldBuffer: oldBuffer, newLength: 2, newBuffer: newBuffer)
                 }));
         }

@@ -13,9 +13,12 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         public void CreatesAUniqueIdForSingleTagHelperChunk()
         {
             // Arrange
-            var chunk = CreateTagHelperChunk("div", new[] {
-                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName")
-            });
+            var chunk = CreateTagHelperChunk(
+                "div",
+                new[]
+                {
+                    new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName")
+                });
             var codeRenderer = CreateCodeRenderer();
 
             // Act
@@ -29,10 +32,13 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         public void UsesTheSameUniqueIdForTagHelperChunkWithMultipleTagHelpers()
         {
             // Arrange
-            var chunk = CreateTagHelperChunk("div", new[] {
-                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName"),
-                new TagHelperDescriptor("div", "Div2TagHelper", "FakeAssemblyName")
-            });
+            var chunk = CreateTagHelperChunk(
+                "div",
+                new[]
+                {
+                    new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName"),
+                    new TagHelperDescriptor("div", "Div2TagHelper", "FakeAssemblyName")
+                });
             var codeRenderer = CreateCodeRenderer();
 
             // Act
@@ -46,12 +52,18 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         public void UsesDifferentUniqueIdForMultipleTagHelperChunksForSameTagHelper()
         {
             // Arrange
-            var chunk1 = CreateTagHelperChunk("div", new[] {
-                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName")
-            });
-            var chunk2 = CreateTagHelperChunk("div", new[] {
-                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName")
-            });
+            var chunk1 = CreateTagHelperChunk(
+                "div",
+                new[]
+                {
+                    new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName")
+                });
+            var chunk2 = CreateTagHelperChunk(
+                "div",
+                new[]
+                {
+                    new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName")
+                });
             var codeRenderer = CreateCodeRenderer();
 
             // Act
@@ -66,12 +78,18 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         public void UsesDifferentUniqueIdForNestedTagHelperChunksForSameTagHelper()
         {
             // Arrange
-            var parentChunk = CreateTagHelperChunk("div", new[] {
-                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName")
-            });
-            var childChunk = CreateTagHelperChunk("div", new[] {
-                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName")
-            });
+            var parentChunk = CreateTagHelperChunk(
+                "div",
+                new[]
+                {
+                    new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName")
+                });
+            var childChunk = CreateTagHelperChunk(
+                "div",
+                new[]
+                {
+                    new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName")
+                });
             parentChunk.Children.Add(childChunk);
             var codeRenderer = CreateCodeRenderer();
 
@@ -86,12 +104,18 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         public void UsesDifferentUniqueIdForMultipleTagHelperChunksForDifferentTagHelpers()
         {
             // Arrange
-            var divChunk = CreateTagHelperChunk("div", new[] {
-                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName")
-            });
-            var spanChunk = CreateTagHelperChunk("span", new[] {
-                new TagHelperDescriptor("span", "SpanTagHelper", "FakeAssemblyName")
-            });
+            var divChunk = CreateTagHelperChunk(
+                "div",
+                new[]
+                {
+                    new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName")
+                });
+            var spanChunk = CreateTagHelperChunk(
+                "span",
+                new[]
+                {
+                    new TagHelperDescriptor("span", "SpanTagHelper", "FakeAssemblyName")
+                });
             var codeRenderer = CreateCodeRenderer();
 
             // Act
@@ -106,17 +130,26 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         public void UsesCorrectUniqueIdForMultipleTagHelperChunksSomeWithSameSameTagHelpersSomeWithDifferentTagHelpers()
         {
             // Arrange
-            var chunk1 = CreateTagHelperChunk("div", new[] {
-                new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName"),
-                new TagHelperDescriptor("div", "Div2TagHelper", "FakeAssemblyName")
-            });
-            var chunk2 = CreateTagHelperChunk("span", new[] {
-                new TagHelperDescriptor("span", "SpanTagHelper", "FakeAssemblyName")
-            });
-            var chunk3 = CreateTagHelperChunk("span", new[] {
-                new TagHelperDescriptor("span", "SpanTagHelper", "FakeAssemblyName"),
-                new TagHelperDescriptor("span", "Span2TagHelper", "FakeAssemblyName")
-            });
+            var chunk1 = CreateTagHelperChunk(
+                "div",
+                new[]
+                {
+                    new TagHelperDescriptor("div", "DivTagHelper", "FakeAssemblyName"),
+                    new TagHelperDescriptor("div", "Div2TagHelper", "FakeAssemblyName")
+                });
+            var chunk2 = CreateTagHelperChunk(
+                "span",
+                new[]
+                {
+                    new TagHelperDescriptor("span", "SpanTagHelper", "FakeAssemblyName")
+                });
+            var chunk3 = CreateTagHelperChunk(
+                "span",
+                new[]
+                {
+                    new TagHelperDescriptor("span", "SpanTagHelper", "FakeAssemblyName"),
+                    new TagHelperDescriptor("span", "Span2TagHelper", "FakeAssemblyName")
+                });
             var codeRenderer = CreateCodeRenderer();
 
             // Act

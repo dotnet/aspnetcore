@@ -27,13 +27,15 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 new TagHelperDescriptor("input",
                                         "InputTagHelper",
                                         "SomeAssembly",
-                                        new TagHelperAttributeDescriptor[] {
+                                        new TagHelperAttributeDescriptor[]
+                                        {
                                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
                                         }),
                 new TagHelperDescriptor("input",
                                         "InputTagHelper2",
                                         "SomeAssembly",
-                                        new TagHelperAttributeDescriptor[] {
+                                        new TagHelperAttributeDescriptor[]
+                                        {
                                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
                                             new TagHelperAttributeDescriptor("checked", checkedPropertyInfo)
                                         })

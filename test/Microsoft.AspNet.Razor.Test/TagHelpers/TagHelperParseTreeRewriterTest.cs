@@ -1949,8 +1949,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         buildPartialStatementBlock(
                             () => new MarkupBlock(
                                 blockFactory.EscapedMarkupTagBlock(
-                                    "<", 
-                                    "text /", 
+                                    "<",
+                                    "text /",
                                     new MarkupBlock(factory.Markup("}"))))),
                         new []
                         {
@@ -3991,7 +3991,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                 .Accepts(AcceptedCharacters.NonWhiteSpace)));
 
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p class=foo dynamic=@DateTime.Now style=color:red;><strong></p></strong>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4013,7 +4014,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             absoluteIndex: 64, lineIndex: 0, columnIndex: 64)
                     }
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<div><p>Hello <strong>World</strong></div>",
                     new MarkupBlock(
                         blockFactory.MarkupTagBlock("<div>"),
@@ -4029,7 +4031,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             absoluteIndex: 5, lineIndex: 0, columnIndex: 5)
                     }
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<div><p>Hello <strong>World</div>",
                     new MarkupBlock(
                         blockFactory.MarkupTagBlock("<div>"),
@@ -4048,7 +4051,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             absoluteIndex: 14, lineIndex: 0, columnIndex: 14)
                     }
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p class=\"foo\">Hello <p style=\"color:red;\">World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4216,13 +4220,15 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                 var factory = CreateDefaultSpanFactory();
 
                 // Should re-write text tags that aren't in C# blocks
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<text>Hello World</text>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("text",
                             factory.Markup("Hello World")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "@{<text>Hello World</text>}",
                     new MarkupBlock(
                         factory.EmptyHtml(),
@@ -4239,7 +4245,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                         factory.EmptyHtml())
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "@{<text><p>Hello World</p></text>}",
                     new MarkupBlock(
                         factory.EmptyHtml(),
@@ -4257,7 +4264,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                         factory.EmptyHtml())
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "@{<p><text>Hello World</text></p>}",
                     new MarkupBlock(
                         factory.EmptyHtml(),
@@ -4290,7 +4298,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             {
                 var factory = CreateDefaultSpanFactory();
 
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<foo><!-- Hello World --></foo>",
                     new MarkupBlock(
                         new MarkupTagBlock(
@@ -4299,7 +4308,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagBlock(
                             factory.Markup("</foo>")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<foo><!-- @foo --></foo>",
                     new MarkupBlock(
                         new MarkupTagBlock(
@@ -4314,7 +4324,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagBlock(
                             factory.Markup("</foo>")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<foo><?xml Hello World ?></foo>",
                     new MarkupBlock(
                         new MarkupTagBlock(
@@ -4323,7 +4334,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagBlock(
                             factory.Markup("</foo>")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<foo><?xml @foo ?></foo>",
                     new MarkupBlock(
                         new MarkupTagBlock(
@@ -4338,7 +4350,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagBlock(
                             factory.Markup("</foo>")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<foo><!DOCTYPE @foo ></foo>",
                     new MarkupBlock(
                         new MarkupTagBlock(
@@ -4353,7 +4366,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagBlock(
                             factory.Markup("</foo>")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<foo><!DOCTYPE hello=\"world\" ></foo>",
                     new MarkupBlock(
                         new MarkupTagBlock(
@@ -4362,7 +4376,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagBlock(
                             factory.Markup("</foo>")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<foo><![CDATA[ Hello World ]]></foo>",
                     new MarkupBlock(
                         new MarkupTagBlock(
@@ -4371,7 +4386,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagBlock(
                             factory.Markup("</foo>")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<foo><![CDATA[ @foo ]]></foo>",
                     new MarkupBlock(
                         new MarkupTagBlock(
@@ -4404,7 +4420,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             {
                 var factory = CreateDefaultSpanFactory();
 
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p      class=\"     foo\"    style=\"   color :  red  ;   \"    ></p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4421,7 +4438,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.Markup("   ")))
                         }))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p      class=\"     foo\"    style=\"   color :  red  ;   \"    >Hello World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4439,7 +4457,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             },
                             factory.Markup("Hello World")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p     class=\"   foo  \" >Hello</p> <p    style=\"  color:red; \" >World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4500,7 +4519,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.Code("foo++; } while (foo<bar>);").AsStatement().Accepts(AcceptedCharacters.None)));
 
                 var currentFormattedString = "<p class=\"{0}\" style='{0}'></p>";
-                yield return new object[] {
+                yield return new object[]
+                {
                     string.Format(currentFormattedString, dateTimeNowString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4510,7 +4530,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock(dateTimeNow))
                         }))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     string.Format(currentFormattedString, doWhileString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4522,7 +4543,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                 };
 
                 currentFormattedString = "<p class=\"{0}\" style='{0}'>Hello World</p>";
-                yield return new object[] {
+                yield return new object[]
+                {
                     string.Format(currentFormattedString, dateTimeNowString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4533,7 +4555,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             },
                             factory.Markup("Hello World")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     string.Format(currentFormattedString, doWhileString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4546,7 +4569,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                 };
 
                 currentFormattedString = "<p class=\"{0}\">Hello</p> <p style='{0}'>World</p>";
-                yield return new object[] {
+                yield return new object[]
+                {
                     string.Format(currentFormattedString, dateTimeNowString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4563,7 +4587,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             },
                             factory.Markup("World")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     string.Format(currentFormattedString, doWhileString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4583,7 +4608,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
 
                 currentFormattedString =
                     "<p class=\"{0}\" style='{0}'>Hello World <strong class=\"{0}\">inside of strong tag</strong></p>";
-                yield return new object[] {
+                yield return new object[]
+                {
                     string.Format(currentFormattedString, dateTimeNowString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4646,26 +4672,30 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                factory.Code("foo++; } while (foo<bar>);").AsStatement().Accepts(AcceptedCharacters.None));
 
                 var currentFormattedString = "<p>{0}</p>";
-                yield return new object[] {
+                yield return new object[]
+                {
                     string.Format(currentFormattedString, dateTimeNowString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p", dateTimeNow))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     string.Format(currentFormattedString, doWhileString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p", doWhile))
                 };
 
                 currentFormattedString = "<p>Hello World {0}</p>";
-                yield return new object[] {
+                yield return new object[]
+                {
                     string.Format(currentFormattedString, dateTimeNowString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
                             factory.Markup("Hello World "),
                             dateTimeNow))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     string.Format(currentFormattedString, doWhileString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4674,14 +4704,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                 };
 
                 currentFormattedString = "<p>{0}</p> <p>{0}</p>";
-                yield return new object[] {
+                yield return new object[]
+                {
                     string.Format(currentFormattedString, dateTimeNowString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p", dateTimeNow),
                         factory.Markup(" "),
                         new MarkupTagHelperBlock("p", dateTimeNow))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     string.Format(currentFormattedString, doWhileString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p", doWhile),
@@ -4690,7 +4722,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                 };
 
                 currentFormattedString = "<p>Hello {0}<strong>inside of {0} strong tag</strong></p>";
-                yield return new object[] {
+                yield return new object[]
+                {
                     string.Format(currentFormattedString, dateTimeNowString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4702,7 +4735,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             factory.Markup(" strong tag"),
                             blockFactory.MarkupTagBlock("</strong>")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     string.Format(currentFormattedString, doWhileString),
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4732,19 +4766,22 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             {
                 var factory = CreateDefaultSpanFactory();
 
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<script><script></foo></script>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("script",
                             factory.Markup("<script></foo>")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<script>Hello World <div></div></script>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("script",
                             factory.Markup("Hello World <div></div>")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<script>Hel<p>lo</p></script> <p><div>World</div></p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("script",
@@ -4754,7 +4791,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock("div",
                                 factory.Markup("World"))))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<script>Hel<strong>lo</strong></script> <script><span>World</span></script>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("script",
@@ -4763,7 +4801,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("script",
                             factory.Markup("<span>World</span>")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<script class=\"foo\" style=\"color:red;\" />",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("script",
@@ -4774,7 +4813,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                             }))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p>Hello <script class=\"foo\" style=\"color:red;\"></script> World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4787,7 +4827,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 }),
                             factory.Markup(" World")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p>Hello <script class=\"@@foo@bar.com\" style=\"color:red;\"></script> World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4824,7 +4865,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             {
                 var factory = CreateDefaultSpanFactory();
 
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p class=\"foo\" style=\"color:red;\" />",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4835,13 +4877,15 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                             }))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p>Hello <p class=\"foo\" style=\"color:red;\" /> World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock(
                             "p",
                             selfClosing: false,
-                            children: new SyntaxTreeNode[] {
+                            children: new SyntaxTreeNode[]
+                            {
                                 factory.Markup("Hello "),
                                 new MarkupTagHelperBlock(
                                     "p",
@@ -4853,9 +4897,11 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                                 "style",
                                                 factory.Markup("color:red;"))
                                         }),
-                                factory.Markup(" World")}))
+                                factory.Markup(" World")
+                            }))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "Hello<p class=\"foo\" /> <p style=\"color:red;\" />World",
                     new MarkupBlock(
                         factory.Markup("Hello"),
@@ -4899,7 +4945,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                                 .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                                 .Accepts(AcceptedCharacters.NonWhiteSpace)));
 
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p class=foo dynamic=@DateTime.Now style=color:red;></p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4910,7 +4957,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                         }))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p class=foo dynamic=@DateTime.Now style=color:red;>Hello World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4922,7 +4970,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             },
                             factory.Markup("Hello World")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p class=foo dynamic=@DateTime.Now style=color@@:red;>Hello World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4941,7 +4990,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             },
                             factory.Markup("Hello World")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p class=foo dynamic=@DateTime.Now>Hello</p> <p style=color:red; dynamic=@DateTime.Now>World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -4960,7 +5010,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             },
                             factory.Markup("World")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p class=foo dynamic=@DateTime.Now style=color:red;>Hello World <strong class=\"foo\">inside of strong tag</strong></p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -5003,7 +5054,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                 var factory = CreateDefaultSpanFactory();
                 var blockFactory = new BlockFactory(factory);
 
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p class=\"foo\" style=\"color:red;\"></p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -5013,7 +5065,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                         }))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p class=\"foo\" style=\"color:red;\">Hello World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -5024,7 +5077,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             },
                             factory.Markup("Hello World")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p class=\"foo\">Hello</p> <p style=\"color:red;\">World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -5041,7 +5095,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             },
                             factory.Markup("World")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p class=\"foo\" style=\"color:red;\">Hello World <strong class=\"foo\">inside of strong tag</strong></p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -5083,18 +5138,21 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                 var factory = CreateDefaultSpanFactory();
                 var blockFactory = new BlockFactory(factory);
 
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p></p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p"))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p>Hello World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
                             factory.Markup("Hello World")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p>Hello</p> <p>World</p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -5103,7 +5161,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupTagHelperBlock("p",
                             factory.Markup("World")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p>Hello World <strong>inside of strong tag</strong></p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -5131,20 +5190,23 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                 var factory = CreateDefaultSpanFactory();
                 var blockFactory = new BlockFactory(factory);
 
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p><div></div></p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
                             new MarkupTagHelperBlock("div")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p>Hello World <div></div></p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
                             factory.Markup("Hello World "),
                             new MarkupTagHelperBlock("div")))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p>Hel<p>lo</p></p> <p><div>World</div></p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
@@ -5156,7 +5218,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagHelperBlock("div",
                                 factory.Markup("World"))))
                 };
-                yield return new object[] {
+                yield return new object[]
+                {
                     "<p>Hel<strong>lo</strong></p> <p><span>World</span></p>",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",

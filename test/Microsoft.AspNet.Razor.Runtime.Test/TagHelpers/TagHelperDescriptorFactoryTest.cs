@@ -252,12 +252,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 nameof(OverriddenAttributeTagHelper.ValidAttribute1));
             var validProperty2 = typeof(OverriddenAttributeTagHelper).GetProperty(
                 nameof(OverriddenAttributeTagHelper.ValidAttribute2));
-            var expectedDescriptors = new[] {
+            var expectedDescriptors = new[]
+            {
                 new TagHelperDescriptor(
                     "overridden-attribute",
                     typeof(OverriddenAttributeTagHelper).FullName,
                     AssemblyName,
-                    new[] {
+                    new[]
+                    {
                         new TagHelperAttributeDescriptor("SomethingElse", validProperty1),
                         new TagHelperAttributeDescriptor("Something-Else", validProperty2)
                     })
@@ -283,12 +285,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 nameof(InheritedOverriddenAttributeTagHelper.ValidAttribute1));
             var validProperty2 = typeof(InheritedOverriddenAttributeTagHelper).GetProperty(
                 nameof(InheritedOverriddenAttributeTagHelper.ValidAttribute2));
-            var expectedDescriptors = new[] {
+            var expectedDescriptors = new[]
+            {
                 new TagHelperDescriptor(
                     "inherited-overridden-attribute",
                     typeof(InheritedOverriddenAttributeTagHelper).FullName,
                     AssemblyName,
-                    new[] {
+                    new[]
+                    {
                         new TagHelperAttributeDescriptor("valid-attribute1", validProperty1),
                         new TagHelperAttributeDescriptor("Something-Else", validProperty2)
                     })
@@ -314,12 +318,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 nameof(InheritedNotOverriddenAttributeTagHelper.ValidAttribute1));
             var validProperty2 = typeof(InheritedNotOverriddenAttributeTagHelper).GetProperty(
                 nameof(InheritedNotOverriddenAttributeTagHelper.ValidAttribute2));
-            var expectedDescriptors = new[] {
+            var expectedDescriptors = new[]
+            {
                 new TagHelperDescriptor(
                     "inherited-not-overridden-attribute",
                     typeof(InheritedNotOverriddenAttributeTagHelper).FullName,
                     AssemblyName,
-                    new[] {
+                    new[]
+                    {
                         new TagHelperAttributeDescriptor("SomethingElse", validProperty1),
                         new TagHelperAttributeDescriptor("Something-Else", validProperty2)
                     })
@@ -368,7 +374,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 "inherited-single-attribute",
                 typeof(InheritedSingleAttributeTagHelper).FullName,
                 AssemblyName,
-                new[] {
+                new[]
+                {
                     new TagHelperAttributeDescriptor(
                         "int-attribute",
                         nameof(InheritedSingleAttributeTagHelper.IntAttribute),
@@ -398,7 +405,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 "single-attribute",
                 typeof(SingleAttributeTagHelper).FullName,
                 AssemblyName,
-                new[] {
+                new[]
+                {
                     new TagHelperAttributeDescriptor("int-attribute", intProperty)
                 });
 
@@ -425,7 +433,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 "missing-accessor",
                 typeof(MissingAccessorTagHelper).FullName,
                 AssemblyName,
-                new[] {
+                new[]
+                {
                     new TagHelperAttributeDescriptor("valid-attribute", validProperty)
                 });
 
@@ -452,7 +461,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 "non-public-accessor",
                 typeof(NonPublicAccessorTagHelper).FullName,
                 AssemblyName,
-                new[] {
+                new[]
+                {
                     new TagHelperAttributeDescriptor("valid-attribute", validProperty)
                 });
 
@@ -524,12 +534,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var errorSink = new ErrorSink();
 
             // Also confirm isStringProperty is calculated correctly.
-            var expectedDescriptors = new[] {
+            var expectedDescriptors = new[]
+            {
                 new TagHelperDescriptor(
                     "div",
                     typeof(MultiTagTagHelper).FullName,
                     AssemblyName,
-                    new[] {
+                    new[]
+                    {
                         new TagHelperAttributeDescriptor(
                             "valid-attribute",
                             nameof(MultiTagTagHelper.ValidAttribute),
@@ -540,7 +552,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     "p",
                     typeof(MultiTagTagHelper).FullName,
                     AssemblyName,
-                    new[] {
+                    new[]
+                    {
                         new TagHelperAttributeDescriptor(
                             "valid-attribute",
                             nameof(MultiTagTagHelper.ValidAttribute),
@@ -575,7 +588,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     "inherited-multi-tag",
                     typeof(InheritedMultiTagTagHelper).FullName,
                     AssemblyName,
-                    new[] {
+                    new[]
+                    {
                         new TagHelperAttributeDescriptor("valid-attribute", validProp)
                     });
 
@@ -596,7 +610,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var errorSink = new ErrorSink();
-            var expectedDescriptors = new[] {
+            var expectedDescriptors = new[]
+            {
                 new TagHelperDescriptor(
                     "div",
                     typeof(DuplicateTagNameTagHelper).FullName,
@@ -628,7 +643,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var errorSink = new ErrorSink();
-            var expectedDescriptors = new[] {
+            var expectedDescriptors = new[]
+            {
                 new TagHelperDescriptor("data-condition",
                                         typeof(OverrideNameTagHelper).FullName,
                                         AssemblyName),
@@ -691,7 +707,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     { "he/lo", new[] { onNameError("he/lo", "/") } },
                     {
                         "/he/lo/",
-                        new[] {
+                        new[]
+                        {
                             onNameError("/he/lo/", "/"),
                             onNameError("/he/lo/", "/"),
                             onNameError("/he/lo/", "/")
@@ -934,7 +951,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     {
                         typeof(InvalidBoundAttribute),
                         Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                        new[] {
+                        new[]
+                        {
                             string.Format(
                                 errorFormat,
                                 nameof(InvalidBoundAttribute.DataSomething),
@@ -943,13 +961,15 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     },
                     {
                         typeof(InvalidBoundAttributeWithValid),
-                        new[] {
+                        new[]
+                        {
                             new TagHelperAttributeDescriptor(
                                 "int-attribute",
                                 typeof(InvalidBoundAttributeWithValid)
                                     .GetProperty(nameof(InvalidBoundAttributeWithValid.IntAttribute)))
                         },
-                        new[] {
+                        new[]
+                        {
                             string.Format(
                                 errorFormat,
                                 nameof(InvalidBoundAttributeWithValid.DataSomething),
@@ -958,7 +978,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     },
                     {
                         typeof(OverriddenInvalidBoundAttributeWithValid),
-                        new[] {
+                        new[]
+                        {
                             new TagHelperAttributeDescriptor(
                                 "valid-something",
                                 typeof(OverriddenInvalidBoundAttributeWithValid)
@@ -969,7 +990,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     {
                         typeof(OverriddenValidBoundAttributeWithInvalid),
                         Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                        new[] {
+                        new[]
+                        {
                             string.Format(
                                 errorFormat,
                                 nameof(OverriddenValidBoundAttributeWithInvalid.ValidSomething),
@@ -979,7 +1001,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     {
                         typeof(OverriddenValidBoundAttributeWithInvalidUpperCase),
                         Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                        new[] {
+                        new[]
+                        {
                             string.Format(
                                 errorFormat,
                                 nameof(OverriddenValidBoundAttributeWithInvalidUpperCase.ValidSomething),

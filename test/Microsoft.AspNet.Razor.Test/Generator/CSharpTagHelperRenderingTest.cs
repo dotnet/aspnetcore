@@ -587,7 +587,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             // Act & Assert
             RunTagHelperTest("AddTagHelperDirective",
                              designTimeMode: true,
-                             tagHelperDescriptors: new[] {
+                             tagHelperDescriptors: new[]
+                             {
                                 new TagHelperDescriptor("p", "pTagHelper", "SomeAssembly")
                              });
         }
@@ -602,9 +603,9 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 new TagHelperDescriptor("MyTagHelper",
                                         "MyTagHelper",
                                         "SomeAssembly",
-                                        new [] {
-                                            new TagHelperAttributeDescriptor("BoundProperty",
-                                                                             propertyInfo)
+                                        new []
+                                        {
+                                            new TagHelperAttributeDescriptor("BoundProperty", propertyInfo)
                                         }),
                 new TagHelperDescriptor("NestedTagHelper", "NestedTagHelper", "SomeAssembly")
             };
@@ -626,7 +627,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     tagName: "p",
                     typeName: "PTagHelper",
                     assemblyName: "SomeAssembly",
-                    attributes: new [] {
+                    attributes: new []
+                    {
                         new TagHelperAttributeDescriptor("age", pAgePropertyInfo)
                     },
                     requiredAttributes: Enumerable.Empty<string>()),
@@ -635,7 +637,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     tagName: "input",
                     typeName: "InputTagHelper",
                     assemblyName: "SomeAssembly",
-                    attributes: new TagHelperAttributeDescriptor[] {
+                    attributes: new TagHelperAttributeDescriptor[]
+                    {
                         new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
                     },
                     requiredAttributes: Enumerable.Empty<string>()),
@@ -644,7 +647,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     tagName: "input",
                     typeName: "InputTagHelper2",
                     assemblyName: "SomeAssembly",
-                    attributes: new TagHelperAttributeDescriptor[] {
+                    attributes: new TagHelperAttributeDescriptor[]
+                    {
                         new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
                         new TagHelperAttributeDescriptor("checked", checkedPropertyInfo)
                     },
