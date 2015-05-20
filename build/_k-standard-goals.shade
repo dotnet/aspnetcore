@@ -65,7 +65,7 @@ default Configuration='${E("Configuration")}'
   k-restore
 
 #target-dir-clean target='clean'
-  rimraf rimrafDir='${TARGET_DIR}' if='Directory.Exists("${TARGET_DIR}")'
+  rimraf rimrafDir='${TARGET_DIR}' if='Directory.Exists(TARGET_DIR)'
 
 #build-clean target='clean' if='Directory.Exists("src")'
   k-clean each='var projectFile in Files.Include("src/**/project.json")'
