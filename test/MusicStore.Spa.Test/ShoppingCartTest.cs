@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.AspNet.Http.Internal;
@@ -29,7 +30,7 @@ namespace MusicStore.Models
 
         private class CookiesFeature : IRequestCookiesFeature
         {
-            private readonly IReadableStringCollection _cookies;
+            private IReadableStringCollection _cookies;
 
             public CookiesFeature(string key, string value)
             {
@@ -42,6 +43,7 @@ namespace MusicStore.Models
             public IReadableStringCollection Cookies
             {
                 get { return _cookies; }
+                set { _cookies = value; }
             }
         }
     }
