@@ -5,7 +5,7 @@
         "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
         "Microsoft.Framework.Caching.Distributed": "1.0.0-*",
         "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
-        "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" }
+        "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" }
     },
     "compilationOptions": {
         "allowUnsafe": true
