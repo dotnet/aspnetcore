@@ -18,9 +18,12 @@ namespace Microsoft.Framework.Localization
     /// </summary>
     public class ResourceManagerStringLocalizer : IStringLocalizer
     {
-        private readonly ConcurrentDictionary<MissingManifestCacheKey, object> _missingManifestCache =
-            new ConcurrentDictionary<MissingManifestCacheKey, object>();
+        private readonly ConcurrentDictionary<string, object> _missingManifestCache =
+            new ConcurrentDictionary<string, object>();
 
+        private static readonly ConcurrentDictionary<string, IList<string>> _resourceNamesCache =
+            new ConcurrentDictionary<string, IList<string>>();
+        
         /// <summary>
         /// Creates a new <see cref="ResourceManagerStringLocalizer"/>.
         /// </summary>
@@ -96,9 +99,10 @@ namespace Microsoft.Framework.Localization
         /// <param name="name">The name of the string resource.</param>
         /// <param name="culture">The <see cref="CultureInfo"/> to get the string for.</param>
         /// <returns>The resource string, or <c>null</c> if none was found.</returns>
-        protected string GetStringSafely([NotNull] string name, [NotNull] CultureInfo culture)
+        protected string GetStringSafely([NotNull] string name, CultureInfo culture)
         {
-            var cacheKey = new MissingManifestCacheKey(name, culture ?? CultureInfo.CurrentUICulture);
+            var cacheKey = $"name={name}&culture={(culture ?? CultureInfo.CurrentUICulture).Name}";
+
             if (_missingManifestCache.ContainsKey(cacheKey))
             {
                 return null;
@@ -136,7 +140,6 @@ namespace Microsoft.Framework.Localization
         /// <returns>The <see cref="IEnumerator{LocalizedString}"/>.</returns>
         protected IEnumerator<LocalizedString> GetEnumerator([NotNull] CultureInfo culture)
         {
-            // TODO: I'm sure something here should be cached, probably the whole result
             var resourceNames = GetResourceNamesFromCultureHierarchy(culture);
 
             foreach (var name in resourceNames)
@@ -144,6 +147,12 @@ namespace Microsoft.Framework.Localization
                 var value = GetStringSafely(name, culture);
                 yield return new LocalizedString(name, value ?? name, resourceNotFound: value == null);
             }
+        }
+
+        // Internal to allow testing
+        internal static void ClearResourceNamesCache()
+        {
+            _resourceNamesCache.Clear();
         }
 
         private IEnumerable<string> GetResourceNamesFromCultureHierarchy(CultureInfo startingCulture)
@@ -155,20 +164,10 @@ namespace Microsoft.Framework.Localization
             {
                 try
                 {
-                    var resourceStreamName = ResourceBaseName;
-                    if (!string.IsNullOrEmpty(currentCulture.Name))
+                    var cultureResourceNames = GetResourceNamesForCulture(currentCulture);
+                    foreach (var resourceName in cultureResourceNames)
                     {
-                        resourceStreamName += "." + currentCulture.Name;
-                    }
-                    resourceStreamName += ".resources";
-                    using (var cultureResourceStream = ResourceAssembly.GetManifestResourceStream(resourceStreamName))
-                    using (var resources = new ResourceReader(cultureResourceStream))
-                    {
-                        foreach (DictionaryEntry entry in resources)
-                        {
-                            var resourceName = (string)entry.Key;
-                            resourceNames.Add(resourceName);
-                        }
+                        resourceNames.Add(resourceName);
                     }
                 }
                 catch (MissingManifestResourceException) { }
@@ -185,43 +184,34 @@ namespace Microsoft.Framework.Localization
             return resourceNames;
         }
 
-        private class MissingManifestCacheKey : IEquatable<MissingManifestCacheKey>
+        private IList<string> GetResourceNamesForCulture(CultureInfo culture)
         {
-            private readonly int _hashCode;
-
-            public MissingManifestCacheKey(string name, CultureInfo culture)
+            var resourceStreamName = ResourceBaseName;
+            if (!string.IsNullOrEmpty(culture.Name))
             {
-                Name = name;
-                CultureInfo = culture;
-                _hashCode = new { Name, CultureInfo }.GetHashCode();
+                resourceStreamName += "." + culture.Name;
             }
+            resourceStreamName += ".resources";
 
-            public string Name { get; }
+            var cacheKey = $"assembly={ResourceAssembly.FullName};resourceStreamName={resourceStreamName}";
 
-            public CultureInfo CultureInfo { get; }
-
-            public bool Equals(MissingManifestCacheKey other)
+            var cultureResourceNames = _resourceNamesCache.GetOrAdd(cacheKey, key =>
             {
-                return string.Equals(Name, other.Name, StringComparison.Ordinal)
-                    && CultureInfo == other.CultureInfo;
-            }
-
-            public override bool Equals(object obj)
-            {
-                var other = obj as MissingManifestCacheKey;
-
-                if (other != null)
+                var names = new List<string>();
+                using (var cultureResourceStream = ResourceAssembly.GetManifestResourceStream(key))
+                using (var resources = new ResourceReader(cultureResourceStream))
                 {
-                    return Equals(other);
+                    foreach (DictionaryEntry entry in resources)
+                    {
+                        var resourceName = (string)entry.Key;
+                        names.Add(resourceName);
+                    }
                 }
 
-                return base.Equals(obj);
-            }
+                return names;
+            });
 
-            public override int GetHashCode()
-            {
-                return _hashCode;
-            }
+            return cultureResourceNames;
         }
     }
 }
