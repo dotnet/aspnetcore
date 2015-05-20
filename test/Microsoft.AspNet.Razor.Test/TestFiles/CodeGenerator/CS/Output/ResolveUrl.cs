@@ -81,15 +81,9 @@ namespace TestOutput
             Instrumentation.EndContext();
             WriteAttribute("href", Tuple.Create(" href=\"", 387), Tuple.Create("\"", 442), Tuple.Create(Tuple.Create("", 394), Tuple.Create<System.Object, System.Int32>(Href("~/A+Really(Crazy),Url.Is:This/"), 394), false), 
             Tuple.Create(Tuple.Create("", 424), Tuple.Create<System.Object, System.Int32>(product.id, 424), false), Tuple.Create(Tuple.Create("", 435), Tuple.Create("/Detail", 435), true));
-            Instrumentation.BeginContext(443, 21, true);
-            WriteLiteral(">Crazy Url!</a>\r\n    ");
+            Instrumentation.BeginContext(443, 23, true);
+            WriteLiteral(">Crazy Url!</a>\r\n    \r\n");
             Instrumentation.EndContext();
-#line 12 "ResolveUrl.cshtml"
-           
-
-#line default
-#line hidden
-
 #line 13 "ResolveUrl.cshtml"
 
 #line default

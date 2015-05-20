@@ -1049,19 +1049,22 @@ namespace Microsoft.AspNet.Razor.Parser
             tags.Clear();
             if (!Context.DesignTimeMode)
             {
-                if (Context.LastSpan.Kind == SpanKind.Transition)
+                if (At(HtmlSymbolType.WhiteSpace))
                 {
-                    // Output current span content as markup.
-                    Output(SpanKind.Markup);
+                    if (Context.LastSpan.Kind == SpanKind.Transition)
+                    {
+                        // Output current span content as markup.
+                        Output(SpanKind.Markup);
 
-                    // Accept and mark the whitespace at the end of a <text> tag as code.
-                    AcceptWhile(HtmlSymbolType.WhiteSpace);
-                    Span.CodeGenerator = new StatementCodeGenerator();
-                    Output(SpanKind.Code);
-                }
-                else
-                {
-                    AcceptWhile(HtmlSymbolType.WhiteSpace);
+                        // Accept and mark the whitespace at the end of a <text> tag as code.
+                        AcceptWhile(HtmlSymbolType.WhiteSpace);
+                        Span.CodeGenerator = new StatementCodeGenerator();
+                        Output(SpanKind.Code);
+                    }
+                    else
+                    {
+                        AcceptWhile(HtmlSymbolType.WhiteSpace);
+                    }
                 }
 
                 if (!EndOfFile && CurrentSymbol.Type == HtmlSymbolType.NewLine)
