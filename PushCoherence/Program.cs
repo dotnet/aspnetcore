@@ -13,6 +13,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace PushCoherence
 {
@@ -107,6 +109,8 @@ namespace PushCoherence
                     stream.SetLength(0);
                     xdoc.Save(stream);
                 }
+
+                ReplaceDependencyVersionInAppProjectJson(package);
             }
         }
 
@@ -167,6 +171,39 @@ namespace PushCoherence
                                                    Path.GetFileNameWithoutExtension(packageInfo.Path),
                                                    p.ExitCode);
                     throw new Exception(message);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Remove build number in the app/project.json file dependencies.
+        /// </summary>
+        private static void ReplaceDependencyVersionInAppProjectJson(Package package)
+        {
+            // Project.json in the 'app' folder
+            var appProjectJsonPart = package.GetParts().FirstOrDefault(p => p.Uri.ToString().Contains("app/project.json"));
+
+            if (appProjectJsonPart != null)
+            {
+                using (var stream = appProjectJsonPart.GetStream(FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var reader = new StreamReader(stream);
+                    var modifiedJsonObject = JObject.Parse(reader.ReadToEnd());
+
+                    // First 'dependencies' tag in project.json
+                    var dependencies = modifiedJsonObject["dependencies"] as JObject;
+                    foreach (var property in dependencies.Properties())
+                    {
+                        // Replace build numbers in each dependency
+                        property.Value = StripBuildVersion(property.Value.ToString());
+                    }
+
+                    stream.Position = 0;
+                    stream.SetLength(0);
+
+                    // Write JSON back
+                    var writer = new JsonTextWriter(new StreamWriter(stream));
+                    modifiedJsonObject.WriteTo(writer);
                 }
             }
         }
