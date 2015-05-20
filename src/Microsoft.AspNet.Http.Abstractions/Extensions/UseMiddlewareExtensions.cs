@@ -4,9 +4,9 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Framework.DependencyInjection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Builder
                 var parameters = methodinfo.GetParameters();
                 if (parameters[0].ParameterType != typeof(HttpContext))
                 {
-                    throw new Exception("TODO: Middleware Invoke method must take first argument of HttpContext");
+                    throw new Exception("Middleware Invoke method must take first argument of HttpContext");
                 }
                 if (parameters.Length == 1)
                 {
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Builder
                     var serviceProvider = context.RequestServices ?? context.ApplicationServices ?? applicationServices;
                     if (serviceProvider == null)
                     {
-                        throw new Exception("TODO: IServiceProvider is not available");
+                        throw new Exception("IServiceProvider is not available");
                     }
                     var arguments = new object[parameters.Length];
                     arguments[0] = context;
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Builder
                         arguments[index] = serviceProvider.GetService(serviceType);
                         if (arguments[index] == null)
                         {
-                            throw new Exception(string.Format("TODO: No service for type '{0}' has been registered.", serviceType));
+                            throw new Exception(string.Format("No service for type '{0}' has been registered.", serviceType));
                         }
                     }
                     return (Task)methodinfo.Invoke(instance, arguments);
