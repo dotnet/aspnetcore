@@ -33,6 +33,7 @@ namespace Microsoft.AspNet.Builder
         /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
         public static IApplicationBuilder UseRequestLocalization(
             [NotNull] this IApplicationBuilder builder,
-            [NotNull] RequestLocalizationOptions options => builder.UseMiddleware<RequestLocalizationMiddleware>(options);
+            [NotNull] RequestLocalizationOptions options)
+            => builder.UseMiddleware<RequestLocalizationMiddleware>(options);
     }
 }
