@@ -12,6 +12,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;form&gt; elements.
     /// </summary>
+    [TargetElement("form", Attributes = ActionAttributeName)]
+    [TargetElement("form", Attributes = AntiForgeryAttributeName)]
+    [TargetElement("form", Attributes = ControllerAttributeName)]
+    [TargetElement("form", Attributes = RouteAttributeName)]
+    [TargetElement("form", Attributes = RouteValuesDictionaryName)]
+    [TargetElement("form", Attributes = RouteValuesPrefix + "*")]
     public class FormTagHelper : TagHelper
     {
         private const string ActionAttributeName = "asp-action";

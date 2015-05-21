@@ -12,7 +12,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;a&gt; elements.
     /// </summary>
-    [TargetElement("a")]
+    [TargetElement("a", Attributes = ActionAttributeName)]
+    [TargetElement("a", Attributes = ControllerAttributeName)]
+    [TargetElement("a", Attributes = FragmentAttributeName)]
+    [TargetElement("a", Attributes = HostAttributeName)]
+    [TargetElement("a", Attributes = ProtocolAttributeName)]
+    [TargetElement("a", Attributes = RouteAttributeName)]
+    [TargetElement("a", Attributes = RouteValuesDictionaryName)]
+    [TargetElement("a", Attributes = RouteValuesPrefix + "*")]
     public class AnchorTagHelper : TagHelper
     {
         private const string ActionAttributeName = "asp-action";
