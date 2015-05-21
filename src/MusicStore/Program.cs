@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 
 namespace MusicStore
 {
@@ -21,7 +21,7 @@ namespace MusicStore
         public Task<int> Main(string[] args)
         {
             //Add command line configuration source to read command line parameters.
-            var config = new Configuration();
+            var config = new ConfigurationSection();
             config.AddCommandLine(args);
 
             using (new WebHostBuilder(_serviceProvider, config)

@@ -3,7 +3,7 @@ using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime;
 using MusicStore.Apis;
@@ -15,12 +15,12 @@ namespace MusicStore.Spa
     {
         public Startup(IApplicationEnvironment env)
         {
-            Configuration = new Configuration(env.ApplicationBasePath)
+            Configuration = new ConfigurationSection(env.ApplicationBasePath)
                         .AddJsonFile("Config.json")
                         .AddEnvironmentVariables();
         }
 
-        public Microsoft.Framework.ConfigurationModel.IConfiguration Configuration { get; set; }
+        public Microsoft.Framework.Configuration.IConfiguration Configuration { get; set; }
 
         public void ConfigureServices(IServiceCollection services)
         {

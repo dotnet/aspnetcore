@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Relational;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime;
 
@@ -89,7 +89,7 @@ namespace MusicStore.Models
         {
             var appEnv = serviceProvider.GetService<IApplicationEnvironment>();
 
-            var configuration = new Configuration(appEnv.ApplicationBasePath)
+            var configuration = new ConfigurationSection(appEnv.ApplicationBasePath)
                         .AddJsonFile("config.json")
                         .AddEnvironmentVariables();
 

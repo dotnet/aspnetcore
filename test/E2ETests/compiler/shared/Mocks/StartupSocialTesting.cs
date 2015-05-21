@@ -11,7 +11,7 @@ using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.Caching.Memory;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
@@ -33,7 +33,7 @@ namespace MusicStore
         {
             //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
             //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
-            Configuration = new Configuration(appEnvironment.ApplicationBasePath)
+            Configuration = new ConfigurationSection(appEnvironment.ApplicationBasePath)
                         .AddJsonFile("config.json")
                         .AddEnvironmentVariables() //All environment variables in the process's context flow in as configuration values.
                         .AddJsonFile("configoverride.json", optional: true); // Used to override some configuration parameters that cannot be overridden by environment.

@@ -33,8 +33,9 @@
     "EntityFramework.SqlServer": "7.0.0-*",
     "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
     "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-*",
-    "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
-    "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
+    "Microsoft.Framework.Configuration": "1.0.0-*",
+    "Microsoft.Framework.Configuration.EnvironmentVariables": "1.0.0-*",
+    "Microsoft.Framework.Configuration.Json": "1.0.0-*",
     "AutoMapper": "4.0.0-ci1026"
   },
   "commands": {

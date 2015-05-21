@@ -33,7 +33,9 @@
         "Microsoft.AspNet.Tooling.Razor": "1.0.0-*",
         "Microsoft.Framework.Caching.Distributed": "1.0.0-*",
         "Microsoft.Framework.CodeGenerators.Mvc": "1.0.0-*",
-        "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
+        "Microsoft.Framework.Configuration.CommandLine": "1.0.0-*",
+        "Microsoft.Framework.Configuration.EnvironmentVariables": "1.0.0-*",
+        "Microsoft.Framework.Configuration.Json": "1.0.0-*",
         "Microsoft.Framework.Logging.Console": "1.0.0-*"
     },
     "commands": {
