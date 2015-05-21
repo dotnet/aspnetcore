@@ -1,7 +1,7 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
-         "Microsoft.Framework.ConfigurationModel.Abstractions": "1.0.0-*",
+         "Microsoft.Framework.Configuration.Abstractions": "1.0.0-*",
          "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
          "Microsoft.Framework.OptionsModel": "1.0.0-*",
          "Microsoft.AspNet.Http": "1.0.0-*",

@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Cors;
 using Microsoft.AspNet.Cors.Core;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
