@@ -1,30 +1,31 @@
 ﻿{
-    "version": "1.0.0-*",
-    "description": "ASP.NET 5 HTTP object model. HttpContext and family.",
-    "dependencies": {
-        "Microsoft.Framework.ActivatorUtilities.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.WebEncoders.Core": "1.0.0-*"
-    },
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Collections": "4.0.10-beta-*",
-                "System.Diagnostics.Tools": "4.0.0-beta-*",
-                "System.Globalization": "4.0.10-beta-*",
-                "System.Globalization.Extensions": "4.0.0-beta-*",
-                "System.Linq": "4.0.0-beta-*",
-                "System.Net.Primitives": "4.0.10-beta-*",
-                "System.Net.WebSockets" : "4.0.0-beta-*",
-                "System.Reflection.TypeExtensions": "4.0.0-beta-*",
-                "System.Runtime": "4.0.20-beta-*",
-                "System.Runtime.InteropServices": "4.0.20-beta-*",
-                "System.Security.Cryptography.X509Certificates": "4.0.0-beta-*",
-                "System.Security.Claims": "4.0.0-beta-*",
-                "System.Security.Principal": "4.0.0-beta-*",
-                "System.Threading.Tasks": "4.0.10-beta-*"
-            }
-        }
+  "version": "1.0.0-*",
+  "description": "ASP.NET 5 HTTP object model. HttpContext and family.",
+  "dependencies": {
+    "Microsoft.Framework.ActivatorUtilities.Sources": { "type": "build", "version": "1.0.0-*" },
+    "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
+    "Microsoft.Framework.WebEncoders.Core": "1.0.0-*"
+  },
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": {
+      "dependencies": {
+        "System.Collections": "4.0.10-beta-*",
+        "System.Diagnostics.Tools": "4.0.0-beta-*",
+        "System.Globalization": "4.0.10-beta-*",
+        "System.Globalization.Extensions": "4.0.0-beta-*",
+        "System.Linq": "4.0.0-beta-*",
+        "System.Linq.Expressions": "4.0.10-beta-*",
+        "System.Net.Primitives": "4.0.10-beta-*",
+        "System.Net.WebSockets": "4.0.0-beta-*",
+        "System.Reflection.TypeExtensions": "4.0.0-beta-*",
+        "System.Runtime": "4.0.20-beta-*",
+        "System.Runtime.InteropServices": "4.0.20-beta-*",
+        "System.Security.Claims": "4.0.0-beta-*",
+        "System.Security.Cryptography.X509Certificates": "4.0.0-beta-*",
+        "System.Security.Principal": "4.0.0-beta-*",
+        "System.Threading.Tasks": "4.0.10-beta-*"
+      }
     }
+  }
 }
