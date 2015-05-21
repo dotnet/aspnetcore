@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using Microsoft.AspNet.Builder;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Runtime.Infrastructure;
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Identity.Test
                 {"identity:lockout:EnabledByDefault", "TRUe"},
                 {"identity:lockout:MaxFailedAccessAttempts", "1000"}
             };
-            var config = new Configuration(new MemoryConfigurationSource(dic));
+            var config = new ConfigurationSection(new MemoryConfigurationSource(dic));
             Assert.Equal(roleClaimType, config.Get("identity:claimsidentity:roleclaimtype"));
 
             var services = new ServiceCollection();
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Identity.Test
                 {"identity:user:requireUniqueEmail", "true"},
                 {"identity:lockout:MaxFailedAccessAttempts", "1000"}
             };
-            var config = new Configuration(new MemoryConfigurationSource(dic));
+            var config = new ConfigurationSection(new MemoryConfigurationSource(dic));
             var services = new ServiceCollection();
             services.ConfigureIdentity(config.GetConfigurationSection("identity"));
             services.AddIdentity<TestUser, TestRole>(o => { o.User.RequireUniqueEmail = false; o.Lockout.MaxFailedAccessAttempts++; });

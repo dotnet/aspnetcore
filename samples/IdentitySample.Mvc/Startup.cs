@@ -4,7 +4,7 @@ using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
@@ -23,7 +23,7 @@ namespace IdentitySamples
             * Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
             * then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
             */
-            Configuration = new Configuration(env.ApplicationBasePath)
+            Configuration = new ConfigurationSection(env.ApplicationBasePath)
                 .AddJsonFile("LocalConfig.json")
                 .AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
         }

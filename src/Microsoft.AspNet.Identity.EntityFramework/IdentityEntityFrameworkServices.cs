@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Identity
