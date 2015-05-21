@@ -60,12 +60,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                                                                    metadataProvider: metadataProvider);
             var expectedPostContent = "Something" + htmlGenerator.GenerateAntiForgery(viewContext)
                                                                  .ToString(TagRenderMode.SelfClosing);
-            var formTagHelper = new FormTagHelper
+            var formTagHelper = new FormTagHelper(htmlGenerator)
             {
                 Action = "index",
                 AntiForgery = true,
                 Controller = "home",
-                Generator = htmlGenerator,
                 ViewContext = viewContext,
                 RouteValues =
                 {
@@ -127,11 +126,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             generator.Setup(mock => mock.GenerateAntiForgery(viewContext))
                      .Returns(new TagBuilder("input", new CommonTestEncoder()));
-            var formTagHelper = new FormTagHelper
+            var formTagHelper = new FormTagHelper(generator.Object)
             {
                 Action = "Index",
                 AntiForgery = antiForgery,
-                Generator = generator.Object,
                 ViewContext = viewContext,
             };
 
@@ -194,11 +192,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     })
                 .Returns(new TagBuilder("form", new CommonTestEncoder()))
                 .Verifiable();
-            var formTagHelper = new FormTagHelper
+            var formTagHelper = new FormTagHelper(generator.Object)
             {
                 Action = "Index",
                 AntiForgery = false,
-                Generator = generator.Object,
                 ViewContext = testViewContext,
                 RouteValues =
                 {
@@ -250,12 +247,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     null))
                 .Returns(new TagBuilder("form", new CommonTestEncoder()))
                 .Verifiable();
-            var formTagHelper = new FormTagHelper
+            var formTagHelper = new FormTagHelper(generator.Object)
             {
                 Action = "Index",
                 AntiForgery = false,
                 Controller = "Home",
-                Generator = generator.Object,
                 ViewContext = viewContext,
             };
 
@@ -301,11 +297,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     null))
                 .Returns(new TagBuilder("form", new CommonTestEncoder()))
                 .Verifiable();
-            var formTagHelper = new FormTagHelper
+            var formTagHelper = new FormTagHelper(generator.Object)
             {
                 AntiForgery = false,
                 Route = "Default",
-                Generator = generator.Object,
                 ViewContext = viewContext,
                 RouteValues =
                 {
@@ -341,10 +336,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             generator.Setup(mock => mock.GenerateAntiForgery(It.IsAny<ViewContext>()))
                      .Returns(new TagBuilder("input", new CommonTestEncoder()));
-            var formTagHelper = new FormTagHelper
+            var formTagHelper = new FormTagHelper(generator.Object)
             {
                 AntiForgery = antiForgery,
-                Generator = generator.Object,
                 ViewContext = viewContext,
             };
 
@@ -386,7 +380,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task ProcessAsync_ThrowsIfActionConflictsWithBoundAttributes(string propertyName)
         {
             // Arrange
-            var formTagHelper = new FormTagHelper();
+            var formTagHelper = new FormTagHelper(new TestableHtmlGenerator(new EmptyModelMetadataProvider()));
             var tagHelperOutput = new TagHelperOutput(
                 "form",
                 attributes: new TagHelperAttributeList
@@ -419,7 +413,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task ProcessAsync_ThrowsIfRouteAndActionOrControllerProvided(string propertyName)
         {
             // Arrange
-            var formTagHelper = new FormTagHelper
+            var formTagHelper = new FormTagHelper(new TestableHtmlGenerator(new EmptyModelMetadataProvider()))
             {
                 Route = "Default",
             };

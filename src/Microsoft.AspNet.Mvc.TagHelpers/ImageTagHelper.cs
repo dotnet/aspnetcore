@@ -26,6 +26,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private FileVersionProvider _fileVersionProvider;
 
         /// <summary>
+        /// Creates a new <see cref="ImageTagHelper"/>.
+        /// </summary>
+        /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
+        /// <param name="cache">The <see cref="IMemoryCache"/>.</param>
+        public ImageTagHelper(IHostingEnvironment hostingEnvironment, IMemoryCache cache)
+        {
+            HostingEnvironment = hostingEnvironment;
+            Cache = cache;
+        }
+
+        /// <summary>
         /// Source of the image.
         /// </summary>
         /// <remarks>
@@ -43,17 +54,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [HtmlAttributeName(FileVersionAttributeName)]
         public bool FileVersion { get; set; }
 
-        [Activate]
-        [HtmlAttributeNotBound]
-        public IHostingEnvironment HostingEnvironment { get; set; }
+        protected IHostingEnvironment HostingEnvironment { get; }
 
-        [Activate]
-        [HtmlAttributeNotBound]
+        [ViewContext]
         public ViewContext ViewContext { get; set; }
 
-        [Activate]
-        [HtmlAttributeNotBound]
-        public IMemoryCache Cache { get; set; }
+        protected IMemoryCache Cache { get; }
 
         /// <inheritdoc />
         public override void Process(TagHelperContext context, TagHelperOutput output)

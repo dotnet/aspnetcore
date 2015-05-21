@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task TagHelperActivation_ActivateHtmlHelper_RendersProperly()
+        public async Task TagHelperActivation_ConstructorInjection_RendersProperly()
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);

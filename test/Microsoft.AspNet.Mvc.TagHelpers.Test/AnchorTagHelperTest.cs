@@ -58,12 +58,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = TestableHtmlGenerator.GetViewContext(model: null,
                                                                    htmlGenerator: htmlGenerator,
                                                                    metadataProvider: metadataProvider);
-            var anchorTagHelper = new AnchorTagHelper
+            var anchorTagHelper = new AnchorTagHelper(htmlGenerator)
             {
                 Action = "index",
                 Controller = "home",
                 Fragment = "hello=world",
-                Generator = htmlGenerator,
                 Host = "contoso.com",
                 Protocol = "http",
                 RouteValues =
@@ -117,10 +116,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     null))
                 .Returns(new TagBuilder("a", new CommonTestEncoder()))
                 .Verifiable();
-            var anchorTagHelper = new AnchorTagHelper
+            var anchorTagHelper = new AnchorTagHelper(generator.Object)
             {
                 Fragment = "hello=world",
-                Generator = generator.Object,
                 Host = "contoso.com",
                 Protocol = "http",
                 Route = "Default",
@@ -167,12 +165,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     null))
                 .Returns(new TagBuilder("a", new CommonTestEncoder()))
                 .Verifiable();
-            var anchorTagHelper = new AnchorTagHelper
+            var anchorTagHelper = new AnchorTagHelper(generator.Object)
             {
                 Action = "Index",
                 Controller = "Home",
                 Fragment = "hello=world",
-                Generator = generator.Object,
                 Host = "contoso.com",
                 Protocol = "http",
             };
@@ -196,7 +193,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task ProcessAsync_ThrowsIfHrefConflictsWithBoundAttributes(string propertyName)
         {
             // Arrange
-            var anchorTagHelper = new AnchorTagHelper();
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
+
+            var anchorTagHelper = new AnchorTagHelper(htmlGenerator);
+
             var output = new TagHelperOutput(
                 "a",
                 attributes: new TagHelperAttributeList
@@ -230,10 +231,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task ProcessAsync_ThrowsIfRouteAndActionOrControllerProvided(string propertyName)
         {
             // Arrange
-            var anchorTagHelper = new AnchorTagHelper
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
+
+            var anchorTagHelper = new AnchorTagHelper(htmlGenerator)
             {
                 Route = "Default",
             };
+
             typeof(AnchorTagHelper).GetProperty(propertyName).SetValue(anchorTagHelper, "Home");
             var output = new TagHelperOutput(
                 "a",

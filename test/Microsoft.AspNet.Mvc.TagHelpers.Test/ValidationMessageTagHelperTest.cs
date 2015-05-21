@@ -25,7 +25,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedTagName = "not-span";
             var metadataProvider = new TestModelMetadataProvider();
             var modelExpression = CreateModelExpression("Name");
-            var validationMessageTagHelper = new ValidationMessageTagHelper
+            var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
+
+            var validationMessageTagHelper = new ValidationMessageTagHelper(htmlGenerator)
             {
                 For = modelExpression
             };
@@ -57,12 +59,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);
-            var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
+            
             var viewContext = TestableHtmlGenerator.GetViewContext(model: null,
                                                                    htmlGenerator: htmlGenerator,
                                                                    metadataProvider: metadataProvider);
             validationMessageTagHelper.ViewContext = viewContext;
-            validationMessageTagHelper.Generator = htmlGenerator;
 
             // Act
             await validationMessageTagHelper.ProcessAsync(tagHelperContext, output);
@@ -87,7 +88,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task ProcessAsync_CallsIntoGenerateValidationMessageWithExpectedParameters()
         {
             // Arrange
-            var validationMessageTagHelper = new ValidationMessageTagHelper
+            var expectedViewContext = CreateViewContext();
+            var generator = new Mock<IHtmlGenerator>();
+            generator
+                .Setup(mock =>
+                    mock.GenerateValidationMessage(expectedViewContext, "Hello", null, null, null))
+                .Returns(new TagBuilder("span", new CommonTestEncoder()))
+                .Verifiable();
+
+            var validationMessageTagHelper = new ValidationMessageTagHelper(generator.Object)
             {
                 For = CreateModelExpression("Hello")
             };
@@ -112,14 +121,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);
 
-            var expectedViewContext = CreateViewContext();
-            var generator = new Mock<IHtmlGenerator>();
-            generator
-                .Setup(mock =>
-                    mock.GenerateValidationMessage(expectedViewContext, "Hello", null, null, null))
-                .Returns(new TagBuilder("span", new CommonTestEncoder()))
-                .Verifiable();
-            validationMessageTagHelper.Generator = generator.Object;
             validationMessageTagHelper.ViewContext = expectedViewContext;
 
             // Act & Assert
@@ -141,7 +142,24 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             string childContent, string outputContent, string expectedOutputContent)
         {
             // Arrange
-            var validationMessageTagHelper = new ValidationMessageTagHelper
+            var tagBuilder = new TagBuilder("span2", new CommonTestEncoder())
+            {
+                InnerHtml = "New HTML"
+            };
+            tagBuilder.Attributes.Add("data-foo", "bar");
+            tagBuilder.Attributes.Add("data-hello", "world");
+
+            var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
+            var setup = generator
+                .Setup(mock => mock.GenerateValidationMessage(
+                    It.IsAny<ViewContext>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<object>()))
+                .Returns(tagBuilder);
+
+            var validationMessageTagHelper = new ValidationMessageTagHelper(generator.Object)
             {
                 For = CreateModelExpression("Hello")
             };
@@ -161,25 +179,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent(childContent);
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var tagBuilder = new TagBuilder("span2", new CommonTestEncoder())
-            {
-                InnerHtml = "New HTML"
-            };
-            tagBuilder.Attributes.Add("data-foo", "bar");
-            tagBuilder.Attributes.Add("data-hello", "world");
 
-            var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
-            var setup = generator
-                .Setup(mock => mock.GenerateValidationMessage(
-                    It.IsAny<ViewContext>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<object>()))
-                .Returns(tagBuilder);
             var viewContext = CreateViewContext();
             validationMessageTagHelper.ViewContext = viewContext;
-            validationMessageTagHelper.Generator = generator.Object;
 
             // Act
             await validationMessageTagHelper.ProcessAsync(context, output: output);
@@ -201,7 +203,24 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             string childContent, string expectedOutputContent)
         {
             // Arrange
-            var validationMessageTagHelper = new ValidationMessageTagHelper
+            var tagBuilder = new TagBuilder("span2", new CommonTestEncoder())
+            {
+                InnerHtml = "New HTML"
+            };
+            tagBuilder.Attributes.Add("data-foo", "bar");
+            tagBuilder.Attributes.Add("data-hello", "world");
+
+            var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
+            var setup = generator
+                .Setup(mock => mock.GenerateValidationMessage(
+                    It.IsAny<ViewContext>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<object>()))
+                .Returns(tagBuilder);
+
+            var validationMessageTagHelper = new ValidationMessageTagHelper(generator.Object)
             {
                 For = CreateModelExpression("Hello")
             };
@@ -220,25 +239,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent(childContent);
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var tagBuilder = new TagBuilder("span2", new CommonTestEncoder())
-            {
-                InnerHtml = "New HTML"
-            };
-            tagBuilder.Attributes.Add("data-foo", "bar");
-            tagBuilder.Attributes.Add("data-hello", "world");
 
-            var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
-            var setup = generator
-                .Setup(mock => mock.GenerateValidationMessage(
-                    It.IsAny<ViewContext>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<object>()))
-                .Returns(tagBuilder);
             var viewContext = CreateViewContext();
             validationMessageTagHelper.ViewContext = viewContext;
-            validationMessageTagHelper.Generator = generator.Object;
 
             // Act
             await validationMessageTagHelper.ProcessAsync(context, output: output);
@@ -257,7 +260,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task ProcessAsync_DoesNothingIfNullFor()
         {
             // Arrange
-            var validationMessageTagHelper = new ValidationMessageTagHelper();
+            var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
+            var validationMessageTagHelper = new ValidationMessageTagHelper(generator.Object);
             var expectedPreContent = "original pre-content";
             var expectedContent = "original content";
             var expectedPostContent = "original post-content";
@@ -269,9 +273,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             output.PostContent.SetContent(expectedPostContent);
 
             var viewContext = CreateViewContext();
-            var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             validationMessageTagHelper.ViewContext = viewContext;
-            validationMessageTagHelper.Generator = generator.Object;
 
             // Act
             await validationMessageTagHelper.ProcessAsync(context: null, output: output);

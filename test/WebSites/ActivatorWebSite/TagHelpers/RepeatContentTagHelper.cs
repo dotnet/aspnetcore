@@ -11,15 +11,25 @@ namespace ActivatorWebSite.TagHelpers
     [TargetElement("div")]
     public class RepeatContentTagHelper : TagHelper
     {
+        public RepeatContentTagHelper(IHtmlHelper htmlHelper)
+        {
+            HtmlHelper = htmlHelper;
+        }
+
+        public IHtmlHelper HtmlHelper { get; }
+
+        [HtmlAttributeNotBound]
+        [ViewContext]
+        public ViewContext ViewContext { get; set; }
+
         public int RepeatContent { get; set; }
 
         public ModelExpression Expression { get; set; }
 
-        [Activate]
-        public IHtmlHelper HtmlHelper { get; set; }
-
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
+            (HtmlHelper as ICanHasViewContext)?.Contextualize(ViewContext);
+
             var content = await context.GetChildContentAsync();
             var repeatContent = HtmlHelper.Encode(Expression.Model.ToString());
 

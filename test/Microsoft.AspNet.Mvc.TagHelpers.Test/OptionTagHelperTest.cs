@@ -419,9 +419,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 htmlGenerator: htmlGenerator,
                 metadataProvider: metadataProvider);
             viewContext.FormContext.FormData[SelectTagHelper.SelectedValuesFormDataKey] = selectedValues;
-            var tagHelper = new OptionTagHelper
+            var tagHelper = new OptionTagHelper(htmlGenerator)
             {
-                Generator = htmlGenerator,
                 Value = value,
                 ViewContext = viewContext,
             };
@@ -489,7 +488,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 htmlGenerator: htmlGenerator,
                 metadataProvider: metadataProvider);
             viewContext.FormContext.FormData[SelectTagHelper.SelectedValuesFormDataKey] = selectedValues;
-            var tagHelper = new OptionTagHelper
+            var tagHelper = new OptionTagHelper(htmlGenerator)
             {
                 Value = value,
                 ViewContext = viewContext,
@@ -535,6 +534,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelperContent.SetContent(originalContent);
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
+
             var output = new TagHelperOutput(originalTagName, originalAttributes)
             {
                 SelfClosing = false,
@@ -543,7 +543,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             output.Content.SetContent(originalContent);
             output.PostContent.SetContent(originalPostContent);
 
-            var tagHelper = new OptionTagHelper
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
+
+            var tagHelper = new OptionTagHelper(htmlGenerator)
             {
                 Value = value,
             };

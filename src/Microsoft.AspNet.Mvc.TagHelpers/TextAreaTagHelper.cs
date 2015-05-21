@@ -14,12 +14,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     {
         private const string ForAttributeName = "asp-for";
 
-        [Activate]
-        [HtmlAttributeNotBound]
-        public IHtmlGenerator Generator { get; set; }
+        /// <summary>
+        /// Creates a new <see cref="TextAreaTagHelper"/>.
+        /// </summary>
+        /// <param name="generator">The <see cref="IHtmlGenerator"/>.</param>
+        public TextAreaTagHelper(IHtmlGenerator generator)
+        {
+            Generator = generator;
+        }
 
-        [Activate]
+        protected IHtmlGenerator Generator { get; }
+
         [HtmlAttributeNotBound]
+        [ViewContext]
         public ViewContext ViewContext { get; set; }
 
         /// <summary>

@@ -37,17 +37,24 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private static readonly char[] AttributeSeparator = new[] { ',' };
 
         /// <summary>
-        /// Gets or sets the <see cref="IMemoryCache"/> instance used to cache entries.
+        /// Creates a new <see cref="CacheTagHelper"/>.
         /// </summary>
-        [Activate]
-        [HtmlAttributeNotBound]
-        public IMemoryCache MemoryCache { get; set; }
+        /// <param name="memoryCache">The <see cref="IMemoryCache"/>.</param>
+        public CacheTagHelper(IMemoryCache memoryCache)
+        {
+            MemoryCache = memoryCache;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="IMemoryCache"/> instance used to cache entries.
+        /// </summary>
+        protected IMemoryCache MemoryCache { get; }
 
         /// <summary>
         /// Gets or sets the <see cref="ViewContext"/> for the current executing View.
         /// </summary>
-        [Activate]
         [HtmlAttributeNotBound]
+        [ViewContext]
         public ViewContext ViewContext { get; set; }
 
         /// <summary>

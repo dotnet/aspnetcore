@@ -17,13 +17,21 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string ValidationSummaryAttributeName = "asp-validation-summary";
         private ValidationSummary _validationSummary;
 
-        [Activate]
+        /// <summary>
+        /// Creates a new <see cref="ValidationSummaryTagHelper"/>.
+        /// </summary>
+        /// <param name="generator">The <see cref="IHtmlGenerator"/>.</param>
+        public ValidationSummaryTagHelper(IHtmlGenerator generator)
+        {
+            Generator = generator;
+        }
+
         [HtmlAttributeNotBound]
+        [ViewContext]
         public ViewContext ViewContext { get; set; }
 
-        [Activate]
         [HtmlAttributeNotBound]
-        public IHtmlGenerator Generator { get; set; }
+        protected IHtmlGenerator Generator { get; }
 
         /// <summary>
         /// If <see cref="ValidationSummary.All"/> or <see cref="ValidationSummary.ModelOnly"/>, appends a validation

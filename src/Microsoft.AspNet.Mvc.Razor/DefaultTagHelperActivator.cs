@@ -26,15 +26,18 @@ namespace Microsoft.AspNet.Mvc.Razor
             _injectActions = new ConcurrentDictionary<Type, PropertyActivator<ViewContext>[]>();
             _getPropertiesToActivate = type =>
                 PropertyActivator<ViewContext>.GetPropertiesToActivate(
-                    type, typeof(ActivateAttribute), CreateActivateInfo);
+                    type,
+                    typeof(ViewContextAttribute), 
+                    CreateActivateInfo);
         }
 
         /// <inheritdoc />
         public void Activate<TTagHelper>([NotNull] TTagHelper tagHelper, [NotNull] ViewContext context)
             where TTagHelper : ITagHelper
         {
-            var propertiesToActivate = _injectActions.GetOrAdd(tagHelper.GetType(),
-                                                               _getPropertiesToActivate);
+            var propertiesToActivate = _injectActions.GetOrAdd(
+                tagHelper.GetType(),
+                _getPropertiesToActivate);
 
             for (var i = 0; i < propertiesToActivate.Length; i++)
             {
@@ -60,32 +63,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private static PropertyActivator<ViewContext> CreateActivateInfo(PropertyInfo property)
         {
-            Func<ViewContext, object> valueAccessor;
-            var propertyType = property.PropertyType;
-
-            if (propertyType == typeof(ViewContext))
-            {
-                valueAccessor = viewContext => viewContext;
-            }
-            else if (propertyType == typeof(ViewDataDictionary))
-            {
-                valueAccessor = viewContext => viewContext.ViewData;
-            }
-            else
-            {
-                valueAccessor = (viewContext) =>
-                {
-                    var serviceProvider = viewContext.HttpContext.RequestServices;
-                    var service = serviceProvider.GetRequiredService(propertyType);
-
-                    var contextable = service as ICanHasViewContext;
-                    contextable?.Contextualize(viewContext);
-
-                    return service;
-                };
-            }
-
-            return new PropertyActivator<ViewContext>(property, valueAccessor);
+            return new PropertyActivator<ViewContext>(property, viewContext => viewContext);
         }
     }
 }

@@ -224,10 +224,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 }
             };
             var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);
-            var tagHelper = new SelectTagHelper
+            var tagHelper = new SelectTagHelper(htmlGenerator)
             {
                 For = modelExpression,
-                Generator = htmlGenerator,
                 ViewContext = viewContext,
             };
 
@@ -319,10 +318,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var savedSelected = items.Select(item => item.Selected).ToList();
             var savedText = items.Select(item => item.Text).ToList();
             var savedValue = items.Select(item => item.Value).ToList();
-            var tagHelper = new SelectTagHelper
+
+            var tagHelper = new SelectTagHelper(htmlGenerator)
             {
                 For = modelExpression,
-                Generator = htmlGenerator,
                 Items = items,
                 ViewContext = viewContext,
             };
@@ -422,10 +421,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var savedSelected = items.Select(item => item.Selected).ToList();
             var savedText = items.Select(item => item.Text).ToList();
             var savedValue = items.Select(item => item.Value).ToList();
-            var tagHelper = new SelectTagHelper
+
+            var tagHelper = new SelectTagHelper(htmlGenerator)
             {
                 For = modelExpression,
-                Generator = htmlGenerator,
                 Items = items,
                 ViewContext = viewContext,
             };
@@ -519,11 +518,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 .Returns((TagBuilder)null)
                 .Verifiable();
 
-            var tagHelper = new SelectTagHelper
+            var tagHelper = new SelectTagHelper(htmlGenerator.Object)
             {
                 For = modelExpression,
                 Items = inputItems,
-                Generator = htmlGenerator.Object,
                 ViewContext = viewContext,
             };
 
@@ -593,10 +591,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 .Returns((TagBuilder)null)
                 .Verifiable();
 
-            var tagHelper = new SelectTagHelper
+            var tagHelper = new SelectTagHelper(htmlGenerator.Object)
             {
                 For = modelExpression,
-                Generator = htmlGenerator.Object,
                 ViewContext = viewContext,
             };
 

@@ -70,21 +70,26 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 }),
         };
 
-        private enum Mode
+        /// <summary>
+        /// Creates a new <see cref="ScriptTagHelper"/>.
+        /// </summary>
+        /// <param name="logger">The <see cref="ILogger{ScriptTagHelper}"/>.</param>
+        /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
+        /// <param name="cache">The <see cref="IMemoryCache"/>.</param>
+        /// <param name="htmlEncoder">The <see cref="IHtmlEncoder"/>.</param>
+        /// <param name="javaScriptEncoder">The <see cref="IJavaScriptStringEncoder"/>.</param>
+        public ScriptTagHelper(
+            ILogger<ScriptTagHelper> logger,
+            IHostingEnvironment hostingEnvironment,
+            IMemoryCache cache,
+            IHtmlEncoder htmlEncoder,
+            IJavaScriptStringEncoder javaScriptEncoder)
         {
-            /// <summary>
-            /// Just adding a file version for the generated urls.
-            /// </summary>
-            FileVersion = 0,
-            /// <summary>
-            /// Just performing file globbing search for the src, rendering a separate &lt;script&gt; for each match.
-            /// </summary>
-            GlobbedSrc = 1,
-            /// <summary>
-            /// Rendering a fallback block if primary javascript fails to load. Will also do globbing for both the
-            /// primary and fallback srcs if the appropriate properties are set.
-            /// </summary>
-            Fallback = 2
+            Logger = logger;
+            HostingEnvironment = hostingEnvironment;
+            Cache = cache;
+            HtmlEncoder = htmlEncoder;
+            JavaScriptEncoder = javaScriptEncoder;
         }
 
         /// <summary>
@@ -149,29 +154,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [HtmlAttributeName(FallbackTestExpressionAttributeName)]
         public string FallbackTestExpression { get; set; }
 
-        [Activate]
-        [HtmlAttributeNotBound]
-        protected internal ILogger<ScriptTagHelper> Logger { get; set; }
+        protected ILogger<ScriptTagHelper> Logger { get; }
 
-        [Activate]
-        [HtmlAttributeNotBound]
-        public IHostingEnvironment HostingEnvironment { get; set; }
+        protected IHostingEnvironment HostingEnvironment { get; }
 
-        [Activate]
         [HtmlAttributeNotBound]
+        [ViewContext]
         public ViewContext ViewContext { get; set; }
 
-        [Activate]
-        [HtmlAttributeNotBound]
-        public IMemoryCache Cache { get; set; }
+        protected IMemoryCache Cache { get; }
 
-        [Activate]
-        [HtmlAttributeNotBound]
-        public IHtmlEncoder HtmlEncoder { get; set; }
+        protected IHtmlEncoder HtmlEncoder { get; }
 
-        [Activate]
-        [HtmlAttributeNotBound]
-        public IJavaScriptStringEncoder JavaScriptEncoder { get; set; }
+        protected IJavaScriptStringEncoder JavaScriptEncoder { get; }
 
         // Internal for ease of use when testing.
         protected internal GlobbingUrlBuilder GlobbingUrlBuilder { get; set; }
@@ -387,6 +382,25 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     .Append(HtmlEncoder, ViewContext.Writer.Encoding, value)
                     .Append("\"");
             }
+        }
+
+        private enum Mode
+        {
+            /// <summary>
+            /// Just adding a file version for the generated urls.
+            /// </summary>
+            FileVersion = 0,
+
+            /// <summary>
+            /// Just performing file globbing search for the src, rendering a separate &lt;script&gt; for each match.
+            /// </summary>
+            GlobbedSrc = 1,
+
+            /// <summary>
+            /// Rendering a fallback block if primary javascript fails to load. Will also do globbing for both the
+            /// primary and fallback srcs if the appropriate properties are set.
+            /// </summary>
+            Fallback = 2
         }
     }
 }

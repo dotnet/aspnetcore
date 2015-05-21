@@ -32,9 +32,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string RouteValuesPrefix = "asp-route-";
         private const string Href = "href";
 
-        [Activate]
-        [HtmlAttributeNotBound]
-        public IHtmlGenerator Generator { get; set; }
+        /// <summary>
+        /// Creates a new <see cref="AnchorTagHelper"/>.
+        /// </summary>
+        /// <param name="generator">The <see cref="IHtmlGenerator"/>.</param>
+        public AnchorTagHelper(IHtmlGenerator generator)
+        {
+            Generator = generator;
+        }
+
+        protected IHtmlGenerator Generator { get; }
 
         /// <summary>
         /// The name of the action method.

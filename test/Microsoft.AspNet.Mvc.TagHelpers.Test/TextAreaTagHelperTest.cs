@@ -106,9 +106,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var propertyMetadata = metadataProvider.GetMetadataForProperty(containerType, "Text");
             var modelExplorer = containerExplorer.GetExplorerForExpression(propertyMetadata, model);
 
+            var htmlGenerator = new TestableHtmlGenerator(metadataProvider)
+            {
+                ValidationAttributes =
+                {
+                    {  "valid", "from validation attributes" },
+                }
+            };
+
             // Property name is either nameof(Model.Text) or nameof(NestedModel.Text).
             var modelExpression = new ModelExpression(nameAndId.Name, modelExplorer);
-            var tagHelper = new TextAreaTagHelper
+            var tagHelper = new TextAreaTagHelper(htmlGenerator)
             {
                 For = modelExpression,
             };
@@ -134,16 +142,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             output.Content.SetContent("original content");
 
-            var htmlGenerator = new TestableHtmlGenerator(metadataProvider)
-            {
-                ValidationAttributes =
-                {
-                    {  "valid", "from validation attributes" },
-                }
-            };
             var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);
             tagHelper.ViewContext = viewContext;
-            tagHelper.Generator = htmlGenerator;
 
             // Act
             await tagHelper.ProcessAsync(tagHelperContext, output);

@@ -28,13 +28,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string RouteValuesPrefix = "asp-route-";
         private const string HtmlActionAttributeName = "action";
 
-        [Activate]
+        /// <summary>
+        /// Creates a new <see cref="FormTagHelper"/>.
+        /// </summary>
+        /// <param name="generator">The <see cref="IHtmlGenerator"/>.</param>
+        public FormTagHelper(IHtmlGenerator generator)
+        {
+            Generator = generator;
+        }
+
         [HtmlAttributeNotBound]
+        [ViewContext]
         public ViewContext ViewContext { get; set; }
 
-        [Activate]
-        [HtmlAttributeNotBound]
-        public IHtmlGenerator Generator { get; set; }
+        protected IHtmlGenerator Generator { get; }
 
         /// <summary>
         /// The name of the action method.

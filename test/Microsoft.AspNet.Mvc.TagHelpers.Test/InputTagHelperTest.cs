@@ -939,10 +939,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var modelExpression = new ModelExpression(expressionName, modelExplorer);
             var viewContext = TestableHtmlGenerator.GetViewContext(container, htmlGenerator, metadataProvider);
-            var inputTagHelper = new InputTagHelper
+            var inputTagHelper = new InputTagHelper(htmlGenerator)
             {
                 For = modelExpression,
-                Generator = htmlGenerator,
                 ViewContext = viewContext,
             };
 

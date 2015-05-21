@@ -109,19 +109,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var logger = new Mock<ILogger<LinkTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
-            var helper = new LinkTagHelper
+
+            var helper = new LinkTagHelper(
+                logger.Object,
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                HtmlEncoder = new CommonTestEncoder(),
-                JavaScriptEncoder = new CommonTestEncoder(),
-                Logger = logger.Object,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 FallbackHref = "test.css",
                 FallbackTestClass = "hidden",
                 FallbackTestProperty = "visibility",
                 FallbackTestValue = "hidden",
                 Href = "test.css",
-                Cache = MakeCache(),
             };
 
             // Act
@@ -280,14 +281,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var logger = new Mock<ILogger<LinkTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
-            var helper = new LinkTagHelper
+
+            var helper = new LinkTagHelper(
+                logger.Object,
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                HtmlEncoder = new CommonTestEncoder(),
-                JavaScriptEncoder = new CommonTestEncoder(),
-                Logger = logger.Object,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
-                Cache = MakeCache()
             };
             setProperties(helper);
 
@@ -324,19 +326,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var logger = new Mock<ILogger<LinkTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
-            var helper = new LinkTagHelper
+
+            var helper = new LinkTagHelper(
+                logger.Object,
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                HtmlEncoder = new CommonTestEncoder(),
-                JavaScriptEncoder = new CommonTestEncoder(),
-                Logger = logger.Object,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 FallbackHref = "test.css",
                 FallbackTestClass = "hidden",
                 FallbackTestProperty = "visibility",
                 FallbackTestValue = "hidden",
                 Href = "test.css",
-                Cache = MakeCache(),
             };
 
             // Act
@@ -431,12 +434,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var logger = new Mock<ILogger<LinkTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
-            var helper = new LinkTagHelper
+
+            var helper = new LinkTagHelper(
+                logger.Object,
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                Logger = logger.Object,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
-                Cache = MakeCache(),
             };
             setProperties(helper);
 
@@ -457,12 +463,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var logger = new Mock<ILogger<LinkTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
-            var helper = new LinkTagHelper
+
+            var helper = new LinkTagHelper(
+                logger.Object,
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                Logger = logger.Object,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
-                Cache = MakeCache(),
             };
 
             // Act
@@ -494,16 +503,18 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>();
             globbingUrlBuilder.Setup(g => g.BuildUrlList("/css/site.css", "**/*.css", null))
                 .Returns(new[] { "/css/site.css", "/base.css" });
-            var helper = new LinkTagHelper
+
+            var helper = new LinkTagHelper(
+                logger.Object,
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                HtmlEncoder = new CommonTestEncoder(),
                 GlobbingUrlBuilder = globbingUrlBuilder.Object,
-                Logger = logger.Object,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 Href = "/css/site.css",
                 HrefInclude = "**/*.css",
-                Cache = MakeCache(),
             };
 
             // Act
@@ -537,16 +548,18 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>();
             globbingUrlBuilder.Setup(g => g.BuildUrlList("/css/site.css", "**/*.css", null))
                 .Returns(new[] { "/css/site.css", "/base.css" });
-            var helper = new LinkTagHelper
+
+            var helper = new LinkTagHelper(
+                logger.Object,
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                HtmlEncoder = new CommonTestEncoder(),
                 GlobbingUrlBuilder = globbingUrlBuilder.Object,
-                Logger = logger.Object,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 Href = "/css/site.css",
                 HrefInclude = "**/*.css",
-                Cache = MakeCache(),
             };
 
             // Act
@@ -577,16 +590,18 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var logger = new Mock<ILogger<LinkTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
-            var helper = new LinkTagHelper
+
+            var helper = new LinkTagHelper(
+                logger.Object,
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                HtmlEncoder = new CommonTestEncoder(),
-                Logger = logger.Object,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 Href = "/css/site.css",
                 HrefInclude = "**/*.css",
                 FileVersion = true,
-                Cache = MakeCache(),
             };
 
             // Act
@@ -616,16 +631,18 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var logger = new Mock<ILogger<LinkTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext("/bar");
-            var helper = new LinkTagHelper
+
+            var helper = new LinkTagHelper(
+                logger.Object,
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                HtmlEncoder = new CommonTestEncoder(),
-                Logger = logger.Object,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 Href = "/bar/css/site.css",
                 HrefInclude = "**/*.css",
                 FileVersion = true,
-                Cache = MakeCache(),
             };
 
             // Act
@@ -659,17 +676,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>();
             globbingUrlBuilder.Setup(g => g.BuildUrlList("/css/site.css", "**/*.css", null))
                 .Returns(new[] { "/css/site.css", "/base.css" });
-            var helper = new LinkTagHelper
+
+            var helper = new LinkTagHelper(
+                logger.Object,
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                HtmlEncoder = new CommonTestEncoder(),
                 GlobbingUrlBuilder = globbingUrlBuilder.Object,
-                Logger = logger.Object,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 Href = "/css/site.css",
                 HrefInclude = "**/*.css",
                 FileVersion = true,
-                Cache = MakeCache(),
             };
 
             // Act

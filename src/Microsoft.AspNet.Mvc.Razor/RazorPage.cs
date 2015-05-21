@@ -29,6 +29,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private TextWriter _originalWriter;
         private IUrlHelper _urlHelper;
         private ITagHelperActivator _tagHelperActivator;
+        private ITypeActivatorCache _typeActivatorCache;
         private bool _renderedBody;
 
         public RazorPage()
@@ -143,11 +144,25 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 if (_tagHelperActivator == null)
                 {
-                    _tagHelperActivator =
-                        ViewContext.HttpContext.RequestServices.GetRequiredService<ITagHelperActivator>();
+                    var services = ViewContext.HttpContext.RequestServices;
+                    _tagHelperActivator = services.GetRequiredService<ITagHelperActivator>();
                 }
 
                 return _tagHelperActivator;
+            }
+        }
+
+        private ITypeActivatorCache TypeActivatorCache
+        {
+            get
+            {
+                if (_typeActivatorCache == null)
+                {
+                    var services = ViewContext.HttpContext.RequestServices;
+                    _typeActivatorCache = services.GetRequiredService<ITypeActivatorCache>();
+                }
+
+                return _typeActivatorCache;
             }
         }
 
@@ -177,9 +192,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <remarks>
         /// <typeparamref name="TTagHelper"/> must have a parameterless constructor.
         /// </remarks>
-        public TTagHelper CreateTagHelper<TTagHelper>() where TTagHelper : ITagHelper, new()
+        public TTagHelper CreateTagHelper<TTagHelper>() where TTagHelper : ITagHelper
         {
-            var tagHelper = new TTagHelper();
+            var tagHelper = TypeActivatorCache.CreateInstance<TTagHelper>(
+                ViewContext.HttpContext.RequestServices,
+                typeof(TTagHelper));
 
             TagHelperActivator.Activate(tagHelper, ViewContext);
 

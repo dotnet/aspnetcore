@@ -19,12 +19,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// </remarks>
     public class OptionTagHelper : TagHelper
     {
-        [Activate]
-        [HtmlAttributeNotBound]
-        public IHtmlGenerator Generator { get; set; }
+        /// <summary>
+        /// Creates a new <see cref="OptionTagHelper"/>.
+        /// </summary>
+        /// <param name="generator">The <see cref="IHtmlGenerator"/>.</param>
+        public OptionTagHelper(IHtmlGenerator generator)
+        {
+            Generator = generator;
+        }
 
-        [Activate]
+        protected IHtmlGenerator Generator { get; }
+
         [HtmlAttributeNotBound]
+        [ViewContext]
         public ViewContext ViewContext { get; set; }
 
         /// <summary>

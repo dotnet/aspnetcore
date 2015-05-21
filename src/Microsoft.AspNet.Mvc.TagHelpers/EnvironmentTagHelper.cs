@@ -17,6 +17,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private static readonly char[] NameSeparator = new[] { ',' };
 
         /// <summary>
+        /// Creates a new <see cref="EnvironmentTagHelper"/>.
+        /// </summary>
+        /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
+        public EnvironmentTagHelper(IHostingEnvironment hostingEnvironment)
+        {
+            HostingEnvironment = hostingEnvironment;
+        }
+
+        /// <summary>
         /// A comma separated list of environment names in which the content should be rendered.
         /// </summary>
         /// <remarks>
@@ -25,9 +34,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// </remarks>
         public string Names { get; set; }
 
-        [Activate]
-        [HtmlAttributeNotBound]
-        public IHostingEnvironment HostingEnvironment { get; set; }
+        protected IHostingEnvironment HostingEnvironment { get; }
 
         /// <inheritdoc />
         public override void Process(TagHelperContext context, TagHelperOutput output)

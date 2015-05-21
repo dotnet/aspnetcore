@@ -62,12 +62,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "time", "{0:HH:mm:ss.fff}" },
             };
 
-        [Activate]
-        [HtmlAttributeNotBound]
-        public IHtmlGenerator Generator { get; set; }
+        /// <summary>
+        /// Creates a new <see cref="InputTagHelper"/>.
+        /// </summary>
+        /// <param name="generator">The <see cref="IHtmlGenerator"/>.</param>
+        public InputTagHelper(IHtmlGenerator generator)
+        {
+            Generator = generator;
+        }
 
-        [Activate]
+        protected IHtmlGenerator Generator { get; }
+
         [HtmlAttributeNotBound]
+        [ViewContext]
         public ViewContext ViewContext { get; set; }
 
         /// <summary>

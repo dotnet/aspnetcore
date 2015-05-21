@@ -56,13 +56,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
-            var helper = new ImageTagHelper
+
+            var helper = new ImageTagHelper(hostingEnvironment, MakeCache())
             {
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 Src = "testimage.png",
                 FileVersion = true,
-                Cache = MakeCache(),
             };
 
             // Act
@@ -98,13 +97,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             });
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
-            var helper = new ImageTagHelper
+
+            var helper = new ImageTagHelper(hostingEnvironment, MakeCache())
             {
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 Src = "/images/test-image.png",
                 FileVersion = true,
-                Cache = MakeCache(),
             };
 
             // Act
@@ -135,13 +133,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             });
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
-            var helper = new ImageTagHelper
+
+            var helper = new ImageTagHelper(hostingEnvironment, MakeCache())
             {
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 Src = "/images/test-image.png",
                 FileVersion = false,
-                Cache = MakeCache(),
             };
 
             // Act
@@ -172,13 +169,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             });
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext("/bar");
-            var helper = new ImageTagHelper
+
+            var helper = new ImageTagHelper(hostingEnvironment, MakeCache())
             {
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 Src = "/bar/images/image.jpg",
                 FileVersion = true,
-                Cache = MakeCache(),
             };
 
             // Act

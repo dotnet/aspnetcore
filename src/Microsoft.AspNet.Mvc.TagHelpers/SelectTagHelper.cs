@@ -31,12 +31,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// </remarks>
         public static readonly string SelectedValuesFormDataKey = nameof(SelectTagHelper) + "-SelectedValues";
 
-        [Activate]
-        [HtmlAttributeNotBound]
-        public IHtmlGenerator Generator { get; set; }
+        /// <summary>
+        /// Creates a new <see cref="SelectTagHelper"/>.
+        /// </summary>
+        /// <param name="generator">The <see cref="IHtmlGenerator"/>.</param>
+        public SelectTagHelper(IHtmlGenerator generator)
+        {
+            Generator = generator;
+        }
 
-        [Activate]
+        protected IHtmlGenerator Generator { get; }
+
         [HtmlAttributeNotBound]
+        [ViewContext]
         public ViewContext ViewContext { get; set; }
 
         /// <summary>

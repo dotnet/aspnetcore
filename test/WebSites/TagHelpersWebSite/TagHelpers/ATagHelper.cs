@@ -9,9 +9,13 @@ namespace TagHelpersWebSite.TagHelpers
 {
     public class ATagHelper : TagHelper
     {
-        [Activate]
+        public ATagHelper(IUrlHelper urlHelper)
+        {
+            UrlHelper = urlHelper;
+        }
+
         [HtmlAttributeNotBound]
-        public IUrlHelper UrlHelper { get; set; }
+        public IUrlHelper UrlHelper { get; }
 
         public string Controller { get; set; }
 

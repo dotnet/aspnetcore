@@ -25,7 +25,7 @@ namespace TagHelpersWebSite.TagHelpers
 
         public string Style { get; set; }
 
-        [Activate]
+        [ViewContext]
         [HtmlAttributeNotBound]
         public ViewContext ViewContext { get; set; }
 

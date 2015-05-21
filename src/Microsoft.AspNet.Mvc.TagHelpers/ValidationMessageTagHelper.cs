@@ -16,13 +16,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     {
         private const string ValidationForAttributeName = "asp-validation-for";
 
-        [Activate]
+        /// <summary>
+        /// Creates a new <see cref="ValidationMessageTagHelper"/>.
+        /// </summary>
+        /// <param name="generator">The <see cref="IHtmlGenerator"/>.</param>
+        public ValidationMessageTagHelper(IHtmlGenerator generator)
+        {
+            Generator = generator;
+        }
+
         [HtmlAttributeNotBound]
+        [ViewContext]
         public ViewContext ViewContext { get; set; }
 
-        [Activate]
-        [HtmlAttributeNotBound]
-        public IHtmlGenerator Generator { get; set; }
+        protected IHtmlGenerator Generator { get; }
 
         /// <summary>
         /// Name to be validated on the current model.

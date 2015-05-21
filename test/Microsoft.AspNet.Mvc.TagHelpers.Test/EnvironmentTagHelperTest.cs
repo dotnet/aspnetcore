@@ -88,9 +88,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
             hostingEnvironment.Object.EnvironmentName = environmentName;
 
             // Act
-            var helper = new EnvironmentTagHelper
+            var helper = new EnvironmentTagHelper(hostingEnvironment.Object)
             {
-                HostingEnvironment = hostingEnvironment.Object,
                 Names = namesAttribute
             };
             helper.Process(context, output);
@@ -116,9 +115,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
             hostingEnvironment.Object.EnvironmentName = environmentName;
 
             // Act
-            var helper = new EnvironmentTagHelper
+            var helper = new EnvironmentTagHelper(hostingEnvironment.Object)
             {
-                HostingEnvironment = hostingEnvironment.Object,
                 Names = namesAttribute
             };
             helper.Process(context, output);

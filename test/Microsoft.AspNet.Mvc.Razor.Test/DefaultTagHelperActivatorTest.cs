@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             public object ViewDataValue { get; set; } = new object();
 
-            [Activate]
+            [ViewContext]
             public ViewContext ViewContext { get; set; }
         }
 
@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             public object ViewDataValue { get; set; } = new object();
 
-            [Activate]
+            [ViewContext]
             public ViewContext ViewContext { get; set; }
         }
     }

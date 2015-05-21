@@ -4,21 +4,27 @@
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace ActivatorWebSite.TagHelpers
 {
     [TargetElement("body")]
     public class TitleTagHelper : TagHelper
     {
-        [Activate]
-        public IHtmlHelper HtmlHelper { get; set; }
+        public TitleTagHelper(IHtmlHelper htmlHelper)
+        {
+            HtmlHelper = htmlHelper;
+        }
 
-        [Activate]
+        public IHtmlHelper HtmlHelper { get; }
+
+        [HtmlAttributeNotBound]
+        [ViewContext]
         public ViewContext ViewContext { get; set; }
 
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
+            (HtmlHelper as ICanHasViewContext)?.Contextualize(ViewContext);
+
             var builder = new TagBuilder("h2", HtmlHelper.HtmlEncoder);
             var title = ViewContext.ViewBag.Title;
             builder.InnerHtml = HtmlHelper.Encode(title);

@@ -15,13 +15,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     {
         private const string ForAttributeName = "asp-for";
 
-        [Activate]
+        /// <summary>
+        /// Creates a new <see cref="LabelTagHelper"/>.
+        /// </summary>
+        /// <param name="generator">The <see cref="IHtmlGenerator"/>.</param>
+        public LabelTagHelper(IHtmlGenerator generator)
+        {
+            Generator = generator;
+        }
+
         [HtmlAttributeNotBound]
+        [ViewContext]
         public ViewContext ViewContext { get; set; }
 
-        [Activate]
-        [HtmlAttributeNotBound]
-        public IHtmlGenerator Generator { get; set; }
+        protected IHtmlGenerator Generator { get; }
 
         /// <summary>
         /// An expression to be evaluated against the current model.

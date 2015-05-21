@@ -177,9 +177,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var propertyMetadata = metadataProvider.GetMetadataForProperty(containerType, "Text");
             var modelExplorer = containerExplorer.GetExplorerForExpression(propertyMetadata, modelAccessor());
+            var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
 
             var modelExpression = new ModelExpression(propertyPath, modelExplorer);
-            var tagHelper = new LabelTagHelper
+            var tagHelper = new LabelTagHelper(htmlGenerator)
             {
                 For = modelExpression,
             };
@@ -211,11 +212,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 output.Content.SetContent(tagHelperOutputContent.OriginalContent);
             }
-
-            var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
+            
             var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);
             tagHelper.ViewContext = viewContext;
-            tagHelper.Generator = htmlGenerator;
 
             // Act
             await tagHelper.ProcessAsync(tagHelperContext, output);

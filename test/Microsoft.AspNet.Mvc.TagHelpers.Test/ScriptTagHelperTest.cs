@@ -55,17 +55,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = MakeTagHelperOutput("script", combinedOutputAttributes);
             var hostingEnvironment = MakeHostingEnvironment();
 
-            var helper = new ScriptTagHelper
+            var helper = new ScriptTagHelper(
+                CreateLogger(),
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                HtmlEncoder = new CommonTestEncoder(),
-                JavaScriptEncoder = new CommonTestEncoder(),
                 ViewContext = viewContext,
-                HostingEnvironment = hostingEnvironment,
                 FallbackSrc = "~/blank.js",
                 FallbackTestExpression = "http://www.example.com/blank.js",
                 Src = "/blank.js",
-                Cache = MakeCache(),
-                Logger = CreateLogger()
             };
 
             // Act
@@ -271,14 +271,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var logger = CreateLogger();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
-            var helper = new ScriptTagHelper
+
+            var helper = new ScriptTagHelper(
+                CreateLogger(),
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                HtmlEncoder = new CommonTestEncoder(),
-                JavaScriptEncoder = new CommonTestEncoder(),
-                Logger = logger,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
-                Cache = MakeCache(),
             };
             setProperties(helper);
 
@@ -363,12 +364,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
-            var helper = new ScriptTagHelper
+
+            var helper = new ScriptTagHelper(
+                CreateLogger(),
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                Logger = logger.Object,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
-                Cache = MakeCache(),
             };
             setProperties(helper);
 
@@ -392,12 +396,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var logger = CreateLogger();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
-            var helper = new ScriptTagHelper
+
+            var helper = new ScriptTagHelper(
+                logger,
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                Logger = logger,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
-                Cache = MakeCache(),
             };
             setProperties(helper);
 
@@ -431,11 +438,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = MakeTagHelperOutput("script");
             var logger = CreateLogger();
 
-            var helper = new ScriptTagHelper
+            var helper = new ScriptTagHelper(
+                CreateLogger(),
+                MakeHostingEnvironment(),
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                Logger = logger,
                 ViewContext = viewContext,
-                Cache = MakeCache(),
             };
 
             // Act
@@ -455,11 +465,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = MakeTagHelperOutput("script");
             var logger = CreateLogger();
 
-            var helper = new ScriptTagHelper
+            var helper = new ScriptTagHelper(
+                logger,
+                MakeHostingEnvironment(),
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                Logger = logger,
                 ViewContext = viewContext,
-                Cache = MakeCache(),
             };
 
             // Act
@@ -503,17 +516,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var logger = CreateLogger();
             var hostingEnvironment = MakeHostingEnvironment();
 
-            var helper = new ScriptTagHelper
+            var helper = new ScriptTagHelper(
+                logger,
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                HtmlEncoder = new CommonTestEncoder(),
-                JavaScriptEncoder = new CommonTestEncoder(),
-                Logger = logger,
                 ViewContext = viewContext,
-                HostingEnvironment = hostingEnvironment,
                 FallbackSrc = "~/blank.js",
                 FallbackTestExpression = "http://www.example.com/blank.js",
                 Src = "/blank.js",
-                Cache = MakeCache(),
             };
 
             // Act
@@ -543,16 +556,18 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>();
             globbingUrlBuilder.Setup(g => g.BuildUrlList("/js/site.js", "**/*.js", null))
                 .Returns(new[] { "/js/site.js", "/common.js" });
-            var helper = new ScriptTagHelper
+
+            var helper = new ScriptTagHelper(
+                logger.Object,
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
                 GlobbingUrlBuilder = globbingUrlBuilder.Object,
-                Logger = logger.Object,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 Src = "/js/site.js",
                 SrcInclude = "**/*.js",
-                HtmlEncoder = new CommonTestEncoder(),
-                Cache = MakeCache(),
             };
 
             // Act
@@ -580,17 +595,18 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>();
             globbingUrlBuilder.Setup(g => g.BuildUrlList("/js/site.js", "**/*.js", null))
                 .Returns(new[] { "/js/site.js", "/common.js" });
-            var helper = new ScriptTagHelper
+
+            var helper = new ScriptTagHelper(
+                logger.Object,
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
                 GlobbingUrlBuilder = globbingUrlBuilder.Object,
-                Logger = logger.Object,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 Src = "/js/site.js",
                 SrcInclude = "**/*.js",
-                HtmlEncoder = new CommonTestEncoder(),
-                JavaScriptEncoder = new TestJavaScriptEncoder(),
-                Cache = MakeCache(),
             };
 
             // Act
@@ -617,16 +633,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
 
-            var helper = new ScriptTagHelper
+            var helper = new ScriptTagHelper(
+                logger.Object,
+                MakeHostingEnvironment(),
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                Logger = logger.Object,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 FileVersion = true,
-                HtmlEncoder = new CommonTestEncoder(),
-                JavaScriptEncoder = new TestJavaScriptEncoder(),
                 Src = "/js/site.js",
-                Cache = MakeCache(),
             };
 
             // Act
@@ -654,16 +670,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext("/bar");
 
-            var helper = new ScriptTagHelper
+            var helper = new ScriptTagHelper(
+                logger.Object,
+                MakeHostingEnvironment(),
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                Logger = logger.Object,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 FileVersion = true,
-                HtmlEncoder = new CommonTestEncoder(),
-                JavaScriptEncoder = new TestJavaScriptEncoder(),
                 Src = "/bar/js/site.js",
-                Cache = MakeCache(),
             };
 
             // Act
@@ -693,18 +709,18 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
 
-            var helper = new ScriptTagHelper
+            var helper = new ScriptTagHelper(
+                logger.Object,
+                MakeHostingEnvironment(),
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
-                Logger = logger.Object,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 FallbackSrc = "fallback.js",
                 FallbackTestExpression = "isavailable()",
                 FileVersion = true,
-                HtmlEncoder = new CommonTestEncoder(),
-                JavaScriptEncoder = new TestJavaScriptEncoder(),
                 Src = "/js/site.js",
-                Cache = MakeCache(),
             };
 
             // Act
@@ -713,7 +729,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             Assert.Equal(
                 "<script src=\"HtmlEncode[[/js/site.js?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\">" +
-                "</script>\r\n<script>(isavailable()||document.write(\"<script src=\\\"JavaScriptEncode[[fallback.js" +
+                "</script>\r\n<script>(isavailable()||document.write(\"<script src=\\\"JavaScriptStringEncode[[fallback.js" +
                 "?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\\\"><\\/script>\"));</script>",
                 output.Content.GetContent());
         }
@@ -736,18 +752,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>();
             globbingUrlBuilder.Setup(g => g.BuildUrlList("/js/site.js", "*.js", null))
                 .Returns(new[] { "/js/site.js", "/common.js" });
-            var helper = new ScriptTagHelper
+
+            var helper = new ScriptTagHelper(
+                logger.Object,
+                MakeHostingEnvironment(),
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder())
             {
                 GlobbingUrlBuilder = globbingUrlBuilder.Object,
-                Logger = logger.Object,
-                HostingEnvironment = hostingEnvironment,
                 ViewContext = viewContext,
                 SrcInclude = "*.js",
                 FileVersion = true,
-                HtmlEncoder = new CommonTestEncoder(),
-                JavaScriptEncoder = new TestJavaScriptEncoder(),
                 Src = "/js/site.js",
-                Cache = MakeCache(),
             };
 
             // Act

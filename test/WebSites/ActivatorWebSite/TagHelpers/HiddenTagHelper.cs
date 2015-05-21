@@ -11,13 +11,23 @@ namespace ActivatorWebSite.TagHelpers
     [TargetElement("span")]
     public class HiddenTagHelper : TagHelper
     {
-        public string Name { get; set; }
+        public HiddenTagHelper(IHtmlHelper htmlHelper)
+        {
+            HtmlHelper = htmlHelper;
+        }
 
-        [Activate]
-        public IHtmlHelper HtmlHelper { get; set; }
+        public IHtmlHelper HtmlHelper { get; }
+
+        [HtmlAttributeNotBound]
+        [ViewContext]
+        public ViewContext ViewContext { get; set; }
+
+        public string Name { get; set; }
 
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
+            (HtmlHelper as ICanHasViewContext)?.Contextualize(ViewContext);
+
             var content = await context.GetChildContentAsync();
 
             output.Content.SetContent(HtmlHelper.Hidden(Name, content).ToString());
