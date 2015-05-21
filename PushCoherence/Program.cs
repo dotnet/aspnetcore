@@ -202,8 +202,10 @@ namespace PushCoherence
                     stream.SetLength(0);
 
                     // Write JSON back
-                    var writer = new JsonTextWriter(new StreamWriter(stream));
-                    modifiedJsonObject.WriteTo(writer);
+                    using (var writer = new JsonTextWriter(new StreamWriter(stream)))
+                    {
+                        modifiedJsonObject.WriteTo(writer);
+                    }
                 }
             }
         }
