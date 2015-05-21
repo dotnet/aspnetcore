@@ -39,7 +39,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Hosting.Server;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 using Microsoft.Framework.Logging;
 using Microsoft.Net.Http.Server;
 
