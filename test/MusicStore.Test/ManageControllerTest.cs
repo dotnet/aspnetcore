@@ -29,6 +29,8 @@ namespace MusicStore.Controllers
             services.AddIdentity<ApplicationUser, IdentityRole>()
                     .AddEntityFrameworkStores<MusicStoreContext>();
 
+            services.AddLogging();
+
             // IHttpContextAccessor is required for SignInManager, and UserManager
             var context = new DefaultHttpContext();
             context.SetFeature<IHttpAuthenticationFeature>(new HttpAuthenticationFeature() { Handler = new TestAuthHandler() });
