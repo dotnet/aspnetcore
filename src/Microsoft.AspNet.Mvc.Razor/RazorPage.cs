@@ -9,6 +9,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -65,7 +66,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Gets the <see cref="IHtmlEncoder"/> to be used for encoding HTML.
         /// </summary>
-        [Activate]
+        [RazorInject]
         public IHtmlEncoder HtmlEncoder { get; set; }
 
         /// <inheritdoc />

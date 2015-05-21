@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
@@ -50,14 +51,16 @@ namespace Microsoft.AspNet.Mvc.Razor
             if (context.ViewData == null)
             {
                 // Create ViewDataDictionary<TModel>(IModelMetadataProvider, ModelStateDictionary).
-                return (ViewDataDictionary)Activator.CreateInstance(activationInfo.ViewDataDictionaryType,
+                return (ViewDataDictionary)Activator.CreateInstance(
+                    activationInfo.ViewDataDictionaryType,
                     _metadataProvider,
                     context.ModelState);
             }
             else if (context.ViewData.GetType() != activationInfo.ViewDataDictionaryType)
             {
                 // Create ViewDataDictionary<TModel>(ViewDataDictionary).
-                return (ViewDataDictionary)Activator.CreateInstance(activationInfo.ViewDataDictionaryType,
+                return (ViewDataDictionary)Activator.CreateInstance(
+                    activationInfo.ViewDataDictionaryType,
                     context.ViewData);
             }
 
@@ -81,9 +84,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             return new PageActivationInfo
             {
                 ViewDataDictionaryType = viewDataType,
-                PropertyActivators = PropertyActivator<ViewContext>.GetPropertiesToActivate(type,
-                                                                                            typeof(ActivateAttribute),
-                                                                                            CreateActivateInfo)
+                PropertyActivators = PropertyActivator<ViewContext>.GetPropertiesToActivate(
+                    type,
+                    typeof(RazorInjectAttribute),
+                    CreateActivateInfo)
             };
         }
 

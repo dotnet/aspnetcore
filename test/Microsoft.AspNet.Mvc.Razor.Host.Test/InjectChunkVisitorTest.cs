@@ -71,7 +71,7 @@ public MyType2 @MyPropertyName2 { get; private set; }
         {
             // Arrange
             var expected = string.Join(Environment.NewLine,
-@"[Microsoft.AspNet.Mvc.ActivateAttribute]",
+@"[Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]",
 @"public",
 @"#line 1 """"",
 @"MyType1 MyPropertyName1",
@@ -79,7 +79,7 @@ public MyType2 @MyPropertyName2 { get; private set; }
 @"#line default",
 @"#line hidden",
 @"{ get; private set; }",
-@"[Microsoft.AspNet.Mvc.ActivateAttribute]",
+@"[Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]",
 @"public",
 @"#line 1 """"",
 @"MyType2 @MyPropertyName2",
@@ -92,7 +92,7 @@ public MyType2 @MyPropertyName2 { get; private set; }
             var context = CreateContext();
             context.Host.DesignTimeMode = true;
 
-            var visitor = new InjectChunkVisitor(writer, context, "Microsoft.AspNet.Mvc.ActivateAttribute");
+            var visitor = new InjectChunkVisitor(writer, context, "Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute");
             var factory = SpanFactory.CreateCsHtml();
             var node = (Span)factory.Code("Some code")
                                     .As(new InjectParameterGenerator("MyType", "MyPropertyName"));
@@ -114,7 +114,7 @@ public MyType2 @MyPropertyName2 { get; private set; }
         public void Visit_WithDesignTimeHost_GeneratesPropertiesAndLinePragmas_ForPartialInjectChunks()
         {
             // Arrange
-            var expected = @"[Microsoft.AspNet.Mvc.ActivateAttribute]
+            var expected = @"[Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
 public
 #line 1 """"
 MyType1
@@ -127,7 +127,7 @@ MyType1
             var context = CreateContext();
             context.Host.DesignTimeMode = true;
 
-            var visitor = new InjectChunkVisitor(writer, context, "Microsoft.AspNet.Mvc.ActivateAttribute");
+            var visitor = new InjectChunkVisitor(writer, context, "Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute");
             var factory = SpanFactory.CreateCsHtml();
             var node = (Span)factory.Code("Some code")
                                     .As(new InjectParameterGenerator("MyType", "MyPropertyName"));

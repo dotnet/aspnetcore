@@ -4,6 +4,7 @@
 using System;
 using System.Linq.Expressions;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
 using Microsoft.Framework.DependencyInjection;
@@ -27,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        [Activate]
+        [RazorInject]
         public ViewDataDictionary<TModel> ViewData { get; set; }
 
         /// <summary>

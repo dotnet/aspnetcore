@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.WebEncoders;
@@ -206,7 +207,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private abstract class TestPageBase<TModel> : RazorPage<TModel>
         {
-            [Activate]
+            [RazorInject]
             public MyService MyService { get; set; }
 
             public MyService MyService2 { get; set; }
@@ -214,7 +215,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private class TestRazorPage : TestPageBase<MyModel>
         {
-            [Activate]
+            [RazorInject]
             internal IHtmlHelper<object> Html { get; private set; }
 
             public override Task ExecuteAsync()

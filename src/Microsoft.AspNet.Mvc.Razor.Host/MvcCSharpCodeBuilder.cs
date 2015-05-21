@@ -14,17 +14,17 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private readonly GeneratedTagHelperAttributeContext _tagHelperAttributeContext;
         private readonly string _defaultModel;
-        private readonly string _activateAttribute;
+        private readonly string _injectAttribute;
 
         public MvcCSharpCodeBuilder([NotNull] CodeBuilderContext context,
                                     [NotNull] string defaultModel,
-                                    [NotNull] string activateAttribute,
+                                    [NotNull] string injectAttribute,
                                     [NotNull] GeneratedTagHelperAttributeContext tagHelperAttributeContext)
             : base(context)
         {
             _tagHelperAttributeContext = tagHelperAttributeContext;
             _defaultModel = defaultModel;
-            _activateAttribute = activateAttribute;
+            _injectAttribute = injectAttribute;
         }
 
         private string Model { get; set; }
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             writer.WriteLineHiddenDirective();
 
-            var injectVisitor = new InjectChunkVisitor(writer, Context, _activateAttribute);
+            var injectVisitor = new InjectChunkVisitor(writer, Context, _injectAttribute);
             injectVisitor.Accept(Context.CodeTreeBuilder.CodeTree.Chunks);
 
             writer.WriteLine();

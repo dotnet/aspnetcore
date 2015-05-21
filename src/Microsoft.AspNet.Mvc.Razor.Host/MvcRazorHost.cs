@@ -159,9 +159,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Gets or sets the name attribute that is used to decorate properties that are injected and need to be
         /// activated.
         /// </summary>
-        public virtual string ActivateAttribute
+        public virtual string InjectAttribute
         {
-            get { return "Microsoft.AspNet.Mvc.ActivateAttribute"; }
+            get { return "Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute"; }
         }
 
         /// <summary>
@@ -238,7 +238,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             return new MvcCSharpCodeBuilder(context,
                                             DefaultModel,
-                                            ActivateAttribute,
+                                            InjectAttribute,
                                             new GeneratedTagHelperAttributeContext
                                             {
                                                 ModelExpressionTypeName = ModelExpressionType,

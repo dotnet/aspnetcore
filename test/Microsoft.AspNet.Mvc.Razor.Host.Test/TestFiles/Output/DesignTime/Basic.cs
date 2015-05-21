@@ -14,13 +14,13 @@
         {
         }
         #line hidden
-        [Microsoft.AspNet.Mvc.ActivateAttribute]
+        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public Microsoft.AspNet.Mvc.Rendering.IHtmlHelper<dynamic> Html { get; private set; }
-        [Microsoft.AspNet.Mvc.ActivateAttribute]
+        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public Microsoft.AspNet.Mvc.Rendering.IJsonHelper Json { get; private set; }
-        [Microsoft.AspNet.Mvc.ActivateAttribute]
+        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public Microsoft.AspNet.Mvc.IViewComponentHelper Component { get; private set; }
-        [Microsoft.AspNet.Mvc.ActivateAttribute]
+        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public Microsoft.AspNet.Mvc.IUrlHelper Url { get; private set; }
 
         #line hidden

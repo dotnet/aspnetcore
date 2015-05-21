@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 BuildLineMapping(documentAbsoluteIndex: 139,
                                  documentLineIndex: 4,
                                  documentCharacterIndex: 17,
-                                 generatedAbsoluteIndex: 2241,
+                                 generatedAbsoluteIndex: 2313,
                                  generatedLineIndex: 55,
                                  generatedCharacterIndex: 95,
                                  contentLength: 3),
@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 166,
                     documentLineIndex: 5,
                     documentCharacterIndex: 18,
-                    generatedAbsoluteIndex: 2554,
+                    generatedAbsoluteIndex: 2626,
                     generatedLineIndex: 61,
                     generatedCharacterIndex: 87,
                     contentLength: 5),
@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var expectedLineMappings = new List<LineMapping>
             {
                 BuildLineMapping(1, 0, 1, 59, 3, 0, 17),
-                BuildLineMapping(28, 1, 8, 688, 26, 8, 20)
+                BuildLineMapping(28, 1, 8, 706, 26, 8, 20)
             };
 
             // Act and Assert
@@ -191,8 +191,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             var expectedLineMappings = new[]
             {
                 BuildLineMapping(7, 0, 7, 214, 6, 7, 7),
-                BuildLineMapping(24, 1, 8, 713, 26, 8, 20),
-                BuildLineMapping(54, 2, 8, 921, 34, 8, 23)
+                BuildLineMapping(24, 1, 8, 731, 26, 8, 20),
+                BuildLineMapping(54, 2, 8, 957, 34, 8, 23)
             };
 
             // Act and Assert
@@ -209,13 +209,13 @@ namespace Microsoft.AspNet.Mvc.Razor
                 DesignTimeMode = true
             };
             host.NamespaceImports.Clear();
-            var expectedLineMappings = new[]
+            var expectedLineMappings = new []
             {
                 BuildLineMapping(7, 0, 7, 222, 6, 7, 7),
-                BuildLineMapping(24, 1, 8, 729, 26, 8, 20),
-                BuildLineMapping(58, 2, 8, 941, 34, 8, 23),
-                BuildLineMapping(93, 3, 8, 1156, 42, 8, 21),
-                BuildLineMapping(129, 4, 8, 1369, 50, 8, 24),
+                BuildLineMapping(24, 1, 8, 747, 26, 8, 20),
+                BuildLineMapping(58, 2, 8, 977, 34, 8, 23),
+                BuildLineMapping(93, 3, 8, 1210, 42, 8, 21),
+                BuildLineMapping(129, 4, 8, 1441, 50, 8, 24),
             };
 
             // Act and Assert
@@ -352,7 +352,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                 return new TestCSharpCodeBuilder(context,
                                                  DefaultModel,
-                                                 ActivateAttribute,
+                                                 "Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute",
                                                  new GeneratedTagHelperAttributeContext
                                                  {
                                                      ModelExpressionTypeName = ModelExpressionType,

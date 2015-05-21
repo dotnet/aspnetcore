@@ -10,21 +10,21 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public class InjectChunkVisitor : MvcCSharpCodeVisitor
     {
-        private readonly string _activateAttribute;
+        private readonly string _injectAttribute;
 
         public InjectChunkVisitor([NotNull] CSharpCodeWriter writer,
                                   [NotNull] CodeBuilderContext context,
-                                  [NotNull] string activateAttributeName)
+                                  [NotNull] string injectAttributeName)
             : base(writer, context)
         {
-            _activateAttribute = "[" + activateAttributeName + "]";
+            _injectAttribute = "[" + injectAttributeName + "]";
         }
 
         public IList<InjectChunk> InjectChunks { get; } = new List<InjectChunk>();
 
         protected override void Visit([NotNull] InjectChunk chunk)
         {
-            Writer.WriteLine(_activateAttribute);
+            Writer.WriteLine(_injectAttribute);
 
             // Some of the chunks that we visit are either InjectDescriptors that are added by default or
             // are chunks from _ViewStart files and are not associated with any Spans. Invoking

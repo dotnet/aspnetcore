@@ -21,7 +21,7 @@
         {
         }
         #line hidden
-        [Microsoft.AspNet.Mvc.ActivateAttribute]
+        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public
 #line 2 "TestFiles/Input/InjectWithSemicolon.cshtml"
         MyApp MyPropertyName
@@ -29,7 +29,7 @@
 #line default
 #line hidden
         { get; private set; }
-        [Microsoft.AspNet.Mvc.ActivateAttribute]
+        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public
 #line 3 "TestFiles/Input/InjectWithSemicolon.cshtml"
         MyService<MyModel> Html
@@ -37,7 +37,7 @@
 #line default
 #line hidden
         { get; private set; }
-        [Microsoft.AspNet.Mvc.ActivateAttribute]
+        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public
 #line 4 "TestFiles/Input/InjectWithSemicolon.cshtml"
         MyApp MyPropertyName2
@@ -45,7 +45,7 @@
 #line default
 #line hidden
         { get; private set; }
-        [Microsoft.AspNet.Mvc.ActivateAttribute]
+        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public
 #line 5 "TestFiles/Input/InjectWithSemicolon.cshtml"
         MyService<MyModel> Html2
@@ -53,11 +53,11 @@
 #line default
 #line hidden
         { get; private set; }
-        [Microsoft.AspNet.Mvc.ActivateAttribute]
+        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public Microsoft.AspNet.Mvc.Rendering.IJsonHelper Json { get; private set; }
-        [Microsoft.AspNet.Mvc.ActivateAttribute]
+        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public Microsoft.AspNet.Mvc.IViewComponentHelper Component { get; private set; }
-        [Microsoft.AspNet.Mvc.ActivateAttribute]
+        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public Microsoft.AspNet.Mvc.IUrlHelper Url { get; private set; }
 
         #line hidden
