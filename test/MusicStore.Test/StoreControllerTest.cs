@@ -144,9 +144,9 @@ namespace MusicStore.Controllers
             Assert.NotNull(genre.Albums.SingleOrDefault(a => a.AlbumId == albumId));
             Assert.Null(viewModel.Artist);
 
-            var cachedAlbum = cache.Get<Task<Album>>("album_1");
+            var cachedAlbum = cache.Get<Album>("album_1");
             Assert.NotNull(cachedAlbum);
-            Assert.Equal(albumId, cachedAlbum.Result.AlbumId);
+            Assert.Equal(albumId, cachedAlbum.AlbumId);
         }
 
         private static Genre[] CreateTestGenres(int numberOfGenres, int numberOfAlbums, DbContext dbContext)
