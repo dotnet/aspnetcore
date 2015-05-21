@@ -48,6 +48,14 @@ sudo ldconfig
 
 **NOTE:** `make install` puts `libuv.so.1` in `/usr/local/lib`, in the above commands `ldconfig` is used to update `ld.so.cache` so that `dlopen` (see `man dlopen`) can load it. If you are getting libuv some other way or not running `make install` then you need to ensure that dlopen is capable of loading `libuv.so.1`.
 
+### Get unzip
+
+Unzip is needed to unpack runtime packages.
+
+```
+sudo apt-get install unzip
+```
+
 ### Get DNVM
 
 Now let's get DNVM. To do this run:
