@@ -31,7 +31,6 @@
         "Microsoft.AspNet.SignalR.Server": "3.0.0-*",
         "Microsoft.AspNet.StaticFiles": "1.0.0-*",
         "Microsoft.AspNet.Tooling.Razor": "1.0.0-*",
-        "Microsoft.Framework.Caching.Distributed": "1.0.0-*",
         "Microsoft.Framework.CodeGenerators.Mvc": "1.0.0-*",
         "Microsoft.Framework.Configuration.CommandLine": "1.0.0-*",
         "Microsoft.Framework.Configuration.EnvironmentVariables": "1.0.0-*",
