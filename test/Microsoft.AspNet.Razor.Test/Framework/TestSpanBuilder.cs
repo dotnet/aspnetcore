@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Razor.Editor;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         public static SpanConstructor EmptyHtml(this SpanFactory self)
         {
             return self.Span(SpanKind.Markup, new HtmlSymbol(self.LocationTracker.CurrentLocation, string.Empty, HtmlSymbolType.Unknown))
-                .With(new MarkupCodeGenerator());
+                .With(new MarkupChunkGenerator());
         }
 
         public static UnclassifiedCodeSpanConstructor Code(this SpanFactory self, string content)
@@ -108,23 +108,23 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         {
             return self
                 .Span(SpanKind.MetaCode, "!", markup: true)
-                .With(SpanCodeGenerator.Null)
+                .With(SpanChunkGenerator.Null)
                 .Accepts(AcceptedCharacters.None);
         }
 
         public static SpanConstructor Markup(this SpanFactory self, string content)
         {
-            return self.Span(SpanKind.Markup, content, markup: true).With(new MarkupCodeGenerator());
+            return self.Span(SpanKind.Markup, content, markup: true).With(new MarkupChunkGenerator());
         }
 
         public static SpanConstructor Markup(this SpanFactory self, params string[] content)
         {
-            return self.Span(SpanKind.Markup, content, markup: true).With(new MarkupCodeGenerator());
+            return self.Span(SpanKind.Markup, content, markup: true).With(new MarkupChunkGenerator());
         }
 
         public static SpanConstructor CodeMarkup(this SpanFactory self, params string[] content)
         {
-            return self.Span(SpanKind.Code, content, markup: true).With(new MarkupCodeGenerator());
+            return self.Span(SpanKind.Code, content, markup: true).With(new MarkupChunkGenerator());
         }
 
         public static SourceLocation GetLocationAndAdvance(this SourceLocationTracker self, string content)
@@ -274,12 +274,12 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         public SpanConstructor AsStatement()
         {
-            return _self.With(new StatementCodeGenerator());
+            return _self.With(new StatementChunkGenerator());
         }
 
         public SpanConstructor AsExpression()
         {
-            return _self.With(new ExpressionCodeGenerator());
+            return _self.With(new ExpressionChunkGenerator());
         }
 
         public SpanConstructor AsImplicitExpression(ISet<string> keywords)
@@ -290,28 +290,28 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         public SpanConstructor AsImplicitExpression(ISet<string> keywords, bool acceptTrailingDot)
         {
             return _self.With(new ImplicitExpressionEditHandler(SpanConstructor.TestTokenizer, keywords, acceptTrailingDot))
-                .With(new ExpressionCodeGenerator());
+                .With(new ExpressionChunkGenerator());
         }
 
         public SpanConstructor AsFunctionsBody()
         {
-            return _self.With(new TypeMemberCodeGenerator());
+            return _self.With(new TypeMemberChunkGenerator());
         }
 
         public SpanConstructor AsNamespaceImport(string ns)
         {
-            return _self.With(new AddImportCodeGenerator(ns));
+            return _self.With(new AddImportChunkGenerator(ns));
         }
 
         public SpanConstructor Hidden()
         {
-            return _self.With(SpanCodeGenerator.Null);
+            return _self.With(SpanChunkGenerator.Null);
         }
 
         public SpanConstructor AsBaseType(string baseType)
         {
             return _self
-                .With(new SetBaseTypeCodeGenerator(baseType))
+                .With(new SetBaseTypeChunkGenerator(baseType))
                 .Accepts(AcceptedCharacters.AnyExceptNewline);
         }
 
@@ -319,27 +319,27 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         {
             return _self
                 .With(
-                    new AddOrRemoveTagHelperCodeGenerator(removeTagHelperDescriptors: false, lookupText: lookupText))
+                    new AddOrRemoveTagHelperChunkGenerator(removeTagHelperDescriptors: false, lookupText: lookupText))
                 .Accepts(AcceptedCharacters.AnyExceptNewline);
         }
 
         public SpanConstructor AsRemoveTagHelper(string lookupText)
         {
             return _self
-                .With(new AddOrRemoveTagHelperCodeGenerator(removeTagHelperDescriptors: true, lookupText: lookupText))
+                .With(new AddOrRemoveTagHelperChunkGenerator(removeTagHelperDescriptors: true, lookupText: lookupText))
                 .Accepts(AcceptedCharacters.AnyExceptNewline);
         }
 
         public SpanConstructor AsTagHelperPrefixDirective(string prefix)
         {
             return _self
-                .With(new TagHelperPrefixDirectiveCodeGenerator(prefix))
+                .With(new TagHelperPrefixDirectiveChunkGenerator(prefix))
                 .Accepts(AcceptedCharacters.AnyExceptNewline);
         }
 
-        public SpanConstructor As(ISpanCodeGenerator codeGenerator)
+        public SpanConstructor As(ISpanChunkGenerator chunkGenerator)
         {
-            return _self.With(codeGenerator);
+            return _self.With(chunkGenerator);
         }
     }
 
@@ -368,9 +368,9 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             return Builder.Build();
         }
 
-        public SpanConstructor With(ISpanCodeGenerator generator)
+        public SpanConstructor With(ISpanChunkGenerator generator)
         {
-            Builder.CodeGenerator = generator;
+            Builder.ChunkGenerator = generator;
             return this;
         }
 
@@ -380,9 +380,9 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             return this;
         }
 
-        public SpanConstructor With(Action<ISpanCodeGenerator> generatorConfigurer)
+        public SpanConstructor With(Action<ISpanChunkGenerator> generatorConfigurer)
         {
-            generatorConfigurer(Builder.CodeGenerator);
+            generatorConfigurer(Builder.ChunkGenerator);
             return this;
         }
 
@@ -399,7 +399,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         public SpanConstructor Hidden()
         {
-            Builder.CodeGenerator = SpanCodeGenerator.Null;
+            Builder.ChunkGenerator = SpanChunkGenerator.Null;
             return this;
         }
     }

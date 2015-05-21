@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             var afterEquals = false;
             var builder = new SpanBuilder
             {
-                CodeGenerator = span.CodeGenerator,
+                ChunkGenerator = span.ChunkGenerator,
                 EditHandler = span.EditHandler,
                 Kind = span.Kind
             };
@@ -322,9 +322,9 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 }
             }
 
-            // We need to rebuild the code generators of the builder and its children (this is needed to
-            // ensure we don't do special attribute code generation since this is a tag helper).
-            block = RebuildCodeGenerators(builder.Build());
+            // We need to rebuild the chunk generators of the builder and its children (this is needed to
+            // ensure we don't do special attribute chunk generation since this is a tag helper).
+            block = RebuildChunkGenerators(builder.Build());
 
             // If there's only 1 child at this point its value could be a simple markup span (treated differently than
             // block level elements for attributes).
@@ -348,16 +348,16 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             return result;
         }
 
-        private static Block RebuildCodeGenerators(Block block)
+        private static Block RebuildChunkGenerators(Block block)
         {
             var builder = new BlockBuilder(block);
 
-            var isDynamic = builder.CodeGenerator is DynamicAttributeBlockCodeGenerator;
+            var isDynamic = builder.ChunkGenerator is DynamicAttributeBlockChunkGenerator;
 
-            // We don't want any attribute specific logic here, null out the block code generator.
-            if (isDynamic || builder.CodeGenerator is AttributeBlockCodeGenerator)
+            // We don't want any attribute specific logic here, null out the block chunk generator.
+            if (isDynamic || builder.ChunkGenerator is AttributeBlockChunkGenerator)
             {
-                builder.CodeGenerator = BlockCodeGenerator.Null;
+                builder.ChunkGenerator = ParentChunkGenerator.Null;
             }
 
             for (var i = 0; i < builder.Children.Count; i++)
@@ -367,40 +367,40 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 if (child.IsBlock)
                 {
                     // The child is a block, recurse down into the block to rebuild its children
-                    builder.Children[i] = RebuildCodeGenerators((Block)child);
+                    builder.Children[i] = RebuildChunkGenerators((Block)child);
                 }
                 else
                 {
                     var childSpan = (Span)child;
-                    ISpanCodeGenerator newCodeGenerator = null;
-                    var literalGenerator = childSpan.CodeGenerator as LiteralAttributeCodeGenerator;
+                    ISpanChunkGenerator newChunkGenerator = null;
+                    var literalGenerator = childSpan.ChunkGenerator as LiteralAttributeChunkGenerator;
 
                     if (literalGenerator != null)
                     {
                         if (literalGenerator.ValueGenerator == null || literalGenerator.ValueGenerator.Value == null)
                         {
-                            newCodeGenerator = new MarkupCodeGenerator();
+                            newChunkGenerator = new MarkupChunkGenerator();
                         }
                         else
                         {
-                            newCodeGenerator = literalGenerator.ValueGenerator.Value;
+                            newChunkGenerator = literalGenerator.ValueGenerator.Value;
                         }
                     }
-                    else if (isDynamic && childSpan.CodeGenerator == SpanCodeGenerator.Null)
+                    else if (isDynamic && childSpan.ChunkGenerator == SpanChunkGenerator.Null)
                     {
-                        // Usually the dynamic code generator handles rendering the null code generators underneath
+                        // Usually the dynamic chunk generator handles creating the null chunk generators underneath
                         // it. This doesn't make sense in terms of tag helpers though, we need to change null code
-                        // generators to markup code generators.
+                        // generators to markup chunk generators.
 
-                        newCodeGenerator = new MarkupCodeGenerator();
+                        newChunkGenerator = new MarkupChunkGenerator();
                     }
 
-                    // If we have a new code generator we'll need to re-build the child
-                    if (newCodeGenerator != null)
+                    // If we have a new chunk generator we'll need to re-build the child
+                    if (newChunkGenerator != null)
                     {
                         var childSpanBuilder = new SpanBuilder(childSpan)
                         {
-                            CodeGenerator = newCodeGenerator
+                            ChunkGenerator = newChunkGenerator
                         };
 
                         builder.Children[i] = childSpanBuilder.Build();

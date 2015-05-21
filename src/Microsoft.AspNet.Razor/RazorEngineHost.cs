@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Chunks.Generators;
+using Microsoft.AspNet.Razor.CodeGeneration;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Framework.Internal;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Razor
     /// * The default Base Class to inherit the generated class from
     /// * The default Class Name and Namespace for the generated class (can be overridden by parameters in RazorTemplateEngine.GeneratedCode)
     /// * The language of the code in a Razor page
-    /// * The markup, code parsers and code generators to use (the system will select defaults, but a Host gets a change to augment them)
+    /// * The markup, code parsers and chunk generators to use (the system will select defaults, but a Host gets a change to augment them)
     ///     ** See DecorateNNN methods
     /// * Additional code to add to the generated code (see PostProcessGeneratedCode)
     /// </remarks>
@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Razor
         public virtual string DefaultBaseClass { get; set; }
 
         /// <summary>
-        /// Indiciates if the parser and code generator should run in design-time mode
+        /// Indicates if the parser and chunk generator should run in design-time mode
         /// </summary>
         public virtual bool DesignTimeMode { get; set; }
 
@@ -194,13 +194,13 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// Gets an instance of the code generator and is provided an opportunity to decorate or replace it
+        /// Gets an instance of the chunk generator and is provided an opportunity to decorate or replace it
         /// </summary>
-        /// <param name="incomingCodeGenerator">The code generator</param>
-        /// <returns>Either the same code generator, after modifications, or a different code generator</returns>
-        public virtual RazorCodeGenerator DecorateCodeGenerator([NotNull] RazorCodeGenerator incomingCodeGenerator)
+        /// <param name="incomingChunkGenerator">The chunk generator</param>
+        /// <returns>Either the same chunk generator, after modifications, or a different chunk generator</returns>
+        public virtual RazorChunkGenerator DecorateChunkGenerator([NotNull] RazorChunkGenerator incomingChunkGenerator)
         {
-            return incomingCodeGenerator;
+            return incomingChunkGenerator;
         }
 
         /// <summary>
@@ -215,12 +215,12 @@ namespace Microsoft.AspNet.Razor
             return incomingBuilder;
         }
 
-        // If a user wants to modify the code generation process they do it via the DecorateCodeGenerator method which
-        // is why this is internal.
-        internal RazorCodeGenerator CreateCodeGenerator(string className, string rootNamespace, string sourceFileName)
+        // If a user wants to modify the chunk generation process they do it via the DecorateChunkGenerator method
+        // which is why this is internal.
+        internal RazorChunkGenerator CreateChunkGenerator(string className, string rootNamespace, string sourceFileName)
         {
-            return DecorateCodeGenerator(
-                CodeLanguage.CreateCodeGenerator(className, rootNamespace, sourceFileName, host: this));
+            return DecorateChunkGenerator(
+                CodeLanguage.CreateChunkGenerator(className, rootNamespace, sourceFileName, host: this));
         }
     }
 }

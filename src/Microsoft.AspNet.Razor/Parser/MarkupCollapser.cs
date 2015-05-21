@@ -3,7 +3,7 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
 namespace Microsoft.AspNet.Razor.Parser
@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected override bool CanRewrite(Span span)
         {
-            return span.Kind == SpanKind.Markup && span.CodeGenerator is MarkupCodeGenerator;
+            return span.Kind == SpanKind.Markup && span.ChunkGenerator is MarkupChunkGenerator;
         }
 
         protected override SyntaxTreeNode RewriteSpan(BlockBuilder parent, Span span)

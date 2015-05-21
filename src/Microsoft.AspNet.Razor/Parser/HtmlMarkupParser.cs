@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Tokenizer;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Razor.Parser
         public override void BuildSpan(SpanBuilder span, SourceLocation start, string content)
         {
             span.Kind = SpanKind.Markup;
-            span.CodeGenerator = new MarkupCodeGenerator();
+            span.ChunkGenerator = new MarkupChunkGenerator();
             base.BuildSpan(span, start, content);
         }
 
@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.Razor.Parser
                         }
                         Output(SpanKind.Markup);
                         Accept(transition);
-                        Span.CodeGenerator = SpanCodeGenerator.Null;
+                        Span.ChunkGenerator = SpanChunkGenerator.Null;
                         Output(SpanKind.Markup);
                         AcceptAndMoveNext();
                         continue; // while
@@ -212,7 +212,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 AcceptAndMoveNext();
 
                 // Setup the metacode span that we will be outputing.
-                Span.CodeGenerator = SpanCodeGenerator.Null;
+                Span.ChunkGenerator = SpanChunkGenerator.Null;
                 Output(SpanKind.MetaCode, AcceptedCharacters.None);
             }
         }

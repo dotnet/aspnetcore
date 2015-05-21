@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Razor.Editor;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
@@ -584,7 +584,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    Factory.Markup(";").Accepts(AcceptedCharacters.None),
                                    new MarkupTagBlock(
                                         Factory.MarkupTransition("</text>").Accepts(AcceptedCharacters.None)),
-                                   Factory.CodeMarkup(" ").With(new StatementCodeGenerator()).Accepts(AcceptedCharacters.None)
+                                   Factory.CodeMarkup(" ").With(new StatementChunkGenerator()).Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("}").AsStatement()));
         }
@@ -604,7 +604,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    Factory.Markup(";").Accepts(AcceptedCharacters.None),
                                    new MarkupTagBlock(
                                         Factory.MarkupTransition("</text>").Accepts(AcceptedCharacters.None)),
-                                   Factory.CodeMarkup(" ").With(new StatementCodeGenerator()).Accepts(AcceptedCharacters.None)
+                                   Factory.CodeMarkup(" ").With(new StatementChunkGenerator()).Accepts(AcceptedCharacters.None)
                                    ),
                                Factory.Code("} ").AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)));

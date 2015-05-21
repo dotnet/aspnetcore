@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
 #endif
 
         [Fact]
-        public void GetDescriptors_LocatesTagHelperCodeGenerator_CreatesDirectiveDescriptors()
+        public void GetDescriptors_LocatesTagHelperChunkGenerator_CreatesDirectiveDescriptors()
         {
             // Arrange
             var resolver = new TestTagHelperDescriptorResolver();
@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         }
 
         [Fact]
-        public void GetDescriptors_LocatesTagHelperPrefixDirectiveCodeGenerator()
+        public void GetDescriptors_LocatesTagHelperPrefixDirectiveChunkGenerator()
         {
             // Arrange
             var resolver = new TestTagHelperDescriptorResolver();
@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         }
 
         [Fact]
-        public void GetDescriptors_LocatesAddTagHelperCodeGenerator()
+        public void GetDescriptors_LocatesAddTagHelperChunkGenerator()
         {
             // Arrange
             var resolver = new TestTagHelperDescriptorResolver();
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         }
 
         [Fact]
-        public void GetDescriptors_LocatesNestedRemoveTagHelperCodeGenerator()
+        public void GetDescriptors_LocatesNestedRemoveTagHelperChunkGenerator()
         {
             // Arrange
             var resolver = new TestTagHelperDescriptorResolver();

@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             + "}",
                 new MarkupBlock(
                     Factory.EmptyHtml(),
-                    new SectionBlock(new SectionCodeGenerator("Foo"),
+                    new SectionBlock(new SectionChunkGenerator("Foo"),
                         Factory.CodeTransition(),
                         Factory.MetaCode("section Foo {")
                                .AutoCompleteWith(null, atEndOfSpan: true),
@@ -179,11 +179,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 new MarkupBlock(
                     new MarkupTagBlock(
                         Factory.Markup("<a"),
-                        new MarkupBlock(new AttributeBlockCodeGenerator("href", new LocationTagged<string>(" href=\"", 2, 0, 2), new LocationTagged<string>("\"", 36, 0, 36)),
-                            Factory.Markup(" href=\"").With(SpanCodeGenerator.Null),
+                        new MarkupBlock(new AttributeBlockChunkGenerator("href", new LocationTagged<string>(" href=\"", 2, 0, 2), new LocationTagged<string>("\"", 36, 0, 36)),
+                            Factory.Markup(" href=\"").With(SpanChunkGenerator.Null),
                             Factory.Markup("mailto:anurse@microsoft.com")
-                                   .With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 9, 0, 9), new LocationTagged<string>("mailto:anurse@microsoft.com", 9, 0, 9))),
-                            Factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                   .With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 9, 0, 9), new LocationTagged<string>("mailto:anurse@microsoft.com", 9, 0, 9))),
+                            Factory.Markup("\"").With(SpanChunkGenerator.Null)),
                         Factory.Markup(">")),
                     Factory.Markup("Email me"),
                     BlockFactory.MarkupTagBlock("</a>")));
@@ -261,7 +261,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
             ParseDocumentTest(@"@section Foo { <script>foo<bar baz='@boz'></script> }",
                 new MarkupBlock(
                     Factory.EmptyHtml(),
-                    new SectionBlock(new SectionCodeGenerator("Foo"),
+                    new SectionBlock(new SectionChunkGenerator("Foo"),
                         Factory.CodeTransition(),
                         Factory.MetaCode("section Foo {")
                             .AutoCompleteWith(autoCompleteString: null, atEndOfSpan: true),
@@ -308,12 +308,12 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             new MarkupTagBlock(
                                 factory.Markup("<span"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 13, 0, 13)),
-                                    factory.Markup(" foo='").With(SpanCodeGenerator.Null),
+                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 13, 0, 13)),
+                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
-                                    factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharacters.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
                     },
                     {
@@ -323,13 +323,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             new MarkupTagBlock(
                                 factory.Markup("<span"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 16, 0, 16)),
-                                    factory.Markup(" foo='").With(SpanCodeGenerator.Null),
-                                    factory.Markup("abc").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("abc", 11, 0, 11))),
+                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 16, 0, 16)),
+                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
+                                    factory.Markup("abc").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("abc", 11, 0, 11))),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 14, 0, 14), new LocationTagged<string>("@", 14, 0, 14))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
-                                    factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 14, 0, 14), new LocationTagged<string>("@", 14, 0, 14))).Accepts(AcceptedCharacters.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
                     },
                     {
@@ -339,13 +339,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             new MarkupTagBlock(
                                 factory.Markup("<span"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 16, 0, 16)),
-                                    factory.Markup(" foo='").With(SpanCodeGenerator.Null),
+                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 16, 0, 16)),
+                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
-                                    factory.Markup("def").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 13, 0, 13), new LocationTagged<string>("def", 13, 0, 13))),
-                                    factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharacters.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                    factory.Markup("def").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 13, 0, 13), new LocationTagged<string>("def", 13, 0, 13))),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
                     },
                     {
@@ -355,14 +355,14 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             new MarkupTagBlock(
                                 factory.Markup("<span"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 21, 0, 21)),
-                                    factory.Markup(" foo='").With(SpanCodeGenerator.Null),
-                                    factory.Markup("abc").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("abc", 11, 0, 11))),
+                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 21, 0, 21)),
+                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
+                                    factory.Markup("abc").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("abc", 11, 0, 11))),
                                     new MarkupBlock(
-                                        factory.Markup(" @").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(" ", 14, 0, 14), new LocationTagged<string>("@", 15, 0, 15))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
-                                    factory.Markup(" def").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(" ", 17, 0, 17), new LocationTagged<string>("def", 18, 0, 18))),
-                                    factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                        factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 14, 0, 14), new LocationTagged<string>("@", 15, 0, 15))).Accepts(AcceptedCharacters.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                    factory.Markup(" def").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 17, 0, 17), new LocationTagged<string>("def", 18, 0, 18))),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
                     },
                     {
@@ -372,16 +372,16 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             new MarkupTagBlock(
                                 factory.Markup("<span"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 26, 0, 26)),
-                                    factory.Markup(" foo='").With(SpanCodeGenerator.Null),
+                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 26, 0, 26)),
+                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharacters.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
                                     new MarkupBlock(
-                                        new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 13, 0, 13), 13, 0, 13),
-                                        factory.EmptyHtml().With(SpanCodeGenerator.Null),
+                                        new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 13, 0, 13), 13, 0, 13),
+                                        factory.EmptyHtml().With(SpanChunkGenerator.Null),
                                         datetimeBlock),
-                                    factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
                     },
                     {
@@ -390,15 +390,15 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             new MarkupTagBlock(
                                 factory.Markup("<span"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 27, 0, 27)),
-                                    factory.Markup(" foo='").With(SpanCodeGenerator.Null),
+                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 27, 0, 27)),
+                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                                     new MarkupBlock(
-                                        new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), 11, 0, 11),
+                                        new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), 11, 0, 11),
                                         datetimeBlock),
                                     new MarkupBlock(
-                                        factory.Markup(" @").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(" ", 24, 0, 24), new LocationTagged<string>("@", 25, 0, 25))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
-                                    factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                        factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 24, 0, 24), new LocationTagged<string>("@", 25, 0, 25))).Accepts(AcceptedCharacters.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
                     },
                     {
@@ -407,23 +407,23 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             new MarkupTagBlock(
                                 factory.Markup("<span"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 32, 0, 32)),
-                                    factory.Markup(" foo='").With(SpanCodeGenerator.Null),
+                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 32, 0, 32)),
+                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                                     new MarkupBlock(
-                                        new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), 11, 0, 11),
+                                        new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), 11, 0, 11),
                                         new ExpressionBlock(
                                             factory.CodeTransition(),
-                                            factory.MetaCode("(").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None),
+                                            factory.MetaCode("(").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None),
                                             factory.Code("2+3").AsExpression(),
-                                            factory.MetaCode(")").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None))),
+                                            factory.MetaCode(")").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None))),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 17, 0, 17), new LocationTagged<string>("@", 17, 0, 17))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 17, 0, 17), new LocationTagged<string>("@", 17, 0, 17))).Accepts(AcceptedCharacters.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
                                     new MarkupBlock(
-                                        new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 19, 0, 19), 19, 0, 19),
-                                        factory.EmptyHtml().With(SpanCodeGenerator.Null),
+                                        new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 19, 0, 19), 19, 0, 19),
+                                        factory.EmptyHtml().With(SpanChunkGenerator.Null),
                                         datetimeBlock),
-                                    factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
                             factory.Markup(" />")))
                     },
                     {
@@ -432,20 +432,20 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             new MarkupTagBlock(
                                 factory.Markup("<span"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 19, 0, 19)),
-                                    factory.Markup(" foo='").With(SpanCodeGenerator.Null),
+                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 19, 0, 19)),
+                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharacters.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
                                     new MarkupBlock(
-                                        new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 13, 0, 13), 13, 0, 13),
-                                        factory.EmptyHtml().With(SpanCodeGenerator.Null),
+                                        new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 13, 0, 13), 13, 0, 13),
+                                        factory.EmptyHtml().With(SpanChunkGenerator.Null),
                                         new ExpressionBlock(
                                             factory.CodeTransition(),
-                                            factory.MetaCode("(").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None),
+                                            factory.MetaCode("(").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None),
                                             factory.Code("2+3").AsExpression(),
-                                            factory.MetaCode(")").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None))),
-                                    factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                            factory.MetaCode(")").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None))),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
                             factory.Markup(" />")))
                     },
                     {
@@ -454,15 +454,15 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             new MarkupTagBlock(
                                 factory.Markup("<span"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 26, 0, 26)),
-                                    factory.Markup(" foo='").With(SpanCodeGenerator.Null),
+                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 26, 0, 26)),
+                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                                     new MarkupBlock(
-                                        new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), 11, 0, 11),
+                                        new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), 11, 0, 11),
                                         datetimeBlock),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 24, 0, 24), new LocationTagged<string>("@", 24, 0, 24))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
-                                    factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 24, 0, 24), new LocationTagged<string>("@", 24, 0, 24))).Accepts(AcceptedCharacters.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
                     },
                     {
@@ -472,13 +472,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             new MarkupTagBlock(
                                 factory.Markup("<span"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 25, 0, 25)),
-                                    factory.Markup(" foo='").With(SpanCodeGenerator.Null),
-                                    factory.Markup("abc@def.com").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("abc@def.com", 11, 0, 11))),
+                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 25, 0, 25)),
+                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
+                                    factory.Markup("abc@def.com").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("abc@def.com", 11, 0, 11))),
                                     new MarkupBlock(
-                                        factory.Markup(" @").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(" ", 22, 0, 22), new LocationTagged<string>("@", 23, 0, 23))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
-                                    factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                        factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 22, 0, 22), new LocationTagged<string>("@", 23, 0, 23))).Accepts(AcceptedCharacters.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
                     },
                     {
@@ -487,17 +487,17 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             new MarkupTagBlock(
                                 factory.Markup("<span"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 26, 0, 26)),
-                                    factory.Markup(" foo='").With(SpanCodeGenerator.Null),
-                                    factory.Markup("abc").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("abc", 11, 0, 11))),
+                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 26, 0, 26)),
+                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
+                                    factory.Markup("abc").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("abc", 11, 0, 11))),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 14, 0, 14), new LocationTagged<string>("@", 14, 0, 14))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
-                                    factory.Markup("def.com").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 16, 0, 16), new LocationTagged<string>("def.com", 16, 0, 16))),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 14, 0, 14), new LocationTagged<string>("@", 14, 0, 14))).Accepts(AcceptedCharacters.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                    factory.Markup("def.com").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 16, 0, 16), new LocationTagged<string>("def.com", 16, 0, 16))),
                                     new MarkupBlock(
-                                        factory.Markup(" @").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(" ", 23, 0, 23), new LocationTagged<string>("@", 24, 0, 24))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
-                                    factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                        factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 23, 0, 23), new LocationTagged<string>("@", 24, 0, 24))).Accepts(AcceptedCharacters.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
                     },
                     {
@@ -507,11 +507,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             new MarkupTagBlock(
                                 factory.Markup("<span"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>(string.Empty, 13, 0, 13)),
-                                    factory.Markup(" foo='").With(SpanCodeGenerator.Null),
+                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>(string.Empty, 13, 0, 13)),
+                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)))),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharacters.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)))),
                             factory.EmptyHtml())
                     },
                     {
@@ -521,14 +521,14 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             new MarkupTagBlock(
                                 factory.Markup("<span"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator("foo", new LocationTagged<string>(" foo=\"", 5, 0, 5), new LocationTagged<string>("\"", 111, 0, 111)),
-                                    factory.Markup(" foo=\"").With(SpanCodeGenerator.Null),
-                                    factory.Markup(@"/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>(@"/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+", 11, 0, 11))),
+                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo=\"", 5, 0, 5), new LocationTagged<string>("\"", 111, 0, 111)),
+                                    factory.Markup(" foo=\"").With(SpanChunkGenerator.Null),
+                                    factory.Markup(@"/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>(@"/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+", 11, 0, 11))),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 43, 0, 43), new LocationTagged<string>("@", 43, 0, 43))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
-                                    factory.Markup(@"[a-z0-9]([a-z0-9-]*[a-z0-9])?\.([a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 45, 0, 45), new LocationTagged<string>(@"[a-z0-9]([a-z0-9-]*[a-z0-9])?\.([a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i", 45, 0, 45))),
-                                    factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 43, 0, 43), new LocationTagged<string>("@", 43, 0, 43))).Accepts(AcceptedCharacters.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                    factory.Markup(@"[a-z0-9]([a-z0-9-]*[a-z0-9])?\.([a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 45, 0, 45), new LocationTagged<string>(@"[a-z0-9]([a-z0-9-]*[a-z0-9])?\.([a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i", 45, 0, 45))),
+                                    factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
                     },
                 };
@@ -551,20 +551,20 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 new MarkupTagBlock(
                     Factory.Markup("<span"),
                     new MarkupBlock(
-                        new AttributeBlockCodeGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 14, 0, 14)),
-                        Factory.Markup(" foo='").With(SpanCodeGenerator.Null),
+                        new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 14, 0, 14)),
+                        Factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                         new MarkupBlock(
-                            new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), 11, 0, 11),
+                            new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), 11, 0, 11),
                             new ExpressionBlock(
                                 Factory.CodeTransition(),
                                 Factory.EmptyCSharp().AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharacters.NonWhiteSpace))),
                         new MarkupBlock(
-                            new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(" ", 12, 0, 12), 12, 0, 12),
-                            Factory.Markup(" ").With(SpanCodeGenerator.Null),
+                            new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(" ", 12, 0, 12), 12, 0, 12),
+                            Factory.Markup(" ").With(SpanChunkGenerator.Null),
                             new ExpressionBlock(
-                                Factory.CodeTransition().Accepts(AcceptedCharacters.None).With(SpanCodeGenerator.Null),
+                                Factory.CodeTransition().Accepts(AcceptedCharacters.None).With(SpanChunkGenerator.Null),
                                 Factory.EmptyCSharp().AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharacters.NonWhiteSpace))),
-                        Factory.Markup("'").With(SpanCodeGenerator.Null)),
+                        Factory.Markup("'").With(SpanChunkGenerator.Null)),
                     Factory.Markup(" />")));
             var expectedErrors = new RazorError[]
             {

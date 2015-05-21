@@ -12,17 +12,17 @@ namespace Microsoft.AspNet.Razor
     public class DocumentParseCompleteEventArgs : EventArgs
     {
         /// <summary>
-        /// Indicates if the tree structure has actually changed since the previous reparse.
+        /// Indicates if the tree structure has actually changed since the previous re-parse.
         /// </summary>
         public bool TreeStructureChanged { get; set; }
 
         /// <summary>
-        /// The results of the code generation and parsing
+        /// The results of the chunk generation and parsing
         /// </summary>
         public GeneratorResults GeneratorResults { get; set; }
 
         /// <summary>
-        /// The TextChange which triggered the reparse
+        /// The TextChange which triggered the re-parse
         /// </summary>
         public TextChange SourceChange { get; set; }
     }

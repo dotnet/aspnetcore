@@ -1,8 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
+using Microsoft.AspNet.Razor.Chunks.Generators;
+using Microsoft.AspNet.Razor.CodeGeneration;
+using Microsoft.AspNet.Razor.CodeGeneration;
 using Microsoft.AspNet.Razor.Parser;
 using Xunit;
 
@@ -25,18 +26,18 @@ namespace Microsoft.AspNet.Razor.Test
         }
 
         [Fact]
-        public void CreateCodeGeneratorParserListenerReturnsNewCSharpCodeGeneratorParserListener()
+        public void CreateChunkGeneratorParserListenerReturnsNewCSharpChunkGeneratorParserListener()
         {
             // Arrange
             var service = new CSharpRazorCodeLanguage();
 
             // Act
             var host = new RazorEngineHost(service);
-            var generator = service.CreateCodeGenerator("Foo", "Bar", "Baz", host);
+            var generator = service.CreateChunkGenerator("Foo", "Bar", "Baz", host);
 
             // Assert
             Assert.NotNull(generator);
-            Assert.IsType<CSharpRazorCodeGenerator>(generator);
+            Assert.IsType<RazorChunkGenerator>(generator);
             Assert.Equal("Foo", generator.ClassName);
             Assert.Equal("Bar", generator.RootNamespaceName);
             Assert.Equal("Baz", generator.SourceFileName);

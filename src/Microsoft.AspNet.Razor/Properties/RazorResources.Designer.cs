@@ -1287,7 +1287,7 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// A TagHelperCodeGenerator must only be used with TagHelperBlocks.
+        /// A TagHelperChunkGenerator must only be used with TagHelperBlocks.
         /// </summary>
         internal static string TagHelpers_TagHelperCodeGeneartorMustBeAssociatedWithATagHelperBlock
         {
@@ -1295,7 +1295,7 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// A TagHelperCodeGenerator must only be used with TagHelperBlocks.
+        /// A TagHelperChunkGenerator must only be used with TagHelperBlocks.
         /// </summary>
         internal static string FormatTagHelpers_TagHelperCodeGeneartorMustBeAssociatedWithATagHelperBlock()
         {

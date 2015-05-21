@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Razor.Editor;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
@@ -52,15 +52,15 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 new MarkupBlock(
                     new MarkupTagBlock(
                         Factory.Markup("<foo"),
-                        new MarkupBlock(new AttributeBlockCodeGenerator("bar", new LocationTagged<string>(" bar=\"", 4, 0, 4), new LocationTagged<string>("\"", 14, 0, 14)),
-                            Factory.Markup(" bar=\"").With(SpanCodeGenerator.Null),
-                            new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 10, 0, 10), 10, 0, 10),
+                        new MarkupBlock(new AttributeBlockChunkGenerator("bar", new LocationTagged<string>(" bar=\"", 4, 0, 4), new LocationTagged<string>("\"", 14, 0, 14)),
+                            Factory.Markup(" bar=\"").With(SpanChunkGenerator.Null),
+                            new MarkupBlock(new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 10, 0, 10), 10, 0, 10),
                                 new ExpressionBlock(
                                     Factory.CodeTransition(),
                                     Factory.Code("baz")
                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                            .Accepts(AcceptedCharacters.NonWhiteSpace))),
-                            Factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                            Factory.Markup("\"").With(SpanChunkGenerator.Null)),
                         Factory.Markup(" />").Accepts(AcceptedCharacters.None))));
         }
 
@@ -201,11 +201,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 new MarkupBlock(
                     new MarkupTagBlock(
                         Factory.Markup("<a"),
-                        new MarkupBlock(new AttributeBlockCodeGenerator("href", new LocationTagged<string>(" href=\"", 2, 0, 2), new LocationTagged<string>("\"", 36, 0, 36)),
-                            Factory.Markup(" href=\"").With(SpanCodeGenerator.Null),
+                        new MarkupBlock(new AttributeBlockChunkGenerator("href", new LocationTagged<string>(" href=\"", 2, 0, 2), new LocationTagged<string>("\"", 36, 0, 36)),
+                            Factory.Markup(" href=\"").With(SpanChunkGenerator.Null),
                             Factory.Markup("mailto:anurse@microsoft.com")
-                                   .With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 9, 0, 9), new LocationTagged<string>("mailto:anurse@microsoft.com", 9, 0, 9))),
-                            Factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                   .With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 9, 0, 9), new LocationTagged<string>("mailto:anurse@microsoft.com", 9, 0, 9))),
+                            Factory.Markup("\"").With(SpanChunkGenerator.Null)),
                         Factory.Markup(">").Accepts(AcceptedCharacters.None)),
                     Factory.Markup("Email me"),
                     new MarkupTagBlock(
@@ -296,7 +296,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             + "}",
                 new MarkupBlock(
                     Factory.EmptyHtml(),
-                    new SectionBlock(new SectionCodeGenerator("foo"),
+                    new SectionBlock(new SectionChunkGenerator("foo"),
                         Factory.CodeTransition(),
                         Factory.MetaCode("section foo {").AutoCompleteWith(null, atEndOfSpan: true),
                         new MarkupBlock(
@@ -393,7 +393,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
             ParseDocumentTest("@section Foo { <foo>@@bar</foo> }",
                 new MarkupBlock(
                     Factory.EmptyHtml(),
-                    new SectionBlock(new SectionCodeGenerator("Foo"),
+                    new SectionBlock(new SectionChunkGenerator("Foo"),
                         Factory.CodeTransition(),
                         Factory.MetaCode("section Foo {").AutoCompleteWith(null, atEndOfSpan: true),
                         new MarkupBlock(
@@ -415,7 +415,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
             ParseDocumentTest("@section Foo { <foo>@@@@@bar</foo> }",
                 new MarkupBlock(
                     Factory.EmptyHtml(),
-                    new SectionBlock(new SectionCodeGenerator("Foo"),
+                    new SectionBlock(new SectionChunkGenerator("Foo"),
                         Factory.CodeTransition(),
                         Factory.MetaCode("section Foo {").AutoCompleteWith(null, atEndOfSpan: true),
                         new MarkupBlock(

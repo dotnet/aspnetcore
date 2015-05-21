@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 using System.Web.WebPages.TestUtils;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.CodeGeneration;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Test.Utils;
@@ -62,14 +62,15 @@ namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
         {
             return new RazorEngineHost(new TLanguage())
             {
-                GeneratedClassContext = new GeneratedClassContext("Execute",
-                                                                  "Write",
-                                                                  "WriteLiteral",
-                                                                  "WriteTo",
-                                                                  "WriteLiteralTo",
-                                                                  "Template",
-                                                                  "DefineSection",
-                                                                  new GeneratedTagHelperContext()),
+                GeneratedClassContext = new GeneratedClassContext(
+                    "Execute",
+                    "Write",
+                    "WriteLiteral",
+                    "WriteTo",
+                    "WriteLiteralTo",
+                    "Template",
+                    "DefineSection",
+                    new GeneratedTagHelperContext()),
                 DesignTimeMode = true
             };
         }

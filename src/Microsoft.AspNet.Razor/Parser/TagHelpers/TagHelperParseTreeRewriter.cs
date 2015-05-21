@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             TrackBlock(new BlockBuilder
             {
                 Type = input.Type,
-                CodeGenerator = input.CodeGenerator
+                ChunkGenerator = input.ChunkGenerator
             });
 
             var activeTagHelpers = _trackerStack.Count;

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Context.OnError(CurrentLocation, RazorResources.FormatParseError_ReservedWord(CurrentSymbol.Content));
             AcceptAndMoveNext();
             Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
-            Span.CodeGenerator = SpanCodeGenerator.Null;
+            Span.ChunkGenerator = SpanChunkGenerator.Null;
             Context.CurrentBlock.Type = BlockType.Directive;
             CompleteBlock();
             Output(SpanKind.MetaCode);
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Razor.Parser
             HandleKeyword(topLevel, () =>
             {
                 Context.CurrentBlock.Type = BlockType.Expression;
-                Context.CurrentBlock.CodeGenerator = new ExpressionCodeGenerator();
+                Context.CurrentBlock.ChunkGenerator = new ExpressionChunkGenerator();
                 ImplicitExpression();
             });
         }
@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.Razor.Parser
             }
 
             Span.EditHandler.AcceptedCharacters = AcceptedCharacters.AnyExceptNewline;
-            Span.CodeGenerator = new AddImportCodeGenerator(
+            Span.ChunkGenerator = new AddImportChunkGenerator(
                 Span.GetContent(symbols => symbols.Skip(1)));
 
             // Optional ";"
@@ -510,7 +510,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
                 // Output "@" as hidden span
                 Accept(transition);
-                Span.CodeGenerator = SpanCodeGenerator.Null;
+                Span.ChunkGenerator = SpanChunkGenerator.Null;
                 Output(SpanKind.Code);
 
                 Assert(CSharpSymbolType.Transition);

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.AspNet.Razor.Editor;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             Kind = original.Kind;
             _symbols = new List<ISymbol>(original.Symbols);
             EditHandler = original.EditHandler;
-            CodeGenerator = original.CodeGenerator;
+            ChunkGenerator = original.ChunkGenerator;
             Start = original.Start;
         }
 
@@ -39,13 +39,13 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         }
 
         public SpanEditHandler EditHandler { get; set; }
-        public ISpanCodeGenerator CodeGenerator { get; set; }
+        public ISpanChunkGenerator ChunkGenerator { get; set; }
 
         public void Reset()
         {
             _symbols = new List<ISymbol>();
             EditHandler = SpanEditHandler.CreateDefault(s => Enumerable.Empty<ISymbol>());
-            CodeGenerator = SpanCodeGenerator.Null;
+            ChunkGenerator = SpanChunkGenerator.Null;
             Start = SourceLocation.Zero;
         }
 

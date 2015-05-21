@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         public void SectionDirectiveAutoCompleteAtEOF()
         {
             ParseBlockTest("@section Header {",
-                new SectionBlock(new SectionCodeGenerator("Header"),
+                new SectionBlock(new SectionChunkGenerator("Header"),
                     Factory.CodeTransition(),
                     Factory.MetaCode("section Header {")
                            .AutoCompleteWith("}", atEndOfSpan: true)
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         {
             ParseBlockTest("@section Header {" + Environment.NewLine
                          + "<p>Foo</p>",
-                new SectionBlock(new SectionCodeGenerator("Header"),
+                new SectionBlock(new SectionChunkGenerator("Header"),
                     Factory.CodeTransition(),
                     Factory.MetaCode("section Header {")
                            .AutoCompleteWith("}", atEndOfSpan: true)
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                     new MarkupTagBlock(
                                         Factory.Markup("</p>").Accepts(AcceptedCharacters.None))),
                                Factory.Span(SpanKind.Code, new CSharpSymbol(Factory.LocationTracker.CurrentLocation, string.Empty, CSharpSymbolType.Unknown))
-                                   .With(new StatementCodeGenerator())
+                                   .With(new StatementChunkGenerator())
                                ),
                            new RazorError(RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"),
                                           1, 0, 1));

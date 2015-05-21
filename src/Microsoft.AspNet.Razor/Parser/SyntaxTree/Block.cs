@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.Internal.Web.Utils;
 
@@ -15,12 +15,12 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
     public class Block : SyntaxTreeNode
     {
         public Block(BlockBuilder source)
-            : this(source.Type, source.Children, source.CodeGenerator)
+            : this(source.Type, source.Children, source.ChunkGenerator)
         {
             source.Reset();
         }
 
-        protected Block(BlockType? type, IEnumerable<SyntaxTreeNode> contents, IBlockCodeGenerator generator)
+        protected Block(BlockType? type, IEnumerable<SyntaxTreeNode> contents, IParentChunkGenerator generator)
         {
             if (type == null)
             {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
             Type = type.Value;
             Children = contents;
-            CodeGenerator = generator;
+            ChunkGenerator = generator;
 
             foreach (SyntaxTreeNode node in Children)
             {
@@ -38,10 +38,10 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         }
 
         // A Test constructor
-        internal Block(BlockType type, IEnumerable<SyntaxTreeNode> contents, IBlockCodeGenerator generator)
+        internal Block(BlockType type, IEnumerable<SyntaxTreeNode> contents, IParentChunkGenerator generator)
         {
             Type = type;
-            CodeGenerator = generator;
+            ChunkGenerator = generator;
             Children = contents;
         }
 
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
         public IEnumerable<SyntaxTreeNode> Children { get; }
 
-        public IBlockCodeGenerator CodeGenerator { get; }
+        public IParentChunkGenerator ChunkGenerator { get; }
 
         public override bool IsBlock
         {
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
         public override string ToString()
         {
-            return string.Format(CultureInfo.CurrentCulture, "{0} Block at {1}::{2} (Gen:{3})", Type, Start, Length, CodeGenerator);
+            return string.Format(CultureInfo.CurrentCulture, "{0} Block at {1}::{2} (Gen:{3})", Type, Start, Length, ChunkGenerator);
         }
 
         public override bool Equals(object obj)
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             var other = obj as Block;
             return other != null &&
                 Type == other.Type &&
-                Equals(CodeGenerator, other.CodeGenerator) &&
+                Equals(ChunkGenerator, other.ChunkGenerator) &&
                 ChildrenEqual(Children, other.Children);
         }
 
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         {
             return HashCodeCombiner.Start()
                 .Add(Type)
-                .Add(CodeGenerator)
+                .Add(ChunkGenerator)
                 .Add(Children)
                 .CombinedHash;
         }

@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Chunks.Generators;
+using Microsoft.AspNet.Razor.CodeGeneration;
 using Microsoft.AspNet.Razor.Parser;
 
 namespace Microsoft.AspNet.Razor
@@ -50,10 +50,10 @@ namespace Microsoft.AspNet.Razor
         public abstract ParserBase CreateCodeParser();
 
         /// <summary>
-        /// Constructs the code generator.  Must return a new instance on EVERY call to ensure thread-safety
+        /// Constructs the chunk generator.  Must return a new instance on EVERY call to ensure thread-safety
         /// </summary>
-        public abstract RazorCodeGenerator CreateCodeGenerator(string className, string rootNamespaceName, string sourceFileName, RazorEngineHost host);
+        public abstract RazorChunkGenerator CreateChunkGenerator(string className, string rootNamespaceName, string sourceFileName, RazorEngineHost host);
 
-        public abstract CodeBuilder CreateCodeBuilder(CodeBuilderContext codeGeneratorContext);
+        public abstract CodeBuilder CreateCodeBuilder(CodeBuilderContext chunkGeneratorContext);
     }
 }

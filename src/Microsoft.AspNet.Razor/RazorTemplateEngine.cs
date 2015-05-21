@@ -7,8 +7,8 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Chunks.Generators;
+using Microsoft.AspNet.Razor.CodeGeneration;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.Framework.Internal;
@@ -313,7 +313,7 @@ namespace Microsoft.AspNet.Razor
             var results = parser.Parse(input);
 
             // Generate code
-            var generator = CreateCodeGenerator(className, rootNamespace, sourceFileName);
+            var generator = CreateChunkGenerator(className, rootNamespace, sourceFileName);
             generator.DesignTimeMode = Host.DesignTimeMode;
             generator.Visit(results);
 
@@ -323,16 +323,16 @@ namespace Microsoft.AspNet.Razor
             var builderResult = builder.Build();
 
             // Collect results and return
-            return new GeneratorResults(results, builderResult, codeBuilderContext.CodeTreeBuilder.CodeTree);
+            return new GeneratorResults(results, builderResult, codeBuilderContext.ChunkTreeBuilder.ChunkTree);
         }
 
-        protected internal virtual RazorCodeGenerator CreateCodeGenerator(
+        protected internal virtual RazorChunkGenerator CreateChunkGenerator(
             string className,
             string rootNamespace,
             string sourceFileName)
         {
-            return Host.DecorateCodeGenerator(
-                Host.CodeLanguage.CreateCodeGenerator(className, rootNamespace, sourceFileName, Host));
+            return Host.DecorateChunkGenerator(
+                Host.CodeLanguage.CreateChunkGenerator(className, rootNamespace, sourceFileName, Host));
         }
 
         protected internal virtual RazorParser CreateParser(string sourceFileName)

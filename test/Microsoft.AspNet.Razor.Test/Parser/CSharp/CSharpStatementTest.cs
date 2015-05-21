@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
@@ -248,7 +248,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         public void NonBlockKeywordTreatedAsImplicitExpression()
         {
             ParseBlockTest("@is foo",
-                           new ExpressionBlock(new ExpressionCodeGenerator(),
+                           new ExpressionBlock(new ExpressionChunkGenerator(),
                                                Factory.CodeTransition(),
                                                Factory.Code("is")
                                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)

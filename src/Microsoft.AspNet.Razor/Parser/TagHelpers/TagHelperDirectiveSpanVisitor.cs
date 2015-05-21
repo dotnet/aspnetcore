@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Framework.Internal;
@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
 {
     /// <summary>
     /// A <see cref="ParserVisitor"/> that generates <see cref="TagHelperDescriptor"/>s from
-    /// tag helper code generators in a Razor document.
+    /// tag helper chunk generators in a Razor document.
     /// </summary>
     public class TagHelperDirectiveSpanVisitor : ParserVisitor
     {
@@ -57,30 +57,30 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
 
         public override void VisitSpan(Span span)
         {
-            // We're only interested in spans with an AddOrRemoveTagHelperCodeGenerator.
+            // We're only interested in spans with an AddOrRemoveTagHelperChunkGenerator.
 
-            if (span.CodeGenerator is AddOrRemoveTagHelperCodeGenerator)
+            if (span.ChunkGenerator is AddOrRemoveTagHelperChunkGenerator)
             {
-                var codeGenerator = (AddOrRemoveTagHelperCodeGenerator)span.CodeGenerator;
+                var chunkGenerator = (AddOrRemoveTagHelperChunkGenerator)span.ChunkGenerator;
 
                 var directive =
-                    codeGenerator.RemoveTagHelperDescriptors ?
+                    chunkGenerator.RemoveTagHelperDescriptors ?
                     TagHelperDirectiveType.RemoveTagHelper :
                     TagHelperDirectiveType.AddTagHelper;
 
                 var directiveDescriptor = new TagHelperDirectiveDescriptor(
-                    codeGenerator.LookupText,
+                    chunkGenerator.LookupText,
                     span.Start,
                     directive);
 
                 _directiveDescriptors.Add(directiveDescriptor);
             }
-            else if (span.CodeGenerator is TagHelperPrefixDirectiveCodeGenerator)
+            else if (span.ChunkGenerator is TagHelperPrefixDirectiveChunkGenerator)
             {
-                var codeGenerator = (TagHelperPrefixDirectiveCodeGenerator)span.CodeGenerator;
+                var chunkGenerator = (TagHelperPrefixDirectiveChunkGenerator)span.ChunkGenerator;
 
                 var directiveDescriptor = new TagHelperDirectiveDescriptor(
-                    codeGenerator.Prefix,
+                    chunkGenerator.Prefix,
                     span.Start,
                     TagHelperDirectiveType.TagHelperPrefix);
 

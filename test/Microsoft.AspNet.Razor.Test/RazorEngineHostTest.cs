@@ -1,7 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
+using Microsoft.AspNet.Razor.CodeGeneration;
 using Microsoft.AspNet.Razor.Parser;
 using Xunit;
 
@@ -67,13 +68,13 @@ namespace Microsoft.AspNet.Razor.Test
         }
 
         [Fact]
-        public void DecorateCodeGeneratorReturnsIncomingCodeGenerator()
+        public void DecorateChunkGeneratorReturnsIncomingChunkGenerator()
         {
             // Arrange
-            var expected = new CSharpRazorCodeGenerator("Foo", "Bar", "Baz", CreateHost());
+            var expected = new RazorChunkGenerator("Foo", "Bar", "Baz", CreateHost());
 
             // Act
-            var actual = CreateHost().DecorateCodeGenerator(expected);
+            var actual = CreateHost().DecorateChunkGenerator(expected);
 
             // Assert
             Assert.Same(expected, actual);

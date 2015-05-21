@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
 
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             Descriptors = descriptors;
             Attributes = new List<KeyValuePair<string, SyntaxTreeNode>>(attributes);
             Type = BlockType.Tag;
-            CodeGenerator = new TagHelperCodeGenerator(descriptors);
+            ChunkGenerator = new TagHelperChunkGenerator(descriptors);
         }
 
         // Internal for testing
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             SelfClosing = selfClosing;
             Attributes = attributes;
             Type = BlockType.Tag;
-            CodeGenerator = new TagHelperCodeGenerator(tagHelperDescriptors: null);
+            ChunkGenerator = new TagHelperChunkGenerator(tagHelperDescriptors: null);
 
             // Children is IList, no AddRange
             foreach (var child in children)

@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         /// <param name="source">A <see cref="TagHelperBlockBuilder"/> used to construct a valid
         /// <see cref="TagHelperBlock"/>.</param>
         public TagHelperBlock(TagHelperBlockBuilder source)
-            : base(source.Type, source.Children, source.CodeGenerator)
+            : base(source.Type, source.Children, source.ChunkGenerator)
         {
             TagName = source.TagName;
             Descriptors = source.Descriptors;
@@ -103,12 +103,12 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         {
             return string.Format(CultureInfo.CurrentCulture,
                                  "'{0}' (Attrs: {1}) Tag Helper Block at {2}::{3} (Gen:{4})",
-                                 TagName, Attributes.Count, Start, Length, CodeGenerator);
+                                 TagName, Attributes.Count, Start, Length, ChunkGenerator);
         }
 
         /// <summary>
         /// Determines whether two <see cref="TagHelperBlock"/>s are equal by comparing the <see cref="TagName"/>,
-        /// <see cref="Attributes"/>, <see cref="Block.Type"/>, <see cref="Block.CodeGenerator"/> and
+        /// <see cref="Attributes"/>, <see cref="Block.Type"/>, <see cref="Block.ChunkGenerator"/> and
         /// <see cref="Block.Children"/>.
         /// </summary>
         /// <param name="other">The <see cref="TagHelperBlock"/> to check equality against.</param>

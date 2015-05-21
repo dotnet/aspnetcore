@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Parser.TagHelpers;
@@ -360,7 +360,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         private static void EvaluateBlock(ErrorCollector collector, Block actual, Block expected)
         {
-            if (actual.Type != expected.Type || !expected.CodeGenerator.Equals(actual.CodeGenerator))
+            if (actual.Type != expected.Type || !expected.ChunkGenerator.Equals(actual.ChunkGenerator))
             {
                 AddMismatchError(collector, actual, expected);
             }
@@ -516,14 +516,14 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             switch (block.Type)
             {
                 case BlockType.Markup:
-                    span.With(new MarkupCodeGenerator());
+                    span.With(new MarkupChunkGenerator());
                     break;
                 case BlockType.Statement:
-                    span.With(new StatementCodeGenerator());
+                    span.With(new StatementChunkGenerator());
                     break;
                 case BlockType.Expression:
-                    block.CodeGenerator = new ExpressionCodeGenerator();
-                    span.With(new ExpressionCodeGenerator());
+                    block.ChunkGenerator = new ExpressionChunkGenerator();
+                    span.With(new ExpressionChunkGenerator());
                     break;
             }
             block.Children.Add(span);

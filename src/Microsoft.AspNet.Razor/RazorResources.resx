@@ -376,7 +376,7 @@ Instead, wrap the contents of the block in "{{}}":
     <value>The tag helper '{0}' must not have C# in the element's attribute declaration area.</value>
   </data>
   <data name="TagHelpers_TagHelperCodeGeneartorMustBeAssociatedWithATagHelperBlock" xml:space="preserve">
-    <value>A TagHelperCodeGenerator must only be used with TagHelperBlocks.</value>
+    <value>A TagHelperChunkGenerator must only be used with TagHelperBlocks.</value>
   </data>
   <data name="ParseError_DirectiveMustHaveValue" xml:space="preserve">
     <value>Directive '{0}' must have a value.</value>

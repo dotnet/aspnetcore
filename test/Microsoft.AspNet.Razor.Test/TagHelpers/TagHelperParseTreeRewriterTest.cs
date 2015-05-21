@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
@@ -166,16 +166,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagBlock(
                                 factory.Markup("<div"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator(
+                                    new AttributeBlockChunkGenerator(
                                         name: "class",
                                         prefix: new LocationTagged<string>(" class=\"", 4, 0, 4),
                                         suffix: new LocationTagged<string>("\"", 15, 0, 15)),
-                                    factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                    factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                     factory.Markup("btn").With(
-                                        new LiteralAttributeCodeGenerator(
+                                        new LiteralAttributeChunkGenerator(
                                             prefix: new LocationTagged<string>(string.Empty, 12, 0, 12),
                                             value: new LocationTagged<string>("btn", 12, 0, 12))),
-                                    factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                    factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
                     },
                     {
@@ -184,16 +184,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagBlock(
                                 factory.Markup("<div"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator(
+                                    new AttributeBlockChunkGenerator(
                                         name: "class",
                                         prefix: new LocationTagged<string>(" class=\"", 4, 0, 4),
                                         suffix: new LocationTagged<string>("\"", 15, 0, 15)),
-                                    factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                    factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                     factory.Markup("btn").With(
-                                        new LiteralAttributeCodeGenerator(
+                                        new LiteralAttributeChunkGenerator(
                                             prefix: new LocationTagged<string>(string.Empty, 12, 0, 12),
                                             value: new LocationTagged<string>("btn", 12, 0, 12))),
-                                    factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                    factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                 factory.Markup(">")),
                             blockFactory.MarkupTagBlock("</div>"))
                     },
@@ -363,7 +363,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                         new MarkupBlock(
                                             new MarkupBlock(
                                                 factory.Markup("@").Accepts(AcceptedCharacters.None),
-                                                factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                                factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
                                             factory.Markup("hi"))),
                                 },
                                 children: factory.Markup("words and spaces")))
@@ -1175,7 +1175,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                             new MarkupBlock(
                                                 new MarkupBlock(
                                                     factory.Markup("@").Accepts(AcceptedCharacters.None),
-                                                    factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                                    factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
                                                 new MarkupBlock(
                                                     factory.EmptyHtml(),
                                                     new ExpressionBlock(
@@ -1319,7 +1319,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup("true")),
-                                    new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null))
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup(string.Empty).With(SpanChunkGenerator.Null))
                                 })),
                         new[]
                         {
@@ -1336,7 +1336,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 selfClosing: true,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null)),
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup(string.Empty).With(SpanChunkGenerator.Null)),
                                     new KeyValuePair<string, SyntaxTreeNode>("name", new MarkupBlock())
                                 })),
                         new[]
@@ -1354,7 +1354,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 selfClosing: true,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null)),
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup(string.Empty).With(SpanChunkGenerator.Null)),
                                     new KeyValuePair<string, SyntaxTreeNode>("name", factory.Markup("  "))
                                 })),
                         new[]
@@ -1374,8 +1374,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup("true")),
                                     new KeyValuePair<string, SyntaxTreeNode>("name", factory.Markup("john")),
-                                    new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null)),
-                                    new KeyValuePair<string, SyntaxTreeNode>("name", factory.Markup(string.Empty).With(SpanCodeGenerator.Null))
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup(string.Empty).With(SpanChunkGenerator.Null)),
+                                    new KeyValuePair<string, SyntaxTreeNode>("name", factory.Markup(string.Empty).With(SpanChunkGenerator.Null))
                                 })),
                         new[]
                         {
@@ -1429,7 +1429,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 "myth",
                                 new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    new KeyValuePair<string, SyntaxTreeNode>("BOUND", factory.CodeMarkup(string.Empty).With(SpanCodeGenerator.Null)),
+                                    new KeyValuePair<string, SyntaxTreeNode>("BOUND", factory.CodeMarkup(string.Empty).With(SpanChunkGenerator.Null)),
                                     new KeyValuePair<string, SyntaxTreeNode>("nAMe", factory.Markup("john"))
                                 })),
                         new[]
@@ -1568,16 +1568,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                         factory.BangEscape(),
                                         factory.Markup("text"),
                                         new MarkupBlock(
-                                            new AttributeBlockCodeGenerator(
+                                            new AttributeBlockChunkGenerator(
                                                 name: "class",
                                                 prefix: new LocationTagged<string>(" class=\"", 8, 0, 8),
                                                 suffix: new LocationTagged<string>("\"", 19, 0, 19)),
-                                            factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                            factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                             factory.Markup("btn").With(
-                                                new LiteralAttributeCodeGenerator(
+                                                new LiteralAttributeChunkGenerator(
                                                     prefix: new LocationTagged<string>(string.Empty, 16, 0, 16),
                                                     value: new LocationTagged<string>("btn", 16, 0, 16))),
-                                            factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                            factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                         factory.Markup(">").Accepts(AcceptedCharacters.None)),
                                     factory.Markup("}")))),
                         new []
@@ -1599,16 +1599,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.BangEscape(),
                                     factory.Markup("text"),
                                     new MarkupBlock(
-                                        new AttributeBlockCodeGenerator(
+                                        new AttributeBlockChunkGenerator(
                                             name: "class",
                                             prefix: new LocationTagged<string>(" class=\"", 8, 0, 8),
                                             suffix: new LocationTagged<string>("\"", 19, 0, 19)),
-                                        factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                         factory.Markup("btn").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 16, 0, 16),
                                                 value: new LocationTagged<string>("btn", 16, 0, 16))),
-                                        factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                     factory.Markup(">").Accepts(AcceptedCharacters.None)),
                                 blockFactory.EscapedMarkupTagBlock("</", "text>", AcceptedCharacters.None))),
                         new RazorError[0]
@@ -1622,16 +1622,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.BangEscape(),
                                     factory.Markup("text"),
                                     new MarkupBlock(
-                                        new AttributeBlockCodeGenerator(
+                                        new AttributeBlockChunkGenerator(
                                             name: "class",
                                             prefix: new LocationTagged<string>(" class=\"", 8, 0, 8),
                                             suffix: new LocationTagged<string>("\"", 19, 0, 19)),
-                                        factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                         factory.Markup("btn").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 16, 0, 16),
                                                 value: new LocationTagged<string>("btn", 16, 0, 16))),
-                                        factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                     factory.Markup(">").Accepts(AcceptedCharacters.None)),
                                 factory.Markup("words with spaces"),
                                 blockFactory.EscapedMarkupTagBlock("</", "text>", AcceptedCharacters.None))),
@@ -1646,28 +1646,28 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.BangEscape(),
                                     factory.Markup("text"),
                                     new MarkupBlock(
-                                        new AttributeBlockCodeGenerator(
+                                        new AttributeBlockChunkGenerator(
                                             name: "class",
                                             prefix: new LocationTagged<string>(" class='", 8, 0, 8),
                                             suffix: new LocationTagged<string>("'", 25, 0, 25)),
-                                        factory.Markup(" class='").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" class='").With(SpanChunkGenerator.Null),
                                         factory.Markup("btn1").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 16, 0, 16),
                                                 value: new LocationTagged<string>("btn1", 16, 0, 16))),
                                         factory.Markup(" btn2").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(" ", 20, 0, 20),
                                                 value: new LocationTagged<string>("btn2", 21, 0, 21))),
-                                        factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("'").With(SpanChunkGenerator.Null)),
                                         new MarkupBlock(
-                                            new AttributeBlockCodeGenerator(
+                                            new AttributeBlockChunkGenerator(
                                                 name: "class2",
                                                 prefix: new LocationTagged<string>(" class2=", 26, 0, 26),
                                                 suffix: new LocationTagged<string>(string.Empty, 37, 0, 37)),
-                                            factory.Markup(" class2=").With(SpanCodeGenerator.Null),
+                                            factory.Markup(" class2=").With(SpanChunkGenerator.Null),
                                             factory.Markup("btn").With(
-                                                new LiteralAttributeCodeGenerator(
+                                                new LiteralAttributeChunkGenerator(
                                                     prefix: new LocationTagged<string>(string.Empty, 34, 0, 34),
                                                     value: new LocationTagged<string>("btn", 34, 0, 34)))),
                                     factory.Markup(">").Accepts(AcceptedCharacters.None)),
@@ -1683,29 +1683,29 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.BangEscape(),
                                     factory.Markup("text"),
                                     new MarkupBlock(
-                                        new AttributeBlockCodeGenerator(
+                                        new AttributeBlockChunkGenerator(
                                             name: "class",
                                             prefix: new LocationTagged<string>(" class='", 8, 0, 8),
                                             suffix: new LocationTagged<string>("'", 39, 0, 39)),
-                                        factory.Markup(" class='").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" class='").With(SpanChunkGenerator.Null),
                                         factory.Markup("btn1").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 16, 0, 16),
                                                 value: new LocationTagged<string>("btn1", 16, 0, 16))),
                                         new MarkupBlock(
-                                            new DynamicAttributeBlockCodeGenerator(
+                                            new DynamicAttributeBlockChunkGenerator(
                                                 new LocationTagged<string>(" ", 20, 0, 20), 21, 0, 21),
-                                            factory.Markup(" ").With(SpanCodeGenerator.Null),
+                                            factory.Markup(" ").With(SpanChunkGenerator.Null),
                                             new ExpressionBlock(
                                                 factory.CodeTransition(),
                                                 factory.Code("DateTime.Now")
                                                     .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                                     .Accepts(AcceptedCharacters.NonWhiteSpace))),
                                     factory.Markup(" btn2").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(" ", 34, 0, 34),
                                                 value: new LocationTagged<string>("btn2", 35, 0, 35))),
-                                        factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("'").With(SpanChunkGenerator.Null)),
                                     factory.Markup(">").Accepts(AcceptedCharacters.None)),
                                 blockFactory.EscapedMarkupTagBlock("</", "text>", AcceptedCharacters.None))),
                         new RazorError[0]
@@ -1975,13 +1975,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.BangEscape(),
                                     factory.Markup("text"),
                                     new MarkupBlock(
-                                        new AttributeBlockCodeGenerator(
+                                        new AttributeBlockChunkGenerator(
                                             name: "class",
                                             prefix: new LocationTagged<string>(" class=", 8, 0, 8),
                                             suffix: new LocationTagged<string>(string.Empty, 16, 0, 16)),
-                                        factory.Markup(" class=").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" class=").With(SpanChunkGenerator.Null),
                                         factory.Markup("}").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 15, 0, 15),
                                                 value: new LocationTagged<string>("}", 15, 0, 15))))))),
                         new []
@@ -2003,13 +2003,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.BangEscape(),
                                     factory.Markup("text"),
                                     new MarkupBlock(
-                                        new AttributeBlockCodeGenerator(
+                                        new AttributeBlockChunkGenerator(
                                             name: "class",
                                             prefix: new LocationTagged<string>(" class=\"", 8, 0, 8),
                                             suffix: new LocationTagged<string>(string.Empty, 20, 0, 20)),
-                                        factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                         factory.Markup("btn}").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 16, 0, 16),
                                                 value: new LocationTagged<string>("btn}", 16, 0, 16))))))),
                             new []
@@ -2032,16 +2032,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.Markup("text"),
 
                                     new MarkupBlock(
-                                        new AttributeBlockCodeGenerator(
+                                        new AttributeBlockChunkGenerator(
                                             name: "class",
                                             prefix: new LocationTagged<string>(" class=\"", 8, 0, 8),
                                             suffix: new LocationTagged<string>("\"", 19, 0, 19)),
-                                        factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                         factory.Markup("btn").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 16, 0, 16),
                                                 value: new LocationTagged<string>("btn", 16, 0, 16))),
-                                        factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                         new MarkupBlock(factory.Markup("}"))))),
                                 new []
                                 {
@@ -2063,16 +2063,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.Markup("text"),
 
                                     new MarkupBlock(
-                                        new AttributeBlockCodeGenerator(
+                                        new AttributeBlockChunkGenerator(
                                             name: "class",
                                             prefix: new LocationTagged<string>(" class=\"", 8, 0, 8),
                                             suffix: new LocationTagged<string>("\"", 19, 0, 19)),
-                                        factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                         factory.Markup("btn").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 16, 0, 16),
                                                 value: new LocationTagged<string>("btn", 16, 0, 16))),
-                                        factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                         factory.Markup(" /"),
                                         new MarkupBlock(factory.Markup("}"))))),
                                 new []
@@ -2180,13 +2180,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.BangEscape(),
                                     factory.Markup("p"),
                                     new MarkupBlock(
-                                        new AttributeBlockCodeGenerator(
+                                        new AttributeBlockChunkGenerator(
                                             name: "class",
                                             prefix: new LocationTagged<string>(" class=", 5, 0, 5),
                                             suffix: new LocationTagged<string>(string.Empty, 13, 0, 13)),
-                                        factory.Markup(" class=").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" class=").With(SpanChunkGenerator.Null),
                                         factory.Markup("}").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 12, 0, 12),
                                                 value: new LocationTagged<string>("}", 12, 0, 12))))))),
                         new []
@@ -2208,13 +2208,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.BangEscape(),
                                     factory.Markup("p"),
                                     new MarkupBlock(
-                                        new AttributeBlockCodeGenerator(
+                                        new AttributeBlockChunkGenerator(
                                             name: "class",
                                             prefix: new LocationTagged<string>(" class=\"", 5, 0, 5),
                                             suffix: new LocationTagged<string>(string.Empty, 17, 0, 17)),
-                                        factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                         factory.Markup("btn}").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 13, 0, 13),
                                                 value: new LocationTagged<string>("btn}", 13, 0, 13))))))),
                             new []
@@ -2236,20 +2236,20 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.BangEscape(),
                                     factory.Markup("p"),
                                     new MarkupBlock(
-                                        new AttributeBlockCodeGenerator(
+                                        new AttributeBlockChunkGenerator(
                                             name: "class",
                                             prefix: new LocationTagged<string>(" class=\"", 5, 0, 5),
                                             suffix: new LocationTagged<string>(string.Empty, 19, 0, 19)),
-                                        factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                         factory.Markup("btn").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 13, 0, 13),
                                                 value: new LocationTagged<string>("btn", 13, 0, 13))),
                                         new MarkupBlock(
-                                            factory.Markup("@").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 16, 0, 16), new LocationTagged<string>("@", 16, 0, 16))).Accepts(AcceptedCharacters.None),
-                                            factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                            factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 16, 0, 16), new LocationTagged<string>("@", 16, 0, 16))).Accepts(AcceptedCharacters.None),
+                                            factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
                                         factory.Markup("}").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 18, 0, 18),
                                                 value: new LocationTagged<string>("}", 18, 0, 18))))))),
                             new []
@@ -2272,16 +2272,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.Markup("p"),
 
                                     new MarkupBlock(
-                                        new AttributeBlockCodeGenerator(
+                                        new AttributeBlockChunkGenerator(
                                             name: "class",
                                             prefix: new LocationTagged<string>(" class=\"", 5, 0, 5),
                                             suffix: new LocationTagged<string>("\"", 16, 0, 16)),
-                                        factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                         factory.Markup("btn").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 13, 0, 13),
                                                 value: new LocationTagged<string>("btn", 13, 0, 13))),
-                                        factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                         new MarkupBlock(factory.Markup("}"))))),
                                 new []
                                 {
@@ -2303,16 +2303,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.Markup("p"),
 
                                     new MarkupBlock(
-                                        new AttributeBlockCodeGenerator(
+                                        new AttributeBlockChunkGenerator(
                                             name: "class",
                                             prefix: new LocationTagged<string>(" class=\"", 5, 0, 5),
                                             suffix: new LocationTagged<string>("\"", 16, 0, 16)),
-                                        factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                         factory.Markup("btn").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 13, 0, 13),
                                                 value: new LocationTagged<string>("btn", 13, 0, 13))),
-                                        factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                         factory.Markup(" /"),
                                         new MarkupBlock(
                                             factory.Markup("}"))))),
@@ -2370,11 +2370,11 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 factory.BangEscape(),
                                 factory.Markup("p"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator(
+                                    new AttributeBlockChunkGenerator(
                                         name: "class",
                                         prefix: new LocationTagged<string>(" class=", 3, 0, 3),
                                         suffix: new LocationTagged<string>(string.Empty, 10, 0, 10)),
-                                    factory.Markup(" class=").With(SpanCodeGenerator.Null))))
+                                    factory.Markup(" class=").With(SpanChunkGenerator.Null))))
                     },
                     {
                         "<!p class=\"btn",
@@ -2384,13 +2384,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 factory.BangEscape(),
                                 factory.Markup("p"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator(
+                                    new AttributeBlockChunkGenerator(
                                         name: "class",
                                         prefix: new LocationTagged<string>(" class=\"", 3, 0, 3),
                                         suffix: new LocationTagged<string>(string.Empty, 14, 0, 14)),
-                                    factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                    factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                     factory.Markup("btn").With(
-                                        new LiteralAttributeCodeGenerator(
+                                        new LiteralAttributeChunkGenerator(
                                             prefix: new LocationTagged<string>(string.Empty, 11, 0, 11),
                                             value: new LocationTagged<string>("btn", 11, 0, 11))))))
                     },
@@ -2402,16 +2402,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 factory.BangEscape(),
                                 factory.Markup("p"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator(
+                                    new AttributeBlockChunkGenerator(
                                         name: "class",
                                         prefix: new LocationTagged<string>(" class=\"", 3, 0, 3),
                                         suffix: new LocationTagged<string>("\"", 14, 0, 14)),
-                                    factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                    factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                     factory.Markup("btn").With(
-                                        new LiteralAttributeCodeGenerator(
+                                        new LiteralAttributeChunkGenerator(
                                             prefix: new LocationTagged<string>(string.Empty, 11, 0, 11),
                                             value: new LocationTagged<string>("btn", 11, 0, 11))),
-                                    factory.Markup("\"").With(SpanCodeGenerator.Null))))
+                                    factory.Markup("\"").With(SpanChunkGenerator.Null))))
                     },
                     {
                         "<!p class=\"btn\" /",
@@ -2422,16 +2422,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 factory.Markup("p"),
 
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator(
+                                    new AttributeBlockChunkGenerator(
                                         name: "class",
                                         prefix: new LocationTagged<string>(" class=\"", 3, 0, 3),
                                         suffix: new LocationTagged<string>("\"", 14, 0, 14)),
-                                    factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                    factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                     factory.Markup("btn").With(
-                                        new LiteralAttributeCodeGenerator(
+                                        new LiteralAttributeChunkGenerator(
                                             prefix: new LocationTagged<string>(string.Empty, 11, 0, 11),
                                             value: new LocationTagged<string>("btn", 11, 0, 11))),
-                                    factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                    factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" /")))
                     }
                 };
@@ -2759,16 +2759,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                         factory.BangEscape(),
                                         factory.Markup("p"),
                                         new MarkupBlock(
-                                            new AttributeBlockCodeGenerator(
+                                            new AttributeBlockChunkGenerator(
                                                 name: "class",
                                                 prefix: new LocationTagged<string>(" class=\"", 5, 0, 5),
                                                 suffix: new LocationTagged<string>("\"", 16, 0, 16)),
-                                            factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                            factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                             factory.Markup("btn").With(
-                                                new LiteralAttributeCodeGenerator(
+                                                new LiteralAttributeChunkGenerator(
                                                     prefix: new LocationTagged<string>(string.Empty, 13, 0, 13),
                                                     value: new LocationTagged<string>("btn", 13, 0, 13))),
-                                            factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                            factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                         factory.Markup(">").Accepts(AcceptedCharacters.None)),
                                     factory.Markup("}")))),
                         new []
@@ -2790,16 +2790,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.BangEscape(),
                                     factory.Markup("p"),
                                     new MarkupBlock(
-                                        new AttributeBlockCodeGenerator(
+                                        new AttributeBlockChunkGenerator(
                                             name: "class",
                                             prefix: new LocationTagged<string>(" class=\"", 5, 0, 5),
                                             suffix: new LocationTagged<string>("\"", 16, 0, 16)),
-                                        factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                         factory.Markup("btn").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 13, 0, 13),
                                                 value: new LocationTagged<string>("btn", 13, 0, 13))),
-                                        factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                     factory.Markup(">").Accepts(AcceptedCharacters.None)),
                                 blockFactory.EscapedMarkupTagBlock("</", "p>", AcceptedCharacters.None))),
                         new RazorError[0]
@@ -2813,16 +2813,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.BangEscape(),
                                     factory.Markup("p"),
                                     new MarkupBlock(
-                                        new AttributeBlockCodeGenerator(
+                                        new AttributeBlockChunkGenerator(
                                             name: "class",
                                             prefix: new LocationTagged<string>(" class=\"", 5, 0, 5),
                                             suffix: new LocationTagged<string>("\"", 16, 0, 16)),
-                                        factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                         factory.Markup("btn").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 13, 0, 13),
                                                 value: new LocationTagged<string>("btn", 13, 0, 13))),
-                                        factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                     factory.Markup(">").Accepts(AcceptedCharacters.None)),
                                 factory.Markup("words with spaces"),
                                 blockFactory.EscapedMarkupTagBlock("</", "p>", AcceptedCharacters.None))),
@@ -2837,28 +2837,28 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.BangEscape(),
                                     factory.Markup("p"),
                                     new MarkupBlock(
-                                        new AttributeBlockCodeGenerator(
+                                        new AttributeBlockChunkGenerator(
                                             name: "class",
                                             prefix: new LocationTagged<string>(" class='", 5, 0, 5),
                                             suffix: new LocationTagged<string>("'", 22, 0, 22)),
-                                        factory.Markup(" class='").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" class='").With(SpanChunkGenerator.Null),
                                         factory.Markup("btn1").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 13, 0, 13),
                                                 value: new LocationTagged<string>("btn1", 13, 0, 13))),
                                         factory.Markup(" btn2").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(" ", 17, 0, 17),
                                                 value: new LocationTagged<string>("btn2", 18, 0, 18))),
-                                        factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("'").With(SpanChunkGenerator.Null)),
                                         new MarkupBlock(
-                                            new AttributeBlockCodeGenerator(
+                                            new AttributeBlockChunkGenerator(
                                                 name: "class2",
                                                 prefix: new LocationTagged<string>(" class2=", 23, 0, 23),
                                                 suffix: new LocationTagged<string>(string.Empty, 34, 0, 34)),
-                                            factory.Markup(" class2=").With(SpanCodeGenerator.Null),
+                                            factory.Markup(" class2=").With(SpanChunkGenerator.Null),
                                             factory.Markup("btn").With(
-                                                new LiteralAttributeCodeGenerator(
+                                                new LiteralAttributeChunkGenerator(
                                                     prefix: new LocationTagged<string>(string.Empty, 31, 0, 31),
                                                     value: new LocationTagged<string>("btn", 31, 0, 31)))),
                                     factory.Markup(">").Accepts(AcceptedCharacters.None)),
@@ -2874,29 +2874,29 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     factory.BangEscape(),
                                     factory.Markup("p"),
                                     new MarkupBlock(
-                                        new AttributeBlockCodeGenerator(
+                                        new AttributeBlockChunkGenerator(
                                             name: "class",
                                             prefix: new LocationTagged<string>(" class='", 5, 0, 5),
                                             suffix: new LocationTagged<string>("'", 36, 0, 36)),
-                                        factory.Markup(" class='").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" class='").With(SpanChunkGenerator.Null),
                                         factory.Markup("btn1").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 13, 0, 13),
                                                 value: new LocationTagged<string>("btn1", 13, 0, 13))),
                                         new MarkupBlock(
-                                            new DynamicAttributeBlockCodeGenerator(
+                                            new DynamicAttributeBlockChunkGenerator(
                                                 new LocationTagged<string>(" ", 17, 0, 17), 18, 0, 18),
-                                            factory.Markup(" ").With(SpanCodeGenerator.Null),
+                                            factory.Markup(" ").With(SpanChunkGenerator.Null),
                                             new ExpressionBlock(
                                                 factory.CodeTransition(),
                                                 factory.Code("DateTime.Now")
                                                     .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                                     .Accepts(AcceptedCharacters.NonWhiteSpace))),
                                     factory.Markup(" btn2").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(" ", 31, 0, 31),
                                                 value: new LocationTagged<string>("btn2", 32, 0, 32))),
-                                        factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("'").With(SpanChunkGenerator.Null)),
                                     factory.Markup(">").Accepts(AcceptedCharacters.None)),
                                 blockFactory.EscapedMarkupTagBlock("</", "p>", AcceptedCharacters.None))),
                         new RazorError[0]
@@ -3060,16 +3060,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 factory.BangEscape(),
                                 factory.Markup("p"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator(
+                                    new AttributeBlockChunkGenerator(
                                         name: "class",
                                         prefix: new LocationTagged<string>(" class=\"", 3, 0, 3),
                                         suffix: new LocationTagged<string>("\"", 14, 0, 14)),
-                                    factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                    factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                     factory.Markup("btn").With(
-                                        new LiteralAttributeCodeGenerator(
+                                        new LiteralAttributeChunkGenerator(
                                             prefix: new LocationTagged<string>(string.Empty, 11, 0, 11),
                                             value: new LocationTagged<string>("btn", 11, 0, 11))),
-                                    factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                    factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                 factory.Markup(">"))),
                         new RazorError[0]
                     },
@@ -3081,16 +3081,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 factory.BangEscape(),
                                 factory.Markup("p"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator(
+                                    new AttributeBlockChunkGenerator(
                                         name: "class",
                                         prefix: new LocationTagged<string>(" class=\"", 3, 0, 3),
                                         suffix: new LocationTagged<string>("\"", 14, 0, 14)),
-                                    factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                    factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                     factory.Markup("btn").With(
-                                        new LiteralAttributeCodeGenerator(
+                                        new LiteralAttributeChunkGenerator(
                                             prefix: new LocationTagged<string>(string.Empty, 11, 0, 11),
                                             value: new LocationTagged<string>("btn", 11, 0, 11))),
-                                    factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                    factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                 factory.Markup(">")),
                             blockFactory.EscapedMarkupTagBlock("</", "p>")),
                         new RazorError[0]
@@ -3103,16 +3103,16 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 factory.BangEscape(),
                                 factory.Markup("p"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator(
+                                    new AttributeBlockChunkGenerator(
                                         name: "class",
                                         prefix: new LocationTagged<string>(" class=\"", 3, 0, 3),
                                         suffix: new LocationTagged<string>("\"", 14, 0, 14)),
-                                    factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
+                                    factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
                                     factory.Markup("btn").With(
-                                        new LiteralAttributeCodeGenerator(
+                                        new LiteralAttributeChunkGenerator(
                                             prefix: new LocationTagged<string>(string.Empty, 11, 0, 11),
                                             value: new LocationTagged<string>("btn", 11, 0, 11))),
-                                    factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                    factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                 factory.Markup(">")),
                             factory.Markup("words and spaces"),
                             blockFactory.EscapedMarkupTagBlock("</", "p>")),
@@ -3126,28 +3126,28 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 factory.BangEscape(),
                                 factory.Markup("p"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator(
+                                    new AttributeBlockChunkGenerator(
                                         name: "class",
                                         prefix: new LocationTagged<string>(" class='", 3, 0, 3),
                                         suffix: new LocationTagged<string>("'", 20, 0, 20)),
-                                    factory.Markup(" class='").With(SpanCodeGenerator.Null),
+                                    factory.Markup(" class='").With(SpanChunkGenerator.Null),
                                     factory.Markup("btn1").With(
-                                        new LiteralAttributeCodeGenerator(
+                                        new LiteralAttributeChunkGenerator(
                                             prefix: new LocationTagged<string>(string.Empty, 11, 0, 11),
                                             value: new LocationTagged<string>("btn1", 11, 0, 11))),
                                     factory.Markup(" btn2").With(
-                                        new LiteralAttributeCodeGenerator(
+                                        new LiteralAttributeChunkGenerator(
                                             prefix: new LocationTagged<string>(" ", 15, 0, 15),
                                             value: new LocationTagged<string>("btn2", 16, 0, 16))),
-                                    factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
                                     new MarkupBlock(
-                                        new AttributeBlockCodeGenerator(
+                                        new AttributeBlockChunkGenerator(
                                             name: "class2",
                                             prefix: new LocationTagged<string>(" class2=", 21, 0, 21),
                                             suffix: new LocationTagged<string>(string.Empty, 32, 0, 32)),
-                                        factory.Markup(" class2=").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" class2=").With(SpanChunkGenerator.Null),
                                         factory.Markup("btn").With(
-                                            new LiteralAttributeCodeGenerator(
+                                            new LiteralAttributeChunkGenerator(
                                                 prefix: new LocationTagged<string>(string.Empty, 29, 0, 29),
                                                 value: new LocationTagged<string>("btn", 29, 0, 29)))),
                                 factory.Markup(">")),
@@ -3162,29 +3162,29 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 factory.BangEscape(),
                                 factory.Markup("p"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator(
+                                    new AttributeBlockChunkGenerator(
                                         name: "class",
                                         prefix: new LocationTagged<string>(" class='", 3, 0, 3),
                                         suffix: new LocationTagged<string>("'", 34, 0, 34)),
-                                    factory.Markup(" class='").With(SpanCodeGenerator.Null),
+                                    factory.Markup(" class='").With(SpanChunkGenerator.Null),
                                     factory.Markup("btn1").With(
-                                        new LiteralAttributeCodeGenerator(
+                                        new LiteralAttributeChunkGenerator(
                                             prefix: new LocationTagged<string>(string.Empty, 11, 0, 11),
                                             value: new LocationTagged<string>("btn1", 11, 0, 11))),
                                     new MarkupBlock(
-                                        new DynamicAttributeBlockCodeGenerator(
+                                        new DynamicAttributeBlockChunkGenerator(
                                             new LocationTagged<string>(" ", 15, 0, 15), 16, 0, 16),
-                                        factory.Markup(" ").With(SpanCodeGenerator.Null),
+                                        factory.Markup(" ").With(SpanChunkGenerator.Null),
                                         new ExpressionBlock(
                                             factory.CodeTransition(),
                                             factory.Code("DateTime.Now")
                                                 .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                                 .Accepts(AcceptedCharacters.NonWhiteSpace))),
                                 factory.Markup(" btn2").With(
-                                        new LiteralAttributeCodeGenerator(
+                                        new LiteralAttributeChunkGenerator(
                                             prefix: new LocationTagged<string>(" ", 29, 0, 29),
                                             value: new LocationTagged<string>("btn2", 30, 0, 30))),
-                                    factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(">")),
                             blockFactory.EscapedMarkupTagBlock("</", "p>")),
                         new RazorError[0]
@@ -3241,7 +3241,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 // be a single item, hence don't need to be enclosed by a block.
                                 new KeyValuePair<string, SyntaxTreeNode>(
                                     "class",
-                                    factory.Markup("").With(SpanCodeGenerator.Null)),
+                                    factory.Markup("").With(SpanChunkGenerator.Null)),
                             }))
                     },
                     {
@@ -3254,7 +3254,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     new KeyValuePair<string, SyntaxTreeNode>("class1", new MarkupBlock()),
                                     new KeyValuePair<string, SyntaxTreeNode>(
                                         "class2",
-                                        factory.Markup("").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("").With(SpanChunkGenerator.Null)),
                                     new KeyValuePair<string, SyntaxTreeNode>("class3", new MarkupBlock()),
                                 }))
                     },
@@ -3269,7 +3269,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                     new KeyValuePair<string, SyntaxTreeNode>("class2",  new MarkupBlock()),
                                     new KeyValuePair<string, SyntaxTreeNode>(
                                         "class3",
-                                        factory.Markup("").With(SpanCodeGenerator.Null)),
+                                        factory.Markup("").With(SpanChunkGenerator.Null)),
                                 }))
                     },
                 };
@@ -3898,7 +3898,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                             factory.Markup("Time:"),
                                              new MarkupBlock(
                                                 factory.Markup(" @").Accepts(AcceptedCharacters.None),
-                                                factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                                factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
                                             dateTimeNow))
                                 }))
                     },
@@ -3918,7 +3918,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                         new MarkupBlock(
                                              new MarkupBlock(
                                                 factory.Markup("@").Accepts(AcceptedCharacters.None),
-                                                factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                                factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
                                             factory.Markup("BoundStringAttribute")))
                                 }))
                     },
@@ -3934,7 +3934,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                         new MarkupBlock(
                                             new MarkupBlock(
                                                 factory.Markup("@").Accepts(AcceptedCharacters.None),
-                                                factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                                factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
                                             new MarkupBlock(
                                                 factory.EmptyHtml(),
                                                 new ExpressionBlock(
@@ -4144,15 +4144,15 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             new MarkupTagBlock(
                                 factory.Markup("<"),
                                 new MarkupBlock(
-                                    new AttributeBlockCodeGenerator(
+                                    new AttributeBlockChunkGenerator(
                                         name: "class",
                                         prefix: new LocationTagged<string>(" class=\"", 1, 0, 1),
                                         suffix: new LocationTagged<string>("\"", 12, 0, 12)),
-                                    factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
-                                    factory.Markup("foo").With(new LiteralAttributeCodeGenerator(
+                                    factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
+                                    factory.Markup("foo").With(new LiteralAttributeChunkGenerator(
                                         prefix: new LocationTagged<string>(string.Empty, 9, 0, 9),
                                         value: new LocationTagged<string>("foo", 9, 0, 9))),
-                                    factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                    factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" ")),
                             new MarkupTagHelperBlock("p", selfClosing: true))
                     },
@@ -4523,7 +4523,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                         factory.Markup("Foo").Accepts(AcceptedCharacters.None),
                                         new MarkupTagBlock(
                                             factory.MarkupTransition("</text>")),
-                                        factory.CodeMarkup(" ").With(new StatementCodeGenerator()).Accepts(AcceptedCharacters.None)),
+                                        factory.CodeMarkup(" ").With(new StatementChunkGenerator()).Accepts(AcceptedCharacters.None)),
                                     factory.Code("foo++; } while (foo<bar>);").AsStatement().Accepts(AcceptedCharacters.None)));
 
                 var currentFormattedString = "<p class=\"{0}\" style='{0}'></p>";
@@ -4629,17 +4629,17 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             factory.Markup("Hello World "),
                             new MarkupTagBlock(
                                 factory.Markup("<strong"),
-                                new MarkupBlock(new AttributeBlockCodeGenerator(name: "class",
+                                new MarkupBlock(new AttributeBlockChunkGenerator(name: "class",
                                                                                 prefix: new LocationTagged<string>(" class=\"", 66, 0, 66),
                                                                                 suffix: new LocationTagged<string>("\"", 87, 0, 87)),
-                                    factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
-                                    new MarkupBlock(new DynamicAttributeBlockCodeGenerator(new LocationTagged<string>(string.Empty, 74, 0, 74), 74, 0, 74),
+                                    factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
+                                    new MarkupBlock(new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 74, 0, 74), 74, 0, 74),
                                         new ExpressionBlock(
                                             factory.CodeTransition(),
                                             factory.Code("DateTime.Now")
                                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                                    .Accepts(AcceptedCharacters.NonWhiteSpace))),
-                                    factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                    factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                 factory.Markup(">")),
                             factory.Markup("inside of strong tag"),
                             blockFactory.MarkupTagBlock("</strong>")))
@@ -4849,7 +4849,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                         new MarkupBlock(
                                             new MarkupBlock(
                                                 factory.Markup("@").Accepts(AcceptedCharacters.None),
-                                                factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                                factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
                                             factory.Markup("foo@bar.com"))),
                                     new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                                 }),
@@ -4993,7 +4993,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                         factory.Markup("color"),
                                          new MarkupBlock(
                                             factory.Markup("@").Accepts(AcceptedCharacters.None),
-                                            factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                            factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
                                         factory.Markup(":red;")))
                             },
                             factory.Markup("Hello World")))
@@ -5032,13 +5032,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             factory.Markup("Hello World "),
                             new MarkupTagBlock(
                                 factory.Markup("<strong"),
-                                new MarkupBlock(new AttributeBlockCodeGenerator(name: "class",
+                                new MarkupBlock(new AttributeBlockChunkGenerator(name: "class",
                                                                                 prefix: new LocationTagged<string>(" class=\"", 71, 0, 71),
                                                                                 suffix: new LocationTagged<string>("\"", 82, 0, 82)),
-                                    factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
-                                    factory.Markup("foo").With(new LiteralAttributeCodeGenerator(prefix: new LocationTagged<string>(string.Empty, 79, 0, 79),
+                                    factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
+                                    factory.Markup("foo").With(new LiteralAttributeChunkGenerator(prefix: new LocationTagged<string>(string.Empty, 79, 0, 79),
                                                                                                  value: new LocationTagged<string>("foo", 79, 0, 79))),
-                                    factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                    factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                 factory.Markup(">")),
                             factory.Markup("inside of strong tag"),
                             blockFactory.MarkupTagBlock("</strong>")))
@@ -5116,13 +5116,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             factory.Markup("Hello World "),
                             new MarkupTagBlock(
                                 factory.Markup("<strong"),
-                                new MarkupBlock(new AttributeBlockCodeGenerator(name: "class",
+                                new MarkupBlock(new AttributeBlockChunkGenerator(name: "class",
                                                                                 prefix: new LocationTagged<string>(" class=\"", 53, 0, 53),
                                                                                 suffix: new LocationTagged<string>("\"", 64, 0, 64)),
-                                    factory.Markup(" class=\"").With(SpanCodeGenerator.Null),
-                                    factory.Markup("foo").With(new LiteralAttributeCodeGenerator(prefix: new LocationTagged<string>(string.Empty, 61, 0, 61),
+                                    factory.Markup(" class=\"").With(SpanChunkGenerator.Null),
+                                    factory.Markup("foo").With(new LiteralAttributeChunkGenerator(prefix: new LocationTagged<string>(string.Empty, 61, 0, 61),
                                                                                                  value: new LocationTagged<string>("foo", 61, 0, 61))),
-                                    factory.Markup("\"").With(SpanCodeGenerator.Null)),
+                                    factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                 factory.Markup(">")),
                             factory.Markup("inside of strong tag"),
                             blockFactory.MarkupTagBlock("</strong>")))

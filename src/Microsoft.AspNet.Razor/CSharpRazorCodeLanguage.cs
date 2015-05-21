@@ -1,9 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Generator.Compiler;
-using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
+using Microsoft.AspNet.Razor.Chunks.Generators;
+using Microsoft.AspNet.Razor.CodeGeneration;
 using Microsoft.AspNet.Razor.Parser;
 #if NET45
 
@@ -35,11 +34,11 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// Constructs a new instance of the code generator for this language with the specified settings
+        /// Constructs a new instance of the chunk generator for this language with the specified settings
         /// </summary>
-        public override RazorCodeGenerator CreateCodeGenerator(string className, string rootNamespaceName, string sourceFileName, RazorEngineHost host)
+        public override RazorChunkGenerator CreateChunkGenerator(string className, string rootNamespaceName, string sourceFileName, RazorEngineHost host)
         {
-            return new CSharpRazorCodeGenerator(className, rootNamespaceName, sourceFileName, host);
+            return new RazorChunkGenerator(className, rootNamespaceName, sourceFileName, host);
         }
 
         public override CodeBuilder CreateCodeBuilder(CodeBuilderContext context)

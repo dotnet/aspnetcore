@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
@@ -402,7 +402,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         public void SectionDirective()
         {
             ParseBlockTest("@section Header { <p>F{o}o</p> }",
-                new SectionBlock(new SectionCodeGenerator("Header"),
+                new SectionBlock(new SectionChunkGenerator("Header"),
                     Factory.CodeTransition(),
                     Factory.MetaCode("section Header {")
                            .AutoCompleteWith(null, atEndOfSpan: true)

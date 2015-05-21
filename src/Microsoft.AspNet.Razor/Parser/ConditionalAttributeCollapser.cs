@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNet.Razor.Editor;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Tokenizer;
 
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected override bool CanRewrite(Block block)
         {
-            var gen = block.CodeGenerator as AttributeBlockCodeGenerator;
+            var gen = block.ChunkGenerator as AttributeBlockChunkGenerator;
             return gen != null && block.Children.Any() && block.Children.All(IsLiteralAttributeValue);
         }
 
@@ -44,12 +44,12 @@ namespace Microsoft.AspNet.Razor.Parser
             var span = node as Span;
             Debug.Assert(span != null);
 
-            var litGen = span.CodeGenerator as LiteralAttributeCodeGenerator;
+            var litGen = span.ChunkGenerator as LiteralAttributeChunkGenerator;
 
             return span != null &&
                    ((litGen != null && litGen.ValueGenerator == null) ||
-                    span.CodeGenerator == SpanCodeGenerator.Null ||
-                    span.CodeGenerator is MarkupCodeGenerator);
+                    span.ChunkGenerator == SpanChunkGenerator.Null ||
+                    span.ChunkGenerator is MarkupChunkGenerator);
         }
     }
 }

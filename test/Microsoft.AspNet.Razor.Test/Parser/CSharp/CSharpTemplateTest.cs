@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Razor.Editor;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
@@ -285,12 +285,12 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     new MarkupTagBlock(
                         Factory.Markup("<p"),
                         new MarkupBlock(
-                            new AttributeBlockCodeGenerator("foo", new LocationTagged<string>(" foo='", 46, 0, 46), new LocationTagged<string>("'", 54, 0, 54)),
-                            Factory.Markup(" foo='").With(SpanCodeGenerator.Null),
+                            new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 46, 0, 46), new LocationTagged<string>("'", 54, 0, 54)),
+                            Factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                              new MarkupBlock(
-                                Factory.Markup("@").With(new LiteralAttributeCodeGenerator(new LocationTagged<string>(string.Empty, 52, 0, 52), new LocationTagged<string>("@", 52, 0, 52))).Accepts(AcceptedCharacters.None),
-                                Factory.Markup("@").With(SpanCodeGenerator.Null).Accepts(AcceptedCharacters.None)),
-                            Factory.Markup("'").With(SpanCodeGenerator.Null)),
+                                Factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 52, 0, 52), new LocationTagged<string>("@", 52, 0, 52))).Accepts(AcceptedCharacters.None),
+                                Factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                            Factory.Markup("'").With(SpanChunkGenerator.Null)),
                         Factory.Markup(">").Accepts(AcceptedCharacters.None)),
                     Factory.Markup("Foo #"),
                     new ExpressionBlock(

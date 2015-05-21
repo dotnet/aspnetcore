@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 
 namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 {
@@ -18,13 +18,13 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         {
             Type = original.Type;
             Children = new List<SyntaxTreeNode>(original.Children);
-            CodeGenerator = original.CodeGenerator;
+            ChunkGenerator = original.ChunkGenerator;
         }
 
         [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "Type is the most appropriate name for this property and there is little chance of confusion with GetType")]
         public BlockType? Type { get; set; }
         public IList<SyntaxTreeNode> Children { get; private set; }
-        public IBlockCodeGenerator CodeGenerator { get; set; }
+        public IParentChunkGenerator ChunkGenerator { get; set; }
 
         public virtual Block Build()
         {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         {
             Type = null;
             Children = new List<SyntaxTreeNode>();
-            CodeGenerator = BlockCodeGenerator.Null;
+            ChunkGenerator = ParentChunkGenerator.Null;
         }
     }
 }

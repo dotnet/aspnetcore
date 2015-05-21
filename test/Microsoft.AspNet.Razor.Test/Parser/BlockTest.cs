@@ -3,7 +3,7 @@
 
 using System.Linq;
 using System.Web.WebPages.TestUtils;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
@@ -29,21 +29,21 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         }
 
         [Fact]
-        public void ConstructorTransfersInstanceOfCodeGeneratorFromBlockBuilder()
+        public void ConstructorTransfersInstanceOfChunkGeneratorFromBlockBuilder()
         {
             // Arrange
-            var expected = new ExpressionCodeGenerator();
+            var expected = new ExpressionChunkGenerator();
             var builder = new BlockBuilder()
             {
                 Type = BlockType.Helper,
-                CodeGenerator = expected
+                ChunkGenerator = expected
             };
 
             // Act
             var actual = builder.Build();
 
             // Assert
-            Assert.Same(expected, actual.CodeGenerator);
+            Assert.Same(expected, actual.ChunkGenerator);
         }
 
         [Fact]

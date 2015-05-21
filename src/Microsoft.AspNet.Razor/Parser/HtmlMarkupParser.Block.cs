@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNet.Razor.Editor;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
@@ -50,11 +50,11 @@ namespace Microsoft.AspNet.Razor.Parser
                         Assert(HtmlSymbolType.Transition);
                         AcceptAndMoveNext();
                         Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
-                        Span.CodeGenerator = SpanCodeGenerator.Null;
+                        Span.ChunkGenerator = SpanChunkGenerator.Null;
                         Output(SpanKind.Transition);
                         if (At(HtmlSymbolType.Transition))
                         {
-                            Span.CodeGenerator = SpanCodeGenerator.Null;
+                            Span.ChunkGenerator = SpanChunkGenerator.Null;
                             AcceptAndMoveNext();
                             Output(SpanKind.MetaCode);
                         }
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         private void DefaultMarkupSpan(SpanBuilder span)
         {
-            span.CodeGenerator = new MarkupCodeGenerator();
+            span.ChunkGenerator = new MarkupChunkGenerator();
             span.EditHandler = new SpanEditHandler(Language.TokenizeString, AcceptedCharacters.Any);
         }
 
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
                 // The first part (left) is added to this span and we return a MetaCode span
                 Accept(split.Item1);
-                Span.CodeGenerator = SpanCodeGenerator.Null;
+                Span.ChunkGenerator = SpanChunkGenerator.Null;
                 Output(SpanKind.MetaCode);
                 if (split.Item2 != null)
                 {
@@ -368,7 +368,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
             }
 
-            Span.CodeGenerator = SpanCodeGenerator.Null;
+            Span.ChunkGenerator = SpanChunkGenerator.Null;
 
             CompleteTagBlockWithSpan(tagBlockWrapper, Span.EditHandler.AcceptedCharacters, SpanKind.Transition);
 
@@ -524,7 +524,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
             if (attributeCanBeConditional)
             {
-                Span.CodeGenerator = SpanCodeGenerator.Null; // The block code generator will render the prefix
+                Span.ChunkGenerator = SpanChunkGenerator.Null; // The block chunk generator will render the prefix
                 Output(SpanKind.Markup);
 
                 // Read the values
@@ -543,12 +543,13 @@ namespace Microsoft.AspNet.Razor.Parser
 
                 if (Span.Symbols.Count > 0)
                 {
-                    Span.CodeGenerator = SpanCodeGenerator.Null; // Again, block code generator will render the suffix
+                    // Again, block chunk generator will render the suffix
+                    Span.ChunkGenerator = SpanChunkGenerator.Null;
                     Output(SpanKind.Markup);
                 }
 
-                // Create the block code generator
-                Context.CurrentBlock.CodeGenerator = new AttributeBlockCodeGenerator(
+                // Create the block chunk generator
+                Context.CurrentBlock.ChunkGenerator = new AttributeBlockChunkGenerator(
                     name, prefix, suffix);
             }
             else
@@ -585,13 +586,13 @@ namespace Microsoft.AspNet.Razor.Parser
                         Accept(prefix);
 
                         // Render a single "@" in place of "@@".
-                        Span.CodeGenerator = new LiteralAttributeCodeGenerator(
+                        Span.ChunkGenerator = new LiteralAttributeChunkGenerator(
                             prefix.GetContent(prefixStart),
                             new LocationTagged<string>(CurrentSymbol.GetContent(), CurrentLocation));
                         AcceptAndMoveNext();
                         Output(SpanKind.Markup, AcceptedCharacters.None);
 
-                        Span.CodeGenerator = SpanCodeGenerator.Null;
+                        Span.ChunkGenerator = SpanChunkGenerator.Null;
                         AcceptAndMoveNext();
                         Output(SpanKind.Markup, AcceptedCharacters.None);
                     }
@@ -602,14 +603,14 @@ namespace Microsoft.AspNet.Razor.Parser
                     var valueStart = CurrentLocation;
                     PutCurrentBack();
 
-                    // Output the prefix but as a null-span. DynamicAttributeBlockCodeGenerator will render it
-                    Span.CodeGenerator = SpanCodeGenerator.Null;
+                    // Output the prefix but as a null-span. DynamicAttributeBlockChunkGenerator will render it
+                    Span.ChunkGenerator = SpanChunkGenerator.Null;
 
-                    // Dynamic value, start a new block and set the code generator
+                    // Dynamic value, start a new block and set the chunk generator
                     using (Context.StartBlock(BlockType.Markup))
                     {
-                        Context.CurrentBlock.CodeGenerator =
-                            new DynamicAttributeBlockCodeGenerator(prefix.GetContent(prefixStart), valueStart);
+                        Context.CurrentBlock.ChunkGenerator =
+                            new DynamicAttributeBlockChunkGenerator(prefix.GetContent(prefixStart), valueStart);
 
                         OtherParserBlock();
                     }
@@ -625,9 +626,9 @@ namespace Microsoft.AspNet.Razor.Parser
                 // Virtual Path value
                 var valueStart = CurrentLocation;
                 VirtualPath();
-                Span.CodeGenerator = new LiteralAttributeCodeGenerator(
+                Span.ChunkGenerator = new LiteralAttributeChunkGenerator(
                     prefix.GetContent(prefixStart),
-                    new LocationTagged<SpanCodeGenerator>(new ResolveUrlCodeGenerator(), valueStart));
+                    new LocationTagged<SpanChunkGenerator>(new ResolveUrlChunkGenerator(), valueStart));
             }
             else
             {
@@ -644,7 +645,7 @@ namespace Microsoft.AspNet.Razor.Parser
                                       // but for now that's ok)
                                       !IsEndOfAttributeValue(quote, sym));
                 Accept(value);
-                Span.CodeGenerator = new LiteralAttributeCodeGenerator(prefix.GetContent(prefixStart), value.GetContent(prefixStart));
+                Span.ChunkGenerator = new LiteralAttributeChunkGenerator(prefix.GetContent(prefixStart), value.GetContent(prefixStart));
             }
             Output(SpanKind.Markup);
         }
@@ -770,7 +771,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 string.Equals(tag.Item1.Content, SyntaxConstants.TextTagName, StringComparison.OrdinalIgnoreCase))
             {
                 Output(SpanKind.Markup);
-                Span.CodeGenerator = SpanCodeGenerator.Null;
+                Span.ChunkGenerator = SpanChunkGenerator.Null;
 
                 Accept(_bufferedOpenAngle);
                 Assert(HtmlSymbolType.Text);
@@ -1058,7 +1059,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
                         // Accept and mark the whitespace at the end of a <text> tag as code.
                         AcceptWhile(HtmlSymbolType.WhiteSpace);
-                        Span.CodeGenerator = new StatementCodeGenerator();
+                        Span.ChunkGenerator = new StatementChunkGenerator();
                         Output(SpanKind.Code);
                     }
                     else

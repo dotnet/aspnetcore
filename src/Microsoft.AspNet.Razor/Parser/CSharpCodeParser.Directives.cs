@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             TagHelperDirective(
                 SyntaxConstants.CSharp.TagHelperPrefixKeyword,
-                prefix => new TagHelperPrefixDirectiveCodeGenerator(prefix));
+                prefix => new TagHelperPrefixDirectiveChunkGenerator(prefix));
         }
 
         protected virtual void AddTagHelperDirective()
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Razor.Parser
             TagHelperDirective(
                 SyntaxConstants.CSharp.AddTagHelperKeyword,
                 lookupText =>
-                    new AddOrRemoveTagHelperCodeGenerator(removeTagHelperDescriptors: false, lookupText: lookupText));
+                    new AddOrRemoveTagHelperChunkGenerator(removeTagHelperDescriptors: false, lookupText: lookupText));
         }
 
         protected virtual void RemoveTagHelperDirective()
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Razor.Parser
             TagHelperDirective(
                 SyntaxConstants.CSharp.RemoveTagHelperKeyword,
                 lookupText =>
-                    new AddOrRemoveTagHelperCodeGenerator(removeTagHelperDescriptors: true, lookupText: lookupText));
+                    new AddOrRemoveTagHelperChunkGenerator(removeTagHelperDescriptors: true, lookupText: lookupText));
         }
 
         protected virtual void SectionDirective()
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 sectionName = CurrentSymbol.Content;
                 AcceptAndMoveNext();
             }
-            Context.CurrentBlock.CodeGenerator = new SectionCodeGenerator(sectionName);
+            Context.CurrentBlock.ChunkGenerator = new SectionChunkGenerator(sectionName);
 
             var errorLocation = CurrentLocation;
             whitespace = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: false));
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Output(SpanKind.MetaCode);
             SectionBlock("{", "}", caseSensitive: true);
 
-            Span.CodeGenerator = SpanCodeGenerator.Null;
+            Span.ChunkGenerator = SpanChunkGenerator.Null;
             // Check for the terminating "}"
             if (!Optional(CSharpSymbolType.RightBrace))
             {
@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Span.EditHandler = editHandler;
 
             Balance(BalancingModes.NoErrorOnFailure, CSharpSymbolType.LeftBrace, CSharpSymbolType.RightBrace, blockStart);
-            Span.CodeGenerator = new TypeMemberCodeGenerator();
+            Span.ChunkGenerator = new TypeMemberChunkGenerator();
             if (!At(CSharpSymbolType.RightBrace))
             {
                 editHandler.AutoCompleteString = "}";
@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.Razor.Parser
             {
                 Output(SpanKind.Code);
                 Assert(CSharpSymbolType.RightBrace);
-                Span.CodeGenerator = SpanCodeGenerator.Null;
+                Span.ChunkGenerator = SpanChunkGenerator.Null;
                 Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
                 AcceptAndMoveNext();
                 CompleteBlock();
@@ -222,10 +222,10 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected void InheritsDirectiveCore()
         {
-            BaseTypeDirective(RazorResources.ParseError_InheritsKeyword_Must_Be_Followed_By_TypeName, baseType => new SetBaseTypeCodeGenerator(baseType));
+            BaseTypeDirective(RazorResources.ParseError_InheritsKeyword_Must_Be_Followed_By_TypeName, baseType => new SetBaseTypeChunkGenerator(baseType));
         }
 
-        protected void BaseTypeDirective(string noTypeNameError, Func<string, SpanCodeGenerator> createCodeGenerator)
+        protected void BaseTypeDirective(string noTypeNameError, Func<string, SpanChunkGenerator> createChunkGenerator)
         {
             var keywordStartLocation = Span.Start;
 
@@ -270,15 +270,15 @@ namespace Microsoft.AspNet.Razor.Parser
             // Pull out the type name
             string baseType = Span.GetContent();
 
-            // Set up code generation
-            Span.CodeGenerator = createCodeGenerator(baseType.Trim());
+            // Set up chunk generation
+            Span.ChunkGenerator = createChunkGenerator(baseType.Trim());
 
             // Output the span and finish the block
             CompleteBlock();
             Output(SpanKind.Code, AcceptedCharacters.AnyExceptNewline);
         }
 
-        private void TagHelperDirective(string keyword, Func<string, ISpanCodeGenerator> buildCodeGenerator)
+        private void TagHelperDirective(string keyword, Func<string, ISpanChunkGenerator> buildChunkGenerator)
         {
             AssertDirective(keyword);
             var keywordStartLocation = CurrentLocation;
@@ -321,16 +321,16 @@ namespace Microsoft.AspNet.Razor.Parser
                 // If the value starts with a quote then we should generate appropriate C# code to colorize the value.
                 if (startsWithQuote)
                 {
-                    // Set up code generation
-                    // The generated chunk of this code generator is picked up by CSharpDesignTimeHelpersVisitor which
+                    // Set up chunk generation
+                    // The generated chunk of this chunk generator is picked up by CSharpDesignTimeHelpersVisitor which
                     // renders the C# to colorize the user provided value. We trim the quotes around the user's value
                     // so when we render the code we can project the users value into double quotes to not invoke C#
                     // IntelliSense.
-                    Span.CodeGenerator = buildCodeGenerator(rawValue.Trim('"'));
+                    Span.ChunkGenerator = buildChunkGenerator(rawValue.Trim('"'));
                 }
 
                 // We expect the directive to be surrounded in quotes.
-                // The format for taghelper directives are: @directivename "SomeValue"
+                // The format for tag helper directives are: @directivename "SomeValue"
                 if (!startsWithQuote ||
                     !rawValue.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
                 {

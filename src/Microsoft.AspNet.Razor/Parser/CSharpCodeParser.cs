@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.Razor.Editor;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Tokenizer;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
@@ -181,7 +181,7 @@ namespace Microsoft.AspNet.Razor.Parser
         private void DefaultSpanConfig(SpanBuilder span)
         {
             span.EditHandler = SpanEditHandler.CreateDefault(Language.TokenizeString);
-            span.CodeGenerator = new StatementCodeGenerator();
+            span.ChunkGenerator = new StatementChunkGenerator();
         }
 
         private void AtTransition(CSharpSymbol current)
@@ -189,7 +189,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Debug.Assert(current.Type == CSharpSymbolType.Transition);
             Accept(current);
             Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
-            Span.CodeGenerator = SpanCodeGenerator.Null;
+            Span.ChunkGenerator = SpanChunkGenerator.Null;
 
             // Output the "@" span and continue here
             Output(SpanKind.Transition);
@@ -209,7 +209,7 @@ namespace Microsoft.AspNet.Razor.Parser
                         if (CurrentSymbol.Type == CSharpSymbolType.LeftParenthesis)
                         {
                             Context.CurrentBlock.Type = BlockType.Expression;
-                            Context.CurrentBlock.CodeGenerator = new ExpressionCodeGenerator();
+                            Context.CurrentBlock.ChunkGenerator = new ExpressionChunkGenerator();
                             ExplicitExpression();
                             return;
                         }
@@ -218,14 +218,14 @@ namespace Microsoft.AspNet.Razor.Parser
                             Action handler;
                             if (TryGetDirectiveHandler(CurrentSymbol.Content, out handler))
                             {
-                                Span.CodeGenerator = SpanCodeGenerator.Null;
+                                Span.ChunkGenerator = SpanChunkGenerator.Null;
                                 handler();
                                 return;
                             }
                             else
                             {
                                 Context.CurrentBlock.Type = BlockType.Expression;
-                                Context.CurrentBlock.CodeGenerator = new ExpressionCodeGenerator();
+                                Context.CurrentBlock.ChunkGenerator = new ExpressionChunkGenerator();
                                 ImplicitExpression();
                                 return;
                             }
@@ -244,9 +244,9 @@ namespace Microsoft.AspNet.Razor.Parser
 
                     // Invalid character
                     Context.CurrentBlock.Type = BlockType.Expression;
-                    Context.CurrentBlock.CodeGenerator = new ExpressionCodeGenerator();
+                    Context.CurrentBlock.ChunkGenerator = new ExpressionChunkGenerator();
                     AddMarkerSymbolIfNecessary();
-                    Span.CodeGenerator = new ExpressionCodeGenerator();
+                    Span.ChunkGenerator = new ExpressionChunkGenerator();
                     Span.EditHandler = new ImplicitExpressionEditHandler(
                         Language.TokenizeString,
                         DefaultKeywords,
@@ -283,7 +283,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
             // Set up the "{" span and output
             Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
-            Span.CodeGenerator = SpanCodeGenerator.Null;
+            Span.ChunkGenerator = SpanChunkGenerator.Null;
             Output(SpanKind.MetaCode);
 
             // Set up auto-complete and parse the code block
@@ -291,7 +291,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Span.EditHandler = editHandler;
             CodeBlock(false, block);
 
-            Span.CodeGenerator = new StatementCodeGenerator();
+            Span.ChunkGenerator = new StatementChunkGenerator();
             AddMarkerSymbolIfNecessary();
             if (!At(CSharpSymbolType.RightBrace))
             {
@@ -303,7 +303,7 @@ namespace Microsoft.AspNet.Razor.Parser
             {
                 // Set up the "}" span
                 Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
-                Span.CodeGenerator = SpanCodeGenerator.Null;
+                Span.ChunkGenerator = SpanChunkGenerator.Null;
             }
 
             if (!At(CSharpSymbolType.WhiteSpace) && !At(CSharpSymbolType.NewLine))
@@ -330,13 +330,13 @@ namespace Microsoft.AspNet.Razor.Parser
         private void ImplicitExpression(AcceptedCharacters acceptedCharacters)
         {
             Context.CurrentBlock.Type = BlockType.Expression;
-            Context.CurrentBlock.CodeGenerator = new ExpressionCodeGenerator();
+            Context.CurrentBlock.ChunkGenerator = new ExpressionChunkGenerator();
 
             using (PushSpanConfig(span =>
             {
                 span.EditHandler = new ImplicitExpressionEditHandler(Language.TokenizeString, Keywords, acceptTrailingDot: IsNested);
                 span.EditHandler.AcceptedCharacters = acceptedCharacters;
-                span.CodeGenerator = new ExpressionCodeGenerator();
+                span.ChunkGenerator = new ExpressionChunkGenerator();
             }))
             {
                 do
@@ -504,7 +504,7 @@ namespace Microsoft.AspNet.Razor.Parser
         private void ConfigureExplicitExpressionSpan(SpanBuilder sb)
         {
             sb.EditHandler = SpanEditHandler.CreateDefault(Language.TokenizeString);
-            sb.CodeGenerator = new ExpressionCodeGenerator();
+            sb.ChunkGenerator = new ExpressionChunkGenerator();
         }
 
         private void ExplicitExpression()
@@ -513,7 +513,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Assert(CSharpSymbolType.LeftParenthesis);
             AcceptAndMoveNext();
             Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
-            Span.CodeGenerator = SpanCodeGenerator.Null;
+            Span.ChunkGenerator = SpanChunkGenerator.Null;
             Output(SpanKind.MetaCode);
             using (PushSpanConfig(ConfigureExplicitExpressionSpan))
             {
@@ -544,7 +544,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 PutCurrentBack();
             }
             Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
-            Span.CodeGenerator = SpanCodeGenerator.Null;
+            Span.ChunkGenerator = SpanChunkGenerator.Null;
             CompleteBlock(insertMarkerIfNecessary: false);
             Output(SpanKind.MetaCode);
         }
@@ -558,7 +558,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Output(SpanKind.Code);
             using (Context.StartBlock(BlockType.Template))
             {
-                Context.CurrentBlock.CodeGenerator = new TemplateBlockCodeGenerator();
+                Context.CurrentBlock.ChunkGenerator = new TemplateBlockChunkGenerator();
                 PutCurrentBack();
                 OtherParserBlock();
             }

@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNet.Razor.Editor;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         public Span Next { get; protected internal set; }
 
         public SpanEditHandler EditHandler { get; protected set; }
-        public ISpanCodeGenerator CodeGenerator { get; protected set; }
+        public ISpanChunkGenerator ChunkGenerator { get; protected set; }
 
         public override bool IsBlock
         {
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             Kind = builder.Kind;
             Symbols = builder.Symbols;
             EditHandler = builder.EditHandler;
-            CodeGenerator = builder.CodeGenerator ?? SpanCodeGenerator.Null;
+            ChunkGenerator = builder.ChunkGenerator ?? SpanChunkGenerator.Null;
             _start = builder.Start;
 
             // Since we took references to the values in SpanBuilder, clear its references out
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             builder.Append(EditHandler.ToString());
             builder.Append(">");
             builder.Append(" Gen: <");
-            builder.Append(CodeGenerator.ToString());
+            builder.Append(ChunkGenerator.ToString());
             builder.Append("> {");
             builder.Append(string.Join(";", Symbols.GroupBy(sym => sym.GetType()).Select(grp => string.Concat(grp.Key.Name, ":", grp.Count()))));
             builder.Append("}");
@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             return other != null &&
                 Kind.Equals(other.Kind) &&
                 EditHandler.Equals(other.EditHandler) &&
-                CodeGenerator.Equals(other.CodeGenerator) &&
+                ChunkGenerator.Equals(other.ChunkGenerator) &&
                 Symbols.SequenceEqual(other.Symbols);
         }
 

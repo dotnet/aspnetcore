@@ -7,8 +7,8 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Web.WebPages.TestUtils;
-using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
+using Microsoft.AspNet.Razor.Chunks.Generators;
+using Microsoft.AspNet.Razor.CodeGeneration;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Text;
 using Moq;
@@ -84,26 +84,26 @@ namespace Microsoft.AspNet.Razor.Test
         }
 
         [Fact]
-        public void CreateCodeGeneratorMethodPassesCodeGeneratorThroughDecorateMethodOnHost()
+        public void CreateChunkGeneratorMethodPassesChunkGeneratorThroughDecorateMethodOnHost()
         {
             // Arrange
             var mockHost = new Mock<RazorEngineHost>(new CSharpRazorCodeLanguage()) { CallBase = true };
 
-            var expected = new Mock<RazorCodeGenerator>("Foo", "Bar", "Baz", mockHost.Object).Object;
+            var expected = new Mock<RazorChunkGenerator>("Foo", "Bar", "Baz", mockHost.Object).Object;
 
-            mockHost.Setup(h => h.DecorateCodeGenerator(It.IsAny<CSharpRazorCodeGenerator>()))
+            mockHost.Setup(h => h.DecorateChunkGenerator(It.IsAny<RazorChunkGenerator>()))
                 .Returns(expected);
             var engine = new RazorTemplateEngine(mockHost.Object);
 
             // Act
-            var actual = engine.CreateCodeGenerator("Foo", "Bar", "Baz");
+            var actual = engine.CreateChunkGenerator("Foo", "Bar", "Baz");
 
             // Assert
             Assert.Equal(expected, actual);
         }
 
         [Fact]
-        public void CreateCodeBuilder_PassesCodeGeneratorThroughDecorateMethodOnHost()
+        public void CreateCodeBuilder_PassesChunkGeneratorThroughDecorateMethodOnHost()
         {
             // Arrange
             var mockHost = new Mock<RazorEngineHost>(new CSharpRazorCodeLanguage()) { CallBase = true };
