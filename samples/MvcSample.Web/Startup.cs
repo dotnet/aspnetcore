@@ -10,7 +10,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
 #if DNX451
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 #endif
 using Microsoft.Framework.DependencyInjection;
 #if DNX451
@@ -54,7 +54,7 @@ namespace MvcSample.Web
             var configurationPath = Path.Combine(applicationEnvironment.ApplicationBasePath, "config.json");
 
             // Set up configuration sources.
-            var configuration = new Configuration()
+            var configuration = new ConfigurationSection()
                 .AddJsonFile(configurationPath)
                 .AddEnvironmentVariables();
             string diSystem;

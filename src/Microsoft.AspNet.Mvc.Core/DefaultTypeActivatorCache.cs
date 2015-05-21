@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
     /// Caches <see cref="ObjectFactory"/> instances produced by 
-    /// <see cref="ActivatorUtilities.CreateFactory(Type, Type[])"/>.
+    /// <see cref="Microsoft.Framework.DependencyInjection.ActivatorUtilities.CreateFactory(Type, Type[])"/>.
     /// </summary>
     public class DefaultTypeActivatorCache : ITypeActivatorCache
     {
