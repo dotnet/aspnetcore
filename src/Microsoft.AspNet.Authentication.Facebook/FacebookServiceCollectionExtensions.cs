@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Authentication.Facebook;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
