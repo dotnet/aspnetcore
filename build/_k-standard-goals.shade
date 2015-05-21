@@ -65,7 +65,20 @@ default Configuration='${E("Configuration")}'
   k-restore
 
 #target-dir-clean target='clean'
-  rimraf rimrafDir='${TARGET_DIR}' if='Directory.Exists(TARGET_DIR)'
+  @{
+      if (Directory.Exists(TARGET_DIR))
+      {
+          var directory = new DirectoryInfo(TARGET_DIR);
+          directory.Attributes &= ~FileAttributes.ReadOnly;
+
+          foreach (var info in directory.GetFileSystemInfos("*", SearchOption.AllDirectories))
+          {
+              info.Attributes &= ~FileAttributes.ReadOnly;
+          }
+
+          directory.Delete(true);
+        }
+    }
 
 #build-clean target='clean' if='Directory.Exists("src")'
   k-clean each='var projectFile in Files.Include("src/**/project.json")'
