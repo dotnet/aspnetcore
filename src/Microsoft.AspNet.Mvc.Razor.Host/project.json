@@ -1,31 +1,43 @@
 {
-    "description": "Design time hosting infrastructure for the ASP.NET MVC Razor view engine.",
-    "version": "6.0.0-*",
-    "compilationOptions": {
-        "warningsAsErrors": true
+  "description": "Design time hosting infrastructure for the ASP.NET MVC Razor view engine.",
+  "version": "6.0.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "Microsoft.AspNet.FileProviders.Physical": "1.0.0-*",
+    "Microsoft.AspNet.Razor.Runtime": "4.0.0-*",
+    "Microsoft.Framework.Caching.Memory": "1.0.0-*",
+    "Microsoft.Framework.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" },
+    "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" }
+  },
+  "frameworks": {
+    "net45": { },
+    "dnx451": {
+      "dependencies": {
+        "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*"
+      }
     },
-    "dependencies": {
-        "Microsoft.AspNet.FileProviders.Physical": "1.0.0-*",
-        "Microsoft.AspNet.Razor.Runtime": "4.0.0-*",
-        "Microsoft.Framework.Caching.Memory": "1.0.0-*",
-        "Microsoft.Framework.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" }
-    },
-    "frameworks": {
-        "net45": {},
-        "dnx451": {
-            "dependencies": {
-                "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*"
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*",
-                "System.Collections.Concurrent": "4.0.10-beta-*",
-                "System.ComponentModel.TypeConverter": "4.0.0-beta-*",
-                "System.Reflection.Extensions": "4.0.0-beta-*",
-                "System.Text.Encoding.Extensions": "4.0.10-beta-*"
-            }
-        }
+    "dnxcore50": {
+      "dependencies": {
+        "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*",
+        "System.Collections.Concurrent": "4.0.10-beta-*",
+        "System.ComponentModel.TypeConverter": "4.0.0-beta-*",
+        "System.Reflection.Extensions": "4.0.0-beta-*",
+        "System.Text.Encoding.Extensions": "4.0.10-beta-*"
+      }
     }
+  },
+  "exclude": [
+    "wwwroot",
+    "node_modules",
+    "bower_components"
+  ],
+  "packExclude": [
+    "node_modules",
+    "bower_components",
+    "**.kproj",
+    "**.user",
+    "**.vspscc"
+  ]
 }

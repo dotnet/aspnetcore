@@ -1,35 +1,47 @@
 {
-    "description": "The Razor view engine for ASP.NET MVC.",
-    "version": "6.0.0-*",
-    "compilationOptions": {
-        "warningsAsErrors": false
+  "description": "The Razor view engine for ASP.NET MVC.",
+  "version": "6.0.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": false
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Diagnostics.Abstractions": "1.0.0-*",
+    "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
+    "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",
+    "Microsoft.AspNet.PageExecutionInstrumentation.Interfaces": "1.0.0-*",
+    "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" },
+    "Microsoft.Framework.PropertyActivator.Sources": { "version": "1.0.0-*", "type": "build" },
+    "Microsoft.Framework.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" },
+    "Microsoft.Framework.Runtime.Roslyn.Common": "1.0.0-*",
+    "Microsoft.Framework.Runtime.Roslyn.Abstractions": "1.0.0-*"
+  },
+  "frameworks": {
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Collections": "",
+        "System.IO": "",
+        "System.Runtime": "",
+        "System.Text.Encoding": "",
+        "System.Threading.Tasks": ""
+      }
     },
-    "dependencies": {
-        "Microsoft.AspNet.Diagnostics.Abstractions": "1.0.0-*",
-        "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
-        "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
-        "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",
-        "Microsoft.AspNet.PageExecutionInstrumentation.Interfaces": "1.0.0-*",
-        "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Framework.PropertyActivator.Sources": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Framework.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Framework.Runtime.Roslyn.Common": "1.0.0-*",
-        "Microsoft.Framework.Runtime.Roslyn.Abstractions": "1.0.0-*"
-    },
-    "frameworks": {
-        "dnx451": {
-            "frameworkAssemblies": {
-                "System.Collections": "",
-                "System.IO": "",
-                "System.Runtime": "",
-                "System.Text.Encoding": "",
-                "System.Threading.Tasks": ""
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Threading.Tasks.Parallel": "4.0.0-beta-*"
-            }
-        }
+    "dnxcore50": {
+      "dependencies": {
+        "System.Threading.Tasks.Parallel": "4.0.0-beta-*"
+      }
     }
+  },
+  "exclude": [
+    "wwwroot",
+    "node_modules",
+    "bower_components"
+  ],
+  "packExclude": [
+    "node_modules",
+    "bower_components",
+    "**.kproj",
+    "**.user",
+    "**.vspscc"
+  ]
 }
