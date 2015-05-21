@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Mvc
         /// <see cref="IControllerActivator"/> activates this property while activating controllers. If user codes
         /// directly instantiate controllers, the getter returns an empty <see cref="Mvc.ActionContext"/>.
         /// </remarks>
-        [Activate]
+        [ActionContext]
         public ActionContext ActionContext
         {
             get
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Gets or sets the <see cref="ActionBindingContext"/>.
         /// </summary>
-        [Activate]
+        [ActionBindingContext]
         public ActionBindingContext BindingContext { get; set; }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Mvc
         /// However, when controllers are directly instantiated in user codes, this property is initialized with
         /// <see cref="EmptyModelMetadataProvider"/>.
         /// </remarks>
-        [Activate]
+        [ViewDataDictionary]
         public ViewDataDictionary ViewData
         {
             get

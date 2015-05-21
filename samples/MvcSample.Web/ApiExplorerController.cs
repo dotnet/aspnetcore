@@ -9,8 +9,12 @@ namespace MvcSample.Web
     [Route("ApiExplorer")]
     public class ApiExplorerController : Controller
     {
-        [Activate]
-        public IApiDescriptionGroupCollectionProvider Provider { get; set; }
+        public ApiExplorerController(IApiDescriptionGroupCollectionProvider provider)
+        {
+            Provider = provider;
+        }
+
+        public IApiDescriptionGroupCollectionProvider Provider { get; }
 
         [HttpGet]
         public IActionResult All()

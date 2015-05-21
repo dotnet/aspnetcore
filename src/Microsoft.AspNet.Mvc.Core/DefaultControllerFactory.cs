@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
@@ -20,10 +19,8 @@ namespace Microsoft.AspNet.Mvc
     public class DefaultControllerFactory : IControllerFactory
     {
         private readonly IControllerActivator _controllerActivator;
-        private readonly IDictionary<Type, Func<ActionContext, object>> _valueAccessorLookup;
         private readonly ConcurrentDictionary<Type, PropertyActivator<ActionContext>[]> _activateActions;
         private readonly Func<Type, PropertyActivator<ActionContext>[]> _getPropertiesToActivate;
-        private readonly Func<Type, Func<ActionContext, object>> _getRequiredService = GetRequiredService;
 
         /// <summary>
         /// Initializes a new instance of <see cref="DefaultControllerFactory"/>.
@@ -33,7 +30,7 @@ namespace Microsoft.AspNet.Mvc
         public DefaultControllerFactory(IControllerActivator controllerActivator)
         {
             _controllerActivator = controllerActivator;
-            _valueAccessorLookup = CreateValueAccessorLookup();
+
             _activateActions = new ConcurrentDictionary<Type, PropertyActivator<ActionContext>[]>();
             _getPropertiesToActivate = GetPropertiesToActivate;
         }
@@ -98,8 +95,9 @@ namespace Microsoft.AspNet.Mvc
         protected virtual void ActivateProperties([NotNull] object controller, [NotNull] ActionContext context)
         {
             var controllerType = controller.GetType();
-            var propertiesToActivate = _activateActions.GetOrAdd(controllerType,
-                                                                 _getPropertiesToActivate);
+            var propertiesToActivate = _activateActions.GetOrAdd(
+                controllerType,
+                _getPropertiesToActivate);
 
             for (var i = 0; i < propertiesToActivate.Length; i++)
             {
@@ -108,79 +106,40 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        /// <summary>
-        /// Returns a <see cref="IDictionary{TKey, TValue}"/> of property types to delegates used to activate
-        /// controller properties annotated with <see cref="ActivateAttribute"/>.
-        /// </summary>
-        /// <returns>A dictionary containing the property type to activator delegate mapping.</returns>
-        /// <remarks>Override this method to provide custom activation behavior for controller properties
-        /// annotated with <see cref="ActivateAttribute"/>.</remarks>
-        protected virtual IDictionary<Type, Func<ActionContext, object>> CreateValueAccessorLookup()
-        {
-            var dictionary = new Dictionary<Type, Func<ActionContext, object>>
-            {
-                { typeof(ActionContext), (context) => context },
-                { typeof(HttpContext), (context) => context.HttpContext },
-                { typeof(HttpRequest), (context) => context.HttpContext.Request },
-                { typeof(HttpResponse), (context) => context.HttpContext.Response },
-                {
-                    typeof(ViewDataDictionary),
-                    (context) =>
-                    {
-                        var serviceProvider = context.HttpContext.RequestServices;
-                        return new ViewDataDictionary(
-                            serviceProvider.GetRequiredService<IModelMetadataProvider>(),
-                            context.ModelState);
-                    }
-                },
-                {
-                    typeof(ActionBindingContext),
-                    (context) =>
-                    {
-                        var serviceProvider = context.HttpContext.RequestServices;
-                        var accessor = serviceProvider.GetRequiredService<IScopedInstance<ActionBindingContext>>();
-                        return accessor.Value;
-                    }
-                }
-            };
-
-            return dictionary;
-        }
-
         private PropertyActivator<ActionContext>[] GetPropertiesToActivate(Type type)
         {
-            var activatorsForActivateProperties = PropertyActivator<ActionContext>.GetPropertiesToActivate(
-                                                        type,
-                                                        typeof(ActivateAttribute),
-                                                        CreateActivateInfo);
-            return activatorsForActivateProperties;
+            IEnumerable<PropertyActivator<ActionContext>> activators;
+            activators = PropertyActivator<ActionContext>.GetPropertiesToActivate(
+                type,
+                typeof(ActionContextAttribute),
+                p => new PropertyActivator<ActionContext>(p, c => c));
+
+            activators = activators.Concat(PropertyActivator<ActionContext>.GetPropertiesToActivate(
+                type,
+                typeof(ActionBindingContextAttribute),
+                p => new PropertyActivator<ActionContext>(p, GetActionBindingContext)));
+
+            activators = activators.Concat(PropertyActivator<ActionContext>.GetPropertiesToActivate(
+                type,
+                typeof(ViewDataDictionaryAttribute),
+                p => new PropertyActivator<ActionContext>(p, GetViewDataDictionary)));
+
+            return activators.ToArray();
         }
 
-        private PropertyActivator<ActionContext> CreateActivateInfo(
-            PropertyInfo property)
+        private static ActionBindingContext GetActionBindingContext(ActionContext context)
         {
-            Func<ActionContext, object> valueAccessor;
-            if (!_valueAccessorLookup.TryGetValue(property.PropertyType, out valueAccessor))
-            {
-                var message = Resources.FormatControllerFactory_PropertyCannotBeActivated(
-                                                    property.Name,
-                                                    property.DeclaringType.FullName);
-                throw new InvalidOperationException(message);
-            }
-
-            return new PropertyActivator<ActionContext>(property, valueAccessor);
+            var serviceProvider = context.HttpContext.RequestServices;
+            var accessor = serviceProvider.GetRequiredService<IScopedInstance<ActionBindingContext>>();
+            return accessor.Value;
         }
 
-        private PropertyActivator<ActionContext> CreateFromServicesInfo(
-            PropertyInfo property)
+        private static ViewDataDictionary GetViewDataDictionary(ActionContext context)
         {
-            var valueAccessor = _getRequiredService(property.PropertyType);
-            return new PropertyActivator<ActionContext>(property, valueAccessor);
-        }
-
-        private static Func<ActionContext, object> GetRequiredService(Type propertyType)
-        {
-            return actionContext => actionContext.HttpContext.RequestServices.GetRequiredService(propertyType);
+            var serviceProvider = context.HttpContext.RequestServices;
+            return new ViewDataDictionary(
+                serviceProvider.GetRequiredService<IModelMetadataProvider>(),
+                context.ModelState);
         }
     }
 }

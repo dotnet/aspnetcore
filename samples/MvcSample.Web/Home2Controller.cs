@@ -12,11 +12,10 @@ namespace MvcSample.Web.RandomNameSpace
     {
         private User _user = new User() { Name = "User Name", Address = "Home Address" };
 
-        [Activate]
-        public HttpResponse Response
-        {
-            get; set;
-        }
+        [ActionContext]
+        public ActionContext ActionContext { get; set; }
+
+        public HttpResponse Response => ActionContext.HttpContext.Response;
 
         public string Index()
         {

@@ -11,11 +11,12 @@ namespace ActivatorWebSite
         [FromServices]
         public MyService Service { get; set; }
 
-        [Activate]
-        public HttpRequest Request { get; set; }
+        [ActionContext]
+        public ActionContext ActionContext { get; set; }
 
-        [Activate]
-        public HttpResponse Response { get; set; }
+        public HttpRequest Request => ActionContext.HttpContext.Request;
+
+        public HttpResponse Response => ActionContext.HttpContext.Response;
 
         public IActionResult Index()
         {

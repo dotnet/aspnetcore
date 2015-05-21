@@ -27,14 +27,14 @@ namespace System.Web.Http
         /// Gets the action context.
         /// </summary>
         /// <remarks>The setter is intended for unit testing purposes only.</remarks>
-        [Activate]
+        [ActionContext]
         public ActionContext ActionContext { get; set; }
 
         /// <summary>
         /// Gets the <see cref="ActionBindingContext"/>.
         /// </summary>
         /// <remarks>The setter is intended for unit testing purposes only.</remarks>
-        [Activate]
+        [ActionBindingContext]
         public ActionBindingContext BindingContext { get; set; }
 
         /// <summary>

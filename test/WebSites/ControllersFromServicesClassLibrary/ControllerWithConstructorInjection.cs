@@ -19,8 +19,10 @@ namespace ControllersFromServicesClassLibrary
 
         private QueryValueService QueryService { get; }
 
-        [Activate]
-        public HttpRequest Request { get; set; }
+        [ActionContext]
+        public ActionContext ActionContext { get; set; }
+
+        public HttpRequest Request => ActionContext.HttpContext.Request;
 
         [HttpGet("/constructorinjection")]
         public IActionResult Index()

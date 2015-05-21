@@ -7,15 +7,16 @@ namespace ActivatorWebSite
 {
     public class CannotBeActivatedController
     {
-        [Activate]
-        private FakeType Service { get; set; }
+        public CannotBeActivatedController(FakeType service)
+        {
+        }
 
         public IActionResult Index()
         {
             return new NoContentResult();
         }
 
-        private sealed class FakeType
+        public sealed class FakeType
         {
         }
     }

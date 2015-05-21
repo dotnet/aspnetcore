@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Mvc.Core
             // Arrange
             var actionDescriptor = new ControllerActionDescriptor
             {
-                ControllerTypeInfo = typeof(ControllerWithActivateAndFromServices).GetTypeInfo()
+                ControllerTypeInfo = typeof(ControllerWithAttributes).GetTypeInfo()
             };
             var services = GetServices();
             var httpContext = new DefaultHttpContext
@@ -86,9 +86,8 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = factory.CreateController(context);
 
             // Assert
-            var controller = Assert.IsType<ControllerWithActivateAndFromServices>(result);
+            var controller = Assert.IsType<ControllerWithAttributes>(result);
             Assert.Same(context, controller.ActionContext);
-            Assert.Same(httpContext, controller.HttpContext);
         }
 
         [Fact]
@@ -97,7 +96,7 @@ namespace Microsoft.AspNet.Mvc.Core
             // Arrange
             var actionDescriptor = new ControllerActionDescriptor
             {
-                ControllerTypeInfo = typeof(ControllerWithActivateAndFromServices).GetTypeInfo()
+                ControllerTypeInfo = typeof(ControllerWithAttributes).GetTypeInfo()
             };
 
             var services = GetServices();
@@ -112,8 +111,8 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = factory.CreateController(context);
 
             // Assert
-            var controller = Assert.IsType<ControllerWithActivateAndFromServices>(result);
-            Assert.NotNull(controller.GetViewData());
+            var controller = Assert.IsType<ControllerWithAttributes>(result);
+            Assert.NotNull(controller.ViewData);
         }
 
         [Fact]
@@ -122,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.Core
             // Arrange
             var actionDescriptor = new ControllerActionDescriptor
             {
-                ControllerTypeInfo = typeof(ControllerWithActivateAndFromServices).GetTypeInfo()
+                ControllerTypeInfo = typeof(ControllerWithAttributes).GetTypeInfo()
             };
             var bindingContext = new ActionBindingContext();
 
@@ -139,17 +138,17 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = factory.CreateController(context);
 
             // Assert
-            var controller = Assert.IsType<ControllerWithActivateAndFromServices>(result);
+            var controller = Assert.IsType<ControllerWithAttributes>(result);
             Assert.Same(bindingContext, controller.BindingContext);
         }
 
         [Fact]
-        public void CreateController_IgnoresPropertiesThatAreNotDecoratedWithActivateAttribute()
+        public void CreateController_IgnoresPropertiesThatAreNotDecoratedWithAttribute()
         {
             // Arrange
             var actionDescriptor = new ControllerActionDescriptor
             {
-                ControllerTypeInfo = typeof(ControllerWithActivateAndFromServices).GetTypeInfo()
+                ControllerTypeInfo = typeof(ControllerWithoutAttributes).GetTypeInfo()
             };
             var services = GetServices();
             var httpContext = new DefaultHttpContext
@@ -163,8 +162,8 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = factory.CreateController(context);
 
             // Assert
-            var controller = Assert.IsType<ControllerWithActivateAndFromServices>(result);
-            Assert.Null(controller.Response);
+            var controller = Assert.IsType<ControllerWithoutAttributes>(result);
+            Assert.Null(controller.ActionContext);
         }
 
         [Fact]
@@ -185,8 +184,10 @@ namespace Microsoft.AspNet.Mvc.Core
 
             // Act and Assert
             var exception = Assert.Throws<InvalidOperationException>(() => factory.CreateController(context));
-            Assert.Equal("The property 'Service' on controller '" + typeof(ControllerThatCannotBeActivated) +
-                        "' cannot be activated.", exception.Message);
+            Assert.Equal(
+                $"Unable to resolve service for type '{typeof(TestService).FullName}' while attempting to activate " +
+                $"'{typeof(ControllerThatCannotBeActivated).FullName}'.", 
+                exception.Message);
         }
 
         [Theory]
@@ -211,8 +212,9 @@ namespace Microsoft.AspNet.Mvc.Core
 
             // Act and Assert
             var exception = Assert.Throws<InvalidOperationException>(() => factory.CreateController(context));
-            Assert.Equal("The type '" + type.FullName + "' cannot be activated by '" + typeof(DefaultControllerFactory) +
-                "' because it is either a value type, an interface, an abstract class or an open generic type.",
+            Assert.Equal(
+                $"The type '{type.FullName}' cannot be activated by '{typeof(DefaultControllerFactory).FullName}' " +
+                "because it is either a value type, an interface, an abstract class or an open generic type.",
                 exception.Message);
         }
 
@@ -250,8 +252,6 @@ namespace Microsoft.AspNet.Mvc.Core
                     .Returns(Mock.Of<IUrlHelper>());
             services.Setup(s => s.GetService(typeof(IModelMetadataProvider)))
                     .Returns(metadataProvider);
-            services.Setup(s => s.GetService(typeof(TestService)))
-                    .Returns(new TestService());
             services.Setup(s => s.GetService(typeof(IObjectModelValidator)))
                     .Returns(new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider));
             services
@@ -262,40 +262,25 @@ namespace Microsoft.AspNet.Mvc.Core
             return services.Object;
         }
 
-        private class ControllerWithActivateAndFromServices
+        private class ControllerWithoutAttributes
         {
-            [Activate]
             public ActionContext ActionContext { get; set; }
 
-            [Activate]
             public ActionBindingContext BindingContext { get; set; }
 
-            [Activate]
-            public HttpContext HttpContext { get; set; }
+            public ViewDataDictionary ViewData { get; set; }
+        }
 
-            [Activate]
-            protected HttpRequest Request { get; set; }
+        private class ControllerWithAttributes
+        {
+            [ActionContext]
+            public ActionContext ActionContext { get; set; }
 
-            [Activate]
-            private ViewDataDictionary ViewData { get; set; }
+            [ActionBindingContext]
+            public ActionBindingContext BindingContext { get; set; }
 
-            [FromServices]
-            public IUrlHelper Helper { get; set; }
-
-            [FromServices]
-            public TestService TestService { get; set; }
-
-            public HttpResponse Response { get; set; }
-
-            public ViewDataDictionary GetViewData()
-            {
-                return ViewData;
-            }
-
-            public HttpRequest GetHttpRequest()
-            {
-                return Request;
-            }
+            [ViewDataDictionary]
+            public ViewDataDictionary ViewData { get; set; }
         }
 
         private class MyController : Controller
@@ -310,8 +295,12 @@ namespace Microsoft.AspNet.Mvc.Core
 
         private class ControllerThatCannotBeActivated
         {
-            [Activate]
-            public TestService Service { get; set; }
+            public ControllerThatCannotBeActivated(TestService service)
+            {
+                Service = service;
+            }
+
+            public TestService Service { get; }
         }
 
         private class TestService
