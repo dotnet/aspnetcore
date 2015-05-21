@@ -125,12 +125,12 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         {
             // Arrange
             var viewPath = @"views/index.razor";
-            var globalImportPath = @"views/global.import.cshtml";
+            var viewImportsPath = @"views/global.import.cshtml";
             var host = Mock.Of<IMvcRazorHost>();
 
             var fileProvider = new TestFileProvider();
             var file = fileProvider.AddFile(viewPath, "View Content");
-            fileProvider.AddFile(globalImportPath, "Global Import Content");
+            fileProvider.AddFile(viewImportsPath, "Global Import Content");
             var relativeFileInfo = new RelativeFileInfo(file, viewPath);
             var razorService = new RazorCompilationService(
                 Mock.Of<ICompilationService>(),
@@ -141,7 +141,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 new RazorError("message-1", new SourceLocation(1, 2, 17)),
                 new RazorError("message-2", new SourceLocation(viewPath, 1, 4, 6), 7),
                 new RazorError { Message = "message-3" },
-                new RazorError("message-4", new SourceLocation(globalImportPath, 1, 3, 8), 4),
+                new RazorError("message-4", new SourceLocation(viewImportsPath, 1, 3, 8), 4),
             };
 
             // Act
@@ -185,13 +185,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 },
                 failure =>
                 {
-                    Assert.Equal(globalImportPath, failure.SourceFilePath);
+                    Assert.Equal(viewImportsPath, failure.SourceFilePath);
                     Assert.Equal("Global Import Content", failure.SourceFileContent);
                     Assert.Collection(failure.Messages,
                         message =>
                         {
                             Assert.Equal(errors[3].Message, message.Message);
-                            Assert.Equal(globalImportPath, message.SourceFilePath);
+                            Assert.Equal(viewImportsPath, message.SourceFilePath);
                             Assert.Equal(4, message.StartLine);
                             Assert.Equal(8, message.StartColumn);
                             Assert.Equal(4, message.EndLine);

@@ -5,7 +5,7 @@ using Microsoft.AspNet.Mvc;
 
 namespace RazorWebSite.Controllers
 {
-    public class NestedGlobalImportsController : Controller
+    public class NestedViewImportsController : Controller
     {
         public ViewResult Index()
         {
@@ -14,7 +14,7 @@ namespace RazorWebSite.Controllers
                 Name = "Controller-Person"
             };
 
-            return View("~/Views/NestedGlobalImports/Nested/Index.cshtml", model);
+            return View("~/Views/NestedViewImports/Nested/Index.cshtml", model);
         }
     }
 }

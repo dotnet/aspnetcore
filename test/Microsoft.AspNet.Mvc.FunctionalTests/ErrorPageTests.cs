@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task CompilationFailuresFromGlobalImportAreListed()
+        public async Task CompilationFailuresFromViewImportsAreListed()
         {
             // Arrange
             var expectedMessage = "The type or namespace name &#x27;NamespaceDoesNotExist&#x27; could not be found ("
@@ -59,13 +59,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html");
 
             // Act
-            var response = await client.GetAsync("http://localhost/ErrorFromGlobalImport");
+            var response = await client.GetAsync("http://localhost/ErrorFromViewImports");
 
             // Assert
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
             var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains(@"Views\ErrorFromGlobalImport\_GlobalImport.cshtml", content);
+            Assert.Contains(@"Views\ErrorFromViewImports\_ViewImports.cshtml", content);
             Assert.Contains(expectedMessage, content);
         }
     }

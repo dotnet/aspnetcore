@@ -64,16 +64,16 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 }
             }
 
-            // Set up _GlobalImports
+            // Set up _ViewImports
             foreach (var entry in cacheEntries)
             {
-                var globalFileLocations = ViewHierarchyUtility.GetGlobalImportLocations(entry.RelativePath);
+                var globalFileLocations = ViewHierarchyUtility.GetViewImportsLocations(entry.RelativePath);
                 foreach (var location in globalFileLocations)
                 {
                     var globalFileEntry = _cache.Get<CompilerCacheEntry>(location);
                     if (globalFileEntry != null)
                     {
-                        // Add the the composite _GlobalImport entry as a dependency.
+                        // Add the composite _ViewImports entry as a dependency.
                         entry.AssociatedGlobalFileEntry = globalFileEntry;
                         break;
                     }
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             else if (cacheEntry.IsPreCompiled && !cacheEntry.IsValidatedPreCompiled)
             {
                 // For precompiled views, the first time the entry is read, we need to ensure that no changes were made
-                // either to the file associated with this entry, or any _GlobalImport associated with it between the time
+                // either to the file associated with this entry, or any _ViewImports associated with it between the time
                 // the View was precompiled and the time EnsureInitialized was called. For later iterations, we can
                 // rely on expiration triggers ensuring the validity of the entry.
 
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
                 if (AssociatedGlobalFilesChanged(cacheEntry, compile))
                 {
-                    // Recompile if _GlobalImports have changed since the entry was created.
+                    // Recompile if _ViewImports have changed since the entry was created.
                     return OnCacheMiss(relativeFileInfo, normalizedPath, compile);
                 }
 
@@ -199,8 +199,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var entry = (CompilerCacheEntry)cacheSetContext.State;
             cacheSetContext.AddExpirationTrigger(_fileProvider.Watch(entry.RelativePath));
 
-            var globalImportPaths = ViewHierarchyUtility.GetGlobalImportLocations(cacheSetContext.Key);
-            foreach (var location in globalImportPaths)
+            var viewImportsPaths = ViewHierarchyUtility.GetViewImportsLocations(cacheSetContext.Key);
+            foreach (var location in viewImportsPaths)
             {
                 cacheSetContext.AddExpirationTrigger(_fileProvider.Watch(location));
             }
@@ -215,24 +215,24 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             return entry.AssociatedGlobalFileEntry != globalFileEntry;
         }
 
-        // Returns the entry for the nearest _GlobalImport that the file inherits directives from. Since _GlobalImport
-        // entries are affected by other _GlobalImport entries that are in the path hierarchy, the returned value
-        // represents the composite result of performing a cache check on individual _GlobalImport entries.
+        // Returns the entry for the nearest _ViewImports that the file inherits directives from. Since _ViewImports
+        // entries are affected by other _ViewImports entries that are in the path hierarchy, the returned value
+        // represents the composite result of performing a cache check on individual _ViewImports entries.
         private CompilerCacheEntry GetCompositeGlobalFileEntry(string relativePath,
                                                               Func<RelativeFileInfo, CompilationResult> compile)
         {
-            var globalImportLocations = ViewHierarchyUtility.GetGlobalImportLocations(relativePath);
-            foreach (var globalImport in globalImportLocations)
+            var viewImportsLocations = ViewHierarchyUtility.GetViewImportsLocations(relativePath);
+            foreach (var viewImports in viewImportsLocations)
             {
-                var getOrAddResult = GetOrAddCore(globalImport, compile);
+                var getOrAddResult = GetOrAddCore(viewImports, compile);
                 if (getOrAddResult != null)
                 {
-                    // This is the nearest _GlobalImport that exists on disk.
+                    // This is the nearest _ViewImports that exists on disk.
                     return getOrAddResult.CompilerCacheEntry;
                 }
             }
 
-            // No _GlobalImports discovered.
+            // No _ViewImports discovered.
             return null;
         }
 

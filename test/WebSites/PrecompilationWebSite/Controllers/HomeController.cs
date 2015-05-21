@@ -19,7 +19,7 @@ namespace PrecompilationWebSite.Controllers
 
         public IActionResult GlobalDeletedPriorToFirstRequest()
         {
-            return View("~/Views/GlobalImportDelete/Index");
+            return View("~/Views/ViewImportsDelete/Index");
         }
 
         [HttpGet("/Test")]

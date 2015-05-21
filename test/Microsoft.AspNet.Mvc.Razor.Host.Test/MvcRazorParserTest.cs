@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public class MvcRazorCodeParserTest
     {
-        public static TheoryData GlobalImportData
+        public static TheoryData ViewImportsData
         {
             get
             {
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Theory]
-        [MemberData(nameof(GlobalImportData))]
+        [MemberData(nameof(ViewImportsData))]
         public void GetTagHelperDescriptors_ReturnsExpectedDirectiveDescriptors(
             CodeTree[] codeTrees,
             TagHelperDirectiveDescriptor[] expectedDirectiveDescriptors)

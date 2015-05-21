@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             var pagePath = cacheSetContext.Key;
             var getCodeTree = (Func<IFileInfo, CodeTree>)cacheSetContext.State;
 
-            // GetOrAdd is invoked for each _ViewStart that might potentially exist in the path.
+            // GetOrAdd is invoked for each _ViewImports that might potentially exist in the path.
             // We can avoid performing file system lookups for files that do not exist by caching
             // negative results and adding a Watch for that file.
             cacheSetContext.AddExpirationTrigger(_fileProvider.Watch(pagePath));

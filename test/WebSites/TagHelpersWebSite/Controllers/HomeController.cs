@@ -30,7 +30,7 @@ namespace TagHelpersWebSite.Controllers
             return View();
         }
 
-        public ViewResult NestedGlobalImportTagHelper()
+        public ViewResult NestedViewImportsTagHelper()
         {
             return View();
         }

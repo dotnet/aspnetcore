@@ -198,7 +198,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
             if (entry != null)
             {
                 cacheSetContext.AddExpirationTrigger(FileProvider.Watch(fileInfo.RelativePath));
-                foreach (var path in ViewHierarchyUtility.GetGlobalImportLocations(fileInfo.RelativePath))
+                foreach (var path in ViewHierarchyUtility.GetViewImportsLocations(fileInfo.RelativePath))
                 {
                     cacheSetContext.AddExpirationTrigger(FileProvider.Watch(path));
                 }

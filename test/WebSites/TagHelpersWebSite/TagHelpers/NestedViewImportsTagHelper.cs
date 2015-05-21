@@ -7,7 +7,7 @@ using Microsoft.AspNet.Razor.TagHelpers;
 namespace TagHelpersWebSite.TagHelpers
 {
     [TargetElement("nested")]
-    public class NestedGlobalImportTagHelper : TagHelper
+    public class NestedViewImportsTagHelper : TagHelper
     {
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {

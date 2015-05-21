@@ -267,14 +267,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 Content = globalContent,
                 LastModified = DateTime.UtcNow
             };
-            fileProvider.AddFile("_GlobalImport.cshtml", globalFileInfo);
+            fileProvider.AddFile("_ViewImports.cshtml", globalFileInfo);
             var globalRazorFileInfo = new RazorFileInfo
             {
                 Hash = Crc32.Calculate(GetMemoryStream(globalContent)).ToString(CultureInfo.InvariantCulture),
                 HashAlgorithmVersion = 1,
                 LastModified = globalFileInfo.LastModified,
                 Length = globalFileInfo.Length,
-                RelativePath = "_GlobalImport.cshtml",
+                RelativePath = "_ViewImports.cshtml",
                 FullTypeName = typeof(RuntimeCompileIdentical).FullName
             };
             var precompiledViews = new ViewCollection();
@@ -349,7 +349,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         }
 
         [Fact]
-        public void GetOrAdd_IgnoresCachedValueIfFileIsIdentical_ButGlobalImportWasAdedSinceTheCacheWasCreated()
+        public void GetOrAdd_IgnoresCachedValueIfFileIsIdentical_ButViewImportsWasAdedSinceTheCacheWasCreated()
         {
             // Arrange
             var expectedType = typeof(RuntimeCompileDifferent);
@@ -378,7 +378,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             Assert.Equal(typeof(PreCompile), actual1.CompiledType);
 
             // Act 2
-            var globalTrigger = fileProvider.GetTrigger("Views\\_GlobalImport.cshtml");
+            var globalTrigger = fileProvider.GetTrigger("Views\\_ViewImports.cshtml");
             globalTrigger.IsExpired = true;
             var result2 = cache.GetOrAdd(testFile.PhysicalPath,
                                          compile: _ => CompilationResult.Successful(expectedType));
@@ -411,7 +411,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
             var globalFileInfo = new TestFileInfo
             {
-                PhysicalPath = "Views\\_GlobalImport.cshtml",
+                PhysicalPath = "Views\\_ViewImports.cshtml",
                 Content = "viewstart-content",
                 LastModified = lastModified
             };
@@ -460,7 +460,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 var contentStream = GetMemoryStream(globalContent);
                 var lastModified = DateTime.UtcNow;
                 int length = Encoding.UTF8.GetByteCount(globalContent);
-                var path = "Views\\_GlobalImport.cshtml";
+                var path = "Views\\_ViewImports.cshtml";
 
                 var razorFileInfo = new RazorFileInfo
                 {

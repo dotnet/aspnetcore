@@ -17,11 +17,11 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
     /// A subtype of <see cref="RazorParser"/> that <see cref="MvcRazorHost"/> uses to support inheritance of tag
-    /// helpers from <c>_GlobalImport</c> files.
+    /// helpers from <c>_ViewImports</c> files.
     /// </summary>
     public class MvcRazorParser : RazorParser
     {
-        private readonly IEnumerable<TagHelperDirectiveDescriptor> _globalImportDirectiveDescriptors;
+        private readonly IEnumerable<TagHelperDirectiveDescriptor> _viewImportsDirectiveDescriptors;
         private readonly string _modelExpressionTypeName;
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="parser">The <see cref="RazorParser"/> to copy properties from.</param>
         /// <param name="inheritedCodeTrees">The <see cref="IReadOnlyList{CodeTree}"/>s that are inherited
-        /// from parsed pages from _GlobalImport files.</param>
+        /// from parsed pages from _ViewImports files.</param>
         /// <param name="defaultInheritedChunks">The <see cref="IReadOnlyList{Chunk}"/> inherited by
         /// default by all Razor pages in the application.</param>
         public MvcRazorParser(
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             : base(parser)
         {
             // Construct tag helper descriptors from @addTagHelper, @removeTagHelper and @tagHelperPrefix chunks
-            _globalImportDirectiveDescriptors = GetTagHelperDirectiveDescriptors(
+            _viewImportsDirectiveDescriptors = GetTagHelperDirectiveDescriptors(
                 inheritedCodeTrees,
                 defaultInheritedChunks);
 
@@ -52,9 +52,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             [NotNull] Block documentRoot,
             [NotNull] ErrorSink errorSink)
         {
-            var visitor = new GlobalImportTagHelperDirectiveSpanVisitor(
+            var visitor = new ViewImportsTagHelperDirectiveSpanVisitor(
                 TagHelperDescriptorResolver,
-                _globalImportDirectiveDescriptors,
+                _viewImportsDirectiveDescriptors,
                 errorSink);
 
             var descriptors = visitor.GetDescriptors(documentRoot);
@@ -86,13 +86,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             var descriptors = new List<TagHelperDirectiveDescriptor>();
 
             // For tag helpers, the @removeTagHelper only applies tag helpers that were added prior to it.
-            // Consequently we must visit tag helpers outside-in - furthest _GlobalImport first and nearest one last.
+            // Consequently we must visit tag helpers outside-in - furthest _ViewImports first and nearest one last.
             // This is different from the behavior of chunk merging where we visit the nearest one first and ignore
             // chunks that were previously visited.
-            var chunksFromGlobalImports = inheritedCodeTrees
+            var chunksFromViewImports = inheritedCodeTrees
                 .Reverse()
                 .SelectMany(tree => tree.Chunks);
-            var chunksInOrder = defaultInheritedChunks.Concat(chunksFromGlobalImports);
+            var chunksInOrder = defaultInheritedChunks.Concat(chunksFromViewImports);
             foreach (var chunk in chunksInOrder)
             {
                 // All TagHelperDirectiveDescriptors created here have undefined source locations because the source
@@ -138,24 +138,24 @@ namespace Microsoft.AspNet.Mvc.Razor
             return descriptors;
         }
 
-        private class GlobalImportTagHelperDirectiveSpanVisitor : TagHelperDirectiveSpanVisitor
+        private class ViewImportsTagHelperDirectiveSpanVisitor : TagHelperDirectiveSpanVisitor
         {
-            private readonly IEnumerable<TagHelperDirectiveDescriptor> _globalImportDirectiveDescriptors;
+            private readonly IEnumerable<TagHelperDirectiveDescriptor> _viewImportsDirectiveDescriptors;
 
-            public GlobalImportTagHelperDirectiveSpanVisitor(
+            public ViewImportsTagHelperDirectiveSpanVisitor(
                 ITagHelperDescriptorResolver descriptorResolver,
-                IEnumerable<TagHelperDirectiveDescriptor> globalImportDirectiveDescriptors,
+                IEnumerable<TagHelperDirectiveDescriptor> viewImportsDirectiveDescriptors,
                 ErrorSink errorSink)
                 : base(descriptorResolver, errorSink)
             {
-                _globalImportDirectiveDescriptors = globalImportDirectiveDescriptors;
+                _viewImportsDirectiveDescriptors = viewImportsDirectiveDescriptors;
             }
 
             protected override TagHelperDescriptorResolutionContext GetTagHelperDescriptorResolutionContext(
                 IEnumerable<TagHelperDirectiveDescriptor> descriptors,
                 ErrorSink errorSink)
             {
-                var directivesToImport = MergeDirectiveDescriptors(descriptors, _globalImportDirectiveDescriptors);
+                var directivesToImport = MergeDirectiveDescriptors(descriptors, _viewImportsDirectiveDescriptors);
 
                 return base.GetTagHelperDescriptorResolutionContext(directivesToImport, errorSink);
             }

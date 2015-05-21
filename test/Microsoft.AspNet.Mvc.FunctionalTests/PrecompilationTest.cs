@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var layoutContent = File.ReadAllText(Path.Combine(viewsDirectory, "Layout.cshtml"));
             var indexContent = File.ReadAllText(Path.Combine(viewsDirectory, "Index.cshtml"));
             var viewstartContent = File.ReadAllText(Path.Combine(viewsDirectory, "_ViewStart.cshtml"));
-            var globalContent = File.ReadAllText(Path.Combine(viewsDirectory, "_GlobalImport.cshtml"));
+            var globalContent = File.ReadAllText(Path.Combine(viewsDirectory, "_ViewImports.cshtml"));
 
             // We will render a view that writes the fully qualified name of the Assembly containing the type of
             // the view. If the view is precompiled, this assembly will be PrecompilationWebsite.
@@ -85,8 +85,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 Assert.Equal(response2.Layout, response3.Layout);
 
                 // Act - 4
-                // Touch the _GlobalImport file and verify it causes all files to recompile.
-                await TouchFile(viewsDirectory, "_GlobalImport.cshtml");
+                // Touch the _ViewImports file and verify it causes all files to recompile.
+                await TouchFile(viewsDirectory, "_ViewImports.cshtml");
                 responseContent = await client.GetStringAsync("http://localhost/Home/Index");
 
                 // Assert - 4
@@ -108,8 +108,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 Assert.NotEqual(response4.Index, response5.Index);
 
                 // Act - 6
-                // Touch the _GlobalImport file. This time, we'll verify the Non-precompiled -> Non-precompiled workflow.
-                await TouchFile(viewsDirectory, "_GlobalImport.cshtml");
+                // Touch the _ViewImports file. This time, we'll verify the Non-precompiled -> Non-precompiled workflow.
+                await TouchFile(viewsDirectory, "_ViewImports.cshtml");
                 responseContent = await client.GetStringAsync("http://localhost/Home/Index");
 
                 // Assert - 6
@@ -120,8 +120,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 Assert.NotEqual(response5.Layout, response6.Layout);
 
                 // Act - 7
-                // Add a new _GlobalImport file
-                var newGlobalImport = await TouchFile(Path.GetDirectoryName(viewsDirectory), "_GlobalImport.cshtml");
+                // Add a new _ViewImports file
+                var newViewImports = await TouchFile(Path.GetDirectoryName(viewsDirectory), "_ViewImports.cshtml");
                 responseContent = await client.GetStringAsync("http://localhost/Home/Index");
 
                 // Assert - 7
@@ -132,8 +132,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 Assert.NotEqual(response6.Layout, response7.Layout);
 
                 // Act - 8
-                // Remove new _GlobalImport file
-                File.Delete(newGlobalImport);
+                // Remove new _ViewImports file
+                File.Delete(newViewImports);
                 await Task.Delay(_cacheDelayInterval);
                 responseContent = await client.GetStringAsync("http://localhost/Home/Index");
 
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 File.WriteAllText(Path.Combine(viewsDirectory, "Layout.cshtml"), layoutContent.TrimEnd(' '));
                 File.WriteAllText(Path.Combine(viewsDirectory, "Index.cshtml"), indexContent.TrimEnd(' '));
                 File.WriteAllText(Path.Combine(viewsDirectory, "_ViewStart.cshtml"), viewstartContent.TrimEnd(' '));
-                File.WriteAllText(Path.Combine(viewsDirectory, "_GlobalImport.cshtml"), globalContent.TrimEnd(' '));
+                File.WriteAllText(Path.Combine(viewsDirectory, "_ViewImports.cshtml"), globalContent.TrimEnd(' '));
             }
         }
 
@@ -205,8 +205,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var viewsDirectory = Path.Combine(applicationEnvironment.ApplicationBasePath,
                                               "Views",
-                                              "GlobalImportDelete");
-            var globalPath = Path.Combine(viewsDirectory, "_GlobalImport.cshtml");
+                                              "ViewImportsDelete");
+            var globalPath = Path.Combine(viewsDirectory, "_ViewImports.cshtml");
             var globalContent = File.ReadAllText(globalPath);
 
             // Act - 1

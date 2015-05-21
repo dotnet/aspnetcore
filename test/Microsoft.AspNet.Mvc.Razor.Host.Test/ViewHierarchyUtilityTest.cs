@@ -23,10 +23,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void GetGlobalImportLocations_ReturnsEmptySequenceIfViewPathIsEmpty(string viewPath)
+        public void GetViewImportsLocations_ReturnsEmptySequenceIfViewPathIsEmpty(string viewPath)
         {
             // Act
-            var result = ViewHierarchyUtility.GetGlobalImportLocations(viewPath);
+            var result = ViewHierarchyUtility.GetViewImportsLocations(viewPath);
 
             // Assert
             Assert.Empty(result);
@@ -57,18 +57,18 @@ namespace Microsoft.AspNet.Mvc.Razor
         [InlineData("/Views/Home/MyView.cshtml")]
         [InlineData("~/Views/Home/MyView.cshtml")]
         [InlineData("Views/Home/MyView.cshtml")]
-        public void GetGlobalImportLocations_ReturnsPotentialViewStartLocations_PathStartswithSlash(string inputPath)
+        public void GetViewImportsLocations_ReturnsPotentialViewStartLocations_PathStartswithSlash(string inputPath)
         {
             // Arrange
             var expected = new[]
             {
-                @"Views\Home\_GlobalImport.cshtml",
-                @"Views\_GlobalImport.cshtml",
-                @"_GlobalImport.cshtml"
+                @"Views\Home\_ViewImports.cshtml",
+                @"Views\_ViewImports.cshtml",
+                @"_ViewImports.cshtml"
             };
 
             // Act
-            var result = ViewHierarchyUtility.GetGlobalImportLocations(inputPath);
+            var result = ViewHierarchyUtility.GetViewImportsLocations(inputPath);
 
             // Assert
             Assert.Equal(expected, result);
@@ -98,38 +98,38 @@ namespace Microsoft.AspNet.Mvc.Razor
         [InlineData("/Views/Home/_ViewStart.cshtml")]
         [InlineData("~/Views/Home/_ViewStart.cshtml")]
         [InlineData("Views/Home/_ViewStart.cshtml")]
-        public void GetGlobalImportLocations_WhenCurrentIsViewStart(string inputPath)
+        public void GetViewImportsLocations_WhenCurrentIsViewStart(string inputPath)
         {
             // Arrange
             var expected = new[]
             {
-                @"Views\Home\_GlobalImport.cshtml",
-                @"Views\_GlobalImport.cshtml",
-                @"_GlobalImport.cshtml"
+                @"Views\Home\_ViewImports.cshtml",
+                @"Views\_ViewImports.cshtml",
+                @"_ViewImports.cshtml"
             };
 
             // Act
-            var result = ViewHierarchyUtility.GetGlobalImportLocations(inputPath);
+            var result = ViewHierarchyUtility.GetViewImportsLocations(inputPath);
 
             // Assert
             Assert.Equal(expected, result);
         }
 
         [Theory]
-        [InlineData("/Views/Home/_GlobalImport.cshtml")]
-        [InlineData("~/Views/Home/_GlobalImport.cshtml")]
-        [InlineData("Views/Home/_GlobalImport.cshtml")]
-        public void GetGlobalImportLocations_SkipsCurrentPath_IfCurrentIsGlobalImport(string inputPath)
+        [InlineData("/Views/Home/_ViewImports.cshtml")]
+        [InlineData("~/Views/Home/_ViewImports.cshtml")]
+        [InlineData("Views/Home/_ViewImports.cshtml")]
+        public void GetViewImportsLocations_SkipsCurrentPath_IfCurrentIsViewImports(string inputPath)
         {
             // Arrange
             var expected = new[]
             {
-                @"Views\_GlobalImport.cshtml",
-                @"_GlobalImport.cshtml"
+                @"Views\_ViewImports.cshtml",
+                @"_ViewImports.cshtml"
             };
 
             // Act
-            var result = ViewHierarchyUtility.GetGlobalImportLocations(inputPath);
+            var result = ViewHierarchyUtility.GetViewImportsLocations(inputPath);
 
             // Assert
             Assert.Equal(expected, result);
@@ -163,22 +163,22 @@ namespace Microsoft.AspNet.Mvc.Razor
         [InlineData("Test.cshtml")]
         [InlineData("Global.cshtml")]
         [InlineData("_ViewStart.cshtml")]
-        public void GetGlobalImportLocations_ReturnsPotentialGlobalLocations(string fileName)
+        public void GetViewImportsLocations_ReturnsPotentialGlobalLocations(string fileName)
         {
             // Arrange
             var expected = new[]
             {
-                @"Areas\MyArea\Sub\Views\Admin\_GlobalImport.cshtml",
-                @"Areas\MyArea\Sub\Views\_GlobalImport.cshtml",
-                @"Areas\MyArea\Sub\_GlobalImport.cshtml",
-                @"Areas\MyArea\_GlobalImport.cshtml",
-                @"Areas\_GlobalImport.cshtml",
-                @"_GlobalImport.cshtml",
+                @"Areas\MyArea\Sub\Views\Admin\_ViewImports.cshtml",
+                @"Areas\MyArea\Sub\Views\_ViewImports.cshtml",
+                @"Areas\MyArea\Sub\_ViewImports.cshtml",
+                @"Areas\MyArea\_ViewImports.cshtml",
+                @"Areas\_ViewImports.cshtml",
+                @"_ViewImports.cshtml",
             };
             var viewPath = Path.Combine("Areas", "MyArea", "Sub", "Views", "Admin", fileName);
 
             // Act
-            var result = ViewHierarchyUtility.GetGlobalImportLocations(viewPath);
+            var result = ViewHierarchyUtility.GetViewImportsLocations(viewPath);
 
             // Assert
             Assert.Equal(expected, result);
@@ -234,13 +234,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public void GetGlobalImportLocations_ReturnsEmptySequence_IfPathIsRooted()
+        public void GetViewImportsLocations_ReturnsEmptySequence_IfPathIsRooted()
         {
             // Arrange
             var absolutePath = Path.Combine(Directory.GetCurrentDirectory(), "Index.cshtml");
 
             // Act
-            var result = ViewHierarchyUtility.GetGlobalImportLocations(absolutePath);
+            var result = ViewHierarchyUtility.GetViewImportsLocations(absolutePath);
 
             // Assert
             Assert.Empty(result);

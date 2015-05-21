@@ -9,12 +9,12 @@ using System.Linq;
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
-    /// Contains methods to locate <c>_ViewStart.cshtml</c> and <c>_GlobalImport.cshtml</c>
+    /// Contains methods to locate <c>_ViewStart.cshtml</c> and <c>_ViewImports.cshtml</c>
     /// </summary>
     public static class ViewHierarchyUtility
     {
         private const string ViewStartFileName = "_ViewStart.cshtml";
-        private const string GlobalImportFileName = "_GlobalImport.cshtml";
+        private const string ViewImportsFileName = "_ViewImports.cshtml";
 
         /// <summary>
         /// Gets the view start locations that are applicable to the specified path.
@@ -34,21 +34,21 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// Gets the locations for <c>_GlobalImport</c>s that are applicable to the specified path.
+        /// Gets the locations for <c>_ViewImports</c>s that are applicable to the specified path.
         /// </summary>
         /// <param name="applicationRelativePath">The application relative path of the file to locate
-        /// <c>_GlobalImport</c>s for.</param>
-        /// <returns>A sequence of paths that represent potential <c>_GlobalImport</c> locations.</returns>
+        /// <c>_ViewImports</c>s for.</param>
+        /// <returns>A sequence of paths that represent potential <c>_ViewImports</c> locations.</returns>
         /// <remarks>
         /// This method returns paths starting from the directory of <paramref name="applicationRelativePath"/> and
         /// moves upwards until it hits the application root.
         /// e.g.
-        /// /Views/Home/View.cshtml -> [ /Views/Home/_GlobalImport.cshtml, /Views/_GlobalImport.cshtml,
-        ///                              /_GlobalImport.cshtml ]
+        /// /Views/Home/View.cshtml -> [ /Views/Home/_ViewImports.cshtml, /Views/_ViewImports.cshtml,
+        ///                              /_ViewImports.cshtml ]
         /// </remarks>
-        public static IEnumerable<string> GetGlobalImportLocations(string applicationRelativePath)
+        public static IEnumerable<string> GetViewImportsLocations(string applicationRelativePath)
         {
-            return GetHierarchicalPath(applicationRelativePath, GlobalImportFileName);
+            return GetHierarchicalPath(applicationRelativePath, ViewImportsFileName);
         }
 
         private static IEnumerable<string> GetHierarchicalPath(string relativePath, string fileName)

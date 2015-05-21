@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         public bool IsPreCompiled { get; }
 
         /// <summary>
-        /// Gets or sets the <see cref="CompilerCacheEntry"/> for the nearest _GlobalImport that the compiled type
+        /// Gets or sets the <see cref="CompilerCacheEntry"/> for the nearest _ViewImports that the compiled type
         /// depends on.
         /// </summary>
         public CompilerCacheEntry AssociatedGlobalFileEntry { get; set; }

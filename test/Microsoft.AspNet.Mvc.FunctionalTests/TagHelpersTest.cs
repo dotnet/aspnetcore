@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedContent, responseContent);
         }
 
-        public static TheoryData TagHelpersAreInheritedFromGlobalImportPagesData
+        public static TheoryData TagHelpersAreInheritedFromViewImportsPagesData
         {
             get
             {
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 return new TheoryData<string, string>
                 {
                     {
-                        "NestedGlobalImportTagHelper",
+                        "NestedViewImportsTagHelper",
                         string.Format(
                             "<root>root-content</root>{0}{0}{0}<nested>nested-content</nested>",
                             Environment.NewLine)
@@ -109,8 +109,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(TagHelpersAreInheritedFromGlobalImportPagesData))]
-        public async Task TagHelpersAreInheritedFromGlobalImportPages(string action, string expected)
+        [MemberData(nameof(TagHelpersAreInheritedFromViewImportsPagesData))]
+        public async Task TagHelpersAreInheritedFromViewImportsPages(string action, string expected)
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);

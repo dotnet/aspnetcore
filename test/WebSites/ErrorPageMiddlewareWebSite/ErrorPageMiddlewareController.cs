@@ -19,10 +19,10 @@ namespace ErrorPageMiddlewareWebSite
             return View();
         }
 
-        [HttpGet("/ErrorFromGlobalImport")]
-        public IActionResult GlobalImportError()
+        [HttpGet("/ErrorFromViewImports")]
+        public IActionResult ViewImportsError()
         {
-            return View("~/Views/ErrorFromGlobalImport/Index");
+            return View("~/Views/ErrorFromViewImports/Index");
         }
     }
 }

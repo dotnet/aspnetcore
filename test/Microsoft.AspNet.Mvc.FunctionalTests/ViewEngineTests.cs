@@ -323,7 +323,7 @@ View With Layout
 <page>Hello Controller-Person</page>";
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
-            var target = "http://localhost/NestedGlobalImports";
+            var target = "http://localhost/NestedViewImports";
 
             // Act
             var body = await client.GetStringAsync(target);
