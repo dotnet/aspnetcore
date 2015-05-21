@@ -14,12 +14,53 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         private readonly IModelMetadataProvider _metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
 
         [Fact]
-        public void GetValidators_DoesNotAddRequiredAttribute_IfAttributeIsSpecifiedExplicitly()
+        public void GetValidators_AddsRequiredAttribute_ForIsRequiredTrue()
         {
             // Arrange
             var provider = new DataAnnotationsClientModelValidatorProvider();
-            var metadata = _metadataProvider.GetMetadataForProperty(typeof(DummyRequiredAttributeHelperClass),
-                                                                    "WithAttribute");
+
+            var metadata = _metadataProvider.GetMetadataForProperty(
+                typeof(DummyRequiredAttributeHelperClass),
+                nameof(DummyRequiredAttributeHelperClass.ValueTypeWithoutAttribute));
+
+            var providerContext = new ClientValidatorProviderContext(metadata);
+
+            // Act
+            provider.GetValidators(providerContext);
+
+            // Assert
+            var validator = Assert.Single(providerContext.Validators);
+            Assert.IsType<RequiredAttributeAdapter>(validator);
+        }
+
+        [Fact]
+        public void GetValidators_DoesNotAddRequiredAttribute_ForIsRequiredFalse()
+        {
+            // Arrange
+            var provider = new DataAnnotationsClientModelValidatorProvider();
+
+            var metadata = _metadataProvider.GetMetadataForProperty(
+                typeof(DummyRequiredAttributeHelperClass),
+                nameof(DummyRequiredAttributeHelperClass.ReferenceTypeWithoutAttribute));
+
+            var providerContext = new ClientValidatorProviderContext(metadata);
+
+            // Act
+            provider.GetValidators(providerContext);
+
+            // Assert
+            Assert.Empty(providerContext.Validators);
+        }
+
+        [Fact]
+        public void GetValidators_DoesNotAddExtraRequiredAttribute_IfAttributeIsSpecifiedExplicitly()
+        {
+            // Arrange
+            var provider = new DataAnnotationsClientModelValidatorProvider();
+
+            var metadata = _metadataProvider.GetMetadataForProperty(
+                typeof(DummyRequiredAttributeHelperClass),
+                nameof(DummyRequiredAttributeHelperClass.WithAttribute));
 
             var providerContext = new ClientValidatorProviderContext(metadata);
 
@@ -76,8 +117,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
         [Theory]
         [MemberData(nameof(DataAnnotationAdapters))]
-        public void AdapterFactory_RegistersAdapters_ForDataAnnotationAttributes(ValidationAttribute attribute,
-                                                                                 Type expectedAdapterType)
+        public void AdapterFactory_RegistersAdapters_ForDataAnnotationAttributes(
+            ValidationAttribute attribute,
+            Type expectedAdapterType)
         {
             // Arrange
             var adapters = new DataAnnotationsClientModelValidatorProvider().AttributeFactories;
@@ -103,8 +145,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
         [Theory]
         [MemberData(nameof(DataTypeAdapters))]
-        public void AdapterFactory_RegistersAdapters_ForDataTypeAttributes(ValidationAttribute attribute,
-                                                                           string expectedRuleName)
+        public void AdapterFactory_RegistersAdapters_ForDataTypeAttributes(
+            ValidationAttribute attribute,
+            string expectedRuleName)
         {
             // Arrange
             var adapters = new DataAnnotationsClientModelValidatorProvider().AttributeFactories;
@@ -148,7 +191,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             [Required(ErrorMessage = "Custom Required Message")]
             public int WithAttribute { get; set; }
 
-            public int WithoutAttribute { get; set; }
+            public int ValueTypeWithoutAttribute { get; set; }
+
+            public string ReferenceTypeWithoutAttribute { get; set; }
         }
     }
 }

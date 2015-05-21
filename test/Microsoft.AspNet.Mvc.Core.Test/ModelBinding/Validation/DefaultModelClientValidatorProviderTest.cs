@@ -117,7 +117,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             // Assert
             var validators = context.Validators;
 
-            Assert.IsType<RangeAttributeAdapter>(Assert.Single(validators));
+            Assert.Equal(2, validators.Count);
+            Assert.Single(validators, v => v is RangeAttributeAdapter);
+            Assert.Single(validators, v => v is RequiredAttributeAdapter);
         }
 
         [Fact]
@@ -159,7 +161,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             // Assert
             var validators = context.Validators;
 
-            Assert.IsType<RangeAttributeAdapter>(Assert.Single(validators));
+            Assert.Equal(2, validators.Count);
+            Assert.Single(validators, v => v is RangeAttributeAdapter);
+            Assert.Single(validators, v => v is RequiredAttributeAdapter);
         }
 
         [Fact]
@@ -245,7 +249,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         private class CustomValidationAttributeOnProperty
         {
             [CustomValidation]
-            public int Property { get; set; }
+            public string Property { get; set; }
         }
 
         private class ProductEntity

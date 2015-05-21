@@ -28,7 +28,7 @@ Address_1</textarea>;
         </div>
         <div>
             <label for="Employee_Gender">Gender</label>
-            <input checked="checked" id="Employee_Gender" name="Employee.Gender" type="radio" value="Female" /> Female
+            <input checked="checked" data-val="true" data-val-required="The Gender field is required." id="Employee_Gender" name="Employee.Gender" type="radio" value="Female" /> Female
             <input id="Employee_Gender" name="Employee.Gender" type="radio" value="Male" /> Male
         </div>
         <div>
@@ -38,7 +38,7 @@ Address_1</textarea>;
 <option>1002</option>
 </select>
         </div>
-        <input data-val="true" data-val-range="The field Number must be between 1 and 100." data-val-range-max="100" data-val-range-min="1" id="Employee_Number" name="Employee.Number" type="hidden" value="1" />
+        <input data-val="true" data-val-range="The field Number must be between 1 and 100." data-val-range-max="100" data-val-range-min="1" data-val-required="The Number field is required." id="Employee_Number" name="Employee.Number" type="hidden" value="1" />
         <div class="validation-summary-valid" data-valmsg-summary="true"><ul><li style="display:none"></li>
 </ul></div>
         <input type="submit" />

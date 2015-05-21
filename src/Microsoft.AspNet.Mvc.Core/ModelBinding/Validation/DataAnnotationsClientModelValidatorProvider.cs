@@ -32,13 +32,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         /// <inheritdoc />
         public void GetValidators(ClientValidatorProviderContext context)
         {
+            var hasRequiredAttribute = false;
+
             foreach (var attribute in context.ValidatorMetadata.OfType<ValidationAttribute>())
             {
+                hasRequiredAttribute |= attribute is RequiredAttribute; 
+
                 DataAnnotationsClientModelValidationFactory factory;
                 if (_attributeFactories.TryGetValue(attribute.GetType(), out factory))
                 {
                     context.Validators.Add(factory(attribute));
                 }
+            }
+
+            if (!hasRequiredAttribute && context.ModelMetadata.IsRequired)
+            {
+                // Add a default '[Required]' validator for generating HTML if necessary.
+                context.Validators.Add(new RequiredAttributeAdapter(new RequiredAttribute()));
             }
         }
 

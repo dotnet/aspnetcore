@@ -25,7 +25,7 @@
             <div class="form-group">
                 <label class="control-label col-md-2" for="Age">Age</label>
                 <div class="col-md-10">
-                    <input class="form-control input-validation-error" type="number" data-val="true" data-val-range="The field Age must be between 10 and 100." data-val-range-max="100" data-val-range-min="10" id="Age" name="Age" value="1000" />
+                    <input class="form-control input-validation-error" type="number" data-val="true" data-val-range="The field Age must be between 10 and 100." data-val-range-max="100" data-val-range-min="10" data-val-required="The Age field is required." id="Age" name="Age" value="1000" />
                     <span class="field-validation-error" data-valmsg-for="Age" data-valmsg-replace="true">The field Age must be between 10 and 100.</span>
                 </div>
             </div>
@@ -36,7 +36,7 @@
                     <span class="field-validation-valid" data-valmsg-for="Email" data-valmsg-replace="true"></span>
                 </div>
             </div>
-            <input type="hidden" value="0" id="EmployeeId" name="EmployeeId" />
+            <input type="hidden" value="0" data-val="true" data-val-required="The EmployeeId field is required." id="EmployeeId" name="EmployeeId" />
             <div class="form-group">
                 <label class="control-label col-md-2" for="FullName">Full Name</label>
                 <div class="col-md-10">

@@ -236,9 +236,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var assemblyNamePrefix = GetAssemblyNamePrefix();
-            var expected = @"<root data-root=""true""><input class=""form-control"" type=""number"" data-val=""true""" +
+            var expected = 
+                @"<root data-root=""true""><input class=""form-control"" type=""number"" data-val=""true""" +
                 @" data-val-range=""The field Age must be between 10 and 100."" data-val-range-max=""100"" "+
-                @"data-val-range-min=""10"" id=""Age"" name=""Age"" value="""" /><a href="""">Back to List</a></root>";
+                @"data-val-range-min=""10"" data-val-required=""The Age field is required."" " +
+                @"id=""Age"" name=""Age"" value="""" /><a href="""">Back to List</a></root>";
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 

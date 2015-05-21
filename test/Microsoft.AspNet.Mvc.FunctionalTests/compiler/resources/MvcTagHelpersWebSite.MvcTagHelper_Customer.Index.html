@@ -6,7 +6,7 @@
     <form action="/Customer/MvcTagHelper_Customer" method="post">
         <div>
             <label class="order" for="Number">Number</label>
-            <input class="form-control input-validation-error" type="number" data-val="true" data-val-range="The field Number must be between 1 and 100." data-val-range-max="100" data-val-range-min="1" id="Number" name="Number" value="" />
+            <input class="form-control input-validation-error" type="number" data-val="true" data-val-range="The field Number must be between 1 and 100." data-val-range-max="100" data-val-range-min="1" data-val-required="The Number field is required." id="Number" name="Number" value="" />
             <span class="field-validation-error" data-valmsg-for="Number" data-valmsg-replace="true">The value &#x27;&#x27; is invalid.</span>
         </div>
         <div>
@@ -29,7 +29,7 @@
         </div>
         <div>
             <label class="order" for="Gender">Gender</label>
-            <input type="radio" value="Male" id="Gender" name="Gender" /> Male
+            <input type="radio" value="Male" data-val="true" data-val-required="The Gender field is required." id="Gender" name="Gender" /> Male
             <input type="radio" value="Female" id="Gender" name="Gender" /> Female
             <span class="field-validation-valid" data-valmsg-for="Gender" data-valmsg-replace="true"></span>
         </div>

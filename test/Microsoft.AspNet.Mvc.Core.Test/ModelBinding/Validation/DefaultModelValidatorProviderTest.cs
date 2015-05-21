@@ -96,38 +96,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             Assert.Single(validators, v => Assert.IsType<CustomModelValidatorAttribute>(v).Tag == "Property");
         }
 
-        // RangeAttribute is an example of a ValidationAttribute with it's own adapter type.
         [Fact]
-        public void GetValidators_DataAnnotationsAttribute_SpecificAdapter()
-        {
-            // Arrange
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-            var validatorProvider = TestClientModelValidatorProvider.CreateDefaultProvider();
-
-            var metadata = metadataProvider.GetMetadataForProperty(
-                typeof(RangeAttributeOnProperty),
-                nameof(RangeAttributeOnProperty.Property));
-            var context = new ClientValidatorProviderContext(metadata);
-
-            // Act
-            validatorProvider.GetValidators(context);
-
-            // Assert
-            var validators = context.Validators;
-
-            Assert.IsType<RangeAttributeAdapter>(Assert.Single(validators));
-        }
-
-        [Fact]
-        public void GetValidators_DataAnnotationsAttribute_DefaultAdapter()
+        public void GetValidators_FromModelMetadataType_SingleValidator()
         {
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var validatorProvider = TestModelValidatorProvider.CreateDefaultProvider();
 
             var metadata = metadataProvider.GetMetadataForProperty(
-                typeof(CustomValidationAttributeOnProperty),
-                nameof(CustomValidationAttributeOnProperty.Property));
+                typeof(ProductViewModel),
+                nameof(ProductViewModel.Id));
             var context = new ModelValidatorProviderContext(metadata);
 
             // Act
@@ -136,28 +114,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             // Assert
             var validators = context.Validators;
 
-             Assert.IsType<DataAnnotationsModelValidator>(Assert.Single(validators));
-        }
-
-        [Fact]
-        public void GetValidators_FromModelMetadataType_SingleValidator()
-        {
-            // Arrange
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-            var validatorProvider = TestClientModelValidatorProvider.CreateDefaultProvider();
-
-            var metadata = metadataProvider.GetMetadataForProperty(
-                typeof(ProductViewModel),
-                nameof(ProductViewModel.Id));
-            var context = new ClientValidatorProviderContext(metadata);
-
-            // Act
-            validatorProvider.GetValidators(context);
-
-            // Assert
-            var validators = context.Validators;
-
-            Assert.IsType<RangeAttributeAdapter>(Assert.Single(validators));
+            var adapter = Assert.IsType<DataAnnotationsModelValidator>(Assert.Single(validators));
+            Assert.IsType<RangeAttribute>(adapter.Attribute);
         }
 
         [Fact]
@@ -165,12 +123,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         {
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-            var validatorProvider = TestClientModelValidatorProvider.CreateDefaultProvider();
+            var validatorProvider = TestModelValidatorProvider.CreateDefaultProvider();
 
             var metadata = metadataProvider.GetMetadataForProperty(
                 typeof(ProductViewModel),
                 nameof(ProductViewModel.Name));
-            var context = new ClientValidatorProviderContext(metadata);
+            var context = new ModelValidatorProviderContext(metadata);
 
             // Act
             validatorProvider.GetValidators(context);
@@ -179,8 +137,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var validators = context.Validators;
 
             Assert.Equal(2, validators.Count);
-            Assert.Single(validators, v => v is RegularExpressionAttributeAdapter);
-            Assert.Single(validators, v => v is StringLengthAttributeAdapter);
+            Assert.Single(validators, v => ((DataAnnotationsModelValidator)v).Attribute is RegularExpressionAttribute);
+            Assert.Single(validators, v => ((DataAnnotationsModelValidator)v).Attribute is StringLengthAttribute);
         }
 
         private class ValidatableObject : IValidatableObject

@@ -14,7 +14,7 @@
         </div>
         <div>
             <label class="order" for="ShippingDateTime">ShippingDateTime</label>
-            <input type="datetime-local" id="ShippingDateTime" name="ShippingDateTime" value="01/01/0001 00:00:00" />
+            <input type="datetime-local" data-val="true" data-val-required="The ShippingDateTime field is required." id="ShippingDateTime" name="ShippingDateTime" value="01/01/0001 00:00:00" />
         </div>
         <div>
             <label class="order" for="Products">Products</label>
@@ -34,11 +34,11 @@
         </div>
         <div>
             <label class="order" for="OrderDate">OrderDate</label>
-            <input type="datetime" id="OrderDate" name="OrderDate" value="0001/01/01/ A.D." />
+            <input type="datetime" data-val="true" data-val-required="The OrderDate field is required." id="OrderDate" name="OrderDate" value="0001/01/01/ A.D." />
         </div>
         <div>
             <label class="order" for="NeedSpecialHandle">NeedSpecialHandle</label>
-            <input checked="checked" id="NeedSpecialHandle" name="NeedSpecialHandle" type="checkbox" value="true" /><input name="NeedSpecialHandle" type="hidden" value="false" />
+            <input checked="checked" data-val="true" data-val-required="The NeedSpecialHandle field is required." id="NeedSpecialHandle" name="NeedSpecialHandle" type="checkbox" value="true" /><input name="NeedSpecialHandle" type="hidden" value="false" />
         </div>
         <div>
             <label class="order" for="PaymentMethod">PaymentMethod</label>
@@ -49,7 +49,7 @@
         </div>
         <div>
             <label class="order" for="Customer_Number">Number</label>
-            <input class="form-control" type="number" data-val="true" data-val-range="The field Number must be between 1 and 100." data-val-range-max="100" data-val-range-min="1" id="Customer_Number" name="Customer.Number" value="1" />
+            <input class="form-control" type="number" data-val="true" data-val-range="The field Number must be between 1 and 100." data-val-range-max="100" data-val-range-min="1" data-val-required="The Number field is required." id="Customer_Number" name="Customer.Number" value="1" />
             <span class="field-validation-valid" data-valmsg-for="Customer.Number" data-valmsg-replace="true"></span>
         </div>
         <div>
@@ -72,7 +72,7 @@
         </div>
         <div>
             <label class="order" for="Customer_Gender">Gender</label>
-            <input type="radio" value="Male" id="Customer_Gender" name="Customer.Gender" /> Male
+            <input type="radio" value="Male" data-val="true" data-val-required="The Model field is required." id="Customer_Gender" name="Customer.Gender" /> Male
 <input type="radio" value="Female" checked="checked" id="Customer_Gender" name="Customer.Gender" /> Female
             <span class="field-validation-valid" data-valmsg-for="Customer.Gender" data-valmsg-replace="true"></span>
         </div>
