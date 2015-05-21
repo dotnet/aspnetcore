@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         // https://github.com/aspnet/Razor/issues/165
 
         public static ICollection<char> InvalidNonWhitespaceNameCharacters { get; } = new HashSet<char>(
-            new[] { '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'' });
+            new[] { '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*' });
 
         /// <summary>
         /// Creates a <see cref="TagHelperDescriptor"/> from the given <paramref name="type"/>.
@@ -169,6 +169,25 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             bool targetingAttributes,
             ErrorSink errorSink)
         {
+            if (!targetingAttributes &&
+                string.Equals(
+                    name,
+                    TagHelperDescriptorProvider.ElementCatchAllTarget,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                // '*' as the entire name is OK in the TargetElement catch-all case.
+                return true;
+            }
+            else if (targetingAttributes &&
+                name.EndsWith(
+                    TagHelperDescriptorProvider.RequiredAttributeWildcardSuffix,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                // A single '*' at the end of a required attribute is valid; everywhere else is invalid. Strip it from
+                // the end so we can validate the rest of the name.
+                name = name.Substring(0, name.Length - 1);
+            }
+
             var targetName = targetingAttributes ?
                 Resources.TagHelperDescriptorFactory_Attribute :
                 Resources.TagHelperDescriptorFactory_Tag;

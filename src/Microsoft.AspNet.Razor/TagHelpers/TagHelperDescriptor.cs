@@ -133,6 +133,9 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <summary>
         /// The list of required attribute names the tag helper expects to target an element.
         /// </summary>
+        /// <remarks>
+        /// <c>*</c> at the end of an attribute name acts as a prefix match.
+        /// </remarks>
         public IReadOnlyList<string> RequiredAttributes { get; private set; }
     }
 }

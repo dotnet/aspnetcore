@@ -25,20 +25,34 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                     assemblyName: "SomeAssembly",
                     attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                     requiredAttributes: new[] { "class", "style" });
+                var inputWildcardPrefixDescriptor = new TagHelperDescriptor(
+                    tagName: "input",
+                    typeName: "InputWildCardAttribute",
+                    assemblyName: "SomeAssembly",
+                    attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                    requiredAttributes: new[] { "nodashprefix*" });
                 var catchAllDescriptor = new TagHelperDescriptor(
-                    tagName: TagHelperDescriptorProvider.CatchAllDescriptorTarget,
+                    tagName: TagHelperDescriptorProvider.ElementCatchAllTarget,
                     typeName: "CatchAllTagHelper",
                     assemblyName: "SomeAssembly",
                     attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                     requiredAttributes: new[] { "class" });
                 var catchAllDescriptor2 = new TagHelperDescriptor(
-                    tagName: TagHelperDescriptorProvider.CatchAllDescriptorTarget,
+                    tagName: TagHelperDescriptorProvider.ElementCatchAllTarget,
                     typeName: "CatchAllTagHelper",
                     assemblyName: "SomeAssembly",
                     attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                     requiredAttributes: new[] { "custom", "class" });
+                var catchAllWildcardPrefixDescriptor = new TagHelperDescriptor(
+                    tagName: TagHelperDescriptorProvider.ElementCatchAllTarget,
+                    typeName: "CatchAllWildCardAttribute",
+                    assemblyName: "SomeAssembly",
+                    attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                    requiredAttributes: new[] { "prefix-*" });
                 var defaultAvailableDescriptors =
                     new[] { divDescriptor, inputDescriptor, catchAllDescriptor, catchAllDescriptor2 };
+                var defaultWildcardDescriptors =
+                    new[] { inputWildcardPrefixDescriptor, catchAllWildcardPrefixDescriptor };
 
                 return new TheoryData<
                     string, // tagName
@@ -73,28 +87,82 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new[] { inputDescriptor, catchAllDescriptor }
                     },
                     {
-                        TagHelperDescriptorProvider.CatchAllDescriptorTarget,
+                        TagHelperDescriptorProvider.ElementCatchAllTarget,
                         new[] { "custom" },
                         defaultAvailableDescriptors,
                         Enumerable.Empty<TagHelperDescriptor>()
                     },
                     {
-                        TagHelperDescriptorProvider.CatchAllDescriptorTarget,
+                        TagHelperDescriptorProvider.ElementCatchAllTarget,
                         new[] { "class" },
                         defaultAvailableDescriptors,
                         new[] { catchAllDescriptor }
                     },
                     {
-                        TagHelperDescriptorProvider.CatchAllDescriptorTarget,
+                        TagHelperDescriptorProvider.ElementCatchAllTarget,
                         new[] { "class", "style" },
                         defaultAvailableDescriptors,
                         new[] { catchAllDescriptor }
                     },
                     {
-                        TagHelperDescriptorProvider.CatchAllDescriptorTarget,
+                        TagHelperDescriptorProvider.ElementCatchAllTarget,
                         new[] { "class", "custom" },
                         defaultAvailableDescriptors,
                         new[] { catchAllDescriptor, catchAllDescriptor2 }
+                    },
+                    {
+                        "input",
+                        new[] { "nodashprefixA" },
+                        defaultWildcardDescriptors,
+                        new[] { inputWildcardPrefixDescriptor }
+                    },
+                    {
+                        "input",
+                        new[] { "nodashprefix-ABC-DEF", "random" },
+                        defaultWildcardDescriptors,
+                        new[] { inputWildcardPrefixDescriptor }
+                    },
+                    {
+                        "input",
+                        new[] { "prefixABCnodashprefix" },
+                        defaultWildcardDescriptors,
+                        Enumerable.Empty<TagHelperDescriptor>()
+                    },
+                    {
+                        "input",
+                        new[] { "prefix-" },
+                        defaultWildcardDescriptors,
+                        Enumerable.Empty<TagHelperDescriptor>()
+                    },
+                    {
+                        "input",
+                        new[] { "nodashprefix" },
+                        defaultWildcardDescriptors,
+                        Enumerable.Empty<TagHelperDescriptor>()
+                    },
+                    {
+                        "input",
+                        new[] { "prefix-A" },
+                        defaultWildcardDescriptors,
+                        new[] { catchAllWildcardPrefixDescriptor }
+                    },
+                    {
+                        "input",
+                        new[] { "prefix-ABC-DEF", "random" },
+                        defaultWildcardDescriptors,
+                        new[] { catchAllWildcardPrefixDescriptor }
+                    },
+                    {
+                        "input",
+                        new[] { "prefix-abc", "nodashprefix-def" },
+                        defaultWildcardDescriptors,
+                        new[] { inputWildcardPrefixDescriptor, catchAllWildcardPrefixDescriptor }
+                    },
+                    {
+                        "input",
+                        new[] { "class", "prefix-abc", "onclick", "nodashprefix-def", "style" },
+                        defaultWildcardDescriptors,
+                        new[] { inputWildcardPrefixDescriptor, catchAllWildcardPrefixDescriptor }
                     },
                 };
             }
@@ -124,7 +192,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             // Arrange
             var catchAllDescriptor = CreatePrefixedDescriptor(
                 "th",
-                TagHelperDescriptorProvider.CatchAllDescriptorTarget,
+                TagHelperDescriptorProvider.ElementCatchAllTarget,
                 "foo1");
             var descriptors = new[] { catchAllDescriptor };
             var provider = new TagHelperDescriptorProvider(descriptors);
@@ -159,7 +227,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         public void GetDescriptors_ReturnsCatchAllDescriptorsForPrefixedTags()
         {
             // Arrange
-            var catchAllDescriptor = CreatePrefixedDescriptor("th:", TagHelperDescriptorProvider.CatchAllDescriptorTarget, "foo1");
+            var catchAllDescriptor = CreatePrefixedDescriptor("th:", TagHelperDescriptorProvider.ElementCatchAllTarget, "foo1");
             var descriptors = new[] { catchAllDescriptor };
             var provider = new TagHelperDescriptorProvider(descriptors);
 
@@ -230,14 +298,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var divDescriptor = new TagHelperDescriptor("div", "foo1", "SomeAssembly");
             var spanDescriptor = new TagHelperDescriptor("span", "foo2", "SomeAssembly");
             var catchAllDescriptor = new TagHelperDescriptor(
-                TagHelperDescriptorProvider.CatchAllDescriptorTarget,
+                TagHelperDescriptorProvider.ElementCatchAllTarget,
                 "foo3",
                 "SomeAssembly");
             var descriptors = new TagHelperDescriptor[] { divDescriptor, spanDescriptor, catchAllDescriptor };
             var provider = new TagHelperDescriptorProvider(descriptors);
 
             // Act
-            var retrievedDescriptors = provider.GetDescriptors(TagHelperDescriptorProvider.CatchAllDescriptorTarget, attributeNames: Enumerable.Empty<string>());
+            var retrievedDescriptors = provider.GetDescriptors(TagHelperDescriptorProvider.ElementCatchAllTarget, attributeNames: Enumerable.Empty<string>());
 
             // Assert
             var descriptor = Assert.Single(retrievedDescriptors);
@@ -251,7 +319,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var divDescriptor = new TagHelperDescriptor("div", "foo1", "SomeAssembly");
             var spanDescriptor = new TagHelperDescriptor("span", "foo2", "SomeAssembly");
             var catchAllDescriptor = new TagHelperDescriptor(
-                TagHelperDescriptorProvider.CatchAllDescriptorTarget,
+                TagHelperDescriptorProvider.ElementCatchAllTarget,
                 "foo3",
                 "SomeAssembly");
             var descriptors = new TagHelperDescriptor[] { divDescriptor, spanDescriptor, catchAllDescriptor };

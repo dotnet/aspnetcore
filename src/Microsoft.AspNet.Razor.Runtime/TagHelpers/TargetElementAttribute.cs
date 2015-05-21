@@ -12,16 +12,16 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
     public sealed class TargetElementAttribute : Attribute
     {
-        public const string CatchAllDescriptorTarget = TagHelperDescriptorProvider.CatchAllDescriptorTarget;
+        public const string ElementCatchAllTarget = TagHelperDescriptorProvider.ElementCatchAllTarget;
 
         /// <summary>
         /// Instantiates a new instance of the <see cref="TargetElementAttribute"/> class with <see cref="Tag"/>
         /// set to <c>*</c>.
         /// </summary>
-        /// <remarks>A <c>*</c> <see cref="Tag"/> value indicates an <see cref="ITagHelper"/> 
+        /// <remarks>A <c>*</c> <see cref="Tag"/> value indicates an <see cref="ITagHelper"/>
         /// that targets all HTML elements with the required <see cref="Attributes"/>.</remarks>
         public TargetElementAttribute()
-            : this(CatchAllDescriptorTarget)
+            : this(ElementCatchAllTarget)
         {
         }
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="tag">
         /// The HTML tag the <see cref="ITagHelper"/> targets.
         /// </param>
-        /// <remarks>A <c>*</c> <paramref name="tag"/> value indicates an <see cref="ITagHelper"/> 
+        /// <remarks>A <c>*</c> <paramref name="tag"/> value indicates an <see cref="ITagHelper"/>
         /// that targets all HTML elements with the required <see cref="Attributes"/>.</remarks>
         public TargetElementAttribute(string tag)
         {
@@ -41,14 +41,17 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <summary>
         /// The HTML tag the <see cref="ITagHelper"/> targets.
         /// </summary>
-        /// <remarks>A <c>*</c> <see cref="Tag"/> value indicates an <see cref="ITagHelper"/> 
+        /// <remarks>A <c>*</c> <see cref="Tag"/> value indicates an <see cref="ITagHelper"/>
         /// that targets all HTML elements with the required <see cref="Attributes"/>.</remarks>
         public string Tag { get; }
 
         /// <summary>
-        /// A comma-separated <see cref="string"/> of attributes the HTML element must contain for the 
+        /// A comma-separated <see cref="string"/> of attribute names the HTML element must contain for the
         /// <see cref="ITagHelper"/> to run.
         /// </summary>
+        /// <remarks>
+        /// <c>*</c> at the end of an attribute name acts as a prefix match.
+        /// </remarks>
         public string Attributes { get; set; }
     }
 }
