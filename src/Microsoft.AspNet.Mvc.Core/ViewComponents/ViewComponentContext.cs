@@ -15,6 +15,19 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Creates a new <see cref="ViewComponentContext"/>.
         /// </summary>
+        /// <remarks>
+        /// The default constructor is provided for unit test purposes only.
+        /// </remarks>
+        public ViewComponentContext()
+        {
+            ViewComponentDescriptor = new ViewComponentDescriptor();
+            Arguments = new object[0];
+            ViewContext = new ViewContext();
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="ViewComponentContext"/>.
+        /// </summary>
         /// <param name="viewComponentDescriptor">
         /// The <see cref="ViewComponentContext"/> for the View Component being invoked.
         /// </param>
@@ -29,32 +42,54 @@ namespace Microsoft.AspNet.Mvc
         {
             ViewComponentDescriptor = viewComponentDescriptor;
             Arguments = arguments;
-            ViewContext = viewContext;
-            Writer = writer;
+
+            // We want to create a defensive copy of the VDD here so that changes done in the VC
+            // aren't visible in the calling view.
+            ViewContext = new ViewContext(
+                viewContext,
+                viewContext.View, 
+                new ViewDataDictionary(viewContext.ViewData),
+                writer);
         }
 
         /// <summary>
-        /// Gets the View Component arguments. 
-        /// </summary>
-        public object[] Arguments { get; }
-
-        /// <summary>
-        /// Gets the <see cref="ViewComponentDescriptor"/> for the View Component being invoked.
-        /// </summary>
-        public ViewComponentDescriptor ViewComponentDescriptor { get; }
-
-        /// <summary>
-        /// Gets the <see cref="ViewContext"/>.
-        /// </summary>
-        public ViewContext ViewContext { get; }
-
-        /// <summary>
-        /// Gets the <see cref="TextWriter"/> for writing output.
+        /// Gets or sets the View Component arguments. 
         /// </summary>
         /// <remarks>
-        /// <see cref="IViewComponentHelper.Invoke(string, object[])"/> or a similar overload is used to invoke the
-        /// View Component, then <see cref="Writer"/> will be different than <see cref="ViewContext.Writer"/>.
+        /// The property setter is provided for unit test purposes only.
         /// </remarks>
-        public TextWriter Writer { get; }
+        public object[] Arguments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ViewComponentDescriptor"/> for the View Component being invoked.
+        /// </summary>
+        /// <remarks>
+        /// The property setter is provided for unit test purposes only.
+        /// </remarks>
+        public ViewComponentDescriptor ViewComponentDescriptor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ViewContext"/>.
+        /// </summary>
+        /// <remarks>
+        /// The property setter is provided for unit test purposes only.
+        /// </remarks>
+        public ViewContext ViewContext { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="ViewDataDictionary"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is an alias for <c>ViewContext.ViewData</c>.
+        /// </remarks>
+        public ViewDataDictionary ViewData => ViewContext.ViewData;
+
+        /// <summary>
+        /// Gets the <see cref="TextWriter"/> for output.
+        /// </summary>
+        /// <remarks>
+        /// This is an alias for <c>ViewContext.Writer</c>.
+        /// </remarks>
+        public TextWriter Writer => ViewContext.Writer;
     }
 }

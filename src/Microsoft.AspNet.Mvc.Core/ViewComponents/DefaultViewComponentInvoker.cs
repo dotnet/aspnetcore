@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             var component = _typeActivatorCache.CreateInstance<object>(
                 _serviceProvider, 
                 context.ViewComponentDescriptor.Type);
-            _viewComponentActivator.Activate(component, context.ViewContext);
+            _viewComponentActivator.Activate(component, context);
             return component;
         }
 

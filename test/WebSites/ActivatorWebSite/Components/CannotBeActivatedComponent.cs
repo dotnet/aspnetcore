@@ -8,15 +8,16 @@ namespace ActivatorWebSite
     [ViewComponent(Name = "CannotBeActivated")]
     public class CannotBeActivatedComponent : ViewComponent
     {
-        [Activate]
-        private FakeType Service { get; set; }
+        public CannotBeActivatedComponent(FakeType fakeType)
+        {
+        }
 
         public IViewComponentResult Invoke()
         {
             return Content("Test");
         }
 
-        private sealed class FakeType
+        public sealed class FakeType
         {
         }
     }

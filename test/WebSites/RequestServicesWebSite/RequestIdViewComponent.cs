@@ -7,8 +7,12 @@ namespace RequestServicesWebSite
 {
     public class RequestIdViewComponent : ViewComponent
     {
-        [Activate]
-        public RequestIdService RequestIdService { get; set; }
+        public RequestIdViewComponent(RequestIdService requestIdService)
+        {
+            RequestIdService = requestIdService;
+        }
+
+        private RequestIdService RequestIdService { get; }
 
         public IViewComponentResult Invoke()
         {

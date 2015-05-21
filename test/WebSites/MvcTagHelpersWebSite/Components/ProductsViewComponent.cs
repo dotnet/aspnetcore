@@ -9,11 +9,15 @@ namespace MvcTagHelpersWebSite.Components
 {
     public class ProductsViewComponent : ViewComponent
     {
-        [Activate]
-        public ProductsService ProductsService { get; set; }
+        public ProductsViewComponent(ProductsService productsService, IMemoryCache cache)
+        {
+            ProductsService = productsService;
+            Cache = cache;
+        }
 
-        [Activate]
-        public IMemoryCache Cache { get; set; }
+        private ProductsService ProductsService { get; }
+
+        public IMemoryCache Cache { get; }
 
         public IViewComponentResult Invoke(string category)
         {

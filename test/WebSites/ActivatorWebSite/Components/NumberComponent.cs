@@ -8,8 +8,12 @@ namespace ActivatorWebSite
     [ViewComponent(Name = "Number")]
     public class NumberComponent : ViewComponent
     {
-        [Activate]
-        public MyService MyTestService { get; set; }
+        public NumberComponent(MyService myTestService)
+        {
+            MyTestService = myTestService;
+        }
+
+        private MyService MyTestService { get; }
 
         public IViewComponentResult Invoke(string content)
         {

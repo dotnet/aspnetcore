@@ -6,7 +6,9 @@ using System.Security.Principal;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 using Newtonsoft.Json;
 
@@ -18,9 +20,10 @@ namespace Microsoft.AspNet.Mvc
     [ViewComponent]
     public abstract class ViewComponent
     {
+        private IUrlHelper _url;
         private dynamic _viewBag;
-        private ViewContext _viewContext;
-        private ViewDataDictionary _viewData;
+        private ViewComponentContext _viewComponentContext;
+        private ICompositeViewEngine _viewEngine;
 
         /// <summary>
         /// Gets the <see cref="HttpContext"/>.
@@ -96,62 +99,93 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Gets or sets the <see cref="IUrlHelper"/>.
         /// </summary>
-        [Activate]
-        public IUrlHelper Url { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="ViewContext"/>.
-        /// </summary>
-        [Activate]
-        public ViewContext ViewContext
+        public IUrlHelper Url
         {
             get
             {
-                if (_viewContext == null)
+                if (_url == null)
                 {
-                    // This should run only for the ViewComponent unit test scenarios
-                    _viewContext = new ViewContext();
+                    // May be null in unit-testing scenarios.
+                    var services = ViewComponentContext.ViewContext?.HttpContext?.RequestServices;
+                    _url = services?.GetRequiredService<IUrlHelper>();
                 }
 
-                return _viewContext;
+                return _url;
             }
 
             [param: NotNull]
             set
             {
-                _viewContext = value;
+                _url = value;
+            }
+        }
+
+        [ViewComponentContext]
+        public ViewComponentContext ViewComponentContext
+        {
+            get
+            {
+                // This should run only for the ViewComponent unit test scenarios.
+                if (_viewComponentContext == null)
+                {
+                    _viewComponentContext = new ViewComponentContext();
+                }
+
+                return _viewComponentContext;
+            }
+
+            [param: NotNull]
+            set
+            {
+                _viewComponentContext = value;
             }
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="ViewDataDictionary"/>.
+        /// Gets the <see cref="ViewContext"/>.
         /// </summary>
-        [Activate]
+        public ViewContext ViewContext
+        {
+            get
+            {
+                return ViewComponentContext.ViewContext;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="ViewDataDictionary"/>.
+        /// </summary>
         public ViewDataDictionary ViewData
         {
             get
             {
-                if (_viewData == null)
-                {
-                    // This should run only for the ViewComponent unit test scenarios
-                    _viewData = new ViewDataDictionary(ViewContext.ViewData);
-                }
-
-                return _viewData;
-            }
-
-            [param: NotNull]
-            set
-            {
-                _viewData = value;
+                return ViewComponentContext.ViewData;
             }
         }
 
         /// <summary>
         /// Gets or sets the <see cref="ICompositeViewEngine"/>.
         /// </summary>
-        [Activate]
-        public ICompositeViewEngine ViewEngine { get; set; }
+        public ICompositeViewEngine ViewEngine
+        {
+            get
+            {
+                if (_viewEngine == null)
+                {
+                    // May be null in unit-testing scenarios.
+                    var services = ViewComponentContext.ViewContext?.HttpContext?.RequestServices;
+                    _viewEngine = services?.GetRequiredService<ICompositeViewEngine>();
+                }
+
+                return _viewEngine;
+            }
+
+            [param: NotNull]
+            set
+            {
+                _viewEngine = value;
+            }
+        }
 
         /// <summary>
         /// Returns a result which will render HTML encoded text.

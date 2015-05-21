@@ -12,7 +12,9 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         /// When implemented in a type, activates an instantiated ViewComponent.
         /// </summary>
         /// <param name="viewComponent">The ViewComponent to activate.</param>
-        /// <param name="context">The <see cref="ViewContext"/> for the executing <see cref="ViewComponent"/>.</param>
-        void Activate(object viewComponent, ViewContext context);
+        /// <param name="context">
+        /// The <see cref="ViewComponentContext"/> for the executing <see cref="ViewComponent"/>.
+        /// </param>
+        void Activate(object viewComponent, ViewComponentContext context);
     }
 }

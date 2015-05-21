@@ -14,10 +14,7 @@ namespace Microsoft.AspNet.Mvc
         public void ViewComponent_ViewBag_UsesViewData()
         {
             // Arrange
-            var viewComponent = new TestViewComponent()
-            {
-                ViewData = new ViewDataDictionary(metadataProvider: new EmptyModelMetadataProvider()),
-            };
+            var viewComponent = new TestViewComponent();
 
             // Act
             viewComponent.ViewBag.A = "Alice";
@@ -33,10 +30,7 @@ namespace Microsoft.AspNet.Mvc
         public void ViewComponent_ViewData_StoresDataForViewBag()
         {
             // Arrange
-            var viewComponent = new TestViewComponent()
-            {
-                ViewData = new ViewDataDictionary(metadataProvider: new EmptyModelMetadataProvider()),
-            };
+            var viewComponent = new TestViewComponent();
 
             // Act
             viewComponent.ViewData["A"] = "Alice";
@@ -84,10 +78,7 @@ namespace Microsoft.AspNet.Mvc
         public void ViewComponent_View_WithEmptyParameter_SetsResultViewWithDefaultViewName()
         {
             // Arrange
-            var viewComponent = new TestViewComponent()
-            {
-                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
-            };
+            var viewComponent = new TestViewComponent();
 
             // Act
             var actualResult = viewComponent.View();
@@ -104,10 +95,7 @@ namespace Microsoft.AspNet.Mvc
         public void ViewComponent_View_WithViewNameParameter_SetsResultViewWithCustomViewName()
         {
             // Arrange
-            var viewComponent = new TestViewComponent()
-            {
-                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
-            };
+            var viewComponent = new TestViewComponent();
 
             // Act
             var actualResult = viewComponent.View("CustomViewName");
@@ -125,10 +113,8 @@ namespace Microsoft.AspNet.Mvc
         public void ViewComponent_View_WithModelParameter_SetsResultViewWithDefaultViewNameAndModel()
         {
             // Arrange
-            var viewComponent = new TestViewComponent()
-            {
-                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
-            };
+            var viewComponent = new TestViewComponent();
+
             var model = new object();
 
             // Act
@@ -147,10 +133,8 @@ namespace Microsoft.AspNet.Mvc
         public void ViewComponent_View_WithViewNameAndModelParameters_SetsResultViewWithCustomViewNameAndModel()
         {
             // Arrange
-            var viewComponent = new TestViewComponent()
-            {
-                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
-            };
+            var viewComponent = new TestViewComponent();
+
             var model = new object();
 
             // Act
@@ -180,7 +164,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.Empty(viewComponent.ViewContext.ViewData);
             Assert.NotNull(viewComponent.ViewData);
             Assert.Empty(viewComponent.ViewData);
-            Assert.NotSame(viewComponent.ViewData, viewComponent.ViewContext.ViewData);
+            Assert.Same(viewComponent.ViewData, viewComponent.ViewContext.ViewData);
         }
 
         private class TestViewComponent : ViewComponent

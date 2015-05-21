@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ViewComponentActivator_ActivatesProperties()
+        public async Task ViewComponentActivator_Activates()
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -127,35 +127,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expected, body.Trim());
         }
 
-        [Fact]
-        public async Task ViewComponentActivator_ActivatesPropertiesAndContextualizesThem()
-        {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            var expected = "test-value";
-
-            // Act
-            var body = await client.GetStringAsync("http://localhost/View/ConsumeValueComponent?test=test-value");
-
-            // Assert
-            Assert.Equal(expected, body.Trim());
-        }
-
-        [Fact]
-        public async Task ViewComponentActivator_ActivatesPropertiesAndContextualizesThem_WhenMultiplePropertiesArePresent()
-        {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            var expected = "Random Number:4 test-value";
-
-            // Act
-            var body = await client.GetStringAsync("http://localhost/View/ConsumeViewAndValueComponent?test=test-value");
-
-            // Assert
-            Assert.Equal(expected, body.Trim());
-        }
 
         [Fact]
         public async Task ViewComponentThatCannotBeActivated_ThrowsWhenAttemptedToBeInvoked()
@@ -163,8 +134,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
-            var expectedMessage = "No service for type 'ActivatorWebSite.CannotBeActivatedComponent+FakeType' " +
-                                   "has been registered.";
+            var expectedMessage =
+                "Unable to resolve service for type 'ActivatorWebSite.CannotBeActivatedComponent+FakeType' " +
+                "while attempting to activate 'ActivatorWebSite.CannotBeActivatedComponent'.";
 
             // Act & Assert
             var response = await client.GetAsync("http://localhost/View/ConsumeCannotBeActivatedComponent");

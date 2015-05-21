@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc
         public async Task ExecuteAsync([NotNull] ViewComponentContext context)
         {
             var viewEngine = ViewEngine ?? ResolveViewEngine(context);
-            var viewData = ViewData ?? context.ViewContext.ViewData;
+            var viewData = ViewData ?? context.ViewData;
 
             string qualifiedViewName;
             if (ViewName != null && ViewName.Length > 0 && ViewName[0] == '/')
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Mvc
             var childViewContext = new ViewContext(
                 context.ViewContext,
                 view,
-                ViewData ?? context.ViewContext.ViewData,
+                ViewData ?? context.ViewData,
                 context.Writer);
 
             using (view as IDisposable)
