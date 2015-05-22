@@ -99,6 +99,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
                 await Options.Notifications.ValidatePrincipal(context);
 
+                AuthenticateCalled = true;
                 return new AuthenticationTicket(context.Principal, context.Properties, Options.AuthenticationScheme);
             }
             catch (Exception exception)

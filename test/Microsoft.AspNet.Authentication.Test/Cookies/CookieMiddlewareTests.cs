@@ -443,19 +443,27 @@ namespace Microsoft.AspNet.Authentication.Cookies
             Assert.True(transaction1.SetCookie.Contains("path=/base"));
         }
 
-        [Fact]
-        public async Task CookieTurns401To403IfAuthenticated()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task CookieTurns401To403IfAuthenticated(bool automatic)
         {
             var clock = new TestClock();
             var server = CreateServer(options =>
             {
+                options.AutomaticAuthentication = automatic;
                 options.SystemClock = clock;
             }, 
             SignInAsAlice);
 
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
 
-            var transaction2 = await SendAsync(server, "http://example.com/unauthorized", transaction1.CookieNameValue);
+            var url = "http://example.com/unauthorized";
+            if (automatic)
+            {
+                url += "auto";
+            }
+            var transaction2 = await SendAsync(server, url, transaction1.CookieNameValue);
 
             transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
         }
@@ -545,6 +553,11 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     {
                         // Simulate Authorization failure 
                         var result = await context.Authentication.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                        context.Authentication.Challenge(CookieAuthenticationDefaults.AuthenticationScheme);
+                    }
+                    else if (req.Path == new PathString("/unauthorizedauto"))
+                    {
+                        // Simulate Authorization failure 
                         context.Authentication.Challenge(CookieAuthenticationDefaults.AuthenticationScheme);
                     }
                     else if (req.Path == new PathString("/protected/CustomRedirect"))

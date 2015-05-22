@@ -59,7 +59,8 @@ namespace Microsoft.AspNet.Authentication
             get { return _baseOptions; }
         }
 
-        internal bool AuthenticateCalled { get; set; }
+        // REVIEW: Overriding Authenticate and not calling base requires manually calling this for 401-403 to work
+        protected bool AuthenticateCalled { get; set; }
 
         public IAuthenticationHandler PriorHandler { get; set; }
 
