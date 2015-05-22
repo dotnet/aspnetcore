@@ -1,5 +1,6 @@
 [Oo]bj/
 [Bb]in/
+.vs/
 *.xap
 *.user
 /TestResults

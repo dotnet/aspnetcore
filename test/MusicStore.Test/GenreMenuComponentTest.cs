@@ -27,12 +27,10 @@ namespace MusicStore.Components
         public async Task GenreMenuComponent_Returns_NineGenres()
         {
             // Arrange
-            var genreMenuComponent = new GenreMenuComponent()
-            {
-                DbContext = _serviceProvider.GetRequiredService<MusicStoreContext>(),
-            };
+            var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
+            var genreMenuComponent = new GenreMenuComponent(dbContext);
 
-            PopulateData(genreMenuComponent.DbContext);
+            PopulateData(dbContext);
 
             // Act
             var result = await genreMenuComponent.InvokeAsync();

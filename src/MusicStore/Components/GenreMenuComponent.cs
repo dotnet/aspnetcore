@@ -10,12 +10,12 @@ namespace MusicStore.Components
     [ViewComponent(Name = "GenreMenu")]
     public class GenreMenuComponent : ViewComponent
     {
-        [Activate]
-        public MusicStoreContext DbContext
+        public GenreMenuComponent(MusicStoreContext dbContext)
         {
-            get;
-            set;
+            DbContext = dbContext;
         }
+
+        private MusicStoreContext DbContext { get; }
 
         public async Task<IViewComponentResult> InvokeAsync()
         {

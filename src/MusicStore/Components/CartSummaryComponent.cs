@@ -8,12 +8,12 @@ namespace MusicStore.Components
     [ViewComponent(Name = "CartSummary")]
     public class CartSummaryComponent : ViewComponent
     {
-        [Activate]
-        public MusicStoreContext DbContext
+        public CartSummaryComponent(MusicStoreContext dbContext)
         {
-            get;
-            set;
+            DbContext = dbContext;
         }
+
+        private MusicStoreContext DbContext { get; }
 
         public async Task<IViewComponentResult> InvokeAsync()
         {

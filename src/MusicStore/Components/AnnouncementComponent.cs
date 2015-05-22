@@ -11,26 +11,18 @@ namespace MusicStore.Components
     [ViewComponent(Name = "Announcement")]
     public class AnnouncementComponent : ViewComponent
     {
-        [Activate]
-        public MusicStoreContext DbContext
+        public AnnouncementComponent(MusicStoreContext dbContext, IMemoryCache cache, ISystemClock clock)
         {
-            get;
-            set;
+            DbContext = dbContext;
+            Cache = cache;
+            Clock = clock;
         }
 
-        [Activate]
-        public IMemoryCache Cache
-        {
-            get;
-            set;
-        }
+        private MusicStoreContext DbContext { get; }
 
-        [Activate]
-        public ISystemClock Clock
-        {
-            get;
-            set;
-        }
+        private IMemoryCache Cache { get; }
+
+        private ISystemClock Clock { get; }
 
         public async Task<IViewComponentResult> InvokeAsync()
         {

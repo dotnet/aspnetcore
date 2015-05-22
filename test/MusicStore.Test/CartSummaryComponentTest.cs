@@ -53,9 +53,8 @@ namespace MusicStore.Components
             PopulateData(dbContext, cartId, albumTitle: "AlbumA", itemCount: 10);
 
             // CartSummaryComponent initialization
-            var cartSummaryComponent = new CartSummaryComponent()
+            var cartSummaryComponent = new CartSummaryComponent(dbContext)
             {
-                DbContext = dbContext,
                 ViewContext = viewContext,
             };
 

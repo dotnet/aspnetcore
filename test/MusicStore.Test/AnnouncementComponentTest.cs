@@ -31,14 +31,13 @@ namespace MusicStore.Components
             // Arrange
             var today = new DateTime(year: 2002, month: 10, day: 30);
 
-            var announcementComponent = new AnnouncementComponent()
-            {
-                DbContext = _serviceProvider.GetRequiredService<MusicStoreContext>(),
-                Cache = _serviceProvider.GetRequiredService<IMemoryCache>(),
-                Clock = new TestSystemClock() { UtcNow = today },
-            };
+            var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
+            var cache = _serviceProvider.GetRequiredService<IMemoryCache>();
+            var clock = new TestSystemClock() { UtcNow = today };
 
-            PopulateData(announcementComponent.DbContext, latestAlbumDate: today);
+            var announcementComponent = new AnnouncementComponent(dbContext, cache, clock);
+
+            PopulateData(dbContext, latestAlbumDate: today);
 
             // Action
             var result = await announcementComponent.InvokeAsync();
