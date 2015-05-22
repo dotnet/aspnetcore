@@ -21,8 +21,9 @@ namespace MusicStore
         public Task<int> Main(string[] args)
         {
             //Add command line configuration source to read command line parameters.
-            var config = new ConfigurationSection();
-            config.AddCommandLine(args);
+            var builder = new ConfigurationBuilder();
+            builder.AddCommandLine(args);
+            var config = builder.Build();
 
             using (new WebHostBuilder(_serviceProvider, config)
                 .UseServer("Microsoft.AspNet.Server.WebListener")

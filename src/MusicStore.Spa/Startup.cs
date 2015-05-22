@@ -15,9 +15,10 @@ namespace MusicStore.Spa
     {
         public Startup(IApplicationEnvironment env)
         {
-            Configuration = new ConfigurationSection(env.ApplicationBasePath)
+            var builder = new ConfigurationBuilder(env.ApplicationBasePath)
                         .AddJsonFile("Config.json")
                         .AddEnvironmentVariables();
+            Configuration = builder.Build();
         }
 
         public Microsoft.Framework.Configuration.IConfiguration Configuration { get; set; }

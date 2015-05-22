@@ -33,11 +33,12 @@ namespace MusicStore
         {
             //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
             //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
-            Configuration = new ConfigurationSection(appEnvironment.ApplicationBasePath)
+            var builder = new ConfigurationBuilder(appEnvironment.ApplicationBasePath)
                         .AddJsonFile("config.json")
                         .AddEnvironmentVariables() //All environment variables in the process's context flow in as configuration values.
                         .AddJsonFile("configoverride.json", optional: true); // Used to override some configuration parameters that cannot be overridden by environment.
 
+            Configuration = builder.Build();
             _runtimeEnvironment = runtimeEnvironment;
         }
 
