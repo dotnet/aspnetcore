@@ -55,7 +55,7 @@ namespace MusicStore.Components
             // CartSummaryComponent initialization
             var cartSummaryComponent = new CartSummaryComponent(dbContext)
             {
-                ViewContext = viewContext,
+                ViewComponentContext = new ViewComponentContext() { ViewContext = viewContext }
             };
 
             // Act
