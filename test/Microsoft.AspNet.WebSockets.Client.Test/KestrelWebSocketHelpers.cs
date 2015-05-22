@@ -42,9 +42,9 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
                 builder.Run(c => app(c));
             };
 
-            var builder = new ConfigurationBuilder();
-            builder.Add(new MemoryConfigurationSource());
-            var config = builder.Build();
+            var configBuilder = new ConfigurationBuilder();
+            configBuilder.Add(new MemoryConfigurationSource());
+            var config = configBuilder.Build();
             config.Set("server.urls", "http://localhost:54321");
 
             var host = new WebHostBuilder(CallContextServiceLocator.Locator.ServiceProvider, config)
