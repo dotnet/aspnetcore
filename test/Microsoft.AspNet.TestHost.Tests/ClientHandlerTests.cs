@@ -11,6 +11,7 @@ using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNet.TestHost
@@ -222,7 +223,8 @@ namespace Microsoft.AspNet.TestHost
                 HttpCompletionOption.ResponseHeadersRead));
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ExceptionAfterFirstWriteIsReported()
         {
             ManualResetEvent block = new ManualResetEvent(false);
