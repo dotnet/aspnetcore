@@ -1,0 +1,15 @@
+﻿{
+  "dependencies": {
+    "Microsoft.AspNet.ResponseCaching": "1.0.0-*",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*",
+    "Microsoft.AspNet.Http": "1.0.0-beta5-11528",
+    "Microsoft.Framework.Caching.Memory": "1.0.0-beta5-11395"
+  },
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  },
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": { }
+  }
+}
