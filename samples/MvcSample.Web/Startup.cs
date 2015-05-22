@@ -54,9 +54,10 @@ namespace MvcSample.Web
             var configurationPath = Path.Combine(applicationEnvironment.ApplicationBasePath, "config.json");
 
             // Set up configuration sources.
-            var configuration = new ConfigurationSection()
+            var configBuilder = new ConfigurationBuilder()
                 .AddJsonFile(configurationPath)
                 .AddEnvironmentVariables();
+            var configuration = configBuilder.Build();
             string diSystem;
             if (configuration.TryGet("DependencyInjection", out diSystem) &&
                 diSystem.Equals("AutoFac", StringComparison.OrdinalIgnoreCase))
