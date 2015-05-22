@@ -1,0 +1,36 @@
+use import="Files"
+
+default include='**/*.*'
+default exclude=''
+default overwrite='${ false }'
+default Quiet='${ false }'
+
+@{
+  var copyFiles = Files.BasePath(Path.GetFullPath(sourceDir));
+  if (!string.IsNullOrEmpty(include))
+  {
+    copyFiles = copyFiles.Include(include);
+  }
+
+  if (!string.IsNullOrEmpty(exclude))
+  {
+    copyFiles = copyFiles.Exclude(exclude);
+  }
+
+  foreach(var copyFile in copyFiles)
+  {
+    if (!Quiet)
+    {
+        Log.Info(string.Format("Copying {0}", copyFile));
+    }
+
+    var sourceFile = Path.Combine(sourceDir, copyFile);
+    var outputFile = Path.Combine(outputDir, copyFile);
+    if (!Directory.Exists(Path.GetDirectoryName(outputFile)))
+    {
+      Directory.CreateDirectory(Path.GetDirectoryName(outputFile));
+    }
+
+    File.Copy(sourceFile, outputFile, overwrite);
+  }
+}

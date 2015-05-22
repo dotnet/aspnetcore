@@ -10,6 +10,7 @@ default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts")}'
 default BUILD_DIR='${Path.Combine(TARGET_DIR, "build")}'
 default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
 default Configuration='${E("Configuration")}'
+default Quiet='${ false }'
 
 @{
   if (string.IsNullOrEmpty(E("DNX_BUILD_VERSION")))
@@ -192,6 +193,7 @@ default Configuration='${E("Configuration")}'
     E("NUGET3_restore_options"," --quiet");
     E("bower_install_options","--quiet");
     E("npm_install_options","--quiet");
+    Quiet = true;
   }
 
 #--parallel
