@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.TestHost
             Assert.Throws<InvalidOperationException>(
                 () => TestServer.Create(
                     services,
-                    new ConfigurationSection(), new Startup().Configure, configureServices: null));
+                    new ConfigurationBuilder().Build(), new Startup().Configure, configureServices: null));
         }
 
         [Fact]

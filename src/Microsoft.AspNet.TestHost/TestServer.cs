@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.TestHost
         {
             return new WebHostBuilder(
                 services ?? CallContextServiceLocator.Locator.ServiceProvider,
-                config ?? new ConfigurationSection());
+                config ?? new ConfigurationBuilder().Build());
         }
 
         public static WebHostBuilder CreateBuilder()

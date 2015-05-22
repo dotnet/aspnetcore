@@ -50,8 +50,9 @@ namespace Microsoft.AspNet.Hosting
                 { "server", "Microsoft.AspNet.Hosting.Tests" }
             };
 
-            var config = new ConfigurationSection()
+            var builder = new ConfigurationBuilder()
                 .Add(new MemoryConfigurationSource(vals));
+            var config = builder.Build();
             var host = CreateBuilder(config).Build();
             host.Start();
             Assert.NotNull(host.ApplicationServices.GetRequiredService<IHostingEnvironment>());
@@ -65,8 +66,9 @@ namespace Microsoft.AspNet.Hosting
                 { "Hosting:Server", "Microsoft.AspNet.Hosting.Tests" }
             };
 
-            var config = new ConfigurationSection()
+            var builder = new ConfigurationBuilder()
                 .Add(new MemoryConfigurationSource(vals));
+            var config = builder.Build();
             var host = CreateBuilder(config).Build();
             host.Start();
             Assert.NotNull(host.ApplicationServices.GetRequiredService<IHostingEnvironment>());
@@ -155,8 +157,9 @@ namespace Microsoft.AspNet.Hosting
                 { "ASPNET_ENV", "Staging" }
             };
 
-            var config = new ConfigurationSection()
+            var builder = new ConfigurationBuilder()
                 .Add(new MemoryConfigurationSource(vals));
+            var config = builder.Build();
 
             var engine = CreateBuilder(config).Build();
             var env = engine.ApplicationServices.GetRequiredService<IHostingEnvironment>();
@@ -171,8 +174,9 @@ namespace Microsoft.AspNet.Hosting
                 { "Hosting:Environment", "Staging" }
             };
 
-            var config = new ConfigurationSection()
+            var builder = new ConfigurationBuilder()
                 .Add(new MemoryConfigurationSource(vals));
+            var config = builder.Build();
 
             var engine = CreateBuilder(config).Build();
             var env = engine.ApplicationServices.GetRequiredService<IHostingEnvironment>();
@@ -382,7 +386,7 @@ namespace Microsoft.AspNet.Hosting
         {
             return new WebHostBuilder(
                 CallContextServiceLocator.Locator.ServiceProvider,
-                config ?? new ConfigurationSection());
+                config ?? new ConfigurationBuilder().Build());
         }
 
         public IServerInformation Initialize(IConfiguration configuration)

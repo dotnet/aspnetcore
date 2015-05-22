@@ -23,14 +23,16 @@ namespace Microsoft.AspNet.Hosting
         public void Main(string[] args)
         {
             // Allow the location of the ini file to be specfied via a --config command line arg
-            var tempConfig = new ConfigurationSection().AddCommandLine(args);
+            var tempBuilder = new ConfigurationBuilder().AddCommandLine(args);
+            var tempConfig = tempBuilder.Build();
             var configFilePath = tempConfig[ConfigFileKey] ?? HostingIniFile;
 
             var appBasePath = _serviceProvider.GetRequiredService<IApplicationEnvironment>().ApplicationBasePath;
-            var config = new ConfigurationSection(appBasePath);
-            config.AddIniFile(configFilePath, optional: true);
-            config.AddEnvironmentVariables();
-            config.AddCommandLine(args);
+            var builder = new ConfigurationBuilder(appBasePath);
+            builder.AddIniFile(configFilePath, optional: true);
+            builder.AddEnvironmentVariables();
+            builder.AddCommandLine(args);
+            var config = builder.Build();
 
             var host = new WebHostBuilder(_serviceProvider, config).Build();
             using (host.Start())

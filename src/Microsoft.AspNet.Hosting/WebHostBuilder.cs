@@ -42,7 +42,8 @@ namespace Microsoft.AspNet.Hosting
         private string _serverFactoryLocation;
         private IServerFactory _serverFactory;
 
-        public WebHostBuilder([NotNull] IServiceProvider services) : this(services, config: new ConfigurationSection()) { }
+        public WebHostBuilder([NotNull] IServiceProvider services) 
+            : this(services, config: new ConfigurationBuilder().Build()) { }
 
         public WebHostBuilder([NotNull] IServiceProvider services, [NotNull] IConfiguration config)
         {
