@@ -35,7 +35,7 @@ sudo apt-get install mono-complete
 To build libuv you should do the following:
 
 ```
-sudo apt-get install automake libtool curl
+sudo apt-get install automake libtool curl make unzip
 curl -sSL https://github.com/libuv/libuv/archive/v1.4.2.tar.gz | sudo tar zxfv - -C /usr/local/src
 cd /usr/local/src/libuv-1.4.2
 sudo sh autogen.sh
