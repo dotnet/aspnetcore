@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task ProtectedCustomRequestShouldRedirectToCustomLogin(bool auto)
+        public async Task ProtectedCustomRequestShouldRedirectToCustomRedirectUri(bool auto)
         {
             var server = CreateServer(options =>
             {
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             if (auto)
             {
                 Uri location = transaction.Response.Headers.Location;
-                location.ToString().ShouldBe("/CustomRedirect");
+                location.ToString().ShouldBe("http://example.com/login?ReturnUrl=%2FCustomRedirect");
             }
         }
 
