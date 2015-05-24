@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -273,7 +272,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         private static void AuthorizationCodeReceivedHandledOptions(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
-            options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { MockSecurityTokenValidator() };
+            options.SecurityTokenValidator = MockSecurityTokenValidator();
             options.ProtocolValidator = MockProtocolValidator();
             options.Notifications =
                 new OpenIdConnectAuthenticationNotifications
@@ -289,7 +288,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         private static void AuthorizationCodeReceivedSkippedOptions(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
-            options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { MockSecurityTokenValidator() };
+            options.SecurityTokenValidator = MockSecurityTokenValidator();
             options.ProtocolValidator = MockProtocolValidator();
             options.Notifications =
                 new OpenIdConnectAuthenticationNotifications
@@ -305,7 +304,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         private static void AuthenticationErrorHandledOptions(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
-            options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { MockSecurityTokenValidator() };
+            options.SecurityTokenValidator = MockSecurityTokenValidator();
             options.ProtocolValidator = MockProtocolValidator();
             options.Notifications =
                 new OpenIdConnectAuthenticationNotifications
@@ -321,7 +320,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         private static void AuthenticationErrorSkippedOptions(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
-            options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { MockSecurityTokenValidator() };
+            options.SecurityTokenValidator = MockSecurityTokenValidator();
             options.ProtocolValidator = MockProtocolValidator();
             options.Notifications =
                 new OpenIdConnectAuthenticationNotifications
@@ -387,7 +386,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             options.ProtocolValidator.RequireNonce = false;
             options.StateDataFormat = new AuthenticationPropertiesFormaterKeyValue();
             options.GetClaimsFromUserInfoEndpoint = true;
-            options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { MockSecurityTokenValidator() };
+            options.SecurityTokenValidator = MockSecurityTokenValidator();
             options.Notifications =
                 new OpenIdConnectAuthenticationNotifications
                 {
@@ -469,7 +468,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             SecurityToken jwt = null;
             mockValidator.Setup(v => v.ValidateToken(It.IsAny<string>(), It.IsAny<TokenValidationParameters>(), out jwt)).Returns(new ClaimsPrincipal());
             mockValidator.Setup(v => v.CanReadToken(It.IsAny<string>())).Returns(false);
-            options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { mockValidator.Object };
+            options.SecurityTokenValidator = mockValidator.Object;
         }
 
         private static void SecurityTokenValidatorThrows(OpenIdConnectAuthenticationOptions options)
@@ -479,13 +478,13 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             SecurityToken jwt = null;
             mockValidator.Setup(v => v.ValidateToken(It.IsAny<string>(), It.IsAny<TokenValidationParameters>(), out jwt)).Throws<SecurityTokenSignatureKeyNotFoundException>();
             mockValidator.Setup(v => v.CanReadToken(It.IsAny<string>())).Returns(true);
-            options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { mockValidator.Object };
+            options.SecurityTokenValidator = mockValidator.Object;
         }
 
         private static void SecurityTokenValidatorValidatesAllTokens(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
-            options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { MockSecurityTokenValidator() };
+            options.SecurityTokenValidator = MockSecurityTokenValidator();
             options.ProtocolValidator.RequireTimeStampInNonce = false;
             options.ProtocolValidator.RequireNonce = false;
         }

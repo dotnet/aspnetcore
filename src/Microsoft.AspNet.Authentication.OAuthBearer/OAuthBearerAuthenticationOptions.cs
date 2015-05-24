@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
-using Microsoft.Framework.Internal;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
@@ -16,21 +16,12 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
     /// </summary>
     public class OAuthBearerAuthenticationOptions : AuthenticationOptions
     {
-        private ICollection<ISecurityTokenValidator> _securityTokenValidators;
-        private TokenValidationParameters _tokenValidationParameters;
-
         /// <summary>
         /// Creates an instance of bearer authentication options with default values.
         /// </summary>
         public OAuthBearerAuthenticationOptions() : base()
         {
             AuthenticationScheme = OAuthBearerAuthenticationDefaults.AuthenticationScheme;
-            BackchannelTimeout = TimeSpan.FromMinutes(1);
-            Challenge = OAuthBearerAuthenticationDefaults.AuthenticationScheme;
-            Notifications = new OAuthBearerAuthenticationNotifications();
-            RefreshOnIssuerKeyNotFound = true;
-            SystemClock = new SystemClock();
-            TokenValidationParameters = new TokenValidationParameters();
         }
 
         /// <summary>
@@ -54,15 +45,14 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
         /// <summary>
         /// Gets or sets the challenge to put in the "WWW-Authenticate" header.
         /// </summary>
-        /// TODO - brentschmaltz, should not be null.
-        public string Challenge { get; set; }
+        public string Challenge { get; set; } = OAuthBearerAuthenticationDefaults.AuthenticationScheme;
 
         /// <summary>
         /// The object provided by the application to process events raised by the bearer authentication middleware.
         /// The application may implement the interface fully, or it may create an instance of OAuthBearerAuthenticationProvider
         /// and assign delegates only to the events it wants to process.
         /// </summary>
-        public OAuthBearerAuthenticationNotifications Notifications { get; set; }
+        public OAuthBearerAuthenticationNotifications Notifications { get; set; } = new OAuthBearerAuthenticationNotifications();
 
         /// <summary>
         /// The HttpMessageHandler used to retrieve metadata.
@@ -74,7 +64,7 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
         /// <summary>
         /// Gets or sets the timeout when using the backchannel to make an http call.
         /// </summary>
-        public TimeSpan BackchannelTimeout { get; set; }
+        public TimeSpan BackchannelTimeout { get; set; } = TimeSpan.FromMinutes(1);
 
 #if DNX451
         /// <summary>
@@ -104,48 +94,24 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
         /// Gets or sets if a metadata refresh should be attempted after a SecurityTokenSignatureKeyNotFoundException. This allows for automatic
         /// recovery in the event of a signature key rollover. This is enabled by default.
         /// </summary>
-        public bool RefreshOnIssuerKeyNotFound { get; set; }
+        public bool RefreshOnIssuerKeyNotFound { get; set; } = true;
 
         /// <summary>
         /// Used to know what the current clock time is when calculating or validating token expiration. When not assigned default is based on
         /// DateTimeOffset.UtcNow. This is typically needed only for unit testing.
         /// </summary>
-        public ISystemClock SystemClock { get; set; }
+        public ISystemClock SystemClock { get; set; } = new SystemClock();
 
         /// <summary>
-        /// Gets or sets the <see cref="SecurityTokenValidators"/> for validating tokens.
+        /// Gets the ordered list of <see cref="ISecurityTokenValidator"/> used to validate access tokens.
         /// </summary>
-        /// <exception cref="ArgumentNullException">if 'value' is null.</exception>
-        public ICollection<ISecurityTokenValidator> SecurityTokenValidators
-        {
-            get
-            {
-                return _securityTokenValidators;
-            }
-
-            [param: NotNull]
-            set
-            {
-                _securityTokenValidators = value;
-            }
-        }
+        public IList<ISecurityTokenValidator> SecurityTokenValidators { get; } = new List<ISecurityTokenValidator> { new JwtSecurityTokenHandler() };
 
         /// <summary>
-        /// Gets or sets the TokenValidationParameters
+        /// Gets or sets the parameters used to validate identity tokens.
         /// </summary>
         /// <remarks>Contains the types and definitions required for validating a token.</remarks>
         /// <exception cref="ArgumentNullException">if 'value' is null.</exception>
-        public TokenValidationParameters TokenValidationParameters
-        {
-            get
-            {
-                return _tokenValidationParameters;
-            }
-            [param: NotNull]
-            set
-            {
-                _tokenValidationParameters = value;
-            }
-        }
+        public TokenValidationParameters TokenValidationParameters { get; set; } = new TokenValidationParameters();
     }
 }

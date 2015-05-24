@@ -141,7 +141,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 RequestType = OpenIdConnectRequestType.AuthenticationRequest,
                 Resource = Options.Resource,
                 ResponseType = Options.ResponseType,
-                Scope = Options.Scope
+                Scope = string.Join(" ", Options.Scope)
             };
 
             // Omitting the response_mode parameter when it already corresponds to the default
@@ -827,17 +827,14 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
             SecurityToken validatedToken = null;
             ClaimsPrincipal principal = null;
-            foreach (var validator in Options.SecurityTokenValidators)
+            if (Options.SecurityTokenValidator.CanReadToken(idToken))
             {
-                if (validator.CanReadToken(idToken))
+                principal = Options.SecurityTokenValidator.ValidateToken(idToken, validationParameters, out validatedToken);
+                jwt = validatedToken as JwtSecurityToken;
+                if (jwt == null)
                 {
-                    principal = validator.ValidateToken(idToken, validationParameters, out validatedToken);
-                    jwt = validatedToken as JwtSecurityToken;
-                    if (jwt == null)
-                    {
-                        Logger.LogError(Resources.OIDCH_0010_ValidatedSecurityTokenNotJwt, validatedToken?.GetType());
-                        throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0010_ValidatedSecurityTokenNotJwt, validatedToken?.GetType()));
-                    }
+                    Logger.LogError(Resources.OIDCH_0010_ValidatedSecurityTokenNotJwt, validatedToken?.GetType());
+                    throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0010_ValidatedSecurityTokenNotJwt, validatedToken?.GetType()));
                 }
             }
 

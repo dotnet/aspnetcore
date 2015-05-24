@@ -63,6 +63,11 @@ namespace Microsoft.AspNet.Authentication.OAuth
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.TokenEndpoint)));
             }
 
+            if (Options.Notifications == null)
+            {
+                Options.Notifications = new OAuthAuthenticationNotifications();
+            }
+
             if (Options.StateDataFormat == null)
             {
                 var dataProtector = dataProtectionProvider.CreateProtector(

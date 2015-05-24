@@ -2,12 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
-using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
@@ -41,11 +37,6 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
             if (Options.Notifications == null)
             {
                 Options.Notifications = new OAuthBearerAuthenticationNotifications();
-            }
-
-            if (Options.SecurityTokenValidators == null)
-            {
-                Options.SecurityTokenValidators = new List<ISecurityTokenValidator> { new JwtSecurityTokenHandler() };
             }
 
             if (string.IsNullOrEmpty(Options.TokenValidationParameters.ValidAudience) && !string.IsNullOrEmpty(Options.Audience))

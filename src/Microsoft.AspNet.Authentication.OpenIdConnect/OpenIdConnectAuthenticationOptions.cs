@@ -5,11 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
+using System.Security.Claims;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Framework.Caching.Distributed;
-using Microsoft.Framework.Internal;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
@@ -20,13 +21,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
     /// </summary>
     public class OpenIdConnectAuthenticationOptions : AuthenticationOptions
     {
-        private TimeSpan _backchannelTimeout;
-        private OpenIdConnectProtocolValidator _protocolValidator;
-        private ICollection<ISecurityTokenValidator> _securityTokenValidators;
-        private ISecureDataFormat<AuthenticationProperties> _stateDataFormat;
-        private ISecureDataFormat<string> _stringDataFormat;
-        private TokenValidationParameters _tokenValidationParameters;
-
         /// <summary>
         /// Initializes a new <see cref="OpenIdConnectAuthenticationOptions"/>
         /// </summary>
@@ -55,16 +49,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         public OpenIdConnectAuthenticationOptions(string authenticationScheme)
         {
             AuthenticationScheme = authenticationScheme;
-            BackchannelTimeout = TimeSpan.FromMinutes(1);
             Caption = OpenIdConnectAuthenticationDefaults.Caption;
-            GetClaimsFromUserInfoEndpoint = false;
-            ProtocolValidator = new OpenIdConnectProtocolValidator() { RequireState = false };
-            RefreshOnIssuerKeyNotFound = true;
-            ResponseMode = OpenIdConnectResponseModes.FormPost;
-            ResponseType = OpenIdConnectResponseTypes.CodeIdToken;
-            Scope = OpenIdConnectScopes.OpenIdProfile;
-            TokenValidationParameters = new TokenValidationParameters();
-            UseTokenLifetime = true;
         }
 
         /// <summary>
@@ -103,23 +88,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// Gets or sets the timeout when using the backchannel to make an http call.
         /// </summary>
         [SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly", Justification = "By design we use the property name in the exception")]
-        public TimeSpan BackchannelTimeout
-        {
-            get
-            {
-                return _backchannelTimeout;
-            }
-
-            set
-            {
-                if (value <= TimeSpan.Zero)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(BackchannelTimeout), value, Resources.OIDCH_0101_BackChallnelLessThanZero);
-                }
-
-                _backchannelTimeout = value;
-            }
-        }
+        public TimeSpan BackchannelTimeout { get; set; } = TimeSpan.FromSeconds(60);
 
         /// <summary>
         /// Get or sets the text that the user can display on a sign in user interface.
@@ -192,25 +161,14 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <summary>
         /// Gets or sets the <see cref="OpenIdConnectAuthenticationNotifications"/> to notify when processing OpenIdConnect messages.
         /// </summary>
-        public OpenIdConnectAuthenticationNotifications Notifications { get; set; }
+        public OpenIdConnectAuthenticationNotifications Notifications { get; set; } = new OpenIdConnectAuthenticationNotifications();
 
         /// <summary>
         /// Gets or sets the <see cref="OpenIdConnectProtocolValidator"/> that is used to ensure that the 'id_token' received
         /// is valid per: http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation 
         /// </summary>
         /// <exception cref="ArgumentNullException">if 'value' is null.</exception>
-        public OpenIdConnectProtocolValidator ProtocolValidator
-        {
-            get
-            {
-                return _protocolValidator;
-            }
-            [param: NotNull]
-            set
-            {
-                _protocolValidator = value;
-            }
-        }
+        public OpenIdConnectProtocolValidator ProtocolValidator { get; set; } = new OpenIdConnectProtocolValidator { RequireState = false };
 
         /// <summary>
         /// Gets or sets the 'post_logout_redirect_uri'
@@ -230,7 +188,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// Gets or sets if a metadata refresh should be attempted after a SecurityTokenSignatureKeyNotFoundException. This allows for automatic
         /// recovery in the event of a signature key rollover. This is enabled by default.
         /// </summary>
-        public bool RefreshOnIssuerKeyNotFound { get; set; }
+        public bool RefreshOnIssuerKeyNotFound { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the 'resource'.
@@ -240,103 +198,49 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <summary>
         /// Gets or sets the 'response_mode'.
         /// </summary>
-        public string ResponseMode { get; set; }
+        public string ResponseMode { get; set; } = OpenIdConnectResponseModes.FormPost;
 
         /// <summary>
         /// Gets or sets the 'response_type'.
         /// </summary>
-        public string ResponseType { get; set; }
+        public string ResponseType { get; set; } = OpenIdConnectResponseTypes.CodeIdToken;
 
         /// <summary>
-        /// Gets or sets the 'scope'.
+        /// Gets the list of permissions to request.
         /// </summary>
-        public string Scope { get; set; }
+        public IList<string> Scope { get; } = new List<string> { "openid", "profile" };
 
         /// <summary>
-        /// Gets or sets the SignInScheme which will be used to set the <see cref="System.Security.Claims.ClaimsIdentity.AuthenticationType"/>.
+        /// Gets or sets the SignInScheme which will be used to set the <see cref="ClaimsIdentity.AuthenticationType"/>.
         /// </summary>
         public string SignInScheme { get; set; }
 
         /// <summary>
         /// Gets or sets the type used to secure data handled by the middleware.
         /// </summary>
-        public ISecureDataFormat<AuthenticationProperties> StateDataFormat
-        {
-            get
-            {
-                return _stateDataFormat;
-            }
-            [param: NotNull]
-            set
-            {
-                _stateDataFormat = value;
-            }
-        }
+        public ISecureDataFormat<AuthenticationProperties> StateDataFormat { get; set; }
 
         /// <summary>
         /// Gets or sets the type used to secure strings used by the middleware.
         /// </summary>
-        public ISecureDataFormat<string> StringDataFormat
-        {
-            get
-            {
-                return _stringDataFormat;
-            }
-            [param: NotNull]
-            set
-            {
-                _stringDataFormat = value;
-            }
-        }
+        public ISecureDataFormat<string> StringDataFormat { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="SecurityTokenValidators"/> for validating tokens.
+        /// Gets or sets the <see cref="ISecurityTokenValidator"/> used to validate identity tokens.
         /// </summary>
-        /// <exception cref="ArgumentNullException">if 'value' is null.</exception>
-        public ICollection<ISecurityTokenValidator> SecurityTokenValidators
-        {
-            get
-            {
-                return _securityTokenValidators;
-            }
-
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("SecurityTokenValidators");
-                }
-
-                _securityTokenValidators = value;
-            }
-        }
+        public ISecurityTokenValidator SecurityTokenValidator { get; set; } = new JwtSecurityTokenHandler();
 
         /// <summary>
-        /// Gets or sets the TokenValidationParameters
+        /// Gets or sets the parameters used to validate identity tokens.
         /// </summary>
         /// <remarks>Contains the types and definitions required for validating a token.</remarks>
-        public TokenValidationParameters TokenValidationParameters
-        {
-            get
-            {
-                return _tokenValidationParameters;
-            }
-            [param: NotNull]
-            set
-            {
-                _tokenValidationParameters = value;
-            }
-        }
+        public TokenValidationParameters TokenValidationParameters { get; set; } = new TokenValidationParameters();
 
         /// <summary>
         /// Indicates that the authentication session lifetime (e.g. cookies) should match that of the authentication token.
         /// If the token does not provide lifetime information then normal session lifetimes will be used.
         /// This is enabled by default.
         /// </summary>
-        public bool UseTokenLifetime
-        {
-            get;
-            set;
-        }
+        public bool UseTokenLifetime { get; set; } = true;
     }
 }

@@ -226,8 +226,13 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                     options.RedirectUri = queryValues.RedirectUri;
                 else if (param.Equals(OpenIdConnectParameterNames.Resource))
                     options.Resource = queryValues.Resource;
-                else if (param.Equals(OpenIdConnectParameterNames.Scope))
-                    options.Scope = queryValues.Scope;
+                else if (param.Equals(OpenIdConnectParameterNames.Scope)) {
+                    options.Scope.Clear();
+
+                    foreach (var scope in queryValues.Scope.Split(' ')) {
+                        options.Scope.Add(scope);
+                    }
+                }
             }
 
             options.Authority = queryValues.Authority;

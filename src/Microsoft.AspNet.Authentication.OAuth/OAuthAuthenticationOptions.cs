@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Security.Claims;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authentication.OAuth
 {
@@ -83,7 +82,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// <summary>
         /// Gets or sets the <see cref="IOAuthAuthenticationNotifications"/> used to handle authentication events.
         /// </summary>
-        public IOAuthAuthenticationNotifications Notifications { get; [param: NotNull] set; } = new OAuthAuthenticationNotifications();
+        public IOAuthAuthenticationNotifications Notifications { get; set; } = new OAuthAuthenticationNotifications();
 
         /// <summary>
         /// A list of permissions to request.

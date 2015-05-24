@@ -2,10 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
-using System.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Text;
 using Microsoft.AspNet.Builder;
@@ -60,10 +57,10 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             if (Options.StateDataFormat == null)
             {
                 var dataProtector = dataProtectionProvider.CreateProtector(
-                    typeof(OpenIdConnectAuthenticationMiddleware).FullName, 
-					typeof(string).FullName,
+                    typeof(OpenIdConnectAuthenticationMiddleware).FullName,
+                    typeof(string).FullName,
                     Options.AuthenticationScheme,
-					"v1");
+                    "v1");
 
                 Options.StateDataFormat = new PropertiesDataFormat(dataProtector);
             }
@@ -77,11 +74,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     "v1");
 
                 Options.StringDataFormat = new SecureDataFormat<string>(new StringSerializer(), dataProtector, TextEncodings.Base64Url);
-            }
-
-            if (Options.SecurityTokenValidators == null)
-            {
-                Options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { new JwtSecurityTokenHandler() };
             }
             
             // if the user has not set the AuthorizeCallback, set it from the redirect_uri
