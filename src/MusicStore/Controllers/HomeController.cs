@@ -54,6 +54,11 @@ namespace MusicStore.Controllers
             return View("~/Views/Shared/StatusCodePage.cshtml");
         }
 
+        public IActionResult AccessDenied()
+        {
+            return View("~/Views/Shared/AccessDenied.cshtml");
+        }
+
         private async Task<List<Album>> GetTopSellingAlbumsAsync(int count)
         {
             // Group the order details by album and return

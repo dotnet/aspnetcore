@@ -202,7 +202,8 @@ namespace E2ETests
                     await validator.SignInWithInvalidPassword(generatedEmail, "Password~1");
                     await validator.SignInWithUser(generatedEmail, "Password~2");
 
-                    // Making a request to a protected resource that this user does not have access to - should automatically redirect to login page again
+                    // Making a request to a protected resource that this user does not have access to - should
+                    // automatically redirect to the configured access denied page
                     await validator.AccessStoreWithoutPermissions(generatedEmail);
 
                     // Logout from this user session - This should take back to the home page
