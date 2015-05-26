@@ -142,13 +142,12 @@ namespace E2ETests
         {
             _logger.LogInformation("Trying to access StoreManager that needs ManageStore claim with the current user : {email}", email ?? "Anonymous");
             var response = await _httpClient.GetAsync("Admin/StoreManager/");
+            await ThrowIfResponseStatusNotOk(response);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            ValidateLayoutPage(responseContent);
 
             if (email == null)
             {
-                await ThrowIfResponseStatusNotOk(response);
-                var responseContent = await response.Content.ReadAsStringAsync();
-                ValidateLayoutPage(responseContent);
-
                 Assert.Contains("<title>Log in – ASP.NET MVC Music Store</title>", responseContent, StringComparison.OrdinalIgnoreCase);
                 Assert.Contains("<h4>Use a local account to log in.</h4>", responseContent, StringComparison.OrdinalIgnoreCase);
                 Assert.Equal<string>(_deploymentResult.ApplicationBaseUri + PrefixBaseAddress("Account/Login?ReturnUrl=%2F{0}%2FAdmin%2FStoreManager%2F"), response.RequestMessage.RequestUri.AbsoluteUri);
@@ -156,10 +155,6 @@ namespace E2ETests
             }
             else
             {
-                await ThrowIfResponseStatusNotOk(response);
-                var responseContent = await response.Content.ReadAsStringAsync();
-                ValidateLayoutPage(responseContent);
-
                 Assert.Contains("<title>Access denied due to insufficient permissions – ASP.NET MVC Music Store</title>", responseContent, StringComparison.OrdinalIgnoreCase);
             }
         }
