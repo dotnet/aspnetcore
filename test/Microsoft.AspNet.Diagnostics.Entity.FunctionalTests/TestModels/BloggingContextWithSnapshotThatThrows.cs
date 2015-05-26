@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 {
     public class BloggingContextWithSnapshotThatThrows : BloggingContext
     {
-        public BloggingContextWithSnapshotThatThrows(IServiceProvider provider, DbContextOptions options)
+        public BloggingContextWithSnapshotThatThrows(IServiceProvider provider, EntityOptions options)
             : base(provider, options)
         { }
 

@@ -187,7 +187,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 services =>
                 {
                     services.AddEntityFramework().AddSqlServer();
-                    var optionsBuilder = new DbContextOptionsBuilder();
+                    var optionsBuilder = new EntityOptionsBuilder();
                     if (!PlatformHelper.IsMono)
                     {
                         optionsBuilder.UseSqlServer(database.ConnectionString);
@@ -196,7 +196,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     {
                         optionsBuilder.UseInMemoryStore();
                     }
-                    services.AddInstance<DbContextOptions>(optionsBuilder.Options);
+                    services.AddInstance<EntityOptions>(optionsBuilder.Options);
                 });
 
                 var ex = await Assert.ThrowsAsync<SqlException>(async () =>
@@ -214,7 +214,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             public virtual Task Invoke(HttpContext context)
             {
-                var options = context.ApplicationServices.GetService<DbContextOptions>();
+                var options = context.ApplicationServices.GetService<EntityOptions>();
                 using (var db = new BloggingContext(context.ApplicationServices, options))
                 {
                     db.Blogs.Add(new Blog());
@@ -315,7 +315,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
                     services.AddScoped<TContext>();
 
-                    var optionsBuilder = new DbContextOptionsBuilder();
+                    var optionsBuilder = new EntityOptionsBuilder();
                     if (!PlatformHelper.IsMono)
                     {
                         optionsBuilder.UseSqlServer(database.ConnectionString);
