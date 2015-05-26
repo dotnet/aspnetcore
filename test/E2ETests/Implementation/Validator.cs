@@ -156,7 +156,7 @@ namespace E2ETests
             }
             else
             {
-                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+                await ThrowIfResponseStatusNotOk(response);
                 var responseContent = await response.Content.ReadAsStringAsync();
                 ValidateLayoutPage(responseContent);
 
