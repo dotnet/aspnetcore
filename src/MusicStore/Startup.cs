@@ -62,7 +62,7 @@ namespace MusicStore
 
             services.ConfigureCookieAuthentication(options =>
             {
-                options.AccessDeniedPath = new PathString("~/Home/AccessDenied");
+                options.AccessDeniedPath = new PathString("/Home/AccessDenied");
             });
 
             services.ConfigureFacebookAuthentication(options =>

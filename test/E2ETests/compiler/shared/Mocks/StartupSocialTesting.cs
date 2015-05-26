@@ -8,6 +8,7 @@ using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Diagnostics.Entity;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.Caching.Memory;
@@ -73,6 +74,11 @@ namespace MusicStore
             services.AddIdentity<ApplicationUser, IdentityRole>()
                     .AddEntityFrameworkStores<MusicStoreContext>()
                     .AddDefaultTokenProviders();
+
+            services.ConfigureCookieAuthentication(options =>
+            {
+                options.AccessDeniedPath = new PathString("/Home/AccessDenied");
+            });
 
             services.ConfigureFacebookAuthentication(options =>
             {
