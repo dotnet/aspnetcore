@@ -3,7 +3,6 @@
   "description": "ASP.NET 5 common extension methods for HTTP abstractions and IApplicationBuilder.",
   "dependencies": {
     "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
-    "Microsoft.AspNet.Http.Features": "1.0.0-*",
     "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
     "Microsoft.Framework.WebEncoders.Core": "1.0.0-*",
     "Microsoft.Net.Http.Headers": "1.0.0-*"

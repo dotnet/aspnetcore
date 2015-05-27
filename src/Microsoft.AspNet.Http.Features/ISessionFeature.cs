@@ -3,11 +3,8 @@
 
 namespace Microsoft.AspNet.Http.Features
 {
-    // TODO: Is there any reason not to flatten the Factory down into the Feature?
     public interface ISessionFeature
     {
-        ISessionFactory Factory { get; set; }
-
         ISession Session { get; set; }
     }
 }

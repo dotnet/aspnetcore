@@ -4,7 +4,6 @@
     "dependencies": {
         "Microsoft.AspNet.FeatureModel": "1.0.0-*",
         "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
-        "Microsoft.AspNet.Http.Features": "1.0.0-*",
         "Microsoft.AspNet.WebUtilities": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Net.Http.Headers": "1.0.0-*"

@@ -124,24 +124,27 @@ namespace Microsoft.AspNet.Http.Internal
             set { LifetimeFeature.RequestAborted = value; }
         }
 
-        public override ISessionCollection Session
+        public override ISession Session
         {
             get
             {
                 var feature = SessionFeature;
                 if (feature == null)
                 {
-                    throw new InvalidOperationException("Session has not been configured for this application or request.");
+                    throw new InvalidOperationException("Session has not been configured for this application " +
+                        "or request.");
                 }
-                if (feature.Session == null)
+                return feature.Session;
+            }
+            set
+            {
+                var feature = SessionFeature;
+                if (feature == null)
                 {
-                    if (feature.Factory == null)
-                    {
-                        throw new InvalidOperationException("No ISessionFactory available to create the ISession.");
-                    }
-                    feature.Session = feature.Factory.Create();
+                    feature = new DefaultSessionFeature();
+                    _session.Update(_features, feature);
                 }
-                return new SessionCollection(feature.Session);
+                feature.Session = value;
             }
         }
 

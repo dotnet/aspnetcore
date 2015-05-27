@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.Http
 {
@@ -31,7 +32,7 @@ namespace Microsoft.AspNet.Http
 
         public abstract CancellationToken RequestAborted { get; set; }
 
-        public abstract ISessionCollection Session { get; }
+        public abstract ISession Session { get; set; }
 
         public abstract void Abort();
 

@@ -2,6 +2,7 @@
   "version": "1.0.0-*",
   "description": "ASP.NET 5 HTTP object model. HttpContext and family.",
   "dependencies": {
+    "Microsoft.AspNet.Http.Features": "1.0.0-*",
     "Microsoft.Framework.ActivatorUtilities.Sources": { "type": "build", "version": "1.0.0-*" },
     "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
     "Microsoft.Framework.WebEncoders.Core": "1.0.0-*"
