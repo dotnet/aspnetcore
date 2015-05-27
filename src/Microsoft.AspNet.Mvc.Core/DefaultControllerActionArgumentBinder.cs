@@ -89,12 +89,16 @@ namespace Microsoft.AspNet.Mvc
                     metadata,
                     modelBindingResult.Model);
 
-                var validationContext = new ModelValidationContext(
-                    modelBindingContext.BindingSource,
-                    operationContext.ValidatorProvider,
-                    modelState,
-                    modelExplorer);
-                _validator.Validate(validationContext, modelBindingResult.ValidationNode);
+                if (modelBindingResult.ValidationNode != null)
+                {
+                    var validationContext = new ModelValidationContext(
+                        modelBindingContext.BindingSource,
+                        operationContext.ValidatorProvider,
+                        modelState,
+                        modelExplorer);
+
+                    _validator.Validate(validationContext, modelBindingResult.ValidationNode);
+                }
             }
 
             return modelBindingResult;

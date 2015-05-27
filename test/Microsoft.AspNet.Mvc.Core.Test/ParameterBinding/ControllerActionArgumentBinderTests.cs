@@ -588,10 +588,14 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         private static ActionBindingContext GetActionBindingContext(object model)
         {
             var binder = new Mock<IModelBinder>();
-            binder
-                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns(Task.FromResult(
-                    result: new ModelBindingResult(model: model, key: string.Empty, isModelSet: true)));
+            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                  .Returns<ModelBindingContext>(mbc =>
+                  {
+                      var validationNode = new ModelValidationNode(string.Empty, mbc.ModelMetadata, model);
+                      return Task.FromResult(
+                      result: new ModelBindingResult(model, string.Empty, isModelSet: true, validationNode: validationNode));
+                  });
+
             return new ActionBindingContext()
             {
                 ModelBinder = binder.Object,

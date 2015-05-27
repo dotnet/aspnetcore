@@ -46,7 +46,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model = new FormCollection(new Dictionary<string, string[]>());
             }
 
-            return new ModelBindingResult(model, bindingContext.ModelName, isModelSet: true);
+            var validationNode =
+                 new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, model);
+            return new ModelBindingResult(
+                model,
+                bindingContext.ModelName,
+                isModelSet: true,
+                validationNode: validationNode);
         }
     }
 }

@@ -74,7 +74,9 @@ namespace ModelBindingWebSite.Controllers
                     // by the type converter binder.
                     OrderStatus model;
                     var isModelSet = Enum.TryParse<OrderStatus>("Status" + request.Query.Get("status"), out model);
-                    return Task.FromResult(new ModelBindingResult(model, "status", isModelSet));
+                    var validationNode =
+                     new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, model);
+                    return Task.FromResult(new ModelBindingResult(model, "status", isModelSet, validationNode));
                 }
 
                 return Task.FromResult<ModelBindingResult>(null);
@@ -91,15 +93,17 @@ namespace ModelBindingWebSite.Controllers
 
                     model.BinderType = GetType();
 
-                    var key = 
-                        string.IsNullOrEmpty(bindingContext.ModelName) ? 
-                        "productId" : 
+                    var key =
+                        string.IsNullOrEmpty(bindingContext.ModelName) ?
+                        "productId" :
                         bindingContext.ModelName + "." + "productId";
 
                     var value = await bindingContext.ValueProvider.GetValueAsync(key);
                     model.ProductId = (int)value.ConvertTo(typeof(int));
 
-                    return new ModelBindingResult(model, key, true);
+                    var validationNode =
+                        new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, value);
+                    return new ModelBindingResult(model, key, true, validationNode);
                 }
 
                 return null;

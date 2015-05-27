@@ -309,7 +309,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 {
                     if (mbc.ModelType == typeof(int))
                     {
-                        return Task.FromResult(new ModelBindingResult(42, mbc.ModelName, true));
+                        var model = 42;
+                        var validationNode = new ModelValidationNode(mbc.ModelName, mbc.ModelMetadata, model);
+                        return Task.FromResult(new ModelBindingResult(model, mbc.ModelName, true, validationNode));
                     }
                     return Task.FromResult<ModelBindingResult>(null);
                 });
@@ -325,7 +327,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 {
                     if (mbc.ModelType == typeof(string))
                     {
-                        return Task.FromResult(new ModelBindingResult("some-value", mbc.ModelName, true));
+                        var model = "some-value";
+                        var validationNode = new ModelValidationNode(mbc.ModelName, mbc.ModelMetadata, model);
+                        return Task.FromResult(new ModelBindingResult(model, mbc.ModelName, true, validationNode));
                     }
                     return Task.FromResult<ModelBindingResult>(null);
                 });

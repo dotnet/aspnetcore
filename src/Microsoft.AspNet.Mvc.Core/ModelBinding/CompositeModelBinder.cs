@@ -83,24 +83,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
 
-            // Update the model validation node if the model binding result was set but no validation node was provided.
-            // This would typically be the case where leaf level model binders, do not have to add a validation node
-            // for validation to take effect. The composite being the entry point for model binders, takes care or
-            // adding missing validation nodes.
-            var modelValidationNode = modelBindingResult.ValidationNode;
-            if (modelBindingResult.IsModelSet && modelValidationNode == null)
-            {
-                modelValidationNode = new ModelValidationNode(
-                    bindingKey,
-                    bindingContext.ModelMetadata,
-                    modelBindingResult.Model);
-            }
-
             return new ModelBindingResult(
                 modelBindingResult.Model,
                 bindingKey,
                 modelBindingResult.IsModelSet,
-                modelValidationNode);
+                modelBindingResult.ValidationNode);
         }
 
         private async Task<ModelBindingResult> TryBind(ModelBindingContext bindingContext)

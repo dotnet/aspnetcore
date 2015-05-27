@@ -30,12 +30,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 newModel = valueProviderResult.ConvertTo(bindingContext.ModelType);
                 ModelBindingHelper.ReplaceEmptyStringWithNull(bindingContext.ModelMetadata, ref newModel);
+                var validationNode = new ModelValidationNode(
+                   bindingContext.ModelName,
+                   bindingContext.ModelMetadata,
+                   newModel);
 
-                // We do not need to set an explict ModelValidationNode since CompositeModelBinder does that automatically.
                 return new ModelBindingResult(
                     newModel,
                     bindingContext.ModelName,
-                    isModelSet: true);
+                    isModelSet: true,
+                    validationNode: validationNode);
             }
             catch (Exception ex)
             {

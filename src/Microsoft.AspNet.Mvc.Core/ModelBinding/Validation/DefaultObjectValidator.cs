@@ -247,8 +247,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                                 modelState.GetFieldValidationState(errorKey) == ModelValidationState.Unvalidated)
                             {
 
-                                // If we are not able to add a model error 
-                                // for instance when the max error count is reached, mark the model as skipped. 
+                                // If we are not able to add a model error
+                                // for instance when the max error count is reached, mark the model as skipped.
                                 modelState.MarkFieldSkipped(errorKey);
                             }
 
