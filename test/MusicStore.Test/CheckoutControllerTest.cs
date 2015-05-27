@@ -8,11 +8,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Session;
-using Microsoft.Framework.Caching.Distributed;
-using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Logging.Testing;
 using MusicStore.Models;
 using Xunit;
 
@@ -62,11 +58,7 @@ namespace MusicStore.Controllers
 
             // Session initialization
             var cartId = "CartId_A";
-            var sessionFeature = new SessionFeature()
-            {
-                Session = CreateTestSession(),
-            };
-            httpContext.SetFeature<ISessionFeature>(sessionFeature);
+            httpContext.SetFeature<ISessionFeature>(new TestSessionFeature());
             httpContext.Session.SetString("Session", cartId);
 
             // FormCollection initialization
@@ -239,17 +231,6 @@ namespace MusicStore.Controllers
             var viewResult = Assert.IsType<ViewResult>(result);
 
             Assert.Equal("Error", viewResult.ViewName);
-        }
-
-        private static ISession CreateTestSession()
-        {
-            return new DistributedSession(
-                new LocalCache(new MemoryCache(new MemoryCacheOptions())),
-                "sessionId_A",
-                idleTimeout: TimeSpan.MaxValue,
-                tryEstablishSession: () => true,
-                loggerFactory: new NullLoggerFactory(),
-                isNewSessionKey: true);
         }
 
         private static CartItem[] CreateTestCartItems(string cartId, decimal itemPrice, int numberOfItem)

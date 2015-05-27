@@ -41,13 +41,8 @@ namespace MusicStore.Controllers
         public async Task Index_ReturnsNoCartItems_WhenSessionEmpty()
         {
             // Arrange
-            var sessionFeature = new SessionFeature()
-            {
-                Session = CreateTestSession(),
-            };
-
             var httpContext = new DefaultHttpContext();
-            httpContext.SetFeature<ISessionFeature>(sessionFeature);
+            httpContext.SetFeature<ISessionFeature>(new TestSessionFeature());
 
             var controller = new ShoppingCartController()
             {
@@ -72,13 +67,8 @@ namespace MusicStore.Controllers
         public async Task Index_ReturnsNoCartItems_WhenNoItemsInCart()
         {
             // Arrange
-            var sessionFeature = new SessionFeature()
-            {
-                Session = CreateTestSession(),
-            };
-
             var httpContext = new DefaultHttpContext();
-            httpContext.SetFeature<ISessionFeature>(sessionFeature);
+            httpContext.SetFeature<ISessionFeature>(new TestSessionFeature());
             httpContext.Session.SetString("Session", "CartId_A");
 
             var controller = new ShoppingCartController()
@@ -105,13 +95,8 @@ namespace MusicStore.Controllers
         {
             // Arrange
             var cartId = "CartId_A";
-            var sessionFeature = new SessionFeature()
-            {
-                Session = CreateTestSession(),
-            };
-
             var httpContext = new DefaultHttpContext();
-            httpContext.SetFeature<ISessionFeature>(sessionFeature);
+            httpContext.SetFeature<ISessionFeature>(new TestSessionFeature());
             httpContext.Session.SetString("Session", cartId);
 
             var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
@@ -147,13 +132,8 @@ namespace MusicStore.Controllers
         {
             // Arrange
             var albumId = 3;
-            var sessionFeature = new SessionFeature()
-            {
-                Session = CreateTestSession(),
-            };
-
             var httpContext = new DefaultHttpContext();
-            httpContext.SetFeature<ISessionFeature>(sessionFeature);
+            httpContext.SetFeature<ISessionFeature>(new TestSessionFeature());
             httpContext.Session.SetString("Session", "CartId_A");
 
             // Creates the albums of AlbumId = 1 ~ 10.
@@ -192,11 +172,7 @@ namespace MusicStore.Controllers
             var httpContext = new DefaultHttpContext();
 
             // Session and cart initialization
-            var sessionFeature = new SessionFeature()
-            {
-                Session = CreateTestSession(),
-            };
-            httpContext.SetFeature<ISessionFeature>(sessionFeature);
+            httpContext.SetFeature<ISessionFeature>(new TestSessionFeature());
             httpContext.Session.SetString("Session", cartId);
 
             // DbContext initialization
@@ -241,18 +217,6 @@ namespace MusicStore.Controllers
 
             var cart = ShoppingCart.GetCart(dbContext, httpContext);
             Assert.False((await cart.GetCartItems()).Any(c => c.CartItemId == cartItemId));
-        }
-
-        private static ISession CreateTestSession()
-        {
-
-            return new DistributedSession(
-                new LocalCache(new MemoryCache(new MemoryCacheOptions())),
-                "sessionId_A",
-                idleTimeout: TimeSpan.MaxValue,
-                tryEstablishSession: () => true,
-                loggerFactory: new NullLoggerFactory(),
-                isNewSessionKey: true);
         }
 
         private static CartItem[] CreateTestCartItems(string cartId, decimal itemPrice, int numberOfItem)

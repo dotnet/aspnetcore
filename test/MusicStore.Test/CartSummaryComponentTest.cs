@@ -5,11 +5,8 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Session;
-using Microsoft.Framework.Caching.Distributed;
-using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Logging.Testing;
+using MusicStore.Controllers;
 using MusicStore.Models;
 using Xunit;
 
@@ -42,11 +39,7 @@ namespace MusicStore.Components
 
             // Session initialization
             var cartId = "CartId_A";
-            var sessionFeature = new SessionFeature()
-            {
-                Session = CreateTestSession(),
-            };
-            viewContext.HttpContext.SetFeature<ISessionFeature>(sessionFeature);
+            viewContext.HttpContext.SetFeature<ISessionFeature>(new TestSessionFeature());
             viewContext.HttpContext.Session.SetString("Session", cartId);
 
             // DbContext initialization
@@ -69,17 +62,6 @@ namespace MusicStore.Components
             Assert.Null(viewResult.ViewData.Model);
             Assert.Equal(10, cartSummaryComponent.ViewBag.CartCount);
             Assert.Equal("AlbumA", cartSummaryComponent.ViewBag.CartSummary);
-        }
-
-        private static ISession CreateTestSession()
-        {
-            return new DistributedSession(
-                new LocalCache(new MemoryCache(new MemoryCacheOptions())),
-                "sessionId_A",
-                idleTimeout: TimeSpan.MaxValue,
-                tryEstablishSession: () => true,
-                loggerFactory: new NullLoggerFactory(),
-                isNewSessionKey: true);
         }
 
         private static void PopulateData(MusicStoreContext context, string cartId, string albumTitle, int itemCount)
