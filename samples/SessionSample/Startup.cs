@@ -1,6 +1,10 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.Caching.Redis;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 
@@ -15,16 +19,24 @@ namespace SessionSample
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // Adds a default in-memory implementation of IDistributedCache
             services.AddCaching();
+
+            // Uncomment the following line to use the Redis implementation of IDistributedCache.
+            // This will override any previously registered IDistributedCache service.
+            //services.AddTransient<IDistributedCache, RedisCache>();
+
             services.AddSession();
+
+            services.ConfigureSession(o =>
+            {
+                o.IdleTimeout = TimeSpan.FromSeconds(30);
+            });
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseSession(o => {
-                o.IdleTimeout = TimeSpan.FromSeconds(30); });
-            // app.UseInMemorySession();
-            // app.UseDistributedSession(new RedisCache(new RedisCacheOptions() { Configuration = "localhost" }));
+            app.UseSession();
 
             app.Map("/session", subApp =>
             {

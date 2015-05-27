@@ -11,19 +11,16 @@ namespace Microsoft.Framework.DependencyInjection
     {
         public static IServiceCollection AddSession([NotNull] this IServiceCollection services)
         {
-            return services.AddSession(configure: null);
+            services.AddOptions();
+            services.AddTransient<ISessionStore, DistributedSessionStore>();
+            return services;
         }
 
-        public static IServiceCollection AddSession([NotNull] this IServiceCollection services, Action<SessionOptions> configure)
+        public static void ConfigureSession(
+            [NotNull] this IServiceCollection services,
+            [NotNull] Action<SessionOptions> configure)
         {
-            services.AddTransient<ISessionStore, DistributedSessionStore>();
-
-            if (configure != null)
-            {
-                services.Configure(configure);
-            }
-
-            return services;
+            services.Configure(configure);
         }
     }
 }

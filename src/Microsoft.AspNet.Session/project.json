@@ -2,10 +2,11 @@
     "version": "1.0.0-*",
     "description": "ASP.NET 5 session state middleware.",
     "dependencies": {
-        "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-        "Microsoft.Framework.Caching.Memory": "1.0.0-*",
+        "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
+        "Microsoft.Framework.Caching.Abstractions": "1.0.0-*",
         "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
-        "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" }
+        "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
+        "Microsoft.Framework.OptionsModel": "1.0.0-*"
     },
     "compilationOptions": {
         "allowUnsafe": true

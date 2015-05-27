@@ -34,10 +34,5 @@ namespace Microsoft.AspNet.Session
         /// resets the timeout. Note this only applies to the content of the session, not the cookie.
         /// </summary>
         public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(20);
-
-        /// <summary>
-        /// Gets or sets the session storage manager. This overrides any session store passed into the middleware constructor.
-        /// </summary>
-        public ISessionStore Store { get; set; }
     }
 }

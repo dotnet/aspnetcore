@@ -7,8 +7,6 @@ namespace Microsoft.AspNet.Session
 {
     public class SessionFeature : ISessionFeature
     {
-        public ISessionFactory Factory { get; set; }
-
         public ISession Session { get; set; }
     }
 }

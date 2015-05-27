@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNet.Http;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.Framework.Caching.Distributed;
 using Microsoft.Framework.Internal;
@@ -56,17 +56,13 @@ namespace Microsoft.AspNet.Session
             return _store.TryGetValue(new EncodedKey(key), out value);
         }
 
-        public void Set(string key, ArraySegment<byte> value)
+        public void Set(string key, [NotNull] byte[] value)
         {
             var encodedKey = new EncodedKey(key);
             if (encodedKey.KeyBytes.Length > KeyLengthLimit)
             {
                 throw new ArgumentOutOfRangeException(nameof(key),
                     string.Format("The key cannot be longer than '{0}' when encoded with UTF-8.", KeyLengthLimit));
-            }
-            if (value.Array == null)
-            {
-                throw new ArgumentException("The ArraySegment<byte>.Array cannot be null.", nameof(value));
             }
 
             Load();
@@ -75,8 +71,8 @@ namespace Microsoft.AspNet.Session
                 throw new InvalidOperationException("The session cannot be established after the response has started.");
             }
             _isModified = true;
-            byte[] copy = new byte[value.Count];
-            Buffer.BlockCopy(value.Array, value.Offset, copy, 0, value.Count);
+            byte[] copy = new byte[value.Length];
+            Buffer.BlockCopy(src: value, srcOffset: 0, dst: copy, dstOffset: 0, count: value.Length);
             _store[encodedKey] = copy;
         }
 
@@ -93,12 +89,21 @@ namespace Microsoft.AspNet.Session
             _store.Clear();
         }
 
-        // TODO: This should throw if called directly, but most other places it should fail silently (e.g. TryGetValue should just return null).
-        public void Load()
+        private void Load()
         {
             if (!_loaded)
             {
-                var data = _cache.Get(_sessionId);
+                LoadAsync().GetAwaiter().GetResult();
+            }
+        }
+
+        // TODO: This should throw if called directly, but most other places it should fail silently
+        // (e.g. TryGetValue should just return null).
+        public async Task LoadAsync()
+        {
+            if (!_loaded)
+            {
+                var data = await _cache.GetAsync(_sessionId);
                 if (data != null)
                 {
                     Deserialize(new MemoryStream(data));
@@ -111,11 +116,11 @@ namespace Microsoft.AspNet.Session
             }
         }
 
-        public void Commit()
+        public async Task CommitAsync()
         {
             if (_isModified)
             {
-                var data = _cache.Get(_sessionId);
+                var data = await _cache.GetAsync(_sessionId);
                 if (_logger.IsEnabled(LogLevel.Information) && data == null)
                 {
                     _logger.LogInformation("Session {0} started", _sessionId);
@@ -124,7 +129,7 @@ namespace Microsoft.AspNet.Session
 
                 var stream = new MemoryStream();
                 Serialize(stream);
-                _cache.Set(
+                await _cache.SetAsync(
                     _sessionId,
                     stream.ToArray(),
                     new DistributedCacheEntryOptions().SetSlidingExpiration(_idleTimeout));

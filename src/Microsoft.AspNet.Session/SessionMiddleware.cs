@@ -23,36 +23,19 @@ namespace Microsoft.AspNet.Session
         private readonly RequestDelegate _next;
         private readonly SessionOptions _options;
         private readonly ILogger _logger;
+        private readonly ISessionStore _sessionStore;
 
         public SessionMiddleware(
             [NotNull] RequestDelegate next,
             [NotNull] ILoggerFactory loggerFactory,
-            [NotNull] IEnumerable<ISessionStore> sessionStore,
-            [NotNull] IOptions<SessionOptions> options,
-            [NotNull] ConfigureOptions<SessionOptions> configureOptions)
+            [NotNull] ISessionStore sessionStore,
+            [NotNull] IOptions<SessionOptions> options)
         {
             _next = next;
             _logger = loggerFactory.CreateLogger<SessionMiddleware>();
-            if (configureOptions != null)
-            {
-                _options = options.GetNamedOptions(configureOptions.Name);
-                configureOptions.Configure(_options);
-            }
-            else
-            {
-                _options = options.Options;
-            }
-
-            if (_options.Store == null)
-            {
-                _options.Store = sessionStore.FirstOrDefault();
-                if (_options.Store == null)
-                {
-                    throw new ArgumentException("ISessionStore must be specified.");
-                }
-            }
-
-            _options.Store.Connect();
+            _options = options.Options;
+            _sessionStore = sessionStore;
+            _sessionStore.Connect();
         }
 
         public async Task Invoke(HttpContext context)
@@ -72,8 +55,7 @@ namespace Microsoft.AspNet.Session
             }
 
             var feature = new SessionFeature();
-            feature.Factory = new SessionFactory(sessionKey, _options.Store, _options.IdleTimeout, tryEstablishSession, isNewSessionKey);
-            feature.Session = feature.Factory.Create();
+            feature.Session = _sessionStore.Create(sessionKey, _options.IdleTimeout, tryEstablishSession, isNewSessionKey);
             context.SetFeature<ISessionFeature>(feature);
 
             try
@@ -88,7 +70,7 @@ namespace Microsoft.AspNet.Session
                 {
                     try
                     {
-                        feature.Session.Commit();
+                        await feature.Session.CommitAsync();
                     }
                     catch (Exception ex)
                     {

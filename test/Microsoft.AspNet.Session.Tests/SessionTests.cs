@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Session;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
@@ -24,14 +25,19 @@ namespace Microsoft.AspNet.Session
         {
             using (var server = TestServer.Create(app =>
             {
-                app.UseInMemorySession();
+                app.UseSession();
+
                 app.Run(context =>
                 {
                     Assert.Null(context.Session.GetString("NotFound"));
                     return Task.FromResult(0);
                 });
             },
-            services => services.AddOptions()))
+            services =>
+            {
+                services.AddCaching();
+                services.AddSession();
+            }))
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
@@ -46,7 +52,7 @@ namespace Microsoft.AspNet.Session
         {
             using (var server = TestServer.Create(app =>
             {
-                app.UseInMemorySession();
+                app.UseSession();
                 app.Run(context =>
                 {
                     Assert.Null(context.Session.GetString("Key"));
@@ -55,7 +61,11 @@ namespace Microsoft.AspNet.Session
                     return Task.FromResult(0);
                 });
             },
-            services => services.AddOptions()))
+            services =>
+            {
+                services.AddCaching();
+                services.AddSession();
+            }))
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
@@ -72,7 +82,7 @@ namespace Microsoft.AspNet.Session
         {
             using (var server = TestServer.Create(app =>
             {
-                app.UseInMemorySession();
+                app.UseSession();
                 app.Run(context =>
                 {
                     int? value = context.Session.GetInt32("Key");
@@ -86,7 +96,11 @@ namespace Microsoft.AspNet.Session
                     return context.Response.WriteAsync(value.Value.ToString());
                 });
             },
-            services => services.AddOptions()))
+            services =>
+            {
+                services.AddCaching();
+                services.AddSession();
+            }))
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync("first");
@@ -107,7 +121,7 @@ namespace Microsoft.AspNet.Session
         {
             using (var server = TestServer.Create(app =>
             {
-                app.UseInMemorySession();
+                app.UseSession();
                 app.Run(context =>
                 {
                     int? value = context.Session.GetInt32("Key");
@@ -131,7 +145,11 @@ namespace Microsoft.AspNet.Session
                     return context.Response.WriteAsync(value.Value.ToString());
                 });
             },
-            services => services.AddOptions()))
+            services =>
+            {
+                services.AddCaching();
+                services.AddSession();
+            }))
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync("first");
@@ -151,7 +169,7 @@ namespace Microsoft.AspNet.Session
         {
             using (var server = TestServer.Create(app =>
             {
-                app.UseInMemorySession();
+                app.UseSession();
                 app.Run(context =>
                 {
                     int? value = context.Session.GetInt32("Key");
@@ -175,7 +193,11 @@ namespace Microsoft.AspNet.Session
                     return context.Response.WriteAsync(value.Value.ToString());
                 });
             },
-            services => services.AddOptions()))
+            services =>
+            {
+                services.AddCaching();
+                services.AddSession();
+            }))
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync("first");
@@ -197,7 +219,7 @@ namespace Microsoft.AspNet.Session
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
             using (var server = TestServer.Create(app =>
             {
-                app.UseInMemorySession();
+                app.UseSession();
                 app.Run(context =>
                 {
                     context.Session.SetString("Key", "Value");
@@ -206,8 +228,9 @@ namespace Microsoft.AspNet.Session
             },
             services =>
             {
-                services.AddOptions();
                 services.AddInstance(typeof(ILoggerFactory), loggerFactory);
+                services.AddCaching();
+                services.AddSession();
             }))
             {
                 var client = server.CreateClient();
@@ -226,9 +249,7 @@ namespace Microsoft.AspNet.Session
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
             using (var server = TestServer.Create(app =>
             {
-                app.UseInMemorySession(configure: o => {
-                    o.IdleTimeout = TimeSpan.FromMilliseconds(30);
-                });
+                app.UseSession();
                 app.Run(context =>
                 {
                     int? value = context.Session.GetInt32("Key");
@@ -248,8 +269,10 @@ namespace Microsoft.AspNet.Session
             },
             services =>
             {
-                services.AddOptions();
                 services.AddInstance(typeof(ILoggerFactory), loggerFactory);
+                services.AddCaching();
+                services.AddSession();
+                services.ConfigureSession(o => o.IdleTimeout = TimeSpan.FromMilliseconds(30));
             }))
             {
                 var client = server.CreateClient();
