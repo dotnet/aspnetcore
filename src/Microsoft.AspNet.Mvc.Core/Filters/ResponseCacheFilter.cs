@@ -14,6 +14,12 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class ResponseCacheFilter : IActionFilter, IResponseCacheFilter
     {
+        private readonly CacheProfile _cacheProfile;
+        private int? _cacheDuration;
+        private ResponseCacheLocation? _cacheLocation;
+        private bool? _cacheNoStore;
+        private string _cacheVaryByHeader;
+
         /// <summary>
         /// Creates a new instance of <see cref="ResponseCacheFilter"/>
         /// </summary>
@@ -21,20 +27,7 @@ namespace Microsoft.AspNet.Mvc
         /// <see cref="ResponseCacheFilter"/>.</param>
         public ResponseCacheFilter(CacheProfile cacheProfile)
         {
-            if (!(cacheProfile.NoStore ?? false))
-            {
-                // Duration MUST be set (either in the cache profile or in the attribute) unless NoStore is true.
-                if (cacheProfile.Duration == null)
-                {
-                    throw new InvalidOperationException(
-                            Resources.FormatResponseCache_SpecifyDuration(nameof(NoStore), nameof(Duration)));
-                }
-            }
-
-            Duration = cacheProfile.Duration ?? 0;
-            Location = cacheProfile.Location ?? ResponseCacheLocation.Any;
-            NoStore = cacheProfile.NoStore ?? false;
-            VaryByHeader = cacheProfile.VaryByHeader;
+            _cacheProfile = cacheProfile;
         }
 
         /// <summary>
@@ -42,12 +35,20 @@ namespace Microsoft.AspNet.Mvc
         /// This is a required parameter.
         /// This sets "max-age" in "Cache-control" header.
         /// </summary>
-        public int Duration { get; set; }
+        public int Duration
+        {
+            get { return (_cacheDuration ?? _cacheProfile.Duration) ?? 0; }
+            set { _cacheDuration = value; }
+        }
 
         /// <summary>
         /// Gets or sets the location where the data from a particular URL must be cached.
         /// </summary>
-        public ResponseCacheLocation Location { get; set; }
+        public ResponseCacheLocation Location
+        {
+            get { return (_cacheLocation ?? _cacheProfile.Location) ?? ResponseCacheLocation.Any; }
+            set { _cacheLocation = value; }
+        }
 
         /// <summary>
         /// Gets or sets the value which determines whether the data should be stored or not.
@@ -55,13 +56,21 @@ namespace Microsoft.AspNet.Mvc
         /// Ignores the "Location" parameter for values other than "None".
         /// Ignores the "duration" parameter.
         /// </summary>
-        public bool NoStore { get; set; }
+        public bool NoStore
+        {
+            get { return (_cacheNoStore ?? _cacheProfile.NoStore) ?? false; }
+            set { _cacheNoStore = value; }
+        }
 
         /// <summary>
         /// Gets or sets the value for the Vary response header.
         /// </summary>
-        public string VaryByHeader { get; set; }
-        
+        public string VaryByHeader
+        {
+            get { return _cacheVaryByHeader ?? _cacheProfile.VaryByHeader; }
+            set { _cacheVaryByHeader = value; }
+        }
+
         // <inheritdoc />
         public void OnActionExecuting([NotNull] ActionExecutingContext context)
         {
@@ -70,6 +79,16 @@ namespace Microsoft.AspNet.Mvc
             if (IsOverridden(context))
             {
                 return;
+            }
+
+            if (!NoStore)
+            {
+                // Duration MUST be set (either in the cache profile or in this filter) unless NoStore is true.
+                if (_cacheProfile.Duration == null && _cacheDuration == null)
+                {
+                    throw new InvalidOperationException(
+                            Resources.FormatResponseCache_SpecifyDuration(nameof(NoStore), nameof(Duration)));
+                }
             }
 
             var headers = context.HttpContext.Response.Headers;

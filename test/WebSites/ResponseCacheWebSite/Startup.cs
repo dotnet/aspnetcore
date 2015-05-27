@@ -37,6 +37,14 @@ namespace ResponseCacheWebSite
                         Location = ResponseCacheLocation.None
                     });
 
+                options.CacheProfiles.Add(
+                    "PublicCache30SecVaryByAcceptHeader", new CacheProfile
+                    {
+                        Duration = 30,
+                        Location = ResponseCacheLocation.Any,
+                        VaryByHeader = "Accept"
+                    });
+
                 options.Filters.Add(new ResponseCacheFilter(new CacheProfile
                 {
                     NoStore = true,

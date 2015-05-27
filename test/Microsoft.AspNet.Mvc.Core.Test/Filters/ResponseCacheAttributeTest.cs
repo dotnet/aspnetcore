@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public void CreateInstance_ThrowsWhenTheDurationIsNotSet_WithNoStoreFalse()
+        public void CreateInstance_DoesNotThrowWhenTheDurationIsNotSet_WithNoStoreFalse()
         {
             // Arrange
             var responseCache = new ResponseCacheAttribute()
@@ -172,12 +172,11 @@ namespace Microsoft.AspNet.Mvc
             var cacheProfiles = new Dictionary<string, CacheProfile>();
             cacheProfiles.Add("Test", new CacheProfile { NoStore = false });
 
-            // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(
-                () => responseCache.CreateInstance(GetServiceProvider(cacheProfiles)));
-            Assert.Equal(
-                "If the 'NoStore' property is not set to true, 'Duration' property must be specified.",
-                ex.Message);
+            // Act
+	        var filter = responseCache.CreateInstance(GetServiceProvider(cacheProfiles));
+
+			// Assert
+	        Assert.NotNull(filter);
         }
 
         private IServiceProvider GetServiceProvider(Dictionary<string, CacheProfile> cacheProfiles)

@@ -280,5 +280,84 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             response.Headers.TryGetValues("Pragma", out pragmaValues);
             Assert.Null(pragmaValues);
         }
+
+        // Cache profile overrides
+        [Fact]
+        public async Task ResponseCacheAttribute_OverridesProfileDuration_FromAttributeProperty()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/CacheProfileOverrides/PublicCache30SecTo15Sec");
+
+            // Assert
+            var data = Assert.Single(response.Headers.GetValues("Cache-control"));
+            Assert.Equal("public, max-age=15", data);
+        }
+
+        [Fact]
+        public async Task ResponseCacheAttribute_OverridesProfileLocation_FromAttributeProperty()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/CacheProfileOverrides/PublicCache30SecToPrivateCache");
+
+            // Assert
+            var data = Assert.Single(response.Headers.GetValues("Cache-control"));
+            Assert.Equal("max-age=30, private", data);
+        }
+
+        [Fact]
+        public async Task ResponseCacheAttribute_OverridesProfileNoStore_FromAttributeProperty()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/CacheProfileOverrides/PublicCache30SecToNoStore");
+
+            // Assert
+            var data = Assert.Single(response.Headers.GetValues("Cache-control"));
+            Assert.Equal("no-store", data);
+        }
+
+        [Fact]
+        public async Task ResponseCacheAttribute_OverridesProfileVaryBy_FromAttributeProperty()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/CacheProfileOverrides/PublicCache30SecWithVaryByAcceptToVaryByTest");
+
+            // Assert
+            var cacheControl = Assert.Single(response.Headers.GetValues("Cache-control"));
+            Assert.Equal("public, max-age=30", cacheControl);
+            var vary = Assert.Single(response.Headers.GetValues("Vary"));
+            Assert.Equal("Test", vary);
+        }
+
+        [Fact]
+        public async Task ResponseCacheAttribute_OverridesProfileVaryBy_FromAttributeProperty_AndRemovesVaryHeader()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/CacheProfileOverrides/PublicCache30SecWithVaryByAcceptToVaryByNone");
+
+            // Assert
+            var cacheControl = Assert.Single(response.Headers.GetValues("Cache-control"));
+            Assert.Equal("public, max-age=30", cacheControl);
+            Assert.Throws<InvalidOperationException>(() => response.Headers.GetValues("Vary"));
+        }
     }
 }
