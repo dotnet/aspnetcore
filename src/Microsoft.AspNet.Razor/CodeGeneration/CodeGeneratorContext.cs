@@ -8,17 +8,17 @@ namespace Microsoft.AspNet.Razor.CodeGeneration
     /// <summary>
     /// Context object with information used to generate a Razor page.
     /// </summary>
-    public class CodeBuilderContext : ChunkGeneratorContext
+    public class CodeGeneratorContext : ChunkGeneratorContext
     {
         /// <summary>
-        /// Instantiates a new instance of the <see cref="CodeBuilderContext"/> object.
+        /// Instantiates a new instance of the <see cref="CodeGeneratorContext"/> object.
         /// </summary>
         /// <param name="generatorContext">A <see cref="ChunkGeneratorContext"/> to copy information from.</param>
         /// <param name="errorSink">
         /// The <see cref="ErrorSink"/> used to collect <see cref="RazorError"/>s encountered
         /// when parsing the current Razor document.
         /// </param>
-        public CodeBuilderContext(ChunkGeneratorContext generatorContext, ErrorSink errorSink)
+        public CodeGeneratorContext(ChunkGeneratorContext generatorContext, ErrorSink errorSink)
             : base(generatorContext)
         {
             ErrorSink = errorSink;
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Razor.CodeGeneration
         }
 
         // Internal for testing.
-        internal CodeBuilderContext(RazorEngineHost host,
+        internal CodeGeneratorContext(RazorEngineHost host,
                                     string className,
                                     string rootNamespace,
                                     string sourceFile,

@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Razor.CodeGeneration
         internal static readonly string RunnerVariableName = "__tagHelperRunner";
 
         private readonly CSharpCodeWriter _writer;
-        private readonly CodeBuilderContext _context;
+        private readonly CodeGeneratorContext _context;
         private readonly IChunkVisitor _bodyVisitor;
         private readonly IChunkVisitor _literalBodyVisitor;
         private readonly GeneratedTagHelperContext _tagHelperContext;
@@ -34,12 +34,12 @@ namespace Microsoft.AspNet.Razor.CodeGeneration
         /// </summary>
         /// <param name="bodyVisitor">The <see cref="IChunkVisitor"/> used to render chunks found in the body.</param>
         /// <param name="writer">The <see cref="CSharpCodeWriter"/> used to write code.</param>
-        /// <param name="context">A <see cref="CodeBuilderContext"/> instance that contains information about
+        /// <param name="context">A <see cref="CodeGeneratorContext"/> instance that contains information about
         /// the current code generation process.</param>
         public CSharpTagHelperCodeRenderer(
             [NotNull] IChunkVisitor bodyVisitor,
             [NotNull] CSharpCodeWriter writer,
-            [NotNull] CodeBuilderContext context)
+            [NotNull] CodeGeneratorContext context)
         {
             _bodyVisitor = bodyVisitor;
             _writer = writer;
@@ -653,7 +653,7 @@ namespace Microsoft.AspNet.Razor.CodeGeneration
             public CSharpLiteralCodeVisitor(
                 CSharpTagHelperCodeRenderer tagHelperRenderer,
                 CSharpCodeWriter writer,
-                CodeBuilderContext context)
+                CodeGeneratorContext context)
                 : base(writer, context)
             {
                 // Ensure that no matter how this class is used, we don't create numerous CSharpTagHelperCodeRenderer

@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Razor.CodeGeneration.Visitors
         private bool _foundTagHelpers;
 
         public CSharpTagHelperFieldDeclarationVisitor([NotNull] CSharpCodeWriter writer,
-                                                      [NotNull] CodeBuilderContext context)
+                                                      [NotNull] CodeGeneratorContext context)
             : base(writer, context)
         {
             _declaredTagHelpers = new HashSet<string>(StringComparer.Ordinal);

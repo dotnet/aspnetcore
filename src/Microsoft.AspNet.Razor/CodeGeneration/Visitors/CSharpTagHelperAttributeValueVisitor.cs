@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Razor.CodeGeneration.Visitors
         /// </summary>
         /// <param name="writer">The <see cref="CSharpCodeWriter"/> used to write code.</param>
         /// <param name="context">
-        /// A <see cref="CodeBuilderContext"/> instance that contains information about the current code generation
+        /// A <see cref="CodeGeneratorContext"/> instance that contains information about the current code generation
         /// process.
         /// </param>
         /// <param name="attributeTypeName">
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Razor.CodeGeneration.Visitors
         /// </param>
         public CSharpTagHelperAttributeValueVisitor(
             [NotNull] CSharpCodeWriter writer,
-            [NotNull] CodeBuilderContext context,
+            [NotNull] CodeGeneratorContext context,
             string attributeTypeName)
             : base(writer, context)
         {

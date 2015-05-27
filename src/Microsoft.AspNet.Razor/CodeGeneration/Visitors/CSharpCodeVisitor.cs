@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Razor.CodeGeneration.Visitors
         private CSharpPaddingBuilder _paddingBuilder;
         private CSharpTagHelperCodeRenderer _tagHelperCodeRenderer;
 
-        public CSharpCodeVisitor([NotNull] CSharpCodeWriter writer, [NotNull] CodeBuilderContext context)
+        public CSharpCodeVisitor([NotNull] CSharpCodeWriter writer, [NotNull] CodeGeneratorContext context)
             : base(writer, context)
         {
             _paddingBuilder = new CSharpPaddingBuilder(context.Host);
@@ -519,7 +519,7 @@ namespace Microsoft.AspNet.Razor.CodeGeneration.Visitors
             return RenderPreWriteStart(Writer, Context);
         }
 
-        public static CSharpCodeWriter RenderPreWriteStart(CSharpCodeWriter writer, CodeBuilderContext context)
+        public static CSharpCodeWriter RenderPreWriteStart(CSharpCodeWriter writer, CodeGeneratorContext context)
         {
             if (!string.IsNullOrEmpty(context.TargetWriterName))
             {

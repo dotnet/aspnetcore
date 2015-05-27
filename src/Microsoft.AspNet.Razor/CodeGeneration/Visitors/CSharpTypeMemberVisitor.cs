@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Razor.CodeGeneration.Visitors
 
         public CSharpTypeMemberVisitor([NotNull] CSharpCodeVisitor csharpCodeVisitor,
                                        [NotNull] CSharpCodeWriter writer,
-                                       [NotNull] CodeBuilderContext context)
+                                       [NotNull] CodeGeneratorContext context)
             : base(writer, context)
         {
             _csharpCodeVisitor = csharpCodeVisitor;

@@ -103,11 +103,11 @@ namespace Microsoft.AspNet.Razor.Test
         }
 
         [Fact]
-        public void CreateCodeBuilder_PassesChunkGeneratorThroughDecorateMethodOnHost()
+        public void CreateCodeGenerator_PassesChunkGeneratorThroughDecorateMethodOnHost()
         {
             // Arrange
             var mockHost = new Mock<RazorEngineHost>(new CSharpRazorCodeLanguage()) { CallBase = true };
-            var codeBuilderContext = new CodeBuilderContext(
+            var codeGeneratorContext = new CodeGeneratorContext(
                 mockHost.Object,
                 "different-class",
                 "different-ns",
@@ -115,14 +115,14 @@ namespace Microsoft.AspNet.Razor.Test
                 shouldGenerateLinePragmas: true,
                 errorSink: new ErrorSink());
 
-            var expected = new CSharpCodeBuilder(codeBuilderContext);
+            var expected = new CSharpCodeGenerator(codeGeneratorContext);
 
-            mockHost.Setup(h => h.DecorateCodeBuilder(It.IsAny<CSharpCodeBuilder>(), codeBuilderContext))
+            mockHost.Setup(h => h.DecorateCodeGenerator(It.IsAny<CSharpCodeGenerator>(), codeGeneratorContext))
                     .Returns(expected);
             var engine = new RazorTemplateEngine(mockHost.Object);
 
             // Act
-            var actual = engine.CreateCodeBuilder(codeBuilderContext);
+            var actual = engine.CreateCodeGenerator(codeGeneratorContext);
 
             // Assert
             Assert.Equal(expected, actual);

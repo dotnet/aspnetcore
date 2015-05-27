@@ -54,6 +54,6 @@ namespace Microsoft.AspNet.Razor
         /// </summary>
         public abstract RazorChunkGenerator CreateChunkGenerator(string className, string rootNamespaceName, string sourceFileName, RazorEngineHost host);
 
-        public abstract CodeBuilder CreateCodeBuilder(CodeBuilderContext chunkGeneratorContext);
+        public abstract CodeGenerator CreateCodeGenerator(CodeGeneratorContext chunkGeneratorContext);
     }
 }

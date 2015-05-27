@@ -3,20 +3,20 @@
 
 namespace Microsoft.AspNet.Razor.CodeGeneration
 {
-    public abstract class CodeBuilder
+    public abstract class CodeGenerator
     {
-        private readonly CodeBuilderContext _context;
+        private readonly CodeGeneratorContext _context;
 
-        public CodeBuilder(CodeBuilderContext context)
+        public CodeGenerator(CodeGeneratorContext context)
         {
             _context = context;
         }
 
-        protected CodeBuilderContext Context
+        protected CodeGeneratorContext Context
         {
             get { return _context; }
         }
 
-        public abstract CodeBuilderResult Build();
+        public abstract CodeGeneratorResult Generate();
     }
 }

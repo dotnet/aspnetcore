@@ -10,14 +10,14 @@ namespace Microsoft.AspNet.Razor.CodeGeneration.Visitors
     public abstract class ChunkVisitor<TWriter> : IChunkVisitor
         where TWriter : CodeWriter
     {
-        public ChunkVisitor([NotNull] TWriter writer, [NotNull] CodeBuilderContext context)
+        public ChunkVisitor([NotNull] TWriter writer, [NotNull] CodeGeneratorContext context)
         {
             Writer = writer;
             Context = context;
         }
 
         protected TWriter Writer { get; private set; }
-        protected CodeBuilderContext Context { get; private set; }
+        protected CodeGeneratorContext Context { get; private set; }
 
         public void Accept([NotNull] IList<Chunk> chunks)
         {

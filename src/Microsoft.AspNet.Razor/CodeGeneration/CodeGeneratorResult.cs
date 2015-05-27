@@ -5,9 +5,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Razor.CodeGeneration
 {
-    public class CodeBuilderResult
+    public class CodeGeneratorResult
     {
-        public CodeBuilderResult(string code, IList<LineMapping> designTimeLineMappings)
+        public CodeGeneratorResult(string code, IList<LineMapping> designTimeLineMappings)
         {
             Code = code;
             DesignTimeLineMappings = designTimeLineMappings;

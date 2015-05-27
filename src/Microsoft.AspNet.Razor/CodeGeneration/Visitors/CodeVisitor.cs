@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Razor.CodeGeneration.Visitors
     public class CodeVisitor<TWriter> : ChunkVisitor<TWriter>
         where TWriter : CodeWriter
     {
-        public CodeVisitor([NotNull] TWriter writer, [NotNull] CodeBuilderContext context)
+        public CodeVisitor([NotNull] TWriter writer, [NotNull] CodeGeneratorContext context)
             : base(writer, context)
         {
         }

@@ -19,15 +19,15 @@ namespace Microsoft.AspNet.Razor
         /// Instantiates a new <see cref="GeneratorResults"/> instance.
         /// </summary>
         /// <param name="parserResults">The results of parsing a document.</param>
-        /// <param name="codeBuilderResult">The results of generating code for the document.</param>
+        /// <param name="codeGeneratorResult">The results of generating code for the document.</param>
         /// <param name="chunkTree">A <see cref="ChunkTree"/> for the document.</param>
         public GeneratorResults([NotNull] ParserResults parserResults,
-                                [NotNull] CodeBuilderResult codeBuilderResult,
+                                [NotNull] CodeGeneratorResult codeGeneratorResult,
                                 [NotNull] ChunkTree chunkTree)
             : this(parserResults.Document,
                    parserResults.TagHelperDescriptors,
                    parserResults.ErrorSink,
-                   codeBuilderResult,
+                   codeGeneratorResult,
                    chunkTree)
         {
         }
@@ -43,17 +43,17 @@ namespace Microsoft.AspNet.Razor
         /// The <see cref="ErrorSink"/> used to collect <see cref="RazorError"/>s encountered when parsing the
         /// current Razor document.
         /// </param>
-        /// <param name="codeBuilderResult">The results of generating code for the document.</param>
+        /// <param name="codeGeneratorResult">The results of generating code for the document.</param>
         /// <param name="chunkTree">A <see cref="ChunkTree"/> for the document.</param>
         public GeneratorResults([NotNull] Block document,
                                 [NotNull] IEnumerable<TagHelperDescriptor> tagHelperDescriptors,
                                 [NotNull] ErrorSink errorSink,
-                                [NotNull] CodeBuilderResult codeBuilderResult,
+                                [NotNull] CodeGeneratorResult codeGeneratorResult,
                                 [NotNull] ChunkTree chunkTree)
             : base(document, tagHelperDescriptors, errorSink)
         {
-            GeneratedCode = codeBuilderResult.Code;
-            DesignTimeLineMappings = codeBuilderResult.DesignTimeLineMappings;
+            GeneratedCode = codeGeneratorResult.Code;
+            DesignTimeLineMappings = codeGeneratorResult.DesignTimeLineMappings;
             ChunkTree = chunkTree;
         }
 

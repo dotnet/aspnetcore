@@ -18,9 +18,9 @@ namespace Microsoft.AspNet.Razor.CodeGeneration.Visitors
         /// Creates a new instance of <see cref="CSharpTagHelperRunnerInitializationVisitor"/>.
         /// </summary>
         /// <param name="writer">The <see cref="CSharpCodeWriter"/> used to generate code.</param>
-        /// <param name="context">The <see cref="CodeBuilderContext"/>.</param>
+        /// <param name="context">The <see cref="CodeGeneratorContext"/>.</param>
         public CSharpTagHelperRunnerInitializationVisitor([NotNull] CSharpCodeWriter writer,
-                                                          [NotNull] CodeBuilderContext context)
+                                                          [NotNull] CodeGeneratorContext context)
             : base(writer, context)
         {
             _tagHelperContext = Context.Host.GeneratedClassContext.GeneratedTagHelperContext;

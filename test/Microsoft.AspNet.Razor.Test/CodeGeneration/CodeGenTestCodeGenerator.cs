@@ -1,14 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.CodeGeneration;
 
 namespace Microsoft.AspNet.Razor.Test.Generator
 {
-    public class CodeGenTestCodeBuilder : CSharpCodeBuilder
+    public class CodeGenTestCodeGenerator : CSharpCodeGenerator
     {
-        public CodeGenTestCodeBuilder(CodeBuilderContext context)
+        public CodeGenTestCodeGenerator(CodeGeneratorContext context)
             : base(context)
         {
         }

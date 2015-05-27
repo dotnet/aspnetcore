@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Razor.CodeGeneration.Visitors
 {
     public class CSharpBaseTypeVisitor : CodeVisitor<CSharpCodeWriter>
     {
-        public CSharpBaseTypeVisitor([NotNull] CSharpCodeWriter writer, [NotNull] CodeBuilderContext context)
+        public CSharpBaseTypeVisitor([NotNull] CSharpCodeWriter writer, [NotNull] CodeGeneratorContext context)
             : base(writer, context)
         {
         }

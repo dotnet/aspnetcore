@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.CodeGeneration;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Razor.TagHelpers
+namespace Microsoft.AspNet.Razor.CodeGeneration
 {
     /// <summary>
     /// Renders code for tag helper property initialization.
@@ -21,7 +20,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// The <see cref="TagHelperAttributeDescriptor"/> to generate code for.
         /// </param>
         /// <param name="writer">The <see cref="CSharpCodeWriter"/> that's used to write code.</param>
-        /// <param name="context">A <see cref="ChunkGeneratorContext"/> instance that contains information about
+        /// <param name="context">A <see cref="Chunks.Generators.ChunkGeneratorContext"/> instance that contains information about
         /// the current code generation process.</param>
         /// <param name="renderAttributeValue">
         /// <see cref="Action"/> that renders the raw value of the HTML attribute.
@@ -31,11 +30,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// C# expressions e.g. <c>"PropertyName"</c>. <c>true</c> if the attribute value contain at least one in-line
         /// Razor construct e.g. <c>"@(@readonly)"</c>.
         /// </param>
-        public virtual void RenderAttributeValue([NotNull] TagHelperAttributeDescriptor attributeDescriptor,
-                                                 [NotNull] CSharpCodeWriter writer,
-                                                 [NotNull] CodeBuilderContext context,
-                                                 [NotNull] Action<CSharpCodeWriter> renderAttributeValue,
-                                                 bool complexValue)
+        public virtual void RenderAttributeValue(
+            [NotNull] TagHelperAttributeDescriptor attributeDescriptor,
+            [NotNull] CSharpCodeWriter writer,
+            [NotNull] CodeGeneratorContext context,
+            [NotNull] Action<CSharpCodeWriter> renderAttributeValue,
+            bool complexValue)
         {
             renderAttributeValue(writer);
         }

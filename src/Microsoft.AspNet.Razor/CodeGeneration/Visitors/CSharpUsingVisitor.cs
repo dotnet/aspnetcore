@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Razor.CodeGeneration.Visitors
 
         private bool _foundTagHelpers;
 
-        public CSharpUsingVisitor([NotNull] CSharpCodeWriter writer, [NotNull] CodeBuilderContext context)
+        public CSharpUsingVisitor([NotNull] CSharpCodeWriter writer, [NotNull] CodeGeneratorContext context)
             : base(writer, context)
         {
             ImportedUsings = new List<string>();

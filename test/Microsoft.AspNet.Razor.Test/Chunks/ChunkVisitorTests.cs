@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Razor.Chunks
 
         private static Mock<ChunkVisitor<CodeWriter>> CreateVisitor()
         {
-            var codeBuilderContext = new CodeBuilderContext(
+            var codeGeneratorContext = new CodeGeneratorContext(
                 new RazorEngineHost(new CSharpRazorCodeLanguage()),
                 "myclass",
                 "myns",
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Razor.Chunks
                 shouldGenerateLinePragmas: false,
                 errorSink: new ErrorSink());
             var writer = Mock.Of<CodeWriter>();
-            return new Mock<ChunkVisitor<CodeWriter>>(writer, codeBuilderContext);
+            return new Mock<ChunkVisitor<CodeWriter>>(writer, codeGeneratorContext);
         }
 
         private class MyTestChunk : Chunk

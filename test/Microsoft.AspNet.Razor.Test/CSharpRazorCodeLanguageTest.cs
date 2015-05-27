@@ -3,7 +3,6 @@
 
 using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.CodeGeneration;
-using Microsoft.AspNet.Razor.CodeGeneration;
 using Microsoft.AspNet.Razor.Parser;
 using Xunit;
 
@@ -45,12 +44,12 @@ namespace Microsoft.AspNet.Razor.Test
         }
 
         [Fact]
-        public void CreateCodeBuilder_ReturnsNewCSharpCodeBuilder()
+        public void CreateCodeGenerator_ReturnsNewCSharpCodeGenerator()
         {
             // Arrange
             var language = new CSharpRazorCodeLanguage();
             var host = new RazorEngineHost(language);
-            var codeBuilderContext = new CodeBuilderContext(
+            var codeGeneratorContext = new CodeGeneratorContext(
                 host,
                 "myclass",
                 "myns",
@@ -59,10 +58,10 @@ namespace Microsoft.AspNet.Razor.Test
                 errorSink: new ErrorSink());
 
             // Act
-            var generator = language.CreateCodeBuilder(codeBuilderContext);
+            var generator = language.CreateCodeGenerator(codeGeneratorContext);
 
             // Assert
-            Assert.IsType<CSharpCodeBuilder>(generator);
+            Assert.IsType<CSharpCodeGenerator>(generator);
         }
     }
 }

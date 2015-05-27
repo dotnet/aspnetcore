@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Razor.CodeGeneration
         /// Indicates that expressions should be written to the output stream
         /// </summary>
         /// <example>
-        /// If @foo is rendered with WriteToOutput, the code builder would output the following code:
+        /// If @foo is rendered with WriteToOutput, the code generator would output the following code:
         ///
         /// Write(foo);
         /// </example>
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Razor.CodeGeneration
         /// the code exists will be used to render it
         /// </summary>
         /// <example>
-        /// If @foo is rendered with InjectCode, the code builder would output the following code:
+        /// If @foo is rendered with InjectCode, the code generator would output the following code:
         ///
         /// foo
         /// </example>

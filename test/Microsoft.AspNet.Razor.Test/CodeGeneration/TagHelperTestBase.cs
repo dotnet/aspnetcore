@@ -77,9 +77,9 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 _tagHelperDescriptors = tagHelperDescriptors;
             }
 
-            protected internal override CodeBuilder CreateCodeBuilder(CodeBuilderContext context)
+            protected internal override CodeGenerator CreateCodeGenerator(CodeGeneratorContext context)
             {
-                return Host.DecorateCodeBuilder(new TestCSharpCodeBuilder(context), context);
+                return Host.DecorateCodeGenerator(new TestCSharpCodeGenerator(context), context);
             }
 
             protected internal override RazorParser CreateParser(string fileName)
@@ -92,15 +92,15 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             }
         }
 
-        protected class TestCSharpCodeBuilder : CodeGenTestCodeBuilder
+        protected class TestCSharpCodeGenerator : CodeGenTestCodeGenerator
         {
-            public TestCSharpCodeBuilder(CodeBuilderContext context)
+            public TestCSharpCodeGenerator(CodeGeneratorContext context)
                 : base(context)
             {
 
             }
 
-            protected override CSharpCodeVisitor CreateCSharpCodeVisitor(CSharpCodeWriter writer, CodeBuilderContext context)
+            protected override CSharpCodeVisitor CreateCSharpCodeVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
             {
                 var visitor = base.CreateCSharpCodeVisitor(writer, context);
                 visitor.TagHelperRenderer = new NoUniqueIdsTagHelperCodeRenderer(visitor, writer, context);
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             {
                 public NoUniqueIdsTagHelperCodeRenderer(IChunkVisitor bodyVisitor,
                                                         CSharpCodeWriter writer,
-                                                        CodeBuilderContext context)
+                                                        CodeGeneratorContext context)
                     : base(bodyVisitor, writer, context)
                 {
 

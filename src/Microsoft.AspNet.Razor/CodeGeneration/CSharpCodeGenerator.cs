@@ -10,13 +10,13 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.CodeGeneration
 {
-    public class CSharpCodeBuilder : CodeBuilder
+    public class CSharpCodeGenerator : CodeGenerator
     {
         // See http://msdn.microsoft.com/en-us/library/system.codedom.codechecksumpragma.checksumalgorithmid.aspx
         private const string Sha1AlgorithmId = "{ff1816ec-aa5e-4d10-87f7-6f4963833460}";
         private const int DisableAsyncWarning = 1998;
 
-        public CSharpCodeBuilder(CodeBuilderContext context)
+        public CSharpCodeGenerator(CodeGeneratorContext context)
             : base(context)
         {
         }
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Razor.CodeGeneration
             return new CSharpCodeWriter();
         }
 
-        public override CodeBuilderResult Build()
+        public override CodeGeneratorResult Generate()
         {
             var writer = CreateCodeWriter();
 
@@ -81,11 +81,11 @@ namespace Microsoft.AspNet.Razor.CodeGeneration
                 }
             }
 
-            return new CodeBuilderResult(writer.GenerateCode(), writer.LineMappingManager.Mappings);
+            return new CodeGeneratorResult(writer.GenerateCode(), writer.LineMappingManager.Mappings);
         }
 
         protected virtual CSharpCodeVisitor CreateCSharpCodeVisitor([NotNull] CSharpCodeWriter writer,
-                                                                    [NotNull] CodeBuilderContext context)
+                                                                    [NotNull] CodeGeneratorContext context)
         {
             return new CSharpCodeVisitor(writer, context);
         }

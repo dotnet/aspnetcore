@@ -177,19 +177,19 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         private static TrackingUniqueIdsTagHelperCodeRenderer CreateCodeRenderer()
         {
             var writer = new CSharpCodeWriter();
-            var codeBuilderContext = CreateContext();
-            var visitor = new CSharpCodeVisitor(writer, codeBuilderContext);
+            var codeGeneratorContext = CreateContext();
+            var visitor = new CSharpCodeVisitor(writer, codeGeneratorContext);
             var codeRenderer = new TrackingUniqueIdsTagHelperCodeRenderer(
                 visitor,
                 writer,
-                codeBuilderContext);
+                codeGeneratorContext);
             visitor.TagHelperRenderer = codeRenderer;
             return codeRenderer;
         }
 
-        private static CodeBuilderContext CreateContext()
+        private static CodeGeneratorContext CreateContext()
         {
-            return new CodeBuilderContext(
+            return new CodeGeneratorContext(
                 new ChunkGeneratorContext(
                     new RazorEngineHost(new CSharpRazorCodeLanguage()),
                     "MyClass",
@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             public TrackingUniqueIdsTagHelperCodeRenderer(
                 IChunkVisitor bodyVisitor,
                 CSharpCodeWriter writer,
-                CodeBuilderContext context)
+                CodeGeneratorContext context)
                 : base(bodyVisitor, writer, context)
             {
 

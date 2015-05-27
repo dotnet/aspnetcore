@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.CodeGeneration;
 
 namespace Microsoft.AspNet.Razor.Test.Generator
@@ -13,15 +12,15 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         {
         }
 
-        public override CodeBuilder DecorateCodeBuilder(CodeBuilder incomingBuilder, CodeBuilderContext context)
+        public override CodeGenerator DecorateCodeGenerator(CodeGenerator incomingBuilder, CodeGeneratorContext context)
         {
-            if (incomingBuilder is CodeGenTestCodeBuilder)
+            if (incomingBuilder is CodeGenTestCodeGenerator)
             {
                 return incomingBuilder;
             }
             else
             {
-                return new CodeGenTestCodeBuilder(context);
+                return new CodeGenTestCodeGenerator(context);
             }
         }
     }

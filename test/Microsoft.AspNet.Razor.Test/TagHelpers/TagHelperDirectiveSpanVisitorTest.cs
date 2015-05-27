@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             resolver.Setup(mock => mock.Resolve(It.IsAny<TagHelperDescriptorResolutionContext>()))
                     .Returns(Enumerable.Empty<TagHelperDescriptor>());
             var tagHelperDirectiveSpanVisitor = new TagHelperDirectiveSpanVisitor(
-                resolver.Object, 
+                resolver.Object,
                 new ErrorSink());
             var document = new MarkupBlock(
                 Factory.Code("\"one\"").AsAddTagHelper("one"),
@@ -139,8 +139,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             // Assert
             var directiveDescriptor = Assert.Single(resolver.DirectiveDescriptors);
             Assert.Equal(
-                expectedDirectiveDescriptor, 
-                directiveDescriptor, 
+                expectedDirectiveDescriptor,
+                directiveDescriptor,
                 TagHelperDirectiveDescriptorComparer.Default);
         }
 
@@ -255,14 +255,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
 
         private class CustomTagHelperDirectiveSpanVisitor : TagHelperDirectiveSpanVisitor
         {
-            private Func<IEnumerable<TagHelperDirectiveDescriptor>, 
+            private Func<IEnumerable<TagHelperDirectiveDescriptor>,
                          ErrorSink,
                          TagHelperDescriptorResolutionContext> _replacer;
 
             public CustomTagHelperDirectiveSpanVisitor(
                 ITagHelperDescriptorResolver descriptorResolver,
-                Func<IEnumerable<TagHelperDirectiveDescriptor>, 
-                     ErrorSink, 
+                Func<IEnumerable<TagHelperDirectiveDescriptor>,
+                     ErrorSink,
                      TagHelperDescriptorResolutionContext> replacer)
                 : base(descriptorResolver, new ErrorSink())
             {

@@ -313,17 +313,17 @@ namespace Microsoft.AspNet.Razor
             var results = parser.Parse(input);
 
             // Generate code
-            var generator = CreateChunkGenerator(className, rootNamespace, sourceFileName);
-            generator.DesignTimeMode = Host.DesignTimeMode;
-            generator.Visit(results);
+            var chunkGenerator = CreateChunkGenerator(className, rootNamespace, sourceFileName);
+            chunkGenerator.DesignTimeMode = Host.DesignTimeMode;
+            chunkGenerator.Visit(results);
 
-            var codeBuilderContext = new CodeBuilderContext(generator.Context, results.ErrorSink);
-            codeBuilderContext.Checksum = checksum;
-            var builder = CreateCodeBuilder(codeBuilderContext);
-            var builderResult = builder.Build();
+            var codeGeneratorContext = new CodeGeneratorContext(chunkGenerator.Context, results.ErrorSink);
+            codeGeneratorContext.Checksum = checksum;
+            var codeGenerator = CreateCodeGenerator(codeGeneratorContext);
+            var codeGeneratorResult = codeGenerator.Generate();
 
             // Collect results and return
-            return new GeneratorResults(results, builderResult, codeBuilderContext.ChunkTreeBuilder.ChunkTree);
+            return new GeneratorResults(results, codeGeneratorResult, codeGeneratorContext.ChunkTreeBuilder.ChunkTree);
         }
 
         protected internal virtual RazorChunkGenerator CreateChunkGenerator(
@@ -351,9 +351,9 @@ namespace Microsoft.AspNet.Razor
             return Host.DecorateRazorParser(parser, sourceFileName);
         }
 
-        protected internal virtual CodeBuilder CreateCodeBuilder(CodeBuilderContext context)
+        protected internal virtual CodeGenerator CreateCodeGenerator(CodeGeneratorContext context)
         {
-            return Host.DecorateCodeBuilder(Host.CodeLanguage.CreateCodeBuilder(context), context);
+            return Host.DecorateCodeGenerator(Host.CodeLanguage.CreateCodeGenerator(context), context);
         }
 
         private static string ComputeChecksum(Stream inputStream)

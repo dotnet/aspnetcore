@@ -42,38 +42,38 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
             // Act & Assert
             RunTagHelperTest(testName: "BasicTagHelpers",
-                             baseLineName: "BasicTagHelpers.CustomAttributeCodeBuilder",
+                             baseLineName: "BasicTagHelpers.CustomAttributeCodeGenerator",
                              tagHelperDescriptors: tagHelperDescriptors,
                              hostConfig: (host) =>
                              {
-                                 return new CodeBuilderReplacingHost(host);
+                                 return new CodeGeneratorReplacingHost(host);
                              });
         }
 
-        private class CodeBuilderReplacingHost : CodeGenTestHost
+        private class CodeGeneratorReplacingHost : CodeGenTestHost
         {
-            public CodeBuilderReplacingHost(RazorEngineHost originalHost)
+            public CodeGeneratorReplacingHost(RazorEngineHost originalHost)
                 : base(new CSharpRazorCodeLanguage())
             {
                 GeneratedClassContext = originalHost.GeneratedClassContext;
             }
 
-            public override CodeBuilder DecorateCodeBuilder(CodeBuilder incomingBuilder, CodeBuilderContext context)
+            public override CodeGenerator DecorateCodeGenerator(CodeGenerator incomingBuilder, CodeGeneratorContext context)
             {
-                return new AttributeChunkGeneratorReplacingCodeBuilder(context);
+                return new AttributeChunkGeneratorReplacingCodeGenerator(context);
             }
         }
 
-        private class AttributeChunkGeneratorReplacingCodeBuilder : TestCSharpCodeBuilder
+        private class AttributeChunkGeneratorReplacingCodeGenerator : TestCSharpCodeGenerator
         {
-            public AttributeChunkGeneratorReplacingCodeBuilder(CodeBuilderContext context)
+            public AttributeChunkGeneratorReplacingCodeGenerator(CodeGeneratorContext context)
                 : base(context)
             {
             }
 
             protected override CSharpCodeVisitor CreateCSharpCodeVisitor(
                 CSharpCodeWriter writer,
-                CodeBuilderContext context)
+                CodeGeneratorContext context)
             {
                 var bodyVisitor = base.CreateCSharpCodeVisitor(writer, context);
 
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             public override void RenderAttributeValue(
                 TagHelperAttributeDescriptor attributeInfo,
                 CSharpCodeWriter writer,
-                CodeBuilderContext context,
+                CodeGeneratorContext context,
                 Action<CSharpCodeWriter> renderAttributeValue,
                 bool complexValue)
             {
