@@ -4,9 +4,9 @@
 using System;
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Generator.Compiler;
-using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
+using Microsoft.AspNet.Razor.Chunks;
+using Microsoft.AspNet.Razor.Chunks.Generators;
+using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Xunit;
 
@@ -144,15 +144,16 @@ MyType1
             Assert.Equal(expected, code);
         }
 
-        private static CodeBuilderContext CreateContext()
+        private static CodeGeneratorContext CreateContext()
         {
-            var codeTreeCache = new DefaultCodeTreeCache(new TestFileProvider());
-            return new CodeBuilderContext(
-                new CodeGeneratorContext(new MvcRazorHost(codeTreeCache),
-                                         "MyClass",
-                                         "MyNamespace",
-                                         string.Empty,
-                                         shouldGenerateLinePragmas: true),
+            var chunkTreeCache = new DefaultChunkTreeCache(new TestFileProvider());
+            return new CodeGeneratorContext(
+                new ChunkGeneratorContext(
+                    new MvcRazorHost(chunkTreeCache),
+                    "MyClass",
+                    "MyNamespace",
+                    string.Empty,
+                    shouldGenerateLinePragmas: true),
                 new ErrorSink());
         }
     }

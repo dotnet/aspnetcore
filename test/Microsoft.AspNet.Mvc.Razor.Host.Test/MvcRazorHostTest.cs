@@ -7,9 +7,10 @@ using System.IO;
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Generator.Compiler;
-using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
+using Microsoft.AspNet.Razor.Chunks;
+using Microsoft.AspNet.Razor.Chunks.Generators;
+using Microsoft.AspNet.Razor.CodeGenerators;
+using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.Framework.Internal;
 using Xunit;
@@ -30,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var rootedAppPath = $"{rootPrefix}SomeComputer/Location/Project/";
             var rootedFilePath = $"{rootPrefix}SomeComputer/Location/Project/src/file.cshtml";
             var host = new MvcRazorHost(
-                codeTreeCache: null,
+                ChunkTreeCache: null,
                 pathNormalizer: new DesignTimeRazorPathNormalizer(rootedAppPath));
             var parser = new RazorParser(
                 host.CodeLanguage.CreateCodeParser(),
@@ -43,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             host.DecorateRazorParser(parser, rootedFilePath);
 
             // Assert
-            Assert.Equal("src/file.cshtml", chunkInheritanceUtility.InheritedCodeTreePagePath, StringComparer.Ordinal);
+            Assert.Equal("src/file.cshtml", chunkInheritanceUtility.InheritedChunkTreePagePath, StringComparer.Ordinal);
         }
 
         [Theory]
@@ -51,32 +52,32 @@ namespace Microsoft.AspNet.Mvc.Razor
         [InlineData("C:/")]
         [InlineData(@"\\")]
         [InlineData(@"C:\")]
-        public void DecorateCodeBuilder_DesignTimeRazorPathNormalizer_NormalizesChunkInheritanceUtilityPaths(
+        public void DecorateCodeGenerator_DesignTimeRazorPathNormalizer_NormalizesChunkInheritanceUtilityPaths(
             string rootPrefix)
         {
             // Arrange
             var rootedAppPath = $"{rootPrefix}SomeComputer/Location/Project/";
             var rootedFilePath = $"{rootPrefix}SomeComputer/Location/Project/src/file.cshtml";
             var host = new MvcRazorHost(
-                codeTreeCache: null,
+                ChunkTreeCache: null,
                 pathNormalizer: new DesignTimeRazorPathNormalizer(rootedAppPath));
             var chunkInheritanceUtility = new PathValidatingChunkInheritanceUtility(host);
-            var codeBuilderContext = new CodeBuilderContext(
-                new CodeGeneratorContext(
+            var CodeGeneratorContext = new CodeGeneratorContext(
+                new ChunkGeneratorContext(
                     host,
                     host.DefaultClassName,
                     host.DefaultNamespace,
                     rootedFilePath,
                     shouldGenerateLinePragmas: true),
                 new ErrorSink());
-            var codeBuilder = new CSharpCodeBuilder(codeBuilderContext);
+            var codeGenerator = new CSharpCodeGenerator(CodeGeneratorContext);
             host.ChunkInheritanceUtility = chunkInheritanceUtility;
 
             // Act
-            host.DecorateCodeBuilder(codeBuilder, codeBuilderContext);
+            host.DecorateCodeGenerator(codeGenerator, CodeGeneratorContext);
 
             // Assert
-            Assert.Equal("src/file.cshtml", chunkInheritanceUtility.InheritedCodeTreePagePath, StringComparer.Ordinal);
+            Assert.Equal("src/file.cshtml", chunkInheritanceUtility.InheritedChunkTreePagePath, StringComparer.Ordinal);
         }
 
         [Fact]
@@ -84,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHost(new DefaultCodeTreeCache(fileProvider));
+            var host = new MvcRazorHost(new DefaultChunkTreeCache(fileProvider));
 
             // Act
             var instrumented = host.EnableInstrumentation;
@@ -98,7 +99,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHost(new DefaultCodeTreeCache(fileProvider))
+            var host = new MvcRazorHost(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
             };
@@ -152,7 +153,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new TestMvcRazorHost(new DefaultCodeTreeCache(fileProvider));
+            var host = new TestMvcRazorHost(new DefaultChunkTreeCache(fileProvider));
 
             // Act and Assert
             RunRuntimeTest(host, scenarioName);
@@ -163,7 +164,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHost(new DefaultCodeTreeCache(fileProvider))
+            var host = new MvcRazorHost(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
             };
@@ -183,7 +184,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHost(new DefaultCodeTreeCache(fileProvider))
+            var host = new MvcRazorHost(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
             };
@@ -204,12 +205,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHost(new DefaultCodeTreeCache(fileProvider))
+            var host = new MvcRazorHost(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
             };
             host.NamespaceImports.Clear();
-            var expectedLineMappings = new []
+            var expectedLineMappings = new[]
             {
                 BuildLineMapping(7, 0, 7, 222, 6, 7, 7),
                 BuildLineMapping(24, 1, 8, 747, 26, 8, 20),
@@ -227,7 +228,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHost(new DefaultCodeTreeCache(fileProvider))
+            var host = new MvcRazorHost(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
             };
@@ -323,17 +324,17 @@ namespace Microsoft.AspNet.Mvc.Razor
         private class PathValidatingChunkInheritanceUtility : ChunkInheritanceUtility
         {
             public PathValidatingChunkInheritanceUtility(MvcRazorHost razorHost)
-                : base(razorHost, codeTreeCache: null, defaultInheritedChunks: new Chunk[0])
+                : base(razorHost, chunkTreeCache: null, defaultInheritedChunks: new Chunk[0])
             {
             }
 
-            public string InheritedCodeTreePagePath { get; private set; }
+            public string InheritedChunkTreePagePath { get; private set; }
 
-            public override IReadOnlyList<CodeTree> GetInheritedCodeTrees([NotNull] string pagePath)
+            public override IReadOnlyList<ChunkTree> GetInheritedChunkTrees([NotNull] string pagePath)
             {
-                InheritedCodeTreePagePath = pagePath;
+                InheritedChunkTreePagePath = pagePath;
 
-                return new CodeTree[0];
+                return new ChunkTree[0];
             }
         }
 
@@ -342,15 +343,15 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         private class TestMvcRazorHost : MvcRazorHost
         {
-            public TestMvcRazorHost(ICodeTreeCache codeTreeCache)
-                : base(codeTreeCache)
+            public TestMvcRazorHost(IChunkTreeCache ChunkTreeCache)
+                : base(ChunkTreeCache)
             { }
 
-            public override CodeBuilder DecorateCodeBuilder(CodeBuilder incomingBuilder, CodeBuilderContext context)
+            public override CodeGenerator DecorateCodeGenerator(CodeGenerator incomingBuilder, CodeGeneratorContext context)
             {
-                base.DecorateCodeBuilder(incomingBuilder, context);
+                base.DecorateCodeGenerator(incomingBuilder, context);
 
-                return new TestCSharpCodeBuilder(context,
+                return new TestCSharpCodeGenerator(context,
                                                  DefaultModel,
                                                  "Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute",
                                                  new GeneratedTagHelperAttributeContext
@@ -360,11 +361,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                                                  });
             }
 
-            protected class TestCSharpCodeBuilder : MvcCSharpCodeBuilder
+            protected class TestCSharpCodeGenerator : MvcCSharpCodeGenerator
             {
                 private readonly GeneratedTagHelperAttributeContext _tagHelperAttributeContext;
 
-                public TestCSharpCodeBuilder(CodeBuilderContext context,
+                public TestCSharpCodeGenerator(CodeGeneratorContext context,
                                              string defaultModel,
                                              string activateAttribute,
                                              GeneratedTagHelperAttributeContext tagHelperAttributeContext)
@@ -373,7 +374,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     _tagHelperAttributeContext = tagHelperAttributeContext;
                 }
 
-                protected override CSharpCodeVisitor CreateCSharpCodeVisitor(CSharpCodeWriter writer, CodeBuilderContext context)
+                protected override CSharpCodeVisitor CreateCSharpCodeVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
                 {
                     var visitor = base.CreateCSharpCodeVisitor(writer, context);
                     visitor.TagHelperRenderer = new NoUniqueIdsTagHelperCodeRenderer(visitor, writer, context)
@@ -388,7 +389,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 {
                     public NoUniqueIdsTagHelperCodeRenderer(IChunkVisitor bodyVisitor,
                                                             CSharpCodeWriter writer,
-                                                            CodeBuilderContext context)
+                                                            CodeGeneratorContext context)
                         : base(bodyVisitor, writer, context)
                     { }
 

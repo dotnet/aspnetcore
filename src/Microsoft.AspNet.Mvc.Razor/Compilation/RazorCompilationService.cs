@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Razor;
+using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 

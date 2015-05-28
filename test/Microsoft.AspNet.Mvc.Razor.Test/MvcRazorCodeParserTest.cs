@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Razor;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
@@ -42,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("   Foo")
-                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo"))
+                    .As(new ModelChunkGenerator(DefaultBaseType, "Foo"))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.EmptyHtml()
             };
@@ -66,10 +67,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo?\r\n")
-                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo?"))
+                    .As(new ModelChunkGenerator(DefaultBaseType, "Foo?"))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.Markup("Bar")
-                    .With(new MarkupCodeGenerator())
+                    .With(new MarkupChunkGenerator())
             };
             Assert.Equal(expectedSpans, spans.ToArray());
         }
@@ -91,10 +92,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo[[]][]\r\n")
-                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo[[]][]"))
+                    .As(new ModelChunkGenerator(DefaultBaseType, "Foo[[]][]"))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.Markup("Bar")
-                    .With(new MarkupCodeGenerator())
+                    .With(new MarkupChunkGenerator())
             };
             Assert.Equal(expectedSpans, spans.ToArray());
         }
@@ -116,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("$rootnamespace$.MyModel")
-                    .As(new ModelCodeGenerator(DefaultBaseType, "$rootnamespace$.MyModel"))
+                    .As(new ModelChunkGenerator(DefaultBaseType, "$rootnamespace$.MyModel"))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.EmptyHtml()
             };
@@ -141,7 +142,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("  ")
-                    .As(new ModelCodeGenerator(DefaultBaseType, string.Empty))
+                    .As(new ModelChunkGenerator(DefaultBaseType, string.Empty))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.EmptyHtml()
             };
@@ -173,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo\r\n")
-                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo"))
+                    .As(new ModelChunkGenerator(DefaultBaseType, "Foo"))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.EmptyHtml(),
                 factory.CodeTransition(SyntaxConstants.TransitionString)
@@ -181,7 +182,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Bar")
-                    .As(new ModelCodeGenerator(DefaultBaseType, "Bar"))
+                    .As(new ModelChunkGenerator(DefaultBaseType, "Bar"))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.EmptyHtml()
             };
@@ -215,7 +216,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo\r\n")
-                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo"))
+                    .As(new ModelChunkGenerator(DefaultBaseType, "Foo"))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.EmptyHtml(),
                 factory.CodeTransition(SyntaxConstants.TransitionString)
@@ -223,7 +224,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("inherits ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Bar")
-                    .As(new SetBaseTypeCodeGenerator("Bar"))
+                    .As(new SetBaseTypeChunkGenerator("Bar"))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.EmptyHtml()
             };
@@ -257,7 +258,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("inherits ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Bar" + Environment.NewLine)
-                    .As(new SetBaseTypeCodeGenerator("Bar"))
+                    .As(new SetBaseTypeChunkGenerator("Bar"))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.EmptyHtml(),
                 factory.CodeTransition(SyntaxConstants.TransitionString)
@@ -265,7 +266,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo")
-                    .As(new ModelCodeGenerator(DefaultBaseType, "Foo"))
+                    .As(new ModelChunkGenerator(DefaultBaseType, "Foo"))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.EmptyHtml()
             };

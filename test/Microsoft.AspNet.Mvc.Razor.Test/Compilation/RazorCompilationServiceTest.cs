@@ -5,7 +5,8 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Chunks;
+using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Framework.OptionsModel;
@@ -56,8 +57,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     new Block(new BlockBuilder { Type = BlockType.Comment }),
                     Enumerable.Empty<TagHelperDescriptor>(),
                     errorSink,
-                    new CodeBuilderResult("", new LineMapping[0]),
-                    new CodeTree());
+                    new CodeGeneratorResult("", new LineMapping[0]),
+                    new ChunkTree());
             var host = new Mock<IMvcRazorHost>();
             host.Setup(h => h.GenerateCode(It.IsAny<string>(), It.IsAny<Stream>()))
                 .Returns(generatorResult)
@@ -94,8 +95,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     new Block(new BlockBuilder { Type = BlockType.Comment }),
                     Enumerable.Empty<TagHelperDescriptor>(),
                     new ErrorSink(),
-                    new CodeBuilderResult(code, new LineMapping[0]),
-                    new CodeTree());
+                    new CodeGeneratorResult(code, new LineMapping[0]),
+                    new ChunkTree());
             var host = new Mock<IMvcRazorHost>();
             host.Setup(h => h.GenerateCode(It.IsAny<string>(), It.IsAny<Stream>()))
                 .Returns(generatorResult);
@@ -206,8 +207,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     new Block(new BlockBuilder { Type = BlockType.Comment }),
                     Enumerable.Empty<TagHelperDescriptor>(),
                     new ErrorSink(),
-                    new CodeBuilderResult("", new LineMapping[0]),
-                    new CodeTree());
+                    new CodeGeneratorResult("", new LineMapping[0]),
+                    new ChunkTree());
         }
 
         private static IOptions<RazorViewEngineOptions> GetOptions(IFileProvider fileProvider = null)

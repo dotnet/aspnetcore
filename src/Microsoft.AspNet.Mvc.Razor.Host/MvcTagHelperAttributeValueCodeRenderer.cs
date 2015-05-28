@@ -2,8 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
+using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Framework.Internal;
 
@@ -30,11 +29,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <see cref="GeneratedTagHelperAttributeContext.ModelExpressionTypeName"/>, then a model expression will be
         /// created by calling into <see cref="GeneratedTagHelperAttributeContext.CreateModelExpressionMethodName"/>.
         /// </remarks>
-        public override void RenderAttributeValue([NotNull] TagHelperAttributeDescriptor attributeDescriptor,
-                                                  [NotNull] CSharpCodeWriter writer,
-                                                  [NotNull] CodeBuilderContext codeBuilderContext,
-                                                  [NotNull] Action<CSharpCodeWriter> renderAttributeValue,
-                                                  bool complexValue)
+        public override void RenderAttributeValue(
+            [NotNull] TagHelperAttributeDescriptor attributeDescriptor,
+            [NotNull] CSharpCodeWriter writer,
+            [NotNull] CodeGeneratorContext CodeGeneratorContext,
+            [NotNull] Action<CSharpCodeWriter> renderAttributeValue,
+            bool complexValue)
         {
             if (attributeDescriptor.TypeName.Equals(_context.ModelExpressionTypeName, StringComparison.Ordinal))
             {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 base.RenderAttributeValue(
                     attributeDescriptor,
                     writer,
-                    codeBuilderContext,
+                    CodeGeneratorContext,
                     renderAttributeValue,
                     complexValue);
             }

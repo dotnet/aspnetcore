@@ -1,16 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
+using Microsoft.AspNet.Razor.CodeGenerators;
+using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
     public class ModelChunkVisitor : MvcCSharpCodeVisitor
     {
-        public ModelChunkVisitor([NotNull] CSharpCodeWriter writer,
-                                 [NotNull] CodeBuilderContext context)
+        public ModelChunkVisitor(
+            [NotNull] CSharpCodeWriter writer,
+            [NotNull] CodeGeneratorContext context)
             : base(writer, context)
         {
         }

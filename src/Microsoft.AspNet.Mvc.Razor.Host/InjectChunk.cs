@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Chunks;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -12,8 +12,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="typeName">The type name of the property to be injected</param>
         /// <param name="propertyName">The member name of the property to be injected.</param>
-        public InjectChunk(string typeName,
-                           string propertyName)
+        public InjectChunk(
+            string typeName,
+            string propertyName)
         {
             TypeName = typeName;
             MemberName = propertyName;

@@ -3,23 +3,23 @@
 
 using System.Globalization;
 using Microsoft.AspNet.Mvc.Razor.Directives;
-using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Generator.Compiler;
-using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
+using Microsoft.AspNet.Razor.CodeGenerators;
+using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    public class MvcCSharpCodeBuilder : CSharpCodeBuilder
+    public class MvcCSharpCodeGenerator : CSharpCodeGenerator
     {
         private readonly GeneratedTagHelperAttributeContext _tagHelperAttributeContext;
         private readonly string _defaultModel;
         private readonly string _injectAttribute;
 
-        public MvcCSharpCodeBuilder([NotNull] CodeBuilderContext context,
-                                    [NotNull] string defaultModel,
-                                    [NotNull] string injectAttribute,
-                                    [NotNull] GeneratedTagHelperAttributeContext tagHelperAttributeContext)
+        public MvcCSharpCodeGenerator(
+            [NotNull] CodeGeneratorContext context,
+            [NotNull] string defaultModel,
+            [NotNull] string injectAttribute,
+            [NotNull] GeneratedTagHelperAttributeContext tagHelperAttributeContext)
             : base(context)
         {
             _tagHelperAttributeContext = tagHelperAttributeContext;
@@ -29,8 +29,9 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private string Model { get; set; }
 
-        protected override CSharpCodeVisitor CreateCSharpCodeVisitor([NotNull] CSharpCodeWriter writer,
-                                                                     [NotNull] CodeBuilderContext context)
+        protected override CSharpCodeVisitor CreateCSharpCodeVisitor(
+            [NotNull] CSharpCodeWriter writer,
+            [NotNull] CodeGeneratorContext context)
         {
             var csharpCodeVisitor = base.CreateCSharpCodeVisitor(writer, context);
 
@@ -43,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         protected override CSharpCodeWritingScope BuildClassDeclaration(CSharpCodeWriter writer)
         {
             // Grab the last model chunk so it gets intellisense.
-            var modelChunk = ChunkHelper.GetModelChunk(Context.CodeTreeBuilder.CodeTree);
+            var modelChunk = ChunkHelper.GetModelChunk(Context.ChunkTreeBuilder.ChunkTree);
 
             Model = modelChunk != null ? modelChunk.ModelType : _defaultModel;
 
@@ -73,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             writer.WriteLineHiddenDirective();
 
             var injectVisitor = new InjectChunkVisitor(writer, Context, _injectAttribute);
-            injectVisitor.Accept(Context.CodeTreeBuilder.CodeTree.Chunks);
+            injectVisitor.Accept(Context.ChunkTreeBuilder.ChunkTree.Chunks);
 
             writer.WriteLine();
             writer.WriteLineHiddenDirective();

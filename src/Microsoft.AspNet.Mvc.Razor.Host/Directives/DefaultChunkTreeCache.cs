@@ -3,16 +3,16 @@
 
 using System;
 using Microsoft.AspNet.FileProviders;
-using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor.Directives
 {
     /// <summary>
-    /// Default implementation of <see cref="ICodeTreeCache"/>.
+    /// Default implementation of <see cref="IChunkTreeCache"/>.
     /// </summary>
-    public class DefaultCodeTreeCache : ICodeTreeCache
+    public class DefaultChunkTreeCache : IChunkTreeCache
     {
         private static readonly MemoryCacheOptions MemoryCacheOptions = new MemoryCacheOptions
         {
@@ -20,31 +20,32 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         };
         private static readonly TimeSpan SlidingExpirationDuration = TimeSpan.FromMinutes(1);
         private readonly IFileProvider _fileProvider;
-        private readonly IMemoryCache _codeTreeCache;
+        private readonly IMemoryCache _chunkTreeCache;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="DefaultCodeTreeCache"/>.
+        /// Initializes a new instance of <see cref="DefaultChunkTreeCache"/>.
         /// </summary>
         /// <param name="fileProvider">The application's <see cref="IFileProvider"/>.</param>
-        public DefaultCodeTreeCache(IFileProvider fileProvider)
+        public DefaultChunkTreeCache(IFileProvider fileProvider)
             : this(fileProvider, MemoryCacheOptions)
         {
         }
 
         // Internal for unit testing
-        internal DefaultCodeTreeCache(IFileProvider fileProvider,
+        internal DefaultChunkTreeCache(IFileProvider fileProvider,
                                       MemoryCacheOptions options)
         {
             _fileProvider = fileProvider;
-            _codeTreeCache = new MemoryCache(options);
+            _chunkTreeCache = new MemoryCache(options);
         }
 
         /// <inheritdoc />
-        public CodeTree GetOrAdd([NotNull] string pagePath,
-                                 [NotNull] Func<IFileInfo, CodeTree> getCodeTree)
+        public ChunkTree GetOrAdd(
+            [NotNull] string pagePath,
+            [NotNull] Func<IFileInfo, ChunkTree> getChunkTree)
         {
-            CodeTree codeTree;
-            if (!_codeTreeCache.TryGetValue(pagePath, out codeTree))
+            ChunkTree chunkTree;
+            if (!_chunkTreeCache.TryGetValue(pagePath, out chunkTree))
             {
                 // GetOrAdd is invoked for each _GlobalImport that might potentially exist in the path.
                 // We can avoid performing file system lookups for files that do not exist by caching
@@ -55,13 +56,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                     .SetSlidingExpiration(SlidingExpirationDuration);
 
                 var file = _fileProvider.GetFileInfo(pagePath);
-                codeTree = file.Exists ? getCodeTree(file) : null;
+                chunkTree = file.Exists ? getChunkTree(file) : null;
 
 
-                _codeTreeCache.Set(pagePath, codeTree, options);
+                _chunkTreeCache.Set(pagePath, chunkTree, options);
             }
 
-            return codeTree;
+            return chunkTree;
         }
     }
 }

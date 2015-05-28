@@ -4,9 +4,10 @@
 using System;
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Razor;
+using Microsoft.AspNet.Razor.Chunks;
+using Microsoft.AspNet.Razor.Chunks.Generators;
+using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Generator.Compiler;
-using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Xunit;
 
@@ -53,7 +54,7 @@ Environment.NewLine +
             var visitor = new ModelChunkVisitor(writer, context);
             var factory = SpanFactory.CreateCsHtml();
             var node = (Span)factory.Code("Some code")
-                                    .As(new ModelCodeGenerator("MyBase", "MyGeneric"));
+                                    .As(new ModelChunkGenerator("MyBase", "MyGeneric"));
 
             // Act
             visitor.Accept(new Chunk[]
@@ -86,7 +87,7 @@ Environment.NewLine +
             var visitor = new ModelChunkVisitor(writer, context);
             var factory = SpanFactory.CreateCsHtml();
             var node = (Span)factory.Code("Some code")
-                                    .As(new ModelCodeGenerator("MyType", "MyPropertyName"));
+                                    .As(new ModelChunkGenerator("MyType", "MyPropertyName"));
 
             // Act
             visitor.Accept(new Chunk[]
@@ -100,15 +101,16 @@ Environment.NewLine +
             Assert.Equal(expected, code);
         }
 
-        private static CodeBuilderContext CreateContext()
+        private static CodeGeneratorContext CreateContext()
         {
             var fileProvider = new TestFileProvider();
-            return new CodeBuilderContext(
-                new CodeGeneratorContext(new MvcRazorHost(new DefaultCodeTreeCache(fileProvider)),
-                                         "MyClass",
-                                         "MyNamespace",
-                                         string.Empty,
-                                         shouldGenerateLinePragmas: true),
+            return new CodeGeneratorContext(
+                new ChunkGeneratorContext(
+                    new MvcRazorHost(new DefaultChunkTreeCache(fileProvider)),
+                    "MyClass",
+                    "MyNamespace",
+                    string.Empty,
+                    shouldGenerateLinePragmas: true),
                 new ErrorSink());
         }
     }

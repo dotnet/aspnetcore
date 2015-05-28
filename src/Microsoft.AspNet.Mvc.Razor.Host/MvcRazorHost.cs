@@ -9,8 +9,8 @@ using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Chunks;
+using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.Internal;
@@ -41,16 +41,16 @@ namespace Microsoft.AspNet.Mvc.Razor
         // CodeGenerationContext.DefaultBaseClass is set to MyBaseType<dynamic>.
         // This field holds the type name without the generic decoration (MyBaseType)
         private readonly string _baseType;
-        private readonly ICodeTreeCache _codeTreeCache;
+        private readonly IChunkTreeCache _ChunkTreeCache;
         private readonly RazorPathNormalizer _pathNormalizer;
         private ChunkInheritanceUtility _chunkInheritanceUtility;
 
-        internal MvcRazorHost(ICodeTreeCache codeTreeCache, RazorPathNormalizer pathNormalizer)
+        internal MvcRazorHost(IChunkTreeCache ChunkTreeCache, RazorPathNormalizer pathNormalizer)
             : base(new CSharpRazorCodeLanguage())
         {
             _pathNormalizer = pathNormalizer;
             _baseType = BaseType;
-            _codeTreeCache = codeTreeCache;
+            _ChunkTreeCache = ChunkTreeCache;
 
             TagHelperDescriptorResolver = new TagHelperDescriptorResolver();
             DefaultBaseClass = BaseType + "<" + DefaultModel + ">";
@@ -116,19 +116,19 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="root">The path to the application base.</param>
         // Note: This constructor is used by tooling and is created once for each
         // Razor page that is loaded. Consequently, each loaded page has its own copy of
-        // the CodeTreeCache, but this ok - having a shared CodeTreeCache per application in tooling
+        // the ChunkTreeCache, but this ok - having a shared ChunkTreeCache per application in tooling
         // is problematic to manage.
         public MvcRazorHost(string root)
-            : this(new DefaultCodeTreeCache(new PhysicalFileProvider(root)), new DesignTimeRazorPathNormalizer(root))
+            : this(new DefaultChunkTreeCache(new PhysicalFileProvider(root)), new DesignTimeRazorPathNormalizer(root))
         {
         }
 #endif
         /// <summary>
-        /// Initializes a new instance of <see cref="MvcRazorHost"/> using the specified <paramref name="codeTreeCache"/>.
+        /// Initializes a new instance of <see cref="MvcRazorHost"/> using the specified <paramref name="ChunkTreeCache"/>.
         /// </summary>
-        /// <param name="codeTreeCache">An <see cref="ICodeTreeCache"/> rooted at the application base path.</param>
-        public MvcRazorHost(ICodeTreeCache codeTreeCache)
-            : this(codeTreeCache, new RazorPathNormalizer())
+        /// <param name="ChunkTreeCache">An <see cref="IChunkTreeCache"/> rooted at the application base path.</param>
+        public MvcRazorHost(IChunkTreeCache ChunkTreeCache)
+            : this(ChunkTreeCache, new RazorPathNormalizer())
         {
         }
 
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 if (_chunkInheritanceUtility == null)
                 {
                     // This needs to be lazily evaluated to support DefaultInheritedChunks being virtual.
-                    _chunkInheritanceUtility = new ChunkInheritanceUtility(this, _codeTreeCache, DefaultInheritedChunks);
+                    _chunkInheritanceUtility = new ChunkInheritanceUtility(this, _ChunkTreeCache, DefaultInheritedChunks);
                 }
 
                 return _chunkInheritanceUtility;
@@ -213,8 +213,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             sourceFileName = _pathNormalizer.NormalizePath(sourceFileName);
 
-            var inheritedCodeTrees = ChunkInheritanceUtility.GetInheritedCodeTrees(sourceFileName);
-            return new MvcRazorParser(razorParser, inheritedCodeTrees, DefaultInheritedChunks, ModelExpressionType);
+            var inheritedChunkTrees = ChunkInheritanceUtility.GetInheritedChunkTrees(sourceFileName);
+            return new MvcRazorParser(razorParser, inheritedChunkTrees, DefaultInheritedChunks, ModelExpressionType);
         }
 
         /// <inheritdoc />
@@ -224,26 +224,29 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public override CodeBuilder DecorateCodeBuilder([NotNull] CodeBuilder incomingBuilder,
-                                                        [NotNull] CodeBuilderContext context)
+        public override CodeGenerator DecorateCodeGenerator(
+            [NotNull] CodeGenerator incomingGenerator,
+            [NotNull] CodeGeneratorContext context)
         {
             // Need the normalized path to resolve inherited chunks only. Full paths are needed for generated Razor
             // files checksum and line pragmas to enable DesignTime debugging.
             var normalizedPath = _pathNormalizer.NormalizePath(context.SourceFile);
-            var inheritedChunks = ChunkInheritanceUtility.GetInheritedCodeTrees(normalizedPath);
+            var inheritedChunks = ChunkInheritanceUtility.GetInheritedChunkTrees(normalizedPath);
 
-            ChunkInheritanceUtility.MergeInheritedCodeTrees(context.CodeTreeBuilder.CodeTree,
-                                                         inheritedChunks,
-                                                         DefaultModel);
+            ChunkInheritanceUtility.MergeInheritedChunkTrees(
+                context.ChunkTreeBuilder.ChunkTree,
+                inheritedChunks,
+                DefaultModel);
 
-            return new MvcCSharpCodeBuilder(context,
-                                            DefaultModel,
-                                            InjectAttribute,
-                                            new GeneratedTagHelperAttributeContext
-                                            {
-                                                ModelExpressionTypeName = ModelExpressionType,
-                                                CreateModelExpressionMethodName = CreateModelExpressionMethod
-                                            });
+            return new MvcCSharpCodeGenerator(
+                context,
+                DefaultModel,
+                InjectAttribute,
+                new GeneratedTagHelperAttributeContext
+                {
+                    ModelExpressionTypeName = ModelExpressionType,
+                    CreateModelExpressionMethodName = CreateModelExpressionMethod
+                });
         }
     }
 }

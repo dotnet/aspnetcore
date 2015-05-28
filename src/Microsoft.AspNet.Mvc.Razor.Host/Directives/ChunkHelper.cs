@@ -4,7 +4,7 @@
 using System;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Razor.Host;
-using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor.Directives
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         /// </summary>
         /// <typeparam name="TChunk">The type to cast to.</typeparam>
         /// <param name="chunk">The chunk to cast.</param>
-        /// <returns>The <paramref name="Chunk"/> cast to <typeparamref name="TChunk"/>.</returns>
+        /// <returns>The <paramref name="chunk"/> cast to <typeparamref name="TChunk"/>.</returns>
         /// <exception cref="ArgumentException"><paramref name="chunk"/> is not an instance of
         /// <typeparamref name="TChunk"/>.</exception>
         public static TChunk EnsureChunk<TChunk>([NotNull] Chunk chunk)
@@ -40,31 +40,32 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
 
         /// <summary>
         /// Returns the <see cref="ModelChunk"/> used to determine the model name for the page generated
-        /// using the specified <paramref name="codeTree"/>
+        /// using the specified <paramref name="chunkTree"/>
         /// </summary>
-        /// <param name="codeTree">The <see cref="CodeTree"/> to scan for <see cref="ModelChunk"/>s in.</param>
-        /// <returns>The last <see cref="ModelChunk"/> in the <see cref="CodeTree"/> if found, null otherwise.
+        /// <param name="chunkTree">The <see cref="ChunkTree"/> to scan for <see cref="ModelChunk"/>s in.</param>
+        /// <returns>The last <see cref="ModelChunk"/> in the <see cref="ChunkTree"/> if found, <c>null</c> otherwise.
         /// </returns>
-        public static ModelChunk GetModelChunk([NotNull] CodeTree codeTree)
+        public static ModelChunk GetModelChunk([NotNull] ChunkTree chunkTree)
         {
             // If there's more than 1 model chunk there will be a Razor error BUT we want intellisense to show up on
             // the current model chunk that the user is typing.
-            return codeTree.Chunks
+            return chunkTree.Chunks
                            .OfType<ModelChunk>()
                            .LastOrDefault();
         }
 
         /// <summary>
         /// Returns the type name of the Model specified via a <see cref="ModelChunk"/> in the
-        /// <paramref name="codeTree"/> if specified or the default model type.
+        /// <paramref name="chunkTree"/> if specified or the default model type.
         /// </summary>
-        /// <param name="codeTree">The <see cref="CodeTree"/> to scan for <see cref="ModelChunk"/>s in.</param>
+        /// <param name="chunkTree">The <see cref="ChunkTree"/> to scan for <see cref="ModelChunk"/>s in.</param>
         /// <param name="defaultModelName">The <see cref="Type"/> name of the default model.</param>
         /// <returns>The model type name for the generated page.</returns>
-        public static string GetModelTypeName([NotNull] CodeTree codeTree,
-                                              [NotNull] string defaultModelName)
+        public static string GetModelTypeName(
+            [NotNull] ChunkTree chunkTree,
+            [NotNull] string defaultModelName)
         {
-            var modelChunk = GetModelChunk(codeTree);
+            var modelChunk = GetModelChunk(chunkTree);
             return modelChunk != null ? modelChunk.ModelType : defaultModelName;
         }
 

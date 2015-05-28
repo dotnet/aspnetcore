@@ -192,7 +192,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
         protected IMvcRazorHost GetRazorHost()
         {
             var descriptorResolver = new TagHelperDescriptorResolver(TagHelperTypeResolver);
-            return new MvcRazorHost(new DefaultCodeTreeCache(FileProvider))
+            return new MvcRazorHost(new DefaultChunkTreeCache(FileProvider))
             {
                 TagHelperDescriptorResolver = descriptorResolver
             };

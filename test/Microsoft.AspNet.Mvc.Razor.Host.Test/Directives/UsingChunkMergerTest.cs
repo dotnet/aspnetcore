@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.AspNet.Testing;
 using Xunit;
 
@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         public void Visit_ThrowsIfThePassedInChunkIsNotAUsingChunk()
         {
             // Arrange
-            var expected = "Argument must be an instance of 'Microsoft.AspNet.Razor.Generator.Compiler.UsingChunk'.";
+            var expected = "Argument must be an instance of 'Microsoft.AspNet.Razor.Chunks.UsingChunk'.";
             var merger = new UsingChunkMerger();
 
             // Act and Assert
@@ -24,44 +24,44 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         public void Merge_ThrowsIfThePassedInChunkIsNotAUsingChunk()
         {
             // Arrange
-            var expected = "Argument must be an instance of 'Microsoft.AspNet.Razor.Generator.Compiler.UsingChunk'.";
+            var expected = "Argument must be an instance of 'Microsoft.AspNet.Razor.Chunks.UsingChunk'.";
             var merger = new UsingChunkMerger();
 
             // Act and Assert
-            ExceptionAssert.ThrowsArgument(() => merger.Merge(new CodeTree(), new LiteralChunk()), "chunk", expected);
+            ExceptionAssert.ThrowsArgument(() => merger.Merge(new ChunkTree(), new LiteralChunk()), "chunk", expected);
         }
 
         [Fact]
-        public void Merge_AddsNamespacesThatHaveNotBeenVisitedInCodeTree()
+        public void Merge_AddsNamespacesThatHaveNotBeenVisitedInChunkTree()
         {
             // Arrange
             var expected = "MyApp.Models";
             var merger = new UsingChunkMerger();
-            var codeTree = new CodeTree();
+            var chunkTree = new ChunkTree();
 
             // Act
             merger.VisitChunk(new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" });
-            merger.Merge(codeTree, new UsingChunk { Namespace = expected });
+            merger.Merge(chunkTree, new UsingChunk { Namespace = expected });
 
             // Assert
-            var chunk = Assert.Single(codeTree.Chunks);
+            var chunk = Assert.Single(chunkTree.Chunks);
             var usingChunk = Assert.IsType<UsingChunk>(chunk);
             Assert.Equal(expected, usingChunk.Namespace);
         }
 
         [Fact]
-        public void Merge_IgnoresNamespacesThatHaveBeenVisitedInCodeTree()
+        public void Merge_IgnoresNamespacesThatHaveBeenVisitedInChunkTree()
         {
             // Arrange
             var merger = new UsingChunkMerger();
-            var codeTree = new CodeTree();
+            var chunkTree = new ChunkTree();
 
             // Act
             merger.VisitChunk(new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" });
-            merger.Merge(codeTree, new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" });
+            merger.Merge(chunkTree, new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" });
 
             // Assert
-            Assert.Empty(codeTree.Chunks);
+            Assert.Empty(chunkTree.Chunks);
         }
 
         [Fact]
@@ -69,18 +69,18 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         {
             // Arrange
             var merger = new UsingChunkMerger();
-            var codeTree = new CodeTree();
+            var chunkTree = new ChunkTree();
 
             // Act
-            merger.Merge(codeTree, new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" });
-            merger.Merge(codeTree, new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" });
-            merger.Merge(codeTree, new UsingChunk { Namespace = "Microsoft.AspNet.Mvc.Razor" });
+            merger.Merge(chunkTree, new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" });
+            merger.Merge(chunkTree, new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" });
+            merger.Merge(chunkTree, new UsingChunk { Namespace = "Microsoft.AspNet.Mvc.Razor" });
 
             // Assert
-            Assert.Equal(2, codeTree.Chunks.Count);
-            var chunk = Assert.IsType<UsingChunk>(codeTree.Chunks[0]);
+            Assert.Equal(2, chunkTree.Chunks.Count);
+            var chunk = Assert.IsType<UsingChunk>(chunkTree.Chunks[0]);
             Assert.Equal("Microsoft.AspNet.Mvc", chunk.Namespace);
-            chunk = Assert.IsType<UsingChunk>(codeTree.Chunks[1]);
+            chunk = Assert.IsType<UsingChunk>(chunkTree.Chunks[1]);
             Assert.Equal("Microsoft.AspNet.Mvc.Razor", chunk.Namespace);
         }
 
@@ -89,17 +89,17 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         {
             // Arrange
             var merger = new UsingChunkMerger();
-            var codeTree = new CodeTree();
+            var chunkTree = new ChunkTree();
 
             // Act
-            merger.Merge(codeTree, new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" });
-            merger.Merge(codeTree, new UsingChunk { Namespace = "Microsoft.AspNet.mvc" });
+            merger.Merge(chunkTree, new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" });
+            merger.Merge(chunkTree, new UsingChunk { Namespace = "Microsoft.AspNet.mvc" });
 
             // Assert
-            Assert.Equal(2, codeTree.Chunks.Count);
-            var chunk = Assert.IsType<UsingChunk>(codeTree.Chunks[0]);
+            Assert.Equal(2, chunkTree.Chunks.Count);
+            var chunk = Assert.IsType<UsingChunk>(chunkTree.Chunks[0]);
             Assert.Equal("Microsoft.AspNet.Mvc", chunk.Namespace);
-            chunk = Assert.IsType<UsingChunk>(codeTree.Chunks[1]);
+            chunk = Assert.IsType<UsingChunk>(chunkTree.Chunks[1]);
             Assert.Equal("Microsoft.AspNet.mvc", chunk.Namespace);
         }
     }

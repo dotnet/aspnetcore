@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using Microsoft.AspNet.Mvc.Razor.Host;
 using Microsoft.AspNet.Razor;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
@@ -55,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
 
             BaseTypeDirective(Resources.FormatMvcRazorCodeParser_KeywordMustBeFollowedByTypeName(ModelKeyword),
-                              CreateModelCodeGenerator);
+                              CreateModelChunkGenerator);
 
             if (_modelStatementFound)
             {
@@ -136,16 +137,16 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // ';' is optional
             propertyName = RemoveWhitespaceAndTrailingSemicolons(propertyName);
-            Span.CodeGenerator = new InjectParameterGenerator(typeName.Trim(), propertyName);
+            Span.ChunkGenerator = new InjectParameterGenerator(typeName.Trim(), propertyName);
 
             // Output the span and finish the block
             CompleteBlock();
             Output(SpanKind.Code, AcceptedCharacters.AnyExceptNewline);
         }
 
-        private SpanCodeGenerator CreateModelCodeGenerator(string model)
+        private SpanChunkGenerator CreateModelChunkGenerator(string model)
         {
-            return new ModelCodeGenerator(_baseType, model);
+            return new ModelChunkGenerator(_baseType, model);
         }
 
         // Internal for unit testing

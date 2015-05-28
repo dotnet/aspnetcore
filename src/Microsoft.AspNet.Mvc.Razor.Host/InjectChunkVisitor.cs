@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
+using Microsoft.AspNet.Razor.CodeGenerators;
+using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly string _injectAttribute;
 
         public InjectChunkVisitor([NotNull] CSharpCodeWriter writer,
-                                  [NotNull] CodeBuilderContext context,
+                                  [NotNull] CodeGeneratorContext context,
                                   [NotNull] string injectAttributeName)
             : base(writer, context)
         {

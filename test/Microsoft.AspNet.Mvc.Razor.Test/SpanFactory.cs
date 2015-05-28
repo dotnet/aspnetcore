@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
         public static SpanConstructor EmptyHtml(this SpanFactory self)
         {
             return self.Span(SpanKind.Markup, new HtmlSymbol(self.LocationTracker.CurrentLocation, String.Empty, HtmlSymbolType.Unknown))
-                .With(new MarkupCodeGenerator());
+                .With(new MarkupChunkGenerator());
         }
 
         public static UnclassifiedCodeSpanConstructor Code(this SpanFactory self, string content)
@@ -40,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
         }
         public static SpanConstructor Markup(this SpanFactory self, string content)
         {
-            return self.Span(SpanKind.Markup, content, markup: true).With(new MarkupCodeGenerator());
+            return self.Span(SpanKind.Markup, content, markup: true).With(new MarkupChunkGenerator());
         }
     }
 
@@ -129,7 +130,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
             _self = self;
         }
 
-        public SpanConstructor As(ISpanCodeGenerator codeGenerator)
+        public SpanConstructor As(ISpanChunkGenerator codeGenerator)
         {
             return _self.With(codeGenerator);
         }
@@ -160,9 +161,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
             return Builder.Build();
         }
 
-        public SpanConstructor With(ISpanCodeGenerator generator)
+        public SpanConstructor With(ISpanChunkGenerator generator)
         {
-            Builder.CodeGenerator = generator;
+            Builder.ChunkGenerator = generator;
             return this;
         }
 

@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.AspNet.Testing;
 using Xunit;
 
@@ -45,41 +45,41 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             var merger = new InjectChunkMerger("dynamic");
 
             // Act and Assert
-            ExceptionAssert.ThrowsArgument(() => merger.Merge(new CodeTree(), new LiteralChunk()), "chunk", expected);
+            ExceptionAssert.ThrowsArgument(() => merger.Merge(new ChunkTree(), new LiteralChunk()), "chunk", expected);
         }
 
         [Fact]
-        public void Merge_AddsChunkIfChunkWithMatchingPropertyNameWasNotVisitedInCodeTree()
+        public void Merge_AddsChunkIfChunkWithMatchingPropertyNameWasNotVisitedInChunkTree()
         {
             // Arrange
             var expectedType = "MyApp.MyHelperType";
             var expectedProperty = "MyHelper";
             var merger = new InjectChunkMerger("dynamic");
-            var codeTree = new CodeTree();
+            var chunkTree = new ChunkTree();
 
             // Act
-            merger.Merge(codeTree, new InjectChunk(expectedType, expectedProperty));
+            merger.Merge(chunkTree, new InjectChunk(expectedType, expectedProperty));
 
             // Assert
-            var chunk = Assert.Single(codeTree.Chunks);
+            var chunk = Assert.Single(chunkTree.Chunks);
             var injectChunk = Assert.IsType<InjectChunk>(chunk);
             Assert.Equal(expectedType, injectChunk.TypeName);
             Assert.Equal(expectedProperty, injectChunk.MemberName);
         }
 
         [Fact]
-        public void Merge_IgnoresChunkIfChunkWithMatchingPropertyNameWasVisitedInCodeTree()
+        public void Merge_IgnoresChunkIfChunkWithMatchingPropertyNameWasVisitedInChunkTree()
         {
             // Arrange
             var merger = new InjectChunkMerger("dynamic");
-            var codeTree = new CodeTree();
+            var chunkTree = new ChunkTree();
 
             // Act
             merger.VisitChunk(new InjectChunk("MyTypeA", "MyProperty"));
-            merger.Merge(codeTree, new InjectChunk("MyTypeB", "MyProperty"));
+            merger.Merge(chunkTree, new InjectChunk("MyTypeB", "MyProperty"));
 
             // Assert
-            Assert.Empty(codeTree.Chunks);
+            Assert.Empty(chunkTree.Chunks);
         }
 
         [Fact]
@@ -87,20 +87,20 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         {
             // Arrange
             var merger = new InjectChunkMerger("dynamic");
-            var codeTree = new CodeTree();
+            var chunkTree = new ChunkTree();
 
             // Act
             merger.VisitChunk(new InjectChunk("MyType", "MyProperty"));
-            merger.Merge(codeTree, new InjectChunk("MyType", "myproperty"));
-            merger.Merge(codeTree, new InjectChunk("MyTypeB", "different-property"));
+            merger.Merge(chunkTree, new InjectChunk("MyType", "myproperty"));
+            merger.Merge(chunkTree, new InjectChunk("MyTypeB", "different-property"));
 
             // Assert
-            Assert.Equal(2, codeTree.Chunks.Count);
-            var injectChunk = Assert.IsType<InjectChunk>(codeTree.Chunks[0]);
+            Assert.Equal(2, chunkTree.Chunks.Count);
+            var injectChunk = Assert.IsType<InjectChunk>(chunkTree.Chunks[0]);
             Assert.Equal("MyType", injectChunk.TypeName);
             Assert.Equal("myproperty", injectChunk.MemberName);
 
-            injectChunk = Assert.IsType<InjectChunk>(codeTree.Chunks[1]);
+            injectChunk = Assert.IsType<InjectChunk>(chunkTree.Chunks[1]);
             Assert.Equal("MyTypeB", injectChunk.TypeName);
             Assert.Equal("different-property", injectChunk.MemberName);
         }
@@ -110,13 +110,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         {
             // Arrange
             var merger = new InjectChunkMerger("dynamic");
-            var codeTree = new CodeTree();
+            var chunkTree = new ChunkTree();
 
             // Act
-            merger.Merge(codeTree, new InjectChunk("MyHelper<TModel>", "MyProperty"));
+            merger.Merge(chunkTree, new InjectChunk("MyHelper<TModel>", "MyProperty"));
 
             // Assert
-            var chunk = Assert.Single(codeTree.Chunks);
+            var chunk = Assert.Single(chunkTree.Chunks);
             var injectChunk = Assert.IsType<InjectChunk>(chunk);
             Assert.Equal("MyHelper<dynamic>", injectChunk.TypeName);
             Assert.Equal("MyProperty", injectChunk.MemberName);
@@ -127,13 +127,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         {
             // Arrange
             var merger = new InjectChunkMerger("MyTestModel2");
-            var codeTree = new CodeTree();
+            var chunkTree = new ChunkTree();
 
             // Act
-            merger.Merge(codeTree, new InjectChunk("MyHelper<TModel>", "MyProperty"));
+            merger.Merge(chunkTree, new InjectChunk("MyHelper<TModel>", "MyProperty"));
 
             // Assert
-            var chunk = Assert.Single(codeTree.Chunks);
+            var chunk = Assert.Single(chunkTree.Chunks);
             var injectChunk = Assert.IsType<InjectChunk>(chunk);
             Assert.Equal("MyHelper<MyTestModel2>", injectChunk.TypeName);
             Assert.Equal("MyProperty", injectChunk.MemberName);
@@ -144,14 +144,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         {
             // Arrange
             var merger = new InjectChunkMerger("dynamic");
-            var codeTree = new CodeTree();
+            var chunkTree = new ChunkTree();
 
             // Act
-            merger.Merge(codeTree, new InjectChunk("SomeType", "Property"));
-            merger.Merge(codeTree, new InjectChunk("SomeOtherType", "Property"));
+            merger.Merge(chunkTree, new InjectChunk("SomeType", "Property"));
+            merger.Merge(chunkTree, new InjectChunk("SomeOtherType", "Property"));
 
             // Assert
-            var chunk = Assert.Single(codeTree.Chunks);
+            var chunk = Assert.Single(chunkTree.Chunks);
             var injectChunk = Assert.IsType<InjectChunk>(chunk);
             Assert.Equal("SomeType", injectChunk.TypeName);
             Assert.Equal("Property", injectChunk.MemberName);

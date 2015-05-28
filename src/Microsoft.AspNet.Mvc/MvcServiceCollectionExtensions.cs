@@ -117,10 +117,10 @@ namespace Microsoft.Framework.DependencyInjection
 
             // Caches view locations that are valid for the lifetime of the application.
             services.TryAdd(ServiceDescriptor.Singleton<IViewLocationCache, DefaultViewLocationCache>());
-            services.TryAdd(ServiceDescriptor.Singleton<ICodeTreeCache>(serviceProvider =>
+            services.TryAdd(ServiceDescriptor.Singleton<IChunkTreeCache>(serviceProvider =>
             {
                 var cachedFileProvider = serviceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>();
-                return new DefaultCodeTreeCache(cachedFileProvider.Options.FileProvider);
+                return new DefaultChunkTreeCache(cachedFileProvider.Options.FileProvider);
             }));
 
             // The host is designed to be discarded after consumption and is very inexpensive to initialize.

@@ -5,8 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Razor;
+using Microsoft.AspNet.Razor.Chunks.Generators;
+using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
@@ -46,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("   Foo")
-                    .As(new ModelCodeGenerator("RazorView", "Foo"))
+                    .As(new ModelChunkGenerator("RazorView", "Foo"))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.EmptyHtml()
             };
@@ -78,10 +79,10 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code(modelName + "\r\n")
-                    .As(new ModelCodeGenerator("RazorView", expectedModel))
+                    .As(new ModelChunkGenerator("RazorView", expectedModel))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.Markup("Bar")
-                    .With(new MarkupCodeGenerator())
+                    .With(new MarkupChunkGenerator())
             };
 
             // Act
@@ -110,7 +111,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("  ")
-                    .As(new ModelCodeGenerator("RazorView", string.Empty))
+                    .As(new ModelChunkGenerator("RazorView", string.Empty))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.EmptyHtml(),
             };
@@ -141,7 +142,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo\r\n")
-                    .As(new ModelCodeGenerator("RazorView", "Foo"))
+                    .As(new ModelChunkGenerator("RazorView", "Foo"))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.EmptyHtml(),
                 factory.CodeTransition(SyntaxConstants.TransitionString)
@@ -149,7 +150,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Bar")
-                    .As(new ModelCodeGenerator("RazorView", "Bar"))
+                    .As(new ModelChunkGenerator("RazorView", "Bar"))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.EmptyHtml()
             };
@@ -186,7 +187,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo\r\n")
-                    .As(new ModelCodeGenerator("RazorView", "Foo"))
+                    .As(new ModelChunkGenerator("RazorView", "Foo"))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.EmptyHtml(),
                 factory.CodeTransition(SyntaxConstants.TransitionString)
@@ -194,7 +195,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("inherits ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Bar")
-                    .As(new SetBaseTypeCodeGenerator("Bar"))
+                    .As(new SetBaseTypeChunkGenerator("Bar"))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.EmptyHtml()
             };
@@ -231,7 +232,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("inherits ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Bar" + Environment.NewLine)
-                    .As(new SetBaseTypeCodeGenerator("Bar"))
+                    .As(new SetBaseTypeChunkGenerator("Bar"))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.EmptyHtml(),
                 factory.CodeTransition(SyntaxConstants.TransitionString)
@@ -239,7 +240,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 factory.MetaCode("model ")
                     .Accepts(AcceptedCharacters.None),
                 factory.Code("Foo")
-                    .As(new ModelCodeGenerator("RazorView", "Foo"))
+                    .As(new ModelChunkGenerator("RazorView", "Foo"))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.EmptyHtml()
             };
@@ -360,7 +361,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     .As(new InjectParameterGenerator(expectedService, expectedPropertyName))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.Markup("Bar")
-                    .With(new MarkupCodeGenerator())
+                    .With(new MarkupChunkGenerator())
             };
 
             // Act
@@ -389,7 +390,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     .As(new InjectParameterGenerator(string.Empty, string.Empty))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.Markup("Bar")
-                    .With(new MarkupCodeGenerator())
+                    .With(new MarkupChunkGenerator())
             };
             var expectedErrors = new[]
             {
@@ -456,7 +457,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     .As(new InjectParameterGenerator("IMyService", string.Empty))
                     .Accepts(AcceptedCharacters.AnyExceptNewline),
                 factory.Markup("Bar")
-                    .With(new MarkupCodeGenerator())
+                    .With(new MarkupChunkGenerator())
             };
             var expectedErrors = new[]
             {

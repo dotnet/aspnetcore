@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Editor;
-using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
@@ -36,9 +36,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             return Builder.Build();
         }
 
-        public SpanConstructor With(ISpanCodeGenerator generator)
+        public SpanConstructor With(ISpanChunkGenerator generator)
         {
-            Builder.CodeGenerator = generator;
+            Builder.ChunkGenerator = generator;
             return this;
         }
 
@@ -48,9 +48,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             return this;
         }
 
-        public SpanConstructor With(Action<ISpanCodeGenerator> generatorConfigurer)
+        public SpanConstructor With(Action<ISpanChunkGenerator> generatorConfigurer)
         {
-            generatorConfigurer(Builder.CodeGenerator);
+            generatorConfigurer(Builder.ChunkGenerator);
             return this;
         }
 
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public SpanConstructor Hidden()
         {
-            Builder.CodeGenerator = SpanCodeGenerator.Null;
+            Builder.ChunkGenerator = SpanChunkGenerator.Null;
             return this;
         }
 

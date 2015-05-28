@@ -3,12 +3,12 @@
 
 using System;
 using System.Globalization;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    public class InjectParameterGenerator : SpanCodeGenerator
+    public class InjectParameterGenerator : SpanChunkGenerator
     {
         public InjectParameterGenerator(string typeName, string propertyName)
         {
@@ -20,10 +20,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public string PropertyName { get; private set; }
 
-        public override void GenerateCode(Span target, CodeGeneratorContext context)
+        public override void GenerateChunk(Span target, ChunkGeneratorContext context)
         {
             var injectChunk = new InjectChunk(TypeName, PropertyName);
-            context.CodeTreeBuilder.AddChunk(injectChunk, target);
+            context.ChunkTreeBuilder.AddChunk(injectChunk, target);
         }
 
         public override string ToString()

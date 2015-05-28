@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Chunks;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor.Directives
@@ -30,19 +30,19 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                 new InjectChunk("MyTestHtmlHelper", "Html"),
                 new UsingChunk { Namespace = "AppNamespace.Model" },
             };
-            var cache = new DefaultCodeTreeCache(fileProvider);
+            var cache = new DefaultChunkTreeCache(fileProvider);
             var host = new MvcRazorHost(cache);
             var utility = new ChunkInheritanceUtility(host, cache, defaultChunks);
 
             // Act
-            var codeTrees = utility.GetInheritedCodeTrees(@"Views\home\Index.cshtml");
+            var chunkTrees = utility.GetInheritedChunkTrees(@"Views\home\Index.cshtml");
 
             // Assert
-            Assert.Collection(codeTrees,
-                codeTree =>
+            Assert.Collection(chunkTrees,
+                ChunkTree =>
                 {
                     var viewImportsPath = @"Views\home\_ViewImports.cshtml";
-                    Assert.Collection(codeTree.Chunks,
+                    Assert.Collection(ChunkTree.Chunks,
                         chunk =>
                         {
                             Assert.IsType<LiteralChunk>(chunk);
@@ -60,10 +60,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                             Assert.Equal(viewImportsPath, chunk.Start.FilePath);
                         });
                 },
-                codeTree =>
+                ChunkTree =>
                 {
                     var viewImportsPath = @"Views\_ViewImports.cshtml";
-                    Assert.Collection(codeTree.Chunks,
+                    Assert.Collection(ChunkTree.Chunks,
                         chunk =>
                         {
                             Assert.IsType<LiteralChunk>(chunk);
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             fileProvider.AddFile(@"_ViewImports.cs", string.Empty);
             fileProvider.AddFile(@"Views\_Layout.cshtml", string.Empty);
             fileProvider.AddFile(@"Views\home\_not-viewimports.cshtml", string.Empty);
-            var cache = new DefaultCodeTreeCache(fileProvider);
+            var cache = new DefaultChunkTreeCache(fileProvider);
             var host = new MvcRazorHost(cache);
             var defaultChunks = new Chunk[]
             {
@@ -124,10 +124,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             var utility = new ChunkInheritanceUtility(host, cache, defaultChunks);
 
             // Act
-            var codeTrees = utility.GetInheritedCodeTrees(@"Views\home\Index.cshtml");
+            var chunkTrees = utility.GetInheritedChunkTrees(@"Views\home\Index.cshtml");
 
             // Assert
-            Assert.Empty(codeTrees);
+            Assert.Empty(chunkTrees);
         }
 
         [Fact]
@@ -137,16 +137,16 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(@"Views\_ViewImports.cshtml",
                                "@inject DifferentHelper<TModel> Html");
-            var cache = new DefaultCodeTreeCache(fileProvider);
+            var cache = new DefaultChunkTreeCache(fileProvider);
             var host = new MvcRazorHost(cache);
             var defaultChunks = new Chunk[]
             {
                 new InjectChunk("MyTestHtmlHelper", "Html"),
                 new UsingChunk { Namespace = "AppNamespace.Model" },
             };
-            var inheritedCodeTrees = new CodeTree[]
+            var inheritedChunkTrees = new ChunkTree[]
             {
-                new CodeTree
+                new ChunkTree
                 {
                     Chunks = new Chunk[]
                     {
@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                         new LiteralChunk { Text = "some text" }
                     }
                 },
-                new CodeTree
+                new ChunkTree
                 {
                     Chunks = new Chunk[]
                     {
@@ -164,18 +164,18 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             };
 
             var utility = new ChunkInheritanceUtility(host, cache, defaultChunks);
-            var codeTree = new CodeTree();
+            var chunkTree = new ChunkTree();
 
             // Act
-            utility.MergeInheritedCodeTrees(codeTree,
-                                            inheritedCodeTrees,
+            utility.MergeInheritedChunkTrees(chunkTree,
+                                            inheritedChunkTrees,
                                             "dynamic");
 
             // Assert
-            Assert.Equal(3, codeTree.Chunks.Count);
-            Assert.Same(inheritedCodeTrees[0].Chunks[0], codeTree.Chunks[0]);
-            Assert.Same(inheritedCodeTrees[1].Chunks[0], codeTree.Chunks[1]);
-            Assert.Same(defaultChunks[0], codeTree.Chunks[2]);
+            Assert.Equal(3, chunkTree.Chunks.Count);
+            Assert.Same(inheritedChunkTrees[0].Chunks[0], chunkTree.Chunks[0]);
+            Assert.Same(inheritedChunkTrees[1].Chunks[0], chunkTree.Chunks[1]);
+            Assert.Same(defaultChunks[0], chunkTree.Chunks[2]);
         }
     }
 }

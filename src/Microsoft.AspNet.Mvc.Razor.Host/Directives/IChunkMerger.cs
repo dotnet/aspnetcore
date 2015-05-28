@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Chunks;
 
 namespace Microsoft.AspNet.Mvc.Razor.Directives
 {
@@ -11,16 +11,16 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
     public interface IChunkMerger
     {
         /// <summary>
-        /// Visits a <see cref="Chunk"/> from the <see cref="CodeTree"/> to merge into.
+        /// Visits a <see cref="Chunk"/> from the <see cref="ChunkTree"/> to merge into.
         /// </summary>
         /// <param name="chunk">A <see cref="Chunk"/> from the tree.</param>
         void VisitChunk(Chunk chunk);
 
         /// <summary>
-        /// Merges an inherited <see cref="Chunk"/> into the <see cref="CodeTree"/>.
+        /// Merges an inherited <see cref="Chunk"/> into the <see cref="ChunkTree"/>.
         /// </summary>
-        /// <param name="codeTree">The <see cref="CodeTree"/> to merge into.</param>
+        /// <param name="ChunkTree">The <see cref="ChunkTree"/> to merge into.</param>
         /// <param name="chunk">The <see cref="Chunk"/> to merge.</param>
-        void Merge(CodeTree codeTree, Chunk chunk);
+        void Merge(ChunkTree chunkTree, Chunk chunk);
     }
 }

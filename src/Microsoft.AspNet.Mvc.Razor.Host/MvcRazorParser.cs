@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Razor.Host;
 using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Parser.TagHelpers;
@@ -28,20 +28,20 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Initializes a new instance of <see cref="MvcRazorParser"/>.
         /// </summary>
         /// <param name="parser">The <see cref="RazorParser"/> to copy properties from.</param>
-        /// <param name="inheritedCodeTrees">The <see cref="IReadOnlyList{CodeTree}"/>s that are inherited
+        /// <param name="inheritedChunkTrees">The <see cref="IReadOnlyList{ChunkTree}"/>s that are inherited
         /// from parsed pages from _ViewImports files.</param>
         /// <param name="defaultInheritedChunks">The <see cref="IReadOnlyList{Chunk}"/> inherited by
         /// default by all Razor pages in the application.</param>
         public MvcRazorParser(
             [NotNull] RazorParser parser,
-            [NotNull] IReadOnlyList<CodeTree> inheritedCodeTrees,
+            [NotNull] IReadOnlyList<ChunkTree> inheritedChunkTrees,
             [NotNull] IReadOnlyList<Chunk> defaultInheritedChunks,
             [NotNull] string modelExpressionTypeName)
             : base(parser)
         {
             // Construct tag helper descriptors from @addTagHelper, @removeTagHelper and @tagHelperPrefix chunks
             _viewImportsDirectiveDescriptors = GetTagHelperDirectiveDescriptors(
-                inheritedCodeTrees,
+                inheritedChunkTrees,
                 defaultInheritedChunks);
 
             _modelExpressionTypeName = modelExpressionTypeName;
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         private static IEnumerable<TagHelperDirectiveDescriptor> GetTagHelperDirectiveDescriptors(
-           IReadOnlyList<CodeTree> inheritedCodeTrees,
+           IReadOnlyList<ChunkTree> inheritedChunkTrees,
            IReadOnlyList<Chunk> defaultInheritedChunks)
         {
             var descriptors = new List<TagHelperDirectiveDescriptor>();
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Consequently we must visit tag helpers outside-in - furthest _ViewImports first and nearest one last.
             // This is different from the behavior of chunk merging where we visit the nearest one first and ignore
             // chunks that were previously visited.
-            var chunksFromViewImports = inheritedCodeTrees
+            var chunksFromViewImports = inheritedChunkTrees
                 .Reverse()
                 .SelectMany(tree => tree.Chunks);
             var chunksInOrder = defaultInheritedChunks.Concat(chunksFromViewImports);

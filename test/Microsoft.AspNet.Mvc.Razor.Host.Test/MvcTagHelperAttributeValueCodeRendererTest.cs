@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Generator.Compiler.CSharp;
+using Microsoft.AspNet.Razor.Chunks.Generators;
+using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Xunit;
 
@@ -31,13 +31,14 @@ namespace Microsoft.AspNet.Mvc.Razor
                 typeName: propertyType,
                 isIndexer: false);
             var writer = new CSharpCodeWriter();
-            var generatorContext = new CodeGeneratorContext(host: null,
-                                                            className: string.Empty,
-                                                            rootNamespace: string.Empty,
-                                                            sourceFile: string.Empty,
-                                                            shouldGenerateLinePragmas: true);
+            var generatorContext = new ChunkGeneratorContext(
+                host: null,
+                className: string.Empty,
+                rootNamespace: string.Empty,
+                sourceFile: string.Empty,
+                shouldGenerateLinePragmas: true);
             var errorSink = new ErrorSink();
-            var context = new CodeBuilderContext(generatorContext, errorSink);
+            var context = new CodeGeneratorContext(generatorContext, errorSink);
 
             // Act
             renderer.RenderAttributeValue(attributeDescriptor, writer, context,

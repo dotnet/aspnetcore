@@ -3,7 +3,7 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNet.Razor;
+using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Framework.Internal;

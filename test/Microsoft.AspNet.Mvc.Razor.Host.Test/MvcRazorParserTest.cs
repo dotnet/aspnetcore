@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Generator.Compiler;
+using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
@@ -21,21 +21,21 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             get
             {
-                // codeTrees, expectedDirectiveDescriptors
-                return new TheoryData<CodeTree[], TagHelperDirectiveDescriptor[]>
+                // chunkTrees, expectedDirectiveDescriptors
+                return new TheoryData<ChunkTree[], TagHelperDirectiveDescriptor[]>
                 {
                     {
-                        new[] { CreateCodeTree(new TagHelperPrefixDirectiveChunk { Prefix = "THP" }) },
+                        new[] { CreateChunkTree(new TagHelperPrefixDirectiveChunk { Prefix = "THP" }) },
                         new[] { CreateDirectiveDescriptor("THP", TagHelperDirectiveType.TagHelperPrefix) }
                     },
                     {
-                        new[] { CreateCodeTree(new AddTagHelperChunk { LookupText = "ATH" }) },
+                        new[] { CreateChunkTree(new AddTagHelperChunk { LookupText = "ATH" }) },
                         new[] { CreateDirectiveDescriptor("ATH", TagHelperDirectiveType.AddTagHelper) }
                     },
                     {
                         new[]
                         {
-                            CreateCodeTree(
+                            CreateChunkTree(
                                 new AddTagHelperChunk { LookupText = "ATH1" },
                                 new AddTagHelperChunk { LookupText = "ATH2" })
                         },
@@ -46,13 +46,13 @@ namespace Microsoft.AspNet.Mvc.Razor
                         }
                     },
                     {
-                        new[] { CreateCodeTree(new RemoveTagHelperChunk { LookupText = "RTH" }) },
+                        new[] { CreateChunkTree(new RemoveTagHelperChunk { LookupText = "RTH" }) },
                         new[] { CreateDirectiveDescriptor("RTH", TagHelperDirectiveType.RemoveTagHelper) }
                     },
                     {
                         new[]
                         {
-                            CreateCodeTree(
+                            CreateChunkTree(
                                 new RemoveTagHelperChunk { LookupText = "RTH1" },
                                 new RemoveTagHelperChunk { LookupText = "RTH2" })
                         },
@@ -65,15 +65,15 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         new[]
                         {
-                            CreateCodeTree(new TagHelperPrefixDirectiveChunk { Prefix = "THP1" }),
-                            CreateCodeTree(new TagHelperPrefixDirectiveChunk { Prefix = "THP2" }),
+                            CreateChunkTree(new TagHelperPrefixDirectiveChunk { Prefix = "THP1" }),
+                            CreateChunkTree(new TagHelperPrefixDirectiveChunk { Prefix = "THP2" }),
                         },
                         new[] { CreateDirectiveDescriptor("THP1", TagHelperDirectiveType.TagHelperPrefix) }
                     },
                     {
                         new[]
                         {
-                            CreateCodeTree(
+                            CreateChunkTree(
                                 new TagHelperPrefixDirectiveChunk { Prefix = "THP" },
                                 new RemoveTagHelperChunk { LookupText = "RTH" },
                                 new AddTagHelperChunk { LookupText = "ATH" })
@@ -88,10 +88,10 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         new[]
                         {
-                            CreateCodeTree(
+                            CreateChunkTree(
                                 new LiteralChunk { Text = "Hello world" },
                                 new AddTagHelperChunk { LookupText = "ATH" }),
-                            CreateCodeTree(new RemoveTagHelperChunk { LookupText = "RTH" })
+                            CreateChunkTree(new RemoveTagHelperChunk { LookupText = "RTH" })
                         },
                         new[]
                         {
@@ -102,11 +102,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         new[]
                         {
-                            CreateCodeTree(new TagHelperPrefixDirectiveChunk { Prefix = "THP" }),
-                            CreateCodeTree(
+                            CreateChunkTree(new TagHelperPrefixDirectiveChunk { Prefix = "THP" }),
+                            CreateChunkTree(
                                 new LiteralChunk { Text = "Hello world" },
                                 new AddTagHelperChunk { LookupText = "ATH" }),
-                            CreateCodeTree(new RemoveTagHelperChunk { LookupText = "RTH" })
+                            CreateChunkTree(new RemoveTagHelperChunk { LookupText = "RTH" })
                         },
                         new[]
                         {
@@ -118,10 +118,10 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         new[]
                         {
-                            CreateCodeTree(new TagHelperPrefixDirectiveChunk { Prefix = "THP1" }),
-                            CreateCodeTree(new AddTagHelperChunk { LookupText = "ATH" }),
-                            CreateCodeTree(new RemoveTagHelperChunk { LookupText = "RTH" }),
-                            CreateCodeTree(new TagHelperPrefixDirectiveChunk { Prefix = "THP2" }),
+                            CreateChunkTree(new TagHelperPrefixDirectiveChunk { Prefix = "THP1" }),
+                            CreateChunkTree(new AddTagHelperChunk { LookupText = "ATH" }),
+                            CreateChunkTree(new RemoveTagHelperChunk { LookupText = "RTH" }),
+                            CreateChunkTree(new TagHelperPrefixDirectiveChunk { Prefix = "THP2" }),
                         },
                         new[]
                         {
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         [Theory]
         [MemberData(nameof(ViewImportsData))]
         public void GetTagHelperDescriptors_ReturnsExpectedDirectiveDescriptors(
-            CodeTree[] codeTrees,
+            ChunkTree[] chunkTrees,
             TagHelperDirectiveDescriptor[] expectedDirectiveDescriptors)
         {
             // Arrange
@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 new CSharpCodeParser(),
                 new HtmlMarkupParser(),
                 tagHelperDescriptorResolver: resolver.Object);
-            var parser = new TestableMvcRazorParser(baseParser, codeTrees, defaultInheritedChunks: new Chunk[0]);
+            var parser = new TestableMvcRazorParser(baseParser, chunkTrees, defaultInheritedChunks: new Chunk[0]);
 
             // Act
             parser.GetTagHelperDescriptorsPublic(block, errorSink: new ErrorSink()).ToArray();
@@ -211,9 +211,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.Equal(expectedOutput, output, StringComparer.Ordinal);
         }
 
-        private static CodeTree CreateCodeTree(params Chunk[] chunks)
+        private static ChunkTree CreateChunkTree(params Chunk[] chunks)
         {
-            return new CodeTree
+            return new ChunkTree
             {
                 Chunks = chunks
             };
@@ -229,9 +229,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         private class TestableMvcRazorParser : MvcRazorParser
         {
             public TestableMvcRazorParser(RazorParser parser,
-                                          IReadOnlyList<CodeTree> codeTrees,
+                                          IReadOnlyList<ChunkTree> chunkTrees,
                                           IReadOnlyList<Chunk> defaultInheritedChunks)
-                : base(parser, codeTrees, defaultInheritedChunks, typeof(ModelExpression).FullName)
+                : base(parser, chunkTrees, defaultInheritedChunks, typeof(ModelExpression).FullName)
             {
             }
 
