@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("10", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "IsValid == false because of #2470")]
+        [Fact]
         public async Task DictionaryModelBinder_BindsDictionaryOfSimpleType_EmptyPrefix_Success()
         {
             // Arrange
@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
-            Assert.True(modelState.IsValid); // Fails due to #2470
+            Assert.True(modelState.IsValid);
 
             var entry = Assert.Single(modelState, kvp => kvp.Key == "[0].Key").Value;
             Assert.Equal("key0", entry.Value.AttemptedValue);
@@ -266,7 +266,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("10", entry.Value.RawValue);
         }
 
-        [Fact(Skip = "IsValid == false because of #2470")]
+        [Fact]
         public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_EmptyPrefix_Success()
         {
             // Arrange
@@ -298,7 +298,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
-            Assert.True(modelState.IsValid); // Fails due to #2470
+            Assert.True(modelState.IsValid);
 
             var entry = Assert.Single(modelState, kvp => kvp.Key == "[0].Key").Value;
             Assert.Equal("key0", entry.Value.AttemptedValue);
