@@ -42,8 +42,10 @@ namespace Microsoft.AspNet.Hosting
         private string _serverFactoryLocation;
         private IServerFactory _serverFactory;
 
-        public WebHostBuilder([NotNull] IServiceProvider services) 
-            : this(services, config: new ConfigurationBuilder().Build()) { }
+        public WebHostBuilder([NotNull] IServiceProvider services)
+            : this(services, config: new ConfigurationBuilder().Build())
+        {
+        }
 
         public WebHostBuilder([NotNull] IServiceProvider services, [NotNull] IConfiguration config)
         {
@@ -109,7 +111,7 @@ namespace Microsoft.AspNet.Hosting
             // Only one of these should be set, but they are used in priority
             engine.Startup = _startup;
             engine.StartupType = _startupType;
-            engine.StartupAssemblyName = _config.Get(ApplicationKey) ?? _config.Get(OldApplicationKey) ?? appEnvironment.ApplicationName;
+            engine.StartupAssemblyName = _startupAssemblyName ?? _config.Get(ApplicationKey) ?? _config.Get(OldApplicationKey) ?? appEnvironment.ApplicationName;
 
             return engine;
         }
@@ -177,7 +179,8 @@ namespace Microsoft.AspNet.Hosting
         public WebHostBuilder UseStartup([NotNull] Action<IApplicationBuilder> configureApp, Action<IServiceCollection> configureServices)
         {
             _startup = new StartupMethods(configureApp,
-                services => {
+                services =>
+                {
                     if (configureServices != null)
                     {
                         configureServices(services);
