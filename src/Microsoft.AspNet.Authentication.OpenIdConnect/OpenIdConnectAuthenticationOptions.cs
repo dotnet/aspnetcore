@@ -239,7 +239,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <summary>
         /// Gets or sets the 'response_mode'.
         /// </summary>
-        public string ResponseMode { get; private set; }
+        public string ResponseMode { get; set; }
 
         /// <summary>
         /// Gets or sets the 'response_type'.

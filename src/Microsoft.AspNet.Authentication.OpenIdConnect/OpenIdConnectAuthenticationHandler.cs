@@ -139,10 +139,18 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 // [brentschmaltz] - #215 this should be a property on RedirectToIdentityProviderNotification not on the OIDCMessage.
                 RequestType = OpenIdConnectRequestType.AuthenticationRequest,
                 Resource = Options.Resource,
-                ResponseMode = Options.ResponseMode,
                 ResponseType = Options.ResponseType,
                 Scope = Options.Scope
             };
+
+            // Omitting the response_mode parameter when it already corresponds to the default
+            // response_mode used for the specified response_type is recommended by the specifications.
+            // See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#ResponseModes
+            if (!string.Equals(Options.ResponseType, OpenIdConnectResponseTypes.Code, StringComparison.Ordinal) ||
+                !string.Equals(Options.ResponseMode, OpenIdConnectResponseModes.Query, StringComparison.Ordinal))
+            {
+                message.ResponseMode = Options.ResponseMode;
+            }
 
             if (Options.ProtocolValidator.RequireNonce)
             {
@@ -236,8 +244,22 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
             OpenIdConnectMessage message = null;
 
+            if (string.Equals(Request.Method, "GET", StringComparison.OrdinalIgnoreCase))
+            {
+                message = new OpenIdConnectMessage(Request.Query);
+
+                // response_mode=query (explicit or not) and a response_type containing id_token
+                // or token are not considered as a safe combination and MUST be rejected.
+                // See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#Security
+                if (!string.IsNullOrWhiteSpace(message.IdToken) || !string.IsNullOrWhiteSpace(message.Token))
+                {
+                    Logger.LogError("An OpenID Connect response cannot contain an identity token " +
+                                    "or an access token when using response_mode=query");
+                    return null;
+                }
+            }
             // assumption: if the ContentType is "application/x-www-form-urlencoded" it should be safe to read as it is small.
-            if (string.Equals(Request.Method, "POST", StringComparison.OrdinalIgnoreCase)
+            else if (string.Equals(Request.Method, "POST", StringComparison.OrdinalIgnoreCase)
               && !string.IsNullOrWhiteSpace(Request.ContentType)
               // May have media/type; charset=utf-8, allow partial match.
               && Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
