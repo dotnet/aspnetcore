@@ -17,12 +17,12 @@ namespace Microsoft.Framework.Localization.Test
         public void EnumeratorCachesCultureWalkForSameAssembly()
         {
             // Arrange
-            ResourceManagerStringLocalizer.ClearResourceNamesCache();
+            var resourceNamesCache = new ResourceNamesCache();
             var baseName = "test";
             var resourceAssembly = new TestAssemblyWrapper();
             var resourceManager = new TestResourceManager(baseName, resourceAssembly.Assembly);
-            var localizer1 = new ResourceManagerStringLocalizer(resourceManager, resourceAssembly, baseName);
-            var localizer2 = new ResourceManagerStringLocalizer(resourceManager, resourceAssembly, baseName);
+            var localizer1 = new ResourceManagerStringLocalizer(resourceManager, resourceAssembly, baseName, resourceNamesCache);
+            var localizer2 = new ResourceManagerStringLocalizer(resourceManager, resourceAssembly, baseName, resourceNamesCache);
 
             // Act
             for (int i = 0; i < 5; i++)
@@ -40,14 +40,14 @@ namespace Microsoft.Framework.Localization.Test
         public void EnumeratorCacheIsScopedByAssembly()
         {
             // Arrange
-            ResourceManagerStringLocalizer.ClearResourceNamesCache();
+            var resourceNamesCache = new ResourceNamesCache();
             var baseName = "test";
             var resourceAssembly1 = new TestAssemblyWrapper("Assembly1");
             var resourceAssembly2 = new TestAssemblyWrapper("Assembly2");
             var resourceManager1 = new TestResourceManager(baseName, resourceAssembly1.Assembly);
             var resourceManager2 = new TestResourceManager(baseName, resourceAssembly2.Assembly);
-            var localizer1 = new ResourceManagerStringLocalizer(resourceManager1, resourceAssembly1, baseName);
-            var localizer2 = new ResourceManagerStringLocalizer(resourceManager2, resourceAssembly2, baseName);
+            var localizer1 = new ResourceManagerStringLocalizer(resourceManager1, resourceAssembly1, baseName, resourceNamesCache);
+            var localizer2 = new ResourceManagerStringLocalizer(resourceManager2, resourceAssembly2, baseName, resourceNamesCache);
 
             // Act
             localizer1.ToList();

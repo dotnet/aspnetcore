@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Reflection;
 using System.Resources;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.Localization.Internal;
 
 namespace Microsoft.Framework.Localization
 {
@@ -24,26 +23,15 @@ namespace Microsoft.Framework.Localization
         /// <param name="resourceManager">The <see cref="System.Resources.ResourceManager"/> to read strings from.</param>
         /// <param name="resourceAssembly">The <see cref="Assembly"/> that contains the strings as embedded resources.</param>
         /// <param name="baseName">The base name of the embedded resource in the <see cref="Assembly"/> that contains the strings.</param>
+        /// <param name="resourceNamesCache">Cache of the list of strings for a given resource assembly name.</param>
         /// <param name="culture">The specific <see cref="CultureInfo"/> to use.</param>
         public ResourceManagerWithCultureStringLocalizer(
             [NotNull] ResourceManager resourceManager,
-            [NotNull] Assembly assembly,
+            [NotNull] Assembly resourceAssembly,
             [NotNull] string baseName,
+            [NotNull] IResourceNamesCache resourceNamesCache,
             [NotNull] CultureInfo culture)
-            : base(resourceManager, assembly, baseName)
-        {
-            _culture = culture;
-        }
-
-        /// <summary>
-        /// Intended for testing purposes only.
-        /// </summary>
-        public ResourceManagerWithCultureStringLocalizer(
-            [NotNull] ResourceManager resourceManager,
-            [NotNull] AssemblyWrapper assemblyWrapper,
-            [NotNull] string baseName,
-            [NotNull] CultureInfo culture)
-            : base(resourceManager, assemblyWrapper, baseName)
+            : base(resourceManager, resourceAssembly, baseName, resourceNamesCache)
         {
             _culture = culture;
         }
