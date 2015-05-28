@@ -22,7 +22,7 @@ namespace CultureInfoGenerator
 
         public void Main(string[] args)
         {
-            var outputFilePath = args.Length > 0 ? args[0] : Path.Combine(_appPath, "../Microsoft.Framework.Globalization.CultureCache/CultureInfoList.cs");
+            var outputFilePath = Path.GetFullPath(args.Length > 0 ? args[0] : Path.Combine(_appPath, "../Microsoft.Framework.Globalization.CultureInfoCache/CultureInfoList.cs"));
             var netFxVersion = Get45or451FromRegistry();
             var windowsVersion = Environment.OSVersion;
 
@@ -76,11 +76,12 @@ namespace Microsoft.Framework.Globalization
                         writer.WriteLine();
                     }
                 }
-
                 writer.WriteLine(
 @"        };
     }
 }");
+
+                Console.WriteLine($"{cultures.Length} culture names written to {outputFilePath}");
             }
         }
 
