@@ -27,8 +27,8 @@ namespace Microsoft.Framework.Localization.Test
             // Act
             for (int i = 0; i < 5; i++)
             {
-                localizer1.ToList();
-                localizer2.ToList();
+                localizer1.GetAllStrings().ToList();
+                localizer2.GetAllStrings().ToList();
             }
 
             // Assert
@@ -50,8 +50,8 @@ namespace Microsoft.Framework.Localization.Test
             var localizer2 = new ResourceManagerStringLocalizer(resourceManager2, resourceAssembly2, baseName, resourceNamesCache);
 
             // Act
-            localizer1.ToList();
-            localizer2.ToList();
+            localizer1.GetAllStrings().ToList();
+            localizer2.GetAllStrings().ToList();
 
             // Assert
             var expectedCallCount = GetCultureInfoDepth(CultureInfo.CurrentUICulture);

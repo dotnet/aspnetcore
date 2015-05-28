@@ -9,7 +9,7 @@ namespace Microsoft.Framework.Localization
     /// <summary>
     /// Represents a service that provides localized strings.
     /// </summary>
-    public interface IStringLocalizer : IEnumerable<LocalizedString>
+    public interface IStringLocalizer
     {
         /// <summary>
         /// Gets the string resource with the given name.
@@ -25,7 +25,17 @@ namespace Microsoft.Framework.Localization
         /// <param name="arguments">The values to format the string with.</param>
         /// <returns>The formatted string resource as a <see cref="LocalizedString"/>.</returns>
         LocalizedString this[string name, params object[] arguments] { get; }
-        
+
+        /// <summary>
+        /// Gets all string resources.
+        /// </summary>
+        /// <param name="includeAncestorCultures">
+        /// A <see cref="System.Boolean"/> indicating whether to include
+        /// strings from ancestor cultures.
+        /// </param>
+        /// <returns>The strings.</returns>
+        IEnumerable<LocalizedString> GetAllStrings(bool includeAncestorCultures);
+
         /// <summary>
         /// Creates a new <see cref="ResourceManagerStringLocalizer"/> for a specific <see cref="CultureInfo"/>.
         /// </summary>
