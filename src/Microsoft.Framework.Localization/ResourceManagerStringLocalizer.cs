@@ -18,12 +18,10 @@ namespace Microsoft.Framework.Localization
     /// </summary>
     public class ResourceManagerStringLocalizer : IStringLocalizer
     {
-        private static readonly ConcurrentDictionary<string, IList<string>> _resourceNamesCache =
-            new ConcurrentDictionary<string, IList<string>>();
-
         private readonly ConcurrentDictionary<string, object> _missingManifestCache =
             new ConcurrentDictionary<string, object>();
 
+        private readonly IResourceNamesCache _resourceNamesCache;
         private readonly ResourceManager _resourceManager;
         private readonly AssemblyWrapper _resourceAssemblyWrapper;
         private readonly string _resourceBaseName;
@@ -34,11 +32,13 @@ namespace Microsoft.Framework.Localization
         /// <param name="resourceManager">The <see cref="System.Resources.ResourceManager"/> to read strings from.</param>
         /// <param name="resourceAssembly">The <see cref="Assembly"/> that contains the strings as embedded resources.</param>
         /// <param name="baseName">The base name of the embedded resource in the <see cref="Assembly"/> that contains the strings.</param>
+        /// <param name="resourceNamesCache">Cache of the list of strings for a given resource assembly name.</param>
         public ResourceManagerStringLocalizer(
             [NotNull] ResourceManager resourceManager,
             [NotNull] Assembly resourceAssembly,
-            [NotNull] string baseName)
-            : this(resourceManager, new AssemblyWrapper(resourceAssembly), baseName)
+            [NotNull] string baseName,
+            [NotNull] IResourceNamesCache resourceNamesCache)
+            : this(resourceManager, new AssemblyWrapper(resourceAssembly), baseName, resourceNamesCache)
         {
             
         }
@@ -49,11 +49,13 @@ namespace Microsoft.Framework.Localization
         public ResourceManagerStringLocalizer(
             [NotNull] ResourceManager resourceManager,
             [NotNull] AssemblyWrapper resourceAssemblyWrapper,
-            [NotNull] string baseName)
+            [NotNull] string baseName,
+            [NotNull] IResourceNamesCache resourceNamesCache)
         {
             _resourceAssemblyWrapper = resourceAssemblyWrapper;
             _resourceManager = resourceManager;
             _resourceBaseName = baseName;
+            _resourceNamesCache = resourceNamesCache;
         }
 
         /// <inheritdoc />
@@ -85,10 +87,16 @@ namespace Microsoft.Framework.Localization
         public IStringLocalizer WithCulture(CultureInfo culture)
         {
             return culture == null
-                ? new ResourceManagerStringLocalizer(_resourceManager, _resourceAssemblyWrapper, _resourceBaseName)
-                : new ResourceManagerWithCultureStringLocalizer(_resourceManager,
-                    _resourceAssemblyWrapper,
+                ? new ResourceManagerStringLocalizer(
+                    _resourceManager,
+                    _resourceAssemblyWrapper.Assembly,
                     _resourceBaseName,
+                    _resourceNamesCache)
+                : new ResourceManagerWithCultureStringLocalizer(
+                    _resourceManager,
+                    _resourceAssemblyWrapper.Assembly,
+                    _resourceBaseName,
+                    _resourceNamesCache,
                     culture);
         }
 
@@ -142,9 +150,6 @@ namespace Microsoft.Framework.Localization
                 yield return new LocalizedString(name, value ?? name, resourceNotFound: value == null);
             }
         }
-
-        // Internal to allow testing
-        internal static void ClearResourceNamesCache() => _resourceNamesCache.Clear();
 
         private IEnumerable<string> GetResourceNamesFromCultureHierarchy(CultureInfo startingCulture)
         {
