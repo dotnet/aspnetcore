@@ -635,17 +635,20 @@ namespace Microsoft.AspNet.Razor.Parser
                 Accept(prefix);
 
                 // Literal value
-                // 'quote' should be "Unknown" if not quoted and symbols coming from the tokenizer should never have "Unknown" type.
+                // 'quote' should be "Unknown" if not quoted and symbols coming from the tokenizer should never have
+                // "Unknown" type.
                 var value = ReadWhile(sym =>
-                                      // These three conditions find separators which break the attribute value into portions
-                                      sym.Type != HtmlSymbolType.WhiteSpace &&
-                                      sym.Type != HtmlSymbolType.NewLine &&
-                                      sym.Type != HtmlSymbolType.Transition &&
-                                      // This condition checks for the end of the attribute value (it repeats some of the checks above
-                                      // but for now that's ok)
-                                      !IsEndOfAttributeValue(quote, sym));
+                    // These three conditions find separators which break the attribute value into portions
+                    sym.Type != HtmlSymbolType.WhiteSpace &&
+                    sym.Type != HtmlSymbolType.NewLine &&
+                    sym.Type != HtmlSymbolType.Transition &&
+                    // This condition checks for the end of the attribute value (it repeats some of the checks above
+                    // but for now that's ok)
+                    !IsEndOfAttributeValue(quote, sym));
                 Accept(value);
-                Span.ChunkGenerator = new LiteralAttributeChunkGenerator(prefix.GetContent(prefixStart), value.GetContent(prefixStart));
+                Span.ChunkGenerator = new LiteralAttributeChunkGenerator(
+                    prefix.GetContent(prefixStart),
+                    value.GetContent(prefixStart));
             }
             Output(SpanKind.Markup);
         }

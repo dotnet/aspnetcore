@@ -334,7 +334,10 @@ namespace Microsoft.AspNet.Razor.Parser
 
             using (PushSpanConfig(span =>
             {
-                span.EditHandler = new ImplicitExpressionEditHandler(Language.TokenizeString, Keywords, acceptTrailingDot: IsNested);
+                span.EditHandler = new ImplicitExpressionEditHandler(
+                    Language.TokenizeString,
+                    Keywords,
+                    acceptTrailingDot: IsNested);
                 span.EditHandler.AcceptedCharacters = acceptedCharacters;
                 span.ChunkGenerator = new ExpressionChunkGenerator();
             }))

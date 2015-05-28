@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.CodeGeneration;
+using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.Parser;
 
 namespace Microsoft.AspNet.Razor
@@ -14,7 +14,8 @@ namespace Microsoft.AspNet.Razor
     /// </summary>
     public abstract class RazorCodeLanguage
     {
-        private static IDictionary<string, RazorCodeLanguage> _services = new Dictionary<string, RazorCodeLanguage>(StringComparer.OrdinalIgnoreCase)
+        private static IDictionary<string, RazorCodeLanguage> _services =
+            new Dictionary<string, RazorCodeLanguage>(StringComparer.OrdinalIgnoreCase)
         {
             { "cshtml", new CSharpRazorCodeLanguage() }
         };
@@ -52,7 +53,11 @@ namespace Microsoft.AspNet.Razor
         /// <summary>
         /// Constructs the chunk generator.  Must return a new instance on EVERY call to ensure thread-safety
         /// </summary>
-        public abstract RazorChunkGenerator CreateChunkGenerator(string className, string rootNamespaceName, string sourceFileName, RazorEngineHost host);
+        public abstract RazorChunkGenerator CreateChunkGenerator(
+            string className,
+            string rootNamespaceName,
+            string sourceFileName,
+            RazorEngineHost host);
 
         public abstract CodeGenerator CreateCodeGenerator(CodeGeneratorContext chunkGeneratorContext);
     }

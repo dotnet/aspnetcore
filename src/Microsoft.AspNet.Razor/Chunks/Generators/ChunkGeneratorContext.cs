@@ -33,11 +33,11 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
 
         public string SourceFile { get; internal set; }
 
-        public string RootNamespace { get; private set; }
+        public string RootNamespace { get; }
 
-        public string ClassName { get; private set; }
+        public string ClassName { get; }
 
-        public RazorEngineHost Host { get; private set; }
+        public RazorEngineHost Host { get; }
 
         public ChunkTreeBuilder ChunkTreeBuilder { get; set; }
     }

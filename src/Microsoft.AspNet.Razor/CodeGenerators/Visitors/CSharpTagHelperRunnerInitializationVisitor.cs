@@ -1,0 +1,48 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNet.Razor.Chunks;
+using Microsoft.Framework.Internal;
+
+namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
+{
+    /// <summary>
+    /// The <see cref="CodeVisitor{T}"/> that generates the code to initialize the TagHelperRunner.
+    /// </summary>
+    public class CSharpTagHelperRunnerInitializationVisitor : CodeVisitor<CSharpCodeWriter>
+    {
+        private readonly GeneratedTagHelperContext _tagHelperContext;
+        private bool _foundTagHelpers;
+
+        /// <summary>
+        /// Creates a new instance of <see cref="CSharpTagHelperRunnerInitializationVisitor"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="CSharpCodeWriter"/> used to generate code.</param>
+        /// <param name="context">The <see cref="CodeGeneratorContext"/>.</param>
+        public CSharpTagHelperRunnerInitializationVisitor([NotNull] CSharpCodeWriter writer,
+                                                          [NotNull] CodeGeneratorContext context)
+            : base(writer, context)
+        {
+            _tagHelperContext = Context.Host.GeneratedClassContext.GeneratedTagHelperContext;
+        }
+
+        /// <summary>
+        /// Writes the TagHelperRunner initialization code to the Writer.
+        /// </summary>
+        /// <param name="chunk">The <see cref="TagHelperChunk"/>.</param>
+        protected override void Visit(TagHelperChunk chunk)
+        {
+            if (!_foundTagHelpers && !Context.Host.DesignTimeMode)
+            {
+                _foundTagHelpers = true;
+
+                Writer
+                    .WriteStartAssignment(CSharpTagHelperCodeRenderer.RunnerVariableName)
+                    .Write(CSharpTagHelperCodeRenderer.RunnerVariableName)
+                    .Write(" ?? ")
+                    .WriteStartNewObject(_tagHelperContext.RunnerTypeName)
+                    .WriteEndMethodInvocation();
+            }
+        }
+    }
+}

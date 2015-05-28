@@ -10,7 +10,9 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
 {
     public class LiteralAttributeChunkGenerator : SpanChunkGenerator
     {
-        public LiteralAttributeChunkGenerator(LocationTagged<string> prefix, LocationTagged<SpanChunkGenerator> valueGenerator)
+        public LiteralAttributeChunkGenerator(
+            LocationTagged<string> prefix,
+            LocationTagged<SpanChunkGenerator> valueGenerator)
         {
             Prefix = prefix;
             ValueGenerator = valueGenerator;

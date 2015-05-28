@@ -19,12 +19,17 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         public static UnclassifiedCodeSpanConstructor EmptyCSharp(this SpanFactory self)
         {
             return new UnclassifiedCodeSpanConstructor(
-                self.Span(SpanKind.Code, new CSharpSymbol(self.LocationTracker.CurrentLocation, string.Empty, CSharpSymbolType.Unknown)));
+                self.Span(
+                    SpanKind.Code,
+                    new CSharpSymbol(self.LocationTracker.CurrentLocation, string.Empty, CSharpSymbolType.Unknown)));
         }
 
         public static SpanConstructor EmptyHtml(this SpanFactory self)
         {
-            return self.Span(SpanKind.Markup, new HtmlSymbol(self.LocationTracker.CurrentLocation, string.Empty, HtmlSymbolType.Unknown))
+            return self
+                .Span(
+                    SpanKind.Markup,
+                    new HtmlSymbol(self.LocationTracker.CurrentLocation, string.Empty, HtmlSymbolType.Unknown))
                 .With(new MarkupChunkGenerator());
         }
 
@@ -36,7 +41,9 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         public static SpanConstructor CodeTransition(this SpanFactory self)
         {
-            return self.Span(SpanKind.Transition, SyntaxConstants.TransitionString, markup: false).Accepts(AcceptedCharacters.None);
+            return self
+                .Span(SpanKind.Transition, SyntaxConstants.TransitionString, markup: false)
+                .Accepts(AcceptedCharacters.None);
         }
 
         public static SpanConstructor CodeTransition(this SpanFactory self, string content)
@@ -46,7 +53,9 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         public static SpanConstructor CodeTransition(this SpanFactory self, CSharpSymbolType type)
         {
-            return self.Span(SpanKind.Transition, SyntaxConstants.TransitionString, type).Accepts(AcceptedCharacters.None);
+            return self
+                .Span(SpanKind.Transition, SyntaxConstants.TransitionString, type)
+                .Accepts(AcceptedCharacters.None);
         }
 
         public static SpanConstructor CodeTransition(this SpanFactory self, string content, CSharpSymbolType type)
@@ -56,7 +65,9 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         public static SpanConstructor MarkupTransition(this SpanFactory self)
         {
-            return self.Span(SpanKind.Transition, SyntaxConstants.TransitionString, markup: true).Accepts(AcceptedCharacters.None);
+            return self
+                .Span(SpanKind.Transition, SyntaxConstants.TransitionString, markup: true)
+                .Accepts(AcceptedCharacters.None);
         }
 
         public static SpanConstructor MarkupTransition(this SpanFactory self, string content)
@@ -66,7 +77,9 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         public static SpanConstructor MarkupTransition(this SpanFactory self, HtmlSymbolType type)
         {
-            return self.Span(SpanKind.Transition, SyntaxConstants.TransitionString, type).Accepts(AcceptedCharacters.None);
+            return self
+                .Span(SpanKind.Transition, SyntaxConstants.TransitionString, type)
+                .Accepts(AcceptedCharacters.None);
         }
 
         public static SpanConstructor MarkupTransition(this SpanFactory self, string content, HtmlSymbolType type)
@@ -241,7 +254,10 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             return AutoCompleteWith(self, autoCompleteString, atEndOfSpan: false);
         }
 
-        public static SpanConstructor AutoCompleteWith(this SpanConstructor self, string autoCompleteString, bool atEndOfSpan)
+        public static SpanConstructor AutoCompleteWith(
+            this SpanConstructor self,
+            string autoCompleteString,
+            bool atEndOfSpan)
         {
             return self.With(new AutoCompleteEditHandler(
                 SpanConstructor.TestTokenizer,
@@ -289,7 +305,8 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         public SpanConstructor AsImplicitExpression(ISet<string> keywords, bool acceptTrailingDot)
         {
-            return _self.With(new ImplicitExpressionEditHandler(SpanConstructor.TestTokenizer, keywords, acceptTrailingDot))
+            return _self
+                .With(new ImplicitExpressionEditHandler(SpanConstructor.TestTokenizer, keywords, acceptTrailingDot))
                 .With(new ExpressionChunkGenerator());
         }
 

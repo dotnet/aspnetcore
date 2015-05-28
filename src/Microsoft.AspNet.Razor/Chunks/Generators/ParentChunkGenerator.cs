@@ -10,7 +10,10 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
     {
         private static readonly int TypeHashCode = typeof(ParentChunkGenerator).GetHashCode();
 
-        [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "This class has no instance state")]
+        [SuppressMessage(
+            "Microsoft.Security",
+            "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
+            Justification = "This class has no instance state")]
         public static readonly IParentChunkGenerator Null = new NullParentChunkGenerator();
 
         public virtual void GenerateStartParentChunk(Block target, ChunkGeneratorContext context)

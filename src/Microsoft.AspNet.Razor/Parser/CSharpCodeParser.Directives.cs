@@ -222,7 +222,9 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected void InheritsDirectiveCore()
         {
-            BaseTypeDirective(RazorResources.ParseError_InheritsKeyword_Must_Be_Followed_By_TypeName, baseType => new SetBaseTypeChunkGenerator(baseType));
+            BaseTypeDirective(
+                RazorResources.ParseError_InheritsKeyword_Must_Be_Followed_By_TypeName,
+                baseType => new SetBaseTypeChunkGenerator(baseType));
         }
 
         protected void BaseTypeDirective(string noTypeNameError, Func<string, SpanChunkGenerator> createChunkGenerator)

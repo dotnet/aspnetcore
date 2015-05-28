@@ -5,21 +5,21 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
 namespace Microsoft.AspNet.Razor.Chunks.Generators
 {
-    public class ExpressionChunkGenerator : HybridChunkGenerator
+    public class ExpressionChunkGenerator : ISpanChunkGenerator, IParentChunkGenerator
     {
         private static readonly int TypeHashCode = typeof(ExpressionChunkGenerator).GetHashCode();
 
-        public override void GenerateStartParentChunk(Block target, ChunkGeneratorContext context)
+        public void GenerateStartParentChunk(Block target, ChunkGeneratorContext context)
         {
             context.ChunkTreeBuilder.StartParentChunk<ExpressionBlockChunk>(target);
         }
 
-        public override void GenerateChunk(Span target, ChunkGeneratorContext context)
+        public void GenerateChunk(Span target, ChunkGeneratorContext context)
         {
             context.ChunkTreeBuilder.AddExpressionChunk(target.Content, target);
         }
 
-        public override void GenerateEndParentChunk(Block target, ChunkGeneratorContext context)
+        public void GenerateEndParentChunk(Block target, ChunkGeneratorContext context)
         {
             context.ChunkTreeBuilder.EndParentChunk();
         }

@@ -45,7 +45,11 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             Children = contents;
         }
 
-        [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "Type is the most appropriate name for this property and there is little chance of confusion with GetType")]
+        [SuppressMessage(
+            "Microsoft.Naming",
+            "CA1721:PropertyNamesShouldNotMatchGetMethods",
+            Justification = "Type is the most appropriate name for this property and there is little chance of " +
+            "confusion with GetType")]
         public BlockType Type { get; }
 
         public IEnumerable<SyntaxTreeNode> Children { get; }
@@ -105,7 +109,13 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
         public override string ToString()
         {
-            return string.Format(CultureInfo.CurrentCulture, "{0} Block at {1}::{2} (Gen:{3})", Type, Start, Length, ChunkGenerator);
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                "{0} Block at {1}::{2} (Gen:{3})",
+                Type,
+                Start,
+                Length,
+                ChunkGenerator);
         }
 
         public override bool Equals(object obj)

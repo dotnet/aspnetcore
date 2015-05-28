@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.CodeGeneration;
+using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.Parser;
 #if NET45
 
@@ -36,7 +36,11 @@ namespace Microsoft.AspNet.Razor
         /// <summary>
         /// Constructs a new instance of the chunk generator for this language with the specified settings
         /// </summary>
-        public override RazorChunkGenerator CreateChunkGenerator(string className, string rootNamespaceName, string sourceFileName, RazorEngineHost host)
+        public override RazorChunkGenerator CreateChunkGenerator(
+            string className,
+            string rootNamespaceName,
+            string sourceFileName,
+            RazorEngineHost host)
         {
             return new RazorChunkGenerator(className, rootNamespaceName, sourceFileName, host);
         }

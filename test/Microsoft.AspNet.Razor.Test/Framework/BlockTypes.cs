@@ -124,7 +124,10 @@ namespace Microsoft.AspNet.Razor.Test.Framework
     {
         private const BlockType ThisBlockType = BlockType.Markup;
 
-        public MarkupBlock(BlockType blockType, IParentChunkGenerator chunkGenerator, IEnumerable<SyntaxTreeNode> children)
+        public MarkupBlock(
+            BlockType blockType,
+            IParentChunkGenerator chunkGenerator,
+            IEnumerable<SyntaxTreeNode> children)
             : base(blockType, children, chunkGenerator)
         {
         }

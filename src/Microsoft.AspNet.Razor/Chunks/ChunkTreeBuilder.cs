@@ -8,13 +8,13 @@ namespace Microsoft.AspNet.Razor.Chunks
 {
     public class ChunkTreeBuilder
     {
-        private readonly Stack<ParentChunk> _parentChain;
+        private readonly Stack<ParentChunk> _parentStack;
         private Chunk _lastChunk;
 
         public ChunkTreeBuilder()
         {
             ChunkTree = new ChunkTree();
-            _parentChain = new Stack<ParentChunk>();
+            _parentStack = new Stack<ParentChunk>();
         }
 
         public ChunkTree ChunkTree { get; private set; }
@@ -27,13 +27,13 @@ namespace Microsoft.AspNet.Razor.Chunks
             chunk.Association = association;
 
             // If we're not in the middle of a chunk block
-            if (_parentChain.Count == 0 || topLevel == true)
+            if (_parentStack.Count == 0 || topLevel == true)
             {
                 ChunkTree.Chunks.Add(chunk);
             }
             else
             {
-                _parentChain.Peek().Children.Add(chunk);
+                _parentStack.Peek().Children.Add(chunk);
             }
         }
 
@@ -164,14 +164,14 @@ namespace Microsoft.AspNet.Razor.Chunks
         {
             AddChunk(parentChunk, association, topLevel);
 
-            _parentChain.Push(parentChunk);
+            _parentStack.Push(parentChunk);
 
             return parentChunk;
         }
 
         public void EndParentChunk()
         {
-            _lastChunk = _parentChain.Pop();
+            _lastChunk = _parentStack.Pop();
         }
     }
 }

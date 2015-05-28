@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Parser.TagHelpers;
@@ -40,11 +41,9 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
         {
             var tagHelperBlock = target as TagHelperBlock;
 
-            if (tagHelperBlock == null)
-            {
-                throw new ArgumentException(
-                    RazorResources.TagHelpers_TagHelperCodeGeneartorMustBeAssociatedWithATagHelperBlock);
-            }
+            Debug.Assert(
+                tagHelperBlock != null,
+                $"A {nameof(TagHelperChunkGenerator)} must only be used with {nameof(TagHelperBlock)}s.");
 
             var attributes = new List<KeyValuePair<string, Chunk>>();
 
@@ -60,7 +59,7 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
 
                 if (attribute.Value != null)
                 {
-                    // Populates the code tree with chunks associated with attributes
+                    // Populates the chunk tree with chunks associated with attributes
                     attribute.Value.Accept(chunkGenerator);
 
                     var chunks = chunkGenerator.Context.ChunkTreeBuilder.ChunkTree.Chunks;
@@ -76,7 +75,7 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
 
                 attributes.Add(new KeyValuePair<string, Chunk>(attribute.Key, attributeChunkValue));
 
-                // Reset the code tree builder so we can build a new one for the next attribute
+                // Reset the chunk tree builder so we can build a new one for the next attribute
                 chunkGenerator.Context.ChunkTreeBuilder = new ChunkTreeBuilder();
             }
 
