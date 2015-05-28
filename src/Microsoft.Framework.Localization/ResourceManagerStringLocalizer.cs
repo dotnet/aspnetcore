@@ -100,6 +100,29 @@ namespace Microsoft.Framework.Localization
                     culture);
         }
 
+        /// <inheritdoc />
+        public virtual IEnumerable<LocalizedString> GetAllStrings(bool includeAncestorCultures) =>
+            GetAllStrings(includeAncestorCultures, CultureInfo.CurrentUICulture);
+
+        /// <summary>
+        /// Returns all strings in the specified culture.
+        /// </summary>
+        /// <param name="includeAncestorCultures"></param>
+        /// <param name="culture">The <see cref="CultureInfo"/> to get strings for.</param>
+        /// <returns>The strings.</returns>
+        protected IEnumerable<LocalizedString> GetAllStrings(bool includeAncestorCultures, [NotNull] CultureInfo culture)
+        {
+            var resourceNames = includeAncestorCultures
+                ? GetResourceNamesFromCultureHierarchy(culture)
+                : GetResourceNamesForCulture(culture);
+
+            foreach (var name in resourceNames)
+            {
+                var value = GetStringSafely(name, culture);
+                yield return new LocalizedString(name, value ?? name, resourceNotFound: value == null);
+            }
+        }
+
         /// <summary>
         /// Gets a resource string from the <see cref="_resourceManager"/> and returns <c>null</c> instead of
         /// throwing exceptions if a match isn't found.
@@ -124,30 +147,6 @@ namespace Microsoft.Framework.Localization
             {
                 _missingManifestCache.TryAdd(cacheKey, null);
                 return null;
-            }
-        }
-
-        /// <summary>
-        /// Returns an <see cref="IEnumerator{LocalizedString}"/> for all strings in the current culture.
-        /// </summary>
-        /// <returns>The <see cref="IEnumerator{LocalizedString}"/>.</returns>
-        public virtual IEnumerator<LocalizedString> GetEnumerator() => GetEnumerator(CultureInfo.CurrentUICulture);
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        /// <summary>
-        /// Returns an <see cref="IEnumerator{LocalizedString}"/> for all strings in the specified culture.
-        /// </summary>
-        /// <param name="culture">The <see cref="CultureInfo"/> to get strings for.</param>
-        /// <returns>The <see cref="IEnumerator{LocalizedString}"/>.</returns>
-        protected IEnumerator<LocalizedString> GetEnumerator([NotNull] CultureInfo culture)
-        {
-            var resourceNames = GetResourceNamesFromCultureHierarchy(culture);
-
-            foreach (var name in resourceNames)
-            {
-                var value = GetStringSafely(name, culture);
-                yield return new LocalizedString(name, value ?? name, resourceNotFound: value == null);
             }
         }
 
@@ -191,10 +190,10 @@ namespace Microsoft.Framework.Localization
 
             var cacheKey = $"assembly={_resourceAssemblyWrapper.FullName};resourceStreamName={resourceStreamName}";
 
-            var cultureResourceNames = _resourceNamesCache.GetOrAdd(cacheKey, key =>
+            var cultureResourceNames = _resourceNamesCache.GetOrAdd(cacheKey, _ =>
             {
                 var names = new List<string>();
-                using (var cultureResourceStream = _resourceAssemblyWrapper.GetManifestResourceStream(key))
+                using (var cultureResourceStream = _resourceAssemblyWrapper.GetManifestResourceStream(resourceStreamName))
                 using (var resources = new ResourceReader(cultureResourceStream))
                 {
                     foreach (DictionaryEntry entry in resources)
