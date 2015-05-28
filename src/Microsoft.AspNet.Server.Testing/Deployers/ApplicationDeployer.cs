@@ -92,8 +92,8 @@ namespace Microsoft.AspNet.Server.Testing
             };
 
             var hostProcess = new Process() { StartInfo = startInfo };
-            hostProcess.ErrorDataReceived += (sender, dataArgs) => { Logger.LogError(dataArgs.Data); };
-            hostProcess.OutputDataReceived += (sender, dataArgs) => { Logger.LogInformation(dataArgs.Data); };
+            hostProcess.ErrorDataReceived += (sender, dataArgs) => { Logger.LogError(dataArgs.Data ?? string.Empty); };
+            hostProcess.OutputDataReceived += (sender, dataArgs) => { Logger.LogInformation(dataArgs.Data ?? string.Empty); };
             hostProcess.Start();
             hostProcess.BeginErrorReadLine();
             hostProcess.BeginOutputReadLine();

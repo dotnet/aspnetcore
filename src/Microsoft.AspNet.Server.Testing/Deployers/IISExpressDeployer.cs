@@ -107,8 +107,8 @@ namespace Microsoft.AspNet.Server.Testing
 #endif
 
             _hostProcess = new Process() { StartInfo = startInfo };
-            _hostProcess.ErrorDataReceived += (sender, dataArgs) => { Logger.LogError(dataArgs.Data); };
-            _hostProcess.OutputDataReceived += (sender, dataArgs) => { Logger.LogInformation(dataArgs.Data); };
+            _hostProcess.ErrorDataReceived += (sender, dataArgs) => { Logger.LogError(dataArgs.Data ?? string.Empty); };
+            _hostProcess.OutputDataReceived += (sender, dataArgs) => { Logger.LogInformation(dataArgs.Data ?? string.Empty); };
             _hostProcess.EnableRaisingEvents = true;
             var hostExitTokenSource = new CancellationTokenSource();
             _hostProcess.Exited += (sender, e) =>
