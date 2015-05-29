@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         // CodeGenerationContext.DefaultBaseClass is set to MyBaseType<dynamic>.
         // This field holds the type name without the generic decoration (MyBaseType)
         private readonly string _baseType;
-        private readonly IChunkTreeCache _ChunkTreeCache;
+        private readonly IChunkTreeCache _chunkTreeCache;
         private readonly RazorPathNormalizer _pathNormalizer;
         private ChunkInheritanceUtility _chunkInheritanceUtility;
 
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             _pathNormalizer = pathNormalizer;
             _baseType = BaseType;
-            _ChunkTreeCache = ChunkTreeCache;
+            _chunkTreeCache = ChunkTreeCache;
 
             TagHelperDescriptorResolver = new TagHelperDescriptorResolver();
             DefaultBaseClass = BaseType + "<" + DefaultModel + ">";
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 if (_chunkInheritanceUtility == null)
                 {
                     // This needs to be lazily evaluated to support DefaultInheritedChunks being virtual.
-                    _chunkInheritanceUtility = new ChunkInheritanceUtility(this, _ChunkTreeCache, DefaultInheritedChunks);
+                    _chunkInheritanceUtility = new ChunkInheritanceUtility(this, _chunkTreeCache, DefaultInheritedChunks);
                 }
 
                 return _chunkInheritanceUtility;

@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public override void RenderAttributeValue(
             [NotNull] TagHelperAttributeDescriptor attributeDescriptor,
             [NotNull] CSharpCodeWriter writer,
-            [NotNull] CodeGeneratorContext CodeGeneratorContext,
+            [NotNull] CodeGeneratorContext codeGeneratorContext,
             [NotNull] Action<CSharpCodeWriter> renderAttributeValue,
             bool complexValue)
         {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 base.RenderAttributeValue(
                     attributeDescriptor,
                     writer,
-                    CodeGeneratorContext,
+                    codeGeneratorContext,
                     renderAttributeValue,
                     complexValue);
             }
