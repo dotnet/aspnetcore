@@ -4,8 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Threading;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.FeatureModel
@@ -14,8 +12,7 @@ namespace Microsoft.AspNet.FeatureModel
     {
         private readonly IFeatureCollection _defaults;
         private readonly IDictionary<Type, object> _featureByFeatureType = new Dictionary<Type, object>();
-        private readonly IDictionary<string, Type> _featureTypeByName = new Dictionary<string, Type>();
-        private readonly object _containerSync = new Object();
+        private readonly object _containerSync = new object();
         private int _containerRevision;
 
         public FeatureCollection()
@@ -40,22 +37,6 @@ namespace Microsoft.AspNet.FeatureModel
                 return feature;
             }
 
-            Type actualType;
-            if (_featureTypeByName.TryGetValue(type.FullName, out actualType))
-            {
-                if (_featureByFeatureType.TryGetValue(actualType, out feature))
-                {
-                    var isInstanceOfType = type.IsInstanceOfType(feature);
-
-                    if (isInstanceOfType)
-                    {
-                        return feature;
-                    }
-
-                    return null;
-                }
-            }
-
             if (_defaults != null && _defaults.TryGetValue(type, out feature))
             {
                 return feature;
@@ -73,26 +54,8 @@ namespace Microsoft.AspNet.FeatureModel
 
             lock (_containerSync)
             {
-                Type priorFeatureType;
-                if (_featureTypeByName.TryGetValue(type.FullName, out priorFeatureType))
-                {
-                    if (priorFeatureType == type)
-                    {
-                        _featureByFeatureType[type] = feature;
-                    }
-                    else
-                    {
-                        _featureTypeByName[type.FullName] = type;
-                        _featureByFeatureType.Remove(priorFeatureType);
-                        _featureByFeatureType.Add(type, feature);
-                    }
-                }
-                else
-                {
-                    _featureTypeByName.Add(type.FullName, type);
-                    _featureByFeatureType.Add(type, feature);
-                }
-                Interlocked.Increment(ref _containerRevision);
+                _featureByFeatureType[type] = feature;
+                _containerRevision++;
             }
         }
 
@@ -169,12 +132,9 @@ namespace Microsoft.AspNet.FeatureModel
         {
             lock (_containerSync)
             {
-                Type priorFeatureType;
-                if (_featureTypeByName.TryGetValue(key.FullName, out priorFeatureType))
+                if (_featureByFeatureType.Remove(key))
                 {
-                    _featureTypeByName.Remove(key.FullName);
-                    _featureByFeatureType.Remove(priorFeatureType);
-                    Interlocked.Increment(ref _containerRevision);
+                    _containerRevision++;
                     return true;
                 }
                 return false;
