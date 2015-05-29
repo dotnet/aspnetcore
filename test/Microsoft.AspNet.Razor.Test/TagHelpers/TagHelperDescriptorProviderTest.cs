@@ -87,30 +87,6 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new[] { inputDescriptor, catchAllDescriptor }
                     },
                     {
-                        TagHelperDescriptorProvider.ElementCatchAllTarget,
-                        new[] { "custom" },
-                        defaultAvailableDescriptors,
-                        Enumerable.Empty<TagHelperDescriptor>()
-                    },
-                    {
-                        TagHelperDescriptorProvider.ElementCatchAllTarget,
-                        new[] { "class" },
-                        defaultAvailableDescriptors,
-                        new[] { catchAllDescriptor }
-                    },
-                    {
-                        TagHelperDescriptorProvider.ElementCatchAllTarget,
-                        new[] { "class", "style" },
-                        defaultAvailableDescriptors,
-                        new[] { catchAllDescriptor }
-                    },
-                    {
-                        TagHelperDescriptorProvider.ElementCatchAllTarget,
-                        new[] { "class", "custom" },
-                        defaultAvailableDescriptors,
-                        new[] { catchAllDescriptor, catchAllDescriptor2 }
-                    },
-                    {
                         "input",
                         new[] { "nodashprefixA" },
                         defaultWildcardDescriptors,
@@ -289,27 +265,6 @@ namespace Microsoft.AspNet.Razor.TagHelpers
 
             // Assert
             Assert.Empty(retrievedDescriptors);
-        }
-
-        [Fact]
-        public void GetDescriptors_DoesNotReturnNonCatchAllTagsForCatchAll()
-        {
-            // Arrange
-            var divDescriptor = new TagHelperDescriptor("div", "foo1", "SomeAssembly");
-            var spanDescriptor = new TagHelperDescriptor("span", "foo2", "SomeAssembly");
-            var catchAllDescriptor = new TagHelperDescriptor(
-                TagHelperDescriptorProvider.ElementCatchAllTarget,
-                "foo3",
-                "SomeAssembly");
-            var descriptors = new TagHelperDescriptor[] { divDescriptor, spanDescriptor, catchAllDescriptor };
-            var provider = new TagHelperDescriptorProvider(descriptors);
-
-            // Act
-            var retrievedDescriptors = provider.GetDescriptors(TagHelperDescriptorProvider.ElementCatchAllTarget, attributeNames: Enumerable.Empty<string>());
-
-            // Assert
-            var descriptor = Assert.Single(retrievedDescriptors);
-            Assert.Same(catchAllDescriptor, descriptor);
         }
 
         [Fact]

@@ -66,17 +66,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 descriptors = catchAllDescriptors;
             }
 
-            // If the requested tag name is the catch-all target, we shouldn't do the work of concatenating extra
-            // descriptors.
-            if (!tagName.Equals(ElementCatchAllTarget, StringComparison.OrdinalIgnoreCase))
+            // If we have a tag name associated with the requested name, we need to combine matchingDescriptors
+            // with all the catch-all descriptors.
+            HashSet<TagHelperDescriptor> matchingDescriptors;
+            if (_registrations.TryGetValue(tagName, out matchingDescriptors))
             {
-                // If we have a tag name associated with the requested name, we need to combine matchingDescriptors
-                // with all the catch-all descriptors.
-                HashSet<TagHelperDescriptor> matchingDescriptors;
-                if (_registrations.TryGetValue(tagName, out matchingDescriptors))
-                {
-                    descriptors = matchingDescriptors.Concat(descriptors);
-                }
+                descriptors = matchingDescriptors.Concat(descriptors);
             }
 
             var applicableDescriptors = ApplyRequiredAttributes(descriptors, attributeNames);
