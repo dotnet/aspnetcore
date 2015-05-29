@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.FeatureModel
         private readonly IFeatureCollection _defaults;
         private readonly IDictionary<Type, object> _featureByFeatureType = new Dictionary<Type, object>();
         private readonly object _containerSync = new object();
-        private int _containerRevision;
+        private volatile int _containerRevision;
 
         public FeatureCollection()
         {
