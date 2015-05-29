@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Generator;
+using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.Framework.Runtime;
 
 namespace PageGenerator
@@ -32,7 +32,7 @@ namespace PageGenerator
             if (diagnosticsLibInfo == null)
             {
                 throw new ArgumentException(string.Format(
-                    "Unable to open library {0}. Is it spelled correctly and listed as a dependency in project.json?", 
+                    "Unable to open library {0}. Is it spelled correctly and listed as a dependency in project.json?",
                     args[0]));
             }
             var viewBasePath = Path.Combine(Path.GetDirectoryName(diagnosticsLibInfo.Path), "Views");
