@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Razor.Chunks
             chunk.Start = association.Start;
             chunk.Association = association;
 
-            // If we're not in the middle of a chunk block
+            // If we're not in the middle of a parent chunk
             if (_parentStack.Count == 0 || topLevel == true)
             {
                 ChunkTree.Chunks.Add(chunk);
