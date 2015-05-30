@@ -45,12 +45,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly RazorPathNormalizer _pathNormalizer;
         private ChunkInheritanceUtility _chunkInheritanceUtility;
 
-        internal MvcRazorHost(IChunkTreeCache ChunkTreeCache, RazorPathNormalizer pathNormalizer)
+        internal MvcRazorHost(IChunkTreeCache chunkTreeCache, RazorPathNormalizer pathNormalizer)
             : base(new CSharpRazorCodeLanguage())
         {
             _pathNormalizer = pathNormalizer;
             _baseType = BaseType;
-            _chunkTreeCache = ChunkTreeCache;
+            _chunkTreeCache = chunkTreeCache;
 
             TagHelperDescriptorResolver = new TagHelperDescriptorResolver();
             DefaultBaseClass = BaseType + "<" + DefaultModel + ">";
@@ -124,11 +124,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 #endif
         /// <summary>
-        /// Initializes a new instance of <see cref="MvcRazorHost"/> using the specified <paramref name="ChunkTreeCache"/>.
+        /// Initializes a new instance of <see cref="MvcRazorHost"/> using the specified <paramref name="chunkTreeCache"/>.
         /// </summary>
-        /// <param name="ChunkTreeCache">An <see cref="IChunkTreeCache"/> rooted at the application base path.</param>
-        public MvcRazorHost(IChunkTreeCache ChunkTreeCache)
-            : this(ChunkTreeCache, new RazorPathNormalizer())
+        /// <param name="chunkTreeCache">An <see cref="IChunkTreeCache"/> rooted at the application base path.</param>
+        public MvcRazorHost(IChunkTreeCache chunkTreeCache)
+            : this(chunkTreeCache, new RazorPathNormalizer())
         {
         }
 

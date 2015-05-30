@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var rootedAppPath = $"{rootPrefix}SomeComputer/Location/Project/";
             var rootedFilePath = $"{rootPrefix}SomeComputer/Location/Project/src/file.cshtml";
             var host = new MvcRazorHost(
-                ChunkTreeCache: null,
+                chunkTreeCache: null,
                 pathNormalizer: new DesignTimeRazorPathNormalizer(rootedAppPath));
             var parser = new RazorParser(
                 host.CodeLanguage.CreateCodeParser(),
@@ -59,10 +59,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             var rootedAppPath = $"{rootPrefix}SomeComputer/Location/Project/";
             var rootedFilePath = $"{rootPrefix}SomeComputer/Location/Project/src/file.cshtml";
             var host = new MvcRazorHost(
-                ChunkTreeCache: null,
+                chunkTreeCache: null,
                 pathNormalizer: new DesignTimeRazorPathNormalizer(rootedAppPath));
             var chunkInheritanceUtility = new PathValidatingChunkInheritanceUtility(host);
-            var CodeGeneratorContext = new CodeGeneratorContext(
+            var codeGeneratorContext = new CodeGeneratorContext(
                 new ChunkGeneratorContext(
                     host,
                     host.DefaultClassName,
@@ -70,11 +70,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                     rootedFilePath,
                     shouldGenerateLinePragmas: true),
                 new ErrorSink());
-            var codeGenerator = new CSharpCodeGenerator(CodeGeneratorContext);
+            var codeGenerator = new CSharpCodeGenerator(codeGeneratorContext);
             host.ChunkInheritanceUtility = chunkInheritanceUtility;
 
             // Act
-            host.DecorateCodeGenerator(codeGenerator, CodeGeneratorContext);
+            host.DecorateCodeGenerator(codeGenerator, codeGeneratorContext);
 
             // Assert
             Assert.Equal("src/file.cshtml", chunkInheritanceUtility.InheritedChunkTreePagePath, StringComparer.Ordinal);

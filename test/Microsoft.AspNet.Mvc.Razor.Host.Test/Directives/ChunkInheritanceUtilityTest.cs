@@ -39,10 +39,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
 
             // Assert
             Assert.Collection(chunkTrees,
-                ChunkTree =>
+                chunkTree =>
                 {
                     var viewImportsPath = @"Views\home\_ViewImports.cshtml";
-                    Assert.Collection(ChunkTree.Chunks,
+                    Assert.Collection(chunkTree.Chunks,
                         chunk =>
                         {
                             Assert.IsType<LiteralChunk>(chunk);
@@ -60,10 +60,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                             Assert.Equal(viewImportsPath, chunk.Start.FilePath);
                         });
                 },
-                ChunkTree =>
+                chunkTree =>
                 {
                     var viewImportsPath = @"Views\_ViewImports.cshtml";
-                    Assert.Collection(ChunkTree.Chunks,
+                    Assert.Collection(chunkTree.Chunks,
                         chunk =>
                         {
                             Assert.IsType<LiteralChunk>(chunk);
