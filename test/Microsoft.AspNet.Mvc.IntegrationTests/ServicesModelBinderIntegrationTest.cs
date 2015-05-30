@@ -1,11 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Xunit;
 
@@ -41,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Person)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(httpContext => { });
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
             var modelState = new ModelStateDictionary();
 
             // Act
@@ -75,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Person)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(httpContext => { });
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
             var modelState = new ModelStateDictionary();
 
             // Act
@@ -117,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(JsonOutputFormatter)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(httpContext => { });
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
             var modelState = new ModelStateDictionary();
 
             // Act

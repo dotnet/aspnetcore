@@ -15,6 +15,11 @@ namespace ModelBindingWebSite.Controllers
         [HttpGet]
         public IActionResult Index(byte[] byteValues)
         {
+            if (byteValues == null)
+            {
+                return Content(content: null);
+            }
+
             return Content(System.Text.Encoding.UTF8.GetString(byteValues));
         }
 

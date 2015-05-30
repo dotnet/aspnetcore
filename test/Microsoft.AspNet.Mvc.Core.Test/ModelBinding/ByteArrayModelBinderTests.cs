@@ -29,7 +29,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binderResult = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Null(binderResult);
+            Assert.NotNull(binderResult);
+            Assert.False(binderResult.IsModelSet);
+            Assert.Equal("foo", binderResult.Key);
+            Assert.Null(binderResult.Model);
+
+            Assert.Empty(bindingContext.ModelState); // No submitted value for "foo".
         }
 
         [Fact]
@@ -80,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task BindModel_ReturnsNull_WhenValueNotFound()
+        public async Task BindModel_ReturnsWithIsModelSetFalse_WhenValueNotFound()
         {
             // Arrange
             var valueProvider = new SimpleHttpValueProvider()
@@ -95,7 +100,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binderResult = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Null(binderResult);
+            Assert.NotNull(binderResult);
+            Assert.False(binderResult.IsModelSet);
+            Assert.Equal("foo", binderResult.Key);
+            Assert.Null(binderResult.Model);
+
+            Assert.Empty(bindingContext.ModelState); // No submitted data for "foo".
         }
 
         [Fact]

@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Person)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(httpContext => { });
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
             var modelState = new ModelStateDictionary();
 
             // Act
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Person)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(httpContext => { });
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
             var modelState = new ModelStateDictionary();
 
             // Act
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(CancellationToken)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(httpContext => { });
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
             var modelState = new ModelStateDictionary();
 
             // Act

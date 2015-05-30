@@ -15,6 +15,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <inheritdoc />
         public async Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
         {
+            // Check if this binder applies.
             if (bindingContext.ModelType != typeof(byte[]))
             {
                 return null;
@@ -22,18 +23,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var valueProviderResult = await bindingContext.ValueProvider.GetValueAsync(bindingContext.ModelName);
 
-            // case 1: there was no <input ... /> element containing this data
+            // Check for missing data case 1: There was no <input ... /> element containing this data.
             if (valueProviderResult == null)
             {
-                return null;
+                return new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
             }
 
             var value = valueProviderResult.AttemptedValue;
 
-            // case 2: there was an <input ... /> element but it was left blank
+            // Check for missing data case 2: There was an <input ... /> element but it was left blank.
             if (string.IsNullOrEmpty(value))
             {
-                return null;
+                return new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
             }
 
             try
@@ -55,8 +56,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, ex);
             }
 
-            // Matched the type (byte[]) only this binder supports.
-            // Always tell the model binding system to skip other model binders i.e. return non-null.
+            // Matched the type (byte[]) only this binder supports. As in missing data cases, always tell the model
+            // binding system to skip other model binders i.e. return non-null.
             return new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
         }
     }
