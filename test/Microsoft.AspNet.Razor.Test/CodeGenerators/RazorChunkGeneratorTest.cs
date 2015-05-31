@@ -127,9 +127,22 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             }
 
             var sourceLocation = string.Format("TestFiles/CodeGenerator/Source/{0}.{1}", name, FileExtension);
-            var expectedOutput = TestFile
-                .Create(string.Format("TestFiles/CodeGenerator/Output/{0}.{1}", baselineName, BaselineExtension))
-                .ReadAllText();
+            var testFile = TestFile
+                .Create(string.Format("TestFiles/CodeGenerator/Output/{0}.{1}", baselineName, BaselineExtension));
+
+            string expectedOutput;
+#if GENERATE_BASELINES
+            if (testFile.Exists())
+            {
+                expectedOutput = testFile.ReadAllText();
+            }
+            else
+            {
+                expectedOutput = null;
+            }
+#else
+            expectedOutput = testFile.ReadAllText();
+#endif
 
             // Set up the host and engine
             var host = CreateHost();
@@ -179,17 +192,20 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     rootNamespace: TestRootNamespaceName,
                     sourceFileName: sourceFileName);
             }
-            // Only called if GENERATE_BASELINES is set, otherwise compiled out.
-            BaselineWriter.WriteBaseline(
-                string.Format(
-                    @"test\Microsoft.AspNet.Razor.Test\TestFiles\ChunkGenerator\Output\{0}.{1}",
-                    baselineName,
-                    BaselineExtension),
-                results.GeneratedCode);
 
-#if !GENERATE_BASELINES
             var textOutput = results.GeneratedCode;
+#if GENERATE_BASELINES
+            var outputFile = string.Format(
+                @"test\Microsoft.AspNet.Razor.Test\TestFiles\CodeGenerator\Output\{0}.{1}",
+                baselineName,
+                BaselineExtension);
 
+            // Update baseline files if files do not already match.
+            if (!string.Equals(expectedOutput, textOutput, StringComparison.Ordinal))
+            {
+                BaselineWriter.WriteBaseline(outputFile, textOutput);
+            }
+#else
             if (onResults != null)
             {
                 onResults(results);
@@ -216,15 +232,68 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
                 if (expectedDesignTimePragmas != null)
                 {
-                    Assert.True(results.DesignTimeLineMappings != null); // Guard
+                    Assert.NotNull(results.DesignTimeLineMappings); // Guard
+#if GENERATE_BASELINES
+                    if (expectedDesignTimePragmas == null ||
+                        !Enumerable.SequenceEqual(expectedDesignTimePragmas, results.DesignTimeLineMappings))
+                    {
+                        var lineMappingFile = Path.ChangeExtension(outputFile, "lineMappings.cs");
+                        var lineMappingCode = GetDesignTimeLineMappingsCode(results.DesignTimeLineMappings);
+                        BaselineWriter.WriteBaseline(lineMappingFile, lineMappingCode);
+                    }
+#else
                     for (var i = 0; i < expectedDesignTimePragmas.Count && i < results.DesignTimeLineMappings.Count; i++)
                     {
                         Assert.Equal(expectedDesignTimePragmas[i], results.DesignTimeLineMappings[i]);
                     }
 
                     Assert.Equal(expectedDesignTimePragmas.Count, results.DesignTimeLineMappings.Count);
+#endif
                 }
             }
+        }
+
+        private static string GetDesignTimeLineMappingsCode(IList<LineMapping> designTimeLineMappings)
+        {
+            var lineMappings = new StringBuilder();
+            lineMappings.AppendLine($"// !!! Do not check in. Instead paste content into test method. !!!");
+            lineMappings.AppendLine();
+
+            var indent = "            ";
+            lineMappings.AppendLine($"{ indent }var expectedLineMappings = new[]");
+            lineMappings.AppendLine($"{ indent }{{");
+            foreach (var lineMapping in designTimeLineMappings)
+            {
+                var innerIndent = indent + "    ";
+                var documentLocation = lineMapping.DocumentLocation;
+                var generatedLocation = lineMapping.GeneratedLocation;
+                lineMappings.AppendLine($"{ innerIndent }BuildLineMapping(");
+
+                innerIndent += "    ";
+                lineMappings.AppendLine($"{ innerIndent }documentAbsoluteIndex: { documentLocation.AbsoluteIndex },");
+                lineMappings.AppendLine($"{ innerIndent }documentLineIndex: { documentLocation.LineIndex },");
+                if (documentLocation.CharacterIndex != generatedLocation.CharacterIndex)
+                {
+                    lineMappings.AppendLine($"{ innerIndent }documentCharacterOffsetIndex: { documentLocation.CharacterIndex },");
+                }
+
+                lineMappings.AppendLine($"{ innerIndent }generatedAbsoluteIndex: { generatedLocation.AbsoluteIndex },");
+                lineMappings.AppendLine($"{ innerIndent }generatedLineIndex: { generatedLocation.LineIndex },");
+                if (documentLocation.CharacterIndex != generatedLocation.CharacterIndex)
+                {
+                    lineMappings.AppendLine($"{ innerIndent }generatedCharacterOffsetIndex: { generatedLocation.CharacterIndex },");
+                }
+                else
+                {
+                    lineMappings.AppendLine($"{ innerIndent }characterOffsetIndex: { generatedLocation.CharacterIndex },");
+                }
+
+                lineMappings.AppendLine($"{ innerIndent }contentLength: { generatedLocation.ContentLength }),");
+            }
+
+            lineMappings.AppendLine($"{ indent }}};");
+
+            return lineMappings.ToString();
         }
 
         private void VerifyNoBrokenEndOfLines(string text)

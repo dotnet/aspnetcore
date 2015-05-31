@@ -1,4 +1,4 @@
-﻿#pragma checksum "CodeBlockWithTextElement.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "13e48ff59aab8106ceb68dd4a10b0bdf10c322fc"
+#pragma checksum "CodeBlockWithTextElement.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "13e48ff59aab8106ceb68dd4a10b0bdf10c322fc"
 namespace TestOutput
 {
     using System;

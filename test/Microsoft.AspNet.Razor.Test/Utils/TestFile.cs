@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Reflection;
 using Xunit;
@@ -9,16 +10,15 @@ namespace Microsoft.AspNet.Razor.Test
 {
     public class TestFile
     {
-        public const string ResourceNameFormat = "{0}.TestFiles.{1}";
+        public TestFile(string resourceName, Assembly assembly)
+        {
+            Assembly = assembly;
+            ResourceName = Assembly.GetName().Name + "." + resourceName.Replace('/', '.');
+        }
+
+        public Assembly Assembly { get; }
 
         public string ResourceName { get; }
-        public Assembly Assembly { get; set; }
-
-        public TestFile(string resName, Assembly asm)
-        {
-            Assembly = asm;
-            ResourceName = Assembly.GetName().Name + "." + resName.Replace('/', '.');
-        }
 
         public static TestFile Create(string localResourceName)
         {
@@ -27,27 +27,44 @@ namespace Microsoft.AspNet.Razor.Test
 
         public Stream OpenRead()
         {
-            var strm = Assembly.GetManifestResourceStream(ResourceName);
-            if (strm == null)
+            var stream = Assembly.GetManifestResourceStream(ResourceName);
+            if (stream == null)
             {
                 Assert.True(false, string.Format("Manifest resource: {0} not found", ResourceName));
             }
-            return strm;
+
+            return stream;
+        }
+
+        public bool Exists()
+        {
+            var resourceNames = Assembly.GetManifestResourceNames();
+            foreach (var resourceName in resourceNames)
+            {
+                // Resource names are case-sensitive.
+                if (string.Equals(ResourceName, resourceName, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public byte[] ReadAllBytes()
         {
-            using (Stream stream = OpenRead())
+            using (var stream = OpenRead())
             {
-                byte[] buffer = new byte[stream.Length];
+                var buffer = new byte[stream.Length];
                 stream.Read(buffer, 0, buffer.Length);
+
                 return buffer;
             }
         }
 
         public string ReadAllText()
         {
-            using (StreamReader reader = new StreamReader(OpenRead()))
+            using (var reader = new StreamReader(OpenRead()))
             {
                 // The .Replace() calls normalize line endings, in case you get \n instead of \r\n
                 // since all the unit tests rely on the assumption that the files will have \r\n endings.
@@ -66,9 +83,9 @@ namespace Microsoft.AspNet.Razor.Test
                 Directory.CreateDirectory(directory);
             }
 
-            using (Stream outStream = File.Create(filePath))
+            using (var outStream = File.Create(filePath))
             {
-                using (Stream inStream = OpenRead())
+                using (var inStream = OpenRead())
                 {
                     inStream.CopyTo(outStream);
                 }

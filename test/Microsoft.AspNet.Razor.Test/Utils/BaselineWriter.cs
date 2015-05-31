@@ -8,19 +8,26 @@ namespace Microsoft.AspNet.Razor.Test.Utils
 {
     public static class BaselineWriter
     {
+        private static object baselineLock = new object();
+
         [Conditional("GENERATE_BASELINES")]
         public static void WriteBaseline(string baselineFile, string output)
         {
             var root = RecursiveFind("Razor.sln", Path.GetFullPath("."));
             var baselinePath = Path.Combine(root, baselineFile);
 
-            // Update baseline
-            // IMPORTANT! Replace this path with the local path on your machine to the baseline files!
-            if (File.Exists(baselinePath))
+            // Serialize writes to minimize contention for file handles and directory access.
+            lock (baselineLock)
             {
-                File.Delete(baselinePath);
+                // Update baseline
+                using (var stream = File.Open(baselinePath, FileMode.Create, FileAccess.Write))
+                {
+                    using (var writer = new StreamWriter(stream))
+                    {
+                        writer.Write(output);
+                    }
+                }
             }
-            File.WriteAllText(baselinePath, output.ToString());
         }
 
         private static string RecursiveFind(string path, string start)
