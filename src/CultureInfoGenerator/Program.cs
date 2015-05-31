@@ -4,8 +4,8 @@
 using System;
 using System.Globalization;
 using System.IO;
-using Microsoft.Dnx.Runtime;
-using Microsoft.Win32;
+using System.Linq;
+using Microsoft.Dnx.Runtime;using Microsoft.Win32;
 
 namespace CultureInfoGenerator
 {
@@ -58,24 +58,7 @@ namespace Microsoft.Framework.Globalization
                     | CultureTypes.InstalledWin32Cultures
                     | CultureTypes.SpecificCultures);
 
-                var format = "            \"{0}\"";
-
-                for (int i = 0; i < cultures.Length; i++)
-                {
-                    var culture = cultures[i];
-
-                    writer.Write(format, culture.Name);
-
-                    if (i < cultures.Length - 1)
-                    {
-                        writer.WriteLine(",");
-                    }
-                    else
-                    {
-                        // Last entry
-                        writer.WriteLine();
-                    }
-                }
+                writer.WriteLine(string.Join($",{Environment.NewLine}", cultures.Select(c => $"            \"{c.Name}\"")));
                 writer.WriteLine(
 @"        };
     }
