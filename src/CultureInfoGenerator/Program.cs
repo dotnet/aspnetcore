@@ -105,15 +105,15 @@ namespace Microsoft.Framework.Globalization
             {
                 return "4.6 RC or later";
             }
-            if ((releaseKey >= 379893))
+            if (releaseKey >= 379893)
             {
                 return "4.5.2 or later";
             }
-            if ((releaseKey >= 378675))
+            if (releaseKey >= 378675)
             {
                 return "4.5.1 or later";
             }
-            if ((releaseKey >= 378389))
+            if (releaseKey >= 378389)
             {
                 return "4.5 or later";
             }
