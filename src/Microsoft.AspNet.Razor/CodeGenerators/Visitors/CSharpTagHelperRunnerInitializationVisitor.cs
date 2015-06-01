@@ -26,6 +26,25 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
             _tagHelperContext = Context.Host.GeneratedClassContext.GeneratedTagHelperContext;
         }
 
+        /// <inheritdoc />
+        public override void Accept(Chunk chunk)
+        {
+            // If at any ParentChunk other than a TagHelperChunk, then dive into its Children to search for more
+            // TagHelperChunk nodes. This method avoids overriding each of the ParentChunk-specific Visit() methods to
+            // dive into Children.
+            var parentChunk = chunk as ParentChunk;
+            if (parentChunk != null && !(parentChunk is TagHelperChunk))
+            {
+                Accept(parentChunk.Children);
+            }
+            else
+            {
+                // If at a TagHelperChunk or any non-ParentChunk, "Accept()" it. This ensures the Visit(TagHelperChunk)
+                // method below is called.
+                base.Accept(chunk);
+            }
+        }
+
         /// <summary>
         /// Writes the TagHelperRunner initialization code to the Writer.
         /// </summary>
