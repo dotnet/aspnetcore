@@ -17,32 +17,29 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         }
 
         [Fact]
-        public void Default_visibility_can_be_changed()
+        public void ShowAll_shows_all_errors()
         {
-            var options = new DatabaseErrorPageOptions();
-            options.SetDefaultVisibility(true);
+            var options = DatabaseErrorPageOptions.ShowAll;
 
             Assert.True(options.ShowExceptionDetails);
             Assert.True(options.ListMigrations);
         }
 
         [Fact]
-        public void ShowExceptionDetails_overides_default_visibility()
+        public void ShowExceptionDetails_is_respected()
         {
-            var options = new DatabaseErrorPageOptions { ShowExceptionDetails = false };
-            options.SetDefaultVisibility(true);
+            var options = DatabaseErrorPageOptions.ShowAll;
+            options.ShowExceptionDetails = false;
 
             Assert.False(options.ShowExceptionDetails);
-            Assert.True(options.ListMigrations);
         }
 
         [Fact]
-        public void ListMigrations_overides_default_visibility()
+        public void ListMigrations_is_respected()
         {
-            var options = new DatabaseErrorPageOptions { ListMigrations = false };
-            options.SetDefaultVisibility(true);
+            var options = DatabaseErrorPageOptions.ShowAll;
+            options.ListMigrations = false;
 
-            Assert.True(options.ShowExceptionDetails);
             Assert.False(options.ListMigrations);
         }
     }

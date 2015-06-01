@@ -31,13 +31,8 @@ namespace Microsoft.AspNet.Diagnostics
         /// </summary>
         /// <param name="next"></param>
         /// <param name="options"></param>
-        /// <param name="isDevMode"></param>
-        public ErrorPageMiddleware([NotNull] RequestDelegate next, [NotNull] ErrorPageOptions options, bool isDevMode)
+        public ErrorPageMiddleware([NotNull] RequestDelegate next, [NotNull] ErrorPageOptions options)
         {
-            if (isDevMode)
-            {
-                options.SetDefaultVisibility(isVisible: true);
-            }
             _next = next;
             _options = options;
         }

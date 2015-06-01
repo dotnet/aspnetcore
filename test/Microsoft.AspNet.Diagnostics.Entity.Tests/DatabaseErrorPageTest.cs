@@ -19,8 +19,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task No_database_or_migrations_only_displays_scaffold_first_migration()
         {
-            var options = new DatabaseErrorPageOptions();
-            options.SetDefaultVisibility(true);
+            var options = DatabaseErrorPageOptions.ShowAll;
 
             var model = new DatabaseErrorPageModel(
                 contextType: typeof(BloggingContext),
@@ -40,8 +39,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task No_database_with_migrations_only_displays_apply_migrations()
         {
-            var options = new DatabaseErrorPageOptions();
-            options.SetDefaultVisibility(true);
+            var options = DatabaseErrorPageOptions.ShowAll;
 
             var model = new DatabaseErrorPageModel(
                 contextType: typeof(BloggingContext),
@@ -61,8 +59,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Existing_database_with_migrations_only_displays_apply_migrations()
         {
-            var options = new DatabaseErrorPageOptions();
-            options.SetDefaultVisibility(true);
+            var options = DatabaseErrorPageOptions.ShowAll;
 
             var model = new DatabaseErrorPageModel(
                 contextType: typeof(BloggingContext),
@@ -82,8 +79,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Existing_database_with_migrations_and_pending_model_changes_only_displays_apply_migrations()
         {
-            var options = new DatabaseErrorPageOptions();
-            options.SetDefaultVisibility(true);
+            var options = DatabaseErrorPageOptions.ShowAll;
 
             var model = new DatabaseErrorPageModel(
                 contextType: typeof(BloggingContext),
@@ -103,8 +99,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Pending_model_changes_only_displays_scaffold_next_migration()
         {
-            var options = new DatabaseErrorPageOptions();
-            options.SetDefaultVisibility(true);
+            var options = DatabaseErrorPageOptions.ShowAll;
 
             var model = new DatabaseErrorPageModel(
                 contextType: typeof(BloggingContext),
@@ -124,8 +119,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Exception_details_are_displayed()
         {
-            var options = new DatabaseErrorPageOptions();
-            options.SetDefaultVisibility(true);
+            var options = DatabaseErrorPageOptions.ShowAll;
 
             var model = new DatabaseErrorPageModel(
                 contextType: typeof(BloggingContext),
@@ -143,8 +137,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Inner_exception_details_are_displayed()
         {
-            var options = new DatabaseErrorPageOptions();
-            options.SetDefaultVisibility(true);
+            var options = DatabaseErrorPageOptions.ShowAll;
 
             var model = new DatabaseErrorPageModel(
                 contextType: typeof(BloggingContext),
@@ -163,8 +156,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task ShowExceptionDetails_is_respected()
         {
-            var options = new DatabaseErrorPageOptions { ShowExceptionDetails = false };
-            options.SetDefaultVisibility(true);
+            var options = DatabaseErrorPageOptions.ShowAll;
+            options.ShowExceptionDetails = false;
 
             var model = new DatabaseErrorPageModel(
                 contextType: typeof(BloggingContext),
@@ -182,8 +175,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task ListMigrations_is_respected()
         {
-            var options = new DatabaseErrorPageOptions { ListMigrations = false };
-            options.SetDefaultVisibility(true);
+            var options = DatabaseErrorPageOptions.ShowAll;
+            options.ListMigrations = false;
 
             var model = new DatabaseErrorPageModel(
                contextType: typeof(BloggingContext),

@@ -5,19 +5,10 @@
 namespace Microsoft.AspNet.Diagnostics
 {
     /// <summary>
-    /// Options for the ErrorPageMiddleware
+    /// Options for the ErrorPageMiddleware.
     /// </summary>
     public class ErrorPageOptions
     {
-        private bool _defaultVisibility;
-
-        private bool? _showExceptionDetails;
-        private bool? _showSourceCode;
-        private bool? _showQuery;
-        private bool? _showCookies;
-        private bool? _showHeaders;
-        private bool? _showEnvironment;
-
         /// <summary>
         /// Create an instance with the default options settings.
         /// </summary>
@@ -29,40 +20,25 @@ namespace Microsoft.AspNet.Diagnostics
         /// <summary>
         /// Returns a new instance of ErrorPageOptions with all visibility options enabled by default.
         /// </summary>
-        public static ErrorPageOptions ShowAll
-        {
-            get
-            {
-                // We don't use a static instance because it's mutable.
-                return new ErrorPageOptions()
-                {
-                    ShowExceptionDetails = true,
-                    ShowSourceCode = true,
-                    ShowQuery = true,
-                    ShowCookies = true,
-                    ShowHeaders = true,
-                    ShowEnvironment = true,
-                };
-            }
-        }
+        public static ErrorPageOptions ShowAll => new ErrorPageOptions
+                                                      {
+                                                          ShowExceptionDetails = true,
+                                                          ShowSourceCode = true,
+                                                          ShowQuery = true,
+                                                          ShowCookies = true,
+                                                          ShowHeaders = true,
+                                                          ShowEnvironment = true,
+                                                      };
 
         /// <summary>
         /// Enables the display of exception types, messages, and stack traces.
         /// </summary>
-        public bool ShowExceptionDetails
-        {
-            get { return _showExceptionDetails ?? _defaultVisibility; }
-            set { _showExceptionDetails = value; }
-        }
+        public bool ShowExceptionDetails { get; set; }
 
         /// <summary>
         /// Enabled the display of local source code around exception stack frames.
         /// </summary>
-        public bool ShowSourceCode
-        {
-            get { return _showSourceCode ?? _defaultVisibility; }
-            set { _showSourceCode = value; }
-        }
+        public bool ShowSourceCode { get; set; }
 
         /// <summary>
         /// Determines how many lines of code to include before and after the line of code
@@ -74,46 +50,21 @@ namespace Microsoft.AspNet.Diagnostics
         /// <summary>
         /// Enables the enumeration of any parsed query values.
         /// </summary>
-        public bool ShowQuery
-        {
-            get { return _showQuery ?? _defaultVisibility; }
-            set { _showQuery = value; }
-        }
+        public bool ShowQuery { get; set; }
 
         /// <summary>
         /// Enables the enumeration of any parsed request cookies.
         /// </summary>
-        public bool ShowCookies
-        {
-            get { return _showCookies ?? _defaultVisibility; }
-            set { _showCookies = value; }
-        }
+        public bool ShowCookies { get; set; }
 
         /// <summary>
         /// Enables the enumeration of the request headers.
         /// </summary>
-        public bool ShowHeaders
-        {
-            get { return _showHeaders ?? _defaultVisibility; }
-            set { _showHeaders = value; }
-        }
+        public bool ShowHeaders { get; set; }
 
         /// <summary>
         /// Enables the enumeration of the OWIN environment values.
         /// </summary>
-        public bool ShowEnvironment
-        {
-            get { return _showEnvironment ?? _defaultVisibility; }
-            set { _showEnvironment = value; }
-        }
-
-        /// <summary>
-        /// Sets the default visibility for options not otherwise specified.
-        /// </summary>
-        /// <param name="isVisible"></param>
-        public void SetDefaultVisibility(bool isVisible)
-        {
-            _defaultVisibility = isVisible;
-        }
+        public bool ShowEnvironment { get; set; }
     }
 }

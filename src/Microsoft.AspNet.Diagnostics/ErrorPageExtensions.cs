@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.Framework.Internal;
 
@@ -32,11 +31,7 @@ namespace Microsoft.AspNet.Builder
         /// <returns></returns>
         public static IApplicationBuilder UseErrorPage([NotNull] this IApplicationBuilder builder, ErrorPageOptions options)
         {
-            /* TODO: Development, Staging, or Production
-            string appMode = new AppProperties(builder.Properties).Get<string>(Constants.HostAppMode);
-            bool isDevMode = string.Equals(Constants.DevMode, appMode, StringComparison.Ordinal);*/
-            bool isDevMode = true;
-            return builder.Use(next => new ErrorPageMiddleware(next, options, isDevMode).Invoke);
+            return builder.Use(next => new ErrorPageMiddleware(next, options).Invoke);
         }
     }
 }
