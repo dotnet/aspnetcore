@@ -3,7 +3,6 @@
 
 #if DNX451
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing;
 using Xunit;
@@ -81,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task BindModelReturnsFalseWhenValueNotFound()
+        public async Task BindModel_ReturnsNull_WhenValueNotFound()
         {
             // Arrange
             var valueProvider = new SimpleHttpValueProvider()
@@ -100,7 +99,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task ByteArrayModelBinderReturnsFalseForOtherTypes()
+        public async Task BindModel_ReturnsNull_ForOtherTypes()
         {
             // Arrange
             var bindingContext = GetBindingContext(null, typeof(int[]));

@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         [InlineData(typeof(int))]
         [InlineData(typeof(int[]))]
         [InlineData(typeof(BindingSource))]
-        public async Task BindModelAsync_ReturnsTrue_ForAllTypes(Type type)
+        public async Task BindModelAsync_ReturnsNotNull_ForAllTypes(Type type)
         {
             // Arrange
             var binder = new HeaderModelBinder();

@@ -115,37 +115,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Empty(validationNode.ChildNodes);
         }
 
-        [Fact]
-        public async Task TryBindStrongModel_BinderExists_BinderReturnsCorrectlyTypedObject_ReturnsTrue()
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData(null, true)]
+        [InlineData(42, false)]
+        [InlineData(42, true)]
+        public async Task TryBindStrongModel_InnerBinderReturnsNotNull_ReturnsInnerBinderResult(
+            object model,
+            bool isModelSet)
         {
             // Arrange
-            var bindingContext = GetBindingContext(new SimpleHttpValueProvider());
-            var binder = new KeyValuePairModelBinder<int, string>();
-            var modelValidationNodeList = new List<ModelValidationNode>();
-
-            // Act
-            var result = await binder.TryBindStrongModel<int>(bindingContext, "key", modelValidationNodeList);
-
-            // Assert
-            Assert.True(result.IsModelSet);
-            Assert.Equal(42, result.Model);
-            Assert.Empty(bindingContext.ModelState);
-        }
-
-        [Fact]
-        public async Task TryBindStrongModel_BinderExists_BinderReturnsIncorrectlyTypedObject_ReturnsTrue()
-        {
-            // Arrange
+            var innerResult = new ModelBindingResult(model, key: string.Empty, isModelSet: isModelSet);
             var innerBinder = new Mock<IModelBinder>();
             innerBinder
                 .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns((ModelBindingContext mbc) =>
+                .Returns((ModelBindingContext context) =>
                 {
-                    Assert.Equal("someName.key", mbc.ModelName);
-                    return Task.FromResult(new ModelBindingResult(null, string.Empty, true));
+                    Assert.Equal("someName.key", context.ModelName);
+                    return Task.FromResult(innerResult);
                 });
             var bindingContext = GetBindingContext(new SimpleHttpValueProvider(), innerBinder.Object);
-
 
             var binder = new KeyValuePairModelBinder<int, string>();
             var modelValidationNodeList = new List<ModelValidationNode>();
@@ -154,8 +143,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.TryBindStrongModel<int>(bindingContext, "key", modelValidationNodeList);
 
             // Assert
-            Assert.True(result.IsModelSet);
-            Assert.Null(result.Model);
+            Assert.Same(innerResult, result);
             Assert.Empty(bindingContext.ModelState);
         }
 

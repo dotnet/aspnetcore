@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         [InlineData(typeof(object))]
         [InlineData(typeof(Calendar))]
         [InlineData(typeof(TestClass))]
-        public async Task BindModel_ReturnsFalse_IfTypeCannotBeConverted(Type destinationType)
+        public async Task BindModel_ReturnsNull_IfTypeCannotBeConverted(Type destinationType)
         {
             // Arrange
             var bindingContext = GetBindingContext(destinationType);
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         [InlineData(typeof(DateTimeOffset))]
         [InlineData(typeof(double))]
         [InlineData(typeof(DayOfWeek))]
-        public async Task BindModel_ReturnsTrue_IfTypeCanBeConverted(Type destinationType)
+        public async Task BindModel_ReturnsNotNull_IfTypeCanBeConverted(Type destinationType)
         {
             if (TestPlatformHelper.IsMono &&
                 destinationType == typeof(DateTimeOffset))
@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task BindModel_NullValueProviderResult_ReturnsFalse()
+        public async Task BindModel_NullValueProviderResult_ReturnsNull()
         {
             // Arrange
             var bindingContext = GetBindingContext(typeof(int));

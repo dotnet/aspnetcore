@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     public class BinderTypeBasedModelBinderModelBinderTest
     {
         [Fact]
-        public async Task BindModel_ReturnsFalseIfNoBinderTypeIsSet()
+        public async Task BindModel_ReturnsNull_IfNoBinderTypeIsSet()
         {
             // Arrange
             var bindingContext = GetBindingContext(typeof(Person));
@@ -30,10 +30,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task BindModel_ReturnsTrueEvenIfSelectedBinderReturnsFalse()
+        public async Task BindModel_ReturnsNotNull_EvenIfSelectedBinderReturnsNull()
         {
             // Arrange
-            var bindingContext = GetBindingContext(typeof(Person), binderType: typeof(FalseModelBinder));
+            var bindingContext = GetBindingContext(typeof(Person), binderType: typeof(NullModelBinder));
 
             var binder = new BinderTypeBasedModelBinder();
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModel_CallsBindAsync_OnProvidedModelBinder()
         {
             // Arrange
-            var bindingContext = GetBindingContext(typeof(Person), binderType: typeof(TrueModelBinder));
+            var bindingContext = GetBindingContext(typeof(Person), binderType: typeof(NotNullModelBinder));
 
             var model = new Person();
             var serviceProvider = new ServiceCollection()
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             public int Age { get; set; }
         }
 
-        private class FalseModelBinder : IModelBinder
+        private class NullModelBinder : IModelBinder
         {
             public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
             {
@@ -129,11 +129,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             }
         }
 
-        private class TrueModelBinder : IModelBinder
+        private class NotNullModelBinder : IModelBinder
         {
             private readonly object _model;
 
-            public TrueModelBinder()
+            public NotNullModelBinder()
             {
                 _model = new Person();
             }

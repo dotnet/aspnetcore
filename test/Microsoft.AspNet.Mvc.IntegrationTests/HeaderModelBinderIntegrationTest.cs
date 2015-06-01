@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             };
 
             // Do not add any headers.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request => { });
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
             var modelState = new ModelStateDictionary();
 
             // Act

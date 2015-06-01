@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Moq;
@@ -268,10 +267,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task ModelBinder_ReturnsTrue_SetsNullValue_SetsModelStateKey()
+        public async Task ModelBinder_ReturnsNotNull_SetsNullValue_SetsModelStateKey()
         {
             // Arrange
-
             var bindingContext = new ModelBindingContext
             {
                 FallbackToEmptyPrefix = true,
@@ -291,7 +289,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var modelBinder = new Mock<IModelBinder>();
             modelBinder
                 .Setup(mb => mb.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns(Task.FromResult(new ModelBindingResult(null, "someName", true)));
+                .Returns(Task.FromResult(new ModelBindingResult(model: null, key: "someName", isModelSet: true)));
 
             var composite = CreateCompositeBinder(modelBinder.Object);
 
@@ -455,7 +453,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            // The result is null because of issue #2473
             Assert.Null(result);
         }
 

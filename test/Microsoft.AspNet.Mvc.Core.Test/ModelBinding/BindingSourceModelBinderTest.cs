@@ -27,20 +27,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Act & Assert
             var exception = Assert.Throws<ArgumentException>(
-                () => new TestableBindingSourceModelBinder(bindingSource));
+                () => new TestableBindingSourceModelBinder(bindingSource, isModelSet: false));
             Assert.Equal(expected, exception.Message);
         }
 
         [Fact]
-        public async Task BindingSourceModelBinder_ReturnsFalse_WithNoSource()
+        public async Task BindingSourceModelBinder_ReturnsNull_WithNoSource()
         {
             // Arrange
             var context = new ModelBindingContext();
             context.ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(string));
 
-            var binder = new TestableBindingSourceModelBinder(BindingSource.Body);
+            var binder = new TestableBindingSourceModelBinder(BindingSource.Body, isModelSet: false);
 
-            // Act 
+            // Act
             var result = await binder.BindModelAsync(context);
 
             // Assert
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task BindingSourceModelBinder_ReturnsFalse_NonMatchingSource()
+        public async Task BindingSourceModelBinder_ReturnsNull_NonMatchingSource()
         {
             // Arrange
             var provider = new TestModelMetadataProvider();
@@ -58,9 +58,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var context = new ModelBindingContext();
             context.ModelMetadata = provider.GetMetadataForType(typeof(string));
 
-            var binder = new TestableBindingSourceModelBinder(BindingSource.Body);
+            var binder = new TestableBindingSourceModelBinder(BindingSource.Body, isModelSet: false);
 
-            // Act 
+            // Act
             var result = await binder.BindModelAsync(context);
 
             // Assert
@@ -68,8 +68,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.False(binder.WasBindModelCoreCalled);
         }
 
-        [Fact]
-        public async Task BindingSourceModelBinder_ReturnsTrue_MatchingSource()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task BindingSourceModelBinder_ReturnsNonNull_MatchingSource(bool isModelSet)
         {
             // Arrange
             var provider = new TestModelMetadataProvider();
@@ -82,30 +84,35 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 BinderModelName = modelMetadata.BinderModelName
             };
 
-            var binder = new TestableBindingSourceModelBinder(BindingSource.Body);
+            var binder = new TestableBindingSourceModelBinder(BindingSource.Body, isModelSet);
 
-            // Act 
+            // Act
             var result = await binder.BindModelAsync(context);
 
             // Assert
             Assert.NotNull(result);
-            Assert.True(result.IsModelSet);
+            Assert.Equal(isModelSet, result.IsModelSet);
+            Assert.Null(result.Model);
             Assert.True(binder.WasBindModelCoreCalled);
         }
 
         private class TestableBindingSourceModelBinder : BindingSourceModelBinder
         {
-            public bool WasBindModelCoreCalled { get; private set; }
+            bool _isModelSet;
 
-            public TestableBindingSourceModelBinder(BindingSource source)
+            public TestableBindingSourceModelBinder(BindingSource source, bool isModelSet)
                 : base(source)
             {
+                _isModelSet = isModelSet;
             }
+
+            public bool WasBindModelCoreCalled { get; private set; }
 
             protected override Task<ModelBindingResult> BindModelCoreAsync([NotNull] ModelBindingContext bindingContext)
             {
                 WasBindModelCoreCalled = true;
-                return Task.FromResult(new ModelBindingResult(null, bindingContext.ModelName, true));
+                return Task.FromResult(
+                    new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: _isModelSet));
             }
         }
     }

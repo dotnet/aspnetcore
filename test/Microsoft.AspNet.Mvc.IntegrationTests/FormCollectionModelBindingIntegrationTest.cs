@@ -128,8 +128,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Empty(modelState.Keys);
         }
 
-        [Fact(Skip = "FormCollection should not return null modelBindingResult for a type that matches. #2456")]
-        public async Task BindParameter_NoData_DoesNotGetBound()
+        [Fact]
+        public async Task BindParameter_NoData_BindsWithEmptyCollection()
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
@@ -158,11 +158,16 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // ModelBindingResult
             Assert.NotNull(modelBindingResult);
-            Assert.Null(modelBindingResult.Model);
+            var collection = Assert.IsType<FormCollection>(modelBindingResult.Model);
 
             // ModelState
             Assert.True(modelState.IsValid);
             Assert.Empty(modelState.Keys);
+
+            // FormCollection
+            Assert.Empty(collection);
+            Assert.Empty(collection.Files);
+            Assert.Empty(collection.Keys);
         }
 
         private void UpdateRequest(HttpRequest request, string data, string name)
@@ -172,7 +177,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(data));
 
             request.Form = formCollection;
-            request.ContentType = "multipart/form-data";
+            request.ContentType = "multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq";
             request.Headers["Content-Disposition"] = "form-data; name=" + name + "; filename=text.txt";
             fileCollection.Add(new FormFile(memoryStream, 0, data.Length)
             {

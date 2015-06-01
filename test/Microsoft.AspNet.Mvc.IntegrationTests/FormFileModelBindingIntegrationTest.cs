@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Empty(modelState.Keys);
         }
 
-        [Fact(Skip = "FormFile Should not return null modelBindingResult for a type that matches. #2456")]
+        [Fact]
         public async Task BindParameter_NoData_DoesNotGetBound()
         {
             // Arrange
@@ -142,10 +142,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             };
 
             // No data is passed.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
-            {
-                request.ContentType = "multipart/form-data";
-            });
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request => UpdateRequest(request, data: null, name: null));
 
             var modelState = new ModelStateDictionary();
 
@@ -154,9 +152,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // Assert
 
-            // ModelBindingResult
-            Assert.NotNull(modelBindingResult); // Fails due to bug #2456
-            Assert.Null(modelBindingResult.Model);
+            // ModelBindingResult; expect null because binding failed.
+            Assert.Null(modelBindingResult);
 
             // ModelState
             Assert.True(modelState.IsValid);
@@ -167,11 +164,19 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         {
             var fileCollection = new FormFileCollection();
             var formCollection = new FormCollection(new Dictionary<string, string[]>(), fileCollection);
-            var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(data));
 
             request.Form = formCollection;
-            request.ContentType = "multipart/form-data";
+            request.ContentType = "multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq";
+
+            if (string.IsNullOrEmpty(data) || string.IsNullOrEmpty(name))
+            {
+                // Leave the submission empty.
+                return;
+            }
+
             request.Headers["Content-Disposition"] = "form-data; name=" + name + "; filename=text.txt";
+
+            var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(data));
             fileCollection.Add(new FormFile(memoryStream, 0, data.Length)
             {
                 Headers = request.Headers

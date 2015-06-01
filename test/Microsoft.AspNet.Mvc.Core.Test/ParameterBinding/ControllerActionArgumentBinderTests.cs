@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
     public class ControllerActionArgumentBinderTests
     {
         [Fact]
-        public async Task BindActionArgumentsAsync_DoesNotAddActionArguments_IfBinderReturnsFalse()
+        public async Task BindActionArgumentsAsync_DoesNotAddActionArguments_IfBinderReturnsNull()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         }
 
         [Fact]
-        public async Task BindActionArgumentsAsync_AddsActionArguments_IfBinderReturnsTrue()
+        public async Task BindActionArgumentsAsync_AddsActionArguments_IfBinderReturnsNotNull()
         {
             // Arrange
             Func<object, int> method = foo => 1;
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
                 {
                     context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(string));
                 })
-                .Returns(Task.FromResult(result: new ModelBindingResult(value, "", true)));
+                .Returns(Task.FromResult(result: new ModelBindingResult(value, key: string.Empty, isModelSet: true)));
 
             var actionContext = new ActionContext(
                 new DefaultHttpContext(),
@@ -342,8 +342,10 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.Null(controller.UntouchedProperty);
         }
 
-        [Fact]
-        public async Task BindActionArgumentsAsync_DoesNotSetNullValues_ForNonNullableProperties()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task BindActionArgumentsAsync_DoesNotSetNullValues_ForNonNullableProperties(bool isModelSet)
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -361,7 +363,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             binder
                 .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns(Task.FromResult(
-                    result: new ModelBindingResult(model: null, key: string.Empty, isModelSet: true)));
+                    result: new ModelBindingResult(model: null, key: string.Empty, isModelSet: isModelSet)));
             var actionBindingContext = new ActionBindingContext()
             {
                 ModelBinder = binder.Object,

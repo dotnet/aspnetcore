@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
@@ -11,7 +9,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     public class TypeMatchModelBinderTest
     {
         [Fact]
-        public async Task BindModel_InvalidValueProviderResult_ReturnsFalse()
+        public async Task BindModel_InvalidValueProviderResult_ReturnsNull()
         {
             // Arrange
             var bindingContext = GetBindingContext();
@@ -33,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task BindModel_ValidValueProviderResult_ReturnsTrue()
+        public async Task BindModel_ValidValueProviderResult_ReturnsNotNull()
         {
             // Arrange
             var bindingContext = GetBindingContext();

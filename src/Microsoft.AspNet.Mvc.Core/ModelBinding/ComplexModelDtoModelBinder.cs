@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     await bindingContext.OperationBindingContext.ModelBinder.BindModelAsync(propertyBindingContext);
                 if (modelBindingResult == null)
                 {
-                    // Could not bind. Add a result so MutableObjectModelBinder will check for [DefaultValue].
+                    // Could not bind. Let MutableObjectModelBinder know explicitly.
                     dto.Results[propertyMetadata] =
                         new ModelBindingResult(model: null, key: propertyModelName, isModelSet: false);
                 }

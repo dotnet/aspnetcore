@@ -33,8 +33,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         [Theory]
         [InlineData("application/x-www-form-urlencoded")]
         [InlineData("application/x-www-form-urlencoded;charset=utf-8")]
-        [InlineData("multipart/form-data")]
-        [InlineData("multipart/form-data;charset=utf-8")]
+        [InlineData("multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq")]
+        [InlineData("multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq; charset=utf-8")]
         public void GetValueProvider_ReturnsValueProviderInstanceWithInvariantCulture(string contentType)
         {
             // Arrange

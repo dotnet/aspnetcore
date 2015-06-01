@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -12,11 +11,9 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 {
     public class BinderTypeBasedModelBinderIntegrationTest
     {
-        // The NullModelBinder and NullModelNotSetModelBinder return a non null ModelBindingResult but a null model.
-        [Theory(Skip = "ModelBindingResult should be non null if a model binder returns a non null resul #2473.")]
-        [InlineData(typeof(NullModelBinder), true)]
+        [Fact]
         [InlineData(typeof(NullModelNotSetModelBinder), false)]
-        public async Task BindParameter_WithModelBinderType_NoData(Type modelBinderType, bool isModelSet)
+        public async Task BindParameter_WithModelBinderType_NullData_ReturnsNull()
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
@@ -25,14 +22,14 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 Name = "Parameter1",
                 BindingInfo = new BindingInfo()
                 {
-                    BinderType = modelBinderType
+                    BinderType = typeof(NullModelBinder)
                 },
 
                 ParameterType = typeof(string)
             };
 
             // No data is passed.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request => { });
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
             var modelState = new ModelStateDictionary();
 
             // Act
@@ -42,27 +39,53 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // ModelBindingResult
             Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
             Assert.Null(modelBindingResult.Model);
-            Assert.Equal(isModelSet, modelBindingResult.IsModelSet);
 
-            // ModelState
+            // ModelState (not set unless inner binder sets it)
             Assert.True(modelState.IsValid);
-            var key = Assert.Single(modelState.Keys);
-            Assert.Equal("CustomParameter", key);
-            Assert.Equal(0, modelState.ErrorCount);
-            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
-            Assert.Null(modelState[key].Value); // value is only set if the custom model binder sets it.
+            Assert.Empty(modelState);
+        }
+
+        [Fact]
+        public async Task BindParameter_WithModelBinderType_NoData_ReturnsNull()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo()
+                {
+                    BinderType = typeof(NullModelNotSetModelBinder)
+                },
+
+                ParameterType = typeof(string)
+            };
+
+            // No data is passed.
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+
+            // ModelBindingResult
+            Assert.Null(modelBindingResult);
+
+            // ModelState (not set unless inner binder sets it)
+            Assert.True(modelState.IsValid);
+            Assert.Empty(modelState);
         }
 
         private class Person2
         {
         }
 
-        // Since the NullResultModelBinder returns a null ModelBindingResult, it acts
-        // as a non greedy model binder, however since it is applied using a BinderTypeBasedModelBinder, 
-        // which wraps this model binder and behaves as a greed model binder, we get a non null result.
-        [Fact(Skip = "ModelBindingResult should be non null if a model binder returns a non null resul #2473.")]
-        public async Task BindParameter_WithModelBinderType_NonGreedy_NoData()
+        [Fact]
+        public async Task BindParameter_WithModelBinderType_NonGreedy_NoData_ReturnsNull()
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
@@ -78,7 +101,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             };
 
             // No data is passed.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request => { });
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
             var modelState = new ModelStateDictionary();
 
             // Act
@@ -87,14 +110,14 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // Assert
 
             // ModelBindingResult
-            Assert.NotNull(modelBindingResult);
+            Assert.Null(modelBindingResult);
 
             // ModelState
             Assert.True(modelState.IsValid);
             Assert.Empty(modelState.Keys);
         }
-        
-        // ModelBinderAttribute can be used without specifing the binder type. 
+
+        // ModelBinderAttribute can be used without specifying the binder type.
         // In such cases BinderTypeBasedModelBinder acts like a non greedy binder where
         // it returns a null ModelBindingResult allowing other ModelBinders to run.
         [Fact]
@@ -114,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             };
 
             // No data is passed.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request => { });
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
             var modelState = new ModelStateDictionary();
 
             // Act
@@ -149,7 +172,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Person2)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request => { });
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
             var modelState = new ModelStateDictionary();
 
             // Act
@@ -193,7 +216,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Person)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request => { });
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
             var modelState = new ModelStateDictionary();
 
             // Act
@@ -234,7 +257,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Person)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request => { });
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
             var modelState = new ModelStateDictionary();
 
             // Act

@@ -397,7 +397,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         // We don't provide enough data in this test for the 'Person' model to be created. So even though there is
         // a [FromServices], it won't be used.
-        [Fact(Skip = "Extra entries in model state  #2646.")]
+        [Fact]
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithServicesModelBinder_WithPrefix_NoData()
         {
             // Arrange
@@ -2043,7 +2043,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
 
             request.Form = formCollection;
-            request.ContentType = "multipart/form-data";
+            request.ContentType = "multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq";
             request.Headers["Content-Disposition"] = "form-data; name=" + name + "; filename=text.txt";
 
             fileCollection.Add(new FormFile(memoryStream, 0, memoryStream.Length)

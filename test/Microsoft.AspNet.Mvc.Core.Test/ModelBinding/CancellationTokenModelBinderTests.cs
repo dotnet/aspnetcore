@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     public class CancellationTokenModelBinderTests
     {
         [Fact]
-        public async Task CancellationTokenModelBinder_ReturnsTrue_ForCancellationTokenType()
+        public async Task CancellationTokenModelBinder_ReturnsNotNull_ForCancellationTokenType()
         {
             // Arrange
             var bindingContext = GetBindingContext(typeof(CancellationToken));
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         [InlineData(typeof(int))]
         [InlineData(typeof(object))]
         [InlineData(typeof(CancellationTokenModelBinderTests))]
-        public async Task CancellationTokenModelBinder_ReturnsFalse_ForNonCancellationTokenType(Type t)
+        public async Task CancellationTokenModelBinder_ReturnsNull_ForNonCancellationTokenType(Type t)
         {
             // Arrange
             var bindingContext = GetBindingContext(t);

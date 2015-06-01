@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Test
     public class ModelBindingHelperTest
     {
         [Fact]
-        public async Task TryUpdateModel_ReturnsFalse_IfBinderReturnsFalse()
+        public async Task TryUpdateModel_ReturnsFalse_IfBinderReturnsNull()
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.Test
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                   .Returns(Task.FromResult<ModelBindingResult>(null));
             var model = new MyModel();
-            
+
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
-        public async Task TryUpdateModel_UsingIncludePredicateOverload_ReturnsFalse_IfBinderReturnsFalse()
+        public async Task TryUpdateModel_UsingIncludePredicateOverload_ReturnsFalse_IfBinderReturnsNull()
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
-        public async Task TryUpdateModel_UsingIncludeExpressionOverload_ReturnsFalse_IfBinderReturnsFalse()
+        public async Task TryUpdateModel_UsingIncludeExpressionOverload_ReturnsFalse_IfBinderReturnsNull()
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
@@ -475,7 +475,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
-        public async Task TryUpdateModelNonGeneric_PredicateOverload_ReturnsFalse_IfBinderReturnsFalse()
+        public async Task TryUpdateModelNonGeneric_PredicateOverload_ReturnsFalse_IfBinderReturnsNull()
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
@@ -568,7 +568,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
-        public async Task TryUpdateModelNonGeneric_ModelTypeOverload_ReturnsFalse_IfBinderReturnsFalse()
+        public async Task TryUpdateModelNonGeneric_ModelTypeOverload_ReturnsFalse_IfBinderReturnsNull()
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
@@ -774,7 +774,7 @@ namespace Microsoft.AspNet.Mvc.Test
             dictionary["product.Category.Name"] = new ModelState { ValidationState = ModelValidationState.Valid };
             dictionary["product.Order[0].Name"] = new ModelState { ValidationState = ModelValidationState.Invalid };
             dictionary.AddModelError("product.Order[0].Name", "Order name invalid.");
-            dictionary["product.Order[0].Address.Street"] = 
+            dictionary["product.Order[0].Address.Street"] =
                 new ModelState { ValidationState = ModelValidationState.Invalid };
             dictionary.AddModelError("product.Order[0].Address.Street", "Street invalid.");
             dictionary["product.Order[1].Name"] = new ModelState { ValidationState = ModelValidationState.Valid };
