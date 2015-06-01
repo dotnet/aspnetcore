@@ -3,8 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
+using System.Resources;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using LocalizationWebSite;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Testing;
@@ -74,6 +77,103 @@ mypartial
 
             // Assert
             Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
+        }
+
+        public static IEnumerable<object[]> LocalizationResourceData
+        {
+            get
+            {
+                // Dnx does not support reading resources yet. Coreclr return null value while trying to read resources.
+                // https://github.com/aspnet/Mvc/issues/2747
+#if DNX451
+                var expected1 =
+@"Hello there!!
+Learn More
+Hi John      ! You are in 2015 year and today is Thursday";
+
+                yield return new[] {"en-GB", expected1 };
+
+                var expected2 =
+@"Bonjour!
+apprendre Encore Plus
+Salut John      ! Vous êtes en 2015 an aujourd'hui est Thursday";
+                yield return new[] { "fr", expected2 };
+#else
+                var expectedCoreClr =
+@"Hello there!!
+Learn More
+Hi";
+                yield return new[] {"en-GB", expectedCoreClr };
+                yield return new[] {"fr", expectedCoreClr };
+#endif
+
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(LocalizationResourceData))]
+        public async Task Localization_Resources_ReturnExpectedValues(string value, string expected)
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+            var cultureCookie = "c=" + value + "|uic=" + value;
+            client.DefaultRequestHeaders.Add(
+                "Cookie",
+                new CookieHeaderValue("ASPNET_CULTURE", cultureCookie).ToString());
+
+            if (!value.StartsWith("en"))
+            {
+                // Manually generating .resources file since we don't autogenerate .resources file yet. 
+                WriteResourceFile("HomeController." + value + ".resx");
+                WriteResourceFile("Views.Shared._LocalizationLayout.cshtml." + value + ".resx");
+            }
+            WriteResourceFile("Views.Home.Locpage.cshtml." + value + ".resx");
+
+            // Act
+            var body = await client.GetStringAsync("http://localhost/Home/Locpage");
+
+            // Assert
+            Assert.Equal(expected, body.Trim());
+        }
+
+        private void WriteResourceFile(string resxFileName)
+        {
+            var resxFilePath = Path.Combine("..", "WebSites", SiteName, "Resources");
+            var resxFullFileName = Path.Combine(resxFilePath, resxFileName);
+            if (File.Exists(resxFullFileName))
+            {
+                using (var fs = File.OpenRead(resxFullFileName))
+                {
+                    var document = XDocument.Load(fs);
+
+                    var binDirPath = Path.Combine(resxFilePath, "bin");
+                    if (!Directory.Exists(binDirPath))
+                    {
+                        Directory.CreateDirectory(binDirPath);
+                    }
+
+                    // Put in "bin" sub-folder of resx file
+                    var targetPath = Path.Combine(
+                        binDirPath,
+                        Path.ChangeExtension(resxFileName, ".resources"));
+
+                    using (var targetStream = File.Create(targetPath))
+                    {
+                        var rw = new ResourceWriter(targetStream);
+
+                        foreach (var e in document.Root.Elements("data"))
+                        {
+                            var name = e.Attribute("name").Value;
+                            var value = e.Element("value").Value;
+
+                            rw.AddResource(name, value);
+                        }
+
+                        rw.Generate();
+                    }
+                }
+            }
         }
     }
 }
