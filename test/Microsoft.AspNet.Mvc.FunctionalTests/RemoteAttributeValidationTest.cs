@@ -18,6 +18,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private const string SiteName = nameof(ValidationWebSite);
         private static readonly Assembly _resourcesAssembly =
             typeof(RemoteAttributeValidationTest).GetTypeInfo().Assembly;
+
         private readonly Action<IApplicationBuilder> _app = new ValidationWebSite.Startup().Configure;
         private readonly Action<IServiceCollection> _configureServices = new ValidationWebSite.Startup().ConfigureServices;
 
@@ -29,8 +30,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
-            var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
-                "compiler/resources/ValidationWebSite." + areaName + ".RemoteAttribute_Home.Create.html");
+            var outputFile = "compiler/resources/ValidationWebSite." + areaName + ".RemoteAttribute_Home.Create.html";
+            var expectedContent =
+                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
             var url = "http://localhost" + pathSegment + "/RemoteAttribute_Home/Create";
 
             // Act
@@ -40,8 +42,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
             Assert.Equal("utf-8", response.Content.Headers.ContentType.CharSet);
+
             var responseContent = await response.Content.ReadAsStringAsync();
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+#else
             Assert.Equal(expectedContent, responseContent);
+#endif
         }
 
         [Theory]

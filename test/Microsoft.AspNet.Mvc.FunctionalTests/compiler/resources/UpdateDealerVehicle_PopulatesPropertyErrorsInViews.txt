@@ -1,4 +1,4 @@
-﻿<div>
+<div>
     <span class="bold">TestCarDealer</span>
     <em>SE</em>
     <input data-val="true" data-val-required="The Id field is required." id="Dealer_Id" name="Dealer.Id" type="hidden" value="32" />

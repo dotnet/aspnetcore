@@ -1,4 +1,4 @@
-﻿#pragma checksum "TestFiles/Input/InjectWithSemicolon.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "b753615982659a9805e6213ceced76ba06782038"
+#pragma checksum "TestFiles/Input/InjectWithSemicolon.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "b753615982659a9805e6213ceced76ba06782038"
 namespace Asp
 {
     using System;

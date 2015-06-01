@@ -15,6 +15,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class ViewEngineTests
     {
         private const string SiteName = nameof(RazorWebSite);
+        private static readonly Assembly _assembly = typeof(ViewEngineTests).GetTypeInfo().Assembly;
+
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
         private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
@@ -318,7 +320,7 @@ View With Layout
         public async Task ViewStartsCanUseDirectivesInjectedFromParentGlobals()
         {
             // Arrange
-            var expected = 
+            var expected =
 @"<view-start>Hello Controller-Person</view-start>
 <page>Hello Controller-Person</page>";
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -426,16 +428,21 @@ Partial that does not specify Layout
         public async Task RazorView_SetsViewPathAndExecutingPagePath()
         {
             // Arrange
-            var expected = await GetType().GetTypeInfo().Assembly
-                .ReadResourceAsStringAsync("compiler/resources/ViewEngineController.ViewWithPaths.txt");
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
+            var outputFile = "compiler/resources/ViewEngineController.ViewWithPaths.txt";
+            var expectedContent = await ResourceFile.ReadResourceAsync(_assembly, outputFile, sourceFile: false);
 
             // Act
-            var body = await client.GetStringAsync("http://localhost/ViewWithPaths");
+            var responseContent = await client.GetStringAsync("http://localhost/ViewWithPaths");
 
             // Assert
-            Assert.Equal(expected, body.Trim());
+            responseContent = responseContent.Trim();
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_assembly, outputFile, expectedContent, responseContent);
+#else
+            Assert.Equal(expectedContent, responseContent);
+#endif
         }
     }
 }

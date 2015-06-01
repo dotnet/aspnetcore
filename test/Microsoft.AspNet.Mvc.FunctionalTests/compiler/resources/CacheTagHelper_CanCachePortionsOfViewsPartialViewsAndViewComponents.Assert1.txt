@@ -1,4 +1,4 @@
-﻿<h2>Category: Laptops</h2>
+<h2>Category: Laptops</h2>
 <h2>Region: North</h2>
 
     <h2>Cached content</h2>

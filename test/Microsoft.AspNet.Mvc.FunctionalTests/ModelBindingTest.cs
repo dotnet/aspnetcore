@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
-using ModelBindingWebSite.Controllers;
 using ModelBindingWebSite.Models;
 using ModelBindingWebSite.ViewModels;
 using Newtonsoft.Json;
@@ -24,6 +23,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class ModelBindingTest
     {
         private const string SiteName = nameof(ModelBindingWebSite);
+        private static readonly Assembly _assembly = typeof(ModelBindingTest).GetTypeInfo().Assembly;
+
         private readonly Action<IApplicationBuilder> _app = new ModelBindingWebSite.Startup().Configure;
         private readonly Action<IServiceCollection> _configureServices = new ModelBindingWebSite.Startup().ConfigureServices;
 
@@ -1383,10 +1384,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task UpdateDealerVehicle_PopulatesPropertyErrorsInViews()
         {
             // Arrange
-            var expectedContent = await GetType().GetTypeInfo().Assembly.ReadResourceAsStringAsync(
-                "compiler/resources/UpdateDealerVehicle_PopulatesPropertyErrorsInViews.txt");
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
+            var outputFile = "compiler/resources/UpdateDealerVehicle_PopulatesPropertyErrorsInViews.txt";
+            var expectedContent = await ResourceFile.ReadResourceAsync(_assembly, outputFile, sourceFile: false);
             var postedContent = new
             {
                 Year = 9001,
@@ -1406,18 +1407,23 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var body = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedContent, body);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_assembly, outputFile, expectedContent, responseContent);
+#else
+            Assert.Equal(expectedContent, responseContent);
+#endif
         }
 
         [Fact]
         public async Task UpdateDealerVehicle_PopulatesValidationSummary()
         {
             // Arrange
-            var expectedContent = await GetType().GetTypeInfo().Assembly.ReadResourceAsStringAsync(
-                "compiler/resources/UpdateDealerVehicle_PopulatesValidationSummary.txt");
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
+            var outputFile = "compiler/resources/UpdateDealerVehicle_PopulatesValidationSummary.txt";
+            var expectedContent = await ResourceFile.ReadResourceAsync(_assembly, outputFile, sourceFile: false);
             var postedContent = new
             {
                 Year = 2013,
@@ -1437,18 +1443,23 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var body = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedContent, body);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_assembly, outputFile, expectedContent, responseContent);
+#else
+            Assert.Equal(expectedContent, responseContent);
+#endif
         }
 
         [Fact]
         public async Task UpdateDealerVehicle_UsesDefaultValuesForOptionalProperties()
         {
             // Arrange
-            var expectedContent = await GetType().GetTypeInfo().Assembly.ReadResourceAsStringAsync(
-                "compiler/resources/UpdateDealerVehicle_UpdateSuccessful.txt");
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
+            var outputFile = "compiler/resources/UpdateDealerVehicle_UpdateSuccessful.txt";
+            var expectedContent = await ResourceFile.ReadResourceAsync(_assembly, outputFile, sourceFile: false);
             var postedContent = new
             {
                 Year = 2013,
@@ -1468,8 +1479,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var body = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedContent, body);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_assembly, outputFile, expectedContent, responseContent);
+#else
+            Assert.Equal(expectedContent, responseContent);
+#endif
         }
 
         [Fact]
@@ -1603,10 +1619,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task HtmlHelper_DisplayFor_ShowsPropertiesInModelMetadataOrder()
         {
             // Arrange
-            var expectedContent = await GetType().GetTypeInfo().Assembly.ReadResourceAsStringAsync(
-                "compiler/resources/ModelBindingWebSite.Vehicle.Details.html");
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
+            var outputFile = "compiler/resources/ModelBindingWebSite.Vehicle.Details.html";
+            var expectedContent = await ResourceFile.ReadResourceAsync(_assembly, outputFile, sourceFile: false);
             var url = "http://localhost/vehicles/42";
 
             // Act
@@ -1615,18 +1631,22 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var body = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedContent, body);
+            var responseContent = await response.Content.ReadAsStringAsync();
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_assembly, outputFile, expectedContent, responseContent);
+#else
+            Assert.Equal(expectedContent, responseContent);
+#endif
         }
 
         [Fact]
         public async Task HtmlHelper_EditorFor_ShowsPropertiesInModelMetadataOrder()
         {
             // Arrange
-            var expectedContent = await GetType().GetTypeInfo().Assembly.ReadResourceAsStringAsync(
-                "compiler/resources/ModelBindingWebSite.Vehicle.Edit.html");
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
+            var outputFile = "compiler/resources/ModelBindingWebSite.Vehicle.Edit.html";
+            var expectedContent = await ResourceFile.ReadResourceAsync(_assembly, outputFile, sourceFile: false);
             var url = "http://localhost/vehicles/42/edit";
 
             // Act
@@ -1635,18 +1655,22 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var body = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedContent, body);
+            var responseContent = await response.Content.ReadAsStringAsync();
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_assembly, outputFile, expectedContent, responseContent);
+#else
+            Assert.Equal(expectedContent, responseContent);
+#endif
         }
 
         [Fact]
         public async Task HtmlHelper_EditorFor_ShowsPropertiesAndErrorsInModelMetadataOrder()
         {
             // Arrange
-            var expectedContent = await GetType().GetTypeInfo().Assembly.ReadResourceAsStringAsync(
-                "compiler/resources/ModelBindingWebSite.Vehicle.Edit.Invalid.html");
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
+            var outputFile = "compiler/resources/ModelBindingWebSite.Vehicle.Edit.Invalid.html";
+            var expectedContent = await ResourceFile.ReadResourceAsync(_assembly, outputFile, sourceFile: false);
             var url = "http://localhost/vehicles/42/edit";
             var contentDictionary = new Dictionary<string, string>
             {
@@ -1674,8 +1698,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var body = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedContent, body);
+            var responseContent = await response.Content.ReadAsStringAsync();
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_assembly, outputFile, expectedContent, responseContent);
+#else
+            Assert.Equal(expectedContent, responseContent);
+#endif
         }
 
         [Fact]

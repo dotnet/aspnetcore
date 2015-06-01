@@ -1,4 +1,4 @@
-﻿namespace Asp
+namespace Asp
 {
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
     using System;

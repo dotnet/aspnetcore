@@ -4,7 +4,6 @@
 using System;
 using System.Net;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Threading.Tasks;
 using ErrorPageMiddlewareWebSite;
 using Microsoft.AspNet.Builder;
@@ -21,8 +20,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private const string SiteName = nameof(ErrorPageMiddlewareWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
         private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
-
-        private readonly Assembly _resourcesAssembly = typeof(ErrorPageTests).GetTypeInfo().Assembly;
 
         [Theory]
         [InlineData("CompilationFailure", "Cannot implicitly convert type &#x27;int&#x27; to &#x27;string&#x27;")]

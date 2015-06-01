@@ -1,4 +1,4 @@
-﻿<div class="left">
+<div class="left">
     <ul>
         <li>
             Vin: 8chars

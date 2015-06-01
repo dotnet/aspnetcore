@@ -4,6 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Razor;
@@ -19,6 +22,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public class MvcRazorHostTest
     {
+        private static Assembly _assembly = typeof(MvcRazorHostTest).Assembly;
+
         [Theory]
         [InlineData("//")]
         [InlineData("C:/")]
@@ -160,6 +165,40 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
+        public void BasicVisitor_GeneratesCorrectLineMappings()
+        {
+            // Arrange
+            var fileProvider = new TestFileProvider();
+            var host = new MvcRazorHost(new DefaultChunkTreeCache(fileProvider))
+            {
+                DesignTimeMode = true
+            };
+            host.NamespaceImports.Clear();
+            var expectedLineMappings = new[]
+            {
+                BuildLineMapping(
+                    documentAbsoluteIndex: 13,
+                    documentLineIndex: 0,
+                    documentCharacterIndex: 13,
+                    generatedAbsoluteIndex: 1269,
+                    generatedLineIndex: 32,
+                    generatedCharacterIndex: 13,
+                    contentLength: 4),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 43,
+                    documentLineIndex: 2,
+                    documentCharacterIndex: 5,
+                    generatedAbsoluteIndex: 1353,
+                    generatedLineIndex: 37,
+                    generatedCharacterIndex: 6,
+                    contentLength: 21),
+            };
+
+            // Act and Assert
+            RunDesignTimeTest(host, "Basic", expectedLineMappings);
+        }
+
+        [Fact]
         public void InjectVisitor_GeneratesCorrectLineMappings()
         {
             // Arrange
@@ -246,19 +285,25 @@ namespace Microsoft.AspNet.Mvc.Razor
                                            string testName)
         {
             var inputFile = "TestFiles/Input/" + testName + ".cshtml";
-            var expectedCode = ReadResource("TestFiles/Output/Runtime/" + testName + ".cs");
+            var outputFile = "TestFiles/Output/Runtime/" + testName + ".cs";
+            var expectedCode = ResourceFile.ReadResource(_assembly, outputFile, sourceFile: false);
 
             // Act
             GeneratorResults results;
-            using (var stream = GetResourceStream(inputFile))
+            using (var stream = ResourceFile.GetResourceStream(_assembly, inputFile, sourceFile: true))
             {
                 results = host.GenerateCode(inputFile, stream);
             }
 
             // Assert
             Assert.True(results.Success);
-            Assert.Equal(expectedCode, results.GeneratedCode);
             Assert.Empty(results.ParserErrors);
+
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_assembly, outputFile, expectedCode, results.GeneratedCode);
+#else
+            Assert.Equal(expectedCode, results.GeneratedCode);
+#endif
         }
 
         private static void RunDesignTimeTest(MvcRazorHost host,
@@ -266,39 +311,60 @@ namespace Microsoft.AspNet.Mvc.Razor
                                               IEnumerable<LineMapping> expectedLineMappings)
         {
             var inputFile = "TestFiles/Input/" + testName + ".cshtml";
-            var expectedCode = ReadResource("TestFiles/Output/DesignTime/" + testName + ".cs");
+            var outputFile = "TestFiles/Output/DesignTime/" + testName + ".cs";
+            var expectedCode = ResourceFile.ReadResource(_assembly, outputFile, sourceFile: false);
 
             // Act
             GeneratorResults results;
-            using (var stream = GetResourceStream(inputFile))
+            using (var stream = ResourceFile.GetResourceStream(_assembly, inputFile, sourceFile: true))
             {
                 results = host.GenerateCode(inputFile, stream);
             }
 
             // Assert
             Assert.True(results.Success);
-            Assert.Equal(expectedCode, results.GeneratedCode);
             Assert.Empty(results.ParserErrors);
-            Assert.Equal(expectedLineMappings, results.DesignTimeLineMappings);
-        }
 
-        private static string ReadResource(string resourceName)
-        {
-            using (var stream = GetResourceStream(resourceName))
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_assembly, outputFile, expectedCode, results.GeneratedCode);
+
+            Assert.NotNull(results.DesignTimeLineMappings); // Guard
+            if (expectedLineMappings == null ||
+                !Enumerable.SequenceEqual(expectedLineMappings, results.DesignTimeLineMappings))
             {
-                using (var streamReader = new StreamReader(stream))
+                var lineMappings = new StringBuilder();
+                lineMappings.AppendLine($"// !!! Do not check in. Instead paste content into test method. !!!");
+                lineMappings.AppendLine();
+
+                var indent = "            ";
+                lineMappings.AppendLine($"{ indent }var expectedLineMappings = new[]");
+                lineMappings.AppendLine($"{ indent }{{");
+                foreach (var lineMapping in results.DesignTimeLineMappings)
                 {
-                    return streamReader.ReadToEnd();
+                    var innerIndent = indent + "    ";
+                    var documentLocation = lineMapping.DocumentLocation;
+                    var generatedLocation = lineMapping.GeneratedLocation;
+                    lineMappings.AppendLine($"{ innerIndent }{ nameof(BuildLineMapping) }(");
+
+                    innerIndent += "    ";
+                    lineMappings.AppendLine($"{ innerIndent }documentAbsoluteIndex: { documentLocation.AbsoluteIndex },");
+                    lineMappings.AppendLine($"{ innerIndent }documentLineIndex: { documentLocation.LineIndex },");
+                    lineMappings.AppendLine($"{ innerIndent }documentCharacterIndex: { documentLocation.CharacterIndex },");
+                    lineMappings.AppendLine($"{ innerIndent }generatedAbsoluteIndex: { generatedLocation.AbsoluteIndex },");
+                    lineMappings.AppendLine($"{ innerIndent }generatedLineIndex: { generatedLocation.LineIndex },");
+                    lineMappings.AppendLine($"{ innerIndent }generatedCharacterIndex: { generatedLocation.CharacterIndex },");
+                    lineMappings.AppendLine($"{ innerIndent }contentLength: { generatedLocation.ContentLength }),");
                 }
+
+                lineMappings.AppendLine($"{ indent }}};");
+
+                var lineMappingFile = Path.ChangeExtension(outputFile, "lineMappings.cs");
+                ResourceFile.UpdateFile(_assembly, lineMappingFile, previousContent: null, content: lineMappings.ToString());
             }
-        }
-
-        private static Stream GetResourceStream(string resourceName)
-        {
-            resourceName = "Microsoft.AspNet.Mvc.Razor.Host.Test." + resourceName.Replace('/', '.');
-
-            var assembly = typeof(MvcRazorHostTest).Assembly;
-            return assembly.GetManifestResourceStream(resourceName);
+#else
+            Assert.Equal(expectedCode, results.GeneratedCode);
+            Assert.Equal(expectedLineMappings, results.DesignTimeLineMappings);
+#endif
         }
 
         private static LineMapping BuildLineMapping(int documentAbsoluteIndex,
@@ -345,36 +411,43 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             public TestMvcRazorHost(IChunkTreeCache ChunkTreeCache)
                 : base(ChunkTreeCache)
-            { }
+            {
+            }
 
-            public override CodeGenerator DecorateCodeGenerator(CodeGenerator incomingBuilder, CodeGeneratorContext context)
+            public override CodeGenerator DecorateCodeGenerator(
+                CodeGenerator incomingBuilder,
+                CodeGeneratorContext context)
             {
                 base.DecorateCodeGenerator(incomingBuilder, context);
 
-                return new TestCSharpCodeGenerator(context,
-                                                 DefaultModel,
-                                                 "Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute",
-                                                 new GeneratedTagHelperAttributeContext
-                                                 {
-                                                     ModelExpressionTypeName = ModelExpressionType,
-                                                     CreateModelExpressionMethodName = CreateModelExpressionMethod
-                                                 });
+                return new TestCSharpCodeGenerator(
+                    context,
+                    DefaultModel,
+                    "Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute",
+                    new GeneratedTagHelperAttributeContext
+                    {
+                        ModelExpressionTypeName = ModelExpressionType,
+                        CreateModelExpressionMethodName = CreateModelExpressionMethod
+                    });
             }
 
             protected class TestCSharpCodeGenerator : MvcCSharpCodeGenerator
             {
                 private readonly GeneratedTagHelperAttributeContext _tagHelperAttributeContext;
 
-                public TestCSharpCodeGenerator(CodeGeneratorContext context,
-                                             string defaultModel,
-                                             string activateAttribute,
-                                             GeneratedTagHelperAttributeContext tagHelperAttributeContext)
+                public TestCSharpCodeGenerator(
+                    CodeGeneratorContext context,
+                    string defaultModel,
+                    string activateAttribute,
+                    GeneratedTagHelperAttributeContext tagHelperAttributeContext)
                     : base(context, defaultModel, activateAttribute, tagHelperAttributeContext)
                 {
                     _tagHelperAttributeContext = tagHelperAttributeContext;
                 }
 
-                protected override CSharpCodeVisitor CreateCSharpCodeVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
+                protected override CSharpCodeVisitor CreateCSharpCodeVisitor(
+                    CSharpCodeWriter writer,
+                    CodeGeneratorContext context)
                 {
                     var visitor = base.CreateCSharpCodeVisitor(writer, context);
                     visitor.TagHelperRenderer = new NoUniqueIdsTagHelperCodeRenderer(visitor, writer, context)
@@ -387,11 +460,13 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                 private class NoUniqueIdsTagHelperCodeRenderer : CSharpTagHelperCodeRenderer
                 {
-                    public NoUniqueIdsTagHelperCodeRenderer(IChunkVisitor bodyVisitor,
-                                                            CSharpCodeWriter writer,
-                                                            CodeGeneratorContext context)
+                    public NoUniqueIdsTagHelperCodeRenderer(
+                        IChunkVisitor bodyVisitor,
+                        CSharpCodeWriter writer,
+                        CodeGeneratorContext context)
                         : base(bodyVisitor, writer, context)
-                    { }
+                    {
+                    }
 
                     protected override string GenerateUniqueId()
                     {

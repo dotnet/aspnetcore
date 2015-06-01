@@ -10,6 +10,9 @@
   "commands": {
     "test": "xunit.runner.aspnet"
   },
+  "compilationOptions": {
+    "define": [ "__RemoveThisBitTo__GENERATE_BASELINES" ]
+  },
   "frameworks": {
     "dnx451": {
       "dependencies": {

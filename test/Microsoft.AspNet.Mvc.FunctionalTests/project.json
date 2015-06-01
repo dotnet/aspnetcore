@@ -3,6 +3,7 @@
     "../Microsoft.AspNet.Mvc.Xml.Test/XmlAssert.cs"
   ],
   "compilationOptions": {
+    "define": [ "__RemoveThisBitTo__GENERATE_BASELINES" ],
     "warningsAsErrors": "true"
   },
   "dependencies": {

@@ -1,4 +1,4 @@
-﻿namespace Asp
+namespace Asp
 {
 #line 1 "TestFiles/Input/Inject.cshtml"
 using MyNamespace

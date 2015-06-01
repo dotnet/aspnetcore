@@ -21,9 +21,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class MvcTagHelpersTest
     {
         private const string SiteName = nameof(MvcTagHelpersWebSite);
+        private static readonly Assembly _resourcesAssembly = typeof(MvcTagHelpersTest).GetTypeInfo().Assembly;
+
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
         private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
-        private static readonly Assembly _resourcesAssembly = typeof(MvcTagHelpersTest).GetTypeInfo().Assembly;
 
         [Theory]
         [InlineData("Index", null)]
@@ -57,11 +58,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
-
-            // The K runtime compiles every file under compiler/resources as a resource at runtime with the same name
-            // as the file name, in order to update a baseline you just need to change the file in that folder.
-            var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
-                "compiler/resources/MvcTagHelpersWebSite.MvcTagHelper_Home." + action + ".html");
+            var outputFile = "compiler/resources/MvcTagHelpersWebSite.MvcTagHelper_Home." + action + ".html";
+            var expectedContent =
+                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
 
             // Act
             // The host is not important as everything runs in memory and tests are isolated from each other.
@@ -72,13 +71,27 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
-            if (antiForgeryPath != null)
+            responseContent = responseContent.Trim();
+            if (antiForgeryPath == null)
+            {
+#if GENERATE_BASELINES
+                ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+#else
+                Assert.Equal(expectedContent.Trim(), responseContent);
+#endif
+            }
+            else
             {
                 var forgeryToken = AntiForgeryTestHelper.RetrieveAntiForgeryToken(responseContent, antiForgeryPath);
+#if GENERATE_BASELINES
+                // Reverse usual substitution and insert a format item into the new file content.
+                responseContent = responseContent.Replace(forgeryToken, "{0}");
+                ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+#else
                 expectedContent = string.Format(expectedContent, forgeryToken);
+                Assert.Equal(expectedContent.Trim(), responseContent);
+#endif
             }
-
-            Assert.Equal(expectedContent.Trim(), responseContent.Trim());
         }
 
         [Theory]
@@ -101,11 +114,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             });
             var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
-
-            // The K runtime compiles every file under compiler/resources as a resource at runtime with the same name
-            // as the file name, in order to update a baseline you just need to change the file in that folder.
-            var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
-                "compiler/resources/MvcTagHelpersWebSite.MvcTagHelper_Home." + action + ".Encoded.html");
+            var outputFile = "compiler/resources/MvcTagHelpersWebSite.MvcTagHelper_Home." + action + ".Encoded.html";
+            var expectedContent =
+                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
 
             // Act
             // The host is not important as everything runs in memory and tests are isolated from each other.
@@ -116,13 +127,27 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
-            if (antiForgeryPath != null)
+            responseContent = responseContent.Trim();
+            if (antiForgeryPath == null)
+            {
+#if GENERATE_BASELINES
+                ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+#else
+                Assert.Equal(expectedContent.Trim(), responseContent);
+#endif
+            }
+            else
             {
                 var forgeryToken = AntiForgeryTestHelper.RetrieveAntiForgeryToken(responseContent, antiForgeryPath);
+#if GENERATE_BASELINES
+                // Reverse usual substitution and insert a format item into the new file content.
+                responseContent = responseContent.Replace(forgeryToken, "{0}");
+                ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+#else
                 expectedContent = string.Format(expectedContent, forgeryToken);
+                Assert.Equal(expectedContent.Trim(), responseContent);
+#endif
             }
-
-            Assert.Equal(expectedContent.Trim(), responseContent.Trim());
         }
 
         [Fact]
@@ -131,8 +156,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
-            var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
-                "compiler/resources/MvcTagHelpersWebSite.MvcTagHelper_Customer.Index.html");
+            var outputFile = "compiler/resources/MvcTagHelpersWebSite.MvcTagHelper_Customer.Index.html";
+            var expectedContent =
+                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
 
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Customer/MvcTagHelper_Customer");
             var nameValueCollection = new List<KeyValuePair<string, string>>
@@ -152,9 +178,18 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var forgeryToken = AntiForgeryTestHelper.RetrieveAntiForgeryToken(responseContent, "Customer/MvcTagHelper_Customer");
+            responseContent = responseContent.Trim();
+            var forgeryToken =
+                AntiForgeryTestHelper.RetrieveAntiForgeryToken(responseContent, "Customer/MvcTagHelper_Customer");
+
+#if GENERATE_BASELINES
+            // Reverse usual substitution and insert a format item into the new file content.
+            responseContent = responseContent.Replace(forgeryToken, "{0}");
+            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+#else
             expectedContent = string.Format(expectedContent, forgeryToken);
-            Assert.Equal(expectedContent.Trim(), responseContent.Trim());
+            Assert.Equal(expectedContent.Trim(), responseContent);
+#endif
         }
 
         [Fact]
@@ -168,6 +203,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             client.BaseAddress = new Uri("http://localhost");
             client.DefaultRequestHeaders.Add("Locale", "North");
 
+            var outputFile1 = assertFile + "1.txt";
+            var expected1 =
+                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile1, sourceFile: false);
+            var outputFile2 = assertFile + "2.txt";
+            var expected2 =
+                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile2, sourceFile: false);
+            var outputFile3 = assertFile + "3.txt";
+            var expected3 =
+                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile3, sourceFile: false);
+
             // Act - 1
             // Verify that content gets cached based on vary-by-params
             var targetUrl = "/catalog?categoryId=1&correlationid=1";
@@ -175,10 +220,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var response2 = await client.GetStringAsync(targetUrl);
 
             // Assert - 1
-            var expected1 = await _resourcesAssembly.ReadResourceAsStringAsync(assertFile + "1.txt");
-
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_resourcesAssembly, outputFile1, expected1, response1.Trim());
+#else
             Assert.Equal(expected1, response1.Trim());
             Assert.Equal(expected1, response2.Trim());
+#endif
 
             // Act - 2
             // Verify content gets changed in partials when one of the vary by parameters is changed
@@ -187,10 +234,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var response4 = await client.GetStringAsync(targetUrl);
 
             // Assert - 2
-            var expected2 = await _resourcesAssembly.ReadResourceAsStringAsync(assertFile + "2.txt");
-
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_resourcesAssembly, outputFile2, expected2, response3.Trim());
+#else
             Assert.Equal(expected2, response3.Trim());
             Assert.Equal(expected2, response4.Trim());
+#endif
 
             // Act - 3
             // Verify content gets changed in a View Component when the Vary-by-header parameters is changed
@@ -202,10 +251,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var response6 = await client.GetStringAsync(targetUrl);
 
             // Assert - 3
-            var expected3 = await _resourcesAssembly.ReadResourceAsStringAsync(assertFile + "3.txt");
-
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_resourcesAssembly, outputFile3, expected3, response5.Trim());
+#else
             Assert.Equal(expected3, response5.Trim());
             Assert.Equal(expected3, response6.Trim());
+#endif
         }
 
         [Fact]
@@ -424,26 +475,36 @@ Products: Laptops (3)";
             var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
 
-            // The K runtime compiles every file under compiler/resources as a resource at runtime with the same name
-            // as the file name, in order to update a baseline you just need to change the file in that folder.
-            var resourceName = string.Format(
+            var outputFile = string.Format(
                 "compiler/resources/MvcTagHelpersWebSite.MvcTagHelper_Home.Form.Options.AntiForgery.{0}.html",
-                optionsAntiForgery?.ToString() ?? "null"
-            );
-            var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(resourceName);
+                optionsAntiForgery?.ToString() ?? "null");
+            var expectedContent =
+                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
 
             // Act
             // The host is not important as everything runs in memory and tests are isolated from each other.
             var response = await client.GetAsync("http://localhost/MvcTagHelper_Home/Form");
             var responseContent = await response.Content.ReadAsStringAsync();
 
-            var forgeryTokens = AntiForgeryTestHelper.RetrieveAntiForgeryTokens(responseContent);
-            expectedContent = string.Format(expectedContent, forgeryTokens.ToArray());
-
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
-            Assert.Equal(expectedContent.Trim(), responseContent.Trim());
+
+            responseContent = responseContent.Trim();
+            var forgeryTokens = AntiForgeryTestHelper.RetrieveAntiForgeryTokens(responseContent).ToArray();
+
+#if GENERATE_BASELINES
+            // Reverse usual substitutions and insert format items into the new file content.
+            for (var index = 0; index < forgeryTokens.Length; index++)
+            {
+                responseContent = responseContent.Replace(forgeryTokens[index], $"{{{ index }}}");
+            }
+
+            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+#else
+            expectedContent = string.Format(expectedContent, forgeryTokens);
+            Assert.Equal(expectedContent.Trim(), responseContent);
+#endif
         }
     }
 }
