@@ -19,8 +19,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public CancellationToken Token { get; set; }
         }
 
-        [Fact(Skip = "CancellationToken should not be validated #2447.")]
-        public async Task BindProperty_WithData__WithPrefix_GetsBound()
+        [Fact]
+        public async Task BindProperty_WithData_WithPrefix_GetsBound()
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
@@ -55,19 +55,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(2, modelState.Keys.Count);
-            Assert.Single(modelState.Keys, k => k == "CustomParameter");
-
-            var key = Assert.Single(modelState.Keys, k => k == "CustomParameter.Token");
-            Assert.Null(modelState[key].Value);
-            Assert.Empty(modelState[key].Errors);
-
-            // This Assert Fails.
-            Assert.Equal(ModelValidationState.Skipped, modelState[key].ValidationState);
+            Assert.Equal(0, modelState.Keys.Count);
         }
 
-        [Fact(Skip = "CancellationToken should not be validated #2447")]
-        public async Task BindProperty_WithData__WithEmptyPrefix_GetsBound()
+        [Fact]
+        public async Task BindProperty_WithData_WithEmptyPrefix_GetsBound()
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
@@ -97,16 +89,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // ModelState
             Assert.True(modelState.IsValid);
-            var key = Assert.Single(modelState.Keys);
-            Assert.Equal("Token", key);
-            Assert.Null(modelState[key].Value);
-            Assert.Empty(modelState[key].Errors);
-
-            // This Assert Fails.
-            Assert.Equal(ModelValidationState.Skipped, modelState[key].ValidationState);
+            Assert.Equal(0, modelState.Count);
         }
 
-        [Fact(Skip = "CancellationToken should not be validated #2447.")]
+        [Fact]
         public async Task BindParameter_WithData_GetsBound()
         {
             // Arrange
@@ -140,13 +126,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // ModelState
             Assert.True(modelState.IsValid);
-            var key = Assert.Single(modelState.Keys);
-            Assert.Equal("CustomParameter", key);
-            Assert.Null(modelState[key].Value);
-            Assert.Empty(modelState[key].Errors);
-
-            // This assert fails.
-            Assert.Equal(ModelValidationState.Skipped, modelState[key].ValidationState);
+            Assert.Equal(0, modelState.Count);
         }
     }
 }

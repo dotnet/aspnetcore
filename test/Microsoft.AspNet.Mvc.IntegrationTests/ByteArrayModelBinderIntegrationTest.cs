@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public byte[] Token { get; set; }
         }
 
-        [Theory(Skip = "ModelState.Value not set due to #2445, #2447")]
+        [Theory(Skip = "ModelState.Value not set due to #2445")]
         [InlineData(true)]
         [InlineData(false)]
         public async Task BindProperty_WithData_GetsBound(bool fallBackScenario)
@@ -68,12 +68,12 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var key = Assert.Single(modelState.Keys, k => k == queryStringKey + "[0]");
             Assert.NotNull(modelState[key].Value); // should be non null bug #2445.
             Assert.Empty(modelState[key].Errors);
-            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState); // Should be skipped. bug#2447
+            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
 
             key = Assert.Single(modelState.Keys, k => k == queryStringKey + "[1]");
             Assert.NotNull(modelState[key].Value); // should be non null bug #2445.
             Assert.Empty(modelState[key].Errors);
-            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState); // Should be skipped. bug#2447
+            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
         }
 
         [Fact]
