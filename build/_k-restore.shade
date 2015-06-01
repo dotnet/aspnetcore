@@ -1,10 +1,16 @@
 @{/*
 
 k-restore
-    Restores nuget packages required for k projects. Downloads and executes k sdk tools.
+    Restores nuget packages required for DNX projects. Downloads and executes DNX sdk tools.
+
+restoreDir=''
+    Optional. The directory in which to execute the dnu restore command.
 */}
 
-default restore_options='${E("NUGET3_restore_options")}'
+default currentDir = '${ Directory.GetCurrentDirectory() }'
+default restoreDir = '${ currentDir }'
 
-exec program='cmd' commandline='/C dnu restore --parallel ${restore_options}' if='!IsMono'
-exec program='dnu' commandline='restore${restore_options}' if='IsMono'
+default restore_options='${ E("NUGET3_restore_options") }'
+
+exec program='cmd' commandline='/C dnu restore --parallel ${ restore_options }' workingdir='${ restoreDir }' if='!IsMono'
+exec program='dnu' commandline='restore ${ restore_options }' workingdir='${ restoreDir }' if='IsMono'
