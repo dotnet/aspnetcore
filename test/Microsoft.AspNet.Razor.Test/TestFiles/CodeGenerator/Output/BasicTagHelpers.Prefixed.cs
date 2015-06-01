@@ -36,10 +36,10 @@ namespace TestOutput
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __InputTagHelper = CreateTagHelper<InputTagHelper>();
                 __tagHelperExecutionContext.Add(__InputTagHelper);
-                __InputTagHelper.Type = "checkbox";
-                __tagHelperExecutionContext.AddTagHelperAttribute("type", __InputTagHelper.Type);
                 __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
                 __tagHelperExecutionContext.Add(__InputTagHelper2);
+                __InputTagHelper.Type = "checkbox";
+                __tagHelperExecutionContext.AddTagHelperAttribute("type", __InputTagHelper.Type);
                 __InputTagHelper2.Type = __InputTagHelper.Type;
 #line 8 "BasicTagHelpers.Prefixed.cshtml"
                __InputTagHelper2.Checked = true;

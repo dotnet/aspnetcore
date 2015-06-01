@@ -35,8 +35,8 @@ namespace TestOutput
         {
             __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper.Type = "checkbox";
             __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
+            __InputTagHelper.Type = "checkbox";
             __InputTagHelper2.Type = __InputTagHelper.Type;
 #line 6 "AttributeTargetingTagHelpers.cshtml"
         __InputTagHelper2.Checked = true;
@@ -44,15 +44,15 @@ namespace TestOutput
 #line default
 #line hidden
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper.Type = "checkbox";
             __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
+            __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
+            __InputTagHelper.Type = "checkbox";
             __InputTagHelper2.Type = __InputTagHelper.Type;
 #line 7 "AttributeTargetingTagHelpers.cshtml"
         __InputTagHelper2.Checked = true;
 
 #line default
 #line hidden
-            __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
             __PTagHelper = CreateTagHelper<PTagHelper>();
         }
         #pragma warning restore 1998

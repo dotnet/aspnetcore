@@ -33,15 +33,15 @@ namespace TestOutput
         {
             __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper.BoundRequiredString = "hello";
             __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
+            __InputTagHelper.BoundRequiredString = "hello";
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper.BoundRequiredString = "hello2";
             __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
             __CatchAllTagHelper.BoundRequiredString = "world";
+            __InputTagHelper.BoundRequiredString = "hello2";
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper.BoundRequiredString = "world";
             __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
+            __InputTagHelper.BoundRequiredString = "world";
             __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
         }
         #pragma warning restore 1998

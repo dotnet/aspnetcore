@@ -45,11 +45,8 @@ namespace TestOutput
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __InputTagHelper = CreateTagHelper<InputTagHelper>();
                 __tagHelperExecutionContext.Add(__InputTagHelper);
-                __InputTagHelper.Type = "text";
-                __tagHelperExecutionContext.AddTagHelperAttribute("type", __InputTagHelper.Type);
                 __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
                 __tagHelperExecutionContext.Add(__InputTagHelper2);
-                __InputTagHelper2.Type = __InputTagHelper.Type;
                 StartTagHelperWritingScope();
                 WriteLiteral("2000 + ");
 #line 6 "BasicTagHelpers.cshtml"
@@ -60,6 +57,9 @@ Write(ViewBag.DefaultInterval);
                 WriteLiteral(" + 1");
                 __tagHelperStringValueBuffer = EndTagHelperWritingScope();
                 __tagHelperExecutionContext.AddHtmlAttribute("data-interval", Html.Raw(__tagHelperStringValueBuffer.ToString()));
+                __InputTagHelper.Type = "text";
+                __tagHelperExecutionContext.AddTagHelperAttribute("type", __InputTagHelper.Type);
+                __InputTagHelper2.Type = __InputTagHelper.Type;
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
@@ -69,10 +69,10 @@ Write(ViewBag.DefaultInterval);
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __InputTagHelper = CreateTagHelper<InputTagHelper>();
                 __tagHelperExecutionContext.Add(__InputTagHelper);
-                __InputTagHelper.Type = "checkbox";
-                __tagHelperExecutionContext.AddTagHelperAttribute("type", __InputTagHelper.Type);
                 __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
                 __tagHelperExecutionContext.Add(__InputTagHelper2);
+                __InputTagHelper.Type = "checkbox";
+                __tagHelperExecutionContext.AddTagHelperAttribute("type", __InputTagHelper.Type);
                 __InputTagHelper2.Type = __InputTagHelper.Type;
 #line 7 "BasicTagHelpers.cshtml"
             __InputTagHelper2.Checked = true;

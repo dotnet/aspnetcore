@@ -69,13 +69,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
 
             RenderTagHelpersCreation(chunk, tagHelperDescriptors);
 
-            // Determine what attributes exist in the element and divide them up.
-            var htmlAttributes = chunk.Attributes;
-            var attributeDescriptors = tagHelperDescriptors.SelectMany(descriptor => descriptor.Attributes).ToArray();
-            var unboundHtmlAttributes = htmlAttributes.Where(attribute => !attributeDescriptors.Any(
-                attributeDescriptor => attributeDescriptor.IsNameMatch(attribute.Key)));
-
-            RenderUnboundHTMLAttributes(unboundHtmlAttributes);
+            RenderAttributes(chunk.Attributes, tagHelperDescriptors);
 
             // No need to run anything in design time mode.
             if (!_designTimeMode)
@@ -172,74 +166,37 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                                                    tagHelperDescriptor.TypeName)
                        .WriteEndMethodInvocation();
 
-                // Execution contexts are a runtime feature.
-                if (!_designTimeMode)
+                // Execution contexts and throwing errors for null dictionary properties are a runtime feature.
+                if (_designTimeMode)
                 {
-                    _writer.WriteInstanceMethodInvocation(ExecutionContextVariableName,
-                                                          _tagHelperContext.ExecutionContextAddMethodName,
-                                                          tagHelperVariableName);
-                }
-
-                // Render all of the bound attribute values for the tag helper.
-                RenderBoundHTMLAttributes(
-                    chunk.Attributes,
-                    tagHelperDescriptor.TypeName,
-                    tagHelperVariableName,
-                    tagHelperDescriptor.Attributes,
-                    htmlAttributeValues);
-            }
-        }
-
-        private void RenderBoundHTMLAttributes(
-            IList<KeyValuePair<string, Chunk>> chunkAttributes,
-            string tagHelperTypeName,
-            string tagHelperVariableName,
-            IEnumerable<TagHelperAttributeDescriptor> attributeDescriptors,
-            Dictionary<string, string> htmlAttributeValues)
-        {
-            // Track dictionary properties we have confirmed are non-null.
-            var confirmedDictionaries = new HashSet<string>(StringComparer.Ordinal);
-
-            // First attribute wins, even if there are duplicates.
-            var distinctAttributes = chunkAttributes.Distinct(KeyValuePairKeyComparer.Default);
-
-            // Go through the HTML attributes in source order, assigning to properties or indexers as we go.
-            foreach (var attributeKeyValuePair in distinctAttributes)
-            {
-                var attributeName = attributeKeyValuePair.Key;
-                var attributeValueChunk = attributeKeyValuePair.Value;
-                if (attributeValueChunk == null)
-                {
-                    // Minimized attributes are not valid for bound attributes. TagHelperBlockRewriter has already
-                    // logged an error if it was a bound attribute; so we can skip.
                     continue;
                 }
 
-                // Find the matching TagHelperAttributeDescriptor.
-                var attributeDescriptor = attributeDescriptors.FirstOrDefault(
-                    descriptor => descriptor.IsNameMatch(attributeName));
-                if (attributeDescriptor == null)
-                {
-                    // Attribute is not bound to a property or indexer in this tag helper.
-                    continue;
-                }
+                _writer.WriteInstanceMethodInvocation(
+                    ExecutionContextVariableName,
+                    _tagHelperContext.ExecutionContextAddMethodName,
+                    tagHelperVariableName);
 
-                // We capture the tag helper's property value accessor so we can retrieve it later (if we need to).
-                var valueAccessor = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0}.{1}",
-                    tagHelperVariableName,
-                    attributeDescriptor.PropertyName);
+                // Track dictionary properties we have confirmed are non-null.
+                var confirmedDictionaries = new HashSet<string>(StringComparer.Ordinal);
 
-                if (attributeDescriptor.IsIndexer)
+                // Ensure that all created TagHelpers have initialized dictionary bound properties which are used
+                // via TagHelper indexers.
+                foreach (var chunkAttribute in chunk.Attributes)
                 {
-                    // Need a different valueAccessor in this case. But first need to throw a reasonable Exception at
-                    // runtime if the property is null. The check is not required at design time.
-                    if (!_designTimeMode && confirmedDictionaries.Add(attributeDescriptor.PropertyName))
+                    var associatedAttributeDescriptor = tagHelperDescriptor.Attributes.FirstOrDefault(
+                        attributeDescriptor => attributeDescriptor.IsNameMatch(chunkAttribute.Key));
+
+                    if (associatedAttributeDescriptor != null &&
+                        associatedAttributeDescriptor.IsIndexer &&
+                        confirmedDictionaries.Add(associatedAttributeDescriptor.PropertyName))
                     {
+                        // Throw a reasonable Exception at runtime if the dictionary property is null.
                         _writer
                             .Write("if (")
-                            .Write(valueAccessor)
+                            .Write(tagHelperVariableName)
+                            .Write(".")
+                            .Write(associatedAttributeDescriptor.PropertyName)
                             .WriteLine(" == null)");
                         using (_writer.BuildScope())
                         {
@@ -249,70 +206,138 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                                 .Write("throw ")
                                 .WriteStartNewObject(nameof(InvalidOperationException))
                                 .WriteStartMethodInvocation(_tagHelperContext.FormatInvalidIndexerAssignmentMethodName)
-                                .WriteStringLiteral(attributeName)
+                                .WriteStringLiteral(chunkAttribute.Key)
                                 .WriteParameterSeparator()
-                                .WriteStringLiteral(tagHelperTypeName)
+                                .WriteStringLiteral(tagHelperDescriptor.TypeName)
                                 .WriteParameterSeparator()
-                                .WriteStringLiteral(attributeDescriptor.PropertyName)
+                                .WriteStringLiteral(associatedAttributeDescriptor.PropertyName)
                                 .WriteEndMethodInvocation(endLine: false)   // End of method call
                                 .WriteEndMethodInvocation(endLine: true);   // End of new expression / throw statement
                         }
                     }
-
-                    var dictionaryKey = attributeName.Substring(attributeDescriptor.Name.Length);
-                    valueAccessor = string.Format(
-                        CultureInfo.InvariantCulture,
-                        "{0}.{1}[\"{2}\"]",
-                        tagHelperVariableName,
-                        attributeDescriptor.PropertyName,
-                        dictionaryKey);
                 }
+            }
+        }
 
-                // If we haven't recorded this attribute value before then we need to record its value.
-                var attributeValueRecorded = htmlAttributeValues.ContainsKey(attributeName);
-                if (!attributeValueRecorded)
+        private void RenderAttributes(
+            IList<KeyValuePair<string, Chunk>> chunkAttributes,
+            IEnumerable<TagHelperDescriptor> tagHelperDescriptors)
+        {
+            var renderedBoundAttributeNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            // Go through the HTML attributes in source order, assigning to properties or indexers or adding to
+            // TagHelperExecutionContext.HTMLAttributes' as we go.
+            foreach (var attribute in chunkAttributes)
+            {
+                var attributeName = attribute.Key;
+                var attributeValueChunk = attribute.Value;
+                var associatedDescriptors = tagHelperDescriptors.Where(descriptor =>
+                    descriptor.Attributes.Any(attributeDescriptor => attributeDescriptor.IsNameMatch(attributeName)));
+
+
+                // Bound attributes have associated descriptors.
+                if (associatedDescriptors.Any())
                 {
-                    // We only need to create attribute values once per HTML element (not once per tag helper).
-                    // We're saving the value accessor so we can retrieve it later if there are more tag
-                    // helpers that need the value.
-                    htmlAttributeValues.Add(attributeName, valueAccessor);
-
-                    // Bufferable attributes are attributes that can have Razor code inside of them. Such
-                    // attributes have string values and may be calculated using a temporary TextWriter or other
-                    // buffer.
-                    var bufferableAttribute = attributeDescriptor.IsStringProperty;
-
-                    RenderNewAttributeValueAssignment(
-                        attributeDescriptor,
-                        bufferableAttribute,
-                        attributeValueChunk,
-                        valueAccessor);
-
-                    // Execution contexts are a runtime feature.
-                    if (_designTimeMode)
+                    if (!renderedBoundAttributeNames.Add(attributeName))
                     {
+                        // First attribute value wins if there are duplicates.
                         continue;
                     }
 
-                    // We need to inform the context of the attribute value.
-                    _writer
-                        .WriteStartInstanceMethodInvocation(
-                            ExecutionContextVariableName,
-                            _tagHelperContext.ExecutionContextAddTagHelperAttributeMethodName)
-                        .WriteStringLiteral(attributeName)
-                        .WriteParameterSeparator()
-                        .Write(valueAccessor)
-                        .WriteEndMethodInvocation();
+                    if (attributeValueChunk == null)
+                    {
+                        // Minimized attributes are not valid for bound attributes. TagHelperBlockRewriter has already
+                        // logged an error if it was a bound attribute; so we can skip.
+                        continue;
+                    }
+
+                    // We need to capture the tag helper's property value accessor so we can retrieve it later
+                    // if there are more tag helpers that need the value.
+                    string valueAccessor = null;
+
+                    foreach (var associatedDescriptor in associatedDescriptors)
+                    {
+                        var associatedAttributeDescriptor = associatedDescriptor.Attributes.First(
+                            attributeDescriptor => attributeDescriptor.IsNameMatch(attributeName));
+                        var tagHelperVariableName = GetVariableName(associatedDescriptor);
+
+                        valueAccessor = RenderBoundAttribute(
+                            attributeName,
+                            attributeValueChunk,
+                            tagHelperVariableName,
+                            valueAccessor,
+                            associatedAttributeDescriptor);
+                    }
                 }
                 else
                 {
-                    // The attribute value has already been recorded, lets retrieve it from the stored value
-                    // accessors.
-                    _writer
-                        .WriteStartAssignment(valueAccessor)
-                        .Write(htmlAttributeValues[attributeName])
-                        .WriteLine(";");
+                    RenderUnboundAttribute(attributeName, attributeValueChunk);
                 }
+            }
+        }
+
+        private string RenderBoundAttribute(
+            string attributeName,
+            Chunk attributeValueChunk,
+            string tagHelperVariableName,
+            string previousValueAccessor,
+            TagHelperAttributeDescriptor attributeDescriptor)
+        {
+            var currentValueAccessor = string.Format(
+                CultureInfo.InvariantCulture,
+                "{0}.{1}",
+                tagHelperVariableName,
+                attributeDescriptor.PropertyName);
+
+            if (attributeDescriptor.IsIndexer)
+            {
+                var dictionaryKey = attributeName.Substring(attributeDescriptor.Name.Length);
+                currentValueAccessor += $"[\"{dictionaryKey}\"]";
+            }
+
+            // If this attribute value has not been seen before, need to record its value.
+            if (previousValueAccessor == null)
+            {
+                // Bufferable attributes are attributes that can have Razor code inside of them. Such
+                // attributes have string values and may be calculated using a temporary TextWriter or other
+                // buffer.
+                var bufferableAttribute = attributeDescriptor.IsStringProperty;
+
+                RenderNewAttributeValueAssignment(
+                    attributeDescriptor,
+                    bufferableAttribute,
+                    attributeValueChunk,
+                    currentValueAccessor);
+
+                if (_designTimeMode)
+                {
+                    // Execution contexts are a runtime feature.
+                    return currentValueAccessor;
+                }
+
+                // We need to inform the context of the attribute value.
+                _writer
+                    .WriteStartInstanceMethodInvocation(
+                        ExecutionContextVariableName,
+                        _tagHelperContext.ExecutionContextAddTagHelperAttributeMethodName)
+                    .WriteStringLiteral(attributeName)
+                    .WriteParameterSeparator()
+                    .Write(currentValueAccessor)
+                    .WriteEndMethodInvocation();
+
+                return currentValueAccessor;
+            }
+            else
+            {
+                // The attribute value has already been determined and accessor was passed to us as
+                // previousValueAccessor, we don't want to evaluate the value twice so lets just use the
+                // previousValueLocation.
+                _writer
+                    .WriteStartAssignment(currentValueAccessor)
+                    .Write(previousValueAccessor)
+                    .WriteLine(";");
+
+                return previousValueAccessor;
             }
         }
 
@@ -389,67 +414,63 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             }
         }
 
-        private void RenderUnboundHTMLAttributes(IEnumerable<KeyValuePair<string, Chunk>> unboundHTMLAttributes)
+        private void RenderUnboundAttribute(string attributeName, Chunk attributeValueChunk)
         {
-            // Build out the unbound HTML attributes for the tag builder
-            foreach (var htmlAttribute in unboundHTMLAttributes)
+            string textValue = null;
+            var isPlainTextValue = false;
+
+            // A null attribute value means the HTML attribute is minimized.
+            if (attributeValueChunk != null)
             {
-                string textValue = null;
-                var isPlainTextValue = false;
-                var attributeValue = htmlAttribute.Value;
+                isPlainTextValue = TryGetPlainTextValue(attributeValueChunk, out textValue);
 
-                // A null attribute value means the HTML attribute is minimized.
-                if (attributeValue != null)
+                // HTML attributes are always strings. So if this value is not plain text i.e. if the value contains
+                // C# code, then we need to buffer it.
+                if (!isPlainTextValue)
                 {
-                    isPlainTextValue = TryGetPlainTextValue(attributeValue, out textValue);
-
-                    // HTML attributes are always strings. So if this value is not plain text i.e. if the value contains
-                    // C# code, then we need to buffer it.
-                    if (!isPlainTextValue)
-                    {
-                        BuildBufferedWritingScope(attributeValue, htmlEncodeValues: true);
-                    }
+                    BuildBufferedWritingScope(attributeValueChunk, htmlEncodeValues: true);
                 }
+            }
 
-                // Execution contexts are a runtime feature, therefore no need to add anything to them.
-                if (_designTimeMode)
-                {
-                    continue;
-                }
+            // Execution contexts are a runtime feature, therefore no need to add anything to them.
+            if (_designTimeMode)
+            {
+                return;
+            }
 
-                // If we have a minimized attribute there is no value
-                if (attributeValue == null)
+            // If we have a minimized attribute there is no value
+            if (attributeValueChunk == null)
+            {
+                _writer
+                    .WriteStartInstanceMethodInvocation(
+                        ExecutionContextVariableName,
+                        _tagHelperContext.ExecutionContextAddMinimizedHtmlAttributeMethodName)
+                    .WriteStringLiteral(attributeName)
+                    .WriteEndMethodInvocation();
+            }
+            else
+            {
+                _writer
+                    .WriteStartInstanceMethodInvocation(
+                        ExecutionContextVariableName,
+                        _tagHelperContext.ExecutionContextAddHtmlAttributeMethodName)
+                    .WriteStringLiteral(attributeName)
+                    .WriteParameterSeparator()
+                    .WriteStartMethodInvocation(_tagHelperContext.MarkAsHtmlEncodedMethodName);
+
+                // If it's a plain text value then we need to surround the value with quotes.
+                if (isPlainTextValue)
                 {
-                    _writer
-                        .WriteStartInstanceMethodInvocation(
-                            ExecutionContextVariableName,
-                            _tagHelperContext.ExecutionContextAddMinimizedHtmlAttributeMethodName)
-                        .WriteStringLiteral(htmlAttribute.Key)
-                        .WriteEndMethodInvocation();
+                    _writer.WriteStringLiteral(textValue);
                 }
                 else
                 {
-                    _writer
-                        .WriteStartInstanceMethodInvocation(
-                            ExecutionContextVariableName,
-                            _tagHelperContext.ExecutionContextAddHtmlAttributeMethodName)
-                        .WriteStringLiteral(htmlAttribute.Key)
-                        .WriteParameterSeparator()
-                        .WriteStartMethodInvocation(_tagHelperContext.MarkAsHtmlEncodedMethodName);
-
-                    // If it's a plain text value then we need to surround the value with quotes.
-                    if (isPlainTextValue)
-                    {
-                        _writer.WriteStringLiteral(textValue);
-                    }
-                    else
-                    {
-                        RenderBufferedAttributeValueAccessor(_writer);
-                    }
-
-                    _writer.WriteEndMethodInvocation(endLine: false)
-                        .WriteEndMethodInvocation();
+                    RenderBufferedAttributeValueAccessor(_writer);
                 }
+
+                _writer
+                    .WriteEndMethodInvocation(endLine: false)
+                    .WriteEndMethodInvocation();
             }
         }
 
@@ -625,26 +646,6 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             plainText = literalChildChunk.Text;
 
             return true;
-        }
-
-        // An IEqualityComparer for string -> Chunk mappings which compares only the Key.
-        private class KeyValuePairKeyComparer : IEqualityComparer<KeyValuePair<string, Chunk>>
-        {
-            public static KeyValuePairKeyComparer Default = new KeyValuePairKeyComparer();
-
-            private KeyValuePairKeyComparer()
-            {
-            }
-
-            public bool Equals(KeyValuePair<string, Chunk> keyValuePairX, KeyValuePair<string, Chunk> keyValuePairY)
-            {
-                return string.Equals(keyValuePairX.Key, keyValuePairY.Key, StringComparison.OrdinalIgnoreCase);
-            }
-
-            public int GetHashCode(KeyValuePair<string, Chunk> keyValuePair)
-            {
-                return keyValuePair.Key.GetHashCode();
-            }
         }
 
         // A CSharpCodeVisitor which does not HTML encode values. Used when rendering bound string attribute values.

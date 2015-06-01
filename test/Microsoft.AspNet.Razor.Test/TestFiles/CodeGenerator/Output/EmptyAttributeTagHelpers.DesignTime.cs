@@ -33,8 +33,8 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper.Type = "";
             __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
+            __InputTagHelper.Type = "";
             __InputTagHelper2.Type = __InputTagHelper.Type;
 #line 4 "EmptyAttributeTagHelpers.cshtml"
 __InputTagHelper2.Checked = ;
@@ -42,8 +42,8 @@ __InputTagHelper2.Checked = ;
 #line default
 #line hidden
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper.Type = "";
             __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
+            __InputTagHelper.Type = "";
             __InputTagHelper2.Type = __InputTagHelper.Type;
 #line 6 "EmptyAttributeTagHelpers.cshtml"
   __InputTagHelper2.Checked = ;

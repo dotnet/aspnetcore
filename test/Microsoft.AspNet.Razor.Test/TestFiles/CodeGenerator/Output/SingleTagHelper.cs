@@ -33,13 +33,13 @@ namespace TestOutput
             , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
+            __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw("Hello World"));
 #line 3 "SingleTagHelper.cshtml"
          __PTagHelper.Age = 1337;
 
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __PTagHelper.Age);
-            __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw("Hello World"));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();

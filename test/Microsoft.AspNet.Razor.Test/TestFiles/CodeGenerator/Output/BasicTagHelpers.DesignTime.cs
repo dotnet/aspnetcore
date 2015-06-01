@@ -34,17 +34,17 @@ namespace TestOutput
         {
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper.Type = "text";
             __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
-            __InputTagHelper2.Type = __InputTagHelper.Type;
 #line 6 "BasicTagHelpers.cshtml"
 __o = ViewBag.DefaultInterval;
 
 #line default
 #line hidden
+            __InputTagHelper.Type = "text";
+            __InputTagHelper2.Type = __InputTagHelper.Type;
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper.Type = "checkbox";
             __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
+            __InputTagHelper.Type = "checkbox";
             __InputTagHelper2.Type = __InputTagHelper.Type;
 #line 7 "BasicTagHelpers.cshtml"
             __InputTagHelper2.Checked = true;

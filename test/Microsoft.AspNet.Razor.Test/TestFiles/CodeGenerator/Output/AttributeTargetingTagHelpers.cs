@@ -48,10 +48,10 @@ namespace TestOutput
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __InputTagHelper = CreateTagHelper<InputTagHelper>();
                 __tagHelperExecutionContext.Add(__InputTagHelper);
-                __InputTagHelper.Type = "checkbox";
-                __tagHelperExecutionContext.AddTagHelperAttribute("type", __InputTagHelper.Type);
                 __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
                 __tagHelperExecutionContext.Add(__InputTagHelper2);
+                __InputTagHelper.Type = "checkbox";
+                __tagHelperExecutionContext.AddTagHelperAttribute("type", __InputTagHelper.Type);
                 __InputTagHelper2.Type = __InputTagHelper.Type;
 #line 6 "AttributeTargetingTagHelpers.cshtml"
         __InputTagHelper2.Checked = true;
@@ -68,10 +68,12 @@ namespace TestOutput
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __InputTagHelper = CreateTagHelper<InputTagHelper>();
                 __tagHelperExecutionContext.Add(__InputTagHelper);
-                __InputTagHelper.Type = "checkbox";
-                __tagHelperExecutionContext.AddTagHelperAttribute("type", __InputTagHelper.Type);
                 __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
                 __tagHelperExecutionContext.Add(__InputTagHelper2);
+                __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
+                __tagHelperExecutionContext.Add(__CatchAllTagHelper);
+                __InputTagHelper.Type = "checkbox";
+                __tagHelperExecutionContext.AddTagHelperAttribute("type", __InputTagHelper.Type);
                 __InputTagHelper2.Type = __InputTagHelper.Type;
 #line 7 "AttributeTargetingTagHelpers.cshtml"
         __InputTagHelper2.Checked = true;
@@ -79,8 +81,6 @@ namespace TestOutput
 #line default
 #line hidden
                 __tagHelperExecutionContext.AddTagHelperAttribute("checked", __InputTagHelper2.Checked);
-                __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
-                __tagHelperExecutionContext.Add(__CatchAllTagHelper);
                 __tagHelperExecutionContext.AddHtmlAttribute("catchAll", Html.Raw("hi"));
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);

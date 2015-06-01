@@ -55,8 +55,8 @@ if (true)
 #line hidden
 
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper.Type = "text";
             __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
+            __InputTagHelper.Type = "text";
             __InputTagHelper2.Type = __InputTagHelper.Type;
             __PTagHelper = CreateTagHelper<PTagHelper>();
 #line 13 "ComplexTagHelpers.cshtml"
@@ -68,13 +68,13 @@ if (true)
 #line hidden
 
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
+            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
 #line 16 "ComplexTagHelpers.cshtml"
 __o = checkbox;
 
 #line default
 #line hidden
             __InputTagHelper.Type = string.Empty;
-            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
             __InputTagHelper2.Type = __InputTagHelper.Type;
 #line 16 "ComplexTagHelpers.cshtml"
                                    __InputTagHelper2.Checked = true;
@@ -83,15 +83,16 @@ __o = checkbox;
 #line hidden
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
+            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
 #line 17 "ComplexTagHelpers.cshtml"
 __o = true ? "checkbox" : "anything";
 
 #line default
 #line hidden
             __InputTagHelper.Type = string.Empty;
-            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
             __InputTagHelper2.Type = __InputTagHelper.Type;
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
+            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
 #line 18 "ComplexTagHelpers.cshtml"
 if(true) {
 
@@ -123,7 +124,6 @@ if(true) {
 #line hidden
 
             __InputTagHelper.Type = string.Empty;
-            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
             __InputTagHelper2.Type = __InputTagHelper.Type;
 #line 19 "ComplexTagHelpers.cshtml"
             }
@@ -158,14 +158,14 @@ __InputTagHelper2.Checked = @object;
 #line hidden
             __PTagHelper = CreateTagHelper<PTagHelper>();
 #line 21 "ComplexTagHelpers.cshtml"
-__PTagHelper.Age = DateTimeOffset.Now.Year - 1970;
+                   __PTagHelper.Age = DateTimeOffset.Now.Year - 1970;
 
 #line default
 #line hidden
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
             __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
 #line 26 "ComplexTagHelpers.cshtml"
-__InputTagHelper2.Checked = DateTimeOffset.Now.Year > 2014;
+                                __InputTagHelper2.Checked = DateTimeOffset.Now.Year > 2014;
 
 #line default
 #line hidden

@@ -40,8 +40,8 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper.Type = "checkbox";
             __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
+            __InputTagHelper.Type = "checkbox";
             __InputTagHelper2.Type = __InputTagHelper.Type;
 #line 8 "BasicTagHelpers.Prefixed.cshtml"
                __InputTagHelper2.Checked = true;

@@ -37,13 +37,13 @@ namespace TestOutput
 #line default
 #line hidden
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
+            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
 #line 6 "EscapedTagHelpers.cshtml"
 __o = DateTime.Now;
 
 #line default
 #line hidden
             __InputTagHelper.Type = string.Empty;
-            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
             __InputTagHelper2.Type = __InputTagHelper.Type;
 #line 6 "EscapedTagHelpers.cshtml"
                                               __InputTagHelper2.Checked = true;
