@@ -4,7 +4,7 @@
     "dependencies": {
         "Microsoft.AspNet.Authentication": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.IdentityModel.Protocol.Extensions": "2.0.0-beta4-*"
+        "Microsoft.IdentityModel.Protocol.Extensions": "2.0.0-beta5-*"
     },
     "frameworks": {
         "dnx451": {
