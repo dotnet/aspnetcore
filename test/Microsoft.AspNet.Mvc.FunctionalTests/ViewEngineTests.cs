@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 using RazorWebSite;
 using Xunit;
 
@@ -138,7 +139,7 @@ component-content";
                 var expected1 = string.Join(Environment.NewLine,
                                             "expander-index",
                                             "gb-partial");
-                yield return new[] { "gb", expected1 };
+                yield return new[] { "en-GB", expected1 };
 
                 var expected2 = string.Join(Environment.NewLine,
                                             "fr-index",
@@ -159,10 +160,13 @@ component-content";
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
+            var cultureCookie = "c=" + value + "|uic=" + value;
+            client.DefaultRequestHeaders.Add(
+                "Cookie",
+                new CookieHeaderValue("ASPNET_CULTURE", cultureCookie).ToString());
 
             // Act
-            var body = await client.GetStringAsync("http://localhost/TemplateExpander?language-expander-value=" +
-                                                   value);
+            var body = await client.GetStringAsync("http://localhost/TemplateExpander");
 
             // Assert
             Assert.Equal(expected, body.Trim());
@@ -288,7 +292,7 @@ ViewWithNestedLayout-Content
 View With Layout
 </language-layout>";
 
-                yield return new[] { "gb", expected1 };
+                yield return new[] { "en-GB", expected1 };
                 yield return new[] { "na", expected1 };
 
                 var expected2 =
@@ -307,10 +311,13 @@ View With Layout
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
+            var cultureCookie = "c=" + value + "|uic=" + value;
+            client.DefaultRequestHeaders.Add(
+                "Cookie",
+                new CookieHeaderValue("ASPNET_CULTURE", cultureCookie).ToString());
 
             // Act
-            var body = await client.GetStringAsync("http://localhost/TemplateExpander/ViewWithLayout?language-expander-value=" +
-                                                   value);
+            var body = await client.GetStringAsync("http://localhost/TemplateExpander/ViewWithLayout");
 
             // Assert
             Assert.Equal(expected, body.Trim());

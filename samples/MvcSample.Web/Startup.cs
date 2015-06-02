@@ -46,6 +46,8 @@ namespace MvcSample.Web
                 options.Filters.Add(new FormatFilterAttribute());
             });
 
+            services.AddMvcLocalization();
+
 #if DNX451
             // Fully-qualify configuration path to avoid issues in functional tests. Just "config.json" would be fine
             // but Configuration uses CallContextServiceLocator.Locator.ServiceProvider to get IApplicationEnvironment.
@@ -63,12 +65,6 @@ namespace MvcSample.Web
                 diSystem.Equals("AutoFac", StringComparison.OrdinalIgnoreCase))
             {
                 _autoFac = true;
-                services.ConfigureRazorViewEngine(options =>
-                {
-                    var expander = new LanguageViewLocationExpander(
-                        context => context.HttpContext.Request.Query["language"]);
-                    options.ViewLocationExpanders.Insert(0, expander);
-                });
 
                 // Create the autofac container
                 var builder = new ContainerBuilder();
@@ -102,6 +98,7 @@ namespace MvcSample.Web
                 app.UseMiddleware<MonitoringMiddlware>();
             }
 #endif
+            app.UseRequestLocalization();
 
             app.UseInMemorySession();
             app.UseMvc(routes =>
