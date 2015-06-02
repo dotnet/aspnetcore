@@ -5,9 +5,11 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNet.Mvc.TestCommon.Notification;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Logging.Testing;
+using Microsoft.Framework.Notification;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -152,12 +154,38 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(initialRouter, Assert.Single(actionRouteData.Routers));
         }
 
+        [Fact]
+        public async Task RouteAsync_Notifies_ActionSelected()
+        {
+            // Arrange
+            var listener = new TestNotificationListener();
+
+            var context = CreateRouteContext(notificationListener: listener);
+            context.RouteData.Values.Add("tag", "value");
+
+            var handler = new MvcRouteHandler();
+
+            // Act
+            await handler.RouteAsync(context);
+
+            // Assert
+            Assert.NotNull(listener?.ActionSelected.ActionDescriptor);
+            Assert.NotNull(listener?.ActionSelected.HttpContext);
+
+            var routeValues = listener?.ActionSelected?.RouteData?.Values;
+            Assert.NotNull(routeValues);
+
+            Assert.Equal(1, routeValues.Count);
+            Assert.Contains(routeValues, kvp => kvp.Key == "tag" && string.Equals(kvp.Value, "value"));
+        }
+
         private RouteContext CreateRouteContext(
             ActionDescriptor actionDescriptor = null,
             IActionSelector actionSelector = null,
             IActionInvokerFactory invokerFactory = null,
             ILoggerFactory loggerFactory = null,
-            IOptions<MvcOptions> optionsAccessor = null)
+            IOptions<MvcOptions> optionsAccessor = null,
+            object notificationListener = null)
         {
             var mockContextAccessor = new Mock<IScopedInstance<ActionContext>>();
 
@@ -203,6 +231,12 @@ namespace Microsoft.AspNet.Mvc
                 optionsAccessor = options.Object;
             }
 
+            var notifier = new Notifier(new NotifierMethodAdapter());
+            if (notificationListener != null)
+            {
+                notifier.EnlistTarget(notificationListener);
+            }
+
             var httpContext = new Mock<HttpContext>();
             httpContext.Setup(h => h.RequestServices.GetService(typeof(IScopedInstance<ActionContext>)))
                 .Returns(mockContextAccessor.Object);
@@ -216,6 +250,8 @@ namespace Microsoft.AspNet.Mvc
                  .Returns(new MvcMarkerService());
             httpContext.Setup(h => h.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
                  .Returns(optionsAccessor);
+            httpContext.Setup(h => h.RequestServices.GetService(typeof(INotifier)))
+                .Returns(notifier);
 
             return new RouteContext(httpContext.Object);
         }

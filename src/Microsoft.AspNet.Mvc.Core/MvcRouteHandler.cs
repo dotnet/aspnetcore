@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -12,12 +11,13 @@ using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.Notification;
 
 namespace Microsoft.AspNet.Mvc
 {
     public class MvcRouteHandler : IRouter
     {
+        private INotifier _notifier;
         private ILogger _logger;
 
         public VirtualPathData GetVirtualPath([NotNull] VirtualPathContext context)
@@ -40,6 +40,8 @@ namespace Microsoft.AspNet.Mvc
             MvcServicesHelper.ThrowIfMvcNotRegistered(services);
 
             EnsureLogger(context.HttpContext);
+            EnsureNotifier(context.HttpContext);
+
             var actionSelector = services.GetRequiredService<IActionSelector>();
             var actionDescriptor = await actionSelector.SelectAsync(context);
 
@@ -68,6 +70,13 @@ namespace Microsoft.AspNet.Mvc
             try
             {
                 context.RouteData = newRouteData;
+
+                if (_notifier.ShouldNotify("Microsoft.AspNet.Mvc.ActionSelected"))
+                {
+                    _notifier.Notify(
+                        "Microsoft.AspNet.Mvc.ActionSelected",
+                        new { actionDescriptor, httpContext = context.HttpContext, routeData = context.RouteData});
+                }
 
                 using (_logger.BeginScope("ActionId: {ActionId}", actionDescriptor.Id))
                 {
@@ -113,6 +122,14 @@ namespace Microsoft.AspNet.Mvc
             {
                 var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
                 _logger = factory.CreateLogger<MvcRouteHandler>();
+            }
+        }
+
+        private void EnsureNotifier(HttpContext context)
+        {
+            if (_notifier == null)
+            {
+                _notifier = context.RequestServices.GetRequiredService<INotifier>();
             }
         }
     }
