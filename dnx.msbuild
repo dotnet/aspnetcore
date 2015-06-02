@@ -357,6 +357,10 @@
                 <term>lez</term>
                 <Justification>part of a name, false positive</Justification>
             </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework.SqlServer\SqlServerTypeMapper.cs">
+                <term>National</term>
+                <Justification>SQL term for nchar/nvarchar</Justification>
+            </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders.Core\UnicodeRanges.generated.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\CodePointFilters.cs;
                                     $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.dll;
