@@ -74,6 +74,7 @@ namespace Microsoft.Net.Http.Server
         private ILogger _logger;
 
         private SafeHandle _requestQueueHandle;
+        private ThreadPoolBoundHandle _boundHandle;
         private volatile State _state; // m_State is set only within lock blocks, but often read outside locks.
 
         private bool _ignoreWriteExceptions;
@@ -139,6 +140,11 @@ namespace Microsoft.Net.Http.Server
             {
                 return _requestQueueHandle;
             }
+        }
+
+        internal ThreadPoolBoundHandle BoundHandle
+        {
+            get { return _boundHandle; }
         }
 
         internal ulong UrlGroupId
@@ -523,7 +529,7 @@ namespace Microsoft.Net.Http.Server
             }
 
             _requestQueueHandle = requestQueueHandle;
-            ThreadPool.BindHandle(_requestQueueHandle);
+            _boundHandle = ThreadPoolBoundHandle.BindHandle(_requestQueueHandle);
         }
 
         private unsafe void CloseRequestQueueHandle()
@@ -531,6 +537,10 @@ namespace Microsoft.Net.Http.Server
             if ((_requestQueueHandle != null) && (!_requestQueueHandle.IsInvalid))
             {
                 _requestQueueHandle.Dispose();
+            }
+            if (_boundHandle != null)
+            {
+                _boundHandle.Dispose();
             }
         }
 
@@ -667,11 +677,10 @@ namespace Microsoft.Net.Http.Server
             // Debug.WriteLine("Server: Registering connection for disconnect for connection ID: " + connectionId);
 
             // Create a nativeOverlapped callback so we can register for disconnect callback
-            var overlapped = new Overlapped();
             var cts = new CancellationTokenSource();
 
             SafeNativeOverlapped nativeOverlapped = null;
-            nativeOverlapped = new SafeNativeOverlapped(overlapped.UnsafePack(
+            nativeOverlapped = new SafeNativeOverlapped(_boundHandle, _boundHandle.AllocateNativeOverlapped(
                 (errorCode, numBytes, overlappedPtr) =>
                 {
                     // Debug.WriteLine("Server: http.sys disconnect callback fired for connection ID: " + connectionId);
@@ -693,7 +702,7 @@ namespace Microsoft.Net.Http.Server
 
                     cts.Dispose();
                 },
-                null));
+                null, null));
 
             uint statusCode;
             try

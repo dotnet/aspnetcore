@@ -30,21 +30,18 @@ namespace Microsoft.Net.Http.Server
     internal class SafeNativeOverlapped : SafeHandle
     {
         internal static readonly SafeNativeOverlapped Zero = new SafeNativeOverlapped();
+        private ThreadPoolBoundHandle _boundHandle;
 
         internal SafeNativeOverlapped()
-            : this(IntPtr.Zero)
-        {
-        }
-
-        internal unsafe SafeNativeOverlapped(NativeOverlapped* handle)
-            : this((IntPtr)handle)
-        {
-        }
-
-        internal SafeNativeOverlapped(IntPtr handle)
             : base(IntPtr.Zero, true)
         {
-            SetHandle(handle);
+        }
+
+        internal unsafe SafeNativeOverlapped(ThreadPoolBoundHandle boundHandle, NativeOverlapped* handle)
+            : base(IntPtr.Zero, true)
+        {
+            SetHandle((IntPtr)handle);
+            _boundHandle = boundHandle;
         }
 
         public override bool IsInvalid
@@ -76,7 +73,7 @@ namespace Microsoft.Net.Http.Server
             {
                 unsafe
                 {
-                    Overlapped.Free((NativeOverlapped*)oldHandle);
+                    _boundHandle.FreeNativeOverlapped((NativeOverlapped*)oldHandle);
                 }
             }
             return true;

@@ -161,7 +161,8 @@ namespace Microsoft.Net.Http.Server
         private UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST* Allocate(uint size)
         {
             uint newSize = size != 0 ? size : RequestBuffer == null ? DefaultBufferSize : Size;
-            if (_nativeOverlapped != null && newSize != RequestBuffer.Length)
+            // We can't reuse overlapped objects
+            if (_nativeOverlapped != null)
             {
                 SafeNativeOverlapped nativeOverlapped = _nativeOverlapped;
                 _nativeOverlapped = null;
@@ -170,9 +171,9 @@ namespace Microsoft.Net.Http.Server
             if (_nativeOverlapped == null)
             {
                 SetBuffer(checked((int)newSize));
-                Overlapped overlapped = new Overlapped();
-                overlapped.AsyncResult = _acceptResult;
-                _nativeOverlapped = new SafeNativeOverlapped(overlapped.Pack(AsyncAcceptContext.IOCallback, RequestBuffer));
+                var boundHandle = _acceptResult.Server.BoundHandle;
+                _nativeOverlapped = new SafeNativeOverlapped(boundHandle,
+                    boundHandle.AllocateNativeOverlapped(AsyncAcceptContext.IOCallback, _acceptResult, RequestBuffer));
                 return (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST*)Marshal.UnsafeAddrOfPinnedArrayElement(RequestBuffer, 0);
             }
             return RequestBlob;

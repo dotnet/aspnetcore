@@ -60,7 +60,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        private WebListener Server
+        internal WebListener Server
         {
             get
             {
@@ -152,9 +152,7 @@ namespace Microsoft.Net.Http.Server
         private static unsafe void IOWaitCallback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlapped)
         {
             // take the ListenerAsyncResult object from the state
-            Overlapped callbackOverlapped = Overlapped.Unpack(nativeOverlapped);
-            AsyncAcceptContext asyncResult = (AsyncAcceptContext)callbackOverlapped.AsyncResult;
-
+            var asyncResult = (AsyncAcceptContext)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped);
             IOCompleted(asyncResult, errorCode, numBytes);
         }
 
