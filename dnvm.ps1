@@ -1,4 +1,4 @@
-#Requires -Version 3
+#Requires -Version 2
 
 if (Test-Path env:WEBSITE_SITE_NAME)
 {
@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta6-10381"
+$BuildVersion="beta6-10383"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -252,7 +252,7 @@ function Safe-Filecopy {
 }
 
 function GetArch($Architecture, $FallBackArch = $DefaultArchitecture) {
-    if(![String]::IsNullOrWhiteSpace($Architecture)) {
+    if(![String]::IsNullOrEmpty($Architecture)) {
         $Architecture
     } elseif($CompatArch) {
         $CompatArch
@@ -262,7 +262,7 @@ function GetArch($Architecture, $FallBackArch = $DefaultArchitecture) {
 }
 
 function GetRuntime($Runtime) {
-    if(![String]::IsNullOrWhiteSpace($Runtime)) {
+    if(![String]::IsNullOrEmpty($Runtime)) {
         $Runtime
     } else {
         $DefaultRuntime
@@ -560,7 +560,7 @@ function Download-Package(
         }
       }
 
-      Write-Progress -Activity ("Downloading $RuntimeShortFriendlyName from $url") -Id 2 -ParentId 1 -Completed
+      Write-Progress -Status "Done" -Activity ("Downloading $RuntimeShortFriendlyName from $url") -Id 2 -ParentId 1 -Completed
     }
     finally {
         Remove-Variable downloadData -Scope "Global"
@@ -632,10 +632,10 @@ function Change-Path() {
     
     $newPath = $prependPath
     foreach($portion in $existingPaths.Split(';')) {
-        if(![string]::IsNullOrWhiteSpace($portion)) {
+        if(![string]::IsNullOrEmpty($portion)) {
             $skip = $portion -eq ""
             foreach($removePath in $removePaths) {
-                if(![string]::IsNullOrWhiteSpace($removePath)) {
+                if(![string]::IsNullOrEmpty($removePath)) {
                     $removePrefix = if($removePath.EndsWith("\")) { $removePath } else { "$removePath\" }
 
                     if ($removePath -and (($portion -eq $removePath) -or ($portion.StartsWith($removePrefix)))) {
@@ -645,7 +645,7 @@ function Change-Path() {
                 }
             }
             if (!$skip) {
-                if(![String]::IsNullOrWhiteSpace($newPath)) {
+                if(![String]::IsNullOrEmpty($newPath)) {
                     $newPath += ";"
                 }
                 $newPath += $portion
@@ -752,7 +752,7 @@ function dnvm-help {
             return
         }
         $help = Get-Help "dnvm-$Command" -ShowWindow:$false
-        if($PassThru) {
+        if($PassThru -Or $Host.Version.Major -lt 3) {
             $help
         } else {
             _WriteOut -ForegroundColor $ColorScheme.Help_Header "$CommandName $Command"
@@ -1084,7 +1084,7 @@ function dnvm-install {
     }
 
     if ($VersionNuPkgOrAlias -eq "latest") {
-        Write-Progress -Activity "Installing runtime" "Determining latest runtime" -Id 1
+        Write-Progress -Status "Determining Latest Runtime" -Activity "Installing runtime" -Id 1
         $VersionNuPkgOrAlias = Find-Latest $Runtime $Architecture -Feed:$selectedFeed
     }
 
@@ -1094,7 +1094,7 @@ function dnvm-install {
         if(!(Test-Path $VersionNuPkgOrAlias)) {
             throw "Unable to locate package file: '$VersionNuPkgOrAlias'"
         }
-        Write-Progress -Activity "Installing runtime" "Parsing package file name" -Id 1
+        Write-Progress -Activity "Installing runtime" -Status "Parsing package file name" -Id 1
         $runtimeFullName = [System.IO.Path]::GetFileNameWithoutExtension($VersionNuPkgOrAlias)
         $Architecture = Get-PackageArch $runtimeFullName
         $Runtime = Get-PackageRuntime $runtimeFullName
@@ -1134,18 +1134,18 @@ function dnvm-install {
         New-Item -Type Directory $UnpackFolder | Out-Null
 
         if($IsNuPkg) {
-            Write-Progress -Activity "Installing runtime" "Copying package" -Id 1
+            Write-Progress -Activity "Installing runtime" -Status "Copying package" -Id 1
             _WriteDebug "Copying local nupkg $VersionNuPkgOrAlias to $DownloadFile"
             Copy-Item $VersionNuPkgOrAlias $DownloadFile
         } else {
             # Download the package
-            Write-Progress -Activity "Installing runtime" "Downloading runtime" -Id 1
+            Write-Progress -Activity "Installing runtime" -Status "Downloading runtime" -Id 1
             _WriteDebug "Downloading version $VersionNuPkgOrAlias to $DownloadFile"
 
             Download-Package $PackageVersion $Architecture $Runtime $DownloadFile -Proxy:$Proxy -Feed:$selectedFeed
         }
 
-        Write-Progress -Activity "Installing runtime" "Unpacking runtime" -Id 1
+        Write-Progress -Activity "Installing runtime" -Status "Unpacking runtime" -Id 1
         Unpack-Package $DownloadFile $UnpackFolder
 
         if(Test-Path $RuntimeFolder) {
@@ -1164,7 +1164,7 @@ function dnvm-install {
             if (-not $NoNative) {
                 if ((Is-Elevated) -or $Ngen) {
                     $runtimeBin = Get-RuntimePath $runtimeFullName
-                    Write-Progress -Activity "Installing runtime" "Generating runtime native images" -Id 1
+                    Write-Progress -Activity "Installing runtime" -Status "Generating runtime native images" -Id 1
                     Ngen-Library $runtimeBin $Architecture
                 }
                 else {
@@ -1178,7 +1178,7 @@ function dnvm-install {
             }
             else {
                 _WriteOut "Compiling native images for $runtimeFullName to improve startup performance..."
-                Write-Progress -Activity "Installing runtime" "Generating runtime native images" -Id 1
+                Write-Progress -Activity "Installing runtime" -Status "Generating runtime native images" -Id 1
                 if ($DebugPreference -eq 'SilentlyContinue') {
                     Start-Process $CrossGenCommand -Wait -WindowStyle Hidden
                 }
@@ -1198,7 +1198,7 @@ function dnvm-install {
         dnvm-alias $Alias $PackageVersion -Architecture:$Architecture -Runtime:$Runtime
     }
 
-    Write-Progress -Activity "Install complete" -Id 1 -Complete
+    Write-Progress -Status "Done" -Activity "Install complete" -Id 1 -Complete
 }
 
 
@@ -1431,7 +1431,11 @@ if(!$cmd) {
 try {
     if(Get-Command -Name "$CommandPrefix$cmd" -ErrorAction SilentlyContinue) {
         _WriteDebug "& dnvm-$cmd $cmdargs"
-        & "dnvm-$cmd" @cmdargs
+        if($host.Version.Major -lt 3) {
+            Invoke-Command ([ScriptBlock]::Create("dnvm-$cmd $cmdargs"))
+        } else {
+            & "dnvm-$cmd" @cmdargs
+        }
     }
     else {
         _WriteOut "Unknown command: '$cmd'"
