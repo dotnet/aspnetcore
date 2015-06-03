@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Http.Internal;
 using Moq;
 using Xunit;
 
@@ -25,7 +26,7 @@ namespace Microsoft.AspNet.Mvc
                 GetHttpContext(session: null, sessionEnabled: true));
 
             // Assert
-            Assert.Empty(tempDataDictionary);
+            Assert.Null(tempDataDictionary);
         }
 
         [Fact]
@@ -36,7 +37,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Act
             var tempDataDictionary = testProvider.LoadTempData(
-                GetHttpContext(Mock.Of<ISessionCollection>()));
+                GetHttpContext(Mock.Of<ISession>()));
 
             // Assert
             Assert.Empty(tempDataDictionary);
@@ -180,7 +181,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 { "string", "value" }
             };
-            var context = GetHttpContext(new TestSessionCollection(), true);
+            var context = GetHttpContext(new TestSession(), true);
 
             // Act
             testProvider.SaveTempData(context, input);
@@ -200,7 +201,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 { "int", 10 }
             };
-            var context = GetHttpContext(new TestSessionCollection(), true);
+            var context = GetHttpContext(new TestSession(), true);
 
             // Act
             testProvider.SaveTempData(context, input);
@@ -222,7 +223,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 { "bool", value }
             };
-            var context = GetHttpContext(new TestSessionCollection(), true);
+            var context = GetHttpContext(new TestSession(), true);
 
             // Act
             testProvider.SaveTempData(context, input);
@@ -243,7 +244,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 { "DateTime", inputDatetime }
             };
-            var context = GetHttpContext(new TestSessionCollection(), true);
+            var context = GetHttpContext(new TestSession(), true);
 
             // Act
             testProvider.SaveTempData(context, input);
@@ -264,7 +265,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 { "Guid", inputGuid }
             };
-            var context = GetHttpContext(new TestSessionCollection(), true);
+            var context = GetHttpContext(new TestSession(), true);
 
             // Act
             testProvider.SaveTempData(context, input);
@@ -284,7 +285,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 { "List`string", new List<string> { "one", "two" } }
             };
-            var context = GetHttpContext(new TestSessionCollection(), true);
+            var context = GetHttpContext(new TestSession(), true);
 
             // Act
             testProvider.SaveTempData(context, input);
@@ -310,7 +311,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 { "Dictionary", inputDictionary }
             };
-            var context = GetHttpContext(new TestSessionCollection(), true);
+            var context = GetHttpContext(new TestSession(), true);
 
             // Act
             testProvider.SaveTempData(context, input);
@@ -330,7 +331,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 { "EmptyDictionary", new Dictionary<string, int>() }
             };
-            var context = GetHttpContext(new TestSessionCollection(), true);
+            var context = GetHttpContext(new TestSession(), true);
 
             // Act
             testProvider.SaveTempData(context, input);
@@ -346,43 +347,35 @@ namespace Microsoft.AspNet.Mvc
             public int DummyInt { get; set; }
         }
 
-        private HttpContext GetHttpContext(ISessionCollection session, bool sessionEnabled=true)
+        private HttpContext GetHttpContext(ISession session, bool sessionEnabled = true)
         {
-            var httpContext = new Mock<HttpContext>();
-            if (session != null)
+            var httpContext = new DefaultHttpContext();
+            if(sessionEnabled)
             {
-                httpContext.Setup(h => h.Session).Returns(session);
+                httpContext.SetFeature<ISessionFeature>(new SessionFeature() { Session = session });
             }
-            else if (!sessionEnabled)
-            {
-                httpContext.Setup(h => h.Session).Throws<InvalidOperationException>();
-            }
-            else
-            {
-                httpContext.Setup(h => h.Session[It.IsAny<string>()]);
-            }
-            if (sessionEnabled)
-            {
-                httpContext.Setup(h => h.GetFeature<ISessionFeature>()).Returns(Mock.Of<ISessionFeature>());
-            }
-            return httpContext.Object;
+            return httpContext;
         }
 
-        private class TestSessionCollection : ISessionCollection
+        private class SessionFeature : ISessionFeature
+        {
+            public ISession Session { get; set; }
+        }
+
+        private class TestSession : ISession
         {
             private Dictionary<string, byte[]> _innerDictionary = new Dictionary<string, byte[]>();
 
-            public byte[] this[string key]
-            {
-                get
-                {
-                    return _innerDictionary[key];
-                }
+            public IEnumerable<string> Keys { get { return _innerDictionary.Keys; } }
 
-                set
-                {
-                    _innerDictionary[key] = value;
-                }
+            public Task LoadAsync()
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task CommitAsync()
+            {
+                return Task.FromResult(0);
             }
 
             public void Clear()
@@ -390,17 +383,12 @@ namespace Microsoft.AspNet.Mvc
                 _innerDictionary.Clear();
             }
 
-            public IEnumerator<KeyValuePair<string, byte[]>> GetEnumerator()
-            {
-                return _innerDictionary.GetEnumerator();
-            }
-
             public void Remove(string key)
             {
                 _innerDictionary.Remove(key);
             }
 
-            public void Set(string key, ArraySegment<byte> value)
+            public void Set(string key, byte[] value)
             {
                 _innerDictionary[key] = value.ToArray();
             }
@@ -408,11 +396,6 @@ namespace Microsoft.AspNet.Mvc
             public bool TryGetValue(string key, out byte[] value)
             {
                 return _innerDictionary.TryGetValue(key, out value);
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return _innerDictionary.GetEnumerator();
             }
         }
     }

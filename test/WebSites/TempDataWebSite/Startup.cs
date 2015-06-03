@@ -20,7 +20,7 @@ namespace TempDataWebSite
         {
             app.UseCultureReplacer();
 
-            app.UseInMemorySession();
+            app.UseSession();
             app.UseMvcWithDefaultRoute();
         }
     }

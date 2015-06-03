@@ -61,11 +61,16 @@ namespace Microsoft.AspNet.Mvc
                 return null;
             }
 
-            var tempDataDictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             var session = context.Session;
+            if (session == null)
+            {
+                return null;
+            }
+
+            var tempDataDictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             byte[] value;
 
-            if (session != null && session.TryGetValue(TempDataSessionStateKey, out value))
+            if (session.TryGetValue(TempDataSessionStateKey, out value))
             {
                 using (var memoryStream = new MemoryStream(value))
                 using (var writer = new BsonReader(memoryStream))
@@ -139,7 +144,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 // Since we call Save() after the response has been sent, we need to initialize an empty session
                 // so that it is established before the headers are sent.
-                session[TempDataSessionStateKey] = new byte[] { };
+                session.Set(TempDataSessionStateKey, new byte[] { });
             }
 
             return tempDataDictionary;
@@ -165,7 +170,7 @@ namespace Microsoft.AspNet.Mvc
                     using (var writer = new BsonWriter(memoryStream))
                     {
                         _jsonSerializer.Serialize(writer, values);
-                        session[TempDataSessionStateKey] = memoryStream.ToArray();
+                        session.Set(TempDataSessionStateKey, memoryStream.ToArray());
                     }
                 }
             }

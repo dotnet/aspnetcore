@@ -100,7 +100,7 @@ namespace MvcSample.Web
 #endif
             app.UseRequestLocalization();
 
-            app.UseInMemorySession();
+            app.UseSession();
             app.UseMvc(routes =>
             {
                 routes.MapRoute("areaRoute", "{area:exists}/{controller}/{action}");
