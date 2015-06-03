@@ -12,7 +12,8 @@
     "frameworks": {
         "dnx451": {
             "frameworkAssemblies": {
-                "System.Configuration": ""
+                "System.Configuration": "",
+                "System.Threading.Tasks": ""
             }
         },
         "dnxcore50": {
