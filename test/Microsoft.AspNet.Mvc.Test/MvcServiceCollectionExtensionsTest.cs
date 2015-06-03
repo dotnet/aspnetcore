@@ -5,9 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Mvc.ActionConstraints;
+using Microsoft.AspNet.Mvc.ApiExplorer;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.MvcServiceCollectionExtensionsTestControllers;
-using Microsoft.Framework.Configuration;
+using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -77,6 +81,82 @@ namespace Microsoft.AspNet.Mvc
             var typeProvider = Assert.IsType<FixedSetControllerTypeProvider>(services[3].ImplementationInstance);
             Assert.Equal(controllerTypes, typeProvider.ControllerTypes.OrderBy(c => c.Name));
             Assert.Equal(ServiceLifetime.Singleton, services[3].Lifetime);
+        }
+
+        // Some MVC services can be registered multiple times, for example, 'IConfigureOptions<MvcOptions>' can
+        // be registered by calling 'ConfigureMvc(...)' before the call to 'AddMvc()' in which case the options
+        // configiuration is run in the order they were registered.
+        // For these kind of multi registration service types, we want to make sure that MVC appends its services
+        // to the list i.e it does a 'Add' rather than 'TryAdd' on the ServiceCollection.
+        [Fact]
+        public void MultiRegistrationServiceTypes_AreRegistered_MultipleTimes()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var multiRegistrationServiceTypes = MutliRegistrationServiceTypes;
+
+            // Act
+            MvcServiceCollectionExtensions.AddMvcServices(services);
+            MvcServiceCollectionExtensions.AddMvcServices(services);
+
+            // Assert
+            foreach (var serviceType in multiRegistrationServiceTypes)
+            {
+                AssertServiceCountEquals(services, serviceType, 2);
+            }
+        }
+
+        [Fact]
+        public void SingleRegistrationServiceTypes_AreNotRegistered_MultipleTimes()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var multiRegistrationServiceTypes = MutliRegistrationServiceTypes;
+
+            // Act
+            MvcServiceCollectionExtensions.AddMvcServices(services);
+            MvcServiceCollectionExtensions.AddMvcServices(services);
+
+            // Assert
+            var singleRegistrationServiceTypes = services
+                .Where(serviceDescriptor => !multiRegistrationServiceTypes.Contains(serviceDescriptor.ServiceType))
+                .Select(serviceDescriptor => serviceDescriptor.ServiceType);
+
+            foreach (var singleRegistrationType in singleRegistrationServiceTypes)
+            {
+                AssertServiceCountEquals(services, singleRegistrationType, 1);
+            }
+        }
+
+        private IEnumerable<Type> MutliRegistrationServiceTypes
+        {
+            get
+            {
+                return new[]
+                {
+                    typeof(IConfigureOptions<MvcOptions>),
+                    typeof(IConfigureOptions<RazorViewEngineOptions>),
+                    typeof(IActionConstraintProvider),
+                    typeof(IActionDescriptorProvider),
+                    typeof(IActionInvokerProvider),
+                    typeof(IFilterProvider),
+                    typeof(IApiDescriptionProvider)
+                };
+            }
+        }
+
+        private void AssertServiceCountEquals(
+            IServiceCollection services,
+            Type serviceType,
+            int expectedServiceRegistrationCount)
+        {
+            var serviceDescriptors = services.Where(serviceDescriptor => serviceDescriptor.ServiceType == serviceType);
+            var actual = serviceDescriptors.Count();
+
+            Assert.True(
+                (expectedServiceRegistrationCount == actual),
+                $"Expected service type '{serviceType}' to be registered {expectedServiceRegistrationCount}" +
+                $" time(s) but was actually registered {actual} time(s).");
         }
 
         private class CustomActivator : IControllerActivator
