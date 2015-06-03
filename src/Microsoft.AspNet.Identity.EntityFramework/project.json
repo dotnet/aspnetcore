@@ -6,7 +6,9 @@
   },
   "frameworks": {
     "dnx451": {
-      "dependencies": { }
+      "frameworkAssemblies": {
+        "System.Threading.Tasks": ""
+      }
     },
     "dnxcore50": {
       "dependencies": {
