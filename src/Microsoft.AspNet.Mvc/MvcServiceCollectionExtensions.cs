@@ -34,10 +34,79 @@ namespace Microsoft.Framework.DependencyInjection
         {
             ConfigureDefaultServices(services);
 
+            AddMvcServices(services);
+
+            return services;
+        }
+
+        /// <summary>
+        /// Configures a set of <see cref="MvcOptions"/> for the application.
+        /// </summary>
+        /// <param name="services">The services available in the application.</param>
+        /// <param name="setupAction">The <see cref="MvcOptions"/> which need to be configured.</param>
+        public static void ConfigureMvc(
+            [NotNull] this IServiceCollection services,
+            [NotNull] Action<MvcOptions> setupAction)
+        {
+            services.Configure(setupAction);
+        }
+
+        /// <summary>
+        /// Register the specified <paramref name="controllerTypes"/> as services and as a source for controller
+        /// discovery.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="controllerTypes">A sequence of controller <see cref="Type"/>s to register in the
+        /// <paramref name="services"/> and used for controller discovery.</param>
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection WithControllersAsServices(
+           [NotNull] this IServiceCollection services,
+           [NotNull] IEnumerable<Type> controllerTypes)
+        {
+            var controllerTypeProvider = new FixedSetControllerTypeProvider();
+            foreach (var type in controllerTypes)
+            {
+                services.TryAdd(ServiceDescriptor.Transient(type, type));
+                controllerTypeProvider.ControllerTypes.Add(type.GetTypeInfo());
+            }
+
+            services.Replace(ServiceDescriptor.Transient<IControllerActivator, ServiceBasedControllerActivator>());
+            services.Replace(ServiceDescriptor.Instance<IControllerTypeProvider>(controllerTypeProvider));
+
+            return services;
+        }
+
+        /// <summary>
+        /// Registers controller types from the specified <paramref name="assemblies"/> as services and as a source
+        /// for controller discovery.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="controllerAssemblies">Assemblies to scan.</param>
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection WithControllersAsServices(
+            [NotNull] this IServiceCollection services,
+            [NotNull] IEnumerable<Assembly> controllerAssemblies)
+        {
+            var assemblyProvider = new FixedSetAssemblyProvider();
+            foreach (var assembly in controllerAssemblies)
+            {
+                assemblyProvider.CandidateAssemblies.Add(assembly);
+            }
+
+            var controllerTypeProvider = new DefaultControllerTypeProvider(assemblyProvider);
+            var controllerTypes = controllerTypeProvider.ControllerTypes;
+
+            return WithControllersAsServices(services, controllerTypes.Select(type => type.AsType()));
+        }
+
+        // To enable unit testing
+        internal static void AddMvcServices(IServiceCollection services)
+        {
             // Options and core services.
-            services.TryAdd(ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, MvcOptionsSetup>());
-            services.TryAdd(
-                ServiceDescriptor.Transient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>());
+            // multiple registration service
+            services.AddTransient<IConfigureOptions<MvcOptions>, MvcOptionsSetup>();
+            // multiple registration service
+            services.AddTransient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>();
 
             services.TryAdd(ServiceDescriptor.Transient<IAssemblyProvider, DefaultAssemblyProvider>());
 
@@ -62,7 +131,8 @@ namespace Microsoft.Framework.DependencyInjection
 
             // This provider needs access to the per-request services, but might be used many times for a given
             // request.
-            services.TryAdd(ServiceDescriptor.Transient<IActionConstraintProvider, DefaultActionConstraintProvider>());
+            // multiple registration service
+            services.AddTransient<IActionConstraintProvider, DefaultActionConstraintProvider>();
 
             services.TryAdd(ServiceDescriptor
                 .Singleton<IActionSelectorDecisionTreeProvider, ActionSelectorDecisionTreeProvider>());
@@ -76,10 +146,11 @@ namespace Microsoft.Framework.DependencyInjection
                 return new DefaultObjectValidator(options.ValidationExcludeFilters, modelMetadataProvider);
             }));
 
-            services.TryAdd(ServiceDescriptor
-                .Transient<IActionDescriptorProvider, ControllerActionDescriptorProvider>());
+            // multiple registration service
+            services.AddTransient<IActionDescriptorProvider, ControllerActionDescriptorProvider>();
 
-            services.TryAdd(ServiceDescriptor.Transient<IActionInvokerProvider, ControllerActionInvokerProvider>());
+            // multiple registration service
+            services.AddTransient<IActionInvokerProvider, ControllerActionInvokerProvider>();
 
             services.TryAdd(ServiceDescriptor
                 .Singleton<IActionDescriptorsCollectionProvider, DefaultActionDescriptorsCollectionProvider>());
@@ -87,7 +158,8 @@ namespace Microsoft.Framework.DependencyInjection
             // The IGlobalFilterProvider is used to build the action descriptors (likely once) and so should
             // remain transient to avoid keeping it in memory.
             services.TryAdd(ServiceDescriptor.Transient<IGlobalFilterProvider, DefaultGlobalFilterProvider>());
-            services.TryAdd(ServiceDescriptor.Transient<IFilterProvider, DefaultFilterProvider>());
+            // multiple registration service
+            services.AddTransient<IFilterProvider, DefaultFilterProvider>();
 
             services.TryAdd(ServiceDescriptor.Transient<FormatFilter, FormatFilter>());
             services.TryAdd(ServiceDescriptor.Transient<CorsAuthorizationFilter, CorsAuthorizationFilter>());
@@ -184,74 +256,13 @@ namespace Microsoft.Framework.DependencyInjection
             // Api Description
             services.TryAdd(ServiceDescriptor
                 .Singleton<IApiDescriptionGroupCollectionProvider, ApiDescriptionGroupCollectionProvider>());
-            services.TryAdd(ServiceDescriptor.Transient<IApiDescriptionProvider, DefaultApiDescriptionProvider>());
+            // multiple registration service
+            services.AddTransient<IApiDescriptionProvider, DefaultApiDescriptionProvider>();
 
             // Temp Data
             services.TryAdd(ServiceDescriptor.Scoped<ITempDataDictionary, TempDataDictionary>());
             // This does caching so it should stay singleton
             services.TryAdd(ServiceDescriptor.Singleton<ITempDataProvider, SessionStateTempDataProvider>());
-
-            return services;
-        }
-
-        /// <summary>
-        /// Configures a set of <see cref="MvcOptions"/> for the application.
-        /// </summary>
-        /// <param name="services">The services available in the application.</param>
-        /// <param name="setupAction">The <see cref="MvcOptions"/> which need to be configured.</param>
-        public static void ConfigureMvc(
-            [NotNull] this IServiceCollection services,
-            [NotNull] Action<MvcOptions> setupAction)
-        {
-            services.Configure(setupAction);
-        }
-
-        /// <summary>
-        /// Register the specified <paramref name="controllerTypes"/> as services and as a source for controller
-        /// discovery.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="controllerTypes">A sequence of controller <see cref="Type"/>s to register in the
-        /// <paramref name="services"/> and used for controller discovery.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection WithControllersAsServices(
-           [NotNull] this IServiceCollection services,
-           [NotNull] IEnumerable<Type> controllerTypes)
-        {
-            var controllerTypeProvider = new FixedSetControllerTypeProvider();
-            foreach (var type in controllerTypes)
-            {
-                services.TryAdd(ServiceDescriptor.Transient(type, type));
-                controllerTypeProvider.ControllerTypes.Add(type.GetTypeInfo());
-            }
-
-            services.Replace(ServiceDescriptor.Transient<IControllerActivator, ServiceBasedControllerActivator>());
-            services.Replace(ServiceDescriptor.Instance<IControllerTypeProvider>(controllerTypeProvider));
-
-            return services;
-        }
-
-        /// <summary>
-        /// Registers controller types from the specified <paramref name="assemblies"/> as services and as a source
-        /// for controller discovery.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="controllerAssemblies">Assemblies to scan.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection WithControllersAsServices(
-            [NotNull] this IServiceCollection services,
-            [NotNull] IEnumerable<Assembly> controllerAssemblies)
-        {
-            var assemblyProvider = new FixedSetAssemblyProvider();
-            foreach (var assembly in controllerAssemblies)
-            {
-                assemblyProvider.CandidateAssemblies.Add(assembly);
-            }
-
-            var controllerTypeProvider = new DefaultControllerTypeProvider(assemblyProvider);
-            var controllerTypes = controllerTypeProvider.ControllerTypes;
-
-            return WithControllersAsServices(services, controllerTypes.Select(type => type.AsType()));
         }
 
         private static void ConfigureDefaultServices(IServiceCollection services)
