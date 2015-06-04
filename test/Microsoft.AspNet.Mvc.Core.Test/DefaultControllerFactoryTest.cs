@@ -167,6 +167,31 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
+        public void CreateController_IgnoresNonPublicProperties()
+        {
+            // Arrange
+            var actionDescriptor = new ControllerActionDescriptor
+            {
+                ControllerTypeInfo = typeof(ControllerWithNonVisibleProperties).GetTypeInfo()
+            };
+            var services = GetServices();
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = services
+            };
+            var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
+            var factory = new DefaultControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
+
+            // Act
+            var result = factory.CreateController(context);
+
+            // Assert
+            var controller = Assert.IsType<ControllerWithNonVisibleProperties>(result);
+            Assert.Null(controller.ActionContext);
+            Assert.Null(controller.BindingContext);
+        }
+
+        [Fact]
         public void CreateController_ThrowsIfPropertyCannotBeActivated()
         {
             // Arrange
@@ -269,6 +294,13 @@ namespace Microsoft.AspNet.Mvc.Core
             public ActionBindingContext BindingContext { get; set; }
 
             public ViewDataDictionary ViewData { get; set; }
+        }
+
+        public class ControllerWithNonVisibleProperties
+        {
+            internal ActionContext ActionContext { get; set; }
+
+            public ActionBindingContext BindingContext { get; private set; }
         }
 
         private class ControllerWithAttributes

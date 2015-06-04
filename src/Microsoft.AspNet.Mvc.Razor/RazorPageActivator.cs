@@ -87,7 +87,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 PropertyActivators = PropertyActivator<ViewContext>.GetPropertiesToActivate(
                     type,
                     typeof(RazorInjectAttribute),
-                    CreateActivateInfo)
+                    CreateActivateInfo,
+                    includeNonPublic: true)
             };
         }
 

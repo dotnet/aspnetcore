@@ -32,12 +32,35 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             Assert.Same(context, instance.ViewComponentContext);
         }
 
+        [Fact]
+        public void DefaultViewComponentActivator_ActivatesViewComponentContext_IgnoresNonPublic()
+        {
+            // Arrange
+            var activator = new DefaultViewComponentActivator();
+
+            var context = new ViewComponentContext();
+            var instance = new VisibilityViewComponent();
+
+            // Act
+            activator.Activate(instance, context);
+
+            // Assert
+            Assert.Same(context, instance.ViewComponentContext);
+            Assert.Null(instance.C);
+        }
+
         private class TestViewComponent : ViewComponent
         {
             public Task ExecuteAsync()
             {
                 throw new NotImplementedException();
             }
+        }
+
+        private class VisibilityViewComponent : ViewComponent
+        {
+            [ViewComponentContext]
+            protected internal ViewComponentContext C { get; set; }
         }
     }
 }
