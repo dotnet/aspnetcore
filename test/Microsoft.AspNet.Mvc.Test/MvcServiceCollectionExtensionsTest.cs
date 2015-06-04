@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Mvc
             // Assert
             foreach (var serviceType in multiRegistrationServiceTypes)
             {
-                AssertServiceCountEquals(services, serviceType, 2);
+                AssertServiceCountEquals(services, serviceType.Key, serviceType.Value);
             }
         }
 
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             var singleRegistrationServiceTypes = services
-                .Where(serviceDescriptor => !multiRegistrationServiceTypes.Contains(serviceDescriptor.ServiceType))
+                .Where(serviceDescriptor => !multiRegistrationServiceTypes.Keys.Contains(serviceDescriptor.ServiceType))
                 .Select(serviceDescriptor => serviceDescriptor.ServiceType);
 
             foreach (var singleRegistrationType in singleRegistrationServiceTypes)
@@ -129,20 +129,23 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private IEnumerable<Type> MutliRegistrationServiceTypes
+        private Dictionary<Type, int> MutliRegistrationServiceTypes
         {
             get
             {
-                return new[]
+                return new Dictionary<Type, int>()
                 {
-                    typeof(IConfigureOptions<MvcOptions>),
-                    typeof(IConfigureOptions<RazorViewEngineOptions>),
-                    typeof(IActionConstraintProvider),
-                    typeof(IActionDescriptorProvider),
-                    typeof(IActionInvokerProvider),
-                    typeof(IFilterProvider),
-                    typeof(IApiDescriptionProvider),
-                    typeof(IApplicationModelProvider),
+                    { typeof(IConfigureOptions<MvcOptions>), 4 },
+                    { typeof(IConfigureOptions<MvcFormatterMappingOptions>), 2 },
+                    { typeof(IConfigureOptions<MvcViewOptions>), 2 }, 
+                    { typeof(IConfigureOptions<RazorViewEngineOptions>), 2 },
+                    { typeof(IActionConstraintProvider), 2 },
+                    { typeof(IActionDescriptorProvider), 2 },
+                    { typeof(IActionInvokerProvider), 2 },
+                    { typeof(IControllerPropertyActivator), 4 },
+                    { typeof(IFilterProvider), 2 },
+                    { typeof(IApiDescriptionProvider), 2 },
+                    { typeof(IApplicationModelProvider), 6 },
                 };
             }
         }

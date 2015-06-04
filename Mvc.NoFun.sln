@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22822.1
+VisualStudioVersion = 14.0.22808.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{DAAE4C74-D06F-4874-A166-33305D2643CE}"
 EndProject
@@ -69,6 +69,10 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.ApiExplorer", "src\Microsoft.AspNet.Mvc.ApiExplorer\Microsoft.AspNet.Mvc.ApiExplorer.xproj", "{A2B72833-5D70-4C42-AE85-E0319926FB8A}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.ApiExplorer.Test", "test\Microsoft.AspNet.Mvc.ApiExplorer.Test\Microsoft.AspNet.Mvc.ApiExplorer.Test.xproj", "{4C2AD8AB-8AC0-46C4-80C6-C5577C7255F6}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Extensions", "src\Microsoft.AspNet.Mvc.Extensions\Microsoft.AspNet.Mvc.Extensions.xproj", "{B2CA101A-87E6-4DD2-9BB2-28DA68EF1A94}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Extensions.Test", "test\Microsoft.AspNet.Mvc.Extensions.Test\Microsoft.AspNet.Mvc.Extensions.Test.xproj", "{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -391,6 +395,30 @@ Global
 		{4C2AD8AB-8AC0-46C4-80C6-C5577C7255F6}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{4C2AD8AB-8AC0-46C4-80C6-C5577C7255F6}.Release|x86.ActiveCfg = Release|Any CPU
 		{4C2AD8AB-8AC0-46C4-80C6-C5577C7255F6}.Release|x86.Build.0 = Release|Any CPU
+		{B2CA101A-87E6-4DD2-9BB2-28DA68EF1A94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2CA101A-87E6-4DD2-9BB2-28DA68EF1A94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2CA101A-87E6-4DD2-9BB2-28DA68EF1A94}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{B2CA101A-87E6-4DD2-9BB2-28DA68EF1A94}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{B2CA101A-87E6-4DD2-9BB2-28DA68EF1A94}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B2CA101A-87E6-4DD2-9BB2-28DA68EF1A94}.Debug|x86.Build.0 = Debug|Any CPU
+		{B2CA101A-87E6-4DD2-9BB2-28DA68EF1A94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2CA101A-87E6-4DD2-9BB2-28DA68EF1A94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2CA101A-87E6-4DD2-9BB2-28DA68EF1A94}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B2CA101A-87E6-4DD2-9BB2-28DA68EF1A94}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{B2CA101A-87E6-4DD2-9BB2-28DA68EF1A94}.Release|x86.ActiveCfg = Release|Any CPU
+		{B2CA101A-87E6-4DD2-9BB2-28DA68EF1A94}.Release|x86.Build.0 = Release|Any CPU
+		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}.Debug|x86.Build.0 = Debug|Any CPU
+		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}.Release|x86.ActiveCfg = Release|Any CPU
+		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -424,5 +452,7 @@ Global
 		{DA000953-7532-4DF5-8DB9-8143DF98D999} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 		{A2B72833-5D70-4C42-AE85-E0319926FB8A} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
 		{4C2AD8AB-8AC0-46C4-80C6-C5577C7255F6} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
+		{B2CA101A-87E6-4DD2-9BB2-28DA68EF1A94} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
+		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 	EndGlobalSection
 EndGlobal

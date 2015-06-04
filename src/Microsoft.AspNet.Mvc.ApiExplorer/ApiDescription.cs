@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
         /// </summary>
         /// <remarks>
         /// Will be null if the action returns no response, or if the response type is unclear. Use
-        /// <see cref="ProducesAttribute"/> on an action method to specify a response type.
+        /// <c>ProducesAttribute</c> on an action method to specify a response type.
         /// </remarks>
         public Type ResponseType { get; set; }
 
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
         /// </summary>
         /// <remarks>
         /// Will be empty if the action returns no response, or if the response type is unclear. Use
-        /// <see cref="ProducesAttribute"/> on an action method to specify a response type.
+        /// <c>ProducesAttribute</c> on an action method to specify a response type.
         /// </remarks>
         public IList<ApiResponseFormat> SupportedResponseFormats { get; private set; }
     }

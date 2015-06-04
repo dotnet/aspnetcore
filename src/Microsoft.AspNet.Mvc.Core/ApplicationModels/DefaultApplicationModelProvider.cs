@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Authorization;
-using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -18,15 +16,11 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     public class DefaultApplicationModelProvider : IApplicationModelProvider
     {
-        private readonly AuthorizationOptions _authorizationOptions;
         private readonly ICollection<IFilter> _globalFilters;
 
-        public DefaultApplicationModelProvider(
-            IOptions<MvcOptions> mvcOptionsAccessor,
-            IOptions<AuthorizationOptions> authorizationOptionsAccessor)
+        public DefaultApplicationModelProvider(IOptions<MvcOptions> mvcOptionsAccessor)
         {
             _globalFilters = mvcOptionsAccessor.Options.Filters;
-            _authorizationOptions = authorizationOptionsAccessor.Options;
         }
 
         /// <inheritdoc />
@@ -181,24 +175,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             AddRange(controllerModel.ActionConstraints, attributes.OfType<IActionConstraintMetadata>());
             AddRange(controllerModel.Filters, attributes.OfType<IFilter>());
             AddRange(controllerModel.RouteConstraints, attributes.OfType<IRouteConstraintProvider>());
-
-            var enableCors = attributes.OfType<IEnableCorsAttribute>().SingleOrDefault();
-            if (enableCors != null)
-            {
-                controllerModel.Filters.Add(new CorsAuthorizationFilterFactory(enableCors.PolicyName));
-            }
-
-            var disableCors = attributes.OfType<IDisableCorsAttribute>().SingleOrDefault();
-            if (disableCors != null)
-            {
-                controllerModel.Filters.Add(new DisableCorsAuthorizationFilter());
-            }
-
-            var policy = AuthorizationPolicy.Combine(_authorizationOptions, attributes.OfType<AuthorizeAttribute>());
-            if (policy != null)
-            {
-                controllerModel.Filters.Add(new AuthorizeFilter(policy));
-            }
 
             var apiVisibility = attributes.OfType<IApiDescriptionVisibilityProvider>().FirstOrDefault();
             if (apiVisibility != null)
@@ -528,24 +504,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
             AddRange(actionModel.ActionConstraints, attributes.OfType<IActionConstraintMetadata>());
             AddRange(actionModel.Filters, attributes.OfType<IFilter>());
-
-            var enableCors = attributes.OfType<IEnableCorsAttribute>().SingleOrDefault();
-            if (enableCors != null)
-            {
-                actionModel.Filters.Add(new CorsAuthorizationFilterFactory(enableCors.PolicyName));
-            }
-
-            var disableCors = attributes.OfType<IDisableCorsAttribute>().SingleOrDefault();
-            if (disableCors != null)
-            {
-                actionModel.Filters.Add(new DisableCorsAuthorizationFilter());
-            }
-
-            var policy = AuthorizationPolicy.Combine(_authorizationOptions, attributes.OfType<AuthorizeAttribute>());
-            if (policy != null)
-            {
-                actionModel.Filters.Add(new AuthorizeFilter(policy));
-            }
 
             var actionName = attributes.OfType<ActionNameAttribute>().FirstOrDefault();
             if (actionName?.Name != null)

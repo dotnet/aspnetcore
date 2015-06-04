@@ -2,6 +2,7 @@
   "resource": "TestFiles/**",
   "dependencies": {
     "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.Extensions": "6.0.0-*",
     "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",
     "Microsoft.AspNet.Mvc.TestCommon": { "version": "6.0.0-*", "type": "build" },
     "Microsoft.AspNet.Testing": "1.0.0-*",

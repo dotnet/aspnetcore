@@ -61,6 +61,10 @@ namespace Microsoft.AspNet.Mvc
             serviceProvider.Verify();
         }
 
+        public class Controller
+        {
+        }
+
         private class TypeDerivingFromController : Controller
         {
         }

@@ -15,8 +15,7 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class DefaultControllerTypeProvider : IControllerTypeProvider
     {
-        private const string ControllerTypeName = nameof(Controller);
-        private static readonly TypeInfo ControllerTypeInfo = typeof(Controller).GetTypeInfo();
+        private const string ControllerTypeName = "Controller";
         private static readonly TypeInfo ObjectTypeInfo = typeof(object).GetTypeInfo();
         private readonly IAssemblyProvider _assemblyProvider;
 
@@ -83,14 +82,6 @@ namespace Microsoft.AspNet.Mvc
 
         private bool DerivesFromController(TypeInfo typeInfo, ISet<Assembly> candidateAssemblies)
         {
-            // A type is a controller if it derives from a type that is either named "Controller" or has the suffix
-            // "Controller". We'll optimize the most common case of types deriving from the Mvc Controller type and
-            // walk up the object graph if that's not the case.
-            if (ControllerTypeInfo.IsAssignableFrom(typeInfo))
-            {
-                return true;
-            }
-
             while (typeInfo != ObjectTypeInfo)
             {
                 var baseTypeInfo = typeInfo.BaseType.GetTypeInfo();
@@ -101,6 +92,12 @@ namespace Microsoft.AspNet.Mvc
                 // the base type is declared in references Mvc.
                 if (baseTypeInfo.Name.EndsWith(ControllerTypeName, StringComparison.Ordinal) &&
                     candidateAssemblies.Contains(baseTypeInfo.Assembly))
+                {
+                    return true;
+                }
+
+                // c). The base type is called 'Controller.
+                if (string.Equals(baseTypeInfo.Name, ControllerTypeName, StringComparison.Ordinal))
                 {
                     return true;
                 }

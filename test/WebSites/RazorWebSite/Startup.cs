@@ -24,7 +24,7 @@ namespace RazorWebSite
             {
                 options.ViewLocationExpanders.Add(new CustomPartialDirectoryViewLocationExpander());
             });
-            services.ConfigureMvc(options =>
+            services.ConfigureMvcViews(options =>
             {
                 options.HtmlHelperOptions.ClientValidationEnabled = false;
                 options.HtmlHelperOptions.Html5DateRenderingMode = Microsoft.AspNet.Mvc.Rendering.Html5DateRenderingMode.Rfc3339;

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -34,34 +33,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         }
 
         [Fact]
-        public void CreateControllerModel_AuthorizeAttributeAddsAuthorizeFilter()
-        {
-            // Arrange
-            var builder = new TestApplicationModelProvider();
-            var typeInfo = typeof(AccountController).GetTypeInfo();
-
-            // Act
-            var model = builder.CreateControllerModel(typeInfo);
-
-            // Assert
-            Assert.True(model.Filters.Any(f => f is AuthorizeFilter));
-        }
-
-        [Fact]
-        public void CreateControllerModel_EnableCorsAttributeAddsCorsAuthorizationFilterFactory()
-        {
-            // Arrange
-            var builder = new TestApplicationModelProvider();
-            var typeInfo = typeof(CorsController).GetTypeInfo();
-
-            // Act
-            var model = builder.CreateControllerModel(typeInfo);
-
-            // Assert
-            Assert.Single(model.Filters, f => f is CorsAuthorizationFilterFactory);
-        }
-
-        [Fact]
         public void OnProvidersExecuting_AddsControllerProperties()
         {
             // Arrange
@@ -83,20 +54,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Assert.IsType<FromQueryAttribute>(attribute);
         }
 
-        [Fact]
-        public void CreateControllerModel_DisableCorsAttributeAddsDisableCorsAuthorizationFilter()
-        {
-            // Arrange
-            var builder = new TestApplicationModelProvider();
-            var typeInfo = typeof(DisableCorsController).GetTypeInfo();
-
-            // Act
-            var model = builder.CreateControllerModel(typeInfo);
-
-            // Assert
-            Assert.True(model.Filters.Any(f => f is DisableCorsAuthorizationFilter));
-        }
-
         // This class has a filter attribute, but doesn't implement any filter interfaces,
         // so ControllerFilter is not present.
         [Fact]
@@ -111,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
             // Assert
             var filter = Assert.Single(model.Filters);
-            Assert.IsType<ProducesAttribute>(filter);
+            Assert.IsType<MyFilterAttribute>(filter);
         }
 
         [Fact]
@@ -455,38 +412,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         }
 
         [Fact]
-        public void BuildActionModel_EnableCorsAttributeAddsCorsAuthorizationFilterFactory()
-        {
-            // Arrange
-            var builder = new TestApplicationModelProvider();
-            var typeInfo = typeof(EnableCorsController).GetTypeInfo();
-            var method = typeInfo.GetMethod("Action");
-
-            // Act
-            var actions = builder.BuildActionModels(typeInfo, method);
-
-            // Assert
-            var action = Assert.Single(actions);
-            Assert.Single(action.Filters, f => f is CorsAuthorizationFilterFactory);
-        }
-
-        [Fact]
-        public void BuildActionModel_DisableCorsAttributeAddsDisableCorsAuthorizationFilter()
-        {
-            // Arrange
-            var builder = new TestApplicationModelProvider();
-            var typeInfo = typeof(DisableCorsActionController).GetTypeInfo();
-            var method = typeInfo.GetMethod("Action");
-
-            // Act
-            var actions = builder.BuildActionModels(typeInfo, method);
-
-            // Assert
-            var action = Assert.Single(actions);
-            Assert.True(action.Filters.Any(f => f is DisableCorsAuthorizationFilter));
-        }
-
-        [Fact]
         public void BuildActionModels_ConventionallyRoutedAction_WithoutHttpConstraints()
         {
             // Arrange
@@ -524,29 +449,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Assert.Equal("Update", action.ActionName);
             Assert.Null(action.AttributeRouteModel);
             Assert.IsType<CustomHttpMethodsAttribute>(Assert.Single(action.Attributes));
-        }
-
-        [Fact]
-        public void BuildActionModels_BaseAuthorizeFiltersAreStillValidWhenOverriden()
-        {
-            // Arrange
-            var builder = new TestApplicationModelProvider();
-            builder.AuthorizationOptions.AddPolicy("Base", policy => policy.RequireClaim("Basic").RequireClaim("Basic2"));
-            builder.AuthorizationOptions.AddPolicy("Derived", policy => policy.RequireClaim("Derived"));
-
-            var typeInfo = typeof(DerivedController).GetTypeInfo();
-            var actionName = nameof(DerivedController.Authorize);
-
-            // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
-
-            // Assert
-            var action = Assert.Single(actions);
-            Assert.Equal("Authorize", action.ActionName);
-            Assert.Null(action.AttributeRouteModel);
-            var authorizeFilters = action.Filters.OfType<AuthorizeFilter>();
-            Assert.Single(authorizeFilters);
-            Assert.Equal(3, authorizeFilters.First().Policy.Requirements.Count);
         }
 
         [Fact]
@@ -946,6 +848,20 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             }
         }
 
+        private class Controller : IDisposable
+        {
+            public void Dispose()
+            {
+                throw new NotImplementedException();
+            }
+
+            [NonAction]
+            public virtual IActionResult Redirect(string url)
+            {
+                return null;
+            }
+        }
+
         private class BaseController : Controller
         {
             public void GetFromBase() // Valid action method.
@@ -962,16 +878,10 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             {
             }
 
-            public override RedirectResult Redirect(string url)
+            public override IActionResult Redirect(string url)
             {
                 return base.Redirect(url + "#RedirectOverride");
             }
-
-            [Authorize(Policy = "Base")]
-            public virtual void Authorize()
-            {
-            }
-
         }
 
         private class DerivedController : BaseController
@@ -988,12 +898,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             public new void NewMethod() // Valid action method.
             {
             }
-
-            [Authorize(Policy = "Derived")]
-            public override void Authorize()
-            {
-            }
-
 
             public void GenericMethod<T>()
             {
@@ -1090,7 +994,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             }
         }
 
-        private class OperatorOverloadingController : Mvc.Controller
+        private class OperatorOverloadingController : Controller
         {
             public static OperatorOverloadingController operator +(
                 OperatorOverloadingController c1,
@@ -1175,22 +1079,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             public void Invalid() { }
         }
 
-        private class EnableCorsController
-        {
-            [EnableCors("policy")]
-            public void Action()
-            {
-            }
-        }
-
-        private class DisableCorsActionController
-        {
-            [DisableCors]
-            public void Action()
-            {
-            }
-        }
-
         // Here the constraints on the methods are acting as an IActionHttpMethodProvider and
         // not as an IRouteTemplateProvider given that there is no RouteAttribute
         // on the controller and the template for all the constraints on a method is null.
@@ -1248,27 +1136,25 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         {
         }
 
-        private class StoreController : Mvc.Controller
+        private class StoreController : Controller, IActionFilter
+        {
+            public void OnActionExecuted(ActionExecutedContext context)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void OnActionExecuting(ActionExecutingContext context)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class MyFilterAttribute : Attribute, IFilter
         {
         }
 
-        [Produces("application/json")]
+        [MyFilter]
         public class NoFiltersController
-        {
-        }
-
-        [Authorize]
-        public class AccountController
-        {
-        }
-
-        [EnableCors("policy")]
-        public class CorsController
-        {
-        }
-
-        [DisableCors]
-        public class DisableCorsController
         {
         }
 
@@ -1319,22 +1205,16 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         private class TestApplicationModelProvider : DefaultApplicationModelProvider
         {
             public TestApplicationModelProvider()
-                : this(
-                      new MockMvcOptionsAccessor(),
-                      new OptionsManager<AuthorizationOptions>(Enumerable.Empty<IConfigureOptions<AuthorizationOptions>>()))
+                : this(new MockMvcOptionsAccessor())
             {
             }
 
             public TestApplicationModelProvider(
-                IOptions<MvcOptions> options,
-                IOptions<AuthorizationOptions> authorizationOptions)
-                : base(options, authorizationOptions)
+                IOptions<MvcOptions> options)
+                : base(options)
             {
                 Options = options.Options;
-                AuthorizationOptions = authorizationOptions.Options;
             }
-
-            public AuthorizationOptions AuthorizationOptions { get; }
 
             public MvcOptions Options { get; }
 

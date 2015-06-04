@@ -1,17 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ApplicationModels;
-using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Core.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.Framework.Internal;
-using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -20,56 +15,20 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class MvcOptions
     {
-        private AntiForgeryOptions _antiForgeryOptions = new AntiForgeryOptions();
         private int _maxModelStateErrors = ModelStateDictionary.DefaultMaxAllowedErrors;
 
         public MvcOptions()
         {
             Conventions = new List<IApplicationModelConvention>();
-            ModelBinders = new List<IModelBinder>();
-            ViewEngines = new List<ViewEngineDescriptor>();
-            ValueProviderFactories = new List<IValueProviderFactory>();
-            OutputFormatters = new List<IOutputFormatter>();
-            InputFormatters = new List<IInputFormatter>();
             Filters = new List<IFilter>();
-            FormatterMappings = new FormatterMappings();
-            ValidationExcludeFilters = new List<IExcludeTypeValidationFilter>();
+            InputFormatters = new List<IInputFormatter>();
+            OutputFormatters = new List<IOutputFormatter>();
+            ModelBinders = new List<IModelBinder>();
             ModelMetadataDetailsProviders = new List<IMetadataDetailsProvider>();
             ModelValidatorProviders = new List<IModelValidatorProvider>();
-            ClientModelValidatorProviders = new List<IClientModelValidatorProvider>();
-            CacheProfiles = new Dictionary<string, CacheProfile>(StringComparer.OrdinalIgnoreCase);
-            HtmlHelperOptions = new HtmlHelperOptions();
-            SerializerSettings = SerializerSettingsProvider.CreateSerializerSettings();
+            ValidationExcludeFilters = new List<IExcludeTypeValidationFilter>();
+            ValueProviderFactories = new List<IValueProviderFactory>();
         }
-
-        /// <summary>
-        /// Provides programmatic configuration for the anti-forgery token system.
-        /// </summary>
-        public AntiForgeryOptions AntiForgeryOptions
-        {
-            get
-            {
-                return _antiForgeryOptions;
-            }
-
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value),
-                                                    Resources.FormatPropertyOfTypeCannotBeNull(nameof(AntiForgeryOptions),
-                                                                                               typeof(MvcOptions)));
-                }
-
-                _antiForgeryOptions = value;
-            }
-        }
-
-        /// <summary>
-        /// Used to specify mapping between the URL Format and corresponding
-        /// <see cref="Net.Http.Headers.MediaTypeHeaderValue"/>.
-        /// </summary>
-        public FormatterMappings FormatterMappings { get; }
 
         /// <summary>
         /// Gets a list of <see cref="IFilter"/> which are used to construct filters that
@@ -88,15 +47,9 @@ namespace Microsoft.AspNet.Mvc
         public IList<IInputFormatter> InputFormatters { get; }
 
         /// <summary>
-        /// Gets the <see cref="JsonSerializerSettings"/> that are used by this application.
+        /// Gets a list of <see cref="IModelBinder"/>s used by this application.
         /// </summary>
-        public JsonSerializerSettings SerializerSettings { get; }
-
-        /// <summary>
-        /// Gets a list of <see cref="IExcludeTypeValidationFilter"/>s that are used by this application.
-        /// </summary>
-        public IList<IExcludeTypeValidationFilter> ValidationExcludeFilters { get; }
-            = new List<IExcludeTypeValidationFilter>();
+        public IList<IModelBinder> ModelBinders { get; }
 
         /// <summary>
         /// Gets or sets the maximum number of validation errors that are allowed by this application before further
@@ -117,25 +70,9 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Gets a list of <see cref="IModelBinder"/>s used by this application.
-        /// </summary>
-        public IList<IModelBinder> ModelBinders { get; }
-
-        /// <summary>
         /// Gets a list of <see cref="IModelValidatorProvider"/>s used by this application.
         /// </summary>
         public IList<IModelValidatorProvider> ModelValidatorProviders { get; }
-
-        /// <summary>
-        /// Gets a list of <see cref="IClientModelValidatorProvider"/> instances.
-        /// </summary>
-        public IList<IClientModelValidatorProvider> ClientModelValidatorProviders { get; }
-
-        /// <summary>
-        /// Gets a list of descriptors that represent <see cref="Rendering.IViewEngine"/> used
-        /// by this application.
-        /// </summary>
-        public IList<ViewEngineDescriptor> ViewEngines { get; }
 
         /// <summary>
         /// Gets a list of <see cref="IValueProviderFactory"/> used by this application.
@@ -155,12 +92,6 @@ namespace Microsoft.AspNet.Mvc
         public bool RespectBrowserAcceptHeader { get; set; }
 
         /// <summary>
-        /// Gets a Dictionary of CacheProfile Names, <see cref="CacheProfile"/> which are pre-defined settings for
-        /// <see cref="ResponseCacheFilter"/>.
-        /// </summary>
-        public IDictionary<string, CacheProfile> CacheProfiles { get; }
-
-        /// <summary>
         /// Gets a list of <see cref="IMetadataDetailsProvider"/> instances that will be used to 
         /// create <see cref="ModelMetadata"/> instances.
         /// </summary>
@@ -176,8 +107,8 @@ namespace Microsoft.AspNet.Mvc
         public IList<IMetadataDetailsProvider> ModelMetadataDetailsProviders { get; }
 
         /// <summary>
-        /// Gets or sets programmatic configuration for the HTML helpers and <see cref="ViewContext"/>.
+        /// Gets a list of <see cref="IExcludeTypeValidationFilter"/>s that are used by this application.
         /// </summary>
-        public HtmlHelperOptions HtmlHelperOptions { get; [param: NotNull] set; }
+        public IList<IExcludeTypeValidationFilter> ValidationExcludeFilters { get; }
     }
 }

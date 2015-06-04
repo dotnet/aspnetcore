@@ -224,11 +224,7 @@ namespace Microsoft.AspNet.Mvc
 
             if (optionsAccessor == null)
             {
-                var options = new Mock<IOptions<MvcOptions>>();
-                options.SetupGet(o => o.Options)
-                                   .Returns(new MvcOptions());
-
-                optionsAccessor = options.Object;
+                optionsAccessor = new MockMvcOptionsAccessor();
             }
 
             var notifier = new Notifier(new NotifierMethodAdapter());

@@ -7,6 +7,7 @@ using System.Xml.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.Framework.OptionsModel;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -18,8 +19,8 @@ namespace Microsoft.AspNet.Mvc
         public void Setup_SetsUpViewEngines()
         {
             // Arrange
-            var mvcOptions = new MvcOptions();
-            var setup = new MvcOptionsSetup();
+            var mvcOptions = new MvcViewOptions();
+            var setup = new MvcViewOptionsSetup();
 
             // Act
             setup.Configure(mvcOptions);
@@ -80,10 +81,13 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var mvcOptions = new MvcOptions();
-            var setup = new MvcOptionsSetup();
+            var setup1 = new MvcOptionsSetup();
+            var setup2 = new JsonMvcOptionsSetup(new OptionsManager<MvcJsonOptions>(
+                Enumerable.Empty<IConfigureOptions<MvcJsonOptions>>()));
 
             // Act
-            setup.Configure(mvcOptions);
+            setup1.Configure(mvcOptions);
+            setup2.Configure(mvcOptions);
 
             // Assert
             Assert.Equal(4, mvcOptions.OutputFormatters.Count);
@@ -98,10 +102,13 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var mvcOptions = new MvcOptions();
-            var setup = new MvcOptionsSetup();
+            var setup1 = new MvcOptionsSetup();
+            var setup2 = new JsonMvcOptionsSetup(new OptionsManager<MvcJsonOptions>(
+                Enumerable.Empty<IConfigureOptions<MvcJsonOptions>>()));
 
             // Act
-            setup.Configure(mvcOptions);
+            setup1.Configure(mvcOptions);
+            setup2.Configure(mvcOptions);
 
             // Assert
             Assert.Equal(2, mvcOptions.InputFormatters.Count);
@@ -129,8 +136,8 @@ namespace Microsoft.AspNet.Mvc
         public void Setup_SetsUpClientModelValidatorProviders()
         {
             // Arrange
-            var mvcOptions = new MvcOptions();
-            var setup = new MvcOptionsSetup();
+            var mvcOptions = new MvcViewOptions();
+            var setup = new MvcViewOptionsSetup();
 
             // Act
             setup.Configure(mvcOptions);
@@ -213,8 +220,11 @@ namespace Microsoft.AspNet.Mvc
         public void Setup_JsonFormattersUseSerializerSettings()
         {
             // Arrange
+            var jsonOptionsAccessor = new OptionsManager<MvcJsonOptions>(
+                Enumerable.Empty<IConfigureOptions<MvcJsonOptions>>());
+
             var mvcOptions = new MvcOptions();
-            var setup = new MvcOptionsSetup();
+            var setup = new JsonMvcOptionsSetup(jsonOptionsAccessor);
 
             // Act
             setup.Configure(mvcOptions);
@@ -223,13 +233,13 @@ namespace Microsoft.AspNet.Mvc
             var jsonInputFormatters = mvcOptions.InputFormatters.OfType<JsonInputFormatter>();
             foreach (var jsonInputFormatter in jsonInputFormatters)
             {
-                Assert.Same(mvcOptions.SerializerSettings, jsonInputFormatter.SerializerSettings);
+                Assert.Same(jsonOptionsAccessor.Options.SerializerSettings, jsonInputFormatter.SerializerSettings);
             }
 
             var jsonOuputFormatters = mvcOptions.OutputFormatters.OfType<JsonOutputFormatter>();
             foreach (var jsonOuputFormatter in jsonOuputFormatters)
             {
-                Assert.Same(mvcOptions.SerializerSettings, jsonOuputFormatter.SerializerSettings);
+                Assert.Same(jsonOptionsAccessor.Options.SerializerSettings, jsonOuputFormatter.SerializerSettings);
             }
         }
     }

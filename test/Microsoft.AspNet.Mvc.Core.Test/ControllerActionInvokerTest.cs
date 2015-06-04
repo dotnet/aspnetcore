@@ -18,6 +18,7 @@ using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Logging.Testing;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -28,7 +29,7 @@ namespace Microsoft.AspNet.Mvc
         // Intentionally choosing an uncommon exception type.
         private readonly Exception _actionException = new TimeZoneNotFoundException();
 
-        private readonly JsonResult _result = new JsonResult(new { message = "Hello, world!" });
+        private readonly ContentResult _result = new ContentResult() { Content = "Hello, world!" };
 
         private struct SampleStruct
         {
@@ -964,7 +965,7 @@ namespace Microsoft.AspNet.Mvc
                 Times.Once());
 
             Assert.True(context.Canceled);
-            Assert.IsType<JsonResult>(context.Result);
+            Assert.IsType<ContentResult>(context.Result);
         }
 
         [Fact]
@@ -1006,7 +1007,7 @@ namespace Microsoft.AspNet.Mvc
                 Times.Once());
 
             Assert.True(context.Canceled);
-            Assert.IsType<JsonResult>(context.Result);
+            Assert.IsType<ContentResult>(context.Result);
         }
 
         [Fact]
@@ -2022,14 +2023,28 @@ namespace Microsoft.AspNet.Mvc
 
             httpResponse.Body = new MemoryStream();
 
+            var formatter = new Mock<IOutputFormatter>();
+            formatter
+                .Setup(f => f.CanWriteResult(It.IsAny<OutputFormatterContext>(), It.IsAny<MediaTypeHeaderValue>()))
+                .Returns(true);
+
+            formatter
+                .Setup(f => f.WriteAsync(It.IsAny<OutputFormatterContext>()))
+                .Returns<OutputFormatterContext>(async c =>
+                {
+                    await c.HttpContext.Response.WriteAsync(c.Object.ToString());
+                });
+
             var options = new MvcOptions();
-            options.OutputFormatters.Add(new JsonOutputFormatter());
+            options.OutputFormatters.Add(formatter.Object);
 
             var optionsAccessor = new Mock<IOptions<MvcOptions>>();
-            optionsAccessor.SetupGet(o => o.Options)
+            optionsAccessor
+                .SetupGet(o => o.Options)
                 .Returns(options);
 
-            httpContext.Setup(o => o.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
+            httpContext
+                .Setup(o => o.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
                 .Returns(optionsAccessor.Object);
 
             var actionContext = new ActionContext(
@@ -2059,7 +2074,7 @@ namespace Microsoft.AspNet.Mvc
                 new[] { filterProvider.Object },
                 new MockControllerFactory(this),
                 actionDescriptor,
-                new InputFormatter[0],
+                new IInputFormatter[0],
                 new IOutputFormatter[0],
                 Mock.Of<IControllerActionArgumentBinder>(),
                 new IModelBinder[0],
@@ -2140,19 +2155,19 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(5, context.Object.Items["Result"]);
         }
 
-        public JsonResult ActionMethod()
+        public IActionResult ActionMethod()
         {
             return _result;
         }
 
-        public JsonResult ThrowingActionMethod()
+        public ObjectResult ThrowingActionMethod()
         {
             throw _actionException;
         }
 
-        public JsonResult ActionMethodWithBodyParameter([FromBody] Person bodyParam)
+        public IActionResult ActionMethodWithBodyParameter([FromBody] Person bodyParam)
         {
-            return new JsonResult(bodyParam);
+            return new ObjectResult(bodyParam);
         }
 
         public class Person

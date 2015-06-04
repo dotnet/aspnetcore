@@ -13,7 +13,7 @@ namespace ResponseCacheWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.Configure<MvcOptions>(options =>
+            services.ConfigureMvcCaching(options =>
             {
                 options.CacheProfiles.Add(
                     "PublicCache30Sec", new CacheProfile
@@ -44,7 +44,10 @@ namespace ResponseCacheWebSite
                         Location = ResponseCacheLocation.Any,
                         VaryByHeader = "Accept"
                     });
+            });
 
+            services.ConfigureMvc(options =>
+            { 
                 options.Filters.Add(new ResponseCacheFilter(new CacheProfile
                 {
                     NoStore = true,

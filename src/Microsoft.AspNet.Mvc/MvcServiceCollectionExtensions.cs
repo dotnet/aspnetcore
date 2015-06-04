@@ -40,6 +40,18 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         /// <summary>
+        /// Configures a set of <see cref="AntiForgeryOptions"/> for the application.
+        /// </summary>
+        /// <param name="services">The services available in the application.</param>
+        /// <param name="setupAction">The <see cref="AntiForgeryOptions"/> which need to be configured.</param>
+        public static void ConfigureAntiforgery(
+            [NotNull] this IServiceCollection services,
+            [NotNull] Action<AntiForgeryOptions> setupAction)
+        {
+            services.Configure(setupAction);
+        }
+
+        /// <summary>
         /// Configures a set of <see cref="MvcOptions"/> for the application.
         /// </summary>
         /// <param name="services">The services available in the application.</param>
@@ -47,6 +59,54 @@ namespace Microsoft.Framework.DependencyInjection
         public static void ConfigureMvc(
             [NotNull] this IServiceCollection services,
             [NotNull] Action<MvcOptions> setupAction)
+        {
+            services.Configure(setupAction);
+        }
+
+        /// <summary>
+        /// Configures a set of <see cref="MvcFormatterMappingOptions"/> for the application.
+        /// </summary>
+        /// <param name="services">The services available in the application.</param>
+        /// <param name="setupAction">The <see cref="MvcCacheOptions"/> which need to be configured.</param>
+        public static void ConfigureMvcCaching(
+            [NotNull] this IServiceCollection services,
+            [NotNull] Action<MvcCacheOptions> setupAction)
+        {
+            services.Configure(setupAction);
+        }
+
+        /// <summary>
+        /// Configures a set of <see cref="MvcFormatterMappingOptions"/> for the application.
+        /// </summary>
+        /// <param name="services">The services available in the application.</param>
+        /// <param name="setupAction">The <see cref="MvcFormatterMappingOptions"/> which need to be configured.</param>
+        public static void ConfigureMvcFormatterMappings(
+            [NotNull] this IServiceCollection services,
+            [NotNull] Action<MvcFormatterMappingOptions> setupAction)
+        {
+            services.Configure(setupAction);
+        }
+
+        /// <summary>
+        /// Configures a set of <see cref="MvcJsonOptions"/> for the application.
+        /// </summary>
+        /// <param name="services">The services available in the application.</param>
+        /// <param name="setupAction">The <see cref="MvcJsonOptions"/> which need to be configured.</param>
+        public static void ConfigureMvcJson(
+            [NotNull] this IServiceCollection services,
+            [NotNull] Action<MvcJsonOptions> setupAction)
+        {
+            services.Configure(setupAction);
+        }
+
+        /// <summary>
+        /// Configures a set of <see cref="MvcViewOptions"/> for the application.
+        /// </summary>
+        /// <param name="services">The services available in the application.</param>
+        /// <param name="setupAction">The <see cref="MvcViewOptions"/> which need to be configured.</param>
+        public static void ConfigureMvcViews(
+            [NotNull] this IServiceCollection services,
+            [NotNull] Action<MvcViewOptions> setupAction)
         {
             services.Configure(setupAction);
         }
@@ -102,10 +162,11 @@ namespace Microsoft.Framework.DependencyInjection
         // To enable unit testing
         internal static void AddMvcServices(IServiceCollection services)
         {
-            // Options and core services.
-            // multiple registration service
+            // Options - all of these are multi-registration
             services.AddTransient<IConfigureOptions<MvcOptions>, MvcOptionsSetup>();
-            // multiple registration service
+            services.AddTransient<IConfigureOptions<MvcOptions>, JsonMvcOptionsSetup>();
+            services.AddTransient<IConfigureOptions<MvcFormatterMappingOptions>, JsonMvcFormatterMappingOptionsSetup>();
+            services.AddTransient<IConfigureOptions<MvcViewOptions>, MvcViewOptionsSetup>();
             services.AddTransient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>();
 
             services.TryAdd(ServiceDescriptor.Transient<IAssemblyProvider, DefaultAssemblyProvider>());
@@ -159,6 +220,13 @@ namespace Microsoft.Framework.DependencyInjection
             // multiple registration service
             services.AddTransient<IApplicationModelProvider, DefaultApplicationModelProvider>();
 
+            // multiple registration services
+            services.AddTransient<IApplicationModelProvider, CorsApplicationModelProvider>();
+            services.AddTransient<IApplicationModelProvider, AuthorizationApplicationModelProvider>();
+
+            services.AddTransient<IControllerPropertyActivator, DefaultControllerPropertyActivator>();
+            services.AddTransient<IControllerPropertyActivator, ViewDataDictionaryControllerPropertyActivator>();
+
             services.TryAdd(ServiceDescriptor.Transient<FormatFilter, FormatFilter>());
             services.TryAdd(ServiceDescriptor.Transient<CorsAuthorizationFilter, CorsAuthorizationFilter>());
 
@@ -175,7 +243,7 @@ namespace Microsoft.Framework.DependencyInjection
             // JsonOutputFormatter should use the SerializerSettings on MvcOptions
             services.TryAdd(ServiceDescriptor.Singleton<JsonOutputFormatter>(serviceProvider =>
             {
-                var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Options;
+                var options = serviceProvider.GetRequiredService<IOptions<MvcJsonOptions>>().Options;
                 return new JsonOutputFormatter(options.SerializerSettings);
             }));
 

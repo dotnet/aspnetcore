@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             }
         }
 
-        private class HelloController : Controller
+        private class HelloController
         {
             public string GetHello()
             {
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             }
         }
 
-        private class WorldController : Controller
+        private class WorldController
         {
             public string GetWorld()
             {

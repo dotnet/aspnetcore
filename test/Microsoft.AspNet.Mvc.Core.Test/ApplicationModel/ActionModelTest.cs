@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNet.Authorization;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
@@ -43,17 +42,22 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public void CopyConstructor_CopiesAllProperties()
         {
             // Arrange
-            var action = new ActionModel(typeof(TestController).GetMethod("Edit"),
-                                         new List<object>() { new HttpGetAttribute(), new AuthorizeAttribute() });
+            var action = new ActionModel(
+                typeof(TestController).GetMethod("Edit"),
+                new List<object>()
+                {
+                    new HttpGetAttribute(),
+                    new MyFilterAttribute(),
+                });
 
             action.ActionConstraints.Add(new HttpMethodConstraint(new string[] { "GET" }));
             action.ActionName = "Edit";
 
             action.Controller = new ControllerModel(typeof(TestController).GetTypeInfo(),
                                                     new List<object>());
-            action.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireClaim("whatever").Build()));
+            action.Filters.Add(new MyFilterAttribute());
             action.HttpMethods.Add("GET");
-            action.RouteConstraints.Add(new AreaAttribute("Admin"));
+            action.RouteConstraints.Add(new MyRouteConstraintAttribute());
             action.Properties.Add(new KeyValuePair<object, object>("test key", "test value"));
 
             // Act
@@ -111,6 +115,21 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             public void Edit(int id)
             {
             }
+        }
+
+        private class MyFilterAttribute : Attribute, IFilter
+        {
+        }
+
+        private class MyRouteConstraintAttribute : Attribute, IRouteConstraintProvider
+        {
+            public bool BlockNonAttributedActions { get { return true; } }
+
+            public string RouteKey { get; set; }
+
+            public RouteKeyHandling RouteKeyHandling { get { return RouteKeyHandling.RequireKey; } }
+
+            public string RouteValue { get; set; }
         }
     }
 }

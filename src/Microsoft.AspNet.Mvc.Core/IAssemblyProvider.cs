@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc
     public interface IAssemblyProvider
     {
         /// <summary>
-        /// Gets the sequence of candidate <see cref="Assembly"/>ies that the application
+        /// Gets the sequence of candidate <see cref="Assembly"/> instances that the application
         /// uses for discovery of Mvc specific types.
         /// </summary>
         IEnumerable<Assembly> CandidateAssemblies { get; }

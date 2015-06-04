@@ -7,6 +7,5 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Microsoft.AspNet.Mvc.Core.Test")]
 [assembly: InternalsVisibleTo("Microsoft.AspNet.Mvc.Razor.Test")]
 [assembly: InternalsVisibleTo("Microsoft.AspNet.Mvc.TagHelpers.Test")]
-[assembly: InternalsVisibleTo("Microsoft.AspNet.Mvc.Xml.Test")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 [assembly: AssemblyMetadata("Serviceable", "True")]

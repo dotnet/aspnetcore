@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         public TestableHtmlGenerator(
             IModelMetadataProvider metadataProvider,
-            IOptions<MvcOptions> options,
+            IOptions<MvcViewOptions> options,
             IUrlHelper urlHelper,
             IDictionary<string, object> validationAttributes)
             : base(GetAntiForgery(), options, metadataProvider, urlHelper, new CommonTestEncoder())
@@ -90,27 +90,26 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             return ValidationAttributes;
         }
 
-        private static IOptions<MvcOptions> GetOptions()
+        private static IOptions<MvcViewOptions> GetOptions()
         {
-            var mockOptions = new Mock<IOptions<MvcOptions>>();
+            var mockOptions = new Mock<IOptions<MvcViewOptions>>();
             mockOptions
                 .SetupGet(options => options.Options)
-                .Returns(new MvcOptions());
+                .Returns(new MvcViewOptions());
 
             return mockOptions.Object;
         }
         private static AntiForgery GetAntiForgery()
         {
             // AntiForgery must be passed to TestableHtmlGenerator constructor but will never be called.
-            var optionsAccessor = new Mock<IOptions<MvcOptions>>();
+            var optionsAccessor = new Mock<IOptions<AntiForgeryOptions>>();
             var mockDataProtectionOptions = new Mock<IOptions<DataProtectionOptions>>();
             mockDataProtectionOptions
                 .SetupGet(options => options.Options)
                 .Returns(Mock.Of<DataProtectionOptions>());
-            optionsAccessor.SetupGet(o => o.Options).Returns(new MvcOptions());
             optionsAccessor
                 .SetupGet(o => o.Options)
-                .Returns(new MvcOptions());
+                .Returns(new AntiForgeryOptions());
             var antiForgery = new AntiForgery(
                 Mock.Of<IClaimUidExtractor>(),
                 Mock.Of<IDataProtectionProvider>(),

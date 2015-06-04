@@ -20,10 +20,11 @@ namespace Microsoft.AspNet.Mvc.Core
         public void CreateController_ThrowsIfActionDescriptorIsNotControllerActionDescriptor()
         {
             // Arrange
-            var expected = "The action descriptor must be of type 'Microsoft.AspNet.Mvc.ControllerActionDescriptor'." +
-                            Environment.NewLine + "Parameter name: actionContext";
+            var expected =
+                "The action descriptor must be of type 'Microsoft.AspNet.Mvc.ControllerActionDescriptor'." +
+                Environment.NewLine + "Parameter name: actionContext";
             var actionDescriptor = new ActionDescriptor();
-            var controllerFactory = new DefaultControllerFactory(Mock.Of<IControllerActivator>());
+            var controllerFactory = CreateControllerFactory();
             var httpContext = new DefaultHttpContext();
             var actionContext = new ActionContext(httpContext,
                                                   new RouteData(),
@@ -55,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.Core
                      .Returns(expected)
                      .Verifiable();
 
-            var controllerFactory = new DefaultControllerFactory(activator.Object);
+            var controllerFactory = CreateControllerFactory(activator.Object);
 
             // Act
             var result = controllerFactory.CreateController(actionContext);
@@ -80,7 +81,7 @@ namespace Microsoft.AspNet.Mvc.Core
                 RequestServices = services
             };
             var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
-            var factory = new DefaultControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
+            var factory = CreateControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
 
             // Act
             var result = factory.CreateController(context);
@@ -88,31 +89,6 @@ namespace Microsoft.AspNet.Mvc.Core
             // Assert
             var controller = Assert.IsType<ControllerWithAttributes>(result);
             Assert.Same(context, controller.ActionContext);
-        }
-
-        [Fact]
-        public void CreateController_SetsViewDataDictionary()
-        {
-            // Arrange
-            var actionDescriptor = new ControllerActionDescriptor
-            {
-                ControllerTypeInfo = typeof(ControllerWithAttributes).GetTypeInfo()
-            };
-
-            var services = GetServices();
-            var httpContext = new DefaultHttpContext
-            {
-                RequestServices = services
-            };
-            var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
-            var factory = new DefaultControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
-
-            // Act
-            var result = factory.CreateController(context);
-
-            // Assert
-            var controller = Assert.IsType<ControllerWithAttributes>(result);
-            Assert.NotNull(controller.ViewData);
         }
 
         [Fact]
@@ -132,7 +108,7 @@ namespace Microsoft.AspNet.Mvc.Core
                 RequestServices = services
             };
             var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
-            var factory = new DefaultControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
+            var factory = CreateControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
 
             // Act
             var result = factory.CreateController(context);
@@ -156,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.Core
                 RequestServices = services
             };
             var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
-            var factory = new DefaultControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
+            var factory = CreateControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
 
             // Act
             var result = factory.CreateController(context);
@@ -180,7 +156,7 @@ namespace Microsoft.AspNet.Mvc.Core
                 RequestServices = services
             };
             var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
-            var factory = new DefaultControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
+            var factory = CreateControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
 
             // Act
             var result = factory.CreateController(context);
@@ -192,7 +168,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
-        public void CreateController_ThrowsIfPropertyCannotBeActivated()
+        public void CreateController_ThrowsIConstructorCannotBeActivated()
         {
             // Arrange
             var actionDescriptor = new ControllerActionDescriptor
@@ -205,7 +181,7 @@ namespace Microsoft.AspNet.Mvc.Core
                 RequestServices = services
             };
             var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
-            var factory = new DefaultControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
+            var factory = CreateControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
 
             // Act and Assert
             var exception = Assert.Throws<InvalidOperationException>(() => factory.CreateController(context));
@@ -233,7 +209,7 @@ namespace Microsoft.AspNet.Mvc.Core
                 RequestServices = services
             };
             var context = new ActionContext(httpContext, new RouteData(), actionDescriptor);
-            var factory = new DefaultControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
+            var factory = CreateControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
 
             // Act and Assert
             var exception = Assert.Throws<InvalidOperationException>(() => factory.CreateController(context));
@@ -247,7 +223,7 @@ namespace Microsoft.AspNet.Mvc.Core
         public void DefaultControllerFactory_DisposesIDisposableController()
         {
             // Arrange
-            var factory = new DefaultControllerFactory(Mock.Of<IControllerActivator>());
+            var factory = CreateControllerFactory();
             var controller = new MyController();
 
             // Act + Assert
@@ -262,7 +238,7 @@ namespace Microsoft.AspNet.Mvc.Core
         public void DefaultControllerFactory_ReleasesNonIDisposableController()
         {
             // Arrange
-            var factory = new DefaultControllerFactory(Mock.Of<IControllerActivator>());
+            var factory = CreateControllerFactory();
             var controller = new object();
 
             // Act + Assert (does not throw)
@@ -287,13 +263,22 @@ namespace Microsoft.AspNet.Mvc.Core
             return services.Object;
         }
 
+        private static DefaultControllerFactory CreateControllerFactory(IControllerActivator controllerActivator = null)
+        {
+            controllerActivator = controllerActivator ?? Mock.Of<IControllerActivator>();
+            var propertyActivators = new IControllerPropertyActivator[]
+            {
+                new DefaultControllerPropertyActivator(),
+            };
+
+            return new DefaultControllerFactory(controllerActivator, propertyActivators);
+        }
+
         private class ControllerWithoutAttributes
         {
             public ActionContext ActionContext { get; set; }
 
             public ActionBindingContext BindingContext { get; set; }
-
-            public ViewDataDictionary ViewData { get; set; }
         }
 
         public class ControllerWithNonVisibleProperties
@@ -310,16 +295,13 @@ namespace Microsoft.AspNet.Mvc.Core
 
             [ActionBindingContext]
             public ActionBindingContext BindingContext { get; set; }
-
-            [ViewDataDictionary]
-            public ViewDataDictionary ViewData { get; set; }
         }
 
-        private class MyController : Controller
+        private class MyController : IDisposable
         {
             public bool Disposed { get; set; }
 
-            protected override void Dispose(bool disposing)
+            public void Dispose()
             {
                 Disposed = true;
             }
@@ -337,22 +319,22 @@ namespace Microsoft.AspNet.Mvc.Core
 
         private class TestService
         {
+        }
 
+        private class Controller
+        {
         }
 
         private class OpenGenericType<T> : Controller
         {
-
         }
 
         private abstract class AbstractType : Controller
         {
-
         }
 
         private interface InterfaceType
         {
-
         }
     }
 }

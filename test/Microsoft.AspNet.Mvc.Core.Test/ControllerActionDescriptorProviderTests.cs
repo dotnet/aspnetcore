@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
@@ -1460,7 +1459,7 @@ namespace Microsoft.AspNet.Mvc.Test
             }
 
             var controllerTypeProvider = new FixedSetControllerTypeProvider(new[] { controllerTypeInfo });
-            var modelProvider = new DefaultApplicationModelProvider(options, new MockAuthorizationOptionsAccessor());
+            var modelProvider = new DefaultApplicationModelProvider(options);
 
             var provider = new ControllerActionDescriptorProvider(
                 controllerTypeProvider,
@@ -1476,7 +1475,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var options = new MockMvcOptionsAccessor();
 
             var controllerTypeProvider = new FixedSetControllerTypeProvider(controllerTypeInfos);
-            var modelProvider = new DefaultApplicationModelProvider(options, new MockAuthorizationOptionsAccessor());
+            var modelProvider = new DefaultApplicationModelProvider(options);
 
             var provider = new ControllerActionDescriptorProvider(
                 controllerTypeProvider,
@@ -1494,7 +1493,7 @@ namespace Microsoft.AspNet.Mvc.Test
             options.Options.Conventions.Add(convention);
 
             var controllerTypeProvider = new FixedSetControllerTypeProvider(new[] { controllerTypeInfo });
-            var modelProvider = new DefaultApplicationModelProvider(options, new MockAuthorizationOptionsAccessor());
+            var modelProvider = new DefaultApplicationModelProvider(options);
 
             var provider = new ControllerActionDescriptorProvider(
                 controllerTypeProvider,
@@ -1808,7 +1807,7 @@ namespace Microsoft.AspNet.Mvc.Test
         [Route("Product")]
         [Route("/Product")]
         [Route("/product")]
-        public class DuplicatedAttributeRouteController : Controller
+        public class DuplicatedAttributeRouteController
         {
             [HttpGet("/List")]
             [HttpGet("/List")]
@@ -1822,7 +1821,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Route("Products")]
-        public class NonDuplicatedAttributeRouteController : Controller
+        public class NonDuplicatedAttributeRouteController
         {
             [HttpGet("list")]
             public void ControllerAndAction() { }
@@ -2032,7 +2031,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [ApiExplorerSettings(GroupName = "Default")]
-        private class ApiExplorerEnabledConventionalRoutedController : Controller
+        private class ApiExplorerEnabledConventionalRoutedController
         {
             public void A()
             {
@@ -2040,7 +2039,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [ApiExplorerSettings(IgnoreApi = true)]
-        private class ApiExplorerEnabledActionConventionalRoutedController : Controller
+        private class ApiExplorerEnabledActionConventionalRoutedController
         {
             [ApiExplorerSettings(GroupName = "Default")]
             public void A()

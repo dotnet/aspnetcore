@@ -31,8 +31,8 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             }
         }
 
-        private class HelloController : Controller { }
-        private class WorldController : Controller { }
+        private class HelloController { }
+        private class WorldController { }
 
         private class SimpleControllerConvention : IControllerModelConvention
         {

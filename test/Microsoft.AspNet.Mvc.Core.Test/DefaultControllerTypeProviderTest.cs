@@ -234,7 +234,7 @@ namespace Microsoft.AspNet.Mvc
 // independent.
 namespace Microsoft.AspNet.Mvc.DefaultControllerTypeProviderControllers
 {
-    public abstract class AbstractController : Mvc.Controller
+    public abstract class AbstractController : Controller
     {
     }
 
@@ -242,7 +242,7 @@ namespace Microsoft.AspNet.Mvc.DefaultControllerTypeProviderControllers
     {
     }
 
-    public class StoreController : Mvc.Controller
+    public class StoreController : Controller
     {
     }
 
@@ -250,7 +250,7 @@ namespace Microsoft.AspNet.Mvc.DefaultControllerTypeProviderControllers
     {
     }
 
-    public class OpenGenericController<T> : Mvc.Controller
+    public class OpenGenericController<T> : Controller
     {
     }
 
@@ -262,7 +262,7 @@ namespace Microsoft.AspNet.Mvc.DefaultControllerTypeProviderControllers
     {
     }
 
-    public class NoSuffix : Mvc.Controller
+    public class NoSuffix : Controller
     {
     }
 

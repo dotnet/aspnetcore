@@ -6,7 +6,6 @@ using System.Xml.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
@@ -18,17 +17,14 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class MvcOptionsSetup : ConfigureOptions<MvcOptions>
     {
-        public MvcOptionsSetup() : base(ConfigureMvc)
+        public MvcOptionsSetup()
+            : base(ConfigureMvc)
         {
             Order = DefaultOrder.DefaultFrameworkSortOrder;
         }
 
-        /// <inheritdoc />
         public static void ConfigureMvc(MvcOptions options)
         {
-            // Set up ViewEngines
-            options.ViewEngines.Add(typeof(RazorViewEngine));
-
             // Set up ModelBinding
             options.ModelBinders.Add(new BinderTypeBasedModelBinder());
             options.ModelBinders.Add(new ServicesModelBinder());
@@ -48,14 +44,6 @@ namespace Microsoft.AspNet.Mvc
             options.OutputFormatters.Add(new HttpNoContentOutputFormatter());
             options.OutputFormatters.Add(new StringOutputFormatter());
             options.OutputFormatters.Add(new StreamOutputFormatter());
-            options.OutputFormatters.Add(new JsonOutputFormatter(options.SerializerSettings));
-
-            // Set up default mapping for json extensions to content type
-            options.FormatterMappings.SetMediaTypeMappingForFormat("json", MediaTypeHeaderValue.Parse("application/json"));
-
-            // Set up default input formatters.
-            options.InputFormatters.Add(new JsonInputFormatter(options.SerializerSettings));
-            options.InputFormatters.Add(new JsonPatchInputFormatter(options.SerializerSettings));
 
             // Set up ValueProviders
             options.ValueProviderFactories.Add(new RouteValueValueProviderFactory());
@@ -71,10 +59,6 @@ namespace Microsoft.AspNet.Mvc
             // Set up validators
             options.ModelValidatorProviders.Add(new DefaultModelValidatorProvider());
             options.ModelValidatorProviders.Add(new DataAnnotationsModelValidatorProvider());
-
-            // Set up client validators
-            options.ClientModelValidatorProviders.Add(new DefaultClientModelValidatorProvider());
-            options.ClientModelValidatorProviders.Add(new DataAnnotationsClientModelValidatorProvider());
 
             // Add types to be excluded from Validation
             options.ValidationExcludeFilters.Add(new SimpleTypesExcludeFilter());

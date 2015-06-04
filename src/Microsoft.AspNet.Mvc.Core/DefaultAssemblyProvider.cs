@@ -33,6 +33,7 @@ namespace Microsoft.AspNet.Mvc
             "Microsoft.AspNet.Mvc.Abstractions",
             "Microsoft.AspNet.Mvc.ApiExplorer",
             "Microsoft.AspNet.Mvc.Core",
+            "Microsoft.AspNet.Mvc.Extensions",
             "Microsoft.AspNet.Mvc.Razor",
             "Microsoft.AspNet.Mvc.Razor.Host",
             "Microsoft.AspNet.Mvc.TagHelpers",

@@ -19,20 +19,24 @@ namespace Microsoft.AspNet.Mvc
     public class DefaultControllerFactory : IControllerFactory
     {
         private readonly IControllerActivator _controllerActivator;
-        private readonly ConcurrentDictionary<Type, PropertyActivator<ActionContext>[]> _activateActions;
-        private readonly Func<Type, PropertyActivator<ActionContext>[]> _getPropertiesToActivate;
+        private readonly IControllerPropertyActivator[] _propertyActivators;
 
         /// <summary>
         /// Initializes a new instance of <see cref="DefaultControllerFactory"/>.
         /// </summary>
-        /// <param name="controllerActivator"><see cref="IControllerActivator"/> used to create controller
-        /// instances.</param>
-        public DefaultControllerFactory(IControllerActivator controllerActivator)
+        /// <param name="controllerActivator">
+        /// <see cref="IControllerActivator"/> used to create controller instances.
+        /// </param>
+        /// <param name="propertyActivators">
+        /// A set of <see cref="IControllerPropertyActivator"/> instances used to initialize controller
+        /// properties.
+        /// </param>
+        public DefaultControllerFactory(
+            IControllerActivator controllerActivator,
+            IEnumerable<IControllerPropertyActivator> propertyActivators)
         {
             _controllerActivator = controllerActivator;
-
-            _activateActions = new ConcurrentDictionary<Type, PropertyActivator<ActionContext>[]>();
-            _getPropertiesToActivate = GetPropertiesToActivate;
+            _propertyActivators = propertyActivators.ToArray();
         }
 
         /// <summary>
@@ -71,7 +75,10 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var controller = _controllerActivator.Create(actionContext, controllerType);
-            ActivateProperties(controller, actionContext);
+            foreach (var propertyActivator in _propertyActivators)
+            {
+                propertyActivator.Activate(actionContext, controller);
+            }
 
             return controller;
         }
@@ -85,61 +92,6 @@ namespace Microsoft.AspNet.Mvc
             {
                 disposableController.Dispose();
             }
-        }
-
-        /// <summary>
-        /// Activates the specified controller using the specified action context.
-        /// </summary>
-        /// <param name="controller">The controller to activate.</param>
-        /// <param name="context">The context of the executing action.</param>
-        protected virtual void ActivateProperties([NotNull] object controller, [NotNull] ActionContext context)
-        {
-            var controllerType = controller.GetType();
-            var propertiesToActivate = _activateActions.GetOrAdd(
-                controllerType,
-                _getPropertiesToActivate);
-
-            for (var i = 0; i < propertiesToActivate.Length; i++)
-            {
-                var activateInfo = propertiesToActivate[i];
-                activateInfo.Activate(controller, context);
-            }
-        }
-
-        private PropertyActivator<ActionContext>[] GetPropertiesToActivate(Type type)
-        {
-            IEnumerable<PropertyActivator<ActionContext>> activators;
-            activators = PropertyActivator<ActionContext>.GetPropertiesToActivate(
-                type,
-                typeof(ActionContextAttribute),
-                p => new PropertyActivator<ActionContext>(p, c => c));
-
-            activators = activators.Concat(PropertyActivator<ActionContext>.GetPropertiesToActivate(
-                type,
-                typeof(ActionBindingContextAttribute),
-                p => new PropertyActivator<ActionContext>(p, GetActionBindingContext)));
-
-            activators = activators.Concat(PropertyActivator<ActionContext>.GetPropertiesToActivate(
-                type,
-                typeof(ViewDataDictionaryAttribute),
-                p => new PropertyActivator<ActionContext>(p, GetViewDataDictionary)));
-
-            return activators.ToArray();
-        }
-
-        private static ActionBindingContext GetActionBindingContext(ActionContext context)
-        {
-            var serviceProvider = context.HttpContext.RequestServices;
-            var accessor = serviceProvider.GetRequiredService<IScopedInstance<ActionBindingContext>>();
-            return accessor.Value;
-        }
-
-        private static ViewDataDictionary GetViewDataDictionary(ActionContext context)
-        {
-            var serviceProvider = context.HttpContext.RequestServices;
-            return new ViewDataDictionary(
-                serviceProvider.GetRequiredService<IModelMetadataProvider>(),
-                context.ModelState);
         }
     }
 }

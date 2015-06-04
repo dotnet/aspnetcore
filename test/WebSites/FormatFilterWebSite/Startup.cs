@@ -16,14 +16,16 @@ namespace FormatFilterWebSite
         {
             // Add MVC services to the services container
             services.AddMvc();
-            services.Configure<MvcOptions>(options =>
+            services.ConfigureMvc(options =>
             {
                 var formatFilter = new FormatFilterAttribute();
                 options.Filters.Add(formatFilter);
 
                 var customFormatter = new CustomFormatter("application/custom");
                 options.OutputFormatters.Add(customFormatter);
-
+            });
+            services.ConfigureMvcFormatterMappings(options => 
+            {
                 options.FormatterMappings.SetMediaTypeMappingForFormat(
                     "custom",
                     MediaTypeHeaderValue.Parse("application/custom"));

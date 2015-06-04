@@ -389,9 +389,7 @@ namespace System.Web.Http
                 .SetupGet(o => o.Options)
                 .Returns(new AuthorizationOptions());
 
-            var modelProvider = new DefaultApplicationModelProvider(
-                optionsAccessor.Object,
-                authorizationOptionsAccessor.Object);
+            var modelProvider = new DefaultApplicationModelProvider(optionsAccessor.Object);
 
             var provider = new ControllerActionDescriptorProvider(
                 controllerTypeProvider,
