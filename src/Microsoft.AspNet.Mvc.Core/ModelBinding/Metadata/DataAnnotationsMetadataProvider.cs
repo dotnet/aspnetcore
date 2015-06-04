@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
     /// An implementation of <see cref="IBindingMetadataProvider"/> and <see cref="IDisplayMetadataProvider"/> for
     /// the System.ComponentModel.DataAnnotations attribute classes.
     /// </summary>
-    public class DataAnnotationsMetadataProvider : 
+    public class DataAnnotationsMetadataProvider :
         IBindingMetadataProvider,
         IDisplayMetadataProvider,
         IValidationMetadataProvider
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             // Description
             if (displayAttribute != null)
             {
-                displayMetadata.Description = displayAttribute.GetDescription();
+                displayMetadata.Description = () => displayAttribute.GetDescription();
             }
 
             // DisplayFormat
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             // DisplayName
             if (displayAttribute != null)
             {
-                displayMetadata.DisplayName = displayAttribute.GetName();
+                displayMetadata.DisplayName = () => displayAttribute.GetName();
             }
 
             if (displayFormatAttribute != null && displayFormatAttribute.ApplyFormatInEditMode)
@@ -216,8 +216,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             foreach (var attribute in context.Attributes.OfType<ValidationAttribute>())
             {
-                // If another provider has already added this attribute, do not repeat it. 
-                // This will prevent attributes like RemoteAttribute (which implement ValidationAttribute and 
+                // If another provider has already added this attribute, do not repeat it.
+                // This will prevent attributes like RemoteAttribute (which implement ValidationAttribute and
                 // IClientModelValidator) to be added to the ValidationMetadata twice.
                 // This is to ensure we do not end up with duplication validation rules on the client side.
                 if (!context.ValidationMetadata.ValidatorMetadata.Contains(attribute))

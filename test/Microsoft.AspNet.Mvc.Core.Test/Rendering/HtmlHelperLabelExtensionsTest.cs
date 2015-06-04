@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var provider = new TestModelMetadataProvider();
             provider
                 .ForType<DefaultTemplatesUtilities.ObjectTemplateModel>()
-                .DisplayDetails(dd => dd.DisplayName = string.Empty);
+                .DisplayDetails(dd => dd.DisplayName = () => string.Empty);
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(provider: provider);
 
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var provider = new TestModelMetadataProvider();
             provider
                 .ForType<DefaultTemplatesUtilities.ObjectTemplateModel>()
-                .DisplayDetails(dd => dd.DisplayName = displayName);
+                .DisplayDetails(dd => dd.DisplayName = () => displayName);
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(provider: provider);
 
@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var provider = new TestModelMetadataProvider();
             provider
                 .ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1")
-                .DisplayDetails(dd => dd.DisplayName = string.Empty);
+                .DisplayDetails(dd => dd.DisplayName = () => string.Empty);
 
             var modelExplorer = provider
                 .GetModelExplorerForType(typeof(DefaultTemplatesUtilities.ObjectTemplateModel), model: null)
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var provider = new TestModelMetadataProvider();
             provider
                 .ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1")
-                .DisplayDetails(dd => dd.DisplayName = displayName);
+                .DisplayDetails(dd => dd.DisplayName = () => displayName);
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(provider: provider);
 

@@ -7,6 +7,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Threading;
+using Microsoft.AspNet.Testing;
 using Microsoft.Framework.Internal;
 using Xunit;
 
@@ -418,6 +420,58 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             // Assert
             Assert.Equal("description", result);
+        }
+
+        [Fact]
+        public void DisplayName_FromResources_GetsRecomputed()
+        {
+            // Arrange
+            var display = new DisplayAttribute()
+            {
+                Name = nameof(TestResources.DisplayAttribute_CultureSensitiveName),
+                ResourceType = typeof(TestResources),
+            };
+
+            var provider = CreateProvider(new[] { display });
+            var metadata = provider.GetMetadataForType(typeof(string));
+
+            // Act & Assert
+            var cultures = new[] { "fr-FR", "en-US", "en-GB" };
+            foreach (var culture in cultures)
+            {
+                using (new CultureReplacer(uiCulture: culture))
+                {
+                    // Later iterations ensure value is recomputed.
+                    var result = metadata.DisplayName;
+                    Assert.Equal("name from resources" + culture, result);
+                }
+            }
+        }
+
+        [Fact]
+        public void Description_FromResources_GetsRecomputed()
+        {
+            // Arrange
+            var display = new DisplayAttribute()
+            {
+                Description = nameof(TestResources.DisplayAttribute_CultureSensitiveDescription),
+                ResourceType = typeof(TestResources),
+            };
+
+            var provider = CreateProvider(new[] { display });
+            var metadata = provider.GetMetadataForType(typeof(string));
+
+            // Act & Assert
+            var cultures = new[] { "fr-FR", "en-US", "en-GB" };
+            foreach (var culture in cultures)
+            {
+                using (new CultureReplacer(uiCulture: culture))
+                {
+                    // Later iterations ensure value is recomputed.
+                    var result = metadata.Description;
+                    Assert.Equal("description from resources" + culture, result);
+                }
+            }
         }
 
         [Fact]

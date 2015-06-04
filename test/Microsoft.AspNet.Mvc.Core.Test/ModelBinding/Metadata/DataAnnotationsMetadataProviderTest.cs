@@ -20,8 +20,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 {
                     { new DataTypeAttribute(DataType.Duration), d => d.DataTypeName, DataType.Duration.ToString() },
 
-                    { new DisplayAttribute() { Description = "d" }, d => d.Description, "d" },
-                    { new DisplayAttribute() { Name = "DN" }, d => d.DisplayName, "DN" },
+                    { new DisplayAttribute() { Description = "d" }, d => d.Description(), "d" },
+                    { new DisplayAttribute() { Name = "DN" }, d => d.DisplayName(), "DN" },
                     { new DisplayAttribute() { Order = 3 }, d => d.Order, 3 },
 
                     { new DisplayColumnAttribute("Property"), d => d.SimpleDisplayProperty, "Property" },
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             provider.GetDisplayMetadata(context);
 
             // Assert
-            Assert.Equal("name from resources", context.DisplayMetadata.DisplayName);
+            Assert.Equal("name from resources", context.DisplayMetadata.DisplayName());
         }
 
         // This is IMPORTANT. Product code needs to use GetDescription() instead of .Description. It's easy to regress.
@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             provider.GetDisplayMetadata(context);
 
             // Assert
-            Assert.Equal("description from resources", context.DisplayMetadata.Description);
+            Assert.Equal("description from resources", context.DisplayMetadata.Description());
         }
 
         [Theory]

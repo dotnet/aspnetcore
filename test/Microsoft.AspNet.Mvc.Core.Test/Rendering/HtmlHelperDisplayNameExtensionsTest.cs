@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var provider = new TestModelMetadataProvider();
             provider
                 .ForType<DefaultTemplatesUtilities.ObjectTemplateModel>()
-                .DisplayDetails(dd => dd.DisplayName = displayName);
+                .DisplayDetails(dd => dd.DisplayName = () => displayName);
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(provider: provider);
             var enumerableHelper = DefaultTemplatesUtilities.GetHtmlHelperForEnumerable(provider: provider);
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var provider = new TestModelMetadataProvider();
             provider
                 .ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1")
-                .DisplayDetails(dd => dd.DisplayName = displayName);
+                .DisplayDetails(dd => dd.DisplayName = () => displayName);
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(provider: provider);
             var enumerableHelper = DefaultTemplatesUtilities.GetHtmlHelperForEnumerable(provider: provider);

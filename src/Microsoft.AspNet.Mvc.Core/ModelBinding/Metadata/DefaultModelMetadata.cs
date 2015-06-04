@@ -179,7 +179,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         {
             get
             {
-                return DisplayMetadata.Description;
+                if (DisplayMetadata.Description == null)
+                {
+                    return null;
+                }
+
+                return DisplayMetadata.Description();
             }
         }
 
@@ -197,7 +202,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         {
             get
             {
-                return DisplayMetadata.DisplayName;
+                if (DisplayMetadata.DisplayName == null)
+                {
+                    return null;
+                }
+
+                return DisplayMetadata.DisplayName();
             }
         }
 
