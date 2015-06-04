@@ -65,13 +65,13 @@ namespace Microsoft.Net.Http.Server
         {
             _sentHeaders = sentHeaders;
             _cancellationRegistration = cancellationRegistration;
-            Overlapped overlapped = new Overlapped();
-            overlapped.AsyncResult = this;
+            var boundHandle = _responseStream.RequestContext.Server.BoundHandle;
 
             if (size == 0)
             {
                 _dataChunks = null;
-                _overlapped = new SafeNativeOverlapped(overlapped.Pack(IOCallback, null));
+                _overlapped = new SafeNativeOverlapped(boundHandle,
+                    boundHandle.AllocateNativeOverlapped(IOCallback, this, null));
             }
             else
             {
@@ -114,7 +114,8 @@ namespace Microsoft.Net.Http.Server
                 }
 
                 // This call will pin needed memory
-                _overlapped = new SafeNativeOverlapped(overlapped.Pack(IOCallback, objectsToPin));
+                _overlapped = new SafeNativeOverlapped(boundHandle,
+                    boundHandle.AllocateNativeOverlapped(IOCallback, this, objectsToPin));
 
                 if (chunked)
                 {
@@ -136,8 +137,7 @@ namespace Microsoft.Net.Http.Server
         {
             _sentHeaders = sentHeaders;
             _cancellationRegistration = cancellationRegistration;
-            Overlapped overlapped = new Overlapped();
-            overlapped.AsyncResult = this;
+            var boundHandle = ResponseStream.RequestContext.Server.BoundHandle;
 
             int bufferSize = 1024 * 64; // TODO: Validate buffer size choice.
 #if DNXCORE50
@@ -162,7 +162,8 @@ namespace Microsoft.Net.Http.Server
             if (size == 0 || (!size.HasValue && _fileStream.Length == 0))
             {
                 _dataChunks = null;
-                _overlapped = new SafeNativeOverlapped(overlapped.Pack(IOCallback, null));
+                _overlapped = new SafeNativeOverlapped(boundHandle,
+                    boundHandle.AllocateNativeOverlapped(IOCallback, this, null));
             }
             else
             {
@@ -206,7 +207,8 @@ namespace Microsoft.Net.Http.Server
                 }
 
                 // This call will pin needed memory
-                _overlapped = new SafeNativeOverlapped(overlapped.Pack(IOCallback, objectsToPin));
+                _overlapped = new SafeNativeOverlapped(boundHandle,
+                    boundHandle.AllocateNativeOverlapped(IOCallback, this, objectsToPin));
 
                 if (chunked)
                 {
@@ -318,9 +320,7 @@ namespace Microsoft.Net.Http.Server
 
         private static unsafe void Callback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlapped)
         {
-            Overlapped callbackOverlapped = Overlapped.Unpack(nativeOverlapped);
-            ResponseStreamAsyncResult asyncResult = callbackOverlapped.AsyncResult as ResponseStreamAsyncResult;
-
+            var asyncResult = (ResponseStreamAsyncResult)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped);
             IOCompleted(asyncResult, errorCode, numBytes);
         }
 

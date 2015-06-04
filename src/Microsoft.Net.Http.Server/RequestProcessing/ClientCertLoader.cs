@@ -138,9 +138,9 @@ namespace Microsoft.Net.Http.Server
                 return;
             }
             _backingBuffer = new byte[checked((int)size)];
-            Overlapped overlapped = new Overlapped();
-            overlapped.AsyncResult = this;
-            _overlapped = new SafeNativeOverlapped(overlapped.Pack(IOCallback, _backingBuffer));
+            var boundHandle = RequestContext.Server.BoundHandle;
+            _overlapped = new SafeNativeOverlapped(boundHandle,
+                boundHandle.AllocateNativeOverlapped(IOCallback, this, _backingBuffer));
             _memoryBlob = (UnsafeNclNativeMethods.HttpApi.HTTP_SSL_CLIENT_CERT_INFO*)Marshal.UnsafeAddrOfPinnedArrayElement(_backingBuffer, 0);
         }
 
@@ -315,9 +315,7 @@ namespace Microsoft.Net.Http.Server
 
         private static unsafe void WaitCallback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlapped)
         {
-            Overlapped callbackOverlapped = Overlapped.Unpack(nativeOverlapped);
-            ClientCertLoader asyncResult = (ClientCertLoader)callbackOverlapped.AsyncResult;
-
+            var asyncResult = (ClientCertLoader)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped);
             IOCompleted(asyncResult, errorCode, numBytes);
         }
 

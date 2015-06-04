@@ -43,6 +43,11 @@ namespace Microsoft.Net.Http.Server
             _requestContext = httpContext;
         }
 
+        internal RequestContext RequestContext
+        {
+            get { return _requestContext; }
+        }
+
         public override bool CanSeek
         {
             get

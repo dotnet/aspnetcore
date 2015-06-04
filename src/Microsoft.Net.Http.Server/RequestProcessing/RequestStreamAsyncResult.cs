@@ -64,9 +64,9 @@ namespace Microsoft.Net.Http.Server
             : this(requestStream, userState, callback)
         {
             _dataAlreadyRead = dataAlreadyRead;
-            Overlapped overlapped = new Overlapped();
-            overlapped.AsyncResult = this;
-            _overlapped = new SafeNativeOverlapped(overlapped.Pack(IOCallback, buffer));
+            var boundHandle = requestStream.RequestContext.Server.BoundHandle;
+            _overlapped = new SafeNativeOverlapped(boundHandle,
+                boundHandle.AllocateNativeOverlapped(IOCallback, this, buffer));
             _pinnedBuffer = (Marshal.UnsafeAddrOfPinnedArrayElement(buffer, offset));
             _cancellationRegistration = cancellationRegistration;
         }
@@ -126,9 +126,7 @@ namespace Microsoft.Net.Http.Server
 
         private static unsafe void Callback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlapped)
         {
-            Overlapped callbackOverlapped = Overlapped.Unpack(nativeOverlapped);
-            RequestStreamAsyncResult asyncResult = callbackOverlapped.AsyncResult as RequestStreamAsyncResult;
-
+            var asyncResult = (RequestStreamAsyncResult)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped);
             IOCompleted(asyncResult, errorCode, numBytes);
         }
 
