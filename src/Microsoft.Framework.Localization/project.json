@@ -7,7 +7,6 @@
     "Microsoft.Framework.Localization.Abstractions": "1.0.0-*",
     "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
     "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*",
-    "System.Resources.ReaderWriter": "4.0.0-*"
   },
 
   "frameworks": {
@@ -19,6 +18,7 @@
         "System.Collections.Concurrent": "4.0.10-beta-*",
         "System.Globalization": "4.0.10-beta-*",
         "System.Linq": "4.0.0-beta-*",
+        "System.Resources.ReaderWriter": "4.0.0-beta-*",
         "System.Resources.ResourceManager": "4.0.0-beta-*",
         "System.Threading": "4.0.10-beta-*"
       }
