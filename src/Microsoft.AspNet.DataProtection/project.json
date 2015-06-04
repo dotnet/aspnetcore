@@ -13,6 +13,7 @@
     "frameworks": {
         "net451": {
             "frameworkAssemblies": {
+                "System.IO": "",
                 "System.Security": "",
                 "System.Xml": "",
                 "System.Xml.Linq": ""
@@ -20,6 +21,7 @@
         },
         "dnx451": {
             "frameworkAssemblies": {
+                "System.IO": "",
                 "System.Security": "",
                 "System.Xml": "",
                 "System.Xml.Linq": ""
