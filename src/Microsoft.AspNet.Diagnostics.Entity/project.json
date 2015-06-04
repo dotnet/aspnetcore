@@ -6,6 +6,7 @@
     },
     "dependencies": {
         "Microsoft.AspNet.Diagnostics": "1.0.0-*",
+        "EntityFramework.Core": "7.0.0-*",
         "EntityFramework.Relational": "7.0.0-*"
     },
     "compile": [ "..\\Shared\\*.cs" ],
