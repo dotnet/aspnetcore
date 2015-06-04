@@ -127,7 +127,7 @@ namespace Microsoft.Net.Http.Headers
                 }
                 else if (value < 0)
                 {
-                    throw new ArgumentOutOfRangeException("value");
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 }
                 else if (sizeParameter != null)
                 {
@@ -656,7 +656,7 @@ namespace Microsoft.Net.Http.Headers
         {
             if ((index < 0) || (index >= pattern.Length))
             {
-                throw new ArgumentOutOfRangeException("index");
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
             if ((pattern[index] == '%')
                 && (pattern.Length - index >= 3))

@@ -70,11 +70,11 @@ namespace Microsoft.AspNet.WebUtilities
             {
                 if (value < 0)
                 {
-                    throw new ArgumentOutOfRangeException("value", value, "The Position must be positive.");
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "The Position must be positive.");
                 }
                 if (value > _observedLength)
                 {
-                    throw new ArgumentOutOfRangeException("value", value, "The Position must be less than length.");
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "The Position must be less than length.");
                 }
                 _position = value;
                 if (_position < _observedLength)

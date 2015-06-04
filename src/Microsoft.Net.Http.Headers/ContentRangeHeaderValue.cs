@@ -29,15 +29,15 @@ namespace Microsoft.Net.Http.Headers
 
             if (length < 0)
             {
-                throw new ArgumentOutOfRangeException("length");
+                throw new ArgumentOutOfRangeException(nameof(length));
             }
             if ((to < 0) || (to > length))
             {
-                throw new ArgumentOutOfRangeException("to");
+                throw new ArgumentOutOfRangeException(nameof(to));
             }
             if ((from < 0) || (from > to))
             {
-                throw new ArgumentOutOfRangeException("from");
+                throw new ArgumentOutOfRangeException(nameof(from));
             }
 
             _from = from;
@@ -52,7 +52,7 @@ namespace Microsoft.Net.Http.Headers
 
             if (length < 0)
             {
-                throw new ArgumentOutOfRangeException("length");
+                throw new ArgumentOutOfRangeException(nameof(length));
             }
 
             _length = length;
@@ -65,11 +65,11 @@ namespace Microsoft.Net.Http.Headers
 
             if (to < 0)
             {
-                throw new ArgumentOutOfRangeException("to");
+                throw new ArgumentOutOfRangeException(nameof(to));
             }
             if ((from < 0) || (from > to))
             {
-                throw new ArgumentOutOfRangeException("from");
+                throw new ArgumentOutOfRangeException(nameof(@from));
             }
 
             _from = from;

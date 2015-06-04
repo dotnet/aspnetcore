@@ -49,7 +49,7 @@ namespace Microsoft.Net.Http.Headers
             // null values cannot be added to the collection.
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
         }
     }

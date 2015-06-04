@@ -39,7 +39,7 @@ namespace Microsoft.Net.Http.Headers
         {
             if (string.IsNullOrEmpty(tag))
             {
-                throw new ArgumentException("An empty string is not allowed.", "tag");
+                throw new ArgumentException("An empty string is not allowed.", nameof(tag));
             }
 
             int length = 0;

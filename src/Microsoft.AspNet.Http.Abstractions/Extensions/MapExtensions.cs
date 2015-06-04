@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Builder
         {
             if (pathMatch.HasValue && pathMatch.Value.EndsWith("/", StringComparison.Ordinal))
             {
-                throw new ArgumentException("The path must not end with a '/'", "pathMatch");
+                throw new ArgumentException("The path must not end with a '/'", nameof(pathMatch));
             }
 
             // create branch

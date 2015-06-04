@@ -28,7 +28,7 @@ namespace Microsoft.Net.Http.Headers
         {
             if (entityTag == null)
             {
-                throw new ArgumentNullException("entityTag");
+                throw new ArgumentNullException(nameof(entityTag));
             }
 
             _entityTag = entityTag;

@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Http
         {
             if (!String.IsNullOrEmpty(value) && value[0] != '/')
             {
-                throw new ArgumentException(""/*Resources.Exception_PathMustStartWithSlash*/, "value");
+                throw new ArgumentException(""/*Resources.Exception_PathMustStartWithSlash*/, nameof(value));
             }
             _value = value;
         }

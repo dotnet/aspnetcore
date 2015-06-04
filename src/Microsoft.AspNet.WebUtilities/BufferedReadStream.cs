@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.WebUtilities
             {
                 if (value < 0)
                 {
-                    throw new ArgumentOutOfRangeException("value", value, "Position must be positive.");
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "Position must be positive.");
                 }
                 if (value == Position)
                 {

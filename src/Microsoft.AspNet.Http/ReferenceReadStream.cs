@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Http.Internal
                 ThrowIfDisposed();
                 if (value < 0 || value > Length)
                 {
-                    throw new ArgumentOutOfRangeException("value", value, "The Position must be within the length of the Stream: " + Length);
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "The Position must be within the length of the Stream: " + Length);
                 }
                 VerifyPosition();
                 _position = value;

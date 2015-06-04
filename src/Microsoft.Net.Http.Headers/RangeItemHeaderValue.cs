@@ -21,15 +21,15 @@ namespace Microsoft.Net.Http.Headers
             }
             if (from.HasValue && (from.Value < 0))
             {
-                throw new ArgumentOutOfRangeException("from");
+                throw new ArgumentOutOfRangeException(nameof(from));
             }
             if (to.HasValue && (to.Value < 0))
             {
-                throw new ArgumentOutOfRangeException("to");
+                throw new ArgumentOutOfRangeException(nameof(to));
             }
             if (from.HasValue && to.HasValue && (from.Value > to.Value))
             {
-                throw new ArgumentOutOfRangeException("from");
+                throw new ArgumentOutOfRangeException(nameof(from));
             }
 
             _from = from;

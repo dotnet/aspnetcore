@@ -411,7 +411,7 @@ namespace Microsoft.AspNet.Owin
         {
             if (arrayIndex < 0 || arrayIndex > array.Length)
             {
-                throw new ArgumentOutOfRangeException("arrayIndex", arrayIndex, string.Empty);
+                throw new ArgumentOutOfRangeException(nameof(arrayIndex), arrayIndex, string.Empty);
             }
             var keys = Keys;
             if (keys.Count > array.Length - arrayIndex)

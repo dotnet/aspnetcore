@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Http
         {
             if (!string.IsNullOrEmpty(value) && value[0] != '?')
             {
-                throw new ArgumentException("The leading '?' must be included for a non-empty query.", "value");
+                throw new ArgumentException("The leading '?' must be included for a non-empty query.", nameof(value));
             }
             _value = value;
         }
