@@ -14,6 +14,26 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 yield return new object[]
                 {
+                    LanguageViewLocationExpanderOption.Suffix,
+                    new[]
+                    {
+                        "/Views/{1}/{0}.cshtml",
+                        "/Views/Shared/{0}.cshtml"
+                    },
+                    new[]
+                    {
+                        "/Views/{1}/{0}.en-GB.cshtml",
+                        "/Views/{1}/{0}.en.cshtml",
+                        "/Views/{1}/{0}.cshtml",
+                        "/Views/Shared/{0}.en-GB.cshtml",
+                        "/Views/Shared/{0}.en.cshtml",
+                        "/Views/Shared/{0}.cshtml"
+                    }
+                };
+
+                yield return new object[]
+                {
+                    LanguageViewLocationExpanderOption.SubFolder,
                     new[]
                     {
                         "/Views/{1}/{0}.cshtml",
@@ -32,6 +52,30 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                 yield return new object[]
                 {
+                    LanguageViewLocationExpanderOption.Suffix,
+                    new[]
+                    {
+                        "/Areas/{2}/Views/{1}/{0}.cshtml",
+                        "/Areas/{2}/Views/Shared/{0}.cshtml",
+                        "/Views/Shared/{0}.cshtml"
+                    },
+                    new[]
+                    {
+                        "/Areas/{2}/Views/{1}/{0}.en-GB.cshtml",
+                        "/Areas/{2}/Views/{1}/{0}.en.cshtml",
+                        "/Areas/{2}/Views/{1}/{0}.cshtml",
+                        "/Areas/{2}/Views/Shared/{0}.en-GB.cshtml",
+                        "/Areas/{2}/Views/Shared/{0}.en.cshtml",
+                        "/Areas/{2}/Views/Shared/{0}.cshtml",
+                        "/Views/Shared/{0}.en-GB.cshtml",
+                        "/Views/Shared/{0}.en.cshtml",
+                        "/Views/Shared/{0}.cshtml"
+                    }
+                };
+
+                yield return new object[]
+                {
+                    LanguageViewLocationExpanderOption.SubFolder,
                     new[]
                     {
                         "/Areas/{2}/Views/{1}/{0}.cshtml",
@@ -82,12 +126,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         [Theory]
         [MemberData(nameof(ViewLocationExpanderTestDataWithExpectedValues))]
         public void ExpandViewLocations_SpecificLocale(
+            LanguageViewLocationExpanderOption option,
             IEnumerable<string> viewLocations,
             IEnumerable<string> expectedViewLocations)
         {
             // Arrange
             var viewLocationExpanderContext = new ViewLocationExpanderContext(new ActionContext(),"testView", false);
-            var languageViewLocationExpander = new LanguageViewLocationExpander();
+            var languageViewLocationExpander = new LanguageViewLocationExpander(option);
             viewLocationExpanderContext.Values = new Dictionary<string, string>();
             viewLocationExpanderContext.Values["language"] = "en-GB";
 

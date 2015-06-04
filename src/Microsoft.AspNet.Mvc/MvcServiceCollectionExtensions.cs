@@ -263,11 +263,29 @@ namespace Microsoft.Framework.DependencyInjection
             services.TryAdd(ServiceDescriptor.Singleton<ITempDataProvider, SessionStateTempDataProvider>());
         }
 
+        /// <summary>
+        /// Adds Mvc localization to the application.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
         public static IServiceCollection AddMvcLocalization([NotNull] this IServiceCollection services)
+        {
+            return AddMvcLocalization(services, LanguageViewLocationExpanderOption.Suffix);
+        }
+
+        /// <summary>
+        ///  Adds Mvc localization to the application.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="option">The view format for localized views.</param>
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection AddMvcLocalization(
+            [NotNull] this IServiceCollection services,
+            LanguageViewLocationExpanderOption option)
         {
             services.ConfigureRazorViewEngine(options =>
             {
-                options.ViewLocationExpanders.Add(new LanguageViewLocationExpander());
+                options.ViewLocationExpanders.Add(new LanguageViewLocationExpander(option));
             });
 
             return services;

@@ -46,7 +46,7 @@ namespace MvcSample.Web
                 options.Filters.Add(new FormatFilterAttribute());
             });
 
-            services.AddMvcLocalization();
+            services.AddMvcLocalization(LanguageViewLocationExpanderOption.SubFolder);
 
 #if DNX451
             // Fully-qualify configuration path to avoid issues in functional tests. Just "config.json" would be fine
@@ -59,7 +59,9 @@ namespace MvcSample.Web
             var configBuilder = new ConfigurationBuilder()
                 .AddJsonFile(configurationPath)
                 .AddEnvironmentVariables();
+
             var configuration = configBuilder.Build();
+
             string diSystem;
             if (configuration.TryGet("DependencyInjection", out diSystem) &&
                 diSystem.Equals("AutoFac", StringComparison.OrdinalIgnoreCase))

@@ -32,7 +32,7 @@ namespace RazorWebSite
                 options.HtmlHelperOptions.ValidationMessageElement = "validationMessageElement";
                 options.HtmlHelperOptions.ValidationSummaryMessageElement = "validationSummaryElement";
             });
-            services.AddMvcLocalization();
+            services.AddMvcLocalization(LanguageViewLocationExpanderOption.SubFolder);
         }
 
         public void Configure(IApplicationBuilder app)
