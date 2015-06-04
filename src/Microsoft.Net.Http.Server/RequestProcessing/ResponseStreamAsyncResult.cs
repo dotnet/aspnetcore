@@ -27,117 +27,97 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using static Microsoft.Net.Http.Server.UnsafeNclNativeMethods;
 
 namespace Microsoft.Net.Http.Server
 {
     internal unsafe class ResponseStreamAsyncResult : IAsyncResult, IDisposable
     {
-        private static readonly byte[] CRLF = new byte[] { (byte)'\r', (byte)'\n' };
         private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(Callback);
 
         private SafeNativeOverlapped _overlapped;
-        private UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK[] _dataChunks;
-        private bool _sentHeaders;
+        private HttpApi.HTTP_DATA_CHUNK[] _dataChunks;
         private FileStream _fileStream;
         private ResponseStream _responseStream;
         private TaskCompletionSource<object> _tcs;
-        private AsyncCallback _callback;
         private uint _bytesSent;
         private CancellationTokenRegistration _cancellationRegistration;
 
-        internal ResponseStreamAsyncResult(ResponseStream responseStream, object userState, AsyncCallback callback)
+        internal ResponseStreamAsyncResult(ResponseStream responseStream, CancellationTokenRegistration cancellationRegistration)
         {
             _responseStream = responseStream;
-            _tcs = new TaskCompletionSource<object>(userState);
-            _callback = callback;
-        }
-        internal ResponseStreamAsyncResult(ResponseStream responseStream, object userState, AsyncCallback callback,
-            byte[] buffer, int offset, int size, bool chunked, bool sentHeaders)
-            : this(responseStream, userState, callback, buffer, offset, size, chunked, sentHeaders,
-                  new CancellationTokenRegistration())
-        {
-        }
-
-        internal ResponseStreamAsyncResult(ResponseStream responseStream, object userState, AsyncCallback callback,
-            byte[] buffer, int offset, int size, bool chunked, bool sentHeaders,
-            CancellationTokenRegistration cancellationRegistration)
-            : this(responseStream, userState, callback)
-        {
-            _sentHeaders = sentHeaders;
+            _tcs = new TaskCompletionSource<object>();
             _cancellationRegistration = cancellationRegistration;
-            var boundHandle = _responseStream.RequestContext.Server.BoundHandle;
+        }
 
-            if (size == 0)
+        internal ResponseStreamAsyncResult(ResponseStream responseStream, BufferBuilder buffer, bool chunked,
+            CancellationTokenRegistration cancellationRegistration)
+            : this(responseStream, cancellationRegistration)
+        {
+            var boundHandle = _responseStream.RequestContext.Server.BoundHandle;
+            object[] objectsToPin;
+
+            if (buffer.TotalBytes == 0)
             {
                 _dataChunks = null;
                 _overlapped = new SafeNativeOverlapped(boundHandle,
                     boundHandle.AllocateNativeOverlapped(IOCallback, this, null));
+                return;
             }
-            else
+
+            _dataChunks = new HttpApi.HTTP_DATA_CHUNK[buffer.BufferCount + (chunked ? 2 : 0)];
+            objectsToPin = new object[_dataChunks.Length + 1];
+            objectsToPin[0] = _dataChunks;
+            var currentChunk = 0;
+            var currentPin = 1;
+
+            var chunkHeaderBuffer = new ArraySegment<byte>();
+            if (chunked)
             {
-                _dataChunks = new UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK[chunked ? 3 : 1];
-
-                object[] objectsToPin = new object[1 + _dataChunks.Length];
-                objectsToPin[_dataChunks.Length] = _dataChunks;
-
-                int chunkHeaderOffset = 0;
-                byte[] chunkHeaderBuffer = null;
-                if (chunked)
-                {
-                    chunkHeaderBuffer = GetChunkHeader(size, out chunkHeaderOffset);
-
-                    _dataChunks[0] = new UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK();
-                    _dataChunks[0].DataChunkType = UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-                    _dataChunks[0].fromMemory.BufferLength = (uint)(chunkHeaderBuffer.Length - chunkHeaderOffset);
-
-                    objectsToPin[0] = chunkHeaderBuffer;
-
-                    _dataChunks[1] = new UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK();
-                    _dataChunks[1].DataChunkType = UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-                    _dataChunks[1].fromMemory.BufferLength = (uint)size;
-
-                    objectsToPin[1] = buffer;
-
-                    _dataChunks[2] = new UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK();
-                    _dataChunks[2].DataChunkType = UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-                    _dataChunks[2].fromMemory.BufferLength = (uint)CRLF.Length;
-
-                    objectsToPin[2] = CRLF;
-                }
-                else
-                {
-                    _dataChunks[0] = new UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK();
-                    _dataChunks[0].DataChunkType = UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-                    _dataChunks[0].fromMemory.BufferLength = (uint)size;
-
-                    objectsToPin[0] = buffer;
-                }
-
-                // This call will pin needed memory
-                _overlapped = new SafeNativeOverlapped(boundHandle,
-                    boundHandle.AllocateNativeOverlapped(IOCallback, this, objectsToPin));
-
-                if (chunked)
-                {
-                    _dataChunks[0].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(chunkHeaderBuffer, chunkHeaderOffset);
-                    _dataChunks[1].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(buffer, offset);
-                    _dataChunks[2].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(CRLF, 0);
-                }
-                else
-                {
-                    _dataChunks[0].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(buffer, offset);
-                }
+                chunkHeaderBuffer = Helpers.GetChunkHeader(buffer.TotalBytes);
+                SetDataChunk(_dataChunks, ref currentChunk, objectsToPin, ref currentPin, chunkHeaderBuffer);
             }
+
+            foreach (var segment in buffer.Buffers)
+            {
+                SetDataChunk(_dataChunks, ref currentChunk, objectsToPin, ref currentPin, segment);
+            }
+
+            if (chunked)
+            {
+                SetDataChunk(_dataChunks, ref currentChunk, objectsToPin, ref currentPin, new ArraySegment<byte>(Helpers.CRLF));
+            }
+
+            // This call will pin needed memory
+            _overlapped = new SafeNativeOverlapped(boundHandle,
+                boundHandle.AllocateNativeOverlapped(IOCallback, this, objectsToPin));
+
+            currentChunk = 0;
+            if (chunked)
+            {
+                _dataChunks[currentChunk].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(chunkHeaderBuffer.Array, chunkHeaderBuffer.Offset);
+                currentChunk++;
+            }
+            foreach (var segment in buffer.Buffers)
+            {
+                _dataChunks[currentChunk].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(segment.Array, segment.Offset);
+                currentChunk++;
+            }
+            if (chunked)
+            {
+                _dataChunks[currentChunk].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(Helpers.CRLF, 0);
+                currentChunk++;
+            }
+
+            // We've captured a reference to all the buffers, clear the buffer so that it can be used to queue overlapped writes.
+            buffer.Clear();
         }
 
-        internal ResponseStreamAsyncResult(ResponseStream responseStream, object userState, AsyncCallback callback,
-            string fileName, long offset, long? size, bool chunked, bool sentHeaders,
-            CancellationTokenRegistration cancellationRegistration)
-            : this(responseStream, userState, callback)
+        internal ResponseStreamAsyncResult(ResponseStream responseStream, string fileName, long offset,
+            long? count, bool chunked, CancellationTokenRegistration cancellationRegistration)
+            : this(responseStream, cancellationRegistration)
         {
-            _sentHeaders = sentHeaders;
-            _cancellationRegistration = cancellationRegistration;
-            var boundHandle = ResponseStream.RequestContext.Server.BoundHandle;
+            var boundHandle = responseStream.RequestContext.Server.BoundHandle;
 
             int bufferSize = 1024 * 64; // TODO: Validate buffer size choice.
 #if DNXCORE50
@@ -153,13 +133,13 @@ namespace Microsoft.Net.Http.Server
                 _fileStream.Dispose();
                 throw new ArgumentOutOfRangeException("offset", offset, string.Empty);
             }
-            if (size.HasValue && (size < 0 || size > length - offset))
+            if (count.HasValue && (count < 0 || count > length - offset))
             {
                 _fileStream.Dispose();
-                throw new ArgumentOutOfRangeException("size", size, string.Empty);
+                throw new ArgumentOutOfRangeException("count", count, string.Empty);
             }
 
-            if (size == 0 || (!size.HasValue && _fileStream.Length == 0))
+            if (count == 0 || (!count.HasValue && _fileStream.Length == 0))
             {
                 _dataChunks = null;
                 _overlapped = new SafeNativeOverlapped(boundHandle,
@@ -167,42 +147,34 @@ namespace Microsoft.Net.Http.Server
             }
             else
             {
-                _dataChunks = new UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK[chunked ? 3 : 1];
+                _dataChunks = new HttpApi.HTTP_DATA_CHUNK[chunked ? 3 : 1];
 
                 object[] objectsToPin = new object[_dataChunks.Length];
                 objectsToPin[_dataChunks.Length - 1] = _dataChunks;
 
-                int chunkHeaderOffset = 0;
-                byte[] chunkHeaderBuffer = null;
+                var chunkHeaderBuffer = new ArraySegment<byte>();
                 if (chunked)
                 {
-                    chunkHeaderBuffer = GetChunkHeader((int)(size ?? _fileStream.Length - offset), out chunkHeaderOffset);
+                    chunkHeaderBuffer = Helpers.GetChunkHeader((int)(count ?? _fileStream.Length - offset));
+                    _dataChunks[0].DataChunkType = HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
+                    _dataChunks[0].fromMemory.BufferLength = (uint)chunkHeaderBuffer.Count;
+                    objectsToPin[0] = chunkHeaderBuffer.Array;
 
-                    _dataChunks[0] = new UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK();
-                    _dataChunks[0].DataChunkType = UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-                    _dataChunks[0].fromMemory.BufferLength = (uint)(chunkHeaderBuffer.Length - chunkHeaderOffset);
-
-                    objectsToPin[0] = chunkHeaderBuffer;
-
-                    _dataChunks[1] = new UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK();
-                    _dataChunks[1].DataChunkType = UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromFileHandle;
+                    _dataChunks[1].DataChunkType = HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromFileHandle;
                     _dataChunks[1].fromFile.offset = (ulong)offset;
-                    _dataChunks[1].fromFile.count = (ulong)(size ?? -1);
+                    _dataChunks[1].fromFile.count = (ulong)(count ?? -1);
                     _dataChunks[1].fromFile.fileHandle = _fileStream.SafeFileHandle.DangerousGetHandle();
                     // Nothing to pin for the file handle.
 
-                    _dataChunks[2] = new UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK();
-                    _dataChunks[2].DataChunkType = UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-                    _dataChunks[2].fromMemory.BufferLength = (uint)CRLF.Length;
-
-                    objectsToPin[1] = CRLF;
+                    _dataChunks[2].DataChunkType = HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
+                    _dataChunks[2].fromMemory.BufferLength = (uint)Helpers.CRLF.Length;
+                    objectsToPin[1] = Helpers.CRLF;
                 }
                 else
                 {
-                    _dataChunks[0] = new UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK();
-                    _dataChunks[0].DataChunkType = UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromFileHandle;
+                    _dataChunks[0].DataChunkType = HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromFileHandle;
                     _dataChunks[0].fromFile.offset = (ulong)offset;
-                    _dataChunks[0].fromFile.count = (ulong)(size ?? -1);
+                    _dataChunks[0].fromFile.count = (ulong)(count ?? -1);
                     _dataChunks[0].fromFile.fileHandle = _fileStream.SafeFileHandle.DangerousGetHandle();
                 }
 
@@ -212,15 +184,21 @@ namespace Microsoft.Net.Http.Server
 
                 if (chunked)
                 {
-                    _dataChunks[0].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(chunkHeaderBuffer, chunkHeaderOffset);
-                    _dataChunks[2].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(CRLF, 0);
+                    // These must be set after pinning with Overlapped.
+                    _dataChunks[0].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(chunkHeaderBuffer.Array, chunkHeaderBuffer.Offset);
+                    _dataChunks[2].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(Helpers.CRLF, 0);
                 }
             }
         }
 
-        internal ResponseStream ResponseStream
+        private static void SetDataChunk(HttpApi.HTTP_DATA_CHUNK[] chunks, ref int chunkIndex, object[] objectsToPin, ref int pinIndex, ArraySegment<byte> segment)
         {
-            get { return _responseStream; }
+            objectsToPin[pinIndex] = segment.Array;
+            pinIndex++;
+            chunks[chunkIndex].DataChunkType = HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
+            // The address is not set until after we pin it with Overlapped
+            chunks[chunkIndex].fromMemory.BufferLength = (uint)segment.Count;
+            chunkIndex++;
         }
 
         internal SafeNativeOverlapped NativeOverlapped
@@ -254,7 +232,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK* DataChunks
+        internal HttpApi.HTTP_DATA_CHUNK* DataChunks
         {
             get
             {
@@ -264,7 +242,7 @@ namespace Microsoft.Net.Http.Server
                 }
                 else
                 {
-                    return (UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK*)(Marshal.UnsafeAddrOfPinnedArrayElement(_dataChunks, 0));
+                    return (HttpApi.HTTP_DATA_CHUNK*)(Marshal.UnsafeAddrOfPinnedArrayElement(_dataChunks, 0));
                 }
             }
         }
@@ -326,109 +304,15 @@ namespace Microsoft.Net.Http.Server
 
         internal void Complete()
         {
-            if (_tcs.TrySetResult(null) && _callback != null)
-            {
-                try
-                {
-                    _callback(this);
-                }
-                catch (Exception)
-                {
-                    // TODO: Exception handling? This may be an IO callback thread and throwing here could crash the app.
-                    // TODO: Log
-                }
-            }
+            _tcs.TrySetResult(null);
             Dispose();
         }
 
         internal void Fail(Exception ex)
         {
-            if (_tcs.TrySetException(ex) && _callback != null)
-            {
-                try
-                {
-                    _callback(this);
-                }
-                catch (Exception)
-                {
-                    // TODO: Exception handling? This may be an IO callback thread and throwing here could crash the app.
-                }
-            }
+            _tcs.TrySetException(ex);
             Dispose();
             _responseStream.Abort();
-        }
-
-        /*++
-
-            GetChunkHeader
-
-            A private utility routine to convert an integer to a chunk header,
-            which is an ASCII hex number followed by a CRLF. The header is returned
-            as a byte array.
-
-            Input:
-
-                size        - Chunk size to be encoded
-                offset      - Out parameter where we store offset into buffer.
-
-            Returns:
-
-                A byte array with the header in int.
-
-        --*/
-
-        private static byte[] GetChunkHeader(int size, out int offset)
-        {
-            uint mask = 0xf0000000;
-            byte[] header = new byte[10];
-            int i;
-            offset = -1;
-
-            // Loop through the size, looking at each nibble. If it's not 0
-            // convert it to hex. Save the index of the first non-zero
-            // byte.
-
-            for (i = 0; i < 8; i++, size <<= 4)
-            {
-                // offset == -1 means that we haven't found a non-zero nibble
-                // yet. If we haven't found one, and the current one is zero,
-                // don't do anything.
-
-                if (offset == -1)
-                {
-                    if ((size & mask) == 0)
-                    {
-                        continue;
-                    }
-                }
-
-                // Either we have a non-zero nibble or we're no longer skipping
-                // leading zeros. Convert this nibble to ASCII and save it.
-
-                uint temp = (uint)size >> 28;
-
-                if (temp < 10)
-                {
-                    header[i] = (byte)(temp + '0');
-                }
-                else
-                {
-                    header[i] = (byte)((temp - 10) + 'A');
-                }
-
-                // If we haven't found a non-zero nibble yet, we've found one
-                // now, so remember that.
-
-                if (offset == -1)
-                {
-                    offset = i;
-                }
-            }
-
-            header[8] = (byte)'\r';
-            header[9] = (byte)'\n';
-
-            return header;
         }
 
         public object AsyncState

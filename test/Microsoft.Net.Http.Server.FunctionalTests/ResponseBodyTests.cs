@@ -15,7 +15,7 @@ namespace Microsoft.Net.Http.Server
     public class ResponseBodyTests
     {
         [Fact]
-        public async Task ResponseBody_WriteNoHeaders_DefaultsToChunked()
+        public async Task ResponseBody_BufferWriteNoHeaders_DefaultsToContentLength()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
@@ -23,6 +23,31 @@ namespace Microsoft.Net.Http.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
+                context.Response.ShouldBuffer = true;
+                context.Response.Body.Write(new byte[10], 0, 10);
+                await context.Response.Body.WriteAsync(new byte[10], 0, 10);
+                context.Dispose();
+
+                HttpResponseMessage response = await responseTask;
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.Equal(new Version(1, 1), response.Version);
+                IEnumerable<string> ignored;
+                Assert.True(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
+                Assert.False(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
+                Assert.Equal(new byte[20], await response.Content.ReadAsByteArrayAsync());
+            }
+        }
+
+        [Fact]
+        public async Task ResponseBody_NoBufferWriteNoHeaders_DefaultsToChunked()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+
+                var context = await server.GetContextAsync();
+                context.Response.ShouldBuffer = false;
                 context.Response.Body.Write(new byte[10], 0, 10);
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
                 context.Dispose();
@@ -34,6 +59,29 @@ namespace Microsoft.Net.Http.Server
                 Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
                 Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
                 Assert.Equal(new byte[20], await response.Content.ReadAsByteArrayAsync());
+            }
+        }
+
+        [Fact]
+        public async Task ResponseBody_FlushThenBuffer_DefaultsToChunkedAndTerminates()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+
+                var context = await server.GetContextAsync();
+                context.Response.Body.Write(new byte[10], 0, 10);
+                context.Response.Body.Flush();
+                await context.Response.Body.WriteAsync(new byte[10], 0, 10);
+                context.Dispose();
+
+                HttpResponseMessage response = await responseTask;
+                Assert.Equal(200, (int)response.StatusCode);
+                IEnumerable<string> contentLength;
+                Assert.False(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
+                Assert.True(response.Headers.TransferEncodingChunked.HasValue);
+                Assert.Equal(20, (await response.Content.ReadAsByteArrayAsync()).Length);
             }
         }
 
@@ -111,7 +159,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Fact]
-        public async Task ResponseBody_WriteContentLengthNotEnoughWritten_Throws()
+        public async Task ResponseBody_WriteContentLengthNotEnoughWritten_Aborts()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
@@ -119,6 +167,12 @@ namespace Microsoft.Net.Http.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
+                context.Response.Headers["Content-lenGth"] = " 20 ";
+                context.Response.Body.Write(new byte[5], 0, 5);
+                context.Dispose();
+
+                // HttpClient retries the request because it didn't get a response.
+                context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Response.Body.Write(new byte[5], 0, 5);
                 context.Dispose();
@@ -136,6 +190,13 @@ namespace Microsoft.Net.Http.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
+                context.Response.Headers["Content-lenGth"] = " 10 ";
+                context.Response.Body.Write(new byte[5], 0, 5);
+                Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(new byte[6], 0, 6));
+                context.Dispose();
+
+                // HttpClient retries the request because it didn't get a response.
+                context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = " 10 ";
                 context.Response.Body.Write(new byte[5], 0, 5);
                 Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(new byte[6], 0, 6));
@@ -167,6 +228,92 @@ namespace Microsoft.Net.Http.Server
                 Assert.Equal("10", contentLength.First());
                 Assert.Null(response.Headers.TransferEncodingChunked);
                 Assert.Equal(new byte[10], await response.Content.ReadAsByteArrayAsync());
+            }
+        }
+
+        [Fact]
+        public async Task ResponseBody_WriteZeroCount_StartsResponse()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+
+                var context = await server.GetContextAsync();
+                context.Response.Body.Write(new byte[10], 0, 0);
+                Assert.True(context.Response.HasStarted);
+                await context.Response.Body.WriteAsync(new byte[10], 0, 0);
+                context.Dispose();
+
+                HttpResponseMessage response = await responseTask;
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.Equal(new Version(1, 1), response.Version);
+                IEnumerable<string> ignored;
+                Assert.True(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
+                Assert.False(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
+                Assert.Equal(new byte[0], await response.Content.ReadAsByteArrayAsync());
+            }
+        }
+
+        [Fact]
+        public async Task ResponseBody_WriteMoreThanBufferLimitBufferWithNoHeaders_DefaultsToChunkedAndFlushes()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+
+                var context = await server.GetContextAsync();
+                context.Response.ShouldBuffer = true;
+                for (int i = 0; i < 4; i++)
+                {
+                    context.Response.Body.Write(new byte[1020], 0, 1020);
+                    Assert.True(context.Response.HasStarted);
+                    Assert.False(context.Response.HasStartedSending);
+                }
+                context.Response.Body.Write(new byte[1020], 0, 1020);
+                Assert.True(context.Response.HasStartedSending);
+                context.Response.Body.Write(new byte[1020], 0, 1020);
+                context.Dispose();
+
+                HttpResponseMessage response = await responseTask;
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.Equal(new Version(1, 1), response.Version);
+                IEnumerable<string> ignored;
+                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
+                Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
+                Assert.Equal(new byte[1020*6], await response.Content.ReadAsByteArrayAsync());
+            }
+        }
+
+        [Fact]
+        public async Task ResponseBody_WriteAsyncMoreThanBufferLimitBufferWithNoHeaders_DefaultsToChunkedAndFlushes()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+
+                var context = await server.GetContextAsync();
+                context.Response.ShouldBuffer = true;
+                for (int i = 0; i < 4; i++)
+                {
+                    await context.Response.Body.WriteAsync(new byte[1020], 0, 1020);
+                    Assert.True(context.Response.HasStarted);
+                    Assert.False(context.Response.HasStartedSending);
+                }
+                await context.Response.Body.WriteAsync(new byte[1020], 0, 1020);
+                Assert.True(context.Response.HasStartedSending);
+                await context.Response.Body.WriteAsync(new byte[1020], 0, 1020);
+                context.Dispose();
+
+                HttpResponseMessage response = await responseTask;
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.Equal(new Version(1, 1), response.Version);
+                IEnumerable<string> ignored;
+                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
+                Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
+                Assert.Equal(new byte[1020 * 6], await response.Content.ReadAsByteArrayAsync());
             }
         }
 

@@ -22,23 +22,27 @@
 // ------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using static Microsoft.Net.Http.Server.UnsafeNclNativeMethods;
 
 namespace Microsoft.Net.Http.Server
 {
     internal class ResponseStream : Stream
     {
-        private static readonly byte[] ChunkTerminator = new byte[] { (byte)'0', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
+        private const int MaxBufferSize = 4 * 1024;
 
         private RequestContext _requestContext;
         private long _leftToWrite = long.MinValue;
         private bool _closed;
         private bool _inOpaqueMode;
+        private BufferBuilder _buffer = new BufferBuilder();
+
         // The last write needs special handling to cancel.
         private ResponseStreamAsyncResult _lastWrite;
 
@@ -99,49 +103,185 @@ namespace Microsoft.Net.Http.Server
         // Send headers
         public override void Flush()
         {
-            if (_closed || _requestContext.Response.HeadersSent)
+            if (_closed)
             {
                 return;
             }
-            UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS flags = ComputeLeftToWrite();
-            // TODO: Verbose log
+            FlushInternal(endOfRequest: false);
+        }
 
+        private unsafe void FlushInternal(bool endOfRequest)
+        {
+            bool startedSending = _requestContext.Response.HasStartedSending;
+            var byteCount = _buffer.TotalBytes;
+            if (byteCount == 0 && startedSending && !endOfRequest)
+            {
+                // Empty flush
+                return;
+            }
+
+            var flags = ComputeLeftToWrite(endOfRequest);
+            if (!_inOpaqueMode && endOfRequest && _leftToWrite > byteCount)
+            {
+                _requestContext.Abort();
+                // This is logged rather than thrown because it is too late for an exception to be visible in user code.
+                LogHelper.LogError(_requestContext.Logger, "ResponseStream::Dispose", "Fewer bytes were written than were specified in the Content-Length.");
+                return;
+            }
+
+            if (endOfRequest && _requestContext.Response.BoundaryType == BoundaryType.Close)
+            {
+                flags |= HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
+            }
+            else if (!endOfRequest && _leftToWrite != byteCount)
+            {
+                flags |= HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
+            }
+
+            UpdateWritenCount((uint)byteCount);
+            uint statusCode = 0;
+            HttpApi.HTTP_DATA_CHUNK[] dataChunks;
+            var pinnedBuffers = PinDataBuffers(endOfRequest, out dataChunks);
             try
             {
-                uint statusCode;
-                unsafe
+                if (!startedSending)
                 {
-                    // TODO: Don't add MoreData flag if content-length == 0?
-                    flags |= UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
-                    statusCode = _requestContext.Response.SendHeaders(null, null, flags, false);
+                    statusCode = _requestContext.Response.SendHeaders(dataChunks, null, flags, false);
                 }
-
-                if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
+                else
                 {
-                    throw new IOException(string.Empty, new WebListenerException((int)statusCode));
+                    fixed (HttpApi.HTTP_DATA_CHUNK* pDataChunks = dataChunks)
+                    {
+                        statusCode = HttpApi.HttpSendResponseEntityBody(
+                                _requestContext.RequestQueueHandle,
+                                _requestContext.RequestId,
+                                (uint)flags,
+                                (ushort)dataChunks.Length,
+                                pDataChunks,
+                                null,
+                                SafeLocalFree.Zero,
+                                0,
+                                SafeNativeOverlapped.Zero,
+                                IntPtr.Zero);
+                    }
+
+                    if (_requestContext.Server.IgnoreWriteExceptions)
+                    {
+                        statusCode = UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS;
+                    }
                 }
             }
-            catch (Exception e)
+            finally
             {
-                LogHelper.LogException(_requestContext.Logger, "Flush", e);
+                FreeDataBuffers(pinnedBuffers);
+                _buffer.Clear();
+            }
+
+            if (statusCode != ErrorCodes.ERROR_SUCCESS && statusCode != ErrorCodes.ERROR_HANDLE_EOF
+                // Don't throw for disconnects, we were already finished with the response.
+                && (!endOfRequest || (statusCode != ErrorCodes.ERROR_CONNECTION_INVALID && statusCode != ErrorCodes.ERROR_INVALID_PARAMETER)))
+            {
+                Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
+                LogHelper.LogException(_requestContext.Logger, "Flush", exception);
                 Abort();
-                throw;
+                throw exception;
             }
         }
 
-        // Send headers
-        public override Task FlushAsync(CancellationToken cancellationToken)
+        private List<GCHandle> PinDataBuffers(bool endOfRequest, out HttpApi.HTTP_DATA_CHUNK[] dataChunks)
         {
-            if (_closed || _requestContext.Response.HeadersSent)
+            var pins = new List<GCHandle>();
+            var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
+
+            var currentChunk = 0;
+            // Figure out how many data chunks
+            if (chunked && _buffer.TotalBytes == 0 && endOfRequest)
+            {
+                dataChunks = new HttpApi.HTTP_DATA_CHUNK[1];
+                SetDataChunk(dataChunks, ref currentChunk, pins, new ArraySegment<byte>(Helpers.ChunkTerminator));
+                return pins;
+            }
+            else if (_buffer.TotalBytes == 0)
+            {
+                // No data
+                dataChunks = new HttpApi.HTTP_DATA_CHUNK[0];
+                return pins;
+            }
+
+            var chunkCount = _buffer.BufferCount;
+            if (chunked)
+            {
+                // Chunk framing
+                chunkCount += 2;
+
+                if (endOfRequest)
+                {
+                    // Chunk terminator
+                    chunkCount += 1;
+                }
+            }
+            dataChunks = new HttpApi.HTTP_DATA_CHUNK[chunkCount];
+
+            if (chunked)
+            {
+                var chunkHeaderBuffer = Helpers.GetChunkHeader(_buffer.TotalBytes);
+                SetDataChunk(dataChunks, ref currentChunk, pins, chunkHeaderBuffer);
+            }
+
+            foreach (var buffer in _buffer.Buffers)
+            {
+                SetDataChunk(dataChunks, ref currentChunk, pins, buffer);
+            }
+
+            if (chunked)
+            {
+                SetDataChunk(dataChunks, ref currentChunk, pins, new ArraySegment<byte>(Helpers.CRLF));
+
+                if (endOfRequest)
+                {
+                    SetDataChunk(dataChunks, ref currentChunk, pins, new ArraySegment<byte>(Helpers.ChunkTerminator));
+                }
+            }
+
+            return pins;
+        }
+
+        private static void SetDataChunk(HttpApi.HTTP_DATA_CHUNK[] chunks, ref int chunkIndex, List<GCHandle> pins, ArraySegment<byte> buffer)
+        {
+            var handle = GCHandle.Alloc(buffer.Array, GCHandleType.Pinned);
+            pins.Add(handle);
+            chunks[chunkIndex].DataChunkType = HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
+            chunks[chunkIndex].fromMemory.pBuffer = handle.AddrOfPinnedObject() + buffer.Offset;
+            chunks[chunkIndex].fromMemory.BufferLength = (uint)buffer.Count;
+            chunkIndex++;
+        }
+
+        private void FreeDataBuffers(List<GCHandle> pinnedBuffers)
+        {
+            foreach (var pin in pinnedBuffers)
+            {
+                if (pin.IsAllocated)
+                {
+                    pin.Free();
+                }
+            }
+        }
+
+
+        // Simpler than Flush because it will never be called at the end of the request from Dispose.
+        public unsafe override Task FlushAsync(CancellationToken cancellationToken)
+        {
+            if (_closed)
             {
                 return Helpers.CompletedTask();
             }
-            UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS flags = ComputeLeftToWrite();
-            // TODO: Verbose log
 
-            if (cancellationToken.IsCancellationRequested)
+            bool startedSending = _requestContext.Response.HasStartedSending;
+            var byteCount = _buffer.TotalBytes;
+            if (byteCount == 0 && startedSending)
             {
-                return Helpers.CanceledTask<int>();
+                // Empty flush
+                return Helpers.CompletedTask();
             }
 
             var cancellationRegistration = default(CancellationTokenRegistration);
@@ -150,26 +290,37 @@ namespace Microsoft.Net.Http.Server
                 cancellationRegistration = cancellationToken.Register(RequestContext.AbortDelegate, _requestContext);
             }
 
-            // TODO: Don't add MoreData flag if content-length == 0?
-            flags |= UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
-            ResponseStreamAsyncResult asyncResult = new ResponseStreamAsyncResult(this, null, null, null, 0, 0, _requestContext.Response.BoundaryType == BoundaryType.Chunked, false, cancellationRegistration);
+            var flags = ComputeLeftToWrite();
+            if (_leftToWrite != byteCount)
+            {
+                flags |= HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
+            }
 
+            UpdateWritenCount((uint)byteCount);
+            uint statusCode = 0;
+            var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
+            var asyncResult = new ResponseStreamAsyncResult(this, _buffer, chunked, cancellationRegistration);
+            uint bytesSent = 0;
             try
             {
-                uint statusCode;
-                unsafe
+                if (!startedSending)
                 {
                     statusCode = _requestContext.Response.SendHeaders(null, asyncResult, flags, false);
+                    bytesSent = asyncResult.BytesSent;
                 }
-
-                if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && WebListener.SkipIOCPCallbackOnSuccess)
+                else
                 {
-                    // IO operation completed synchronously - callback won't be called to signal completion.
-                    asyncResult.IOCompleted(statusCode);
-                }
-                else if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
-                {
-                    throw new IOException(string.Empty, new WebListenerException((int)statusCode));
+                    statusCode = HttpApi.HttpSendResponseEntityBody(
+                        _requestContext.RequestQueueHandle,
+                        _requestContext.RequestId,
+                        (uint)flags,
+                        asyncResult.DataChunkCount,
+                        asyncResult.DataChunks,
+                        &bytesSent,
+                        SafeLocalFree.Zero,
+                        0,
+                        asyncResult.NativeOverlapped,
+                        IntPtr.Zero);
                 }
             }
             catch (Exception e)
@@ -178,6 +329,34 @@ namespace Microsoft.Net.Http.Server
                 asyncResult.Dispose();
                 Abort();
                 throw;
+            }
+
+            if (statusCode != ErrorCodes.ERROR_SUCCESS && statusCode != ErrorCodes.ERROR_IO_PENDING)
+            {
+                asyncResult.Dispose();
+                if (_requestContext.Server.IgnoreWriteExceptions && startedSending)
+                {
+                    asyncResult.Complete();
+                }
+                else
+                {
+                    Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
+                    LogHelper.LogException(_requestContext.Logger, "FlushAsync", exception);
+                    Abort();
+                    throw exception;
+                }
+            }
+
+            if (statusCode == ErrorCodes.ERROR_SUCCESS && WebListener.SkipIOCPCallbackOnSuccess)
+            {
+                // IO operation completed synchronously - callback won't be called to signal completion.
+                asyncResult.IOCompleted(statusCode, bytesSent);
+            }
+
+            // Last write, cache it for special cancellation handling.
+            if ((flags & HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
+            {
+                _lastWrite = asyncResult;
             }
 
             return asyncResult.Task;
@@ -195,13 +374,13 @@ namespace Microsoft.Net.Http.Server
             throw new NotSupportedException(Resources.Exception_NoSeek);
         }
 
-        public override int Read([In, Out] byte[] buffer, int offset, int size)
+        public override int Read([In, Out] byte[] buffer, int offset, int count)
         {
             throw new InvalidOperationException(Resources.Exception_WriteOnlyStream);
         }
 
 #if !DNXCORE50
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             throw new InvalidOperationException(Resources.Exception_WriteOnlyStream);
         }
@@ -225,7 +404,7 @@ namespace Microsoft.Net.Http.Server
             UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE;
             if (!_requestContext.Response.ComputedHeaders)
             {
-                flags = _requestContext.Response.ComputeHeaders(endOfRequest: endOfRequest);
+                flags = _requestContext.Response.ComputeHeaders(endOfRequest, _buffer.TotalBytes);
             }
             if (_leftToWrite == long.MinValue)
             {
@@ -246,229 +425,56 @@ namespace Microsoft.Net.Http.Server
             return flags;
         }
 
-        public override unsafe void Write(byte[] buffer, int offset, int size)
+        public override void Write(byte[] buffer, int offset, int count)
         {
-            if (buffer == null)
-            {
-                throw new ArgumentNullException("buffer");
-            }
-            if (offset < 0 || offset > buffer.Length)
-            {
-                throw new ArgumentOutOfRangeException("offset");
-            }
-            if (size < 0 || size > buffer.Length - offset)
-            {
-                throw new ArgumentOutOfRangeException("size");
-            }
-            if (_closed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
+            // Validates for null and bounds. Allows count == 0.
+            var data = new ArraySegment<byte>(buffer, offset, count);
+            CheckDisposed();
             // TODO: Verbose log parameters
-            UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS flags = ComputeLeftToWrite();
-            if (size == 0 && _leftToWrite != 0)
-            {
-                return;
-            }
-            if (_leftToWrite >= 0 && size > _leftToWrite)
-            {
-                throw new InvalidOperationException(Resources.Exception_TooMuchWritten);
-            }
-            // TODO: Verbose log
+            // Officially starts the response and fires OnSendingHeaders
+            _requestContext.Response.Start();
 
-            uint statusCode;
-            uint dataToWrite = (uint)size;
-            SafeLocalFree bufferAsIntPtr = null;
-            IntPtr pBufferAsIntPtr = IntPtr.Zero;
-            bool sentHeaders = _requestContext.Response.HeadersSent;
-            try
+            var currentBytes = _buffer.TotalBytes + data.Count;
+            var contentLength = _requestContext.Response.ContentLength;
+            if (contentLength.HasValue && !_requestContext.Response.ComputedHeaders && contentLength.Value <= currentBytes)
             {
-                if (size == 0)
+                if (contentLength.Value < currentBytes)
                 {
-                    // TODO: Is this code path accessible? Is this like a Flush?
-                    statusCode = _requestContext.Response.SendHeaders(null, null, flags, false);
+                    throw new InvalidOperationException("More bytes written than specified in the Content-Length header.");
                 }
-                else
-                {
-                    fixed (byte* pDataBuffer = buffer)
-                    {
-                        byte* pBuffer = pDataBuffer;
-                        if (_requestContext.Response.BoundaryType == BoundaryType.Chunked)
-                        {
-                            // TODO:
-                            // here we need some heuristics, some time it is definitely better to split this in 3 write calls
-                            // but for small writes it is probably good enough to just copy the data internally.
-                            string chunkHeader = size.ToString("x", CultureInfo.InvariantCulture);
-                            dataToWrite = dataToWrite + (uint)(chunkHeader.Length + 4);
-                            bufferAsIntPtr = SafeLocalFree.LocalAlloc((int)dataToWrite);
-                            pBufferAsIntPtr = bufferAsIntPtr.DangerousGetHandle();
-                            for (int i = 0; i < chunkHeader.Length; i++)
-                            {
-                                Marshal.WriteByte(pBufferAsIntPtr, i, (byte)chunkHeader[i]);
-                            }
-                            Marshal.WriteInt16(pBufferAsIntPtr, chunkHeader.Length, 0x0A0D);
-                            Marshal.Copy(buffer, offset, IntPtrHelper.Add(pBufferAsIntPtr, chunkHeader.Length + 2), size);
-                            Marshal.WriteInt16(pBufferAsIntPtr, (int)(dataToWrite - 2), 0x0A0D);
-                            pBuffer = (byte*)pBufferAsIntPtr;
-                            offset = 0;
-                        }
-                        UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK dataChunk = new UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK();
-                        dataChunk.DataChunkType = UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-                        dataChunk.fromMemory.pBuffer = (IntPtr)(pBuffer + offset);
-                        dataChunk.fromMemory.BufferLength = dataToWrite;
-
-                        flags |= _leftToWrite == size ? UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE : UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
-                        if (!sentHeaders)
-                        {
-                            statusCode = _requestContext.Response.SendHeaders(&dataChunk, null, flags, false);
-                        }
-                        else
-                        {
-                            statusCode =
-                                UnsafeNclNativeMethods.HttpApi.HttpSendResponseEntityBody(
-                                    _requestContext.RequestQueueHandle,
-                                    _requestContext.RequestId,
-                                    (uint)flags,
-                                    1,
-                                    &dataChunk,
-                                    null,
-                                    SafeLocalFree.Zero,
-                                    0,
-                                    SafeNativeOverlapped.Zero,
-                                    IntPtr.Zero);
-
-                            if (_requestContext.Server.IgnoreWriteExceptions)
-                            {
-                                statusCode = UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS;
-                            }
-                        }
-                    }
-                }
+                // or the last write in a response that hasn't started yet, flush immideately
+                _buffer.Add(data);
+                Flush();
             }
-            finally
+            // The last write in a response that has already started, flush immidately
+            else if (_requestContext.Response.ComputedHeaders && _leftToWrite >= 0 && _leftToWrite <= currentBytes)
             {
-                if (bufferAsIntPtr != null)
+                if (_leftToWrite < currentBytes)
                 {
-                    // free unmanaged buffer
-                    bufferAsIntPtr.Dispose();
+                    throw new InvalidOperationException("More bytes written than specified in the Content-Length header.");
                 }
+                _buffer.Add(data);
+                Flush();
             }
-
-            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
+            else if (_requestContext.Response.ShouldBuffer && currentBytes < MaxBufferSize)
             {
-                Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
-                LogHelper.LogException(_requestContext.Logger, "Write", exception);
-                Abort();
-                throw exception;
+                _buffer.CopyAndAdd(data);
             }
-            UpdateWritenCount(dataToWrite);
-
-            // TODO: Verbose log data written
+            else
+            {
+                // Append to existing data without a copy, and then flush immidately
+                _buffer.Add(data);
+                Flush();
+            }
         }
+
 #if DNXCORE50
-        public unsafe IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
+        public unsafe IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
 #else
-        public override unsafe IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
+        public override unsafe IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
 #endif
         {
-            if (buffer == null)
-            {
-                throw new ArgumentNullException("buffer");
-            }
-            if (offset < 0 || offset > buffer.Length)
-            {
-                throw new ArgumentOutOfRangeException("offset");
-            }
-            if (size < 0 || size > buffer.Length - offset)
-            {
-                throw new ArgumentOutOfRangeException("size");
-            }
-            if (_closed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
-            UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS flags = ComputeLeftToWrite();
-            if (size == 0 && _leftToWrite != 0)
-            {
-                ResponseStreamAsyncResult result = new ResponseStreamAsyncResult(this, state, callback);
-                result.Complete();
-                return result;
-            }
-            if (_leftToWrite >= 0 && size > _leftToWrite)
-            {
-                throw new InvalidOperationException(Resources.Exception_TooMuchWritten);
-            }
-            // TODO: Verbose log parameters
-
-            uint statusCode;
-            uint bytesSent = 0;
-            flags |= _leftToWrite == size ? UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE : UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
-            bool sentHeaders = _requestContext.Response.HeadersSent;
-            ResponseStreamAsyncResult asyncResult = new ResponseStreamAsyncResult(this, state, callback, buffer, offset, size, _requestContext.Response.BoundaryType == BoundaryType.Chunked, sentHeaders);
-
-            // Update m_LeftToWrite now so we can queue up additional BeginWrite's without waiting for EndWrite.
-            UpdateWritenCount((uint)((_requestContext.Response.BoundaryType == BoundaryType.Chunked) ? 0 : size));
-
-            try
-            {
-                if (!sentHeaders)
-                {
-                    statusCode = _requestContext.Response.SendHeaders(null, asyncResult, flags, false);
-                    bytesSent = asyncResult.BytesSent;
-                }
-                else
-                {
-                    statusCode =
-                        UnsafeNclNativeMethods.HttpApi.HttpSendResponseEntityBody(
-                            _requestContext.RequestQueueHandle,
-                            _requestContext.RequestId,
-                            (uint)flags,
-                            asyncResult.DataChunkCount,
-                            asyncResult.DataChunks,
-                            &bytesSent,
-                            SafeLocalFree.Zero,
-                            0,
-                            asyncResult.NativeOverlapped,
-                            IntPtr.Zero);
-                }
-            }
-            catch (Exception e)
-            {
-                LogHelper.LogException(_requestContext.Logger, "BeginWrite", e);
-                asyncResult.Dispose();
-                Abort();
-                throw;
-            }
-
-            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
-            {
-                asyncResult.Dispose();
-                if (_requestContext.Server.IgnoreWriteExceptions && sentHeaders)
-                {
-                    asyncResult.Complete();
-                }
-                else
-                {
-                    Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
-                    LogHelper.LogException(_requestContext.Logger, "BeginWrite", exception);
-                    Abort();
-                    throw exception;
-                }
-            }
-
-            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && WebListener.SkipIOCPCallbackOnSuccess)
-            {
-                // IO operation completed synchronously - callback won't be called to signal completion.
-                asyncResult.IOCompleted(statusCode, bytesSent);
-            }
-
-            // Last write, cache it for special cancellation handling.
-            if ((flags & UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
-            {
-                _lastWrite = asyncResult;
-            }
-
-            return asyncResult;
+            return WriteAsync(buffer, offset, count).ToIAsyncResult(callback, state);
         }
 #if DNXCORE50
         public void EndWrite(IAsyncResult asyncResult)
@@ -480,143 +486,58 @@ namespace Microsoft.Net.Http.Server
             {
                 throw new ArgumentNullException("asyncResult");
             }
-            ResponseStreamAsyncResult castedAsyncResult = asyncResult as ResponseStreamAsyncResult;
-            if (castedAsyncResult == null || castedAsyncResult.ResponseStream != this)
-            {
-                throw new ArgumentException(Resources.Exception_WrongIAsyncResult, "asyncResult");
-            }
-            if (castedAsyncResult.EndCalled)
-            {
-                throw new InvalidOperationException(Resources.Exception_EndCalledMultipleTimes);
-            }
-            castedAsyncResult.EndCalled = true;
-
-            try
-            {
-                // wait & then check for errors
-                // TODO: Graceful re-throw
-                castedAsyncResult.Task.Wait();
-            }
-            catch (Exception exception)
-            {
-                LogHelper.LogException(_requestContext.Logger, "EndWrite", exception);
-                Abort();
-                throw;
-            }
+            ((Task)asyncResult).GetAwaiter().GetResult();
         }
 
-        public override unsafe Task WriteAsync(byte[] buffer, int offset, int size, CancellationToken cancellationToken)
+        public override unsafe Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            if (buffer == null)
-            {
-                throw new ArgumentNullException("buffer");
-            }
-            if (offset < 0 || offset > buffer.Length)
-            {
-                throw new ArgumentOutOfRangeException("offset");
-            }
-            if (size < 0 || size > buffer.Length - offset)
-            {
-                throw new ArgumentOutOfRangeException("size");
-            }
-            if (_closed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
-            UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS flags = ComputeLeftToWrite();
-            if (size == 0 && _leftToWrite != 0)
-            {
-                return Helpers.CompletedTask();
-            }
-            if (_leftToWrite >= 0 && size > _leftToWrite)
-            {
-                throw new InvalidOperationException(Resources.Exception_TooMuchWritten);
-            }
-            // TODO: Verbose log
-
+            // Validates for null and bounds. Allows count == 0.
+            var data = new ArraySegment<byte>(buffer, offset, count);
             if (cancellationToken.IsCancellationRequested)
             {
                 return Helpers.CanceledTask<int>();
             }
+            CheckDisposed();
+            // TODO: Verbose log parameters
+            // Officially starts the response and fires OnSendingHeaders
+            _requestContext.Response.Start();
 
-            var cancellationRegistration = default(CancellationTokenRegistration);
-            if (cancellationToken.CanBeCanceled)
+            var currentBytes = _buffer.TotalBytes + data.Count;
+            var contentLength = _requestContext.Response.ContentLength;
+            if (contentLength.HasValue && !_requestContext.Response.ComputedHeaders && contentLength.Value <= currentBytes)
             {
-                cancellationRegistration = cancellationToken.Register(RequestContext.AbortDelegate, _requestContext);
-            }
-
-            uint statusCode;
-            uint bytesSent = 0;
-            flags |= _leftToWrite == size ? UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE : UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
-            bool sentHeaders = _requestContext.Response.HeadersSent;
-            ResponseStreamAsyncResult asyncResult = new ResponseStreamAsyncResult(this, null, null, buffer, offset, size, _requestContext.Response.BoundaryType == BoundaryType.Chunked, sentHeaders, cancellationRegistration);
-
-            // Update m_LeftToWrite now so we can queue up additional BeginWrite's without waiting for EndWrite.
-            UpdateWritenCount((uint)((_requestContext.Response.BoundaryType == BoundaryType.Chunked) ? 0 : size));
-
-            try
-            {
-                if (!sentHeaders)
+                if (contentLength.Value < currentBytes)
                 {
-                    statusCode = _requestContext.Response.SendHeaders(null, asyncResult, flags, false);
-                    bytesSent = asyncResult.BytesSent;
+                    throw new InvalidOperationException("More bytes written than specified in the Content-Length header.");
                 }
-                else
+                // The last write in a response that hasn't started yet, flush immideately
+                _buffer.Add(data);
+                return FlushAsync(cancellationToken);
+            }
+            // The last write in a response that has already started, flush immidately
+            else if (_requestContext.Response.ComputedHeaders && _leftToWrite > 0 && _leftToWrite <= currentBytes)
+            {
+                if (_leftToWrite < currentBytes)
                 {
-                    statusCode =
-                        UnsafeNclNativeMethods.HttpApi.HttpSendResponseEntityBody(
-                            _requestContext.RequestQueueHandle,
-                            _requestContext.RequestId,
-                            (uint)flags,
-                            asyncResult.DataChunkCount,
-                            asyncResult.DataChunks,
-                            &bytesSent,
-                            SafeLocalFree.Zero,
-                            0,
-                            asyncResult.NativeOverlapped,
-                            IntPtr.Zero);
+                    throw new InvalidOperationException("More bytes written than specified in the Content-Length header.");
                 }
+                _buffer.Add(data);
+                return FlushAsync(cancellationToken);
             }
-            catch (Exception e)
+            else if (_requestContext.Response.ShouldBuffer && currentBytes < MaxBufferSize)
             {
-                LogHelper.LogException(_requestContext.Logger, "WriteAsync", e);
-                asyncResult.Dispose();
-                Abort();
-                throw;
+                _buffer.CopyAndAdd(data);
+                return Helpers.CompletedTask();
             }
-
-            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
+            else
             {
-                asyncResult.Dispose();
-                if (_requestContext.Server.IgnoreWriteExceptions && sentHeaders)
-                {
-                    asyncResult.Complete();
-                }
-                else
-                {
-                    Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
-                    LogHelper.LogException(_requestContext.Logger, "WriteAsync", exception);
-                    Abort();
-                    throw exception;
-                }
+                // Append to existing data without a copy, and then flush immidately
+                _buffer.Add(data);
+                return FlushAsync(cancellationToken);
             }
-
-            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && WebListener.SkipIOCPCallbackOnSuccess)
-            {
-                // IO operation completed synchronously - callback won't be called to signal completion.
-                asyncResult.IOCompleted(statusCode, bytesSent);
-            }
-
-            // Last write, cache it for special cancellation handling.
-            if ((flags & UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
-            {
-                _lastWrite = asyncResult;
-            }
-
-            return asyncResult.Task;
         }
 
-        internal unsafe Task SendFileAsync(string fileName, long offset, long? size, CancellationToken cancellationToken)
+        internal async Task SendFileAsync(string fileName, long offset, long? count, CancellationToken cancellationToken)
         {
             // It's too expensive to validate the file attributes before opening the file. Open the file and then check the lengths.
             // This all happens inside of ResponseStreamAsyncResult.
@@ -624,17 +545,26 @@ namespace Microsoft.Net.Http.Server
             {
                 throw new ArgumentNullException("fileName");
             }
-            if (_closed)
+            CheckDisposed();
+            if (_buffer.TotalBytes > 0)
             {
-                throw new ObjectDisposedException(GetType().FullName);
+                // SendFileAsync is primarly used for full responses so we don't optimize this partialy buffered scenario.
+                // In theory we could merge SendFileAsyncCore into FlushAsync[Internal] and send the buffered data in the same call as the file.
+                await FlushAsync(cancellationToken);
             }
+            // We can't mix await and unsafe so seperate the unsafe code into another method.
+            await SendFileAsyncCore(fileName, offset, count, cancellationToken);
+        }
 
+        internal unsafe Task SendFileAsyncCore(string fileName, long offset, long? count, CancellationToken cancellationToken)
+        {
+            _requestContext.Response.Start();
             UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS flags = ComputeLeftToWrite();
-            if (size == 0 && _leftToWrite != 0)
+            if (count == 0 && _leftToWrite != 0)
             {
                 return Helpers.CompletedTask();
             }
-            if (_leftToWrite >= 0 && size > _leftToWrite)
+            if (_leftToWrite >= 0 && count > _leftToWrite)
             {
                 throw new InvalidOperationException(Resources.Exception_TooMuchWritten);
             }
@@ -653,30 +583,30 @@ namespace Microsoft.Net.Http.Server
 
             uint statusCode;
             uint bytesSent = 0;
-            flags |= _leftToWrite == size ? UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE : UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
-            bool sentHeaders = _requestContext.Response.HeadersSent;
-            ResponseStreamAsyncResult asyncResult = new ResponseStreamAsyncResult(this, null, null, fileName, offset, size,
-                _requestContext.Response.BoundaryType == BoundaryType.Chunked, sentHeaders, cancellationRegistration);
+            flags |= _leftToWrite == count ? HttpApi.HTTP_FLAGS.NONE : HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
+            bool startedSending = _requestContext.Response.HasStartedSending;
+            var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
+            ResponseStreamAsyncResult asyncResult = new ResponseStreamAsyncResult(this, fileName, offset, count, chunked, cancellationRegistration);
 
             long bytesWritten;
-            if (_requestContext.Response.BoundaryType == BoundaryType.Chunked)
+            if (chunked)
             {
                 bytesWritten = 0;
             }
-            else if (size.HasValue)
+            else if (count.HasValue)
             {
-                bytesWritten = size.Value;
+                bytesWritten = count.Value;
             }
             else
             {
                 bytesWritten = asyncResult.FileLength - offset;
             }
-            // Update m_LeftToWrite now so we can queue up additional calls to SendFileAsync.
+            // Update _leftToWrite now so we can queue up additional calls to SendFileAsync.
             UpdateWritenCount((uint)bytesWritten);
 
             try
             {
-                if (!sentHeaders)
+                if (!startedSending)
                 {
                     statusCode = _requestContext.Response.SendHeaders(null, asyncResult, flags, false);
                     bytesSent = asyncResult.BytesSent;
@@ -684,8 +614,7 @@ namespace Microsoft.Net.Http.Server
                 else
                 {
                     // TODO: If opaque then include the buffer data flag.
-                    statusCode =
-                        UnsafeNclNativeMethods.HttpApi.HttpSendResponseEntityBody(
+                    statusCode = HttpApi.HttpSendResponseEntityBody(
                             _requestContext.RequestQueueHandle,
                             _requestContext.RequestId,
                             (uint)flags,
@@ -709,7 +638,7 @@ namespace Microsoft.Net.Http.Server
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
             {
                 asyncResult.Dispose();
-                if (_requestContext.Server.IgnoreWriteExceptions && sentHeaders)
+                if (_requestContext.Server.IgnoreWriteExceptions && startedSending)
                 {
                     asyncResult.Complete();
                 }
@@ -722,14 +651,14 @@ namespace Microsoft.Net.Http.Server
                 }
             }
 
-            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && WebListener.SkipIOCPCallbackOnSuccess)
+            if (statusCode == ErrorCodes.ERROR_SUCCESS && WebListener.SkipIOCPCallbackOnSuccess)
             {
                 // IO operation completed synchronously - callback won't be called to signal completion.
                 asyncResult.IOCompleted(statusCode, bytesSent);
             }
 
             // Last write, cache it for special cancellation handling.
-            if ((flags & UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
+            if ((flags & HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
             {
                 _lastWrite = asyncResult;
             }
@@ -765,85 +694,7 @@ namespace Microsoft.Net.Http.Server
                         return;
                     }
                     _closed = true;
-                    UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS flags = ComputeLeftToWrite(endOfRequest: true);
-                    if (_leftToWrite > 0 && !_inOpaqueMode)
-                    {
-                        _requestContext.Abort();
-                        // This is logged rather than thrown because it is too late for an exception to be visible in user code.
-                        LogHelper.LogError(_requestContext.Logger, "ResponseStream::Dispose", "Fewer bytes were written than were specified in the Content-Length.");
-                        return;
-                    }
-                    bool sentHeaders = _requestContext.Response.HeadersSent;
-                    if (sentHeaders && _leftToWrite == 0)
-                    {
-                        return;
-                    }
-
-                    uint statusCode = 0;
-                    if ((_requestContext.Response.BoundaryType == BoundaryType.Chunked
-                        || _requestContext.Response.BoundaryType == BoundaryType.Close
-                        || _requestContext.Response.BoundaryType == BoundaryType.PassThrough)
-                        && !_requestContext.Request.IsHeadMethod)
-                    {
-                        if (_requestContext.Response.BoundaryType == BoundaryType.Close)
-                        {
-                            flags |= UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
-                        }
-                        fixed (void* pBuffer = ChunkTerminator)
-                        {
-                            UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK* pDataChunk = null;
-                            if (_requestContext.Response.BoundaryType == BoundaryType.Chunked)
-                            {
-                                UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK dataChunk = new UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK();
-                                dataChunk.DataChunkType = UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-                                dataChunk.fromMemory.pBuffer = (IntPtr)pBuffer;
-                                dataChunk.fromMemory.BufferLength = (uint)ChunkTerminator.Length;
-                                pDataChunk = &dataChunk;
-                            }
-                            if (!sentHeaders)
-                            {
-                                statusCode = _requestContext.Response.SendHeaders(pDataChunk, null, flags, false);
-                            }
-                            else
-                            {
-                                statusCode =
-                                    UnsafeNclNativeMethods.HttpApi.HttpSendResponseEntityBody(
-                                        _requestContext.RequestQueueHandle,
-                                        _requestContext.RequestId,
-                                        (uint)flags,
-                                        pDataChunk != null ? (ushort)1 : (ushort)0,
-                                        pDataChunk,
-                                        null,
-                                        SafeLocalFree.Zero,
-                                        0,
-                                        SafeNativeOverlapped.Zero,
-                                        IntPtr.Zero);
-
-                                if (_requestContext.Server.IgnoreWriteExceptions)
-                                {
-                                    statusCode = UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS;
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (!sentHeaders)
-                        {
-                            statusCode = _requestContext.Response.SendHeaders(null, null, flags, false);
-                        }
-                    }
-                    if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF
-                        // Don't throw for disconnects, we were already finished with the response.
-                        && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_CONNECTION_INVALID
-                        && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_PARAMETER)
-                    {
-                        Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
-                        LogHelper.LogException(_requestContext.Logger, "Dispose", exception);
-                        _requestContext.Abort();
-                        throw exception;
-                    }
-                    _leftToWrite = 0;
+                    FlushInternal(endOfRequest: true);
                 }
             }
             finally
@@ -868,6 +719,14 @@ namespace Microsoft.Net.Http.Server
             if (asyncState != null && !asyncState.IsCompleted)
             {
                 UnsafeNclNativeMethods.CancelIoEx(requestQueueHandle, asyncState.NativeOverlapped);
+            }
+        }
+
+        private void CheckDisposed()
+        {
+            if (_closed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
             }
         }
     }

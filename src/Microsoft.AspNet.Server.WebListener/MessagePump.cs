@@ -167,13 +167,14 @@ namespace Microsoft.AspNet.Server.WebListener
                 catch (Exception ex)
                 {
                     LogHelper.LogException(_logger, "ProcessRequestAsync", ex);
-                    if (requestContext.Response.HeadersSent)
+                    if (requestContext.Response.HasStartedSending)
                     {
                         requestContext.Abort();
                     }
                     else
                     {
                         // We haven't sent a response yet, try to send a 500 Internal Server Error
+                        requestContext.Response.Reset();
                         SetFatalResponse(requestContext, 500);
                     }
                 }
@@ -195,8 +196,6 @@ namespace Microsoft.AspNet.Server.WebListener
         private static void SetFatalResponse(RequestContext context, int status)
         {
             context.Response.StatusCode = status;
-            context.Response.ReasonPhrase = string.Empty;
-            context.Response.Headers.Clear();
             context.Response.ContentLength = 0;
             context.Dispose();
         }

@@ -84,7 +84,6 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
-                Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
                 Assert.True(upgradeThrew.Value);
             }
         }

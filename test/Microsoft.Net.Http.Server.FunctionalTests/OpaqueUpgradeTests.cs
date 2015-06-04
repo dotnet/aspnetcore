@@ -31,7 +31,6 @@ namespace Microsoft.Net.Http.Server
                 context.Dispose();
                 HttpResponseMessage response = await clientTask;
                 Assert.Equal(200, (int)response.StatusCode);
-                Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
                 Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
             }
         }

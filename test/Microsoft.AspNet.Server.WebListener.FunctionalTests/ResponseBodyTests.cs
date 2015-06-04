@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
@@ -31,7 +32,7 @@ namespace Microsoft.AspNet.Server.WebListener
     public class ResponseBodyTests
     {
         [Fact]
-        public async Task ResponseBody_WriteNoHeaders_DefaultsToChunked()
+        public async Task ResponseBody_WriteNoHeaders_BuffersAndSetsContentLength()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, env =>
@@ -45,24 +46,22 @@ namespace Microsoft.AspNet.Server.WebListener
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.Equal(new Version(1, 1), response.Version);
                 IEnumerable<string> ignored;
-                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
-                Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
+                Assert.True(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
+                Assert.False(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
                 Assert.Equal(new byte[20], await response.Content.ReadAsByteArrayAsync());
             }
         }
 
         [Fact]
-        public async Task ResponseBody_WriteChunked_Chunked()
+        public async Task ResponseBody_WriteNoHeadersAndFlush_DefaultsToChunked()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                httpContext.Request.Headers["transfeR-Encoding"] = " CHunked ";
-                Stream stream = httpContext.Response.Body;
-                stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
-                stream.Write(new byte[10], 0, 10);
-                return stream.WriteAsync(new byte[10], 0, 10);
+                httpContext.Response.Body.Write(new byte[10], 0, 10);
+                await httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
+                await httpContext.Response.Body.FlushAsync();
             }))
             {
                 HttpResponseMessage response = await SendRequestAsync(address);
@@ -71,7 +70,30 @@ namespace Microsoft.AspNet.Server.WebListener
                 IEnumerable<string> ignored;
                 Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
                 Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
-                Assert.Equal(new byte[30], await response.Content.ReadAsByteArrayAsync());
+                Assert.Equal(new byte[20], await response.Content.ReadAsByteArrayAsync());
+            }
+        }
+
+        [Fact]
+        public async Task ResponseBody_WriteChunked_ManuallyChunked()
+        {
+            string address;
+            using (Utilities.CreateHttpServer(out address, async env =>
+            {
+                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
+                httpContext.Response.Headers["transfeR-Encoding"] = " CHunked ";
+                Stream stream = httpContext.Response.Body;
+                var responseBytes = Encoding.ASCII.GetBytes("10\r\nManually Chunked\r\n0\r\n\r\n");
+                await stream.WriteAsync(responseBytes, 0, responseBytes.Length);
+            }))
+            {
+                HttpResponseMessage response = await SendRequestAsync(address);
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.Equal(new Version(1, 1), response.Version);
+                IEnumerable<string> ignored;
+                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
+                Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
+                Assert.Equal("Manually Chunked", await response.Content.ReadAsStringAsync());
             }
         }
 
@@ -132,7 +154,7 @@ namespace Microsoft.AspNet.Server.WebListener
         }
 
         [Fact]
-        public void ResponseBody_WriteContentLengthTooMuchWritten_Throws()
+        public async Task ResponseBody_WriteContentLengthTooMuchWritten_Throws()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, env =>
@@ -144,7 +166,8 @@ namespace Microsoft.AspNet.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                Assert.Throws<AggregateException>(() => SendRequestAsync(address).Result);
+                var response = await SendRequestAsync(address);
+                Assert.Equal(500, (int)response.StatusCode);
             }
         }
 

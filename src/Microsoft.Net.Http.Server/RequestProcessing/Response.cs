@@ -33,6 +33,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.Logging;
+using static Microsoft.Net.Http.Server.UnsafeNclNativeMethods;
 
 namespace Microsoft.Net.Http.Server
 {
@@ -46,18 +47,34 @@ namespace Microsoft.Net.Http.Server
         private ResponseStream _nativeStream;
         private long _expectedBodyLength;
         private BoundaryType _boundaryType;
-        private UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_V2 _nativeResponse;
+        private HttpApi.HTTP_RESPONSE_V2 _nativeResponse;
         private IList<Tuple<Action<object>, object>> _onSendingHeadersActions;
         private IList<Tuple<Action<object>, object>> _onResponseCompletedActions;
 
         private RequestContext _requestContext;
+        private bool _bufferingEnabled;
 
-        internal Response(RequestContext httpContext)
+        internal Response(RequestContext requestContext)
         {
             // TODO: Verbose log
-            _requestContext = httpContext;
-            _nativeResponse = new UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_V2();
+            _requestContext = requestContext;
             _headers = new HeaderCollection();
+            Reset();
+        }
+
+        public void Reset()
+        {
+            if (_responseState >= ResponseState.StartedSending)
+            {
+                _requestContext.Abort();
+                throw new InvalidOperationException("The response has already been sent. Request Aborted.");
+            }
+            // We haven't started yet, or we're just buffered, we can clear any data, headers, and state so
+            // that we can start over (e.g. to write an error message).
+            _nativeResponse = new HttpApi.HTTP_RESPONSE_V2();
+            _headers.IsReadOnly = false;
+            _headers.Clear();
+            _reasonPhrase = null;
             _boundaryType = BoundaryType.None;
             _nativeResponse.Response_V1.StatusCode = (ushort)HttpStatusCode.OK;
             _nativeResponse.Response_V1.Version.MajorVersion = 1;
@@ -65,13 +82,17 @@ namespace Microsoft.Net.Http.Server
             _responseState = ResponseState.Created;
             _onSendingHeadersActions = new List<Tuple<Action<object>, object>>();
             _onResponseCompletedActions = new List<Tuple<Action<object>, object>>();
+            _bufferingEnabled = _requestContext.Server.BufferResponses;
+            _expectedBodyLength = 0;
+            _nativeStream = null;
         }
 
         private enum ResponseState
         {
             Created,
+            Started,
             ComputedHeaders,
-            SentHeaders,
+            StartedSending,
             Closed,
         }
 
@@ -105,14 +126,6 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        private void CheckResponseStarted()
-        {
-            if (_responseState >= ResponseState.SentHeaders)
-            {
-                throw new InvalidOperationException("Headers already sent.");
-            }
-        }
-
         public string ReasonPhrase
         {
             get { return _reasonPhrase; }
@@ -121,6 +134,16 @@ namespace Microsoft.Net.Http.Server
                 // TODO: Validate user input for illegal chars, length limit, etc.?
                 CheckResponseStarted();
                 _reasonPhrase = value;
+            }
+        }
+
+        public bool ShouldBuffer
+        {
+            get { return _bufferingEnabled; }
+            set
+            {
+                CheckResponseStarted();
+                _bufferingEnabled = value;
             }
         }
 
@@ -168,10 +191,7 @@ namespace Microsoft.Net.Http.Server
 
         internal long ExpectedBodyLength
         {
-            get
-            {
-                return _expectedBodyLength;
-            }
+            get { return _expectedBodyLength; }
         }
 
         // Header accessors
@@ -248,6 +268,7 @@ namespace Microsoft.Net.Http.Server
             {
                 return;
             }
+            Start();
             NotifyOnResponseCompleted();
             // TODO: Verbose log
             EnsureResponseStream();
@@ -259,26 +280,30 @@ namespace Microsoft.Net.Http.Server
 
         internal BoundaryType BoundaryType
         {
-            get
-            {
-                return _boundaryType;
-            }
+            get { return _boundaryType; }
         }
 
-        public bool HeadersSent
+        public bool HasStarted
         {
-            get
+            get { return _responseState >= ResponseState.Started; }
+        }
+
+        private void CheckResponseStarted()
+        {
+            if (HasStarted)
             {
-                return _responseState >= ResponseState.SentHeaders;
+                throw new InvalidOperationException("Headers already sent.");
             }
         }
 
         internal bool ComputedHeaders
         {
-            get
-            {
-                return _responseState >= ResponseState.ComputedHeaders;
-            }
+            get { return _responseState >= ResponseState.ComputedHeaders; }
+        }
+
+        public bool HasStartedSending
+        {
+            get { return _responseState >= ResponseState.StartedSending; }
         }
 
         private void EnsureResponseStream()
@@ -319,14 +344,14 @@ namespace Microsoft.Net.Http.Server
         // What would we loose by bypassing HttpSendHttpResponse?
         //
         // TODO: Consider using the HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA flag for most/all responses rather than just Opaque.
-        internal unsafe uint SendHeaders(UnsafeNclNativeMethods.HttpApi.HTTP_DATA_CHUNK* pDataChunk,
+        internal unsafe uint SendHeaders(HttpApi.HTTP_DATA_CHUNK[] dataChunks,
             ResponseStreamAsyncResult asyncResult,
-            UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS flags,
+            HttpApi.HTTP_FLAGS flags,
             bool isOpaqueUpgrade)
         {
-            Debug.Assert(!HeadersSent, "HttpListenerResponse::SendHeaders()|SentHeaders is true.");
+            Debug.Assert(!HasStartedSending, "HttpListenerResponse::SendHeaders()|SentHeaders is true.");
 
-            _responseState = ResponseState.SentHeaders;
+            _responseState = ResponseState.StartedSending;
             var reasonPhrase = GetReasonPhrase(StatusCode);
 
             if (RequestContext.Logger.IsEnabled(LogLevel.Verbose))
@@ -344,10 +369,16 @@ namespace Microsoft.Net.Http.Server
             List<GCHandle> pinnedHeaders = SerializeHeaders(isOpaqueUpgrade);
             try
             {
-                if (pDataChunk != null)
+                if (dataChunks != null)
                 {
-                    _nativeResponse.Response_V1.EntityChunkCount = 1;
-                    _nativeResponse.Response_V1.pEntityChunks = pDataChunk;
+                    if (pinnedHeaders == null)
+                    {
+                        pinnedHeaders = new List<GCHandle>();
+                    }
+                    var handle = GCHandle.Alloc(dataChunks, GCHandleType.Pinned);
+                    pinnedHeaders.Add(handle);
+                    _nativeResponse.Response_V1.EntityChunkCount = (ushort)dataChunks.Length;
+                    _nativeResponse.Response_V1.pEntityChunks = (HttpApi.HTTP_DATA_CHUNK*)handle.AddrOfPinnedObject();
                 }
                 else if (asyncResult != null && asyncResult.DataChunks != null)
                 {
@@ -360,45 +391,16 @@ namespace Microsoft.Net.Http.Server
                     _nativeResponse.Response_V1.pEntityChunks = null;
                 }
 
-                if (reasonPhrase.Length > 0)
+                byte[] reasonPhraseBytes = new byte[HeaderEncoding.GetByteCount(reasonPhrase)];
+                fixed (byte* pReasonPhrase = reasonPhraseBytes)
                 {
-                    byte[] reasonPhraseBytes = new byte[HeaderEncoding.GetByteCount(reasonPhrase)];
-                    fixed (byte* pReasonPhrase = reasonPhraseBytes)
-                    {
-                        _nativeResponse.Response_V1.ReasonLength = (ushort)reasonPhraseBytes.Length;
-                        HeaderEncoding.GetBytes(reasonPhrase, 0, reasonPhraseBytes.Length, reasonPhraseBytes, 0);
-                        _nativeResponse.Response_V1.pReason = (sbyte*)pReasonPhrase;
-                        fixed (UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_V2* pResponse = &_nativeResponse)
-                        {
-                            statusCode =
-                                UnsafeNclNativeMethods.HttpApi.HttpSendHttpResponse(
-                                    RequestContext.RequestQueueHandle,
-                                    Request.RequestId,
-                                    (uint)flags,
-                                    pResponse,
-                                    null,
-                                    &bytesSent,
-                                    SafeLocalFree.Zero,
-                                    0,
-                                    asyncResult == null ? SafeNativeOverlapped.Zero : asyncResult.NativeOverlapped,
-                                    IntPtr.Zero);
-
-                            if (asyncResult != null &&
-                                statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
-                                WebListener.SkipIOCPCallbackOnSuccess)
-                            {
-                                asyncResult.BytesSent = bytesSent;
-                                // The caller will invoke IOCompleted
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    fixed (UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_V2* pResponse = &_nativeResponse)
+                    _nativeResponse.Response_V1.ReasonLength = (ushort)reasonPhraseBytes.Length;
+                    HeaderEncoding.GetBytes(reasonPhrase, 0, reasonPhraseBytes.Length, reasonPhraseBytes, 0);
+                    _nativeResponse.Response_V1.pReason = (sbyte*)pReasonPhrase;
+                    fixed (HttpApi.HTTP_RESPONSE_V2* pResponse = &_nativeResponse)
                     {
                         statusCode =
-                            UnsafeNclNativeMethods.HttpApi.HttpSendHttpResponse(
+                            HttpApi.HttpSendHttpResponse(
                                 RequestContext.RequestQueueHandle,
                                 Request.RequestId,
                                 (uint)flags,
@@ -411,7 +413,7 @@ namespace Microsoft.Net.Http.Server
                                 IntPtr.Zero);
 
                         if (asyncResult != null &&
-                            statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
+                            statusCode == ErrorCodes.ERROR_SUCCESS &&
                             WebListener.SkipIOCPCallbackOnSuccess)
                         {
                             asyncResult.BytesSent = bytesSent;
@@ -427,10 +429,20 @@ namespace Microsoft.Net.Http.Server
             return statusCode;
         }
 
-        internal UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS ComputeHeaders(bool endOfRequest = false)
+        internal void Start()
         {
-            // Notify that this is absolutely the last chance to make changes.
-            NotifyOnSendingHeaders();
+            if (!HasStarted)
+            {
+                // Notify that this is absolutely the last chance to make changes.
+                NotifyOnSendingHeaders();
+                Headers.IsReadOnly = true; // Prohibit further modifications.
+                _responseState = ResponseState.Started;
+            }
+        }
+
+        internal HttpApi.HTTP_FLAGS ComputeHeaders(bool endOfRequest = false, int bufferedBytes = 0)
+        {
+            Headers.IsReadOnly = false; // Temporarily allow modification.
 
             // 401
             if (StatusCode == (ushort)HttpStatusCode.Unauthorized)
@@ -438,7 +450,7 @@ namespace Microsoft.Net.Http.Server
                 RequestContext.Server.AuthenticationManager.SetAuthenticationChallenge(RequestContext);
             }
 
-            var flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE;
+            var flags = HttpApi.HTTP_FLAGS.NONE;
             Debug.Assert(!ComputedHeaders, "HttpListenerResponse::ComputeHeaders()|ComputedHeaders is true.");
             _responseState = ResponseState.ComputedHeaders;
 
@@ -478,14 +490,18 @@ namespace Microsoft.Net.Http.Server
                 // The application is performing it's own chunking.
                 _boundaryType = BoundaryType.PassThrough;
             }
-            else if (endOfRequest && !(isHeadRequest && statusCanHaveBody)) // HEAD requests always end without a body. Assume a GET response would have a body.
+            else if (endOfRequest && !(isHeadRequest && statusCanHaveBody)) // HEAD requests should always end without a body. Assume a GET response would have a body.
             {
-                if (statusCanHaveBody)
+                if (bufferedBytes > 0)
+                {
+                    Headers[HttpKnownHeaderNames.ContentLength] = bufferedBytes.ToString(CultureInfo.InvariantCulture);
+                }
+                else if (statusCanHaveBody)
                 {
                     Headers[HttpKnownHeaderNames.ContentLength] = Constants.Zero;
                 }
                 _boundaryType = BoundaryType.ContentLength;
-                _expectedBodyLength = 0;
+                _expectedBodyLength = bufferedBytes;
             }
             else if (keepConnectionAlive && requestVersion == Constants.V1_1)
             {
@@ -508,9 +524,10 @@ namespace Microsoft.Net.Http.Server
                 {
                     Headers.Append(HttpKnownHeaderNames.Connection, Constants.Close);
                 }
-                flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
+                flags = HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
             }
 
+            Headers.IsReadOnly = true; // Prohibit further modifications.
             return flags;
         }
 
@@ -521,9 +538,9 @@ namespace Microsoft.Net.Http.Server
 
         private List<GCHandle> SerializeHeaders(bool isOpaqueUpgrade)
         {
-            Headers.Sent = true; // Prohibit further modifications.
-            UnsafeNclNativeMethods.HttpApi.HTTP_UNKNOWN_HEADER[] unknownHeaders = null;
-            UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO[] knownHeaderInfo = null;
+            Headers.IsReadOnly = true; // Prohibit further modifications.
+            HttpApi.HTTP_UNKNOWN_HEADER[] unknownHeaders = null;
+            HttpApi.HTTP_RESPONSE_INFO[] knownHeaderInfo = null;
             List<GCHandle> pinnedHeaders;
             GCHandle gcHandle;
             /*
@@ -552,11 +569,11 @@ namespace Microsoft.Net.Http.Server
                     continue;
                 }
                 // See if this is an unknown header
-                lookup = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
+                lookup = HttpApi.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
 
                 // Http.Sys doesn't let us send the Connection: Upgrade header as a Known header.
                 if (lookup == -1 ||
-                    (isOpaqueUpgrade && lookup == (int)UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_HEADER_ID.Enum.HttpHeaderConnection))
+                    (isOpaqueUpgrade && lookup == (int)HttpApi.HTTP_RESPONSE_HEADER_ID.Enum.HttpHeaderConnection))
                 {
                     numUnknownHeaders += headerPair.Value.Length;
                 }
@@ -569,7 +586,7 @@ namespace Microsoft.Net.Http.Server
 
             try
             {
-                fixed (UnsafeNclNativeMethods.HttpApi.HTTP_KNOWN_HEADER* pKnownHeaders = &_nativeResponse.Response_V1.Headers.KnownHeaders)
+                fixed (HttpApi.HTTP_KNOWN_HEADER* pKnownHeaders = &_nativeResponse.Response_V1.Headers.KnownHeaders)
                 {
                     foreach (KeyValuePair<string, string[]> headerPair in Headers)
                     {
@@ -580,18 +597,18 @@ namespace Microsoft.Net.Http.Server
                         }
                         headerName = headerPair.Key;
                         string[] headerValues = headerPair.Value;
-                        lookup = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerName);
+                        lookup = HttpApi.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerName);
 
                         // Http.Sys doesn't let us send the Connection: Upgrade header as a Known header.
                         if (lookup == -1 ||
-                            (isOpaqueUpgrade && lookup == (int)UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_HEADER_ID.Enum.HttpHeaderConnection))
+                            (isOpaqueUpgrade && lookup == (int)HttpApi.HTTP_RESPONSE_HEADER_ID.Enum.HttpHeaderConnection))
                         {
                             if (unknownHeaders == null)
                             {
-                                unknownHeaders = new UnsafeNclNativeMethods.HttpApi.HTTP_UNKNOWN_HEADER[numUnknownHeaders];
+                                unknownHeaders = new HttpApi.HTTP_UNKNOWN_HEADER[numUnknownHeaders];
                                 gcHandle = GCHandle.Alloc(unknownHeaders, GCHandleType.Pinned);
                                 pinnedHeaders.Add(gcHandle);
-                                _nativeResponse.Response_V1.Headers.pUnknownHeaders = (UnsafeNclNativeMethods.HttpApi.HTTP_UNKNOWN_HEADER*)gcHandle.AddrOfPinnedObject();
+                                _nativeResponse.Response_V1.Headers.pUnknownHeaders = (HttpApi.HTTP_UNKNOWN_HEADER*)gcHandle.AddrOfPinnedObject();
                             }
 
                             for (int headerValueIndex = 0; headerValueIndex < headerValues.Length; headerValueIndex++)
@@ -632,29 +649,29 @@ namespace Microsoft.Net.Http.Server
                         {
                             if (knownHeaderInfo == null)
                             {
-                                knownHeaderInfo = new UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO[numKnownMultiHeaders];
+                                knownHeaderInfo = new HttpApi.HTTP_RESPONSE_INFO[numKnownMultiHeaders];
                                 gcHandle = GCHandle.Alloc(knownHeaderInfo, GCHandleType.Pinned);
                                 pinnedHeaders.Add(gcHandle);
-                                _nativeResponse.pResponseInfo = (UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO*)gcHandle.AddrOfPinnedObject();
+                                _nativeResponse.pResponseInfo = (HttpApi.HTTP_RESPONSE_INFO*)gcHandle.AddrOfPinnedObject();
                             }
 
-                            knownHeaderInfo[_nativeResponse.ResponseInfoCount].Type = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
+                            knownHeaderInfo[_nativeResponse.ResponseInfoCount].Type = HttpApi.HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
                             knownHeaderInfo[_nativeResponse.ResponseInfoCount].Length =
 #if DNXCORE50
-                                (uint)Marshal.SizeOf<UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS>();
+                                (uint)Marshal.SizeOf<HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS>();
 #else
-                                (uint)Marshal.SizeOf(typeof(UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS));
+                                (uint)Marshal.SizeOf(typeof(HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS));
 #endif
 
-                            UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS header = new UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS();
+                            HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS header = new HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS();
 
-                            header.HeaderId = (UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_HEADER_ID.Enum)lookup;
-                            header.Flags = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // TODO: The docs say this is for www-auth only.
+                            header.HeaderId = (HttpApi.HTTP_RESPONSE_HEADER_ID.Enum)lookup;
+                            header.Flags = HttpApi.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // TODO: The docs say this is for www-auth only.
 
-                            UnsafeNclNativeMethods.HttpApi.HTTP_KNOWN_HEADER[] nativeHeaderValues = new UnsafeNclNativeMethods.HttpApi.HTTP_KNOWN_HEADER[headerValues.Length];
+                            HttpApi.HTTP_KNOWN_HEADER[] nativeHeaderValues = new HttpApi.HTTP_KNOWN_HEADER[headerValues.Length];
                             gcHandle = GCHandle.Alloc(nativeHeaderValues, GCHandleType.Pinned);
                             pinnedHeaders.Add(gcHandle);
-                            header.KnownHeaders = (UnsafeNclNativeMethods.HttpApi.HTTP_KNOWN_HEADER*)gcHandle.AddrOfPinnedObject();
+                            header.KnownHeaders = (HttpApi.HTTP_KNOWN_HEADER*)gcHandle.AddrOfPinnedObject();
 
                             for (int headerValueIndex = 0; headerValueIndex < headerValues.Length; headerValueIndex++)
                             {
@@ -672,7 +689,7 @@ namespace Microsoft.Net.Http.Server
                             // This type is a struct, not an object, so pinning it causes a boxed copy to be created. We can't do that until after all the fields are set.
                             gcHandle = GCHandle.Alloc(header, GCHandleType.Pinned);
                             pinnedHeaders.Add(gcHandle);
-                            knownHeaderInfo[_nativeResponse.ResponseInfoCount].pInfo = (UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS*)gcHandle.AddrOfPinnedObject();
+                            knownHeaderInfo[_nativeResponse.ResponseInfoCount].pInfo = (HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS*)gcHandle.AddrOfPinnedObject();
 
                             _nativeResponse.ResponseInfoCount++;
                         }
@@ -704,18 +721,18 @@ namespace Microsoft.Net.Http.Server
         // Subset of ComputeHeaders
         internal void SendOpaqueUpgrade()
         {
-            // TODO: Should we do this notification earlier when you still have a chance to change the status code to avoid an upgrade?
             // Notify that this is absolutely the last chance to make changes.
-            NotifyOnSendingHeaders();
+            Start();
+            _boundaryType = BoundaryType.Close;
 
             // TODO: Send headers async?
             ulong errorCode = SendHeaders(null, null,
-                UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_OPAQUE |
-                UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA |
-                UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA,
+                HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_OPAQUE |
+                HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA |
+                HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA,
                 true);
 
-            if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+            if (errorCode != ErrorCodes.ERROR_SUCCESS)
             {
                 throw new WebListenerException((int)errorCode);
             }
@@ -725,7 +742,7 @@ namespace Microsoft.Net.Http.Server
         {
             if (_responseState >= ResponseState.Closed)
             {
-                throw new ObjectDisposedException(this.GetType().FullName);
+                throw new ObjectDisposedException(GetType().FullName);
             }
         }
 
@@ -746,6 +763,7 @@ namespace Microsoft.Net.Http.Server
         internal void SwitchToOpaqueMode()
         {
             EnsureResponseStream();
+            _bufferingEnabled = false;
             _nativeStream.SwitchToOpaqueMode();
         }
 

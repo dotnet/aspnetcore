@@ -39,6 +39,7 @@ namespace Microsoft.AspNet.Server.WebListener
         IHttpSendFileFeature,
         ITlsConnectionFeature,
         ITlsTokenBindingFeature,
+        IHttpBufferingFeature,
         IHttpRequestLifetimeFeature,
         IHttpWebSocketFeature,
         IHttpAuthenticationFeature,
@@ -97,6 +98,7 @@ namespace Microsoft.AspNet.Server.WebListener
             _features.Add(typeof(IHttpConnectionFeature), this);
             _features.Add(typeof(IHttpResponseFeature), this);
             _features.Add(typeof(IHttpSendFileFeature), this);
+            _features.Add(typeof(IHttpBufferingFeature), this);
             _features.Add(typeof(IHttpRequestLifetimeFeature), this);
             _features.Add(typeof(IHttpAuthenticationFeature), this);
             _features.Add(typeof(IRequestIdentifierFeature), this);
@@ -328,6 +330,16 @@ namespace Microsoft.AspNet.Server.WebListener
             return Request.GetReferredTokenBindingId();
         }
 
+        void IHttpBufferingFeature.DisableRequestBuffering()
+        {
+            // There is no request buffering.
+        }
+
+        void IHttpBufferingFeature.DisableResponseBuffering()
+        {
+            Response.ShouldBuffer = false;
+        }
+
         Stream IHttpResponseFeature.Body
         {
             get
@@ -356,7 +368,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
         bool IHttpResponseFeature.HeadersSent
         {
-            get { return Response.HeadersSent; }
+            get { return Response.HasStarted; }
         }
 
         void IHttpResponseFeature.OnSendingHeaders(Action<object> callback, object state)

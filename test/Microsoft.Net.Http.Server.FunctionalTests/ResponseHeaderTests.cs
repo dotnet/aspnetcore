@@ -349,13 +349,13 @@ namespace Microsoft.Net.Http.Server
                 responseHeaders.SetValues("Custom1", "value1a", "value1b");
                 responseHeaders.SetValues("Custom2", "value2a, value2b");
                 var body = context.Response.Body;
-                Assert.False(context.Response.HeadersSent);
+                Assert.False(context.Response.HasStarted);
                 body.Flush();
-                Assert.True(context.Response.HeadersSent);
+                Assert.True(context.Response.HasStarted);
                 var ex = Assert.Throws<InvalidOperationException>(() => context.Response.StatusCode = 404);
                 Assert.Equal("Headers already sent.", ex.Message);
                 ex = Assert.Throws<InvalidOperationException>(() => responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }));
-                Assert.Equal("The response headers cannot be modified because they have already been sent.", ex.Message);
+                Assert.Equal("The response headers cannot be modified because the response has already started.", ex.Message);
 
                 context.Dispose();
 
@@ -385,13 +385,13 @@ namespace Microsoft.Net.Http.Server
                 responseHeaders.SetValues("Custom1", "value1a", "value1b");
                 responseHeaders.SetValues("Custom2", "value2a, value2b");
                 var body = context.Response.Body;
-                Assert.False(context.Response.HeadersSent);
+                Assert.False(context.Response.HasStarted);
                 await body.FlushAsync();
-                Assert.True(context.Response.HeadersSent);
+                Assert.True(context.Response.HasStarted);
                 var ex = Assert.Throws<InvalidOperationException>(() => context.Response.StatusCode = 404);
                 Assert.Equal("Headers already sent.", ex.Message);
                 ex = Assert.Throws<InvalidOperationException>(() => responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }));
-                Assert.Equal("The response headers cannot be modified because they have already been sent.", ex.Message);
+                Assert.Equal("The response headers cannot be modified because the response has already started.", ex.Message);
 
                 context.Dispose();
 

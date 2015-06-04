@@ -203,6 +203,34 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Fact]
+        public async Task ResponseSendFile_EmptyFileCountUnspecified_SetsChunkedAndFlushesHeaders()
+        {
+            var emptyFilePath = Path.Combine(Environment.CurrentDirectory, "zz_" + Guid.NewGuid().ToString() + "EmptyTestFile.txt");
+            var emptyFile = File.Create(emptyFilePath, 1024);
+            emptyFile.Close();
+
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+
+                var context = await server.GetContextAsync();
+                await context.Response.SendFileAsync(emptyFilePath, 0, null, CancellationToken.None);
+                Assert.True(context.Response.HasStartedSending);
+                await context.Response.Body.WriteAsync(new byte[10], 0, 10, CancellationToken.None);
+                context.Dispose();
+                File.Delete(emptyFilePath);
+
+                HttpResponseMessage response = await responseTask;
+                Assert.Equal(200, (int)response.StatusCode);
+                IEnumerable<string> contentLength;
+                Assert.False(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
+                Assert.True(response.Headers.TransferEncodingChunked.HasValue);
+                Assert.Equal(10, (await response.Content.ReadAsByteArrayAsync()).Length);
+            }
+        }
+
+        [Fact]
         public async Task ResponseSendFile_ContentLength_PassedThrough()
         {
             string address;

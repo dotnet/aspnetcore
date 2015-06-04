@@ -71,6 +71,7 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 await httpContext.Response.WriteAsync("Hello World");
+                await httpContext.Response.Body.FlushAsync();
                 try
                 {
                     var opaqueFeature = httpContext.GetFeature<IHttpUpgradeFeature>();
@@ -171,8 +172,8 @@ namespace Microsoft.AspNet.Server.WebListener
                 using (Stream stream = await SendOpaqueRequestAsync(method, address, extraHeader))
                 {
                     byte[] data = new byte[100];
-                    stream.WriteAsync(data, 0, 49).Wait();
-                    int read = stream.ReadAsync(data, 0, data.Length).Result;
+                    await stream.WriteAsync(data, 0, 49);
+                    int read = await stream.ReadAsync(data, 0, data.Length);
                     Assert.Equal(49, read);
                 }
             }

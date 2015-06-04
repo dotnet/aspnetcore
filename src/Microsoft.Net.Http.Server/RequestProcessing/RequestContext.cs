@@ -158,9 +158,9 @@ namespace Microsoft.Net.Http.Server
 
         public Task<Stream> UpgradeAsync()
         {
-            if (!IsUpgradableRequest || _response.HeadersSent)
+            if (!IsUpgradableRequest || _response.HasStarted)
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("This request cannot be upgraded. It is incompatible, or the response has already started.");
             }
 
             // Set the status code and reason phrase
