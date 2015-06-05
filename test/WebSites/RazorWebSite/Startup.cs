@@ -37,8 +37,6 @@ namespace RazorWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseCultureReplacer();
-
             app.UseRequestLocalization();
 
             // Add MVC to the request pipeline
