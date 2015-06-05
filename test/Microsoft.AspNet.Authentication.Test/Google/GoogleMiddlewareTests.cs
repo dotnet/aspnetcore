@@ -74,7 +74,6 @@ namespace Microsoft.AspNet.Authentication.Google
                 options.ClientSecret = "Test Secret";
             });
             var transaction = await server.SendAsync("https://example.com/challenge");
-            Console.WriteLine(transaction.SetCookie);
             transaction.SetCookie.Single().ShouldContain(".AspNet.Correlation.Google=");
         }
 
@@ -88,7 +87,6 @@ namespace Microsoft.AspNet.Authentication.Google
                 options.AutomaticAuthentication = true;
             });
             var transaction = await server.SendAsync("https://example.com/401");
-            Console.WriteLine(transaction.SetCookie);
             transaction.SetCookie.Single().ShouldContain(".AspNet.Correlation.Google=");
         }
 
