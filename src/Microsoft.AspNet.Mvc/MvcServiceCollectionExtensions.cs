@@ -116,10 +116,8 @@ namespace Microsoft.Framework.DependencyInjection
 
             // Core action discovery, filters and action execution.
 
-            // These are consumed only when creating action descriptors, then they can be de-allocated
-            services.TryAdd(ServiceDescriptor.Transient<IControllerTypeProvider, DefaultControllerTypeProvider>());
-            services.TryAdd(ServiceDescriptor.Transient<IControllerModelBuilder, DefaultControllerModelBuilder>());
-            services.TryAdd(ServiceDescriptor.Transient<IActionModelBuilder, DefaultActionModelBuilder>());
+            // This are consumed only when creating action descriptors, then they can be de-allocated
+            services.TryAdd(ServiceDescriptor.Transient<IControllerTypeProvider, DefaultControllerTypeProvider>());;
 
             // This has a cache, so it needs to be a singleton
             services.TryAdd(ServiceDescriptor.Singleton<IControllerFactory, DefaultControllerFactory>());
@@ -155,11 +153,11 @@ namespace Microsoft.Framework.DependencyInjection
             services.TryAdd(ServiceDescriptor
                 .Singleton<IActionDescriptorsCollectionProvider, DefaultActionDescriptorsCollectionProvider>());
 
-            // The IGlobalFilterProvider is used to build the action descriptors (likely once) and so should
-            // remain transient to avoid keeping it in memory.
-            services.TryAdd(ServiceDescriptor.Transient<IGlobalFilterProvider, DefaultGlobalFilterProvider>());
             // multiple registration service
             services.AddTransient<IFilterProvider, DefaultFilterProvider>();
+
+            // multiple registration service
+            services.AddTransient<IApplicationModelProvider, DefaultApplicationModelProvider>();
 
             services.TryAdd(ServiceDescriptor.Transient<FormatFilter, FormatFilter>());
             services.TryAdd(ServiceDescriptor.Transient<CorsAuthorizationFilter, CorsAuthorizationFilter>());

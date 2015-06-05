@@ -6,6 +6,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
@@ -372,12 +373,6 @@ namespace System.Web.Http
             var assemblyProvider = new FixedSetAssemblyProvider();
             assemblyProvider.CandidateAssemblies.Add(GetType().GetTypeInfo().Assembly);
             var controllerTypeProvider = new NamespaceFilteredControllerTypeProvider(assemblyProvider);
-            var modelBuilder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null), null);
-
-            var filterProvider = new Mock<IGlobalFilterProvider>();
-            filterProvider
-                .SetupGet(fp => fp.Filters)
-                .Returns(new List<IFilter>());
 
             var options = new MvcOptions();
 
@@ -389,10 +384,18 @@ namespace System.Web.Http
                 .SetupGet(o => o.Options)
                 .Returns(options);
 
+            var authorizationOptionsAccessor = new Mock<IOptions<AuthorizationOptions>>();
+            authorizationOptionsAccessor
+                .SetupGet(o => o.Options)
+                .Returns(new AuthorizationOptions());
+
+            var modelProvider = new DefaultApplicationModelProvider(
+                optionsAccessor.Object,
+                authorizationOptionsAccessor.Object);
+
             var provider = new ControllerActionDescriptorProvider(
                 controllerTypeProvider,
-                modelBuilder,
-                filterProvider.Object,
+                new[] { modelProvider },
                 optionsAccessor.Object);
 
             return provider;

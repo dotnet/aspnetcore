@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.ApiExplorer;
+using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.MvcServiceCollectionExtensionsTestControllers;
 using Microsoft.AspNet.Mvc.Razor;
@@ -140,7 +141,8 @@ namespace Microsoft.AspNet.Mvc
                     typeof(IActionDescriptorProvider),
                     typeof(IActionInvokerProvider),
                     typeof(IFilterProvider),
-                    typeof(IApiDescriptionProvider)
+                    typeof(IApiDescriptionProvider),
+                    typeof(IApplicationModelProvider),
                 };
             }
         }

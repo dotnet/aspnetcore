@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Mvc.ApplicationModels;
-using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
@@ -11,19 +11,17 @@ namespace Microsoft.AspNet.Mvc.Core
 {
     public class ControllerActionDescriptorProvider : IActionDescriptorProvider
     {
-        private readonly IControllerModelBuilder _applicationModelBuilder;
+        private readonly IApplicationModelProvider[] _applicationModelProviders;
         private readonly IControllerTypeProvider _controllerTypeProvider;
-        private readonly IReadOnlyList<IFilter> _globalFilters;
         private readonly IEnumerable<IApplicationModelConvention> _conventions;
 
-        public ControllerActionDescriptorProvider([NotNull] IControllerTypeProvider controllerTypeProvider,
-                                                  [NotNull] IControllerModelBuilder applicationModelBuilder,
-                                                  [NotNull] IGlobalFilterProvider globalFilters,
-                                                  [NotNull] IOptions<MvcOptions> optionsAccessor)
+        public ControllerActionDescriptorProvider(
+            [NotNull] IControllerTypeProvider controllerTypeProvider,
+            [NotNull] IEnumerable<IApplicationModelProvider> applicationModelProviders,
+            [NotNull] IOptions<MvcOptions> optionsAccessor)
         {
             _controllerTypeProvider = controllerTypeProvider;
-            _applicationModelBuilder = applicationModelBuilder;
-            _globalFilters = globalFilters.Filters;
+            _applicationModelProviders = applicationModelProviders.OrderBy(p => p.Order).ToArray();
             _conventions = optionsAccessor.Options.Conventions;
         }
 
@@ -55,23 +53,20 @@ namespace Microsoft.AspNet.Mvc.Core
 
         internal protected ApplicationModel BuildModel()
         {
-            var applicationModel = new ApplicationModel();
-            foreach (var filter in _globalFilters)
+            var controllerTypes = _controllerTypeProvider.ControllerTypes;
+            var context = new ApplicationModelProviderContext(controllerTypes);
+
+            for (var i = 0; i < _applicationModelProviders.Length; i++)
             {
-                applicationModel.Filters.Add(filter);
+                _applicationModelProviders[i].OnProvidersExecuting(context);
             }
 
-            foreach (var type in _controllerTypeProvider.ControllerTypes)
+            for (var i = _applicationModelProviders.Length - 1 ; i >= 0; i--)
             {
-                var controllerModel = _applicationModelBuilder.BuildControllerModel(type);
-                if (controllerModel != null)
-                {
-                    controllerModel.Application = applicationModel;
-                    applicationModel.Controllers.Add(controllerModel);
-                }
+                _applicationModelProviders[i].OnProvidersExecuted(context);
             }
 
-            return applicationModel;
+            return context.Result;
         }
     }
 }

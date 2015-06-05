@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,31 +6,262 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Authorization;
-using Microsoft.AspNet.Cors;
 using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Mvc.ApiExplorer;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
-    /// <summary>
-    /// A default implementation of <see cref="IActionModelBuilder"/>.
-    /// </summary>
-    public class DefaultActionModelBuilder : IActionModelBuilder
+    public class DefaultApplicationModelProvider : IApplicationModelProvider
     {
         private readonly AuthorizationOptions _authorizationOptions;
+        private readonly ICollection<IFilter> _globalFilters;
 
-        public DefaultActionModelBuilder(IOptions<AuthorizationOptions> authorizationOptions)
+        public DefaultApplicationModelProvider(
+            IOptions<MvcOptions> mvcOptionsAccessor,
+            IOptions<AuthorizationOptions> authorizationOptionsAccessor)
         {
-            _authorizationOptions = authorizationOptions?.Options ?? new AuthorizationOptions();
+            _globalFilters = mvcOptionsAccessor.Options.Filters;
+            _authorizationOptions = authorizationOptionsAccessor.Options;
         }
 
         /// <inheritdoc />
-        public IEnumerable<ActionModel> BuildActionModels([NotNull] TypeInfo typeInfo, [NotNull] MethodInfo methodInfo)
+        public int Order
+        {
+            get
+            {
+                return DefaultOrder.DefaultFrameworkSortOrder;
+            }
+        }
+
+        /// <inheritdoc />
+        public virtual void OnProvidersExecuting([NotNull] ApplicationModelProviderContext context)
+        {
+            foreach (var filter in _globalFilters)
+            {
+                context.Result.Filters.Add(filter);
+            }
+
+            foreach (var controllerType in context.ControllerTypes)
+            {
+                var controllerModels = BuildControllerModels(controllerType);
+                if (controllerModels != null)
+                {
+                    foreach (var controllerModel in controllerModels)
+                    {
+                        context.Result.Controllers.Add(controllerModel);
+                        controllerModel.Application = context.Result;
+
+                        foreach (var propertyHelper in PropertyHelper.GetProperties(controllerType.AsType()))
+                        {
+                            var propertyInfo = propertyHelper.Property;
+                            var propertyModel = CreatePropertyModel(propertyInfo);
+                            if (propertyModel != null)
+                            {
+                                propertyModel.Controller = controllerModel;
+                                controllerModel.ControllerProperties.Add(propertyModel);
+                            }
+                        }
+
+                        foreach (var methodInfo in controllerType.AsType().GetMethods())
+                        {
+                            var actionModels = BuildActionModels(controllerType, methodInfo);
+                            if (actionModels != null)
+                            {
+                                foreach (var actionModel in actionModels)
+                                {
+                                    actionModel.Controller = controllerModel;
+                                    controllerModel.Actions.Add(actionModel);
+
+                                    foreach (var parameterInfo in actionModel.ActionMethod.GetParameters())
+                                    {
+                                        var parameterModel = CreateParameterModel(parameterInfo);
+                                        if (parameterModel != null)
+                                        {
+                                            parameterModel.Action = actionModel;
+                                            actionModel.Parameters.Add(parameterModel);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public virtual void OnProvidersExecuted([NotNull] ApplicationModelProviderContext context)
+        {
+            // Intentionally empty.
+        }
+
+        /// <summary>
+        /// Creates the <see cref="ControllerModel"/> instances for the given controller <see cref="TypeInfo"/>.
+        /// </summary>
+        /// <param name="typeInfo">The controller <see cref="TypeInfo"/>.</param>
+        /// <returns>
+        /// A set of <see cref="ControllerModel"/> instances for the given controller <see cref="TypeInfo"/> or
+        /// <c>null</c> if the <paramref name="typeInfo"/> does not represent a controller.
+        /// </returns>
+        protected virtual IEnumerable<ControllerModel> BuildControllerModels([NotNull] TypeInfo typeInfo)
+        {
+            var controllerModel = CreateControllerModel(typeInfo);
+            yield return controllerModel;
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ControllerModel"/> for the given <see cref="TypeInfo"/>.
+        /// </summary>
+        /// <param name="typeInfo">The <see cref="TypeInfo"/>.</param>
+        /// <returns>A <see cref="ControllerModel"/> for the given <see cref="TypeInfo"/>.</returns>
+        protected virtual ControllerModel CreateControllerModel([NotNull] TypeInfo typeInfo)
+        {
+            // For attribute routes on a controller, we want want to support 'overriding' routes on a derived
+            // class. So we need to walk up the hierarchy looking for the first class to define routes.
+            //
+            // Then we want to 'filter' the set of attributes, so that only the effective routes apply.
+            var currentTypeInfo = typeInfo;
+            var objectTypeInfo = typeof(object).GetTypeInfo();
+
+            IRouteTemplateProvider[] routeAttributes = null;
+
+            do
+            {
+                routeAttributes = currentTypeInfo
+                        .GetCustomAttributes(inherit: false)
+                        .OfType<IRouteTemplateProvider>()
+                        .ToArray();
+
+                if (routeAttributes.Length > 0)
+                {
+                    // Found 1 or more route attributes.
+                    break;
+                }
+
+                currentTypeInfo = currentTypeInfo.BaseType.GetTypeInfo();
+            }
+            while (currentTypeInfo != objectTypeInfo);
+
+            // CoreCLR returns IEnumerable<Attribute> from GetCustomAttributes - the OfType<object>
+            // is needed to so that the result of ToArray() is object
+            var attributes = typeInfo.GetCustomAttributes(inherit: true).OfType<object>().ToArray();
+
+            // This is fairly complicated so that we maintain referential equality between items in
+            // ControllerModel.Attributes and ControllerModel.Attributes[*].Attribute.
+            var filteredAttributes = new List<object>();
+            foreach (var attribute in attributes)
+            {
+                if (attribute is IRouteTemplateProvider)
+                {
+                    // This attribute is a route-attribute, leave it out.
+                }
+                else
+                {
+                    filteredAttributes.Add(attribute);
+                }
+            }
+            filteredAttributes.AddRange(routeAttributes);
+
+            attributes = filteredAttributes.ToArray();
+
+            var controllerModel = new ControllerModel(typeInfo, attributes);
+            AddRange(
+                controllerModel.AttributeRoutes, routeAttributes.Select(a => new AttributeRouteModel(a)));
+
+            controllerModel.ControllerName =
+                typeInfo.Name.EndsWith("Controller", StringComparison.OrdinalIgnoreCase) ?
+                    typeInfo.Name.Substring(0, typeInfo.Name.Length - "Controller".Length) :
+                    typeInfo.Name;
+
+            AddRange(controllerModel.ActionConstraints, attributes.OfType<IActionConstraintMetadata>());
+            AddRange(controllerModel.Filters, attributes.OfType<IFilter>());
+            AddRange(controllerModel.RouteConstraints, attributes.OfType<IRouteConstraintProvider>());
+
+            var enableCors = attributes.OfType<IEnableCorsAttribute>().SingleOrDefault();
+            if (enableCors != null)
+            {
+                controllerModel.Filters.Add(new CorsAuthorizationFilterFactory(enableCors.PolicyName));
+            }
+
+            var disableCors = attributes.OfType<IDisableCorsAttribute>().SingleOrDefault();
+            if (disableCors != null)
+            {
+                controllerModel.Filters.Add(new DisableCorsAuthorizationFilter());
+            }
+
+            var policy = AuthorizationPolicy.Combine(_authorizationOptions, attributes.OfType<AuthorizeAttribute>());
+            if (policy != null)
+            {
+                controllerModel.Filters.Add(new AuthorizeFilter(policy));
+            }
+
+            var apiVisibility = attributes.OfType<IApiDescriptionVisibilityProvider>().FirstOrDefault();
+            if (apiVisibility != null)
+            {
+                controllerModel.ApiExplorer.IsVisible = !apiVisibility.IgnoreApi;
+            }
+
+            var apiGroupName = attributes.OfType<IApiDescriptionGroupNameProvider>().FirstOrDefault();
+            if (apiGroupName != null)
+            {
+                controllerModel.ApiExplorer.GroupName = apiGroupName.GroupName;
+            }
+
+            // Controllers can implement action filter and result filter interfaces. We add
+            // a special delegating filter implementation to the pipeline to handle it.
+            //
+            // This is needed because filters are instantiated before the controller.
+            if (typeof(IAsyncActionFilter).GetTypeInfo().IsAssignableFrom(typeInfo) ||
+                typeof(IActionFilter).GetTypeInfo().IsAssignableFrom(typeInfo))
+            {
+                controllerModel.Filters.Add(new ControllerActionFilter());
+            }
+            if (typeof(IAsyncResultFilter).GetTypeInfo().IsAssignableFrom(typeInfo) ||
+                typeof(IResultFilter).GetTypeInfo().IsAssignableFrom(typeInfo))
+            {
+                controllerModel.Filters.Add(new ControllerResultFilter());
+            }
+
+            return controllerModel;
+        }
+
+        /// <summary>
+        /// Creates a <see cref="PropertyModel"/> for the given <see cref="PropertyInfo"/>.
+        /// </summary>
+        /// <param name="propertyInfo">The <see cref="PropertyInfo"/>.</param>
+        /// <returns>A <see cref="PropertyModel"/> for the given <see cref="PropertyInfo"/>.</returns>
+        protected virtual PropertyModel CreatePropertyModel([NotNull] PropertyInfo propertyInfo)
+        {
+            // CoreCLR returns IEnumerable<Attribute> from GetCustomAttributes - the OfType<object>
+            // is needed to so that the result of ToArray() is object
+            var attributes = propertyInfo.GetCustomAttributes(inherit: true).OfType<object>().ToArray();
+            var propertyModel = new PropertyModel(propertyInfo, attributes);
+            var bindingInfo = BindingInfo.GetBindingInfo(attributes);
+
+            propertyModel.BindingInfo = bindingInfo;
+            propertyModel.PropertyName = propertyInfo.Name;
+
+            return propertyModel;
+        }
+
+
+        /// <summary>
+        /// Creates the <see cref="ControllerModel"/> instances for the given action <see cref="MethodInfo"/>.
+        /// </summary>
+        /// <param name="typeInfo">The controller <see cref="TypeInfo"/>.</param>
+        /// <param name="methodInfo">The action <see cref="MethodInfo"/>.</param>
+        /// <returns>
+        /// A set of <see cref="ActionModel"/> instances for the given action <see cref="MethodInfo"/> or
+        /// <c>null</c> if the <paramref name="methodInfo"/> does not represent an action.
+        /// </returns>
+        protected virtual IEnumerable<ActionModel> BuildActionModels(
+            [NotNull] TypeInfo typeInfo,
+            [NotNull] MethodInfo methodInfo)
         {
             if (!IsAction(typeInfo, methodInfo))
             {
@@ -214,19 +445,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                 }
             }
 
-            foreach (var actionModel in actionModels)
-            {
-                foreach (var parameterInfo in actionModel.ActionMethod.GetParameters())
-                {
-                    var parameterModel = CreateParameterModel(parameterInfo);
-                    if (parameterModel != null)
-                    {
-                        parameterModel.Action = actionModel;
-                        actionModel.Parameters.Add(parameterModel);
-                    }
-                }
-            }
-
             return actionModels;
         }
 
@@ -285,15 +503,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                 return false;
             }
 
-            return
-                methodInfo.IsPublic;
-        }
-
-        private bool IsIDisposableMethod(MethodInfo methodInfo, TypeInfo typeInfo)
-        {
-            return
-                (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(typeInfo) &&
-                 typeInfo.GetRuntimeInterfaceMap(typeof(IDisposable)).TargetMethods[0] == methodInfo);
+            return methodInfo.IsPublic;
         }
 
         /// <summary>
@@ -400,6 +610,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             parameterModel.ParameterName = parameterInfo.Name;
 
             return parameterModel;
+        }
+
+        private bool IsIDisposableMethod(MethodInfo methodInfo, TypeInfo typeInfo)
+        {
+            return
+                (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(typeInfo) &&
+                 typeInfo.GetRuntimeInterfaceMap(typeof(IDisposable)).TargetMethods[0] == methodInfo);
         }
 
         private bool IsSilentRouteAttribute(IRouteTemplateProvider routeTemplateProvider)

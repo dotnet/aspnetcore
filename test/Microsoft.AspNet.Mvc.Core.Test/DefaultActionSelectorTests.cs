@@ -7,6 +7,7 @@ using System.ComponentModel.Design;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ActionConstraints;
@@ -667,14 +668,17 @@ namespace Microsoft.AspNet.Mvc
                 .Select(t => t.GetTypeInfo())
                 .ToList();
 
-            var controllerTypeProvider = new FixedSetControllerTypeProvider(controllerTypes);
-            var modelBuilder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null), null);
+            var options = new MockMvcOptionsAccessor();
 
-            return new ControllerActionDescriptorProvider(
-                                        controllerTypeProvider,
-                                        modelBuilder,
-                                        new TestGlobalFilterProvider(),
-                                        new MockMvcOptionsAccessor());
+            var controllerTypeProvider = new FixedSetControllerTypeProvider(controllerTypes);
+            var modelProvider = new DefaultApplicationModelProvider(options, new MockAuthorizationOptionsAccessor());
+
+            var provider = new ControllerActionDescriptorProvider(
+                controllerTypeProvider,
+                new[] { modelProvider },
+                options);
+
+            return provider;
         }
 
         private static HttpContext GetHttpContext(string httpMethod)

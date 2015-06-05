@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
@@ -1449,61 +1450,63 @@ namespace Microsoft.AspNet.Mvc.Test
             TypeInfo controllerTypeInfo,
             IEnumerable<IFilter> filters = null)
         {
+            var options = new MockMvcOptionsAccessor();
+            if (filters != null)
+            {
+                foreach (var filter in filters)
+                {
+                    options.Options.Filters.Add(filter);
+                }
+            }
+
             var controllerTypeProvider = new FixedSetControllerTypeProvider(new[] { controllerTypeInfo });
-            var controllerModelBuilder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null), null);
+            var modelProvider = new DefaultApplicationModelProvider(options, new MockAuthorizationOptionsAccessor());
 
             var provider = new ControllerActionDescriptorProvider(
                 controllerTypeProvider,
-                controllerModelBuilder,
-                new TestGlobalFilterProvider(filters),
-                new MockMvcOptionsAccessor());
+                new[] { modelProvider },
+                options);
 
             return provider;
         }
 
         private ControllerActionDescriptorProvider GetProvider(
-            params TypeInfo[] controllerTypeInfo)
+            params TypeInfo[] controllerTypeInfos)
         {
-            var controllerTypeProvider = new FixedSetControllerTypeProvider(controllerTypeInfo);
-            var controllerModelBuilder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null), null);
+            var options = new MockMvcOptionsAccessor();
+
+            var controllerTypeProvider = new FixedSetControllerTypeProvider(controllerTypeInfos);
+            var modelProvider = new DefaultApplicationModelProvider(options, new MockAuthorizationOptionsAccessor());
 
             var provider = new ControllerActionDescriptorProvider(
                 controllerTypeProvider,
-                controllerModelBuilder,
-                new TestGlobalFilterProvider(),
-                new MockMvcOptionsAccessor());
+                new[] { modelProvider },
+                options);
 
             return provider;
         }
 
         private ControllerActionDescriptorProvider GetProvider(
-            TypeInfo type,
+            TypeInfo controllerTypeInfo,
             IApplicationModelConvention convention)
         {
-            var controllerTypeProvider = new FixedSetControllerTypeProvider(new[] { type });
-            var modelBuilder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null), null);
-
             var options = new MockMvcOptionsAccessor();
             options.Options.Conventions.Add(convention);
 
-            return new ControllerActionDescriptorProvider(
+            var controllerTypeProvider = new FixedSetControllerTypeProvider(new[] { controllerTypeInfo });
+            var modelProvider = new DefaultApplicationModelProvider(options, new MockAuthorizationOptionsAccessor());
+
+            var provider = new ControllerActionDescriptorProvider(
                 controllerTypeProvider,
-                modelBuilder,
-                new TestGlobalFilterProvider(),
+                new[] { modelProvider },
                 options);
+
+            return provider;
         }
 
         private IEnumerable<ActionDescriptor> GetDescriptors(params TypeInfo[] controllerTypeInfos)
         {
-            var controllerTypeProvider = new FixedSetControllerTypeProvider(controllerTypeInfos);
-            var modelBuilder = new DefaultControllerModelBuilder(new DefaultActionModelBuilder(null), null);
-
-            var provider = new ControllerActionDescriptorProvider(
-                controllerTypeProvider,
-                modelBuilder,
-                new TestGlobalFilterProvider(),
-                new MockMvcOptionsAccessor());
-
+            var provider = GetProvider(controllerTypeInfos);
             return provider.GetDescriptors();
         }
 
