@@ -1995,19 +1995,19 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The '{0}' property is required.
+        /// A value for the '{0}' property was not provided.
         /// </summary>
-        internal static string ModelBinding_MissingRequiredMember
+        internal static string ModelBinding_MissingBindRequiredMember
         {
-            get { return GetString("ModelBinding_MissingRequiredMember"); }
+            get { return GetString("ModelBinding_MissingBindRequiredMember"); }
         }
 
         /// <summary>
-        /// The '{0}' property is required.
+        /// A value for the '{0}' property was not provided.
         /// </summary>
-        internal static string FormatModelBinding_MissingRequiredMember(object p0)
+        internal static string FormatModelBinding_MissingBindRequiredMember(object p0)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ModelBinding_MissingRequiredMember"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("ModelBinding_MissingBindRequiredMember"), p0);
         }
 
         /// <summary>

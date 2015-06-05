@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -364,42 +363,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var modelExplorer = metadataProvider.GetModelExplorerForType(bindingContext.ModelType, bindingContext.Model);
             var validationInfo = GetPropertyValidationInfo(bindingContext);
 
-            // Eliminate provided properties from requiredProperties; leaving just *missing* required properties.
+            // Eliminate provided properties from RequiredProperties; leaving just *missing* required properties.
             var boundProperties = dto.Results.Where(p => p.Value.IsModelSet).Select(p => p.Key.PropertyName);
             validationInfo.RequiredProperties.ExceptWith(boundProperties);
 
             foreach (var missingRequiredProperty in validationInfo.RequiredProperties)
             {
-                var addedError = false;
-
-                // We want to provide the 'null' value, not the value of model.Property,
-                // so avoiding modelExplorer.GetProperty here which would call the actual getter on the
-                // model. This avoids issues with value types, or properties with pre-initialized values.
-                var propertyExplorer = modelExplorer.GetExplorerForProperty(missingRequiredProperty, model: null);
-
+                var propertyExplorer = modelExplorer.GetExplorerForProperty(missingRequiredProperty);
                 var propertyName = propertyExplorer.Metadata.BinderModelName ?? missingRequiredProperty;
-                var modelStateKey = ModelNames.CreatePropertyModelName(
-                    bindingContext.ModelName,
-                    propertyName);
+                var modelStateKey = ModelNames.CreatePropertyModelName(bindingContext.ModelName, propertyName);
 
-                // Get the first 'required' validator (if any) to get custom error message.
-                var validatorProviderContext = new ModelValidatorProviderContext(propertyExplorer.Metadata);
-                bindingContext.OperationBindingContext.ValidatorProvider.GetValidators(validatorProviderContext);
-                var validator = validatorProviderContext.Validators.FirstOrDefault(v => v.IsRequired);
-
-                if (validator != null)
-                {
-                    addedError = RunValidator(validator, bindingContext, propertyExplorer, modelStateKey);
-                }
-
-                // Fall back to default message if BindingBehaviorAttribute required this property and we have no
-                // actual validator for it.
-                if (!addedError)
-                {
-                    bindingContext.ModelState.TryAddModelError(
-                        modelStateKey,
-                        Resources.FormatModelBinding_MissingRequiredMember(propertyName));
-                }
+                bindingContext.ModelState.TryAddModelError(
+                    modelStateKey,
+                    Resources.FormatModelBinding_MissingBindRequiredMember(propertyName));
             }
 
             // For each property that ComplexModelDtoModelBinder attempted to bind, call the setter, recording
@@ -436,10 +412,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </param>
         /// <param name="propertyMetadata">The <see cref="ModelMetadata"/> for the property to set.</param>
         /// <param name="dtoResult">The <see cref="ModelBindingResult"/> for the property's new value.</param>
-        /// <param name="requiredValidator">
-        /// The <see cref="IModelValidator"/> which ensures the value is not <c>null</c>. Or <c>null</c> if no such
-        /// requirement exists.
-        /// </param>
         /// <remarks>Should succeed in all cases that <see cref="CanUpdateProperty"/> returns <c>true</c>.</remarks>
         protected virtual void SetProperty(
             [NotNull] ModelBindingContext bindingContext,

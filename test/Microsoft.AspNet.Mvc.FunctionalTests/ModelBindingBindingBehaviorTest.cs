@@ -49,10 +49,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(2, errors.Count);
 
             var error = Assert.Single(errors, kvp => kvp.Key == "model.BehaviourRequiredProperty");
-            Assert.Equal("The 'BehaviourRequiredProperty' property is required.", ((JArray)error.Value)[0].Value<string>());
+            Assert.Equal(
+                "A value for the 'BehaviourRequiredProperty' property was not provided.",
+                ((JArray)error.Value)[0].Value<string>());
 
             error = Assert.Single(errors, kvp => kvp.Key == "model.BindRequiredProperty");
-            Assert.Equal("The 'BindRequiredProperty' property is required.", ((JArray)error.Value)[0].Value<string>());
+            Assert.Equal(
+                "A value for the 'BindRequiredProperty' property was not provided.",
+                ((JArray)error.Value)[0].Value<string>());
         }
 
         [Fact]

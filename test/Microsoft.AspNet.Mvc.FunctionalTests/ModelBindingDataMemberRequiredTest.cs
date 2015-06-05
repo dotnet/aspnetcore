@@ -49,7 +49,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(1, errors.Count);
 
             var error = Assert.Single(errors, kvp => kvp.Key == "model.RequiredProperty");
-            Assert.Equal("The 'RequiredProperty' property is required.", ((JArray)error.Value)[0].Value<string>());
+            Assert.Equal(
+                "A value for the 'RequiredProperty' property was not provided.",
+                ((JArray)error.Value)[0].Value<string>());
         }
 
         [Fact]

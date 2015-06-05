@@ -793,7 +793,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var modelError = Assert.Single(modelState.Errors);
             Assert.Null(modelError.Exception);
             Assert.NotNull(modelError.ErrorMessage);
-            Assert.Equal("The 'Age' property is required.", modelError.ErrorMessage);
+            Assert.Equal("A value for the 'Age' property was not provided.", modelError.ErrorMessage);
         }
 
         [Fact]
@@ -844,7 +844,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var modelError = Assert.Single(modelState.Errors);
             Assert.Null(modelError.Exception);
             Assert.NotNull(modelError.ErrorMessage);
-            Assert.Equal("The 'Age' property is required.", modelError.ErrorMessage);
+            Assert.Equal("A value for the 'Age' property was not provided.", modelError.ErrorMessage);
         }
 
         [Fact]
@@ -1147,9 +1147,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal(0m, model.PropertyWithDefaultValue);     // [DefaultValue] has no effect
         }
 
-        // This uses [Required] with [BindRequired] to provide a custom validation messsage.
+        // [Required] cannot provide a custom validation for [BindRequired] errors.
         [Fact]
-        public void ProcessDto_ValueTypePropertyWithBindRequired_CustomValidationMessage()
+        public void ProcessDto_ValueTypePropertyWithBindRequired_RequiredValidatorIgnored()
         {
             // Arrange
             var model = new ModelWithBindRequiredAndRequiredAttribute();
@@ -1191,16 +1191,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 .Value;
             var error = Assert.Single(entry.Errors);
             Assert.Null(error.Exception);
-            Assert.Equal("Custom Message ValueTypeProperty", error.ErrorMessage);
+            Assert.Equal("A value for the 'ValueTypeProperty' property was not provided.", error.ErrorMessage);
 
             // Model gets provided values.
             Assert.Equal(0, model.ValueTypeProperty);
             Assert.Equal("value", model.ReferenceTypeProperty);
         }
 
-        // This uses [Required] with [BindRequired] to provide a custom validation messsage.
+        // [Required] cannot provide a custom validation for [BindRequired] errors.
         [Fact]
-        public void ProcessDto_ReferenceTypePropertyWithBindRequired_CustomValidationMessage()
+        public void ProcessDto_ReferenceTypePropertyWithBindRequired_RequiredValidatorIgnored()
         {
             // Arrange
             var model = new ModelWithBindRequiredAndRequiredAttribute();
@@ -1242,7 +1242,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 .Value;
             var error = Assert.Single(entry.Errors);
             Assert.Null(error.Exception);
-            Assert.Equal("Custom Message ReferenceTypeProperty", error.ErrorMessage);
+            Assert.Equal("A value for the 'ReferenceTypeProperty' property was not provided.", error.ErrorMessage);
 
             // Model gets provided values.
             Assert.Equal(17, model.ValueTypeProperty);
@@ -1713,15 +1713,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     ValidatorProvider = TestModelValidatorProvider.CreateDefaultProvider(),
                 }
             };
-        }
-
-        private static IModelValidator GetRequiredValidator(ModelBindingContext bindingContext, ModelMetadata propertyMetadata)
-        {
-            var validatorProvider = bindingContext.OperationBindingContext.ValidatorProvider;
-            var validatorProviderContext = new ModelValidatorProviderContext(propertyMetadata);
-            validatorProvider.GetValidators(validatorProviderContext);
-
-            return validatorProviderContext.Validators.FirstOrDefault(v => v.IsRequired);
         }
 
         private static ModelMetadata GetMetadataForCanUpdateProperty(string propertyName)

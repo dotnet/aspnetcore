@@ -1582,7 +1582,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public string Name { get; set; }
         }
 
-        [Fact(Skip = "Error message is incorrect #2493.")]
+        [Fact]
         public async Task MutableObjectModelBinder_WithRequiredComplexProperty_NoData_GetsErrors()
         {
             // Arrange
@@ -1617,7 +1617,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState, e => e.Key == "Customer").Value;
             Assert.Null(entry.Value);
             var error = Assert.Single(modelState["Customer"].Errors);
-            Assert.Equal("The Customer field is required.", error.ErrorMessage);
+            Assert.Equal("A value for the 'Customer' property was not provided.", error.ErrorMessage);
         }
 
         private class Order11
@@ -1633,7 +1633,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public string Name { get; set; }
         }
 
-        [Fact(Skip = "Error message is incorrect #2493.")]
+        [Fact]
         public async Task MutableObjectModelBinder_WithNestedRequiredProperty_WithPartialData_GetsErrors()
         {
             // Arrange
@@ -1676,10 +1676,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             entry = Assert.Single(modelState, e => e.Key == "parameter.Customer.Name").Value;
             Assert.Null(entry.Value);
             var error = Assert.Single(modelState["parameter.Customer.Name"].Errors);
-            Assert.Equal("The Name field is required.", error.ErrorMessage);
+            Assert.Equal("A value for the 'Name' property was not provided.", error.ErrorMessage);
         }
 
-        [Fact(Skip = "Error message is incorrect #2493.")]
+        [Fact]
         public async Task MutableObjectModelBinder_WithNestedRequiredProperty_WithData_EmptyPrefix_GetsErrors()
         {
             // Arrange
@@ -1722,10 +1722,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             entry = Assert.Single(modelState, e => e.Key == "Customer.Name").Value;
             Assert.Null(entry.Value);
             var error = Assert.Single(modelState["Customer.Name"].Errors);
-            Assert.Equal("The Name field is required.", error.ErrorMessage);
+            Assert.Equal("A value for the 'Name' property was not provided.", error.ErrorMessage);
         }
 
-        [Fact(Skip = "Error message is incorrect #2493.")]
+        [Fact]
         public async Task MutableObjectModelBinder_WithNestedRequiredProperty_WithData_CustomPrefix_GetsErrors()
         {
             // Arrange
@@ -1772,7 +1772,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             entry = Assert.Single(modelState, e => e.Key == "customParameter.Customer.Name").Value;
             Assert.Null(entry.Value);
             var error = Assert.Single(modelState["customParameter.Customer.Name"].Errors);
-            Assert.Equal("The Name field is required.", error.ErrorMessage);
+            Assert.Equal("A value for the 'Name' property was not provided.", error.ErrorMessage);
         }
 
         private class Order12
@@ -1781,7 +1781,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public string ProductName { get; set; }
         }
 
-        [Fact(Skip = "Error message is incorrect #2493.")]
+        [Fact]
         public async Task MutableObjectModelBinder_WithRequiredProperty_NoData_GetsErrors()
         {
             // Arrange
@@ -1817,10 +1817,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState, e => e.Key == "ProductName").Value;
             Assert.Null(entry.Value);
             var error = Assert.Single(modelState["ProductName"].Errors);
-            Assert.Equal("The ProductName field is required.", error.ErrorMessage);
+            Assert.Equal("A value for the 'ProductName' property was not provided.", error.ErrorMessage);
         }
 
-        [Fact(Skip = "Error message is incorrect #2493.")]
+        [Fact]
         public async Task MutableObjectModelBinder_WithRequiredProperty_NoData_CustomPrefix_GetsErros()
         {
             // Arrange
@@ -1860,7 +1860,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState, e => e.Key == "customParameter.ProductName").Value;
             Assert.Null(entry.Value);
             var error = Assert.Single(modelState["customParameter.ProductName"].Errors);
-            Assert.Equal("The ProductName field is required.", error.ErrorMessage);
+            Assert.Equal("A value for the 'ProductName' property was not provided.", error.ErrorMessage);
         }
 
         [Fact]
@@ -1908,7 +1908,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public List<int> OrderIds { get; set; }
         }
 
-        [Fact(Skip = "Error message is incorrect #2493.")]
+        [Fact]
         public async Task MutableObjectModelBinder_WithRequiredCollectionProperty_NoData_GetsErros()
         {
             // Arrange
@@ -1944,10 +1944,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState, e => e.Key == "OrderIds").Value;
             Assert.Null(entry.Value);
             var error = Assert.Single(modelState["OrderIds"].Errors);
-            Assert.Equal("The OrderIds field is required.", error.ErrorMessage);
+            Assert.Equal("A value for the 'OrderIds' property was not provided.", error.ErrorMessage);
         }
 
-        [Fact(Skip = "Error message is incorrect #2493.")]
+        [Fact]
         public async Task MutableObjectModelBinder_WithRequiredCollectionProperty_NoData_CustomPrefix_GetsErros()
         {
             // Arrange
@@ -1987,7 +1987,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState, e => e.Key == "customParameter.OrderIds").Value;
             Assert.Null(entry.Value);
             var error = Assert.Single(modelState["customParameter.OrderIds"].Errors);
-            Assert.Equal("The OrderIds field is required.", error.ErrorMessage);
+            Assert.Equal("A value for the 'OrderIds' property was not provided.", error.ErrorMessage);
         }
 
         [Fact]
