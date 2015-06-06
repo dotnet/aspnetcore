@@ -1,0 +1,18 @@
+﻿@using Microsoft.Framework.DependencyInjection
+@addTagHelper "*, Microsoft.AspNet.Mvc.TagHelpers"
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Form</title>
+</head>
+<body>
+
+    <h2>Form Tag Helper Test</h2>
+    
+    <form></form>
+    <form asp-controller="HtmlGeneration_Home" asp-action="Form"></form>
+    <form asp-controller="HtmlGeneration_Home" asp-action="Form" asp-anti-forgery="true"></form>
+    <form asp-controller="HtmlGeneration_Home" asp-action="Form" asp-anti-forgery="false"></form>
+</body>
+</html>
