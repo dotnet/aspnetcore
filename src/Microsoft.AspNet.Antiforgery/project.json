@@ -1,0 +1,23 @@
+﻿{
+  "version": "1.0.0-*",
+  "description": "",
+  "authors": [ "" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+
+  "dependencies": {
+  },
+
+  "frameworks" : {
+    "dnx451": { },
+    "dnxcore50" : {
+      "dependencies": {
+        "System.Collections": "4.0.10-beta-22807",
+        "System.Linq": "4.0.0-beta-22807",
+        "System.Threading": "4.0.10-beta-22807",
+        "Microsoft.CSharp": "4.0.0-beta-22807"
+      }
+    }
+  }
+}
