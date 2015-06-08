@@ -60,6 +60,76 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
+        public void HiddenNotInTemplate_GetsValueFromPropertyOfViewDataEntry()
+        {
+            // Arrange
+            var expected = @"<input id=""HtmlEncode[[Prefix_Property1]]"" name=""HtmlEncode[[Prefix.Property1]]"" " +
+                @"type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[contained-view-data-value]]"" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNonNullModel());
+            helper.ViewData.Model.Property1 = "model-property1-value";
+            helper.ViewData["Prefix"] = new HiddenModel { Property1 = "contained-view-data-value" };
+
+            // Act
+            var html = helper.Hidden("Prefix.Property1", value: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expected, html.ToString());
+        }
+
+        [Fact]
+        public void HiddenInTemplate_GetsValueFromPropertyOfViewDataEntry()
+        {
+            // Arrange
+            var expected = @"<input id=""HtmlEncode[[Prefix_Property1]]"" name=""HtmlEncode[[Prefix.Property1]]"" " +
+                @"type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[contained-view-data-value]]"" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNonNullModel());
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+            helper.ViewData.Model.Property1 = "model-property1-value";
+            helper.ViewData["Prefix"] = new HiddenModel { Property1 = "contained-view-data-value" };
+
+            // Act
+            var html = helper.Hidden("Property1", value: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expected, html.ToString());
+        }
+
+        [Fact]
+        public void HiddenNotInTemplate_GetsValueFromViewDataEntry_EvenIfNull()
+        {
+            // Arrange
+            var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" " +
+                @"type=""HtmlEncode[[hidden]]"" value="""" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNonNullModel());
+            helper.ViewData.Model.Property1 = "model-property1-value";
+            helper.ViewData["Property1"] = null;
+
+            // Act
+            var html = helper.Hidden("Property1", value: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expected, html.ToString());
+        }
+
+        [Fact]
+        public void HiddenInTemplate_GetsValueFromViewDataEntry_EvenIfNull()
+        {
+            // Arrange
+            var expected = @"<input id=""HtmlEncode[[Prefix_Property1]]"" name=""HtmlEncode[[Prefix.Property1]]"" " +
+                @"type=""HtmlEncode[[hidden]]"" value="""" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNonNullModel());
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+            helper.ViewData.Model.Property1 = "model-property1-value";
+            helper.ViewData["Prefix.Property1"] = null;
+
+            // Act
+            var html = helper.Hidden("Property1", value: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expected, html.ToString());
+        }
+
+        [Fact]
         public void HiddenOverridesValueFromAttributesWithArgumentValue()
         {
             // Arrange
@@ -92,7 +162,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
-        public void HiddenWithNullValueAndNullModel_GeneratesExpectedValue()
+        public void HiddenWithNonNullValue_GeneratesExpectedValue()
         {
             // Arrange
             var expected = @"<input data-key=""HtmlEncode[[value]]"" id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" " +
@@ -155,13 +225,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
-        public void HiddenUsesPropertyValue_IfModelStateAndViewDataDoNotHavePropertyAndExplicitValueIsNull()
+        public void HiddenNotInTemplate_GetsModelValue_IfModelStateAndViewDataEmpty()
         {
             // Arrange
             var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[property-value]]"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
-            helper.ViewData.ModelState.Clear();
-            helper.ViewData.Clear();
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNonNullModel());
             helper.ViewData.Model.Property1 = "property-value";
 
             // Act
@@ -171,15 +239,29 @@ namespace Microsoft.AspNet.Mvc.Rendering
             Assert.Equal(expected, result.ToString());
         }
 
+        [Fact(Skip = "#1485, unable to get Model value.")]
+        public void HiddenInTemplate_GetsModelValue_IfModelStateAndViewDataEmpty()
+        {
+            // Arrange
+            var expected = @"<input id=""HtmlEncode[[Prefix_Property1]]"" name=""HtmlEncode[[Prefix.Property1]]"" " +
+                @"type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[property-value]]"" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNonNullModel());
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+            helper.ViewData.Model.Property1 = "property-value";
+
+            // Act
+            var html = helper.Hidden("Property1", value: null, htmlAttributes: new { value = "attribute-value" });
+
+            // Assert
+            Assert.Equal(expected, html.ToString());
+        }
+
         [Fact]
-        public void HiddenDoesNotUsesAttributeValue()
+        public void HiddenNotInTemplate_DoesNotUseAttributeValue()
         {
             // Arrange
             var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value="""" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
-            helper.ViewData.ModelState.Clear();
-            helper.ViewData.Clear();
-            helper.ViewData.Model.Property1 = null;
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNonNullModel());
 
             // Act
             var result = helper.Hidden("Property1", value: null, htmlAttributes: new { value = "attribute-value" });
@@ -189,7 +271,23 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
-        public void HiddenReturnsEmptyValue_IfPropertyIsNotFound()
+        public void HiddenInTemplate_DoesNotUseAttributeValue()
+        {
+            // Arrange
+            var expected = @"<input id=""HtmlEncode[[Prefix_Property1]]"" name=""HtmlEncode[[Prefix.Property1]]"" " +
+                @"type=""HtmlEncode[[hidden]]"" value="""" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNonNullModel());
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+
+            // Act
+            var html = helper.Hidden("Property1", value: null, htmlAttributes: new { value = "attribute-value" });
+
+            // Assert
+            Assert.Equal(expected, html.ToString());
+        }
+
+        [Fact]
+        public void HiddenNotInTemplate_GetsEmptyValue_IfPropertyIsNotFound()
         {
             // Arrange
             var expected = @"<input baz=""HtmlEncode[[BazValue]]"" id=""HtmlEncode[[keyNotFound]]"" name=""HtmlEncode[[keyNotFound]]"" type=""HtmlEncode[[hidden]]"" " +
@@ -205,7 +303,23 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
-        public void HiddenWithPrefix_GeneratesExpectedValue()
+        public void HiddenInTemplate_GetsEmptyValue_IfPropertyIsNotFound()
+        {
+            // Arrange
+            var expected = @"<input id=""HtmlEncode[[Prefix_keyNotFound]]"" name=""HtmlEncode[[Prefix.keyNotFound]]"" " +
+                @"type=""HtmlEncode[[hidden]]"" value="""" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+
+            // Act
+            var html = helper.Hidden("keyNotFound", value: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expected, html.ToString());
+        }
+
+        [Fact]
+        public void HiddenInTemplate_WithExplicitValue_GeneratesExpectedValue()
         {
             // Arrange
             var expected = @"<input id=""HtmlEncode[[MyPrefix_Property1]]"" name=""HtmlEncode[[MyPrefix.Property1]]"" type=""HtmlEncode[[hidden]]"" " +
@@ -221,7 +335,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
-        public void HiddenWithPrefixAndEmptyName_GeneratesExpectedValue()
+        public void HiddenInTemplate_WithExplicitValueAndEmptyName_GeneratesExpectedValue()
         {
             // Arrange
             var expected = @"<input id=""HtmlEncode[[MyPrefix]]"" name=""HtmlEncode[[MyPrefix]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[fooValue]]"" />";
@@ -236,7 +350,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
-        public void HiddenUsesPrefixName_ToLookupPropertyValueInModelState()
+        public void HiddenInTemplate_UsesPrefixName_ToLookupPropertyValueInModelState()
         {
             // Arrange
             var expected = @"<input id=""HtmlEncode[[MyPrefix$Property1]]"" name=""HtmlEncode[[MyPrefix.Property1]]"" type=""HtmlEncode[[hidden]]"" " +
@@ -258,7 +372,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
-        public void HiddenUsesPrefixName_ToLookupPropertyValueInViewData()
+        public void HiddenInTemplate_UsesPrefixNameToLookupPropertyValueInViewData()
         {
             // Arrange
             var expected = @"<input id=""HtmlEncode[[MyPrefix$Property1]]"" name=""HtmlEncode[[MyPrefix.Property1]]"" type=""HtmlEncode[[hidden]]"" " +
@@ -509,7 +623,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         // This test ensures that specifying a the prefix does not affect the expression result.
         [Fact]
-        public void HiddenForWithPrefix_GeneratesExpectedValue()
+        public void HiddenForInTemplate_GeneratesExpectedValue()
         {
             // Arrange
             var expected = @"<input id=""HtmlEncode[[MyPrefix_Property1]]"" name=""HtmlEncode[[MyPrefix.Property1]]"" type=""HtmlEncode[[hidden]]"" " +
@@ -519,14 +633,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
 
             // Act
-            var result = helper.HiddenFor(m => m.Property1);
+            var result = helper.HiddenFor(m => m.Property1, htmlAttributes: null);
 
             // Assert
             Assert.Equal(expected, result.ToString());
         }
 
         [Fact]
-        public void HiddenForWithPrefix_UsesPrefixWhenLookingUpModelStateValues()
+        public void HiddenForInTemplate_UsesPrefixWhenLookingUpModelStateValues()
         {
             // Arrange
             var expected = @"<input id=""HtmlEncode[[MyPrefix$Property1]]"" name=""HtmlEncode[[MyPrefix.Property1]]"" type=""HtmlEncode[[hidden]]"" " +
@@ -542,7 +656,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             helper.ViewData.ModelState.Add("MyPrefix$Property1", GetModelState("modelstate-with-iddotreplacement"));
 
             // Act
-            var result = helper.HiddenFor(m => m.Property1);
+            var result = helper.HiddenFor(m => m.Property1, htmlAttributes: null);
 
             // Assert
             Assert.Equal(expected, result.ToString());
@@ -671,7 +785,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         [Theory]
         [MemberData(nameof(HiddenFor_UsesModelStateValueForComplexExpressionsData))]
-        public void HiddenFor_UsesModelStateValueForComplexExpressions(
+        public void HiddenForInTemplate_UsesModelStateValueForComplexExpressions(
             Expression<Func<HiddenModel, string>> expression,
             string expected)
         {
@@ -718,13 +832,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
             };
         }
 
-        private static ViewDataDictionary<HiddenModel> GetViewDataWithModelStateAndModelAndViewDataValues()
+        private static ViewDataDictionary<HiddenModel> GetViewDataWithNonNullModel()
         {
             var viewData = new ViewDataDictionary<HiddenModel>(new EmptyModelMetadataProvider())
             {
                 Model = new HiddenModel(),
-                ["Property1"] = "view-data-val",
             };
+
+            return viewData;
+        }
+
+        private static ViewDataDictionary<HiddenModel> GetViewDataWithModelStateAndModelAndViewDataValues()
+        {
+            var viewData = GetViewDataWithNonNullModel();
+            viewData["Property1"] = "view-data-val";
             viewData.ModelState.Add("Property1", GetModelState("ModelStateValue"));
 
             return viewData;

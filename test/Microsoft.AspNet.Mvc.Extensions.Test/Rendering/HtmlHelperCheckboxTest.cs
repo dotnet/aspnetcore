@@ -85,11 +85,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
-        public void CheckBoxCheckedWithOnlyName()
+        public void CheckBoxCheckedWithOnlyName_GeneratesExpectedValue()
         {
             // Arrange
             var expected =
-                @"<input checked=""HtmlEncode[[checked]]"" data-val=""HtmlEncode[[true]]"" " + 
+                @"<input checked=""HtmlEncode[[checked]]"" data-val=""HtmlEncode[[true]]"" " +
                 @"data-val-required=""HtmlEncode[[The Boolean field is required.]]"" id=""HtmlEncode[[Property1]]"" " +
                 @"name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[checkbox]]"" " +
                 @"value=""HtmlEncode[[true]]"" /><input name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
@@ -122,6 +122,170 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
+        public void CheckBoxNotInTemplate_GetsValueFromViewDataDictionary()
+        {
+            // Arrange
+            var expected =
+                @"<input checked=""HtmlEncode[[checked]]"" id=""HtmlEncode[[Property1]]"" " +
+                @"name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[checkbox]]"" value=""HtmlEncode[[true]]"" />" +
+                @"<input name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
+            helper.ViewContext.ClientValidationEnabled = false;
+            helper.ViewData.Model = new TestModel();
+
+            // Act
+            var html = helper.CheckBox("Property1", isChecked: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expected, html.ToString());
+        }
+
+        [Fact]
+        public void CheckBoxInTemplate_GetsValueFromViewDataDictionary()
+        {
+            // Arrange
+            var expected =
+                @"<input checked=""HtmlEncode[[checked]]"" id=""HtmlEncode[[Prefix_Property1]]"" " +
+                @"name=""HtmlEncode[[Prefix.Property1]]"" type=""HtmlEncode[[checkbox]]"" value=""HtmlEncode[[true]]"" />" +
+                @"<input name=""HtmlEncode[[Prefix.Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
+            helper.ViewContext.ClientValidationEnabled = false;
+            helper.ViewData.Remove(nameof(TestModel.Property1));
+            helper.ViewData["Prefix.Property1"] = true;
+            helper.ViewData.Model = new TestModel();
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+
+            // Act
+            var html = helper.CheckBox("Property1", isChecked: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expected, html.ToString());
+        }
+
+        [Fact]
+        public void CheckBoxNotInTemplate_GetsValueFromPropertyOfViewDataEntry()
+        {
+            // Arrange
+            var expected =
+                @"<input checked=""HtmlEncode[[checked]]"" id=""HtmlEncode[[Prefix_Property1]]"" " +
+                @"name=""HtmlEncode[[Prefix.Property1]]"" type=""HtmlEncode[[checkbox]]"" value=""HtmlEncode[[true]]"" />" +
+                @"<input name=""HtmlEncode[[Prefix.Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
+            helper.ViewContext.ClientValidationEnabled = false;
+            helper.ViewData.Remove(nameof(TestModel.Property1));
+            helper.ViewData["Prefix"] = new TestModel { Property1 = true };
+            helper.ViewData.Model = new TestModel();
+
+            // Act
+            var html = helper.CheckBox("Prefix.Property1", isChecked: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expected, html.ToString());
+        }
+
+        [Fact]
+        public void CheckBoxInTemplate_GetsValueFromPropertyOfViewDataEntry()
+        {
+            // Arrange
+            var expected =
+                @"<input checked=""HtmlEncode[[checked]]"" id=""HtmlEncode[[Prefix_Property1]]"" " +
+                @"name=""HtmlEncode[[Prefix.Property1]]"" type=""HtmlEncode[[checkbox]]"" value=""HtmlEncode[[true]]"" />" +
+                @"<input name=""HtmlEncode[[Prefix.Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
+            helper.ViewContext.ClientValidationEnabled = false;
+            helper.ViewData.Remove(nameof(TestModel.Property1));
+            helper.ViewData["Prefix"] = new TestModel { Property1 = true };
+            helper.ViewData.Model = new TestModel();
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+
+            // Act
+            var html = helper.CheckBox("Property1", isChecked: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expected, html.ToString());
+        }
+
+        [Fact]
+        public void CheckBoxNotInTemplate_GetsModelValue_IfModelStateAndViewDataEmpty()
+        {
+            // Arrange
+            var expected =
+                @"<input checked=""HtmlEncode[[checked]]"" id=""HtmlEncode[[Property1]]"" " +
+                @"name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[checkbox]]"" value=""HtmlEncode[[true]]"" />" +
+                @"<input name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(new ViewDataDictionary<TestModel>(metadataProvider));
+            helper.ViewContext.ClientValidationEnabled = false;
+            helper.ViewData.Model = new TestModel { Property1 = true };
+
+            // Act
+            var html = helper.CheckBox("Property1", isChecked: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expected, html.ToString());
+        }
+
+        [Fact(Skip = "#1485, unable to get Model value.")]
+        public void CheckBoxInTemplate_GetsModelValue_IfModelStateAndViewDataEmpty()
+        {
+            // Arrange
+            var expected =
+                @"<input checked=""HtmlEncode[[checked]]"" id=""HtmlEncode[[Prefix_Property1]]"" " +
+                @"name=""HtmlEncode[[Prefix.Property1]]"" type=""HtmlEncode[[checkbox]]"" value=""HtmlEncode[[true]]"" />" +
+                @"<input name=""HtmlEncode[[Prefix.Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(new ViewDataDictionary<TestModel>(metadataProvider));
+            helper.ViewContext.ClientValidationEnabled = false;
+            helper.ViewData.Model = new TestModel { Property1 = true };
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+
+            // Act
+            var html = helper.CheckBox("Property1", isChecked: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expected, html.ToString());
+        }
+
+        [Fact]
+        public void CheckBoxNotInTemplate_NotChecked_IfPropertyIsNotFound()
+        {
+            // Arrange
+            var expected =
+                @"<input id=""HtmlEncode[[Property1]]"" " +
+                @"name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[checkbox]]"" value=""HtmlEncode[[true]]"" />" +
+                @"<input name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(new ViewDataDictionary<TestModel>(metadataProvider));
+            helper.ViewContext.ClientValidationEnabled = false;
+
+            // Act
+            var html = helper.CheckBox("Property1", isChecked: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expected, html.ToString());
+        }
+
+        [Fact]
+        public void CheckBoxInTemplate_NotChecked_IfPropertyIsNotFound()
+        {
+            // Arrange
+            var expected =
+                @"<input id=""HtmlEncode[[Prefix_Property1]]"" " +
+                @"name=""HtmlEncode[[Prefix.Property1]]"" type=""HtmlEncode[[checkbox]]"" value=""HtmlEncode[[true]]"" />" +
+                @"<input name=""HtmlEncode[[Prefix.Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(new ViewDataDictionary<TestModel>(metadataProvider));
+            helper.ViewContext.ClientValidationEnabled = false;
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+
+            // Act
+            var html = helper.CheckBox("Property1", isChecked: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expected, html.ToString());
+        }
+
+        [Fact]
         public void CheckBoxGeneratesUnobtrusiveValidationAttributes()
         {
             // Arrange
@@ -142,9 +306,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var expected =
-                @"<input checked=""HtmlEncode[[checked]]"" data-val=""HtmlEncode[[true]]"" " + 
+                @"<input checked=""HtmlEncode[[checked]]"" data-val=""HtmlEncode[[true]]"" " +
                 @"data-val-required=""HtmlEncode[[The Boolean field is required.]]"" id=""HtmlEncode[[Property1]]"" " +
-                @"name=""HtmlEncode[[Property1]]"" Property1-Property3=""HtmlEncode[[Property3ObjValue]]"" " + 
+                @"name=""HtmlEncode[[Property1]]"" Property1-Property3=""HtmlEncode[[Property3ObjValue]]"" " +
                 @"type=""HtmlEncode[[checkbox]]"" value=""HtmlEncode[[true]]"" /><input " +
                 @"name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
@@ -158,7 +322,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
-        public void CheckBoxWithPrefix_ReplaceDotsInIdByDefaultWithUnderscores()
+        public void CheckBoxInTemplate_ReplaceDotsInIdByDefaultWithUnderscores()
         {
             // Arrange
             var expected = @"<input id=""HtmlEncode[[MyPrefix_Property1]]"" name=""HtmlEncode[[MyPrefix.Property1]]"" " +
@@ -176,7 +340,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
-        public void CheckBoxWithPrefix_ReplacesDotsInIdWithIdDotReplacement()
+        public void CheckBoxInTemplate_ReplacesDotsInIdWithIdDotReplacement()
         {
             // Arrange
             var expected = @"<input id=""HtmlEncode[[MyPrefix!!!Property1]]"" name=""HtmlEncode[[MyPrefix.Property1]]"" " +
@@ -196,7 +360,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
-        public void CheckBoxWithPrefixAndEmptyName()
+        public void CheckBoxInTemplate_WithEmptyExpression_GeneratesExpectedValue()
         {
             // Arrange
             var expected =
@@ -219,7 +383,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void CheckBoxWithComplexExpressionsEvaluatesValuesInViewDataDictionary()
         {
             // Arrange
-            var expected = 
+            var expected =
                 @"<input checked=""HtmlEncode[[checked]]"" data-val=""HtmlEncode[[true]]"" " +
                 @"data-val-required=""HtmlEncode[[The Boolean field is required.]]"" id=""HtmlEncode[[ComplexProperty_Property1]]"" " +
                 @"name=""HtmlEncode[[ComplexProperty." +
@@ -248,7 +412,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             viewData.ModelState.SetModelValue("Property1", valueProviderResult);
 
             // Act
-            var html = helper.CheckBoxFor(m => m.Property1);
+            var html = helper.CheckBoxFor(m => m.Property1, htmlAttributes: null);
 
             // Assert
             Assert.Equal(expected, html.ToString());
@@ -275,7 +439,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
 
             // Act
-            var html = helper.CheckBoxFor(m => m.Property1);
+            var html = helper.CheckBoxFor(m => m.Property1, htmlAttributes: null);
 
             // Assert
             Assert.Equal(expected, html.ToString());
@@ -286,7 +450,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var expected =
-                @"<input checked=""HtmlEncode[[checked]]"" data-val=""HtmlEncode[[true]]"" " + 
+                @"<input checked=""HtmlEncode[[checked]]"" data-val=""HtmlEncode[[true]]"" " +
                 @"data-val-required=""HtmlEncode[[The Property3 field is required.]]"" " +
                 @"id=""HtmlEncode[[Property3]]"" name=""HtmlEncode[[Property3]]"" type=""HtmlEncode[[checkbox]]"" " +
                 @"value=""HtmlEncode[[false]]"" /><input name=""HtmlEncode[[Property3]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
@@ -326,7 +490,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void CheckBoxFor_UsesModelStateAttemptedValue(string attemptedValue, string expectedChecked)
         {
             // Arrange
-            var expected = 
+            var expected =
                 @"<input {0}data-val=""HtmlEncode[[true]]"" data-val-required=""HtmlEncode[[The Property1 field is required.]]"" " +
                 @"id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[checkbox]]"" value=""HtmlEncode[[true]]"" />" +
                 @"<input name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
@@ -339,7 +503,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             viewData.ModelState.SetModelValue("Property1", valueProviderResult);
 
             // Act
-            var html = helper.CheckBoxFor(m => m.Property1);
+            var html = helper.CheckBoxFor(m => m.Property1, htmlAttributes: null);
 
             // Assert
             Assert.Equal(expected, html.ToString());
@@ -365,10 +529,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
-        public void CheckBoxForWith_AttributeDictionary_GeneratesExpectedAttributes()
+        public void CheckBoxFor_WithAttributeDictionary_GeneratesExpectedAttributes()
         {
             // Arrange
-            var expected = 
+            var expected =
                 @"<input data-val=""HtmlEncode[[true]]"" data-val-required=""HtmlEncode[[The Property1 field is required.]]"" " +
                 @"id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" " +
                 @"Property3=""HtmlEncode[[Property3Value]]"" type=""HtmlEncode[[checkbox]]"" value=""HtmlEncode[[true]]"" /><input " +
@@ -384,7 +548,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
-        public void CheckBoxForWithPrefix()
+        public void CheckBoxForInTemplate_GeneratesExpectedValue()
         {
             // Arrange
             var expected =
@@ -407,7 +571,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void CheckBoxFor_WithComplexExpressions_DoesNotUseValuesFromViewDataDictionary()
         {
             // Arrange
-            var expected = 
+            var expected =
                 @"<input data-val=""HtmlEncode[[true]]"" data-val-required=""HtmlEncode[[The Property1 field is required.]]"" " +
                 @"id=""HtmlEncode[[ComplexProperty_Property1]]"" name=""HtmlEncode[[ComplexProperty." +
                 @"Property1]]"" type=""HtmlEncode[[checkbox]]"" value=""HtmlEncode[[true]]"" /><input name=""HtmlEncode[[ComplexProperty.Property1]]"" " +

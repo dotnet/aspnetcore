@@ -11,23 +11,125 @@ using Xunit;
 namespace Microsoft.AspNet.Mvc.Core
 {
     /// <summary>
-    /// Test the <see cref="HtmlHelperValueExtensions" /> class.
+    /// Test the <see cref="IHtmlHelper.Value" /> and <see cref="IHtmlHelper{TModel}.ValueFor"/> methods.
     /// </summary>
-    public class HtmlHelperValueExtensionsTest
+    public class HtmlHelperValueTest
     {
         // Value
 
         [Fact]
-        public void ValueGetsValueFromViewData()
+        public void ValueNotInTemplate_GetsValueFromViewData()
         {
             // Arrange
             var helper = GetHtmlHelper();
 
             // Act
-            var html = helper.Value("StringProperty");
+            var html = helper.Value("StringProperty", format: null);
 
             // Assert
             Assert.Equal("ViewDataValue", html);
+        }
+
+        [Fact(Skip = "$1487, finds 'StringProperty' entry (without prefix) instead.")]
+        public void ValueInTemplate_GetsValueFromPrefixedViewDataEntry()
+        {
+            // Arrange
+            var helper = GetHtmlHelper();
+            helper.ViewData["Prefix.StringProperty"] = "PrefixedViewDataValue";
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+
+            // Act
+            var html = helper.Value("StringProperty", format: null);
+
+            // Assert
+            Assert.Equal("PrefixedViewDataValue", html);
+        }
+
+        [Fact]
+        public void ValueNotInTemplate_GetsValueFromPropertyOfViewDataEntry()
+        {
+            // Arrange
+            var helper = GetHtmlHelper();
+            helper.ViewData["Prefix"] = new { StringProperty = "ContainedViewDataValue" };
+
+            // Act
+            var html = helper.Value("Prefix.StringProperty", format: null);
+
+            // Assert
+            Assert.Equal("ContainedViewDataValue", html);
+        }
+
+        [Fact(Skip = "$1487, finds 'StringProperty' entry (without prefix) instead.")]
+        public void ValueInTemplate_GetsValueFromPropertyOfViewDataEntry()
+        {
+            // Arrange
+            var helper = GetHtmlHelper();
+            helper.ViewData["Prefix"] = new { StringProperty = "ContainedViewDataValue" };
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+
+            // Act
+            var html = helper.Value("StringProperty", format: null);
+
+            // Assert
+            Assert.Equal("ContainedViewDataValue", html);
+        }
+
+        [Fact]
+        public void ValueNotInTemplate_GetsValueFromModel_IfNoViewDataEntry()
+        {
+            // Arrange
+            var helper = GetHtmlHelper();
+            helper.ViewData.Clear();
+
+            // Act
+            var html = helper.Value("StringProperty", format: null);
+
+            // Assert
+            Assert.Equal("ModelStringPropertyValue", html);
+        }
+
+        [Fact]
+        public void ValueInTemplate_GetsValueFromModel_IfNoViewDataEntry()
+        {
+            // Arrange
+            var helper = GetHtmlHelper();
+            helper.ViewData.Clear();
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+
+            // Act
+            var html = helper.Value("StringProperty", format: null);
+
+            // Assert
+            Assert.Equal("ModelStringPropertyValue", html);
+        }
+
+        [Fact]
+        public void ValueNotInTemplate_GetsValueFromViewData_EvenIfNull()
+        {
+            // Arrange
+            var helper = GetHtmlHelper();
+            helper.ViewData["StringProperty"] = null;
+
+            // Act
+            var html = helper.Value("StringProperty", format: null);
+
+            // Assert
+            Assert.Empty(html);
+        }
+
+        [Fact(Skip = "$1487, finds 'StringProperty' entry (without prefix) instead.")]
+        public void ValueInTemplate_GetsValueFromViewData_EvenIfNull()
+        {
+            // Arrange
+            var helper = GetHtmlHelper();
+            helper.ViewData["Prefix.StringProperty"] = null;
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+
+            // Act
+            var html = helper.Value("StringProperty", format: null);
+
+            // Assert
+            Assert.Empty(html);
         }
 
         // ValueFor
@@ -39,7 +141,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var helper = GetHtmlHelper();
 
             // Act
-            var html = helper.ValueFor(m => m.StringProperty);
+            var html = helper.ValueFor(m => m.StringProperty, format: null);
 
             // Assert
             Assert.Equal("ModelStringPropertyValue", html);
@@ -76,9 +178,9 @@ namespace Microsoft.AspNet.Mvc.Core
             viewData.ModelState["FieldPrefix"] = modelState;
 
             // Act & Assert
-            Assert.Equal("StringPropertyRawValue", helper.Value("StringProperty"));
-            Assert.Equal("StringPropertyRawValue", helper.ValueFor(m => m.StringProperty));
-            Assert.Equal("ModelRawValue", helper.ValueForModel());
+            Assert.Equal("StringPropertyRawValue", helper.Value("StringProperty", format: null));
+            Assert.Equal("StringPropertyRawValue", helper.ValueFor(m => m.StringProperty, format: null));
+            Assert.Equal("ModelRawValue", helper.ValueForModel(format: null));
         }
 
         [Fact]
@@ -91,10 +193,10 @@ namespace Microsoft.AspNet.Mvc.Core
                 "{ StringProperty = ModelStringPropertyValue, ObjectProperty = 01/01/1900 00:00:00 }";
 
             // Act & Assert
-            Assert.Equal(expectedModelValue, helper.Value(expression: string.Empty));
-            Assert.Equal(expectedModelValue, helper.Value(expression: null)); // null is another alias for current model
-            Assert.Equal(expectedModelValue, helper.ValueFor(m => m));
-            Assert.Equal(expectedModelValue, helper.ValueForModel());
+            Assert.Equal(expectedModelValue, helper.Value(expression: string.Empty, format: null));
+            Assert.Equal(expectedModelValue, helper.Value(expression: null, format: null)); // null is another alias for current model
+            Assert.Equal(expectedModelValue, helper.ValueFor(m => m, format: null));
+            Assert.Equal(expectedModelValue, helper.ValueForModel(format: null));
         }
 
         [Fact]
@@ -135,7 +237,7 @@ namespace Microsoft.AspNet.Mvc.Core
                 helper.ValueForModel("<{0}>"));
             Assert.Equal("<ViewDataValue <\"\">>", helper.Value("StringProperty", "<{0}>"));
             Assert.Equal("<ModelStringPropertyValue <\"\">>", helper.ValueFor(m => m.StringProperty, "<{0}>"));
-            Assert.Equal("ObjectPropertyRawValue <\"\">", helper.ValueFor(m => m.ObjectProperty));
+            Assert.Equal("ObjectPropertyRawValue <\"\">", helper.ValueFor(m => m.ObjectProperty, format: null));
         }
 
         private sealed class TestModel

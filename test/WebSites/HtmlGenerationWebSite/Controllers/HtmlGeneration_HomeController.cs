@@ -56,14 +56,14 @@ namespace HtmlGenerationWebSite.Controllers
 
         public IActionResult Order()
         {
-            ViewBag.Items = _productsListWithSelection;
+            ViewData["Items"] = _productsListWithSelection;
 
             return View(_order);
         }
 
         public IActionResult OrderUsingHtmlHelpers()
         {
-            ViewBag.Items = _productsListWithSelection;
+            ViewData["Items"] = _productsListWithSelection;
 
             return View(_order);
         }
@@ -124,12 +124,17 @@ namespace HtmlGenerationWebSite.Controllers
                 },
             };
 
+            // Extra data that should be ignored within a template. But #1487 currently affects RadioButton and
+            // TextArea as well as ModelMetadata for <select> tag helper.
+            ViewData[nameof(Employee.Gender)] = "Gender value that will not match.";
+            ViewData[nameof(Employee.Name)] = "Name value that should not be seen.";
+
             return View(employees);
         }
 
         public IActionResult CreateWarehouse()
         {
-            ViewBag.Items = _productsList;
+            ViewData["Items"] = _productsList;
 
             return View();
         }

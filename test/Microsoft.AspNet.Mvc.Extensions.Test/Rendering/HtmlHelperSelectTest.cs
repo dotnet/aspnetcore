@@ -59,6 +59,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
             new SelectListItem { Group = DisabledGroup, Selected = true, Text = "Two",   Value = "2"},
             new SelectListItem { Group = DisabledGroup, Selected = true, Text = "Three", Value = "3"},
         };
+        private static readonly List<SelectListItem> SourcesSelectList = new List<SelectListItem>
+        {
+            new SelectListItem { Text = SelectSources.ModelStateEntry.ToString() },
+            new SelectListItem { Text = SelectSources.ModelStateEntryWithPrefix.ToString() },
+            new SelectListItem { Text = SelectSources.ViewDataEntry.ToString() },
+            new SelectListItem { Text = SelectSources.PropertyOfViewDataEntry.ToString() },
+            new SelectListItem { Text = SelectSources.ViewDataEntryWithPrefix.ToString() },
+            new SelectListItem { Text = SelectSources.PropertyOfViewDataEntryWithPrefix.ToString() },
+            new SelectListItem { Text = SelectSources.ModelValue.ToString() },
+            new SelectListItem { Text = SelectSources.PropertyOfModel.ToString() },
+        };
 
         // Select list -> expected HTML with null model, expected HTML with model containing "2".
         public static TheoryData<IEnumerable<SelectListItem>, string, string> DropDownListDataSet
@@ -371,6 +382,200 @@ namespace Microsoft.AspNet.Mvc.Rendering
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
+        [Fact]
+        public void DropDownListNotInTemplate_GetsModelStateEntry()
+        {
+            // Arrange
+            var expectedHtml = GetExpectedSelectElement(SelectSources.ModelStateEntry, allowMultiple: false);
+
+            var entryResult = new ValueProviderResult(
+                SelectSources.ModelStateEntry,
+                SelectSources.ModelStateEntry.ToString(),
+                culture: null);
+            var entryResultWithPrefix = new ValueProviderResult(
+                SelectSources.ModelStateEntryWithPrefix,
+                SelectSources.ModelStateEntryWithPrefix.ToString(),
+                culture: null);
+            var modelState = new ModelStateDictionary
+            {
+                ["Property1"] = new ModelState { Value = entryResult },
+                ["Prefix.Property1"] = new ModelState { Value = entryResultWithPrefix },
+            };
+
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
+            var viewData = new ViewDataDictionary<ModelContainingSources>(provider, modelState)
+            {
+                ["Property1"] = SelectSources.ViewDataEntry,
+                ["Prefix.Property1"] = SelectSources.ViewDataEntryWithPrefix,
+                ["Prefix"] = new ModelContainingSources { Property1 = SelectSources.PropertyOfViewDataEntry },
+            };
+            viewData.Model = new ModelContainingSources { Property1 = SelectSources.PropertyOfModel };
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
+            helper.ViewContext.ClientValidationEnabled = false;
+
+            // Act
+            var html = helper.DropDownList("Property1", SourcesSelectList, optionLabel: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expectedHtml, html.ToString());
+        }
+
+        [Fact]
+        public void DropDownListInTemplate_GetsModelStateEntry()
+        {
+            // Arrange
+            var expectedHtml = GetExpectedSelectElementWithPrefix(
+                SelectSources.ModelStateEntryWithPrefix,
+                allowMultiple: false);
+
+            var entryResult = new ValueProviderResult(
+                SelectSources.ModelStateEntry,
+                SelectSources.ModelStateEntry.ToString(),
+                culture: null);
+            var entryResultWithPrefix = new ValueProviderResult(
+                SelectSources.ModelStateEntryWithPrefix,
+                SelectSources.ModelStateEntryWithPrefix.ToString(),
+                culture: null);
+            var modelState = new ModelStateDictionary
+            {
+                ["Property1"] = new ModelState { Value = entryResult },
+                ["Prefix.Property1"] = new ModelState { Value = entryResultWithPrefix },
+            };
+
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
+            var viewData = new ViewDataDictionary<ModelContainingSources>(provider, modelState)
+            {
+                ["Property1"] = SelectSources.ViewDataEntry,
+                ["Prefix.Property1"] = SelectSources.ViewDataEntryWithPrefix,
+                ["Prefix"] = new ModelContainingSources { Property1 = SelectSources.PropertyOfViewDataEntry },
+            };
+            viewData.Model = new ModelContainingSources { Property1 = SelectSources.PropertyOfModel };
+            viewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
+            helper.ViewContext.ClientValidationEnabled = false;
+
+            // Act
+            var html = helper.DropDownList("Property1", SourcesSelectList, optionLabel: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expectedHtml, html.ToString());
+        }
+
+        [Fact]
+        public void DropDownListNotInTemplate_GetsViewDataEntry_IfModelStateEmpty()
+        {
+            // Arrange
+            var expectedHtml = GetExpectedSelectElement(SelectSources.ViewDataEntry, allowMultiple: false);
+
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
+            var viewData = new ViewDataDictionary<ModelContainingSources>(provider)
+            {
+                ["Property1"] = SelectSources.ViewDataEntry,
+                ["Prefix.Property1"] = SelectSources.ViewDataEntryWithPrefix,
+                ["Prefix"] = new ModelContainingSources { Property1 = SelectSources.PropertyOfViewDataEntry },
+            };
+            viewData.Model = new ModelContainingSources { Property1 = SelectSources.PropertyOfModel };
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
+            helper.ViewContext.ClientValidationEnabled = false;
+
+            // Act
+            var html = helper.DropDownList("Property1", SourcesSelectList, optionLabel: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expectedHtml, html.ToString());
+        }
+
+        [Fact(Skip = "#1487, incorrectly matches Property1 entry (without prefix) in ViewData.")]
+        public void DropDownListInTemplate_GetsViewDataEntry_IfModelStateEmpty()
+        {
+            // Arrange
+            var expectedHtml = GetExpectedSelectElementWithPrefix(
+                SelectSources.ViewDataEntryWithPrefix,
+                allowMultiple: false);
+
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
+            var viewData = new ViewDataDictionary<ModelContainingSources>(provider)
+            {
+                ["Property1"] = SelectSources.ViewDataEntry,
+                ["Prefix.Property1"] = SelectSources.ViewDataEntryWithPrefix,
+                ["Prefix"] = new ModelContainingSources { Property1 = SelectSources.PropertyOfViewDataEntry },
+            };
+            viewData.Model = new ModelContainingSources { Property1 = SelectSources.PropertyOfModel };
+            viewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
+            helper.ViewContext.ClientValidationEnabled = false;
+
+            // Act
+            var html = helper.DropDownList("Property1", SourcesSelectList, optionLabel: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expectedHtml, html.ToString());
+        }
+
+        [Fact(Skip = "#1487, incorrectly matches Property1 entry (without prefix) in ViewData.")]
+        public void DropDownListInTemplate_GetsPropertyOfViewDataEntry_IfModelStateEmptyAndNoViewDataEntryWithPrefix()
+        {
+            // Arrange
+            var expectedHtml = GetExpectedSelectElementWithPrefix(
+                SelectSources.PropertyOfViewDataEntry,
+                allowMultiple: false);
+
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
+            var viewData = new ViewDataDictionary<ModelContainingSources>(provider)
+            {
+                ["Property1"] = SelectSources.ViewDataEntry,
+                ["Prefix"] = new ModelContainingSources { Property1 = SelectSources.PropertyOfViewDataEntry },
+            };
+            viewData.Model = new ModelContainingSources { Property1 = SelectSources.PropertyOfModel };
+            viewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
+            helper.ViewContext.ClientValidationEnabled = false;
+
+            // Act
+            var html = helper.DropDownList("Property1", SourcesSelectList, optionLabel: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expectedHtml, html.ToString());
+        }
+
+        [Fact]
+        public void DropDownListNotInTemplate_GetsPropertyOfModel_IfModelStateAndViewDataEmpty()
+        {
+            // Arrange
+            var expectedHtml = GetExpectedSelectElement(SelectSources.PropertyOfModel, allowMultiple: false);
+            var model = new ModelContainingSources { Property1 = SelectSources.PropertyOfModel };
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
+            helper.ViewContext.ClientValidationEnabled = false;
+
+            // Act
+            var html = helper.DropDownList("Property1", SourcesSelectList, optionLabel: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expectedHtml, html.ToString());
+        }
+
+        [Fact]
+        public void DropDownListInTemplate_GetsPropertyOfModel_IfModelStateAndViewDataEmpty()
+        {
+            // Arrange
+            var expectedHtml = GetExpectedSelectElementWithPrefix(SelectSources.PropertyOfModel, allowMultiple: false);
+            var model = new ModelContainingSources { Property1 = SelectSources.PropertyOfModel };
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
+            helper.ViewContext.ClientValidationEnabled = false;
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+
+            // Act
+            var html = helper.DropDownList("Property1", SourcesSelectList, optionLabel: null, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expectedHtml, html.ToString());
+        }
+
         [Theory]
         [MemberData(nameof(DropDownListDataSet))]
         public void DropDownListFor_WithNullModel_GeneratesExpectedValue(
@@ -586,6 +791,200 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Assert
             Assert.Equal(expectedHtml, html.ToString());
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
+        }
+
+        [Fact]
+        public void ListBoxNotInTemplate_GetsModelStateEntry()
+        {
+            // Arrange
+            var expectedHtml = GetExpectedSelectElement(SelectSources.ModelStateEntry, allowMultiple: true);
+
+            var entryResult = new ValueProviderResult(
+                SelectSources.ModelStateEntry,
+                SelectSources.ModelStateEntry.ToString(),
+                culture: null);
+            var entryResultWithPrefix = new ValueProviderResult(
+                SelectSources.ModelStateEntryWithPrefix,
+                SelectSources.ModelStateEntryWithPrefix.ToString(),
+                culture: null);
+            var modelState = new ModelStateDictionary
+            {
+                ["Property1"] = new ModelState { Value = entryResult },
+                ["Prefix.Property1"] = new ModelState { Value = entryResultWithPrefix },
+            };
+
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
+            var viewData = new ViewDataDictionary<ModelContainingListOfSources>(provider, modelState)
+            {
+                ["Property1"] = new[] { SelectSources.ViewDataEntry },
+                ["Prefix.Property1"] = new[] { SelectSources.ViewDataEntryWithPrefix },
+                ["Prefix"] = new ModelContainingListOfSources { Property1 = { SelectSources.PropertyOfViewDataEntry } },
+            };
+            viewData.Model = new ModelContainingListOfSources { Property1 = { SelectSources.PropertyOfModel } };
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
+            helper.ViewContext.ClientValidationEnabled = false;
+
+            // Act
+            var html = helper.ListBox("Property1", SourcesSelectList, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expectedHtml, html.ToString());
+        }
+
+        [Fact]
+        public void ListBoxInTemplate_GetsModelStateEntry()
+        {
+            // Arrange
+            var expectedHtml = GetExpectedSelectElementWithPrefix(
+                SelectSources.ModelStateEntryWithPrefix,
+                allowMultiple: true);
+
+            var entryResult = new ValueProviderResult(
+                SelectSources.ModelStateEntry,
+                SelectSources.ModelStateEntry.ToString(),
+                culture: null);
+            var entryResultWithPrefix = new ValueProviderResult(
+                SelectSources.ModelStateEntryWithPrefix,
+                SelectSources.ModelStateEntryWithPrefix.ToString(),
+                culture: null);
+            var modelState = new ModelStateDictionary
+            {
+                ["Property1"] = new ModelState { Value = entryResult },
+                ["Prefix.Property1"] = new ModelState { Value = entryResultWithPrefix },
+            };
+
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
+            var viewData = new ViewDataDictionary<ModelContainingListOfSources>(provider, modelState)
+            {
+                ["Property1"] = new[] { SelectSources.ViewDataEntry },
+                ["Prefix.Property1"] = new[] { SelectSources.ViewDataEntryWithPrefix },
+                ["Prefix"] = new ModelContainingListOfSources { Property1 = { SelectSources.PropertyOfViewDataEntry } },
+            };
+            viewData.Model = new ModelContainingListOfSources { Property1 = { SelectSources.PropertyOfModel } };
+            viewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
+            helper.ViewContext.ClientValidationEnabled = false;
+
+            // Act
+            var html = helper.ListBox("Property1", SourcesSelectList, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expectedHtml, html.ToString());
+        }
+
+        [Fact(Skip = "#2664, throws ArgumentNullException")]
+        public void ListBoxNotInTemplate_GetsViewDataEntry_IfModelStateEmpty()
+        {
+            // Arrange
+            var expectedHtml = GetExpectedSelectElement(SelectSources.ViewDataEntry, allowMultiple: true);
+
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
+            var viewData = new ViewDataDictionary<ModelContainingListOfSources>(provider)
+            {
+                ["Property1"] = new[] { SelectSources.ViewDataEntry },
+                ["Prefix.Property1"] = new[] { SelectSources.ViewDataEntryWithPrefix },
+                ["Prefix"] = new ModelContainingListOfSources { Property1 = { SelectSources.PropertyOfViewDataEntry } },
+            };
+            viewData.Model = new ModelContainingListOfSources { Property1 = { SelectSources.PropertyOfModel } };
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
+            helper.ViewContext.ClientValidationEnabled = false;
+
+            // Act
+            var html = helper.ListBox("Property1", SourcesSelectList, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expectedHtml, html.ToString());
+        }
+
+        [Fact(Skip = "#2664, throws ArgumentNullException")]
+        public void ListBoxInTemplate_GetsViewDataEntry_IfModelStateEmpty()
+        {
+            // Arrange
+            var expectedHtml = GetExpectedSelectElementWithPrefix(
+                SelectSources.ViewDataEntryWithPrefix,
+                allowMultiple: true);
+
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
+            var viewData = new ViewDataDictionary<ModelContainingListOfSources>(provider)
+            {
+                ["Property1"] = new[] { SelectSources.ViewDataEntry },
+                ["Prefix.Property1"] = new[] { SelectSources.ViewDataEntryWithPrefix },
+                ["Prefix"] = new ModelContainingListOfSources { Property1 = { SelectSources.PropertyOfViewDataEntry } },
+            };
+            viewData.Model = new ModelContainingListOfSources { Property1 = { SelectSources.PropertyOfModel } };
+            viewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
+            helper.ViewContext.ClientValidationEnabled = false;
+
+            // Act
+            var html = helper.ListBox("Property1", SourcesSelectList, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expectedHtml, html.ToString());
+        }
+
+        [Fact(Skip = "#2664, throws ArgumentNullException")]
+        public void ListBoxInTemplate_GetsPropertyOfViewDataEntry_IfModelStateEmptyAndNoViewDataEntryWithPrefix()
+        {
+            // Arrange
+            var expectedHtml = GetExpectedSelectElementWithPrefix(
+                SelectSources.PropertyOfViewDataEntry,
+                allowMultiple: true);
+
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
+            var viewData = new ViewDataDictionary<ModelContainingListOfSources>(provider)
+            {
+                ["Property1"] = new[] { SelectSources.ViewDataEntry },
+                ["Prefix"] = new ModelContainingListOfSources { Property1 = { SelectSources.PropertyOfViewDataEntry } },
+            };
+            viewData.Model = new ModelContainingListOfSources { Property1 = { SelectSources.PropertyOfModel } };
+            viewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
+            helper.ViewContext.ClientValidationEnabled = false;
+
+            // Act
+            var html = helper.ListBox("Property1", SourcesSelectList, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expectedHtml, html.ToString());
+        }
+
+        [Fact(Skip = "#2664, throws ArgumentNullException")]
+        public void ListBoxNotInTemplate_GetsPropertyOfModel_IfModelStateAndViewDataEmpty()
+        {
+            // Arrange
+            var expectedHtml = GetExpectedSelectElement(SelectSources.PropertyOfModel, allowMultiple: true);
+            var model = new ModelContainingListOfSources { Property1 = { SelectSources.PropertyOfModel } };
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
+            helper.ViewContext.ClientValidationEnabled = false;
+
+            // Act
+            var html = helper.ListBox("Property1", SourcesSelectList, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expectedHtml, html.ToString());
+        }
+
+        [Fact(Skip = "#2664, throws ArgumentNullException")]
+        public void ListBoxInTemplate_GetsPropertyOfModel_IfModelStateAndViewDataEmpty()
+        {
+            // Arrange
+            var expectedHtml = GetExpectedSelectElementWithPrefix(SelectSources.PropertyOfModel, allowMultiple: true);
+            var model = new ModelContainingListOfSources { Property1 = { SelectSources.PropertyOfModel } };
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
+            helper.ViewContext.ClientValidationEnabled = false;
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
+
+            // Act
+            var html = helper.ListBox("Property1", SourcesSelectList, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expectedHtml, html.ToString());
         }
 
         [Theory]
@@ -1072,6 +1471,51 @@ namespace Microsoft.AspNet.Mvc.Rendering
             VerifySelectList(expected, result);
         }
 
+        private static string GetExpectedSelectElement(SelectSources source, bool allowMultiple)
+        {
+            return $"<select id=\"HtmlEncode[[Property1]]\"{ GetMultiple(allowMultiple) } " +
+                "name=\"HtmlEncode[[Property1]]\">" +
+                $"{ GetOption(SelectSources.ModelStateEntry, source) }{ Environment.NewLine }" +
+                $"{ GetOption(SelectSources.ModelStateEntryWithPrefix, source) }{ Environment.NewLine }" +
+                $"{ GetOption(SelectSources.ViewDataEntry, source) }{ Environment.NewLine }" +
+                $"{ GetOption(SelectSources.PropertyOfViewDataEntry, source) }{ Environment.NewLine }" +
+                $"{ GetOption(SelectSources.ViewDataEntryWithPrefix, source) }{ Environment.NewLine }" +
+                $"{ GetOption(SelectSources.PropertyOfViewDataEntryWithPrefix, source) }{ Environment.NewLine }" +
+                $"{ GetOption(SelectSources.ModelValue, source) }{ Environment.NewLine }" +
+                $"{ GetOption(SelectSources.PropertyOfModel, source) }{ Environment.NewLine }" +
+                "</select>";
+        }
+
+        private static string GetExpectedSelectElementWithPrefix(SelectSources source, bool allowMultiple)
+        {
+            return $"<select id=\"HtmlEncode[[Prefix_Property1]]\"{ GetMultiple(allowMultiple) } " +
+                "name=\"HtmlEncode[[Prefix.Property1]]\">" +
+                $"{ GetOption(SelectSources.ModelStateEntry, source) }{ Environment.NewLine }" +
+                $"{ GetOption(SelectSources.ModelStateEntryWithPrefix, source) }{ Environment.NewLine }" +
+                $"{ GetOption(SelectSources.ViewDataEntry, source) }{ Environment.NewLine }" +
+                $"{ GetOption(SelectSources.PropertyOfViewDataEntry, source) }{ Environment.NewLine }" +
+                $"{ GetOption(SelectSources.ViewDataEntryWithPrefix, source) }{ Environment.NewLine }" +
+                $"{ GetOption(SelectSources.PropertyOfViewDataEntryWithPrefix, source) }{ Environment.NewLine }" +
+                $"{ GetOption(SelectSources.ModelValue, source) }{ Environment.NewLine }" +
+                $"{ GetOption(SelectSources.PropertyOfModel, source) }{ Environment.NewLine }" +
+                "</select>";
+        }
+
+        private static string GetMultiple(bool allowMultiple)
+        {
+            return allowMultiple ? " multiple=\"HtmlEncode[[multiple]]\"" : string.Empty;
+        }
+
+        private static string GetOption(SelectSources optionSource, SelectSources source)
+        {
+            return $"<option{ GetSelected(optionSource, source) }>HtmlEncode[[{ optionSource.ToString() }]]</option>";
+        }
+
+        private static string GetSelected(SelectSources optionSource, SelectSources source)
+        {
+            return optionSource == source ? " selected=\"HtmlEncode[[selected]]\"" : string.Empty;
+        }
+
         // Confirm methods that wrap GetEnumSelectList(ModelMetadata) are not changing anything in returned collection.
         private void VerifySelectList(IEnumerable<SelectListItem> expected, IEnumerable<SelectListItem> actual)
         {
@@ -1135,6 +1579,28 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
                 return SelectListItems;
             }
+        }
+
+        private enum SelectSources
+        {
+            ModelStateEntry,
+            ModelStateEntryWithPrefix,
+            ViewDataEntry,
+            PropertyOfViewDataEntry,
+            ViewDataEntryWithPrefix,
+            PropertyOfViewDataEntryWithPrefix,
+            ModelValue,
+            PropertyOfModel,
+        };
+
+        private class ModelContainingSources
+        {
+            public SelectSources Property1 { get; set; }
+        }
+
+        private class ModelContainingListOfSources
+        {
+            public List<SelectSources> Property1 { get; } = new List<SelectSources>();
         }
 
         private class ClassWithFields
