@@ -44,10 +44,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [InlineData("UserName", true)]
         [InlineData("Username", false)]
         [InlineData("Password", false)]
+        [InlineData("LastName", true)]
+        [InlineData("MiddleName", true)]
+        [InlineData(" ", false)]
+        [InlineData("foo", true)]
+        [InlineData("bar", true)]
         public void BindAttribute_Include(string property, bool isIncluded)
         {
             // Arrange
-            var bind = new BindAttribute(new string[] { "UserName", "FirstName" });
+            var bind = new BindAttribute(new string[] { "UserName", "FirstName", "LastName, MiddleName,  ,foo,bar " });
 
             var context = new ModelBindingContext();
 
@@ -74,7 +79,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 HttpContext = new DefaultHttpContext(),
             };
             var services = new Mock<IServiceProvider>();
-            
+
             context.OperationBindingContext.HttpContext.RequestServices = services.Object;
 
             // Act
@@ -99,7 +104,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             };
 
             var services = new Mock<IServiceProvider>(MockBehavior.Strict);
-            
+
             context.OperationBindingContext.HttpContext.RequestServices = services.Object;
 
             // Act
