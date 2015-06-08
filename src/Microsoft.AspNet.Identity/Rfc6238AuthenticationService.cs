@@ -9,21 +9,6 @@ using System.Text;
 
 namespace Microsoft.AspNet.Identity
 {
-    internal sealed class SecurityToken
-    {
-        private readonly byte[] _data;
-
-        public SecurityToken(byte[] data)
-        {
-            _data = (byte[])data.Clone();
-        }
-
-        internal byte[] GetDataNoClone()
-        {
-            return _data;
-        }
-    }
-
     internal static class Rfc6238AuthenticationService
     {
         private static readonly DateTime _unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -72,7 +57,7 @@ namespace Microsoft.AspNet.Identity
             return (ulong)(delta.Ticks / _timestep.Ticks);
         }
 
-        public static int GenerateCode(SecurityToken securityToken, string modifier = null)
+        public static int GenerateCode(byte[] securityToken, string modifier = null)
         {
             if (securityToken == null)
             {
@@ -81,13 +66,13 @@ namespace Microsoft.AspNet.Identity
 
             // Allow a variance of no greater than 90 seconds in either direction
             var currentTimeStep = GetCurrentTimeStepNumber();
-            using (var hashAlgorithm = new HMACSHA1(securityToken.GetDataNoClone()))
+            using (var hashAlgorithm = new HMACSHA1(securityToken))
             {
                 return ComputeTotp(hashAlgorithm, currentTimeStep, modifier);
             }
         }
 
-        public static bool ValidateCode(SecurityToken securityToken, int code, string modifier = null)
+        public static bool ValidateCode(byte[] securityToken, int code, string modifier = null)
         {
             if (securityToken == null)
             {
@@ -96,7 +81,7 @@ namespace Microsoft.AspNet.Identity
 
             // Allow a variance of no greater than 90 seconds in either direction
             var currentTimeStep = GetCurrentTimeStepNumber();
-            using (var hashAlgorithm = new HMACSHA1(securityToken.GetDataNoClone()))
+            using (var hashAlgorithm = new HMACSHA1(securityToken))
             {
                 for (var i = -2; i <= 2; i++)
                 {
