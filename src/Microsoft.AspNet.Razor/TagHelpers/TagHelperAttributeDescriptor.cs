@@ -19,7 +19,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                   propertyInfo.Name,
                   propertyInfo.PropertyType.FullName,
                   isIndexer: false,
-                  isStringProperty: propertyInfo.PropertyType == typeof(string))
+                  isStringProperty: propertyInfo.PropertyType == typeof(string),
+                  usageDescriptor: null)
         {
         }
 
@@ -39,6 +40,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// If <c>true</c> this <see cref="TagHelperAttributeDescriptor"/> is used for dictionary indexer assignments.
         /// Otherwise this <see cref="TagHelperAttributeDescriptor"/> is used for property assignment.
         /// </param>
+        /// <param name="usageDescriptor">The <see cref="TagHelperUsageDescriptor"/> that contains information about
+        /// use of this attribute.</param>
         /// <remarks>
         /// HTML attribute names are matched case-insensitively, regardless of <paramref name="isIndexer"/>.
         /// </remarks>
@@ -46,13 +49,15 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             [NotNull] string name,
             [NotNull] string propertyName,
             [NotNull] string typeName,
-            bool isIndexer)
+            bool isIndexer,
+            TagHelperUsageDescriptor usageDescriptor)
             : this(
                   name,
                   propertyName,
                   typeName,
                   isIndexer,
-                  isStringProperty: string.Equals(typeName, typeof(string).FullName, StringComparison.Ordinal))
+                  isStringProperty: string.Equals(typeName, typeof(string).FullName, StringComparison.Ordinal),
+                  usageDescriptor: usageDescriptor)
         {
         }
 
@@ -62,13 +67,15 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             [NotNull] string propertyName,
             [NotNull] string typeName,
             bool isIndexer,
-            bool isStringProperty)
+            bool isStringProperty,
+            TagHelperUsageDescriptor usageDescriptor)
         {
             Name = name;
             PropertyName = propertyName;
             TypeName = typeName;
             IsIndexer = isIndexer;
             IsStringProperty = isStringProperty;
+            UsageDescriptor = usageDescriptor;
         }
 
         /// <summary>
@@ -110,6 +117,11 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <see cref="IsIndexer"/> is <c>true</c>, the full name of the indexer's value <see cref="Type"/>.
         /// </summary>
         public string TypeName { get; }
+
+        /// <summary>
+        /// The <see cref="TagHelperUsageDescriptor"/> that contains information about use of this attribute.
+        /// </summary>
+        public TagHelperUsageDescriptor UsageDescriptor { get; }
 
         /// <summary>
         /// Determines whether HTML attribute <paramref name="name"/> matches this

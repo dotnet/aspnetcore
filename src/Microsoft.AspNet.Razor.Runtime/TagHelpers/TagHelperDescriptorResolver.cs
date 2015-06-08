@@ -26,14 +26,16 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             };
 
         private readonly TagHelperTypeResolver _typeResolver;
+        private readonly bool _designTime;
 
         /// <summary>
         /// Instantiates a new instance of the <see cref="TagHelperDescriptorResolver"/> class.
         /// </summary>
-        public TagHelperDescriptorResolver()
-            : this(new TagHelperTypeResolver())
+        /// <param name="designTime">Indicates whether resolved <see cref="TagHelperDescriptor"/>s should include
+        /// design time specific information.</param>
+        public TagHelperDescriptorResolver(bool designTime)
+            : this(new TagHelperTypeResolver(), designTime)
         {
-
         }
 
         /// <summary>
@@ -41,9 +43,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// specified <paramref name="typeResolver"/>.
         /// </summary>
         /// <param name="typeResolver">The <see cref="TagHelperTypeResolver"/>.</param>
-        public TagHelperDescriptorResolver(TagHelperTypeResolver typeResolver)
+        /// <param name="designTime">Indicates whether resolved <see cref="TagHelperDescriptor"/>s should include
+        /// design time specific information.</param>
+        public TagHelperDescriptorResolver(TagHelperTypeResolver typeResolver, bool designTime)
         {
             _typeResolver = typeResolver;
+            _designTime = designTime;
         }
 
         /// <inheritdoc />
@@ -113,7 +118,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// The name of the assembly to resolve <see cref="TagHelperDescriptor"/>s from.
         /// </param>
         /// <param name="documentLocation">The <see cref="SourceLocation"/> of the directive.</param>
-        /// <param name="errorSink">Used to record errors found when resolving <see cref="TagHelperDescriptor"/>s 
+        /// <param name="errorSink">Used to record errors found when resolving <see cref="TagHelperDescriptor"/>s
         /// within the given <paramref name="assemblyName"/>.</param>
         /// <returns><see cref="TagHelperDescriptor"/>s for <see cref="ITagHelper"/>s from the given
         /// <paramref name="assemblyName"/>.</returns>
@@ -128,7 +133,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Convert types to TagHelperDescriptors
             var descriptors = tagHelperTypes.SelectMany(
-                type => TagHelperDescriptorFactory.CreateDescriptors(assemblyName, type, errorSink));
+                type => TagHelperDescriptorFactory.CreateDescriptors(assemblyName, type, _designTime, errorSink));
 
             return descriptors;
         }
@@ -148,7 +153,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         descriptor.TypeName,
                         descriptor.AssemblyName,
                         descriptor.Attributes,
-                        descriptor.RequiredAttributes));
+                        descriptor.RequiredAttributes,
+                        descriptor.UsageDescriptor));
             }
 
             return descriptors;
@@ -222,7 +228,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // We need to escape the TypePattern so we can choose to only allow specific regex.
             var escaped = Regex.Escape(lookupInfo.TypePattern);
 
-            // We surround the escaped with ^ and $ in order ot ensure a regex match matches the entire 
+            // We surround the escaped with ^ and $ in order ot ensure a regex match matches the entire
             // string. We also replace any '*' or '?' characters with regex to match appropriate content.
             // '*' matches 0 or more characters lazily and '?' matches 1 character.
             var pattern = "^" + escaped.Replace(@"\?", ".").Replace(@"\*", ".*?") + "$";
