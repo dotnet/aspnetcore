@@ -71,5 +71,14 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         /// A random value that should change whenever a role is persisted to the store
         /// </summary>
         public virtual string ConcurrencyStamp { get; set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
+        /// Returns a friendly name
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }

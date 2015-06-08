@@ -103,5 +103,14 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         ///     Navigation property for users logins
         /// </summary>
         public virtual ICollection<IdentityUserLogin<TKey>> Logins { get; } = new List<IdentityUserLogin<TKey>>();
+
+        /// <summary>
+        /// Returns a friendly name
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return UserName;
+        }
     }
 }
