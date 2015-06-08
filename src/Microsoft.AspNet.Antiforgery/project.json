@@ -1,22 +1,30 @@
 ﻿{
-  "version": "1.0.0-*",
-  "description": "",
-  "authors": [ "" ],
-  "tags": [ "" ],
-  "projectUrl": "",
-  "licenseUrl": "",
+    "version": "1.0.0-*",
+    "description": "",
+    "authors": [ "" ],
+    "tags": [ "" ],
+    "projectUrl": "",
+    "licenseUrl": "",
 
-  "dependencies": {
-  },
+    "dependencies": {
+        "Microsoft.AspNet.DataProtection": "1.0.0-*",
+        "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
+        "Microsoft.AspNet.WebUtilities": "1.0.0-*",
+        "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
+        "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
+        "Microsoft.Framework.OptionsModel": "1.0.0-*"
+    },
 
   "frameworks" : {
     "dnx451": { },
     "dnxcore50" : {
       "dependencies": {
-        "System.Collections": "4.0.10-beta-22807",
-        "System.Linq": "4.0.0-beta-22807",
-        "System.Threading": "4.0.10-beta-22807",
-        "Microsoft.CSharp": "4.0.0-beta-22807"
+        "System.Collections": "4.0.10-beta-*",
+        "System.Linq": "4.0.0-beta-*",
+        "System.Security.Cryptography.RandomNumberGenerator": "4.0.0-beta-*",
+        "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*",
+        "System.Threading": "4.0.10-beta-*",
+        "Microsoft.CSharp": "4.0.0-beta-*"
       }
     }
   }

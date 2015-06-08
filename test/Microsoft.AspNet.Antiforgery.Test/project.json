@@ -1,6 +1,9 @@
 ﻿{
     "dependencies": {
         "Microsoft.AspNet.Antiforgery": "1.0.0-*",
+        "Microsoft.AspNet.Http": "1.0.0-*",
+        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+        "Microsoft.Framework.WebEncoders.Testing": "1.0.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
     "commands": {
@@ -8,7 +11,11 @@
         "test": "xunit.runner.aspnet"
     },
     "frameworks": {
-        "dnx451": { },
+        "dnx451": {
+            "dependencies": {
+                "Moq": "4.2.1312.1622"
+            }
+        },
         "dnxcore50": { }
     }
 }
