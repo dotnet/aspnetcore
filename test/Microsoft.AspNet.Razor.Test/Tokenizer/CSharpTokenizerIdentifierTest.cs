@@ -160,6 +160,7 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
             TestKeyword("break", CSharpKeyword.Break);
             TestKeyword("checked", CSharpKeyword.Checked);
             TestKeyword("namespace", CSharpKeyword.Namespace);
+            TestKeyword("when", CSharpKeyword.When);
         }
 
         private void TestKeyword(string keyword, CSharpKeyword keywordType)

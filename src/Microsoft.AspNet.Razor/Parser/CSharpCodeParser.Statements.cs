@@ -13,6 +13,9 @@ namespace Microsoft.AspNet.Razor.Parser
 {
     public partial class CSharpCodeParser
     {
+        private static readonly Func<CSharpSymbol, bool> IsValidStatementSpacingSymbol =
+            IsSpacingToken(includeNewLines: true, includeComments: true);
+
         private void SetUpKeywords()
         {
             MapKeywords(ConditionalBlock, CSharpKeyword.For, CSharpKeyword.Foreach, CSharpKeyword.While, CSharpKeyword.Switch, CSharpKeyword.Lock);
@@ -247,19 +250,19 @@ namespace Microsoft.AspNet.Razor.Parser
         private void AfterTryClause()
         {
             // Grab whitespace
-            IEnumerable<CSharpSymbol> ws = SkipToNextImportantToken();
+            var whitespace = SkipToNextImportantToken();
 
             // Check for a catch or finally part
             if (At(CSharpKeyword.Catch))
             {
-                Accept(ws);
+                Accept(whitespace);
                 Assert(CSharpKeyword.Catch);
-                ConditionalBlock(topLevel: false);
+                FilterableCatchBlock();
                 AfterTryClause();
             }
             else if (At(CSharpKeyword.Finally))
             {
-                Accept(ws);
+                Accept(whitespace);
                 Assert(CSharpKeyword.Finally);
                 UnconditionalBlock();
             }
@@ -267,7 +270,7 @@ namespace Microsoft.AspNet.Razor.Parser
             {
                 // Return whitespace and end the block
                 PutCurrentBack();
-                PutBack(ws);
+                PutBack(whitespace);
                 Span.EditHandler.AcceptedCharacters = AcceptedCharacters.Any;
             }
         }
@@ -342,6 +345,41 @@ namespace Microsoft.AspNet.Razor.Parser
             AcceptAndMoveNext();
             AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
             ExpectCodeBlock(block);
+        }
+
+        private void FilterableCatchBlock()
+        {
+            Assert(CSharpKeyword.Catch);
+
+            var block = new Block(CurrentSymbol);
+
+            // Accept "catch"
+            AcceptAndMoveNext();
+            AcceptWhile(IsValidStatementSpacingSymbol);
+
+            // Parse the catch condition if present. If not present, let the C# compiler complain.
+            if (AcceptCondition())
+            {
+                AcceptWhile(IsValidStatementSpacingSymbol);
+
+                if (At(CSharpKeyword.When))
+                {
+                    // Accept "when".
+                    AcceptAndMoveNext();
+                    AcceptWhile(IsValidStatementSpacingSymbol);
+
+                    // Parse the filter condition if present. If not present, let the C# compiler complain.
+                    if (!AcceptCondition())
+                    {
+                        // Incomplete condition.
+                        return;
+                    }
+
+                    AcceptWhile(IsValidStatementSpacingSymbol);
+                }
+
+                ExpectCodeBlock(block);
+            }
         }
 
         private void ConditionalBlock(bool topLevel)

@@ -88,7 +88,8 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             { "interface", CSharpKeyword.Interface },
             { "break", CSharpKeyword.Break },
             { "checked", CSharpKeyword.Checked },
-            { "namespace", CSharpKeyword.Namespace }
+            { "namespace", CSharpKeyword.Namespace },
+            { "when", CSharpKeyword.When }
         };
 
         public static CSharpKeyword? SymbolTypeForIdentifier(string id)

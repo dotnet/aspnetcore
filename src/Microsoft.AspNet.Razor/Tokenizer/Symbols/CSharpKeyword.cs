@@ -82,6 +82,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
         Interface,
         Break,
         Checked,
-        Namespace
+        Namespace,
+        When
     }
 }

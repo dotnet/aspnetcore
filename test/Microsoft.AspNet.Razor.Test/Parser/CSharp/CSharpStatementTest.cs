@@ -137,6 +137,169 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                ));
         }
 
+        public static TheoryData ExceptionFilterData
+        {
+            get
+            {
+                var factory = SpanFactory.CreateCsHtml();
+
+                // document, expectedStatement
+                return new TheoryData<string, StatementBlock>
+                {
+                    {
+                        "@try { someMethod(); } catch(Exception) when (true) { handleIO(); }",
+                        new StatementBlock(
+                            factory.CodeTransition(),
+                            factory
+                                .Code("try { someMethod(); } catch(Exception) when (true) { handleIO(); }")
+                                .AsStatement())
+                    },
+                    {
+                        "@try { A(); } catch(Exception) when (true) { B(); } finally { C(); }",
+                        new StatementBlock(
+                            factory.CodeTransition(),
+                            factory
+                                .Code("try { A(); } catch(Exception) when (true) { B(); } finally { C(); }")
+                                .AsStatement()
+                                .Accepts(AcceptedCharacters.None))
+                    },
+                    {
+                        "@try { A(); } catch(Exception) when (true) { B(); } catch(IOException) when (false) { C(); }",
+                        new StatementBlock(
+                            factory.CodeTransition(),
+                            factory
+                                .Code("try { A(); } catch(Exception) when (true) { B(); } catch(IOException) " +
+                                    "when (false) { C(); }")
+                                .AsStatement())
+                    },
+                    {
+                        string.Format("@try{0}{{{0}   A();{0}}}{0}catch(Exception) when (true)", Environment.NewLine) +
+                        string.Format("{0}{{{0}    B();{0}}}{0}catch(IOException) when (false)", Environment.NewLine) +
+                        string.Format("{0}{{{0}    C();{0}}}", Environment.NewLine),
+                        new StatementBlock(
+                            factory.CodeTransition(),
+                            factory
+                                .Code(
+                                    string.Format("try{0}{{{0}   A();{0}}}{0}catch(Exception) ", Environment.NewLine) +
+                                    string.Format("when (true){0}{{{0}    B();{0}}}{0}", Environment.NewLine) +
+                                    string.Format("catch(IOException) when (false){0}{{{0}    ", Environment.NewLine) +
+                                    string.Format("C();{0}}}", Environment.NewLine))
+                                .AsStatement())
+                    },
+
+                    // Wrapped in @{ block.
+                    {
+                        "@{try { someMethod(); } catch(Exception) when (true) { handleIO(); }}",
+                        new StatementBlock(
+                            factory.CodeTransition(),
+                            factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                            factory
+                                .Code("try { someMethod(); } catch(Exception) when (true) { handleIO(); }")
+                                .AsStatement()
+                                .AutoCompleteWith(autoCompleteString: null),
+                            factory.MetaCode("}").Accepts(AcceptedCharacters.None))
+                    },
+
+                    // Partial exception filter data
+                    {
+                        "@try { someMethod(); } catch(Exception) when",
+                        new StatementBlock(
+                            factory.CodeTransition(),
+                            factory
+                                .Code("try { someMethod(); } catch(Exception) when")
+                                .AsStatement())
+                    },
+                    {
+                        "@try { someMethod(); } when",
+                        new StatementBlock(
+                            factory.CodeTransition(),
+                            factory
+                                .Code("try { someMethod(); }")
+                                .AsStatement())
+                    },
+                    {
+                        "@try { someMethod(); } catch(Exception) when { anotherMethod(); }",
+                        new StatementBlock(
+                            factory.CodeTransition(),
+                            factory
+                                .Code("try { someMethod(); } catch(Exception) when { anotherMethod(); }")
+                                .AsStatement())
+                    },
+                    {
+                        "@try { someMethod(); } catch(Exception) when (true)",
+                        new StatementBlock(
+                            factory.CodeTransition(),
+                            factory
+                                .Code("try { someMethod(); } catch(Exception) when (true)")
+                                .AsStatement())
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ExceptionFilterData))]
+        public void ExceptionFilters(string document, StatementBlock expectedStatement)
+        {
+            // Act & Assert
+            ParseBlockTest(document, expectedStatement);
+        }
+
+        public static TheoryData ExceptionFilterErrorData
+        {
+            get
+            {
+                var factory = SpanFactory.CreateCsHtml();
+                var unbalancedParenErrorString = "An opening \"(\" is missing the corresponding closing \")\".";
+                var unbalancedBracketCatchErrorString = "The catch block is missing a closing \"}\" character.  " +
+                    "Make sure you have a matching \"}\" character for all the \"{\" characters within this block, " +
+                    "and that none of the \"}\" characters are being interpreted as markup.";
+
+                // document, expectedStatement, expectedErrors
+                return new TheoryData<string, StatementBlock, RazorError[]>
+                {
+                    {
+                        "@try { someMethod(); } catch(Exception) when (",
+                        new StatementBlock(
+                            factory.CodeTransition(),
+                            factory
+                                .Code("try { someMethod(); } catch(Exception) when (")
+                                .AsStatement()),
+                        new[] { new RazorError(unbalancedParenErrorString, 45, 0, 45) }
+                    },
+                    {
+                        "@try { someMethod(); } catch(Exception) when (someMethod(",
+                        new StatementBlock(
+                            factory.CodeTransition(),
+                            factory
+                                .Code("try { someMethod(); } catch(Exception) when (someMethod(")
+                                .AsStatement()),
+                        new[] { new RazorError(unbalancedParenErrorString, 45, 0, 45) }
+                    },
+                    {
+                        "@try { someMethod(); } catch(Exception) when (true) {",
+                        new StatementBlock(
+                            factory.CodeTransition(),
+                            factory
+                                .Code("try { someMethod(); } catch(Exception) when (true) {")
+                                .AsStatement()),
+                        new[] { new RazorError(unbalancedBracketCatchErrorString, 23, 0, 23) }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ExceptionFilterErrorData))]
+        public void ExceptionFilterErrors(
+            string document,
+            StatementBlock expectedStatement,
+            RazorError[] expectedErrors)
+        {
+            // Act & Assert
+            ParseBlockTest(document, expectedStatement, expectedErrors);
+        }
+
         [Fact]
         public void FinallyClause()
         {
