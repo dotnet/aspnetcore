@@ -160,13 +160,47 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToReturnsValueIfArrayElementIsIntegerAndDestinationTypeIsEnum()
         {
             // Arrange
-            var vpr = new ValueProviderResult(new object[] { 1 }, null, CultureInfo.InvariantCulture);
+            var result = new ValueProviderResult(new object[] { 1 }, null, CultureInfo.InvariantCulture);
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(MyEnum));
+            var outValue = result.ConvertTo(typeof(IntEnum));
 
             // Assert
-            Assert.Equal(outValue, MyEnum.Value1);
+            Assert.Equal(outValue, IntEnum.Value1);
+        }
+
+        [Theory]
+        [InlineData(1, typeof(IntEnum), IntEnum.Value1)]
+        [InlineData(1L, typeof(LongEnum), LongEnum.Value1)]
+        [InlineData(long.MaxValue, typeof(LongEnum), LongEnum.MaxValue)]
+        [InlineData(1U, typeof(UnsignedIntEnum), UnsignedIntEnum.Value1)]
+        [InlineData(1UL, typeof(IntEnum), IntEnum.Value1)]
+        [InlineData((byte)1, typeof(ByteEnum), ByteEnum.Value1)]
+        [InlineData(byte.MaxValue, typeof(ByteEnum), ByteEnum.MaxValue)]
+        [InlineData((sbyte)1, typeof(ByteEnum), ByteEnum.Value1)]
+        [InlineData((short)1, typeof(IntEnum), IntEnum.Value1)]
+        [InlineData((ushort)1, typeof(IntEnum), IntEnum.Value1)]
+        [InlineData(int.MaxValue, typeof(IntEnum?), IntEnum.MaxValue)]
+        [InlineData(null, typeof(IntEnum?), null)]
+        [InlineData(1L, typeof(LongEnum?), LongEnum.Value1)]
+        [InlineData(null, typeof(LongEnum?), null)]
+        [InlineData(uint.MaxValue, typeof(UnsignedIntEnum?), UnsignedIntEnum.MaxValue)]
+        [InlineData((byte)1, typeof(ByteEnum?), ByteEnum.Value1)]
+        [InlineData(null, typeof(ByteEnum?), null)]
+        [InlineData((ushort)1, typeof(LongEnum?), LongEnum.Value1)]
+        public void ConvertToReturnsValueIfArrayElementIsAnyIntegerTypeAndDestinationTypeIsEnum(
+            object input,
+            Type enumType,
+            object expected)
+        {
+            // Arrange
+            var result = new ValueProviderResult(new object[] { input }, null, CultureInfo.InvariantCulture);
+
+            // Act
+            var outValue = result.ConvertTo(enumType);
+
+            // Assert
+            Assert.Equal(expected, outValue);
         }
 
         [Fact]
@@ -176,10 +210,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var vpr = new ValueProviderResult(new object[] { "1" }, null, CultureInfo.InvariantCulture);
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(MyEnum));
+            var outValue = vpr.ConvertTo(typeof(IntEnum));
 
             // Assert
-            Assert.Equal(outValue, MyEnum.Value1);
+            Assert.Equal(outValue, IntEnum.Value1);
         }
 
         [Fact]
@@ -189,10 +223,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var vpr = new ValueProviderResult(new object[] { "Value1" }, null, CultureInfo.InvariantCulture);
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(MyEnum));
+            var outValue = vpr.ConvertTo(typeof(IntEnum));
 
             // Assert
-            Assert.Equal(outValue, MyEnum.Value1);
+            Assert.Equal(outValue, IntEnum.Value1);
         }
 
         [Fact]
@@ -296,13 +330,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var vpr = new ValueProviderResult(value, null, CultureInfo.InvariantCulture);
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(MyEnum[]));
+            var outValue = vpr.ConvertTo(typeof(IntEnum[]));
 
             // Assert
-            var result = Assert.IsType<MyEnum[]>(outValue);
+            var result = Assert.IsType<IntEnum[]>(outValue);
             Assert.Equal(2, result.Length);
-            Assert.Equal(MyEnum.Value1, result[0]);
-            Assert.Equal(MyEnum.Value0, result[1]);
+            Assert.Equal(IntEnum.Value1, result[0]);
+            Assert.Equal(IntEnum.Value0, result[1]);
         }
 
         [Theory]
@@ -341,7 +375,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [Theory]
         [InlineData(typeof(int))]
         [InlineData(typeof(double?))]
-        [InlineData(typeof(MyEnum?))]
+        [InlineData(typeof(IntEnum?))]
         public void ConvertToThrowsIfConverterThrows(Type destinationType)
         {
             // Arrange
@@ -433,7 +467,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [InlineData(typeof(DateTime))]
         [InlineData(typeof(DateTimeOffset))]
         [InlineData(typeof(Guid))]
-        [InlineData(typeof(MyEnum))]
+        [InlineData(typeof(IntEnum))]
         public void ConvertTo_Throws_IfValueIsNotStringData(Type destinationType)
         {
             // Arrange
@@ -492,10 +526,32 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
         }
 
-        private enum MyEnum
+        private enum IntEnum
         {
             Value0 = 0,
-            Value1 = 1
+            Value1 = 1,
+            MaxValue = int.MaxValue
+        }
+
+        private enum LongEnum : long
+        {
+            Value0 = 0L,
+            Value1 = 1L,
+            MaxValue = long.MaxValue
+        }
+
+        private enum UnsignedIntEnum : uint
+        {
+            Value0 = 0U,
+            Value1 = 1U,
+            MaxValue = uint.MaxValue
+        }
+
+        private enum ByteEnum : byte
+        {
+            Value0 = 0,
+            Value1 = 1,
+            MaxValue = byte.MaxValue
         }
 
         [Flags]

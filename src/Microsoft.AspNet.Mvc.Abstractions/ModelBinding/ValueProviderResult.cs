@@ -142,9 +142,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (!(canConvertFrom || converter.CanConvertTo(destinationType)))
             {
                 // EnumConverter cannot convert integer, so we verify manually
-                if (destinationType.GetTypeInfo().IsEnum && (value is int))
+                if (destinationType.GetTypeInfo().IsEnum &&
+                    (value is int ||
+                    value is uint ||
+                    value is long ||
+                    value is ulong ||
+                    value is short ||
+                    value is ushort ||
+                    value is byte ||
+                    value is sbyte))
                 {
-                    return Enum.ToObject(destinationType, (int)value);
+                    return Enum.ToObject(destinationType, value);
                 }
 
                 throw new InvalidOperationException(
