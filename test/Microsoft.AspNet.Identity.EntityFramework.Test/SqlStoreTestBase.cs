@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity.Test;
+using Microsoft.Data.Entity.Relational;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
@@ -103,6 +105,76 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         public void EnsureDatabase()
         {
             CreateContext();
+        }
+
+        [Fact]
+        public void EnsureDefaultSchema()
+        {
+            VerifyDefaultSchema(CreateContext());
+        }
+
+        internal static void VerifyDefaultSchema(TestDbContext dbContext)
+        {
+            var sqlDb = dbContext.Database as RelationalDatabase;
+            var sqlConn = sqlDb?.Connection;
+
+            Assert.NotNull(sqlConn);
+            using (var db = new SqlConnection(sqlConn.ConnectionString))
+            {
+                db.Open();
+                Assert.True(VerifyColumns(db, "AspNetUsers", "Id", "UserName", "Email", "PasswordHash", "SecurityStamp",
+                    "EmailConfirmed", "PhoneNumber", "PhoneNumberConfirmed", "TwoFactorEnabled", "LockoutEnabled",
+                    "LockoutEnd", "AccessFailedCount", "ConcurrencyStamp", "NormalizedUserName", "NormalizedEmail"));
+                Assert.True(VerifyColumns(db, "AspNetRoles", "Id", "Name", "NormalizedName", "ConcurrencyStamp"));
+                Assert.True(VerifyColumns(db, "AspNetUserRoles", "UserId", "RoleId"));
+                Assert.True(VerifyColumns(db, "AspNetUserClaims", "Id", "UserId", "ClaimType", "ClaimValue"));
+                Assert.True(VerifyColumns(db, "AspNetUserLogins", "UserId", "ProviderKey", "LoginProvider", "ProviderDisplayName"));
+
+                VerifyIndex(db, "AspNetRoles", "RoleNameIndex");
+                VerifyIndex(db, "AspNetUsers", "UserNameIndex");
+                VerifyIndex(db, "AspNetUsers", "EmailIndex");
+                db.Close();
+            }
+        }
+
+        internal static bool VerifyColumns(SqlConnection conn, string table, params string[] columns)
+        {
+            var count = 0;
+            using (
+                var command =
+                    new SqlCommand("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS where TABLE_NAME=@Table", conn))
+            {
+                command.Parameters.Add(new SqlParameter("Table", table));
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        count++;
+                        if (!columns.Contains(reader.GetString(0)))
+                        {
+                            return false;
+                        }
+                    }
+                    return count == columns.Length;
+                }
+            }
+        }
+
+        internal static void VerifyIndex(SqlConnection conn, string table, string index)
+        {
+            using (
+                var command =
+                    new SqlCommand(
+                        "SELECT COUNT(*) FROM sys.indexes where NAME=@Index AND object_id = OBJECT_ID(@Table)", conn))
+            {
+                command.Parameters.Add(new SqlParameter("Index", index));
+                command.Parameters.Add(new SqlParameter("Table", table));
+                using (var reader = command.ExecuteReader())
+                {
+                    Assert.True(reader.Read());
+                    Assert.True(reader.GetInt32(0) > 0);
+                }
+            }
         }
 
         [Fact]
