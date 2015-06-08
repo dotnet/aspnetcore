@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Core;
@@ -31,19 +30,13 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="include">Names of parameters to include in binding.</param>
         public BindAttribute(params string[] include)
         {
-            var items = new List<string>();
-            foreach (var item in include)
-            {
-                items.AddRange(SplitString(item));
-            }
-
-            Include = items.ToArray();
+            Include = include;
         }
 
         /// <summary>
         /// Creates a new instance of <see cref="BindAttribute"/>.
         /// </summary>
-        /// <param name="predicateProviderType">The type which implements
+        /// <param name="predicateProviderType">The type which implements 
         /// <see cref="IPropertyBindingPredicateProvider"/>.
         /// </param>
         public BindAttribute([NotNull] Type predicateProviderType)
@@ -99,7 +92,7 @@ namespace Microsoft.AspNet.Mvc
                 {
                     if (_predicateFromInclude == null)
                     {
-                        _predicateFromInclude =
+                        _predicateFromInclude = 
                             (context, propertyName) => Include.Contains(propertyName, StringComparer.Ordinal);
                     }
 
@@ -142,18 +135,6 @@ namespace Microsoft.AspNet.Mvc
 
                 return predicate(context, propertyName);
             };
-        }
-
-        private static IEnumerable<string> SplitString(string original)
-        {
-            if (string.IsNullOrEmpty(original))
-            {
-                return new string[0];
-            }
-
-            var split = original.Split(',').Select(piece => piece.Trim()).Where(piece => !string.IsNullOrEmpty(piece));
-
-            return split;
         }
     }
 }
