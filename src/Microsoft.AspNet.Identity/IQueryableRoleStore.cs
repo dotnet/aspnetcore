@@ -6,14 +6,15 @@ using System.Linq;
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     Interface that exposes an IQueryable roles
+    /// Provides an abstraction for querying roles in a Role store.
     /// </summary>
-    /// <typeparam name="TRole"></typeparam>
+    /// <typeparam name="TRole">The type encapsulating a role.</typeparam>
     public interface IQueryableRoleStore<TRole> : IRoleStore<TRole> where TRole : class
     {
         /// <summary>
-        ///     IQueryable roles
+        /// Returns an <see cref="IQueryable{T}"/> collection of roles.
         /// </summary>
+        /// <value>An <see cref="IQueryable{T}"/> collection of roles.</value>
         IQueryable<TRole> Roles { get; }
     }
 }

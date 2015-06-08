@@ -6,22 +6,37 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     TokenProvider that generates time based codes using the user's security stamp
+    /// Represents a token provider that generates time based codes using the user's security stamp.
     /// </summary>
-    /// <typeparam name="TUser"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
     public abstract class TotpSecurityStampBasedTokenProvider<TUser> : IUserTokenProvider<TUser>
         where TUser : class
     {
+        /// <summary>
+        /// Gets the name of the token provider.
+        /// </summary>
+        /// <value>The name of the token provider.</value>
         public abstract string Name { get; }
 
         /// <summary>
-        ///     Generate a token for the user using their security stamp
+        /// Generates a token for the specified <paramref name="ref"/> and <paramref name="purpose"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="purpose"></param>
-        /// <param name="manager"></param>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="purpose">The purpose the token will be used for.</param>
+        /// <param name="manager">The <see cref="UserManager{TUser}"/> that can be used to retrieve user properties.</param>
+        /// <param name="user">The user a token should be generated for.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the token for the specified 
+        /// <paramref name="user"/> and <paramref name="purpose"/>.
+        /// </returns>
+        /// <remarks>
+        /// The <paramref name="purpose"/> parameter allows a token generator to be used for multiple types of token whilst
+        /// insuring a token for one purpose cannot be used for another. For example if you specified a purpose of "Email" 
+        /// and validated it with the same purpose a token with the purpose of TOTP would not pass the heck even if it was
+        /// for the same user.
+        /// 
+        /// Implementations of <see cref="IUserTokenProvider{TUser}"/> should validate that purpose is not null or empty to
+        /// help with token separation.
+        /// </remarks>
         public virtual async Task<string> GenerateAsync(string purpose, UserManager<TUser> manager, TUser user)
         {
             if (manager == null)
@@ -34,13 +49,18 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Validate the token for the user
+        /// Returns a flag indicating whether the specified <paramref name="token"/> is valid for the given
+        /// <paramref name="user"/> and <paramref name="purpose"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="purpose"></param>
-        /// <param name="token"></param>
-        /// <param name="manager"></param>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="purpose">The purpose the token will be used for.</param>
+        /// <param name="token">The token to validate.</param>
+        /// <param name="manager">The <see cref="UserManager{TUser}"/> that can be used to retrieve user properties.</param>
+        /// <param name="user">The user a token should be validated for.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the a flag indicating the result
+        /// of validating the <paramref name="token"> for the specified </paramref><paramref name="user"/> and <paramref name="purpose"/>.
+        /// The task will return true if the token is valid, otherwise false.
+        /// </returns>
         public virtual async Task<bool> ValidateAsync(string purpose, string token, UserManager<TUser> manager, TUser user)
         {
             if (manager == null)
@@ -58,12 +78,15 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Used for entropy in the token, uses the user.Id by default
+        /// Returns a constant, provider and user unique modifier used for entropy in generated tokens from user information, as an asynchronous operation.
         /// </summary>
-        /// <param name="purpose"></param>
-        /// <param name="manager"></param>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="purpose">The purpose the token will be generated for.</param>
+        /// <param name="manager">The <see cref="UserManager{TUser}"/> that can be used to retrieve user properties.</param>
+        /// <param name="user">The user a token should be generated for.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing a constant modifier for the specified 
+        /// <paramref name="user"/> and <paramref name="purpose"/>.
+        /// </returns>
         public virtual async Task<string> GetUserModifierAsync(string purpose, UserManager<TUser> manager, TUser user)
         {
             if (manager == null)
@@ -74,6 +97,17 @@ namespace Microsoft.AspNet.Identity
             return "Totp:" + purpose + ":" + userId;
         }
 
+        /// <summary>
+        /// Returns a flag indicating whether the token provider can generate a token suitable for two factor authentication token for
+        /// the specified <paramref name="ref"/>.
+        /// </summary>
+        /// <param name="manager">The <see cref="UserManager{TUser}"/> that can be used to retrieve user properties.</param>
+        /// <param name="user">The user a token could be generated for.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the a flag indicating if a two
+        /// factor token could be generated by this provider for the specified <paramref name="user"/> and <paramref name="purpose"/>.
+        /// The task will return true if a two factor authentication token could be generated, otherwise false.
+        /// </returns>
         public abstract Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user);
     }
 }

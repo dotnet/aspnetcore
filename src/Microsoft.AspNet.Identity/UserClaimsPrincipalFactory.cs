@@ -72,10 +72,11 @@ namespace Microsoft.AspNet.Identity
         public IdentityOptions Options { get; private set; }
 
         /// <summary>
-        /// Creates a populated <see cref="ClaimsPrincipal"/> for the specified <paramref name="user"/>.
+        /// Creates a <see cref="ClaimsPrincipal"/> from an user asynchronously.
         /// </summary>
-        /// <param name="user">The user instance to create claims on.</param>
-        /// <returns>A <see cref="Task{TResult}"/> that represents the started task.</returns>
+        /// <param name="user">The user to create a <see cref="ClaimsPrincipal"/> from.</param>
+        /// <param name="authenticationType">The name of the authentication method the <paramref name="user"/> was sourced from.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous creation operation, containing the created <see cref="ClaimsPrincipal"/>.</returns>
         public virtual async Task<ClaimsPrincipal> CreateAsync(TUser user)
         {
             if (user == null)

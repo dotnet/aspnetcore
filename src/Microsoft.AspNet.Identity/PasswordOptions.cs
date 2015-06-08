@@ -3,31 +3,53 @@
 
 namespace Microsoft.AspNet.Identity
 {
+    /// <summary>
+    /// Specifies options for password requirements.
+    /// </summary>
     public class PasswordOptions
     {
         /// <summary>
-        ///     Minimum required length
+        /// Gets or sets the minimum length a password must be.
         /// </summary>
+        /// <remarks>
+        /// This defaults to 6.
+        /// </remarks>
         public int RequiredLength { get; set; } = 6;
 
         /// <summary>
-        ///     Require a non letter or digit character
+        /// Gets or sets a flag indicating if passwords must contain a digit or other non-alphabetical character.
         /// </summary>
+        /// <value>True if passwords must contain a digit or other non-alphabetical character, otherwise false.</value>
+        /// <remarks>
+        /// This defaults to true.
+        /// </remarks>
         public bool RequireNonLetterOrDigit { get; set; } = true;
 
         /// <summary>
-        ///     Require a lower case letter ('a' - 'z')
+        /// Gets or sets a flag indicating if passwords must contain a lower case ASCII character.
         /// </summary>
+        /// <value>True if passwords must contain a lower case ASCII character.</value>
+        /// <remarks>
+        /// This defaults to true.
+        /// </remarks>
         public bool RequireLowercase { get; set; } = true;
 
         /// <summary>
-        ///     Require an upper case letter ('A' - 'Z')
+        /// Gets or sets a flag indicating if passwords must contain a upper case ASCII character.
         /// </summary>
+        /// <value>True if passwords must contain a upper case ASCII character.</value>
+        /// <remarks>
+        /// This defaults to true.
+        /// </remarks>
         public bool RequireUppercase { get; set; } = true;
 
         /// <summary>
-        ///     Require a digit ('0' - '9')
+        /// Gets or sets a flag indicating if passwords must contain a digit.
         /// </summary>
+        /// <value>True if passwords must contain a digit.</value>
+        /// <remarks>
+        /// This defaults to true.
+        /// </remarks>
         public bool RequireDigit { get; set; } = true;
     }
 }

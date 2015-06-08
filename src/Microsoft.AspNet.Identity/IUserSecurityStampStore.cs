@@ -7,26 +7,26 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     Stores a user's security stamp
+    /// Provides an abstraction for a store which stores a user's security stamp.
     /// </summary>
-    /// <typeparam name="TUser"></typeparam>
+    /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
     public interface IUserSecurityStampStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
-        ///     Set the security stamp for the user
+        /// Sets the provided security <paramref name="stamp"/> for the specified <paramref name="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="stamp"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose security stamp should be set.</param>
+        /// <param name="stamp">The security stamp to set.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         Task SetSecurityStampAsync(TUser user, string stamp, CancellationToken cancellationToken);
 
         /// <summary>
-        ///     Get the user security stamp
+        /// Get the security stamp for the specified <paramref name="user" />, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose security stamp should be set.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the security stamp for the specified <paramref name="user"/>.</returns>
         Task<string> GetSecurityStampAsync(TUser user, CancellationToken cancellationToken);
     }
 }

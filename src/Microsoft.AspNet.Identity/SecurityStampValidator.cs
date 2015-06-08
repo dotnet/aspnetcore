@@ -11,13 +11,18 @@ using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Identity
 {
+    /// <summary>
+    /// Provides default implementation of validation functions for security stamps.
+    /// </summary>
+    /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
     public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser : class
     {
         /// <summary>
-        ///     Rejects the identity if the stamp changes, and otherwise will sign in a new
-        ///     ClaimsIdentity
+        /// Validates a security stamp of an identity as an asynchronous operation, and rebuilds the identity if the validation succeeds, otherwise rejects
+        /// the identity.
         /// </summary>
-        /// <returns></returns>
+        /// <param name="context">The context containing the <see cref="ClaimsPrincipal"/>and <see cref="AuthenticationProperties"/> to validate.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous validation operation.</returns>
         public virtual async Task ValidateAsync(CookieValidatePrincipalContext context)
         {
             var manager = context.HttpContext.RequestServices.GetRequiredService<SignInManager<TUser>>();
@@ -36,11 +41,17 @@ namespace Microsoft.AspNet.Identity
     }
 
     /// <summary>
-    ///     Static helper class used to configure a CookieAuthenticationNotifications to validate a cookie against a user's security
-    ///     stamp
+    /// Static helper class used to configure a CookieAuthenticationNotifications to validate a cookie against a user's security
+    /// stamp.
     /// </summary>
     public static class SecurityStampValidator
     {
+        /// <summary>
+        /// Validates a principal against a user's stored security stamp.
+        /// the identity.
+        /// </summary>
+        /// <param name="context">The context containing the <see cref="ClaimsPrincipal"/>and <see cref="AuthenticationProperties"/> to validate.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous validation operation.</returns>
         public static Task ValidatePrincipalAsync(CookieValidatePrincipalContext context)
         {
             var currentUtc = DateTimeOffset.UtcNow;

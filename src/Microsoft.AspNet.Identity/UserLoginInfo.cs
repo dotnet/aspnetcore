@@ -4,10 +4,16 @@
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     Represents a linked login for a user (i.e. a local username/password or a facebook/google account
+    /// Represents login information and source for a user record.
     /// </summary>
     public class UserLoginInfo
     {
+        /// <summary>
+        /// Creates a new instance of <see cref="UserLoginInfo"/>
+        /// </summary>
+        /// <param name="loginProvider">The provider associated with this login information.</param>
+        /// <param name="providerKey">The unique identifier for this user provided by the login provider.</param>
+        /// <param name="displayName">The display name for this user provided by the login provider.</param>
         public UserLoginInfo(string loginProvider, string providerKey, string displayName)
         {
             LoginProvider = loginProvider;
@@ -16,18 +22,31 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Provider for the linked login, i.e. Local, Facebook, Google, etc.
+        /// Gets or sets the provider for this instance of <see cref="UserLoginInfo"/>.
         /// </summary>
+        /// <value>The provider for the this instance of <see cref="UserLoginInfo"/></value>
+        /// <remarks>
+        /// Examples of the provider may be Local, Facebook, Google, etc.
+        /// </remarks>
         public string LoginProvider { get; set; }
 
         /// <summary>
-        ///     Key for the linked login at the provider
+        /// Gets or sets the unique identifier for the user identity user provided by the login provider.
         /// </summary>
+        /// <value>
+        /// The unique identifier for the user identity user provided by the login provider.
+        /// </value>
+        /// <remarks>
+        /// This would be unique per provider, examples may be @microsoft as a Twitter provider key.
+        /// </remarks>
         public string ProviderKey { get; set; }
 
         /// <summary>
-        ///     Display name for the provider
+        /// Gets or sets the display name for the provider.
         /// </summary>
+        /// <value>
+        /// The display name for the provider.
+        /// </value>
         public string ProviderDisplayName { get; set; }
     }
 }

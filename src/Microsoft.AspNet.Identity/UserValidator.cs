@@ -15,23 +15,30 @@ namespace Microsoft.AspNet.Identity
     /// <summary>
     /// Provides validation services for user classes.
     /// </summary>
-    /// <typeparam name="TUser"></typeparam>
+    /// <typeparam name="TRole">The type encapsulating a user.</typeparam>
     public class UserValidator<TUser> : IUserValidator<TUser> where TUser : class
     {
+        /// <summary>
+        /// Creates a new instance of <see cref="UserValidator{TUser}"/>/
+        /// </summary>
+        /// <param name="errors">The <see cref="IdentityErrorDescriber"/> used to provider error messages.</param>
         public UserValidator(IdentityErrorDescriber errors = null)
         {
             Describer = errors ?? new IdentityErrorDescriber();
         }
 
+        /// <summary>
+        /// Gets the <see cref="IdentityErrorDescriber"/> used to provider error messages for the current <see cref="UserValidator{TUser}"/>.
+        /// </summary>
+        /// <value>Yhe <see cref="IdentityErrorDescriber"/> used to provider error messages for the current <see cref="UserValidator{TUser}"/>.</value>
         public IdentityErrorDescriber Describer { get; private set; }
 
         /// <summary>
-        ///     Validates a user before saving
+        /// Validates the specified <paramref name="user"/> as an asynchronous operation.
         /// </summary>
-        /// <param name="manager"></param>
-        /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="manager">The <see cref="UserManager{TUser}"/> that can be used to retrieve user properties.</param>
+        /// <param name="user">The user to validate.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the validation operation.</returns>
         public virtual async Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user)
         {
             if (manager == null)

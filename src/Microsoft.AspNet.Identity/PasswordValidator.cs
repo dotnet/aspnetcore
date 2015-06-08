@@ -4,30 +4,38 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     Used to validate some basic password policy like length and number of non alphanumerics
+    /// Provides the default password policy for Identity.
     /// </summary>
+    /// <typeparam name="TUser">The type that represents a user.</typeparam>
     public class PasswordValidator<TUser> : IPasswordValidator<TUser> where TUser : class
     {
+        /// <summary>
+        /// Constructions a new instance of <see cref="PasswordValidator{TUser}"/>.
+        /// </summary>
+        /// <param name="errors">The <see cref="IdentityErrorDescriber"/> to retrieve error text from.</param>
         public PasswordValidator(IdentityErrorDescriber errors = null)
         {
             Describer = errors ?? new IdentityErrorDescriber();
         }
 
+        /// <summary>
+        /// Gets the <see cref="IdentityErrorDescriber"/> used to supply error text.
+        /// </summary>
+        /// <value>The <see cref="IdentityErrorDescriber"/> used to supply error text.</value>
         public IdentityErrorDescriber Describer { get; private set; }
 
         /// <summary>
-        ///     Ensures that the password is of the required length and meets the configured requirements
+        /// Validates a password as an asynchronous operation.
         /// </summary>
-        /// <param name="password"></param>
-        /// <param name="manager"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="manager">The <see cref="UserManager{TUser}"/> to retrieve the <paramref name="user"/> properties from.</param>
+        /// <param name="user">The user whose password should be validated.</param>
+        /// <param name="password">The password supplied for validation</param>
+        /// <returns>The task object representing the asynchronous operation.</returns>
         public virtual Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
         {
             if (password == null)
@@ -67,40 +75,40 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the character is a digit between '0' and '9'
+        /// Returns a flag indicting whether the supplied character is a digit.
         /// </summary>
-        /// <param name="c"></param>
-        /// <returns></returns>
+        /// <param name="c">The character to check if it is a digit.</param>
+        /// <returns>True if the character is a digit, otherwise false.</returns>
         public virtual bool IsDigit(char c)
         {
             return c >= '0' && c <= '9';
         }
 
         /// <summary>
-        ///     Returns true if the character is between 'a' and 'z'
+        /// Returns a flag indicting whether the supplied character is a lower case ASCII letter.
         /// </summary>
-        /// <param name="c"></param>
-        /// <returns></returns>
+        /// <param name="c">The character to check if it is a lower case ASCII letter.</param>
+        /// <returns>True if the character is a lower case ASCII letter, otherwise false.</returns>
         public virtual bool IsLower(char c)
         {
             return c >= 'a' && c <= 'z';
         }
 
         /// <summary>
-        ///     Returns true if the character is between 'A' and 'Z'
+        /// Returns a flag indicting whether the supplied character is an upper case ASCII letter.
         /// </summary>
-        /// <param name="c"></param>
-        /// <returns></returns>
+        /// <param name="c">The character to check if it is an upper case ASCII letter.</param>
+        /// <returns>True if the character is an upper case ASCII letter, otherwise false.</returns>
         public virtual bool IsUpper(char c)
         {
             return c >= 'A' && c <= 'Z';
         }
 
         /// <summary>
-        ///     Returns true if the character is upper, lower, or a digit
+        /// Returns a flag indicting whether the supplied character is an ASCII letter or digit.
         /// </summary>
-        /// <param name="c"></param>
-        /// <returns></returns>
+        /// <param name="c">The character to check if it is an ASCII letter or digit.</param>
+        /// <returns>True if the character is an ASCII letter or digit, otherwise false.</returns>
         public virtual bool IsLetterOrDigit(char c)
         {
             return IsUpper(c) || IsLower(c) || IsDigit(c);

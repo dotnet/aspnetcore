@@ -8,11 +8,15 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     Validates roles before they are saved
+    /// Provides the default validation of roles.
     /// </summary>
-    /// <typeparam name="TRole"></typeparam>
+    /// <typeparam name="TRole">The type encapsulating a role.</typeparam>
     public class RoleValidator<TRole> : IRoleValidator<TRole> where TRole : class
     {
+        /// <summary>
+        /// Creates a new instance of <see cref="RoleValidator{TRole}"/>/
+        /// </summary>
+        /// <param name="errors">The <see cref="IdentityErrorDescriber"/> used to provider error messages.</param>
         public RoleValidator(IdentityErrorDescriber errors = null)
         {
             Describer = errors ?? new IdentityErrorDescriber();
@@ -21,12 +25,11 @@ namespace Microsoft.AspNet.Identity
         private IdentityErrorDescriber Describer { get; set; }
 
         /// <summary>
-        ///     Validates a role before saving
+        /// Validates a role as an asynchronous operation.
         /// </summary>
-        /// <param name="manager"></param>
-        /// <param name="role"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="manager">The <see cref="RoleManager{TRole}"/> managing the role store.</param>
+        /// <param name="role">The role to validate.</param>
+        /// <returns>A <see cref="Task{TResult}"/> that represents the <see cref="IdentityResult"/> of the asynchronous validation.</returns>
         public virtual async Task<IdentityResult> ValidateAsync(RoleManager<TRole> manager, TRole role)
         {
             if (manager == null)

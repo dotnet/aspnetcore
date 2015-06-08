@@ -8,52 +8,57 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     Interface that maps users to their roles
+    /// Provides an abstraction for a store which maps users to roles.
     /// </summary>
-    /// <typeparam name="TUser"></typeparam>
+    /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
     public interface IUserRoleStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
-        ///     Adds a user to role
+        /// Add a the specified <paramref name="user"/> to the named role, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="roleName"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to add to the named role.</param>
+        /// <param name="roleName">The name of the role to add the user to.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         Task AddToRoleAsync(TUser user, string roleName, CancellationToken cancellationToken);
 
         /// <summary>
-        ///     Removes the role for the user
+        /// Add a the specified <paramref name="user"/> from the named role, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="roleName"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to remove the named role from.</param>
+        /// <param name="roleName">The name of the role to remove.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         Task RemoveFromRoleAsync(TUser user, string roleName, CancellationToken cancellationToken);
 
         /// <summary>
-        ///     Returns the roles for this user
+        /// Gets a list of role names the specified <paramref name="user"/> belongs to, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose role names to retrieve.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing a list of role names.</returns>
         Task<IList<string>> GetRolesAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
-        ///     Returns true if a user is in a role
+        /// Returns a flag indicating whether the specified <paramref name="user"/> is a member of the give named role, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="roleName"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose role membership should be checked.</param>
+        /// <param name="roleName">The name of the role to be checked.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing a flag indicating whether the specified <see cref="user"/> is
+        /// a member of the named role.
+        /// </returns>
         Task<bool> IsInRoleAsync(TUser user, string roleName, CancellationToken cancellationToken);
 
         /// <summary>
-        ///     Returns all users in given role
+        /// Returns a list of Users who are members of the named role.
         /// </summary>
-        /// <param name="roleName"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="roleName">The name of the role whose membership should be returned.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing a list of users who are in the named role.
+        /// </returns>
         Task<IList<TUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken);
     }
 }

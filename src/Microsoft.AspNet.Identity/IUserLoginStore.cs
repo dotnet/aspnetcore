@@ -8,45 +8,54 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     Interface that maps users to login providers, i.e. Google, Facebook, Twitter, Microsoft
+    /// Provides an abstraction for storing information that maps external login information provided
+    /// by Microsoft Account, Facebook etc. to a user account.
     /// </summary>
-    /// <typeparam name="TUser"></typeparam>
+    /// <typeparam name="TUser">The type that represents a user.</typeparam>
     public interface IUserLoginStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
-        ///     Adds a user login with the specified provider and key
+        /// Adds an external <see cref="UserLoginInfo"/> to the specified <paramref name="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="login"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to add the login to.</param>
+        /// <param name="login">The external <see cref="UserLoginInfo"/> to add to the specified <paramref name="user"/>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         Task AddLoginAsync(TUser user, UserLoginInfo login, CancellationToken cancellationToken);
 
         /// <summary>
-        ///     Removes the user login with the specified combination if it exists, returns true if found and removed
+        /// Attempts to remove the provided login information from the specified <paramref name="user"/>, as an asynchronous operation.
+        /// and returns a flag indicating whether the removal succeed or not.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="loginProvider"></param>
-        /// <param name="providerKey"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to remove the login information from.</param>
+        /// <param name="loginProvider">The login provide whose information should be removed.</param>
+        /// <param name="providerKey">The key given by the external login provider for the specified user.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that contains a flag the result of the asynchronous removing operation. The flag will be true if
+        /// the login information was existed and removed, otherwise false.
+        /// </returns>
         Task RemoveLoginAsync(TUser user, string loginProvider, string providerKey, CancellationToken cancellationToken);
 
         /// <summary>
-        ///     Returns the linked accounts for this user
+        /// Retrieves the associated logins for the specified <param ref="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose associated logins to retrieve.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>
+        /// The <see cref="Task"/> for the asynchronous operation, containing a list of <see cref="UserLoginInfo"/> for the specified <paramref name="user"/>, if any.
+        /// </returns>
         Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
-        ///     Returns the user associated with this login
+        /// Retrieves the user associated with the specified login provider and login provider key, as an asynchronous operation..
         /// </summary>
-        /// <param name="loginProvider"></param>
-        /// <param name="providerKey"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="loginProvider">The login provider who provided the <paramref name="providerKey"/>.</param>
+        /// <param name="providerKey">The key provided by the <paramref name="loginProvider"/> to identify a user.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>
+        /// The <see cref="Task"/> for the asynchronous operation, containing the user, if any which matched the specified login provider and key.
+        /// </returns>
         Task<TUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken);
     }
 }

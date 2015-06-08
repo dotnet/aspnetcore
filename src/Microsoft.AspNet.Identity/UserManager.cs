@@ -19,9 +19,9 @@ using Microsoft.Framework.OptionsModel;
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     Exposes user related api which will automatically save changes to the UserStore
+    /// Provides the APIs for managing user in a persistence store.
     /// </summary>
-    /// <typeparam name="TUser"></typeparam>
+    /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
     public class UserManager<TUser> : IDisposable where TUser : class
     {
         private readonly Dictionary<string, IUserTokenProvider<TUser>> _tokenProviders =
@@ -30,20 +30,21 @@ namespace Microsoft.AspNet.Identity
         private TimeSpan _defaultLockout = TimeSpan.Zero;
         private bool _disposed;
         private readonly HttpContext _context;
+        private CancellationToken CancellationToken => _context?.RequestAborted ?? CancellationToken.None;
 
         /// <summary>
-        ///     Constructor
+        /// Constructs a new instance of <see cref="UserManager{TUser}"/>.
         /// </summary>
-        /// <param name="store"></param>
-        /// <param name="optionsAccessor"></param>
-        /// <param name="passwordHasher"></param>
-        /// <param name="userValidators"></param>
-        /// <param name="passwordValidators"></param>
-        /// <param name="keyNormalizer"></param>
-        /// <param name="errors"></param>
+        /// <param name="store">The persistence store the manager will operate over.</param>
+        /// <param name="optionsAccessor">The accessor used to access the <see cref="IdentityOptions"/>.</param>
+        /// <param name="passwordHasher">The password hashing implementation to use when saving passwords.</param>
+        /// <param name="userValidators">A collection of <see cref="IUserValidator{TUser}"/> to validate users against.</param>
+        /// <param name="passwordValidators">A collection of <see cref="IPasswordValidator{TUser}"/> to validate passwords against.</param>
+        /// <param name="keyNormalizer">The <see cref="ILookupNormalizer"/> to use when generating index keys for users.</param>
+        /// <param name="errors">The <see cref="IdentityErrorDescriber"/> used to provider error messages.</param>
         /// <param name="tokenProviders"></param>
-        /// <param name="logger"></param>
-        /// <param name="contextAccessor"></param>
+        /// <param name="logger">The logger used to log messages, warnings and errors.</param>
+        /// <param name="contextAccessor">The accessor used to access the <see cref="HttpContext"/>.</param>
         public UserManager(IUserStore<TUser> store,
             IOptions<IdentityOptions> optionsAccessor,
             IPasswordHasher<TUser> passwordHasher,
@@ -92,13 +93,17 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Persistence abstraction that the Manager operates against
+        /// Gets or sets the persistence store the manager operates over.
         /// </summary>
+        /// <value>The persistence store the manager operates over.</value>
         protected internal IUserStore<TUser> Store { get; set; }
 
         /// <summary>
-        ///     Used to log messages
+        /// Gets the <see cref="ILogger"/> used to log messages from the manager.
         /// </summary>
+        /// <value>
+        /// The <see cref="ILogger"/> used to log messages from the manager.
+        /// </value>
         protected internal virtual ILogger Logger { get; set; }
 
         internal IPasswordHasher<TUser> PasswordHasher { get; set; }
@@ -114,8 +119,11 @@ namespace Microsoft.AspNet.Identity
         internal IdentityOptions Options { get; set; }
 
         /// <summary>
-        ///     Returns true if the store is an IUserTwoFactorStore
+        /// Gets a flag indicating whether the backing user store supports two factor authentication.
         /// </summary>
+        /// <value>
+        /// true if the backing user store supports user two factor authentication, otherwise false.
+        /// </value>
         public virtual bool SupportsUserTwoFactor
         {
             get
@@ -126,8 +134,11 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the store is an IUserPasswordStore
+        /// Gets a flag indicating whether the backing user store supports user passwords.
         /// </summary>
+        /// <value>
+        /// true if the backing user store supports user passwords, otherwise false.
+        /// </value>
         public virtual bool SupportsUserPassword
         {
             get
@@ -138,8 +149,11 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the store is an IUserSecurityStore
+        /// Gets a flag indicating whether the backing user store supports security stamps.
         /// </summary>
+        /// <value>
+        /// true if the backing user store supports user security stamps, otherwise false.
+        /// </value>
         public virtual bool SupportsUserSecurityStamp
         {
             get
@@ -150,8 +164,11 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the store is an IUserRoleStore
+        /// Gets a flag indicating whether the backing user store supports user roles.
         /// </summary>
+        /// <value>
+        /// true if the backing user store supports user roles, otherwise false.
+        /// </value>
         public virtual bool SupportsUserRole
         {
             get
@@ -162,8 +179,11 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the store is an IUserLoginStore
+        /// Gets a flag indicating whether the backing user store supports external logins.
         /// </summary>
+        /// <value>
+        /// true if the backing user store supports external logins, otherwise false.
+        /// </value>
         public virtual bool SupportsUserLogin
         {
             get
@@ -174,8 +194,11 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the store is an IUserEmailStore
+        /// Gets a flag indicating whether the backing user store supports user emails.
         /// </summary>
+        /// <value>
+        /// true if the backing user store supports user emails, otherwise false.
+        /// </value>
         public virtual bool SupportsUserEmail
         {
             get
@@ -186,8 +209,11 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the store is an IUserPhoneNumberStore
+        /// Gets a flag indicating whether the backing user store supports user telephone numbers.
         /// </summary>
+        /// <value>
+        /// true if the backing user store supports user telephone numbers, otherwise false.
+        /// </value>
         public virtual bool SupportsUserPhoneNumber
         {
             get
@@ -198,8 +224,11 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the store is an IUserClaimStore
+        /// Gets a flag indicating whether the backing user store supports user claims.
         /// </summary>
+        /// <value>
+        /// true if the backing user store supports user claims, otherwise false.
+        /// </value>
         public virtual bool SupportsUserClaim
         {
             get
@@ -210,8 +239,11 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the store is an IUserLockoutStore
+        /// Gets a flag indicating whether the backing user store supports user lock-outs.
         /// </summary>
+        /// <value>
+        /// true if the backing user store supports user lock-outs, otherwise false.
+        /// </value>
         public virtual bool SupportsUserLockout
         {
             get
@@ -222,8 +254,13 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the store is an IQueryableUserStore
+        /// Gets a flag indicating whether the backing user store supports returning 
+        /// <see cref="IQueryable"/> collections of information.
         /// </summary>
+        /// <value>
+        /// true if the backing user store supports returning <see cref="IQueryable"/> collections of 
+        /// information, otherwise false.
+        /// </value>
         public virtual bool SupportsQueryableUsers
         {
             get
@@ -249,10 +286,8 @@ namespace Microsoft.AspNet.Identity
             }
         }
 
-        private CancellationToken CancellationToken => _context?.RequestAborted ?? CancellationToken.None;
-
         /// <summary>
-        ///     Dispose the store context
+        /// Releases all resources used by the user manager.
         /// </summary>
         public void Dispose()
         {
@@ -260,61 +295,28 @@ namespace Microsoft.AspNet.Identity
             GC.SuppressFinalize(this);
         }
 
-        private async Task<IdentityResult> ValidateUserInternal(TUser user)
-        {
-            var errors = new List<IdentityError>();
-            foreach (var v in UserValidators)
-            {
-                var result = await v.ValidateAsync(this, user);
-                if (!result.Succeeded)
-                {
-                    errors.AddRange(result.Errors);
-                }
-            }
-            return errors.Count > 0 ? IdentityResult.Failed(errors.ToArray()) : IdentityResult.Success;
-        }
-
-        private async Task<IdentityResult> ValidatePasswordInternal(TUser user, string password)
-        {
-            var errors = new List<IdentityError>();
-            foreach (var v in PasswordValidators)
-            {
-                var result = await v.ValidateAsync(this, user, password);
-                if (!result.Succeeded)
-                {
-                    errors.AddRange(result.Errors);
-                }
-            }
-            return errors.Count > 0 ? IdentityResult.Failed(errors.ToArray()) : IdentityResult.Success;
-        }
-
+        /// <summary>
+        /// Generates a value suitable for use in concurrency tracking, as an asynchronous operation.
+        /// </summary>
+        /// <param name="user">The user to generate the stamp for.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the security
+        /// stamp for the specified <paramref name="user"/>.
+        /// </returns>
         public virtual Task<string> GenerateConcurrencyStampAsync(TUser user)
         {
             return Task.FromResult(Guid.NewGuid().ToString());
         }
 
         /// <summary>
-        ///     Validate user and update. Called by other UserManager methods
+        /// Creates the specified <paramref name="user"/> in the backing store with no password, 
+        /// as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
-        private async Task<IdentityResult> UpdateUserAsync(TUser user)
-        {
-            var result = await ValidateUserInternal(user);
-            if (!result.Succeeded)
-            {
-                return result;
-            }
-            await UpdateNormalizedUserNameAsync(user);
-            await UpdateNormalizedEmailAsync(user);
-            return await Store.UpdateAsync(user, CancellationToken);
-        }
-
-        /// <summary>
-        ///     Create a user with no password
-        /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to create.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> CreateAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -339,10 +341,13 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Update a user
+        /// Updates the specified <paramref name="user"/> in the backing store, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to update.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> UpdateAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -358,10 +363,13 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Delete a user
+        /// Deletes the specified <paramref name="user"/> from the backing store, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to delete.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> DeleteAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -377,11 +385,13 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Find a user by id
+        /// Finds and returns a user, if any, who has the specified <paramref name="userId"/>.
         /// </summary>
-        /// <param name="userId"></param>
-
-        /// <returns></returns>
+        /// <param name="userId">The user ID to search for.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="userID"/> if it exists.
+        /// </returns>
         public virtual Task<TUser> FindByIdAsync(string userId)
         {
             ThrowIfDisposed();
@@ -389,10 +399,13 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Find a user by name
+        /// Finds and returns a user, if any, who has the specified normalized user name.
         /// </summary>
-        /// <param name="userName"></param>
-        /// <returns></returns>
+        /// <param name="normalizedUserName">The normalized user name to search for.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="userID"/> if it exists.
+        /// </returns>
         public virtual Task<TUser> FindByNameAsync(string userName)
         {
             ThrowIfDisposed();
@@ -404,23 +417,16 @@ namespace Microsoft.AspNet.Identity
             return Store.FindByNameAsync(userName, CancellationToken);
         }
 
-        // IUserPasswordStore methods
-        private IUserPasswordStore<TUser> GetPasswordStore()
-        {
-            var cast = Store as IUserPasswordStore<TUser>;
-            if (cast == null)
-            {
-                throw new NotSupportedException(Resources.StoreNotIUserPasswordStore);
-            }
-            return cast;
-        }
-
         /// <summary>
-        ///     Create a user and associates it with the given password
+        /// Creates the specified <paramref name="user"/> in the backing store with given password, 
+        /// as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to create.</param>
+        /// <param name="password">The password for the user to hash and store.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> CreateAsync(TUser user, string password)
         {
             ThrowIfDisposed();
@@ -442,20 +448,20 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Normalize a key (user name, email) for uniqueness comparisons
+        /// Normalize a key (user name, email) for consistent comparisons.
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <param name="key">The key to normalize.</param>
+        /// <returns>A normalized value representing the specified <paramref name="key"/>.</returns>
         public virtual string NormalizeKey(string key)
         {
             return (KeyNormalizer == null) ? key : KeyNormalizer.Normalize(key);
         }
 
         /// <summary>
-        /// Update the user's normalized user name
+        /// Updates the normalized user name for the specified <paramref name="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose user name should be normalized and updated.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         public virtual async Task UpdateNormalizedUserNameAsync(TUser user)
         {
             var normalizedName = NormalizeKey(await GetUserNameAsync(user));
@@ -463,10 +469,10 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Get the user's name
+        /// Gets the user name for the specified <paramref name="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose name should be retrieved.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the name for the specified <paramref name="user"/>.</returns>
         public virtual async Task<string> GetUserNameAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -478,11 +484,11 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Set the user's name
+        /// Sets the given <paramref name="userName" /> for the specified <paramref name="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="userName"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose name should be set.</param>
+        /// <param name="userName">The user name to set.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         public virtual async Task<IdentityResult> SetUserNameAsync(TUser user, string userName)
         {
             ThrowIfDisposed();
@@ -500,10 +506,10 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Get the user's id
+        /// Gets the user identifier for the specified <paramref name="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose identifier should be retrieved.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the identifier for the specified <paramref name="user"/>.</returns>
         public virtual async Task<string> GetUserIdAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -511,11 +517,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the password combination is valid for the user
+        /// Returns a flag indicating whether the given <paramref name="password"/> is valid for the 
+        /// specified <paramref name="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose password should be validated.</param>
+        /// <param name="password">The password to validate</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing true if
+        /// the specified <paramref name="password" /> matches the one store for the <paramref name="user"/>,
+        /// otherwise false.</returns>
         public virtual async Task<bool> CheckPasswordAsync(TUser user, string password)
         {
             ThrowIfDisposed();
@@ -539,10 +548,13 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the user has a password
+        /// Gets a flag indicating whether the specified <paramref name="user"/> has a password, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to return a flag for, indicating whether they have a password or not.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, returning true if the specified <paramref name="user"/> has a password
+        /// otherwise false.
+        /// </returns>
         public virtual async Task<bool> HasPasswordAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -559,11 +571,15 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Add a user password only if one does not already exist
+        /// Adds the <paramref name="password"/> to the specified <paramref name="user"/> only if the user
+        /// does not already have a password, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose password should be set.</param>
+        /// <param name="password">The password to set.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> AddPasswordAsync(TUser user, string password)
         {
             ThrowIfDisposed();
@@ -590,12 +606,16 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Change a user password
+        /// Changes a user's password after confirming the specified <paramref name="currentPassword"/> is correct,
+        /// as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="currentPassword"></param>
-        /// <param name="newPassword"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose password should be set.</param>
+        /// <param name="currentPassword">The current password to validate before changing.</param>
+        /// <param name="newPassword">The new password to set for the specified <paramref name="user"/>.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> ChangePasswordAsync(TUser user, string currentPassword, string newPassword)
         {
             ThrowIfDisposed();
@@ -621,10 +641,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Remove a user's password
+        /// Removes a user's password, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose password should be removed.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> RemovePasswordAsync(TUser user,
             CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -642,30 +666,16 @@ namespace Microsoft.AspNet.Identity
             }
         }
 
-        internal async Task<IdentityResult> UpdatePasswordHash(IUserPasswordStore<TUser> passwordStore,
-            TUser user, string newPassword, bool validatePassword = true)
-        {
-            if (validatePassword)
-            {
-                var validate = await ValidatePasswordInternal(user, newPassword);
-                if (!validate.Succeeded)
-                {
-                    return validate;
-                }
-            }
-            var hash = newPassword != null ? PasswordHasher.HashPassword(user, newPassword) : null;
-            await passwordStore.SetPasswordHashAsync(user, hash, CancellationToken);
-            await UpdateSecurityStampInternal(user);
-            return IdentityResult.Success;
-        }
-
         /// <summary>
-        /// By default, retrieves the hashed password from the user store and calls PasswordHasher.VerifyHashPassword
+        /// Returns a <see cref="PasswordVerificationResult"/> indicating the result of a password hash comparison.
         /// </summary>
-        /// <param name="store"></param>
-        /// <param name="user"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
+        /// <param name="store">The store containing a user's password.</param>
+        /// <param name="user">The user whose password should be verified.</param>
+        /// <param name="password">The password to verify.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="PasswordVerificationResult"/>
+        /// of the operation.
+        /// </returns>
         protected virtual async Task<PasswordVerificationResult> VerifyPasswordAsync(IUserPasswordStore<TUser> store, TUser user, string password)
         {
             var hash = await store.GetPasswordHashAsync(user, CancellationToken);
@@ -676,22 +686,11 @@ namespace Microsoft.AspNet.Identity
             return PasswordHasher.VerifyHashedPassword(user, hash, password);
         }
 
-        // IUserSecurityStampStore methods
-        private IUserSecurityStampStore<TUser> GetSecurityStore()
-        {
-            var cast = Store as IUserSecurityStampStore<TUser>;
-            if (cast == null)
-            {
-                throw new NotSupportedException(Resources.StoreNotIUserSecurityStampStore);
-            }
-            return cast;
-        }
-
         /// <summary>
-        ///     Returns the current security stamp for a user
+        /// Get the security stamp for the specified <paramref name="user" />, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose security stamp should be set.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the security stamp for the specified <paramref name="user"/>.</returns>
         public virtual async Task<string> GetSecurityStampAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -704,10 +703,16 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Generate a new security stamp for a user, used for SignOutEverywhere functionality
+        /// Regenerates the security stamp for the specified <paramref name="user" />, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose security stamp should be regenerated.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
+        /// <remarks>
+        /// Regenerating a security stamp will sign out any saved login for the user.
+        /// </remarks>
         public virtual async Task<IdentityResult> UpdateSecurityStampAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -725,10 +730,12 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     GenerateAsync a password reset token for the user using the UserTokenProvider
+        /// Generates a password reset token for the specified <paramref name="user"/>, using
+        /// the configured password reset token provider, as an asynchronous operation. 
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to generate a password reset token for.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, 
+        /// containing a password reset token for the specified <paramref name="user"/>.</returns>
         public virtual async Task<string> GeneratePasswordResetTokenAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -742,12 +749,16 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Reset a user's password using a reset password token
+        /// Resets the <paramref name="user"/>'s password to the specified <paramref name="newPassword"/> after
+        /// validating the given password reset <paramref name="token"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="token"></param>
-        /// <param name="newPassword"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose password should be reset.</param>
+        /// <param name="token">The password reset token to verify.</param>
+        /// <param name="newPassword">The new password to set if reset token verification fails.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> ResetPasswordAsync(TUser user, string token, string newPassword)
         {
             ThrowIfDisposed();
@@ -773,37 +784,14 @@ namespace Microsoft.AspNet.Identity
             }
         }
 
-        // Update the security stamp if the store supports it
-        internal async Task UpdateSecurityStampInternal(TUser user)
-        {
-            if (SupportsUserSecurityStamp)
-            {
-                await GetSecurityStore().SetSecurityStampAsync(user, NewSecurityStamp(), CancellationToken);
-            }
-        }
-
-        private static string NewSecurityStamp()
-        {
-            return Guid.NewGuid().ToString();
-        }
-
-        // IUserLoginStore methods
-        private IUserLoginStore<TUser> GetLoginStore()
-        {
-            var cast = Store as IUserLoginStore<TUser>;
-            if (cast == null)
-            {
-                throw new NotSupportedException(Resources.StoreNotIUserLoginStore);
-            }
-            return cast;
-        }
-
         /// <summary>
-        /// Returns the user associated with this login
+        /// Retrieves the user associated with the specified external login provider and login provider key, as an asynchronous operation..
         /// </summary>
-        /// <param name="loginProvider"></param>
-        /// <param name="providerKey"></param>
-        /// <returns></returns>
+        /// <param name="loginProvider">The login provider who provided the <paramref name="providerKey"/>.</param>
+        /// <param name="providerKey">The key provided by the <paramref name="loginProvider"/> to identify a user.</param>
+        /// <returns>
+        /// The <see cref="Task"/> for the asynchronous operation, containing the user, if any which matched the specified login provider and key.
+        /// </returns>
         public virtual Task<TUser> FindByLoginAsync(string loginProvider, string providerKey)
         {
             ThrowIfDisposed();
@@ -820,12 +808,16 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Remove a user login
+        /// Attempts to remove the provided external login information from the specified <paramref name="user"/>, as an asynchronous operation.
+        /// and returns a flag indicating whether the removal succeed or not.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="loginProvider"></param>
-        /// <param name="providerKey"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to remove the login information from.</param>
+        /// <param name="loginProvider">The login provide whose information should be removed.</param>
+        /// <param name="providerKey">The key given by the external login provider for the specified user.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> RemoveLoginAsync(TUser user, string loginProvider, string providerKey)
         {
             ThrowIfDisposed();
@@ -852,11 +844,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Associate a login with a user
+        /// Adds an external <see cref="UserLoginInfo"/> to the specified <paramref name="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="login"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to add the login to.</param>
+        /// <param name="login">The external <see cref="UserLoginInfo"/> to add to the specified <paramref name="user"/>.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> AddLoginAsync(TUser user, UserLoginInfo login)
         {
             ThrowIfDisposed();
@@ -883,10 +878,12 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Gets the logins for a user.
+        /// Retrieves the associated logins for the specified <param ref="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose associated logins to retrieve.</param>
+        /// <returns>
+        /// The <see cref="Task"/> for the asynchronous operation, containing a list of <see cref="UserLoginInfo"/> for the specified <paramref name="user"/>, if any.
+        /// </returns>
         public virtual async Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -898,23 +895,15 @@ namespace Microsoft.AspNet.Identity
             return await loginStore.GetLoginsAsync(user, CancellationToken);
         }
 
-        // IUserClaimStore methods
-        private IUserClaimStore<TUser> GetClaimStore()
-        {
-            var cast = Store as IUserClaimStore<TUser>;
-            if (cast == null)
-            {
-                throw new NotSupportedException(Resources.StoreNotIUserClaimStore);
-            }
-            return cast;
-        }
-
         /// <summary>
-        ///     Add a user claim
+        /// Adds the specified <paramref name="claim"/> to the <paramref name="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="claim"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to add the claim to.</param>
+        /// <param name="claim">The claim to add.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual Task<IdentityResult> AddClaimAsync(TUser user, Claim claim)
         {
             ThrowIfDisposed();
@@ -931,11 +920,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Add claims for a user
+        /// Adds the specified <paramref name="claims"/> to the <paramref name="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="claims"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to add the claim to.</param>
+        /// <param name="claims">The claims to add.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> AddClaimsAsync(TUser user, IEnumerable<Claim> claims)
         {
             ThrowIfDisposed();
@@ -957,12 +949,16 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Updates the give claim information with the given new claim information
+        /// Replaces the given <paramref name="claim"/> on the specified <paramref name="user"/> with the <paramref name="newClaim"/>
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="claim"></param>
-        /// <param name="newClaim"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to replace the claim on.</param>
+        /// <param name="claim">The claim to replace.</param>
+        /// <param name="newClaim">The new claim to replace the existing <paramref name="claim"/> with.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim)
         {
             ThrowIfDisposed();
@@ -988,11 +984,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Remove a user claim
+        /// Removes the specified <paramref name="claim"/> from the given <paramref name="user"/>.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="claim"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to remove the specified <paramref name="claims"/> from.</param>
+        /// <param name="claim">The <see cref="Claim"/> to remove.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual Task<IdentityResult> RemoveClaimAsync(TUser user, Claim claim)
         {
             ThrowIfDisposed();
@@ -1009,11 +1008,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Remove a user claim
+        /// Removes the specified <paramref name="claims"/> from the given <paramref name="user"/>.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="claims"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to remove the specified <paramref name="claims"/> from.</param>
+        /// <param name="claims">A collection of <see cref="Claim"/>s to remove.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims)
         {
             ThrowIfDisposed();
@@ -1035,10 +1037,12 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Get a users's claims
+        /// Gets a list of <see cref="Claim"/>s to be belonging to the specified <paramref name="user"/> as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The role whose claims to retrieve.</param>
+        /// <returns>
+        /// A <see cref="Task{TResult}"/> that represents the result of the asynchronous query, a list of <see cref="Claim"/>s.
+        /// </returns>
         public virtual async Task<IList<Claim>> GetClaimsAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -1050,22 +1054,15 @@ namespace Microsoft.AspNet.Identity
             return await claimStore.GetClaimsAsync(user, CancellationToken);
         }
 
-        private IUserRoleStore<TUser> GetUserRoleStore()
-        {
-            var cast = Store as IUserRoleStore<TUser>;
-            if (cast == null)
-            {
-                throw new NotSupportedException(Resources.StoreNotIUserRoleStore);
-            }
-            return cast;
-        }
-
         /// <summary>
-        ///     Add a user to a role
+        /// Add the specified <paramref name="user"/> to the named role, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="role"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to add to the named role.</param>
+        /// <param name="roleName">The name of the role to add the user to.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> AddToRoleAsync(TUser user, string role)
         {
             ThrowIfDisposed();
@@ -1088,11 +1085,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Add a user to roles
+        /// Add the specified <paramref name="user"/> to the named roles, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="roles"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to add to the named roles.</param>
+        /// <param name="roleName">The name of the roles to add the user to.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> AddToRolesAsync(TUser user, IEnumerable<string> roles)
         {
             ThrowIfDisposed();
@@ -1122,11 +1122,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Remove a user from a role.
+        /// Removes the specified <paramref name="user"/> from the named role, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="role"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to remove from the named role.</param>
+        /// <param name="roleName">The name of the role to remove the user from.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> RemoveFromRoleAsync(TUser user, string role)
         {
             ThrowIfDisposed();
@@ -1148,11 +1151,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Remove a user from a specified roles.
+        /// Removes the specified <paramref name="user"/> from the named roles, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="roles"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to remove from the named roles.</param>
+        /// <param name="roleName">The name of the roles to remove the user from.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> RemoveFromRolesAsync(TUser user, IEnumerable<string> roles)
         {
             ThrowIfDisposed();
@@ -1181,10 +1187,10 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns the roles for the user
+        /// Gets a list of role names the specified <paramref name="user"/> belongs to, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose role names to retrieve.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing a list of role names.</returns>
         public virtual async Task<IList<string>> GetRolesAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -1197,11 +1203,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the user is in the specified role
+        /// Returns a flag indicating whether the specified <paramref name="user"/> is a member of the give named role, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="role"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose role membership should be checked.</param>
+        /// <param name="role">The name of the role to be checked.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing a flag indicating whether the specified <see cref="user"/> is
+        /// a member of the named role.
+        /// </returns>
         public virtual async Task<bool> IsInRoleAsync(TUser user, string role)
         {
             ThrowIfDisposed();
@@ -1212,23 +1221,13 @@ namespace Microsoft.AspNet.Identity
             }
             return await userRoleStore.IsInRoleAsync(user, role, CancellationToken);
         }
-
-        // IUserEmailStore methods
-        internal IUserEmailStore<TUser> GetEmailStore(bool throwOnFail = true)
-        {
-            var cast = Store as IUserEmailStore<TUser>;
-            if (throwOnFail && cast == null)
-            {
-                throw new NotSupportedException(Resources.StoreNotIUserEmailStore);
-            }
-            return cast;
-        }
-
+        
         /// <summary>
-        ///     Get a user's email
+        /// Gets the email address for the specified <paramref name="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose email should be returned.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The task object containing the results of the asynchronous operation, the email address for the specified <paramref name="user"/>.</returns>
         public virtual async Task<string> GetEmailAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -1241,11 +1240,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Set a user's email
+        /// Sets the <paramref name="email"/> address for a <paramref name="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="email"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose email should be set.</param>
+        /// <param name="email">The email to set.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> SetEmailAsync(TUser user, string email)
         {
             ThrowIfDisposed();
@@ -1265,10 +1267,13 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     FindByLoginAsync a user by his email
+        /// Gets the user, if any, associated with the specified, normalized email address.
         /// </summary>
-        /// <param name="email"></param>
-        /// <returns></returns>
+        /// <param name="normalizedEmail">The normalized email address to return the user for.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>
+        /// The task object containing the results of the asynchronous lookup operation, the user if any associated with the specified normalized email address.
+        /// </returns>
         public virtual Task<TUser> FindByEmailAsync(string email)
         {
             ThrowIfDisposed();
@@ -1281,10 +1286,10 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Update the user's normalized email
+        /// Updates the normalized email for the specified <paramref name="user"/>.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose email address should be normalized and updated.</param>
+        /// <returns>The task object representing the asynchronous operation.</returns>
         public virtual async Task UpdateNormalizedEmailAsync(TUser user)
         {
             var store = GetEmailStore(throwOnFail: false);
@@ -1295,12 +1300,13 @@ namespace Microsoft.AspNet.Identity
             }
         }
 
-
         /// <summary>
-        ///     Get the confirmation token for the user
+        /// Generates an email confirmation token for the specified user, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to generate an email confirmation token for.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, an email confirmation token.
+        /// </returns>
         public async virtual Task<string> GenerateEmailConfirmationTokenAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -1314,11 +1320,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Confirm the user with confirmation token
+        /// Validates that an email confirmation token matches the specified <paramref name="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to validate the token against.</param>
+        /// <param name="token">The email confirmation token to validate.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> ConfirmEmailAsync(TUser user, string token)
         {
             ThrowIfDisposed();
@@ -1340,10 +1349,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the user's email has been confirmed
+        /// Gets a flag indicating whether the email address for the specified <paramref name="user"/> has been verified, true if the email address is verified otherwise
+        /// false, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose email confirmation status should be returned.</param>
+        /// <returns>
+        /// The task object containing the results of the asynchronous operation, a flag indicating whether the email address for the specified <paramref name="user"/>
+        /// has been confirmed or not.
+        /// </returns>
         public virtual async Task<bool> IsEmailConfirmedAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -1355,17 +1368,13 @@ namespace Microsoft.AspNet.Identity
             return await store.GetEmailConfirmedAsync(user, CancellationToken);
         }
 
-        private static string GetChangeEmailPurpose(string newEmail)
-        {
-            return "ChangeEmail:" + newEmail;
-        }
-
         /// <summary>
-        ///     Generate a change email token for the user using the UserTokenProvider
+        /// Generates an email change token for the specified user, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="newEmail"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to generate an email change token for.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, an email change token.
+        /// </returns>
         public virtual async Task<string> GenerateChangeEmailTokenAsync(TUser user, string newEmail)
         {
             ThrowIfDisposed();
@@ -1379,12 +1388,15 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Change a user's email using a change email token
+        /// Updates a users emails if the specified email change <paramref name="token"/> is valid for the user.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="token"></param>
-        /// <param name="newEmail"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose email should be updated.</param>
+        /// <param name="newEmail">The new email address.</param>
+        /// <param name="token">The change email token to be verified.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> ChangeEmailAsync(TUser user, string newEmail, string token)
         {
             ThrowIfDisposed();
@@ -1408,22 +1420,11 @@ namespace Microsoft.AspNet.Identity
             }
         }
 
-        // IUserPhoneNumberStore methods
-        internal IUserPhoneNumberStore<TUser> GetPhoneNumberStore()
-        {
-            var cast = Store as IUserPhoneNumberStore<TUser>;
-            if (cast == null)
-            {
-                throw new NotSupportedException(Resources.StoreNotIUserPhoneNumberStore);
-            }
-            return cast;
-        }
-
         /// <summary>
-        ///     Get a user's phoneNumber
+        /// Gets the telephone number, if any, for the specified <paramref name="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose telephone number should be retrieved.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the user's telephone number, if any.</returns>
         public virtual async Task<string> GetPhoneNumberAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -1436,11 +1437,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Set a user's phoneNumber
+        /// Sets the phone number for the specified <paramref name="user"/>.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="phoneNumber"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose phone number to set.</param>
+        /// <param name="phoneNumber">The phone number to set.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> SetPhoneNumberAsync(TUser user, string phoneNumber)
         {
             ThrowIfDisposed();
@@ -1460,12 +1464,16 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Set a user's phoneNumber with the verification token
+        /// Sets the phone number for the specified <paramref name="user"/> if the specified 
+        /// change <paramref name="token"/> is valid.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="phoneNumber"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose phone number to set.</param>
+        /// <param name="phoneNumber">The phone number to set.</param>
+        /// <param name="token">The phone number confirmation token to validate.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> ChangePhoneNumberAsync(TUser user, string phoneNumber, string token)
         {
             ThrowIfDisposed();
@@ -1489,10 +1497,13 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the user's phone number has been confirmed
+        /// Gets a flag indicating whether the specified <paramref name="user"/>'s telephone number has been confirmed, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to return a flag for, indicating whether their telephone number is confirmed.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, returning true if the specified <paramref name="user"/> has a confirmed
+        /// telephone number otherwise false.
+        /// </returns>
         public virtual async Task<bool> IsPhoneNumberConfirmedAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -1504,18 +1515,14 @@ namespace Microsoft.AspNet.Identity
             return await store.GetPhoneNumberConfirmedAsync(user, CancellationToken);
         }
 
-        // Two factor APIS
-        internal async Task<byte[]> CreateSecurityTokenAsync(TUser user)
-        {
-            return Encoding.Unicode.GetBytes(await GetSecurityStampAsync(user));
-        }
-
         /// <summary>
-        ///     Get a phone number code for a user and phone number
+        /// Generates a telephone number change token for the specified user, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="phoneNumber"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to generate a telephone number token for.</param>
+        /// <param name="phoneNumber">The new phone number the validation token should be sent to.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the telephone change number token.
+        /// </returns>
         public virtual async Task<string> GenerateChangePhoneNumberTokenAsync(TUser user, string phoneNumber)
         {
             ThrowIfDisposed();
@@ -1531,12 +1538,16 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Verify a phone number code for a specific user and phone number
+        /// Returns a flag indicating whether the specified <paramref name="user"/>'s phone number change verification
+        /// token is valid for the given <paramref name="phoneNumber"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="token"></param>
-        /// <param name="phoneNumber"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to validate the token against.</param>
+        /// <param name="token">The telephone number change token to validate.</param>
+        /// <param name="phoneNumber">The telephone number the token was generated for.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, returning true if the <paramref name="token"/>
+        /// is valid, otherwise false.
+        /// </returns>
         public virtual async Task<bool> VerifyChangePhoneNumberTokenAsync(TUser user, string token, string phoneNumber)
         {
             ThrowIfDisposed();
@@ -1559,13 +1570,17 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Verify a user token with the specified purpose
+        /// Returns a flag indicating whether the specified <paramref name="token"/> is valid for
+        /// the given <paramref name="user"/> and <paramref name="purpose"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="tokenProvider"></param>
-        /// <param name="purpose"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to validate the token against.</param>
+        /// <param name="tokenProvider">The token provider used to generate the token.</param>
+        /// <param name="purpose">The purpose the token should be generated for.</param>
+        /// <param name="token">The token to validate</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, returning true if the <paramref name="token"/>
+        /// is valid, otherwise false.
+        /// </returns>
         public virtual async Task<bool> VerifyUserTokenAsync(TUser user, string tokenProvider, string purpose, string token)
         {
             ThrowIfDisposed();
@@ -1601,12 +1616,15 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Get a user token for a specific purpose
+        /// Generates a token for the given <paramref name="user"/> and <paramref name="purpose"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="purpose"></param>
-        /// <param name="user"></param>
-        /// <param name="tokenProvider"></param>
-        /// <returns></returns>
+        /// <param name="purpose">The purpose the token will be for.</param>
+        /// <param name="user">The user the token will be for.</param>
+        /// <param name="tokenProvider">The provider which will generate the token.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents result of the asynchronous operation, a token for
+        /// the given user and purpose.
+        /// </returns>
         public virtual async Task<string> GenerateUserTokenAsync(TUser user, string tokenProvider, string purpose)
         {
             ThrowIfDisposed();
@@ -1630,9 +1648,9 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Register a user token provider
+        /// Registers a token provider.
         /// </summary>
-        /// <param name="provider"></param>
+        /// <param name="provider">The provider to register.</param>
         public virtual void RegisterTokenProvider(IUserTokenProvider<TUser> provider)
         {
             ThrowIfDisposed();
@@ -1644,10 +1662,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns a list of valid two factor providers for a user
+        /// Gets a list of valid two factor token providers for the specified <paramref name="user"/>, 
+        /// as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user the whose two factor authentication providers will be returned.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents result of the asynchronous operation, a list of two
+        /// factor authentication providers for the specified user.
+        /// </returns>
         public virtual async Task<IList<string>> GetValidTwoFactorProvidersAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -1667,12 +1689,15 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Verify a user token with the specified provider
+        /// Verifies the specified two factor authentication <paramref name="token" /> against the <paramref name="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="tokenProvider"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
+        /// <param name="user">The user the token is supposed to be for.</param>
+        /// <param name="tokenProvider">The provider which will verify the token.</param>
+        /// <param name="token">The token to verify.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents result of the asynchronous operation, true if the token is valid,
+        /// otherwise false.
+        /// </returns>
         public virtual async Task<bool> VerifyTwoFactorTokenAsync(TUser user, string tokenProvider, string token)
         {
             ThrowIfDisposed();
@@ -1703,11 +1728,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Get a user token for a specific user factor provider
+        /// Gets a two factor authentication token for the specified <paramref name="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="tokenProvider"></param>
-        /// <returns></returns>
+        /// <param name="user">The user the token is for.</param>
+        /// <param name="tokenProvider">The provider which will generate the token.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents result of the asynchronous operation, a two factor authentication token
+        /// for the user.
+        /// </returns>
         public virtual async Task<string> GenerateTwoFactorTokenAsync(TUser user, string tokenProvider)
         {
             ThrowIfDisposed();
@@ -1729,22 +1757,15 @@ namespace Microsoft.AspNet.Identity
             }
         }
 
-        // IUserFactorStore methods
-        internal IUserTwoFactorStore<TUser> GetUserTwoFactorStore()
-        {
-            var cast = Store as IUserTwoFactorStore<TUser>;
-            if (cast == null)
-            {
-                throw new NotSupportedException(Resources.StoreNotIUserTwoFactorStore);
-            }
-            return cast;
-        }
-
         /// <summary>
-        ///     Get a user's two factor provider
+        /// Returns a flag indicating whether the specified <paramref name="user"/> has two factor authentication enabled or not,
+        /// as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose two factor authentication enabled status should be retrieved.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, true if the specified <paramref name="user "/> 
+        /// has two factor authentication enabled, otherwise false.
+        /// </returns>
         public virtual async Task<bool> GetTwoFactorEnabledAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -1757,11 +1778,13 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Set whether a user has two factor enabled or not
+        /// Sets a flag indicating whether the specified <paramref name="user"/> has two factor authentication enabled or not,
+        /// as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="enabled"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose two factor authentication enabled status should be set.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, the <see cref="IdentityResult"/> of the operation
+        /// </returns>
         public virtual async Task<IdentityResult> SetTwoFactorEnabledAsync(TUser user, bool enabled)
         {
             ThrowIfDisposed();
@@ -1779,22 +1802,15 @@ namespace Microsoft.AspNet.Identity
             }
         }
 
-        // IUserLockoutStore methods
-        internal IUserLockoutStore<TUser> GetUserLockoutStore()
-        {
-            var cast = Store as IUserLockoutStore<TUser>;
-            if (cast == null)
-            {
-                throw new NotSupportedException(Resources.StoreNotIUserLockoutStore);
-            }
-            return cast;
-        }
-
         /// <summary>
-        ///     Returns true if the user is locked out
+        /// Returns a flag indicating whether the specified <paramref name="user"/> his locked out,
+        /// as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose locked out status should be retrieved.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, true if the specified <paramref name="user "/> 
+        /// is locked out, otherwise false.
+        /// </returns>
         public virtual async Task<bool> IsLockedOutAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -1812,11 +1828,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Sets whether the user allows lockout
+        /// Sets a flag indicating whether the specified <paramref name="user"/> is locked out,
+        /// as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="enabled"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose locked out status should be set.</param>
+        /// <param name="enabled">Flag indicating whether the user is locked out or not.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, the <see cref="IdentityResult"/> of the operation
+        /// </returns>
         public virtual async Task<IdentityResult> SetLockoutEnabledAsync(TUser user, bool enabled)
         {
             ThrowIfDisposed();
@@ -1834,10 +1853,12 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns whether the user allows lockout
+        /// Retrieves a flag indicating whether user lockout can enabled for the specified user, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose ability to be locked out should be returned.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, true if a user can be locked out, otherwise false.
+        /// </returns>
         public virtual async Task<bool> GetLockoutEnabledAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -1850,10 +1871,13 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns the user lockout end date
+        /// Gets the last <see cref="DateTimeOffset"/> a user's last lockout expired, if any, as an asynchronous operation.
+        /// Any time in the past should be indicates a user is not locked out.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose lockout date should be retrieved.</param>
+        /// <returns>
+        /// A <see cref="Task{TResult}"/> that represents the lookup, a <see cref="DateTimeOffset"/> containing the last time a user's lockout expired, if any.
+        /// </returns>
         public virtual async Task<DateTimeOffset?> GetLockoutEndDateAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -1866,11 +1890,11 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Sets the user lockout end date
+        /// Locks out a user until the specified end date has passed, as an asynchronous operation. Setting a end date in the past immediately unlocks a user.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="lockoutEnd"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose lockout date should be set.</param>
+        /// <param name="lockoutEnd">The <see cref="DateTimeOffset"/> after which the <paramref name="user"/>'s lockout should end.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the operation.</returns>
         public virtual async Task<IdentityResult> SetLockoutEndDateAsync(TUser user, DateTimeOffset? lockoutEnd)
         {
             ThrowIfDisposed();
@@ -1892,12 +1916,12 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Increments the access failed count for the user and if the failed access account is greater than or equal
-        /// to the MaxFailedAccessAttempsBeforeLockout, the user will be locked out for the next
-        /// DefaultAccountLockoutTimeSpan and the AccessFailedCount will be reset to 0.
+        /// Increments the access failed count for the user as an asynchronous operation. 
+        /// If the failed access account is greater than or equal to the configured maximum number of attempts, 
+        /// the user will be locked out for the configured lockout time span.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose failed access count to increment.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the operation.</returns>
         public virtual async Task<IdentityResult> AccessFailedAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -1923,10 +1947,10 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Resets the access failed count for the user to 0
+        /// Resets the access failed count for the specified <paramref name="user"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose failed access count should be reset.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the operation.</returns>
         public virtual async Task<IdentityResult> ResetAccessFailedCountAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -1948,10 +1972,11 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns the number of failed access attempts for the user
+        /// Retrieves the current number of failed accesses for the given <paramref name="user"/>, as an asynchronous operation. 
         /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
+        /// <param name="user">The user whose access failed count should be retrieved for.</param>
+        /// <returns>The <see cref="Task"/> that contains the result the asynchronous operation, the current failed access count
+        /// for the user..</returns>
         public virtual async Task<int> GetAccessFailedCountAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -1975,10 +2000,13 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Get all the users in a role
+        /// Returns a list of users from the user store who have the specified <see cref="Claim"/>.
         /// </summary>
-        /// <param name="roleName"></param>
-        /// <returns></returns>
+        /// <param name="claim">The claim to look for.</param>
+        /// <returns>
+        /// A <see cref="Task{TResult}"/> that represents the result of the asynchronous query, a list of <typeparamref name="TUser"/>s who
+        /// have the specified claim.
+        /// </returns>
         public virtual Task<IList<TUser>> GetUsersInRoleAsync(string roleName)
         {
             ThrowIfDisposed();
@@ -1991,10 +2019,213 @@ namespace Microsoft.AspNet.Identity
             return store.GetUsersInRoleAsync(roleName, CancellationToken);
         }
 
+        /// <summary>
+        /// Starts a logging scope to contain the logging messages for an operation, as an asynchronous operation.
+        /// </summary>
+        /// <param name="user">The user the operation is acting on.</param>
+        /// <param name="methodName">The method that called this method.</param>
+        /// <returns>A <see cref="Task"/> containing the logging scope.</returns>
         protected virtual async Task<IDisposable> BeginLoggingScopeAsync(TUser user, [CallerMemberName] string methodName = null)
         {
             var state = Resources.FormatLoggingResultMessageForUser(methodName, await GetUserIdAsync(user));
             return Logger?.BeginScope(state);
+        }
+
+        /// <summary>
+        /// Releases the unmanaged resources used by the role manager and optionally releases the managed resources.
+        /// </summary>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing && !_disposed)
+            {
+                Store.Dispose();
+                _disposed = true;
+            }
+        }
+
+        // IUserFactorStore methods
+        internal IUserTwoFactorStore<TUser> GetUserTwoFactorStore()
+        {
+            var cast = Store as IUserTwoFactorStore<TUser>;
+            if (cast == null)
+            {
+                throw new NotSupportedException(Resources.StoreNotIUserTwoFactorStore);
+            }
+            return cast;
+        }
+
+        // IUserLockoutStore methods
+        internal IUserLockoutStore<TUser> GetUserLockoutStore()
+        {
+            var cast = Store as IUserLockoutStore<TUser>;
+            if (cast == null)
+            {
+                throw new NotSupportedException(Resources.StoreNotIUserLockoutStore);
+            }
+            return cast;
+        }
+
+        // IUserEmailStore methods
+        internal IUserEmailStore<TUser> GetEmailStore(bool throwOnFail = true)
+        {
+            var cast = Store as IUserEmailStore<TUser>;
+            if (throwOnFail && cast == null)
+            {
+                throw new NotSupportedException(Resources.StoreNotIUserEmailStore);
+            }
+            return cast;
+        }
+
+        // IUserPhoneNumberStore methods
+        internal IUserPhoneNumberStore<TUser> GetPhoneNumberStore()
+        {
+            var cast = Store as IUserPhoneNumberStore<TUser>;
+            if (cast == null)
+            {
+                throw new NotSupportedException(Resources.StoreNotIUserPhoneNumberStore);
+            }
+            return cast;
+        }
+
+        // Two factor APIS
+        internal async Task<byte[]> CreateSecurityTokenAsync(TUser user)
+        {
+            return Encoding.Unicode.GetBytes(await GetSecurityStampAsync(user));
+        }
+
+        // Update the security stamp if the store supports it
+        internal async Task UpdateSecurityStampInternal(TUser user)
+        {
+            if (SupportsUserSecurityStamp)
+            {
+                await GetSecurityStore().SetSecurityStampAsync(user, NewSecurityStamp(), CancellationToken);
+            }
+        }
+
+        internal async Task<IdentityResult> UpdatePasswordHash(IUserPasswordStore<TUser> passwordStore,
+            TUser user, string newPassword, bool validatePassword = true)
+        {
+            if (validatePassword)
+            {
+                var validate = await ValidatePasswordInternal(user, newPassword);
+                if (!validate.Succeeded)
+                {
+                    return validate;
+                }
+            }
+            var hash = newPassword != null ? PasswordHasher.HashPassword(user, newPassword) : null;
+            await passwordStore.SetPasswordHashAsync(user, hash, CancellationToken);
+            await UpdateSecurityStampInternal(user);
+            return IdentityResult.Success;
+        }
+
+        private IUserRoleStore<TUser> GetUserRoleStore()
+        {
+            var cast = Store as IUserRoleStore<TUser>;
+            if (cast == null)
+            {
+                throw new NotSupportedException(Resources.StoreNotIUserRoleStore);
+            }
+            return cast;
+        }
+
+        private static string NewSecurityStamp()
+        {
+            return Guid.NewGuid().ToString();
+        }
+
+        // IUserLoginStore methods
+        private IUserLoginStore<TUser> GetLoginStore()
+        {
+            var cast = Store as IUserLoginStore<TUser>;
+            if (cast == null)
+            {
+                throw new NotSupportedException(Resources.StoreNotIUserLoginStore);
+            }
+            return cast;
+        }
+
+        private IUserSecurityStampStore<TUser> GetSecurityStore()
+        {
+            var cast = Store as IUserSecurityStampStore<TUser>;
+            if (cast == null)
+            {
+                throw new NotSupportedException(Resources.StoreNotIUserSecurityStampStore);
+            }
+            return cast;
+        }
+
+        private IUserClaimStore<TUser> GetClaimStore()
+        {
+            var cast = Store as IUserClaimStore<TUser>;
+            if (cast == null)
+            {
+                throw new NotSupportedException(Resources.StoreNotIUserClaimStore);
+            }
+            return cast;
+        }
+
+
+        private static string GetChangeEmailPurpose(string newEmail)
+        {
+            return "ChangeEmail:" + newEmail;
+        }
+
+        private async Task<IdentityResult> ValidateUserInternal(TUser user)
+        {
+            var errors = new List<IdentityError>();
+            foreach (var v in UserValidators)
+            {
+                var result = await v.ValidateAsync(this, user);
+                if (!result.Succeeded)
+                {
+                    errors.AddRange(result.Errors);
+                }
+            }
+            return errors.Count > 0 ? IdentityResult.Failed(errors.ToArray()) : IdentityResult.Success;
+        }
+
+        private async Task<IdentityResult> ValidatePasswordInternal(TUser user, string password)
+        {
+            var errors = new List<IdentityError>();
+            foreach (var v in PasswordValidators)
+            {
+                var result = await v.ValidateAsync(this, user, password);
+                if (!result.Succeeded)
+                {
+                    errors.AddRange(result.Errors);
+                }
+            }
+            return errors.Count > 0 ? IdentityResult.Failed(errors.ToArray()) : IdentityResult.Success;
+        }
+
+        /// <summary>
+        ///     Validate user and update. Called by other UserManager methods
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        private async Task<IdentityResult> UpdateUserAsync(TUser user)
+        {
+            var result = await ValidateUserInternal(user);
+            if (!result.Succeeded)
+            {
+                return result;
+            }
+            await UpdateNormalizedUserNameAsync(user);
+            await UpdateNormalizedEmailAsync(user);
+            return await Store.UpdateAsync(user, CancellationToken);
+        }
+
+        // IUserPasswordStore methods
+        private IUserPasswordStore<TUser> GetPasswordStore()
+        {
+            var cast = Store as IUserPasswordStore<TUser>;
+            if (cast == null)
+            {
+                throw new NotSupportedException(Resources.StoreNotIUserPasswordStore);
+            }
+            return cast;
         }
 
         private void ThrowIfDisposed()
@@ -2005,17 +2236,5 @@ namespace Microsoft.AspNet.Identity
             }
         }
 
-        /// <summary>
-        ///     When disposing, actually dipose the store context
-        /// </summary>
-        /// <param name="disposing"></param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing && !_disposed)
-            {
-                Store.Dispose();
-                _disposed = true;
-            }
-        }
     }
 }

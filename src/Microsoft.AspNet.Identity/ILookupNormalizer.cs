@@ -4,15 +4,15 @@
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     Used to normalize keys for consistent lookups
+    /// Provides an abstraction for normalizing keys for lookup purposes.
     /// </summary>
     public interface ILookupNormalizer
     {
         /// <summary>
-        /// Returns the normalized key
+        /// Returns a normalized representation of the specified <paramref name="key"/>.
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <param name="key">The key to normalize.</param>
+        /// <returns>A normalized representation of the specified <paramref name="key"/>.</returns>
         string Normalize(string key);
     }
 }

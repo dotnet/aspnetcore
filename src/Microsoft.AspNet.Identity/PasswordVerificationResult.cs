@@ -4,22 +4,23 @@
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     Return result for IPasswordHasher
+    /// Specifies the results for password verification.
     /// </summary>
     public enum PasswordVerificationResult
     {
         /// <summary>
-        ///     Password verification failed
+        /// Indicates password verification failed.
         /// </summary>
         Failed = 0,
 
         /// <summary>
-        ///     Success
+        /// Indicates password verification was successful.
         /// </summary>
         Success = 1,
 
         /// <summary>
-        ///     Success but should update and rehash the password
+        /// Indicates password verification was successful however the password was encoded using a deprecated algorithm
+        /// and should be rehashed and updated.
         /// </summary>
         SuccessRehashNeeded = 2
     }

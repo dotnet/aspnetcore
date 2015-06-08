@@ -3,8 +3,18 @@
 
 namespace Microsoft.AspNet.Identity
 {
+    /// <summary>
+    /// Service to enable localization for application facing identity errors.
+    /// </summary>
+    /// <remarks>
+    /// These errors are returned to controllers and are generally used as display messages to end users.
+    /// </remarks>
     public class IdentityErrorDescriber
     {
+        /// <summary>
+        /// Returns the default <see cref="IdentityError"/>.
+        /// </summary>
+        /// <returns>The default <see cref="IdentityError"/>,</returns>
         public virtual IdentityError DefaultError()
         {
             return new IdentityError
@@ -13,6 +23,11 @@ namespace Microsoft.AspNet.Identity
                 Description = Resources.DefaultError
             };
         }
+
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating a concurrency failure.
+        /// </summary>
+        /// <returns>An <see cref="IdentityError"/> indicating a concurrency failure.</returns>
         public virtual IdentityError ConcurrencyFailure()
         {
             return new IdentityError
@@ -22,6 +37,10 @@ namespace Microsoft.AspNet.Identity
             };
         }
 
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating a password mismatch.
+        /// </summary>
+        /// <returns>An <see cref="IdentityError"/> indicating a password mismatch.</returns>
         public virtual IdentityError PasswordMismatch()
         {
             return new IdentityError
@@ -31,6 +50,10 @@ namespace Microsoft.AspNet.Identity
             };
         }
 
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating an invalid token.
+        /// </summary>
+        /// <returns>An <see cref="IdentityError"/> indicating an invalid token.</returns>
         public virtual IdentityError InvalidToken()
         {
             return new IdentityError
@@ -40,6 +63,10 @@ namespace Microsoft.AspNet.Identity
             };
         }
 
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating an external login is already associated with an account.
+        /// </summary>
+        /// <returns>An <see cref="IdentityError"/> indicating an external login is already associated with an account.</returns>
         public virtual IdentityError LoginAlreadyAssociated()
         {
             return new IdentityError
@@ -49,15 +76,25 @@ namespace Microsoft.AspNet.Identity
             };
         }
 
-        public virtual IdentityError InvalidUserName(string name)
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating the specified user <paramref name="userName"/> is invalid.
+        /// </summary>
+        /// <param name="userName">The user name that is invalid.</param>
+        /// <returns>An <see cref="IdentityError"/> indicating the specified user <paramref name="userName"/> is invalid.</returns>
+        public virtual IdentityError InvalidUserName(string userName)
         {
             return new IdentityError
             {
                 Code = nameof(InvalidUserName),
-                Description = Resources.FormatInvalidUserName(name)
+                Description = Resources.FormatInvalidUserName(userName)
             };
         }
 
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating the specified <paramref name="email"/> is invalid.
+        /// </summary>
+        /// <param name="email">The email that is invalid.</param>
+        /// <returns>An <see cref="IdentityError"/> indicating the specified <paramref name="email"/> is invalid.</returns>
         public virtual IdentityError InvalidEmail(string email)
         {
             return new IdentityError
@@ -67,15 +104,25 @@ namespace Microsoft.AspNet.Identity
             };
         }
 
-        public virtual IdentityError DuplicateUserName(string name)
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating the specified <paramref name="userName"/> already exists.
+        /// </summary>
+        /// <param name="userName">The user name that already exists.</param>
+        /// <returns>An <see cref="IdentityError"/> indicating the specified <paramref name="userName"/> already exists.</returns>
+        public virtual IdentityError DuplicateUserName(string userName)
         {
             return new IdentityError
             {
                 Code = nameof(DuplicateUserName),
-                Description = Resources.FormatDuplicateUserName(name)
+                Description = Resources.FormatDuplicateUserName(userName)
             };
         }
 
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating the specified <paramref name="email"/> is already associated with an account.
+        /// </summary>
+        /// <param name="email">The email that is already associated with an account.</param>
+        /// <returns>An <see cref="IdentityError"/> indicating the specified <paramref name="email"/> is already associated with an account.</returns>
         public virtual IdentityError DuplicateEmail(string email)
         {
             return new IdentityError
@@ -85,24 +132,38 @@ namespace Microsoft.AspNet.Identity
             };
         }
 
-        public virtual IdentityError InvalidRoleName(string name)
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating the specified <paramref name="role"/> name is invalid.
+        /// </summary>
+        /// <param name="role">The invalid role.</param>
+        /// <returns>An <see cref="IdentityError"/> indicating the specific role <paramref name="role"/> name is invalid.</returns>
+        public virtual IdentityError InvalidRoleName(string role)
         {
             return new IdentityError
             {
                 Code = nameof(InvalidRoleName),
-                Description = Resources.FormatInvalidRoleName(name)
+                Description = Resources.FormatInvalidRoleName(role)
             };
         }
 
-        public virtual IdentityError DuplicateRoleName(string name)
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating the specified <paramref name="role"/> name already exists.
+        /// </summary>
+        /// <param name="role">The duplicate role.</param>
+        /// <returns>An <see cref="IdentityError"/> indicating the specific role <paramref name="role"/> name already exists.</returns>
+        public virtual IdentityError DuplicateRoleName(string role)
         {
             return new IdentityError
             {
                 Code = nameof(DuplicateRoleName),
-                Description = Resources.FormatDuplicateRoleName(name)
+                Description = Resources.FormatDuplicateRoleName(role)
             };
         }
 
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating a user already has a password.
+        /// </summary>
+        /// <returns>An <see cref="IdentityError"/> indicating a user already has a password.</returns>
         public virtual IdentityError UserAlreadyHasPassword()
         {
             return new IdentityError
@@ -112,6 +173,10 @@ namespace Microsoft.AspNet.Identity
             };
         }
 
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating user lockout is not enabled.
+        /// </summary>
+        /// <returns>An <see cref="IdentityError"/> indicating user lockout is not enabled..</returns>
         public virtual IdentityError UserLockoutNotEnabled()
         {
             return new IdentityError
@@ -121,6 +186,11 @@ namespace Microsoft.AspNet.Identity
             };
         }
 
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating a user is already in the specified <paramref name="role"/>.
+        /// </summary>
+        /// <param name="role">The duplicate role.</param>
+        /// <returns>An <see cref="IdentityError"/> indicating a user is already in the specified <paramref name="role"/>.</returns>
         public virtual IdentityError UserAlreadyInRole(string role)
         {
             return new IdentityError
@@ -130,6 +200,11 @@ namespace Microsoft.AspNet.Identity
             };
         }
 
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating a user is not in the specified <paramref name="role"/>.
+        /// </summary>
+        /// <param name="role">The duplicate role.</param>
+        /// <returns>An <see cref="IdentityError"/> indicating a user is not in the specified <paramref name="role"/>.</returns>
         public virtual IdentityError UserNotInRole(string role)
         {
             return new IdentityError
@@ -139,6 +214,11 @@ namespace Microsoft.AspNet.Identity
             };
         }
 
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating a password of the specified <paramref name="length"/> does not meet the minimum length requirements.
+        /// </summary>
+        /// <param name="length">The length that is not long enough.</param>
+        /// <returns>An <see cref="IdentityError"/> indicating a password of the specified <paramref name="length"/> does not meet the minimum length requirements.</returns>
         public virtual IdentityError PasswordTooShort(int length)
         {
             return new IdentityError
@@ -148,6 +228,11 @@ namespace Microsoft.AspNet.Identity
             };
         }
 
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating a password entered does not contain a non-alphanumeric character, which is required by the password policy.
+        /// </summary>
+        /// <param name="length">The length that is not long enough.</param>
+        /// <returns>An <see cref="IdentityError"/> indicating a password entered does not contain a non-alphanumeric character.</returns>
         public virtual IdentityError PasswordRequiresNonLetterAndDigit()
         {
             return new IdentityError
@@ -157,6 +242,11 @@ namespace Microsoft.AspNet.Identity
             };
         }
 
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating a password entered does not contain a numeric character, which is required by the password policy.
+        /// </summary>
+        /// <param name="length">The length that is not long enough.</param>
+        /// <returns>An <see cref="IdentityError"/> indicating a password entered does not contain a numeric character.</returns>
         public virtual IdentityError PasswordRequiresDigit()
         {
             return new IdentityError
@@ -166,6 +256,11 @@ namespace Microsoft.AspNet.Identity
             };
         }
 
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating a password entered does not contain a lower case letter, which is required by the password policy.
+        /// </summary>
+        /// <param name="length">The length that is not long enough.</param>
+        /// <returns>An <see cref="IdentityError"/> indicating a password entered does not contain a lower case letter.</returns>
         public virtual IdentityError PasswordRequiresLower()
         {
             return new IdentityError
@@ -175,6 +270,11 @@ namespace Microsoft.AspNet.Identity
             };
         }
 
+        /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating a password entered does not contain an upper case letter, which is required by the password policy.
+        /// </summary>
+        /// <param name="length">The length that is not long enough.</param>
+        /// <returns>An <see cref="IdentityError"/> indicating a password entered does not contain an upper case letter.</returns>
         public virtual IdentityError PasswordRequiresUpper()
         {
             return new IdentityError

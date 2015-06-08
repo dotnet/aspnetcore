@@ -16,7 +16,7 @@ namespace System.Security.Claims
         /// </summary>
         /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance this method extends.</param>
         /// <returns>The Name claim value, or null if the claim is not present.</returns>
-        /// <remarks>The name claim is identified by <see cref="ClaimsIdentity.DefaultNameClaimType"/>.</remarks>
+        /// <remarks>The Name claim is identified by <see cref="ClaimsIdentity.DefaultNameClaimType"/>.</remarks>
         public static string GetUserName(this ClaimsPrincipal principal)
         {
             if (principal == null)
@@ -31,7 +31,7 @@ namespace System.Security.Claims
         /// </summary>
         /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance this method extends.</param>
         /// <returns>The User ID claim value, or null if the claim is not present.</returns>
-        /// <remarks>The name claim is identified by <see cref="ClaimTypes.NameIdentifier"/>.</remarks>
+        /// <remarks>The User ID claim is identified by <see cref="ClaimTypes.NameIdentifier"/>.</remarks>
         public static string GetUserId(this ClaimsPrincipal principal)
         {
             if (principal == null)
@@ -59,9 +59,9 @@ namespace System.Security.Claims
         /// <summary>
         /// Returns the value for the first claim of the specified type otherwise null the claim is not present.
         /// </summary>
-        /// <param name="identity">The <see cref="IIdentity"/> instance this method extends.</param>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance this method extends.</param>
         /// <param name="claimType">The claim type whose first value should be returned.</param>
-        /// <returns>The value of the first instance of the specifed claim type, or null if the claim is not present.</returns>
+        /// <returns>The value of the first instance of the specified claim type, or null if the claim is not present.</returns>
         public static string FindFirstValue(this ClaimsPrincipal principal, string claimType)
         {
             if (principal == null)

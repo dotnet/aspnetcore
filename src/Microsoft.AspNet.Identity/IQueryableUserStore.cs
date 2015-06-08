@@ -6,14 +6,15 @@ using System.Linq;
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     Interface that exposes an IQueryable users
+    /// Provides an abstraction for querying roles in a User store.
     /// </summary>
-    /// <typeparam name="TUser"></typeparam>
+    /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
     public interface IQueryableUserStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
-        ///     IQueryable users
+        /// Returns an <see cref="IQueryable{T}"/> collection of users.
         /// </summary>
+        /// <value>An <see cref="IQueryable{T}"/> collection of users.</value>
         IQueryable<TUser> Users { get; }
     }
 }

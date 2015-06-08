@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     Interface for creating a ClaimsPrincipal from an user
+    /// Provides an abstraction for a factory to create a <see cref="ClaimsPrincipal"/> from a user.
     /// </summary>
-    /// <typeparam name="TUser"></typeparam>
+    /// <typeparam name="TRole">The type encapsulating a user.</typeparam>
     public interface IUserClaimsPrincipalFactory<TUser>
         where TUser : class
     {
         /// <summary>
-        ///     Create a ClaimsPrincipal from an user
+        /// Creates a <see cref="ClaimsPrincipal"/> from an user asynchronously.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="authenticationType"></param>
-        /// <returns></returns>
+        /// <param name="user">The user to create a <see cref="ClaimsPrincipal"/> from.</param>
+        /// <param name="authenticationType">The name of the authentication method the <paramref name="user"/> was sourced from.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous creation operation, containing the created <see cref="ClaimsPrincipal"/>.</returns>
         Task<ClaimsPrincipal> CreateAsync(TUser user);
     }
 }

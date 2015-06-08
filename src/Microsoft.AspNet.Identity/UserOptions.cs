@@ -47,8 +47,7 @@ namespace Microsoft.AspNet.Identity
         /// Gets or sets a flag indicating whether the application requires unique emails for its users.
         /// </summary>
         /// <value>
-        /// A flag indicating whether the application requires unique emails for its users.
-        /// This will be true if the application requires each user to have their own, unique email, otherwise false.
+        /// True if the application requires each user to have their own, unique email, otherwise false.
         /// </value>
         public bool RequireUniqueEmail { get; set; }
     }

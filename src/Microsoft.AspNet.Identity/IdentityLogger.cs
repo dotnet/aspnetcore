@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,12 @@ using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Identity.Logging
 {
+    /// <summary>
+    /// Extensions to make logging easier.
+    /// </summary>
+    /// <remarks>
+    /// To be deleted before RTM.
+    /// </remarks>
     public static class IdentityLoggerExtensions
     {
         private static TResult Log<TResult>(this ILogger logger, TResult result, Func<TResult, LogLevel> getLevel,

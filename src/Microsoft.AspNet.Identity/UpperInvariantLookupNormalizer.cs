@@ -6,15 +6,16 @@ using System;
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    /// Normalizes via ToUpperInvariant()
+    /// Implements <see cref="ILookupNormalizer"/> by converting keys to their upper cased invariant culture representation.
     /// </summary>
     public class UpperInvariantLookupNormalizer : ILookupNormalizer
     {
         /// <summary>
-        /// Normalizes via ToUpperInvariant()
+        /// Returns a normalized representation of the specified <paramref name="key"/>
+        /// by converting keys to their upper cased invariant culture representation.
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <param name="key">The key to normalize.</param>
+        /// <returns>A normalized representation of the specified <paramref name="key"/>.</returns>
         public virtual string Normalize(string key)
         {
             if (key == null)

@@ -7,18 +7,17 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     Used to validate a user
+    /// Provides an abstraction for user validation.
     /// </summary>
-    /// <typeparam name="TUser"></typeparam>
+    /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
     public interface IUserValidator<TUser> where TUser : class
     {
         /// <summary>
-        ///     ValidateAsync the user
+        /// Validates the specified <paramref name="user"/> as an asynchronous operation.
         /// </summary>
-        /// <param name="manager"></param>
-        /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="manager">The <see cref="UserManager{TUser}"/> that can be used to retrieve user properties.</param>
+        /// <param name="user">The user to validate.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the validation operation.</returns>
         Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user);
     }
 }

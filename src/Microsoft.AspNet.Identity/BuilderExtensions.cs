@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Builder
     public static class BuilderExtensions
     {
         /// <summary>
-        /// Enables the ASP.NET identity for the current application.
+        /// Enables ASP.NET identity for the current application.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> instance this method extends.</param>
         /// <returns>The <see cref="IApplicationBuilder"/> instance this method extends.</returns>

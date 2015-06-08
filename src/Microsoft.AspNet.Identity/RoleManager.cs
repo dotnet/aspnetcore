@@ -16,23 +16,24 @@ using Microsoft.Framework.Logging;
 namespace Microsoft.AspNet.Identity
 {
     /// <summary>
-    ///     Exposes role related api which will automatically save changes to the RoleStore
+    /// Provides the APIs for managing roles in a persistence store.
     /// </summary>
-    /// <typeparam name="TRole"></typeparam>
+    /// <typeparam name="TUser">The type encapsulating a role.</typeparam>
     public class RoleManager<TRole> : IDisposable where TRole : class
     {
         private bool _disposed;
         private readonly HttpContext _context;
+        private CancellationToken CancellationToken => _context?.RequestAborted ?? CancellationToken.None;
 
         /// <summary>
-        ///     Constructor
+        /// Constructs a new instance of <see cref="RoleManager{TRole}"/>.
         /// </summary>
-        /// <param name="store">The IRoleStore commits changes via the UpdateAsync/CreateAsync methods</param>
-        /// <param name="roleValidators">IEnumerable of role validators</param>
-        /// <param name="keyNormalizer">user property normalizers</param>
-        /// <param name="errors">IdentityErrorDescribers</param>
-        /// <param name="logger">Logger for RoleManager</param>
-        /// <param name="contextAccessor">HttpContext accessor object</param>
+        /// <param name="store">The persistence store the manager will operate over.</param>
+        /// <param name="roleValidators">A collection of validators for roles.</param>
+        /// <param name="keyNormalizer">The normalizer to use when normalizing role names to keys.</param>
+        /// <param name="errors">The <see cref="IdentityErrorDescriber"/> used to provider error messages.</param>
+        /// <param name="logger">The logger used to log messages, warnings and errors.</param>
+        /// <param name="contextAccessor">The accessor used to access the <see cref="HttpContext"/>.</param>
         public RoleManager(IRoleStore<TRole> store,
             IEnumerable<IRoleValidator<TRole>> roleValidators,
             ILookupNormalizer keyNormalizer,
@@ -60,33 +61,51 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Persistence abstraction that the Manager operates against
+        /// Gets the persistence store this instance operates over.
         /// </summary>
+        /// <value>The persistence store this instance operates over.</value>
         protected IRoleStore<TRole> Store { get; private set; }
 
         /// <summary>
-        ///     Used for logging results
+        /// Gets the <see cref="ILogger"/> used to log messages from the manager.
         /// </summary>
+        /// <value>
+        /// The <see cref="ILogger"/> used to log messages from the manager.
+        /// </value>
         protected internal virtual ILogger Logger { get; set; }
 
         /// <summary>
-        ///     Used to validate roles before persisting changes
+        /// Gets a list of validators for roles to call before persistence.
         /// </summary>
+        /// <value>A list of validators for roles to call before persistence.</value>
         internal IList<IRoleValidator<TRole>> RoleValidators { get; } = new List<IRoleValidator<TRole>>();
 
         /// <summary>
-        ///     Used to generate public API error messages
+        /// Gets the <see cref="IdentityErrorDescriber"/> used to provider error messages.
         /// </summary>
+        /// <value>
+        /// The <see cref="IdentityErrorDescriber"/> used to provider error messages.
+        /// </value>
         internal IdentityErrorDescriber ErrorDescriber { get; set; }
 
         /// <summary>
-        ///     Used to normalize user names, role names, emails for uniqueness
+        /// Gets the normalizer to use when normalizing role names to keys.
         /// </summary>
+        /// <value>
+        /// The normalizer to use when normalizing role names to keys.
+        /// </value>
         internal ILookupNormalizer KeyNormalizer { get; set; }
 
         /// <summary>
-        ///     Returns an IQueryable of roles if the store is an IQueryableRoleStore
+        /// Gets an IQueryable collection of Roles if the persistence store is an <see cref="IQueryableRoleStore"/>,
+        /// otherwise throws a <see cref="NotSupportedException"/>.
         /// </summary>
+        /// <value>An IQueryable collection of Roles if the persistence store is an <see cref="IQueryableRoleStore"/>.</value>
+        /// <exception cref="NotSupportedException">Thrown if the persistence store is not an <see cref="IQueryableRoleStore"/>.</exception>
+        /// <remarks>
+        /// Callers to this property should use <see cref="SupportsQueryableRoles"/> to ensure the backing role store supports 
+        /// returning an IQueryable list of roles.
+        /// </remarks>
         public virtual IQueryable<TRole> Roles
         {
             get
@@ -101,8 +120,11 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the store is an IQueryableRoleStore
+        /// Gets a flag indicating whether the underlying persistence store supports returning an <see cref="IQueryable"/> collection of roles.
         /// </summary>
+        /// <value>
+        /// true if the underlying persistence store supports returning an <see cref="IQueryable"/> collection of roles, otherwise false.
+        /// </value>
         public virtual bool SupportsQueryableRoles
         {
             get
@@ -113,8 +135,11 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the store is an IUserClaimStore
+        /// Gets a flag indicating whether the underlying persistence store supports <see cref="Claim"/>s for roles.
         /// </summary>
+        /// <value>
+        /// true if the underlying persistence store supports <see cref="Claim"/>s for roles, otherwise false.
+        /// </value>
         public virtual bool SupportsRoleClaims
         {
             get
@@ -124,36 +149,13 @@ namespace Microsoft.AspNet.Identity
             }
         }
 
-        private CancellationToken CancellationToken => _context?.RequestAborted ?? CancellationToken.None;
-
         /// <summary>
-        ///     Dispose this object
+        /// Creates the specified <paramref name="role"/> in the persistence store, as an asynchronous operation.
         /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private async Task<IdentityResult> ValidateRoleInternal(TRole role)
-        {
-            var errors = new List<IdentityError>();
-            foreach (var v in RoleValidators)
-            {
-                var result = await v.ValidateAsync(this, role);
-                if (!result.Succeeded)
-                {
-                    errors.AddRange(result.Errors);
-                }
-            }
-            return errors.Count > 0 ? IdentityResult.Failed(errors.ToArray()) : IdentityResult.Success;
-        }
-
-        /// <summary>
-        ///     Create a role
-        /// </summary>
-        /// <param name="role"></param>
-        /// <returns></returns>
+        /// <param name="role">The role to create.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation.
+        /// </returns>
         public virtual async Task<IdentityResult> CreateAsync(TRole role)
         {
             ThrowIfDisposed();
@@ -175,22 +177,25 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Update the user's normalized user name
+        /// Updates the normalized name for the specified <paramref name="role"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="role"></param>
-        /// <returns></returns>
+        /// <param name="role">The role whose normalized name needs to be updated.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation.
+        /// </returns>
         public virtual async Task UpdateNormalizedRoleNameAsync(TRole role)
         {
             var name = await GetRoleNameAsync(role);
             await Store.SetNormalizedRoleNameAsync(role, NormalizeKey(name), CancellationToken);
         }
 
-
         /// <summary>
-        ///     Update an existing role
+        /// Updates the specified <paramref name="role"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="role"></param>
-        /// <returns></returns>
+        /// <param name="role">The role to updated.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> for the update.
+        /// </returns>
         public virtual async Task<IdentityResult> UpdateAsync(TRole role)
         {
             ThrowIfDisposed();
@@ -205,22 +210,13 @@ namespace Microsoft.AspNet.Identity
             }
         }
 
-        private async Task<IdentityResult> UpdateRoleAsync(TRole role)
-        {
-            var result = await ValidateRoleInternal(role);
-            if (!result.Succeeded)
-            {
-                return result;
-            }
-            await UpdateNormalizedRoleNameAsync(role);
-            return await Store.UpdateAsync(role, CancellationToken);
-        }
-
         /// <summary>
-        ///     Delete a role
+        /// Deletes the specified <paramref name="role"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="role"></param>
-        /// <returns></returns>
+        /// <param name="role">The role to delete.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> for the delete.
+        /// </returns>
         public virtual async Task<IdentityResult> DeleteAsync(TRole role)
         {
             ThrowIfDisposed();
@@ -236,10 +232,12 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Returns true if the role exists
+        /// Gets a flag indicating whether the specified <paramref name="roleName"/> exists, as an asynchronous operation.
         /// </summary>
-        /// <param name="roleName"></param>
-        /// <returns></returns>
+        /// <param name="roleName">The role name whose existence should be checked.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing true if the role name exists, otherwise false.
+        /// </returns>
         public virtual async Task<bool> RoleExistsAsync(string roleName)
         {
             ThrowIfDisposed();
@@ -252,21 +250,23 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Normalize a key (role name) for uniqueness comparisons
+        /// Gets a normalized representation of the specified <paramref name="key"/>.
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <param name="key">The value to normalize.</param>
+        /// <returns>A normalized representation of the specified <paramref name="key"/>.</returns>
         public virtual string NormalizeKey(string key)
         {
             return (KeyNormalizer == null) ? key : KeyNormalizer.Normalize(key);
         }
 
-
         /// <summary>
-        ///     Find a role by id
+        /// Finds the role associated with the specified <paramref name="roleId"/> if any, as an asynchronous operation.
         /// </summary>
-        /// <param name="roleId"></param>
-        /// <returns></returns>
+        /// <param name="roleId">The role ID whose role should be returned.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the role 
+        /// associated with the specified <paramref name="roleId"/>
+        /// </returns>
         public virtual async Task<TRole> FindByIdAsync(string roleId)
         {
             ThrowIfDisposed();
@@ -274,10 +274,13 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Return the name of the role
+        /// Gets the name of the specified <paramref name="role"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="role"></param>
-        /// <returns></returns>
+        /// <param name="role">The role whose name should be retrieved.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the name of the 
+        /// specified <paramref name="role"/>.
+        /// </returns>
         public virtual async Task<string> GetRoleNameAsync(TRole role)
         {
             ThrowIfDisposed();
@@ -285,11 +288,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Set the name of the role
+        /// Sets the name of the specified <paramref name="role"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="role"></param>
-        /// <param name="name"></param>
-        /// <returns></returns>
+        /// <param name="role">The role whose name should be set.</param>
+        /// <param name="name">The name to set.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> SetRoleNameAsync(TRole role, string name)
         {
             ThrowIfDisposed();
@@ -303,10 +309,13 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Return the role id for a role
+        /// Gets the ID of the specified <paramref name="role"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="role"></param>
-        /// <returns></returns>
+        /// <param name="role">The role whose ID should be retrieved.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the ID of the 
+        /// specified <paramref name="role"/>.
+        /// </returns>
         public virtual async Task<string> GetRoleIdAsync(TRole role)
         {
             ThrowIfDisposed();
@@ -314,10 +323,13 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     FindByLoginAsync a role by name
+        /// Finds the role associated with the specified <paramref name="roleName"/> if any, as an asynchronous operation.
         /// </summary>
-        /// <param name="roleName"></param>
-        /// <returns></returns>
+        /// <param name="roleName">The name of the role to be returned.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the role 
+        /// associated with the specified <paramref name="roleName"/>
+        /// </returns>
         public virtual async Task<TRole> FindByNameAsync(string roleName)
         {
             ThrowIfDisposed();
@@ -329,23 +341,15 @@ namespace Microsoft.AspNet.Identity
             return await Store.FindByNameAsync(NormalizeKey(roleName), CancellationToken);
         }
 
-        // IRoleClaimStore methods
-        private IRoleClaimStore<TRole> GetClaimStore()
-        {
-            var cast = Store as IRoleClaimStore<TRole>;
-            if (cast == null)
-            {
-                throw new NotSupportedException(Resources.StoreNotIRoleClaimStore);
-            }
-            return cast;
-        }
-
         /// <summary>
-        ///     Add a user claim
+        /// Adds a claim to a role, as an asynchronous operation.
         /// </summary>
-        /// <param name="role"></param>
-        /// <param name="claim"></param>
-        /// <returns></returns>
+        /// <param name="role">The role to add the claim to.</param>
+        /// <param name="claim">The claim to add.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> AddClaimAsync(TRole role, Claim claim)
         {
             ThrowIfDisposed();
@@ -367,11 +371,14 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Remove a user claim
+        /// Removes a claim from a role, as an asynchronous operation.
         /// </summary>
-        /// <param name="role"></param>
-        /// <param name="claim"></param>
-        /// <returns></returns>
+        /// <param name="role">The role to remove the claim from.</param>
+        /// <param name="claim">The claim to add.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+        /// of the operation.
+        /// </returns>
         public virtual async Task<IdentityResult> RemoveClaimAsync(TRole role, Claim claim)
         {
             ThrowIfDisposed();
@@ -389,10 +396,13 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        ///     Get a role's claims
+        /// Gets a list of claims associated with the specified <paramref name="role"/>, as an asynchronous operation.
         /// </summary>
-        /// <param name="role"></param>
-        /// <returns></returns>
+        /// <param name="role">The role whose claims should be returned.</param>
+        /// <returns>
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the list of <see cref="Claim"/>s
+        /// associated with the specified <paramref name="role"/>.
+        /// </returns>
         public virtual async Task<IList<Claim>> GetClaimsAsync(TRole role)
         {
             ThrowIfDisposed();
@@ -404,25 +414,19 @@ namespace Microsoft.AspNet.Identity
             return await claimStore.GetClaimsAsync(role, CancellationToken);
         }
 
-        protected virtual async Task<IDisposable> BeginLoggingScopeAsync(TRole role, [CallerMemberName] string methodName = null)
+        /// <summary>
+        /// Releases all resources used by the role manager.
+        /// </summary>
+        public void Dispose()
         {
-            var state = Resources.FormatLoggingResultMessageForRole(methodName, await GetRoleIdAsync(role));
-            return Logger?.BeginScope(state);
-        }
-            
-
-        private void ThrowIfDisposed()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
-        ///     When disposing, actually dipose the store
+        /// Releases the unmanaged resources used by the role manager and optionally releases the managed resources.
         /// </summary>
-        /// <param name="disposing"></param>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (disposing && !_disposed)
@@ -430,6 +434,56 @@ namespace Microsoft.AspNet.Identity
                 Store.Dispose();
             }
             _disposed = true;
+        }
+
+        protected virtual async Task<IDisposable> BeginLoggingScopeAsync(TRole role, [CallerMemberName] string methodName = null)
+        {
+            var state = Resources.FormatLoggingResultMessageForRole(methodName, await GetRoleIdAsync(role));
+            return Logger?.BeginScope(state);
+        }
+
+        private async Task<IdentityResult> ValidateRoleInternal(TRole role)
+        {
+            var errors = new List<IdentityError>();
+            foreach (var v in RoleValidators)
+            {
+                var result = await v.ValidateAsync(this, role);
+                if (!result.Succeeded)
+                {
+                    errors.AddRange(result.Errors);
+                }
+            }
+            return errors.Count > 0 ? IdentityResult.Failed(errors.ToArray()) : IdentityResult.Success;
+        }
+
+        private async Task<IdentityResult> UpdateRoleAsync(TRole role)
+        {
+            var result = await ValidateRoleInternal(role);
+            if (!result.Succeeded)
+            {
+                return result;
+            }
+            await UpdateNormalizedRoleNameAsync(role);
+            return await Store.UpdateAsync(role, CancellationToken);
+        }
+
+        // IRoleClaimStore methods
+        private IRoleClaimStore<TRole> GetClaimStore()
+        {
+            var cast = Store as IRoleClaimStore<TRole>;
+            if (cast == null)
+            {
+                throw new NotSupportedException(Resources.StoreNotIRoleClaimStore);
+            }
+            return cast;
+        }
+            
+        private void ThrowIfDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
         }
     }
 }
