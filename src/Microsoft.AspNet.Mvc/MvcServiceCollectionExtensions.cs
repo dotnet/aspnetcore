@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc;
@@ -163,13 +164,23 @@ namespace Microsoft.Framework.DependencyInjection
         internal static void AddMvcServices(IServiceCollection services)
         {
             // Options - all of these are multi-registration
-            services.AddTransient<IConfigureOptions<MvcOptions>, MvcOptionsSetup>();
-            services.AddTransient<IConfigureOptions<MvcOptions>, JsonMvcOptionsSetup>();
-            services.AddTransient<IConfigureOptions<MvcFormatterMappingOptions>, JsonMvcFormatterMappingOptionsSetup>();
-            services.AddTransient<IConfigureOptions<MvcViewOptions>, MvcViewOptionsSetup>();
-            services.AddTransient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>();
-
-            services.TryAdd(ServiceDescriptor.Transient<IAssemblyProvider, DefaultAssemblyProvider>());
+            TryAddMultiRegistrationService(
+                services,
+                ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, MvcOptionsSetup>());
+            TryAddMultiRegistrationService(
+                services,
+                ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, JsonMvcOptionsSetup>());
+            TryAddMultiRegistrationService(
+                services,
+                ServiceDescriptor
+                .Transient<IConfigureOptions<MvcFormatterMappingOptions>, JsonMvcFormatterMappingOptionsSetup>());
+            TryAddMultiRegistrationService(
+                services,
+                ServiceDescriptor.Transient<IConfigureOptions<MvcViewOptions>, MvcViewOptionsSetup>());
+            TryAddMultiRegistrationService(
+                services,
+                ServiceDescriptor
+                .Transient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>());
 
             services.TryAdd(ServiceDescriptor.Transient<MvcMarkerService, MvcMarkerService>());
             services.TryAdd((ServiceDescriptor.Singleton<ITypeActivatorCache, DefaultTypeActivatorCache>()));
@@ -178,7 +189,17 @@ namespace Microsoft.Framework.DependencyInjection
             // Core action discovery, filters and action execution.
 
             // This are consumed only when creating action descriptors, then they can be de-allocated
-            services.TryAdd(ServiceDescriptor.Transient<IControllerTypeProvider, DefaultControllerTypeProvider>());;
+            services.TryAdd(ServiceDescriptor.Transient<IAssemblyProvider, DefaultAssemblyProvider>());
+            services.TryAdd(ServiceDescriptor.Transient<IControllerTypeProvider, DefaultControllerTypeProvider>()); ;
+            TryAddMultiRegistrationService(
+                services,
+                ServiceDescriptor.Transient<IApplicationModelProvider, DefaultApplicationModelProvider>());
+            TryAddMultiRegistrationService(
+                services,
+                ServiceDescriptor.Transient<IApplicationModelProvider, CorsApplicationModelProvider>());
+            TryAddMultiRegistrationService(
+                services,
+                ServiceDescriptor.Transient<IApplicationModelProvider, AuthorizationApplicationModelProvider>());
 
             // This has a cache, so it needs to be a singleton
             services.TryAdd(ServiceDescriptor.Singleton<IControllerFactory, DefaultControllerFactory>());
@@ -190,8 +211,9 @@ namespace Microsoft.Framework.DependencyInjection
 
             // This provider needs access to the per-request services, but might be used many times for a given
             // request.
-            // multiple registration service
-            services.AddTransient<IActionConstraintProvider, DefaultActionConstraintProvider>();
+            TryAddMultiRegistrationService(
+                services,
+                ServiceDescriptor.Transient<IActionConstraintProvider, DefaultActionConstraintProvider>());
 
             services.TryAdd(ServiceDescriptor
                 .Singleton<IActionSelectorDecisionTreeProvider, ActionSelectorDecisionTreeProvider>());
@@ -205,27 +227,28 @@ namespace Microsoft.Framework.DependencyInjection
                 return new DefaultObjectValidator(options.ValidationExcludeFilters, modelMetadataProvider);
             }));
 
-            // multiple registration service
-            services.AddTransient<IActionDescriptorProvider, ControllerActionDescriptorProvider>();
+            TryAddMultiRegistrationService(
+                services,
+                ServiceDescriptor.Transient<IActionDescriptorProvider, ControllerActionDescriptorProvider>());
 
-            // multiple registration service
-            services.AddTransient<IActionInvokerProvider, ControllerActionInvokerProvider>();
+            TryAddMultiRegistrationService(
+                services,
+                ServiceDescriptor.Transient<IActionInvokerProvider, ControllerActionInvokerProvider>());
 
             services.TryAdd(ServiceDescriptor
                 .Singleton<IActionDescriptorsCollectionProvider, DefaultActionDescriptorsCollectionProvider>());
 
-            // multiple registration service
-            services.AddTransient<IFilterProvider, DefaultFilterProvider>();
+            TryAddMultiRegistrationService(
+                services,
+                ServiceDescriptor.Transient<IFilterProvider, DefaultFilterProvider>());
 
-            // multiple registration service
-            services.AddTransient<IApplicationModelProvider, DefaultApplicationModelProvider>();
-
-            // multiple registration services
-            services.AddTransient<IApplicationModelProvider, CorsApplicationModelProvider>();
-            services.AddTransient<IApplicationModelProvider, AuthorizationApplicationModelProvider>();
-
-            services.AddTransient<IControllerPropertyActivator, DefaultControllerPropertyActivator>();
-            services.AddTransient<IControllerPropertyActivator, ViewDataDictionaryControllerPropertyActivator>();
+            TryAddMultiRegistrationService(
+                services,
+                ServiceDescriptor.Transient<IControllerPropertyActivator, DefaultControllerPropertyActivator>());
+            TryAddMultiRegistrationService(
+                services,
+                ServiceDescriptor
+                    .Transient<IControllerPropertyActivator, ViewDataDictionaryControllerPropertyActivator>());
 
             services.TryAdd(ServiceDescriptor.Transient<FormatFilter, FormatFilter>());
             services.TryAdd(ServiceDescriptor.Transient<CorsAuthorizationFilter, CorsAuthorizationFilter>());
@@ -322,8 +345,9 @@ namespace Microsoft.Framework.DependencyInjection
             // Api Description
             services.TryAdd(ServiceDescriptor
                 .Singleton<IApiDescriptionGroupCollectionProvider, ApiDescriptionGroupCollectionProvider>());
-            // multiple registration service
-            services.AddTransient<IApiDescriptionProvider, DefaultApiDescriptionProvider>();
+            TryAddMultiRegistrationService(
+                services,
+                ServiceDescriptor.Transient<IApiDescriptionProvider, DefaultApiDescriptionProvider>());
 
             // Temp Data
             services.TryAdd(ServiceDescriptor.Scoped<ITempDataDictionary, TempDataDictionary>());
@@ -357,6 +381,27 @@ namespace Microsoft.Framework.DependencyInjection
             });
 
             return services;
+        }
+
+        // Adds a service if the service type and implementation type hasn't been added yet. This is needed for
+        // services like IConfigureOptions<MvcOptions> or IApplicationModelProvider where you need the ability
+        // to register multiple implementation types for the same service type.
+        private static bool TryAddMultiRegistrationService(IServiceCollection services, ServiceDescriptor descriptor)
+        {
+            // This can't work when registering a factory or instance, you have to register a type.
+            // Additionally, if any existing registrations use a factory or instance, we can't check those, but we don't
+            // assert that because it might be added by user-code.
+            Debug.Assert(descriptor.ImplementationType != null);
+
+            if (services.Any(d =>
+                d.ServiceType == descriptor.ServiceType &&
+                d.ImplementationType == descriptor.ImplementationType))
+            {
+                return false;
+            }
+
+            services.Add(descriptor);
+            return true;
         }
 
         private static void ConfigureDefaultServices(IServiceCollection services)

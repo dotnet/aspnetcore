@@ -9,10 +9,12 @@ using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.MvcServiceCollectionExtensionsTestControllers;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -86,24 +88,35 @@ namespace Microsoft.AspNet.Mvc
 
         // Some MVC services can be registered multiple times, for example, 'IConfigureOptions<MvcOptions>' can
         // be registered by calling 'ConfigureMvc(...)' before the call to 'AddMvc()' in which case the options
-        // configiuration is run in the order they were registered.
-        // For these kind of multi registration service types, we want to make sure that MVC appends its services
-        // to the list i.e it does a 'Add' rather than 'TryAdd' on the ServiceCollection.
+        // configuration is run in the order they were registered.
+        //
+        // For these kind of multi registration service types, we want to make sure that MVC will still add its
+        // services if the implementation type is different.
         [Fact]
         public void MultiRegistrationServiceTypes_AreRegistered_MultipleTimes()
         {
             // Arrange
             var services = new ServiceCollection();
-            var multiRegistrationServiceTypes = MutliRegistrationServiceTypes;
+
+            // Register a mock implementation of each service, AddMvcServices should add another implemenetation.
+            foreach (var serviceType in MutliRegistrationServiceTypes)
+            {
+                var mockType = typeof(Mock<>).MakeGenericType(serviceType.Key);
+                services.Add(ServiceDescriptor.Transient(serviceType.Key, mockType));
+            }
 
             // Act
             MvcServiceCollectionExtensions.AddMvcServices(services);
-            MvcServiceCollectionExtensions.AddMvcServices(services);
 
             // Assert
-            foreach (var serviceType in multiRegistrationServiceTypes)
+            foreach (var serviceType in MutliRegistrationServiceTypes)
             {
-                AssertServiceCountEquals(services, serviceType.Key, serviceType.Value);
+                AssertServiceCountEquals(services, serviceType.Key, serviceType.Value.Length + 1);
+
+                foreach (var implementationType in serviceType.Value)
+                {
+                    AssertContainsSingle(services, serviceType.Key, implementationType);
+                }
             }
         }
 
@@ -112,40 +125,152 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
-            var multiRegistrationServiceTypes = MutliRegistrationServiceTypes;
+
+            // Register a mock implementation of each service, AddMvcServices should not replace it.
+            foreach (var serviceType in SingleRegistrationServiceTypes)
+            {
+                var mockType = typeof(Mock<>).MakeGenericType(serviceType);
+                services.Add(ServiceDescriptor.Transient(serviceType, mockType));
+            }
+
+            // Act
+            MvcServiceCollectionExtensions.AddMvcServices(services);
+
+            // Assert
+            foreach (var singleRegistrationType in SingleRegistrationServiceTypes)
+            {
+                AssertServiceCountEquals(services, singleRegistrationType, 1);
+            }
+        }
+
+        [Fact]
+        public void AddMvcServicesTwice_DoesNotAddDuplicates()
+        {
+            // Arrange
+            var services = new ServiceCollection();
 
             // Act
             MvcServiceCollectionExtensions.AddMvcServices(services);
             MvcServiceCollectionExtensions.AddMvcServices(services);
 
             // Assert
-            var singleRegistrationServiceTypes = services
-                .Where(serviceDescriptor => !multiRegistrationServiceTypes.Keys.Contains(serviceDescriptor.ServiceType))
-                .Select(serviceDescriptor => serviceDescriptor.ServiceType);
-
-            foreach (var singleRegistrationType in singleRegistrationServiceTypes)
+            var singleRegistrationServiceTypes = SingleRegistrationServiceTypes;
+            foreach (var service in services)
             {
-                AssertServiceCountEquals(services, singleRegistrationType, 1);
+                if (singleRegistrationServiceTypes.Contains(service.ServiceType))
+                {
+                    // 'single-registration' services should only have one implementation registered.
+                    AssertServiceCountEquals(services, service.ServiceType, 1);
+                }
+                else
+                {
+                    // 'multi-registration' services should only have one *instance* of each implementation registered.
+                    AssertContainsSingle(services, service.ServiceType, service.ImplementationType);
+                }
             }
         }
 
-        private Dictionary<Type, int> MutliRegistrationServiceTypes
+        private IEnumerable<Type> SingleRegistrationServiceTypes
         {
             get
             {
-                return new Dictionary<Type, int>()
+                var services = new ServiceCollection();
+                MvcServiceCollectionExtensions.AddMvcServices(services);
+
+                var multiRegistrationServiceTypes = MutliRegistrationServiceTypes;
+                return services
+                    .Where(sd => !multiRegistrationServiceTypes.Keys.Contains(sd.ServiceType))
+                    .Select(sd => sd.ServiceType);
+            }
+        }
+
+        private Dictionary<Type, Type[]> MutliRegistrationServiceTypes
+        {
+            get
+            {
+                return new Dictionary<Type, Type[]>()
                 {
-                    { typeof(IConfigureOptions<MvcOptions>), 4 },
-                    { typeof(IConfigureOptions<MvcFormatterMappingOptions>), 2 },
-                    { typeof(IConfigureOptions<MvcViewOptions>), 2 }, 
-                    { typeof(IConfigureOptions<RazorViewEngineOptions>), 2 },
-                    { typeof(IActionConstraintProvider), 2 },
-                    { typeof(IActionDescriptorProvider), 2 },
-                    { typeof(IActionInvokerProvider), 2 },
-                    { typeof(IControllerPropertyActivator), 4 },
-                    { typeof(IFilterProvider), 2 },
-                    { typeof(IApiDescriptionProvider), 2 },
-                    { typeof(IApplicationModelProvider), 6 },
+                    {
+                        typeof(IConfigureOptions<MvcOptions>),
+                        new Type[]
+                        {
+                            typeof(MvcOptionsSetup),
+                            typeof(JsonMvcOptionsSetup),
+                        }
+                    },
+                    {
+                        typeof(IConfigureOptions<MvcFormatterMappingOptions>),
+                        new Type[]
+                        {
+                            typeof(JsonMvcFormatterMappingOptionsSetup),
+                        }
+                    },
+                    {
+                        typeof(IConfigureOptions<MvcViewOptions>),
+                        new Type[]
+                        {
+                            typeof(MvcViewOptionsSetup),
+                        }
+                    },
+                    {
+                        typeof(IConfigureOptions<RazorViewEngineOptions>),
+                        new Type[]
+                        {
+                            typeof(RazorViewEngineOptionsSetup),
+                        }
+                    },
+                    {
+                        typeof(IActionConstraintProvider),
+                        new Type[]
+                        {
+                            typeof(DefaultActionConstraintProvider),
+                        }
+                    },
+                    {
+                        typeof(IActionDescriptorProvider),
+                        new Type[]
+                        {
+                            typeof(ControllerActionDescriptorProvider),
+                        }
+                    },
+                    {
+                        typeof(IActionInvokerProvider),
+                        new Type[]
+                        {
+                            typeof(ControllerActionInvokerProvider),
+                        }
+                    },
+                    {
+                        typeof(IFilterProvider),
+                        new Type[]
+                        {
+                            typeof(DefaultFilterProvider),
+                        }
+                    },
+                    {
+                        typeof(IApiDescriptionProvider),
+                        new Type[]
+                        {
+                            typeof(DefaultApiDescriptionProvider),
+                        }
+                    },
+                    {
+                        typeof(IControllerPropertyActivator),
+                        new Type[]
+                        {
+                            typeof(DefaultControllerPropertyActivator),
+                            typeof(ViewDataDictionaryControllerPropertyActivator),
+                        }
+                    },
+                    {
+                        typeof(IApplicationModelProvider),
+                        new Type[]
+                        {
+                            typeof(DefaultApplicationModelProvider),
+                            typeof(CorsApplicationModelProvider),
+                            typeof(AuthorizationApplicationModelProvider),
+                        }
+                    },
                 };
             }
         }
@@ -162,6 +287,31 @@ namespace Microsoft.AspNet.Mvc
                 (expectedServiceRegistrationCount == actual),
                 $"Expected service type '{serviceType}' to be registered {expectedServiceRegistrationCount}" +
                 $" time(s) but was actually registered {actual} time(s).");
+        }
+
+        private void AssertContainsSingle(
+            IServiceCollection services,
+            Type serviceType,
+            Type implementationType)
+        {
+            var matches = services
+                .Where(sd =>
+                    sd.ServiceType == serviceType &&
+                    sd.ImplementationType == implementationType)
+                .ToArray();
+
+            if (matches.Length == 0)
+            {
+                Assert.True(
+                    false,
+                    $"Could not find an instance of {implementationType} registered as {serviceType}");
+            }
+            else if (matches.Length > 1)
+            {
+                Assert.True(
+                    false,
+                    $"Found multiple instances of {implementationType} registered as {serviceType}");
+            }
         }
 
         private class CustomActivator : IControllerActivator
