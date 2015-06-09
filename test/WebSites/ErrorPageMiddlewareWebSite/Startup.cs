@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Diagnostics;
 using Microsoft.Framework.DependencyInjection;
 
 namespace ErrorPageMiddlewareWebSite
@@ -18,7 +19,7 @@ namespace ErrorPageMiddlewareWebSite
         {
             app.UseCultureReplacer();
 
-            app.UseErrorPage();
+            app.UseErrorPage(ErrorPageOptions.ShowAll);
             app.UseMvc();
         }
     }
