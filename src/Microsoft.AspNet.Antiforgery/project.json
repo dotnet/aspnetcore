@@ -1,11 +1,6 @@
 ﻿{
+    "description": "An antiforgery system for ASP.NET designed to generate and validate tokens to prevent Cross-Site Request Forgery attacks.",
     "version": "1.0.0-*",
-    "description": "",
-    "authors": [ "" ],
-    "tags": [ "" ],
-    "projectUrl": "",
-    "licenseUrl": "",
-
     "dependencies": {
         "Microsoft.AspNet.DataProtection": "1.0.0-*",
         "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
