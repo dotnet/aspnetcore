@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 #if !DNXCORE50
 using Moq;
@@ -52,6 +54,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             Assert.Null(metadata.DisplayFormatString);
             Assert.Null(metadata.DisplayName);
             Assert.Null(metadata.EditFormatString);
+            Assert.Null(metadata.ElementMetadata);
             Assert.Null(metadata.EnumDisplayNamesAndValues);
             Assert.Null(metadata.EnumNamesAndValues);
             Assert.Null(metadata.NullDisplayText);
@@ -104,6 +107,69 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             Assert.Equal(typeof(string), metadata.ModelType);
             Assert.Equal("Message", metadata.PropertyName);
             Assert.Equal(typeof(Exception), metadata.ContainerType);
+        }
+
+        [Theory]
+        [InlineData(typeof(object))]
+        [InlineData(typeof(int))]
+        [InlineData(typeof(NonCollectionType))]
+        [InlineData(typeof(string))]
+        public void ElementMetadata_ReturnsNull_ForNonCollections(Type modelType)
+        {
+            // Arrange
+            var provider = new EmptyModelMetadataProvider();
+            var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+
+            var key = ModelMetadataIdentity.ForType(modelType);
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+
+            var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+            // Act
+            var elementMetadata = metadata.ElementMetadata;
+
+            // Assert
+            Assert.Null(elementMetadata);
+        }
+
+        [Theory]
+        [InlineData(typeof(int[]), typeof(int))]
+        [InlineData(typeof(List<string>), typeof(string))]
+        [InlineData(typeof(DerivedList), typeof(int))]
+        [InlineData(typeof(IEnumerable), typeof(object))]
+        [InlineData(typeof(IEnumerable<string>), typeof(string))]
+        [InlineData(typeof(Collection<int>), typeof(int))]
+        [InlineData(typeof(Dictionary<object, object>), typeof(KeyValuePair<object, object>))]
+        [InlineData(typeof(DerivedDictionary), typeof(KeyValuePair<string, int>))]
+        public void ElementMetadata_ReturnsExpectedMetadata(Type modelType, Type elementType)
+        {
+            // Arrange
+            var provider = new EmptyModelMetadataProvider();
+            var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+
+            var key = ModelMetadataIdentity.ForType(modelType);
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+
+            var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+            // Act
+            var elementMetadata = metadata.ElementMetadata;
+
+            // Assert
+            Assert.NotNull(elementMetadata);
+            Assert.Equal(elementType, elementMetadata.ModelType);
+        }
+
+        private class NonCollectionType
+        {
+        }
+
+        private class DerivedList : List<int>
+        {
+        }
+
+        private class DerivedDictionary : Dictionary<string, int>
+        {
         }
 
         [Theory]
@@ -160,7 +226,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             var expectedProperties = new DefaultModelMetadata[]
             {
                 new DefaultModelMetadata(
-                    provider.Object, 
+                    provider.Object,
                     detailsProvider,
                     new DefaultMetadataDetails(
                         ModelMetadataIdentity.ForProperty(typeof(int), "Prop1", typeof(string)),

@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultHtmlGenerator"/> class.
         /// </summary>
-        /// <param name="antiForgery">The <see cref="AntiForgery"/> instance which is used to generate anti-forgery 
+        /// <param name="antiForgery">The <see cref="AntiForgery"/> instance which is used to generate anti-forgery
         /// tokens.</param>
         /// <param name="optionsAccessor">The accessor for <see cref="MvcOptions"/>.</param>
         /// <param name="metadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
@@ -796,11 +796,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             modelExplorer = modelExplorer ??
                 ExpressionMetadataProvider.FromStringExpression(expression, viewContext.ViewData, _metadataProvider);
+            var metadata = modelExplorer.Metadata;
+            if (allowMultiple && metadata.IsCollectionType)
+            {
+                metadata = metadata.ElementMetadata;
+            }
 
-            var enumNames = modelExplorer.Metadata.EnumNamesAndValues;
-            var isTargetEnum = modelExplorer.Metadata.IsEnum;
-            var innerType =
-                Nullable.GetUnderlyingType(modelExplorer.Metadata.ModelType) ?? modelExplorer.Metadata.ModelType;
+            var enumNames = metadata.EnumNamesAndValues;
+            var isTargetEnum = metadata.IsEnum;
+
+            // Logic below assumes isTargetEnum and enumNames are consistent. Confirm that expectation is met.
+            Debug.Assert(isTargetEnum ^ enumNames == null);
+
+            var innerType = Nullable.GetUnderlyingType(metadata.ModelType) ?? metadata.ModelType;
 
             // Convert raw value collection to strings.
             var currentValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -841,13 +849,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     var integerString = enumValue.ToString("d");
                     currentValues.Add(integerString);
 
-                    // Add all simple names for this value.
-                    var matchingNames = enumNames
-                        .Where(kvp => string.Equals(integerString, kvp.Value, StringComparison.Ordinal))
-                        .Select(kvp => kvp.Key);
-                    foreach (var name in matchingNames)
+                    // isTargetEnum may be false when raw value has a different type than the target e.g. ViewData
+                    // contains enum values and property has type int or string.
+                    if (isTargetEnum)
                     {
-                        currentValues.Add(name);
+                        // Add all simple names for this value.
+                        var matchingNames = enumNames
+                            .Where(kvp => string.Equals(integerString, kvp.Value, StringComparison.Ordinal))
+                            .Select(kvp => kvp.Key);
+                        foreach (var name in matchingNames)
+                        {
+                            currentValues.Add(name);
+                        }
                     }
                 }
             }

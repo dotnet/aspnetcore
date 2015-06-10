@@ -369,7 +369,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="expressions">Expressions identifying the properties to allow for binding.</param>
         /// <returns>An expression which can be used with <see cref="IPropertyBindingPredicateProvider"/>.</returns>
         public static Expression<Func<ModelBindingContext, string, bool>> GetIncludePredicateExpression<TModel>(
-            string prefix, 
+            string prefix,
             Expression<Func<TModel, object>>[] expressions)
         {
             if (expressions.Length == 0)
@@ -417,15 +417,15 @@ namespace Microsoft.AspNet.Mvc
         {
             // If modelkey is empty, we need to iterate through properties (obtained from ModelMetadata) and
             // clear validation state for all entries in ModelStateDictionary that start with each property name.
-            // If modelkey is non-empty, clear validation state for all entries in ModelStateDictionary 
+            // If modelkey is non-empty, clear validation state for all entries in ModelStateDictionary
             // that start with modelKey
             if (string.IsNullOrEmpty(modelKey))
             {
                 var modelMetadata = metadataProvider.GetMetadataForType(modelType);
-                if (modelMetadata.IsCollectionType)
+                var elementMetadata = modelMetadata.ElementMetadata;
+                if (elementMetadata != null)
                 {
-                    var elementType = GetElementType(modelMetadata.ModelType);
-                    modelMetadata = metadataProvider.GetMetadataForType(elementType);
+                    modelMetadata = elementMetadata;
                 }
 
                 foreach (var property in modelMetadata.Properties)
@@ -439,27 +439,6 @@ namespace Microsoft.AspNet.Mvc
                 modelstate.ClearValidationState(modelKey);
             }
         }
-
-        private static Type GetElementType(Type type)
-        {
-            Debug.Assert(typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()));
-            if (type.IsArray)
-            {
-                return type.GetElementType();
-            }
-
-            foreach (var implementedInterface in type.GetInterfaces())
-            {
-                if (implementedInterface.GetTypeInfo().IsGenericType &&
-                    implementedInterface.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-                {
-                    return implementedInterface.GetGenericArguments()[0];
-                }
-            }
-
-            return typeof(object);
-        }
-
 
         internal static void ValidateBindingContext([NotNull] ModelBindingContext bindingContext)
         {

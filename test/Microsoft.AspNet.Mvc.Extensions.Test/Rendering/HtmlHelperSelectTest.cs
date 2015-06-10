@@ -874,7 +874,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             Assert.Equal(expectedHtml, html.ToString());
         }
 
-        [Fact(Skip = "#2664, throws ArgumentNullException")]
+        [Fact]
         public void ListBoxNotInTemplate_GetsViewDataEntry_IfModelStateEmpty()
         {
             // Arrange
@@ -899,7 +899,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             Assert.Equal(expectedHtml, html.ToString());
         }
 
-        [Fact(Skip = "#2664, throws ArgumentNullException")]
+        [Fact(Skip = "#1487, incorrectly matches Property1 entry (without prefix) in ViewData.")]
         public void ListBoxInTemplate_GetsViewDataEntry_IfModelStateEmpty()
         {
             // Arrange
@@ -927,7 +927,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             Assert.Equal(expectedHtml, html.ToString());
         }
 
-        [Fact(Skip = "#2664, throws ArgumentNullException")]
+        [Fact(Skip = "#1487, incorrectly matches Property1 entry (without prefix) in ViewData.")]
         public void ListBoxInTemplate_GetsPropertyOfViewDataEntry_IfModelStateEmptyAndNoViewDataEntryWithPrefix()
         {
             // Arrange
@@ -954,7 +954,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             Assert.Equal(expectedHtml, html.ToString());
         }
 
-        [Fact(Skip = "#2664, throws ArgumentNullException")]
+        [Fact]
         public void ListBoxNotInTemplate_GetsPropertyOfModel_IfModelStateAndViewDataEmpty()
         {
             // Arrange
@@ -970,7 +970,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             Assert.Equal(expectedHtml, html.ToString());
         }
 
-        [Fact(Skip = "#2664, throws ArgumentNullException")]
+        [Fact]
         public void ListBoxInTemplate_GetsPropertyOfModel_IfModelStateAndViewDataEmpty()
         {
             // Arrange

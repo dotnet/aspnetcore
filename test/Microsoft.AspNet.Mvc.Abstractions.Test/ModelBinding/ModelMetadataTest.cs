@@ -269,6 +269,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
 
+            public override ModelMetadata ElementMetadata
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
             public override IEnumerable<KeyValuePair<string, string>> EnumDisplayNamesAndValues
             {
                 get

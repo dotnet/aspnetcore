@@ -169,11 +169,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             ExpandValidationNode(validationContext, modelExplorer);
 
             IList<IModelValidator> validators = null;
-            if (modelExplorer.Metadata.IsCollectionType && modelExplorer.Model != null)
+            var elementMetadata = modelExplorer.Metadata.ElementMetadata;
+            if (elementMetadata != null)
             {
-                var enumerableModel = (IEnumerable)modelExplorer.Model;
-                var elementType = GetElementType(enumerableModel.GetType());
-                var elementMetadata = _modelMetadataProvider.GetMetadataForType(elementType);
                 validators = GetValidators(validationContext.ModelValidationContext.ValidatorProvider, elementMetadata);
             }
 
@@ -283,7 +281,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 return;
             }
 
-            if (!modelExplorer.Metadata.IsCollectionType)
+            var elementMetadata = modelExplorer.Metadata.ElementMetadata;
+            if (elementMetadata == null)
             {
                 foreach (var property in validationNode.ModelMetadata.Properties)
                 {
@@ -300,8 +299,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             else
             {
                 var enumerableModel = (IEnumerable)modelExplorer.Model;
-                var elementType = GetElementType(enumerableModel.GetType());
-                var elementMetadata = _modelMetadataProvider.GetMetadataForType(elementType);
 
                 // An integer index is incorrect in scenarios where there is a custom index provided by the user.
                 // However those scenarios are supported by createing a ModelValidationNode with the right keys.
@@ -319,26 +316,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                     index++;
                 }
             }
-        }
-
-        private static Type GetElementType(Type type)
-        {
-            Debug.Assert(typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()));
-            if (type.IsArray)
-            {
-                return type.GetElementType();
-            }
-
-            foreach (var implementedInterface in type.GetInterfaces())
-            {
-                if (implementedInterface.GetTypeInfo().IsGenericType &&
-                    implementedInterface.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-                {
-                    return implementedInterface.GetGenericArguments()[0];
-                }
-            }
-
-            return typeof(object);
         }
 
         private class ValidationContext

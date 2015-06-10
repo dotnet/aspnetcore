@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNet.Mvc.Extensions;
@@ -67,39 +68,42 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     "Collection", model.GetType().FullName, typeof(IEnumerable).FullName));
             }
 
-            var typeInCollection = typeof(string);
-            var genericEnumerableType = ClosedGenericMatcher.ExtractGenericInterface(
-                collection.GetType(),
-                typeof(IEnumerable<>));
-            if (genericEnumerableType != null)
+            var elementMetadata = htmlHelper.ViewData.ModelMetadata.ElementMetadata;
+            Debug.Assert(elementMetadata != null);
+            var typeInCollectionIsNullableValueType = elementMetadata.IsNullableValueType;
+
+            var serviceProvider = htmlHelper.ViewContext.HttpContext.RequestServices;
+            var metadataProvider = serviceProvider.GetRequiredService<IModelMetadataProvider>();
+
+            // Use typeof(string) instead of typeof(object) for IEnumerable collections. Neither type is Nullable<T>.
+            if (elementMetadata.ModelType == typeof(object))
             {
-                typeInCollection = genericEnumerableType.GenericTypeArguments[0];
+                elementMetadata = metadataProvider.GetMetadataForType(typeof(string));
             }
 
-            var typeInCollectionIsNullableValueType = TypeHelper.IsNullableValueType(typeInCollection);
             var oldPrefix = viewData.TemplateInfo.HtmlFieldPrefix;
-
             try
             {
                 viewData.TemplateInfo.HtmlFieldPrefix = string.Empty;
 
                 var fieldNameBase = oldPrefix;
                 var result = new StringBuilder();
-
-                var serviceProvider = htmlHelper.ViewContext.HttpContext.RequestServices;
-                var metadataProvider = serviceProvider.GetRequiredService<IModelMetadataProvider>();
                 var viewEngine = serviceProvider.GetRequiredService<ICompositeViewEngine>();
 
                 var index = 0;
                 foreach (var item in collection)
                 {
-                    var itemType = typeInCollection;
+                    var itemMetadata = elementMetadata;
                     if (item != null && !typeInCollectionIsNullableValueType)
                     {
-                        itemType = item.GetType();
+                        itemMetadata = metadataProvider.GetMetadataForType(item.GetType());
                     }
 
-                    var modelExplorer = metadataProvider.GetModelExplorerForType(itemType, item);
+                    var modelExplorer = new ModelExplorer(
+                        metadataProvider,
+                        container: htmlHelper.ViewData.ModelExplorer,
+                        metadata: itemMetadata,
+                        model: item);
                     var fieldName = string.Format(CultureInfo.InvariantCulture, "{0}[{1}]", fieldNameBase, index++);
 
                     var templateBuilder = new TemplateBuilder(

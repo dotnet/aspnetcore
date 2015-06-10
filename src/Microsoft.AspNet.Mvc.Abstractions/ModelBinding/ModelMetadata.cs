@@ -5,7 +5,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+#if DNXCORE50
 using System.Reflection;
+#endif
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.Framework.Internal;
 
@@ -79,7 +81,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public abstract string BinderModelName { get; }
 
         /// <summary>
-        /// Gets the <see cref="Type"/> of an <see cref="IModelBinder"/> of a model if specified explicitly using 
+        /// Gets the <see cref="Type"/> of an <see cref="IModelBinder"/> of a model if specified explicitly using
         /// <see cref="IBinderTypeProviderMetadata"/>.
         /// </summary>
         public abstract Type BinderType { get; }
@@ -123,6 +125,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// http://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to edit the model.
         /// </summary>
         public abstract string EditFormatString { get; }
+
+        /// <summary>
+        /// Gets the <see cref="ModelMetadata"/> for elements of <see cref="ModelType"/> if that <see cref="Type"/>
+        /// implements <see cref="IEnumerable"/>.
+        /// </summary>
+        /// <value>
+        /// <see cref="ModelMetadata"/> for <c>T</c> if <see cref="ModelType"/> implements
+        /// <see cref="IEnumerable{T}"/>. <see cref="ModelMetadata"/> for <c>object</c> if <see cref="ModelType"/>
+        /// implements <see cref="IEnumerable"/> but not <see cref="IEnumerable{T}"/>. <c>null</c> otherwise i.e. when
+        /// <see cref="IsCollectionType"/> is <c>false</c>.
+        /// </value>
+        public abstract ModelMetadata ElementMetadata { get; }
 
         /// <summary>
         /// Gets the ordered display names and values of all <see cref="Enum"/> values in <see cref="ModelType"/> or
@@ -330,6 +344,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
+        /// Gets a property getter delegate to get the property value from a model object.
+        /// </summary>
+        public abstract Func<object, object> PropertyGetter { get; }
+
+        /// <summary>
+        /// Gets a property setter delegate to set the property value on a model object.
+        /// </summary>
+        public abstract Action<object, object> PropertySetter { get; }
+
+        /// <summary>
         /// Gets a display name for the model.
         /// </summary>
         /// <remarks>
@@ -341,15 +365,5 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             return DisplayName ?? PropertyName ?? ModelType.Name;
         }
-
-        /// <summary>
-        /// Gets or sets a property getter delegate to get the property value from a model object.
-        /// </summary>
-        public abstract Func<object, object> PropertyGetter { get; }
-
-        /// <summary>
-        /// Gets or sets a property setter delegate to set the property value on a model object.
-        /// </summary>
-        public abstract Action<object, object> PropertySetter { get; }
     }
 }
