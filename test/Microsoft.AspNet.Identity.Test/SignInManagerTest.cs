@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
@@ -77,7 +78,6 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Throws<ArgumentNullException>("claimsFactory", () => new SignInManager<TestUser>(userManager, contextAccessor.Object, null, null, null));
         }
 
-        //TODO: Mock fails in K (this works fine in net45)
         //[Fact]
         //public async Task EnsureClaimsPrincipalFactoryCreateIdentityCalled()
         //{
@@ -86,9 +86,8 @@ namespace Microsoft.AspNet.Identity.Test
         //    var userManager = MockHelpers.TestUserManager<TestUser>();
         //    var identityFactory = new Mock<IUserClaimsPrincipalFactory<TestUser>>();
         //    const string authType = "Test";
-        //    var testIdentity = new ClaimsIdentity(authType);
-        //    identityFactory.Setup(s => s.CreateAsync(userManager, user, authType)).ReturnsAsync(testIdentity).Verifiable();
-        //    userManager.UserClaimsPrincipalFactory = identityFactory.Object;
+        //    var testIdentity = new ClaimsPrincipal();
+        //    identityFactory.Setup(s => s.CreateAsync(user)).ReturnsAsync(testIdentity).Verifiable();
         //    var context = new Mock<HttpContext>();
         //    var response = new Mock<HttpResponse>();
         //    context.Setup(c => c.Response).Returns(response.Object).Verifiable();
@@ -126,10 +125,7 @@ namespace Microsoft.AspNet.Identity.Test
             var claimsFactory = new UserClaimsPrincipalFactory<TestUser, TestRole>(manager.Object, roleManager.Object, options.Object);
             var logStore = new StringBuilder();
             var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
-            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, null);
-            helper.Logger = logger.Object;
-            var expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
-            var expectedLog = string.Format("{0} : {1}", "PasswordSignInAsync", "Lockedout");
+            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger.Object);
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, false);
@@ -137,8 +133,7 @@ namespace Microsoft.AspNet.Identity.Test
             // Assert
             Assert.False(result.Succeeded);
             Assert.True(result.IsLockedOut);
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedLog));
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
+            Assert.True(logStore.ToString().Contains($"User {user.Id} is currently locked out."));
             manager.Verify();
         }
 
@@ -162,10 +157,7 @@ namespace Microsoft.AspNet.Identity.Test
             options.Setup(a => a.Options).Returns(identityOptions);
             var claimsFactory = new UserClaimsPrincipalFactory<TestUser, TestRole>(manager, roleManager.Object, options.Object);
             var sm = new SignInManager<TestUser>(manager, contextAccessor.Object, claimsFactory, options.Object, null);
-            if (logStore != null)
-            {
-                sm.Logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore).Object;
-            }
+            sm.Logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore ?? new StringBuilder()).Object;
             return sm;
         }
 
@@ -185,18 +177,13 @@ namespace Microsoft.AspNet.Identity.Test
             var auth = new Mock<AuthenticationManager>();
             context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
             SetupSignIn(auth, user.Id, isPersistent);
-            var logStore = new StringBuilder();
-            var helper = SetupSignInManager(manager.Object, context.Object, logStore);
-            var expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
-            var expectedLog = string.Format("{0} : {1}", "PasswordSignInAsync", "Succeeded");
+            var helper = SetupSignInManager(manager.Object, context.Object);
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "password", isPersistent, false);
 
             // Assert
             Assert.True(result.Succeeded);
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedLog));
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
             manager.Verify();
             context.Verify();
             auth.Verify();
@@ -285,10 +272,7 @@ namespace Microsoft.AspNet.Identity.Test
                 It.Is<ClaimsPrincipal>(id => id.FindFirstValue(ClaimTypes.Name) == user.Id),
                 It.IsAny<AuthenticationProperties>())).Verifiable();
             context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
-            var logStore = new StringBuilder();
-            var helper = SetupSignInManager(manager.Object, context.Object, logStore);
-            var expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
-            var expectedLog = string.Format("{0} : {1}", "PasswordSignInAsync", "RequiresTwoFactor");
+            var helper = SetupSignInManager(manager.Object, context.Object);
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "password", false, false);
@@ -296,8 +280,6 @@ namespace Microsoft.AspNet.Identity.Test
             // Assert
             Assert.False(result.Succeeded);
             Assert.True(result.RequiresTwoFactor);
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedLog));
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
             manager.Verify();
             context.Verify();
             auth.Verify();
@@ -326,18 +308,13 @@ namespace Microsoft.AspNet.Identity.Test
             var auth = new Mock<AuthenticationManager>();
             context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
             SetupSignIn(auth, user.Id, isPersistent, loginProvider);
-            var logStore = new StringBuilder();
-            var helper = SetupSignInManager(manager.Object, context.Object, logStore);
-            var expectedScope = string.Format("{0} for {1}: {2}", "ExternalLoginSignInAsync", "user", user.Id);
-            var expectedLog = string.Format("{0} : {1}", "ExternalLoginSignInAsync", "Succeeded");
+            var helper = SetupSignInManager(manager.Object, context.Object);
 
             // Act
             var result = await helper.ExternalLoginSignInAsync(loginProvider, providerKey, isPersistent);
 
             // Assert
             Assert.True(result.Succeeded);
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedLog));
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
             manager.Verify();
             context.Verify();
             auth.Verify();
@@ -442,18 +419,13 @@ namespace Microsoft.AspNet.Identity.Test
             }
             auth.Setup(a => a.AuthenticateAsync(IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme)).ReturnsAsync(authResult).Verifiable();
             context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
-            var logStore = new StringBuilder();
-            var helper = SetupSignInManager(manager.Object, context.Object, logStore);
-            var expectedScope = string.Format("{0} for {1}: {2}", "TwoFactorSignInAsync", "user", user.Id);
-            var expectedLog = string.Format("{0} : {1}", "TwoFactorSignInAsync", "Succeeded");
+            var helper = SetupSignInManager(manager.Object, context.Object);
 
             // Act
             var result = await helper.TwoFactorSignInAsync(provider, code, isPersistent, rememberClient);
 
             // Assert
             Assert.True(result.Succeeded);
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedLog));
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
             manager.Verify();
             context.Verify();
             auth.Verify();
@@ -535,8 +507,7 @@ namespace Microsoft.AspNet.Identity.Test
             auth.Setup(a => a.SignOut(IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme)).Verifiable();
             auth.Setup(a => a.SignOut(IdentityOptions.ExternalCookieAuthenticationScheme)).Verifiable();
             IdentityOptions.ApplicationCookieAuthenticationScheme = authenticationScheme;
-            var logStore = new StringBuilder();
-            var helper = SetupSignInManager(manager.Object, context.Object, logStore);
+            var helper = SetupSignInManager(manager.Object, context.Object);
 
             // Act
             helper.SignOut();
@@ -558,15 +529,12 @@ namespace Microsoft.AspNet.Identity.Test
             var context = new Mock<HttpContext>();
             var logStore = new StringBuilder();
             var helper = SetupSignInManager(manager.Object, context.Object, logStore);
-            var expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
-            var expectedLog = string.Format("{0} : {1}", "PasswordSignInAsync", "Failed");
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, false);
 
             // Assert
             Assert.False(result.Succeeded);
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedLog));
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
+            Assert.True(logStore.ToString().Contains($"User {user.Id} failed to provide the correct password."));
             manager.Verify();
             context.Verify();
         }
@@ -641,8 +609,6 @@ namespace Microsoft.AspNet.Identity.Test
             identityOptions.SignIn.RequireConfirmedEmail = true;
             var logStore = new StringBuilder();
             var helper = SetupSignInManager(manager.Object, context.Object, logStore, identityOptions);
-            var expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
-            var expectedLog = string.Format("{0} : {1}", "CanSignInAsync", confirmed.ToString());
 
             // Act
             var result = await helper.PasswordSignInAsync(user, "password", false, false);
@@ -651,8 +617,7 @@ namespace Microsoft.AspNet.Identity.Test
 
             Assert.Equal(confirmed, result.Succeeded);
             Assert.NotEqual(confirmed, result.IsNotAllowed);
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedLog));
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
+            Assert.Equal(confirmed, !logStore.ToString().Contains($"User {user.Id} cannot sign in without a confirmed email."));
 
             manager.Verify();
             context.Verify();
@@ -690,8 +655,6 @@ namespace Microsoft.AspNet.Identity.Test
             identityOptions.SignIn.RequireConfirmedPhoneNumber = true;
             var logStore = new StringBuilder();
             var helper = SetupSignInManager(manager.Object, context.Object, logStore, identityOptions);
-            var expectedScope = string.Format("{0} for {1}: {2}", "PasswordSignInAsync", "user", user.Id);
-            var expectedLog = string.Format("{0} : {1}", "CanSignInAsync", confirmed.ToString());
 
             // Act
             var result = await helper.PasswordSignInAsync(user, "password", false, false);
@@ -699,8 +662,7 @@ namespace Microsoft.AspNet.Identity.Test
             // Assert
             Assert.Equal(confirmed, result.Succeeded);
             Assert.NotEqual(confirmed, result.IsNotAllowed);
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedLog));
-            Assert.NotEqual(-1, logStore.ToString().IndexOf(expectedScope));
+            Assert.Equal(confirmed, !logStore.ToString().Contains($"User {user.Id} cannot sign in without a confirmed phone number."));
             manager.Verify();
             context.Verify();
             auth.Verify();
