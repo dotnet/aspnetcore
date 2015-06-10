@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             if (!_designTimeMode)
             {
                 RenderRunTagHelpers();
-                RenderWriteTagHelperMethodCall();
+                RenderWriteTagHelperMethodCall(chunk);
                 RenderEndTagHelpersScope();
             }
         }
@@ -114,17 +114,11 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             var oldWriter = _context.TargetWriterName;
             _context.TargetWriterName = null;
 
-            // Disabling instrumentation inside TagHelper bodies since we never know if it's accurate
-            var oldInstrumentation = _context.Host.EnableInstrumentation;
-            _context.Host.EnableInstrumentation = false;
-
             using (_writer.BuildAsyncLambda(endLine: false))
             {
                 // Render all of the tag helper children.
                 _bodyVisitor.Accept(children);
             }
-
-            _context.Host.EnableInstrumentation = oldInstrumentation;
 
             _context.TargetWriterName = oldWriter;
 
@@ -481,9 +475,11 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                                                   _tagHelperContext.ScopeManagerEndMethodName);
         }
 
-        private void RenderWriteTagHelperMethodCall()
+        private void RenderWriteTagHelperMethodCall(TagHelperChunk chunk)
         {
-            _writer.Write("await ");
+            _writer
+                .WriteStartInstrumentationContext(_context, chunk.Association, isLiteral: false)
+                .Write("await ");
 
             if (!string.IsNullOrEmpty(_context.TargetWriterName))
             {
@@ -499,7 +495,8 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
 
             _writer
                 .Write(ExecutionContextVariableName)
-                .WriteEndMethodInvocation();
+                .WriteEndMethodInvocation()
+                .WriteEndInstrumentationContext(_context);
         }
 
         private void RenderRunTagHelpers()

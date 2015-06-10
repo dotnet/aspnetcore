@@ -29,7 +29,9 @@ namespace TestOutput
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", false, "test", async() => {
+                Instrumentation.BeginContext(64, 34, true);
                 WriteLiteral("\r\n    <input nottaghelper />\r\n    ");
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
@@ -38,9 +40,13 @@ namespace TestOutput
                 __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw("btn"));
                 __tagHelperExecutionContext.AddMinimizedHtmlAttribute("catchall-unbound-required");
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                Instrumentation.BeginContext(98, 59, false);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
+                Instrumentation.BeginContext(157, 6, true);
                 WriteLiteral("\r\n    ");
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
@@ -54,9 +60,13 @@ namespace TestOutput
                 __InputTagHelper.BoundRequiredString = "hello";
                 __tagHelperExecutionContext.AddTagHelperAttribute("input-bound-required-string", __InputTagHelper.BoundRequiredString);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                Instrumentation.BeginContext(163, 119, false);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
+                Instrumentation.BeginContext(282, 6, true);
                 WriteLiteral("\r\n    ");
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
@@ -72,9 +82,13 @@ namespace TestOutput
                 __InputTagHelper.BoundRequiredString = "hello2";
                 __tagHelperExecutionContext.AddTagHelperAttribute("input-bound-required-string", __InputTagHelper.BoundRequiredString);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                Instrumentation.BeginContext(288, 176, false);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
+                Instrumentation.BeginContext(464, 6, true);
                 WriteLiteral("\r\n    ");
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
@@ -89,16 +103,22 @@ namespace TestOutput
                 __InputTagHelper.BoundRequiredString = "world";
                 __tagHelperExecutionContext.AddTagHelperAttribute("input-bound-required-string", __InputTagHelper.BoundRequiredString);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                Instrumentation.BeginContext(470, 206, false);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
+                Instrumentation.BeginContext(676, 2, true);
                 WriteLiteral("\r\n");
+                Instrumentation.EndContext();
             }
             , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
             __tagHelperExecutionContext.Add(__CatchAllTagHelper);
             __tagHelperExecutionContext.AddMinimizedHtmlAttribute("catchall-unbound-required");
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            Instrumentation.BeginContext(35, 647, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
         }
         #pragma warning restore 1998

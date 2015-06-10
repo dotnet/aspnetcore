@@ -46,7 +46,9 @@ namespace TestOutput
             __tagHelperExecutionContext.AddTagHelperAttribute("checked", __InputTagHelper.Checked);
             __CatchAllTagHelper.Checked = __InputTagHelper.Checked;
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            Instrumentation.BeginContext(35, 40, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
         }
         #pragma warning restore 1998

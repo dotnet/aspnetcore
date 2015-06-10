@@ -43,22 +43,32 @@ namespace TestOutput
                 WriteLiteralTo(__razor_template_writer, "\r\n    <div>\r\n        ");
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("mytaghelper", false, "test", async() => {
+                    Instrumentation.BeginContext(217, 52, true);
                     WriteLiteral("\r\n            In None ContentBehavior.\r\n            ");
+                    Instrumentation.EndContext();
                     __tagHelperExecutionContext = __tagHelperScopeManager.Begin("nestedtaghelper", false, "test", async() => {
+                        Instrumentation.BeginContext(286, 26, true);
                         WriteLiteral("Some buffered values with ");
+                        Instrumentation.EndContext();
+                        Instrumentation.BeginContext(313, 4, false);
 #line 11 "TagHelpersInSection.cshtml"
                                  Write(code);
 
 #line default
 #line hidden
+                        Instrumentation.EndContext();
                     }
                     , StartTagHelperWritingScope, EndTagHelperWritingScope);
                     __NestedTagHelper = CreateTagHelper<NestedTagHelper>();
                     __tagHelperExecutionContext.Add(__NestedTagHelper);
                     __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                    Instrumentation.BeginContext(269, 66, false);
                     await WriteTagHelperAsync(__tagHelperExecutionContext);
+                    Instrumentation.EndContext();
                     __tagHelperExecutionContext = __tagHelperScopeManager.End();
+                    Instrumentation.BeginContext(335, 10, true);
                     WriteLiteral("\r\n        ");
+                    Instrumentation.EndContext();
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __MyTagHelper = CreateTagHelper<MyTagHelper>();
@@ -83,7 +93,9 @@ Write(DateTime.Now);
                 __tagHelperStringValueBuffer = EndTagHelperWritingScope();
                 __tagHelperExecutionContext.AddHtmlAttribute("unboundproperty", Html.Raw(__tagHelperStringValueBuffer.ToString()));
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                Instrumentation.BeginContext(114, 245, false);
                 await WriteTagHelperToAsync(__razor_template_writer, __tagHelperExecutionContext);
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
                 Instrumentation.BeginContext(359, 14, true);
                 WriteLiteralTo(__razor_template_writer, "\r\n    </div>\r\n");

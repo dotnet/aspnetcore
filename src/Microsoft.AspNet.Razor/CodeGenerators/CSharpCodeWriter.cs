@@ -464,7 +464,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             Write("\"");
         }
 
-        public void WriteStartInstrumentationContext(
+        public CSharpCodeWriter WriteStartInstrumentationContext(
             ChunkGeneratorContext context,
             SyntaxTreeNode syntaxNode,
             bool isLiteral)
@@ -475,12 +475,12 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             Write(syntaxNode.Length.ToString(CultureInfo.InvariantCulture));
             WriteParameterSeparator();
             Write(isLiteral ? "true" : "false");
-            WriteEndMethodInvocation();
+            return WriteEndMethodInvocation();
         }
 
-        public void WriteEndInstrumentationContext(ChunkGeneratorContext context)
+        public CSharpCodeWriter WriteEndInstrumentationContext(ChunkGeneratorContext context)
         {
-            WriteMethodInvocation(context.Host.GeneratedClassContext.EndContextMethodName);
+            return WriteMethodInvocation(context.Host.GeneratedClassContext.EndContextMethodName);
         }
     }
 }

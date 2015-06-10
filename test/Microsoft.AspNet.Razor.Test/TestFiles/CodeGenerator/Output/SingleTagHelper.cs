@@ -28,7 +28,9 @@ namespace TestOutput
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", false, "test", async() => {
+                Instrumentation.BeginContext(69, 11, true);
                 WriteLiteral("Body of Tag");
+                Instrumentation.EndContext();
             }
             , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __PTagHelper = CreateTagHelper<PTagHelper>();
@@ -41,7 +43,9 @@ namespace TestOutput
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __PTagHelper.Age);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            Instrumentation.BeginContext(35, 49, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
         }
         #pragma warning restore 1998

@@ -30,7 +30,9 @@ namespace TestOutput
             WriteLiteral("\r\n<THSdiv class=\"randomNonTagHelperAttribute\">\r\n    ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", false, "test", async() => {
+                Instrumentation.BeginContext(135, 58, true);
                 WriteLiteral("\r\n        <p></p>\r\n        <input type=\"text\" />\r\n        ");
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
@@ -48,16 +50,22 @@ namespace TestOutput
 #line hidden
                 __tagHelperExecutionContext.AddTagHelperAttribute("checked", __InputTagHelper2.Checked);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                Instrumentation.BeginContext(193, 43, false);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
+                Instrumentation.BeginContext(236, 6, true);
                 WriteLiteral("\r\n    ");
+                Instrumentation.EndContext();
             }
             , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
             __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw("Hello World"));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            Instrumentation.BeginContext(109, 140, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             Instrumentation.BeginContext(249, 11, true);
             WriteLiteral("\r\n</THSdiv>");

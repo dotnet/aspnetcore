@@ -31,18 +31,26 @@ namespace TestOutput
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", false, "test", async() => {
+                Instrumentation.BeginContext(47, 9, true);
                 WriteLiteral("\r\n    <p>");
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("strong", false, "test", async() => {
+                    Instrumentation.BeginContext(78, 5, true);
                     WriteLiteral("Hello");
+                    Instrumentation.EndContext();
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
                 __tagHelperExecutionContext.Add(__CatchAllTagHelper);
                 __tagHelperExecutionContext.AddHtmlAttribute("catchAll", Html.Raw("hi"));
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                Instrumentation.BeginContext(56, 36, false);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
+                Instrumentation.BeginContext(92, 62, true);
                 WriteLiteral("<strong>World</strong></p>\r\n    <input checked=\"true\" />\r\n    ");
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
@@ -60,9 +68,13 @@ namespace TestOutput
 #line hidden
                 __tagHelperExecutionContext.AddTagHelperAttribute("checked", __InputTagHelper2.Checked);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                Instrumentation.BeginContext(154, 40, false);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
+                Instrumentation.BeginContext(194, 6, true);
                 WriteLiteral("\r\n    ");
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
@@ -83,16 +95,22 @@ namespace TestOutput
                 __tagHelperExecutionContext.AddTagHelperAttribute("checked", __InputTagHelper2.Checked);
                 __tagHelperExecutionContext.AddHtmlAttribute("catchAll", Html.Raw("hi"));
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                Instrumentation.BeginContext(200, 54, false);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
+                Instrumentation.BeginContext(254, 2, true);
                 WriteLiteral("\r\n");
+                Instrumentation.EndContext();
             }
             , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
             __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw("btn"));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            Instrumentation.BeginContext(32, 228, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
         }
         #pragma warning restore 1998

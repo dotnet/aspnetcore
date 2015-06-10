@@ -29,16 +29,22 @@ namespace TestOutput
             WriteLiteral("\r\n<div data-animation=\"fade\" class=\"randomNonTagHelperAttribute\">\r\n    ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", false, "test", async() => {
+                Instrumentation.BeginContext(145, 10, true);
                 WriteLiteral("\r\n        ");
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", false, "test", async() => {
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __PTagHelper = CreateTagHelper<PTagHelper>();
                 __tagHelperExecutionContext.Add(__PTagHelper);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                Instrumentation.BeginContext(155, 7, false);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
+                Instrumentation.BeginContext(162, 10, true);
                 WriteLiteral("\r\n        ");
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
@@ -60,9 +66,13 @@ Write(ViewBag.DefaultInterval);
                 __tagHelperExecutionContext.AddTagHelperAttribute("type", __InputTagHelper.Type);
                 __InputTagHelper2.Type = __InputTagHelper.Type;
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                Instrumentation.BeginContext(172, 73, false);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
+                Instrumentation.BeginContext(245, 10, true);
                 WriteLiteral("\r\n        ");
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
@@ -80,9 +90,13 @@ Write(ViewBag.DefaultInterval);
 #line hidden
                 __tagHelperExecutionContext.AddTagHelperAttribute("checked", __InputTagHelper2.Checked);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                Instrumentation.BeginContext(255, 39, false);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
+                Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
+                Instrumentation.BeginContext(294, 6, true);
                 WriteLiteral("\r\n    ");
+                Instrumentation.EndContext();
             }
             , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __PTagHelper = CreateTagHelper<PTagHelper>();
@@ -90,7 +104,9 @@ Write(ViewBag.DefaultInterval);
             __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw("Hello World"));
             __tagHelperExecutionContext.AddHtmlAttribute("data-delay", Html.Raw("1000"));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            Instrumentation.BeginContext(104, 200, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             Instrumentation.BeginContext(304, 8, true);
             WriteLiteral("\r\n</div>");

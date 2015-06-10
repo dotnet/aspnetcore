@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
+using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.Parser.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Xunit;
 
@@ -170,6 +173,12 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 attributes: new List<KeyValuePair<string, Chunk>>(),
                 descriptors: tagHelperDescriptors)
             {
+                Association = new TagHelperBlock(
+                    new TagHelperBlockBuilder(
+                        tagName,
+                        selfClosing: false,
+                        attributes: new List<KeyValuePair<string, SyntaxTreeNode>>(),
+                        children: Enumerable.Empty<SyntaxTreeNode>())),
                 Children = new List<Chunk>(),
             };
         }
