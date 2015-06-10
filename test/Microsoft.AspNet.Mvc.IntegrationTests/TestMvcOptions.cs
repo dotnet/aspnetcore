@@ -12,6 +12,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         public TestMvcOptions()
         {
             Options = new MvcOptions();
+            CoreMvcOptionsSetup.ConfigureMvc(Options);
             MvcOptionsSetup.ConfigureMvc(Options);
             JsonMvcOptionsSetup.ConfigureMvc(Options, SerializerSettingsProvider.CreateSerializerSettings());
         }

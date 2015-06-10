@@ -7,22 +7,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.ApplicationModels;
-using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewComponents;
-using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
@@ -33,6 +24,8 @@ namespace Microsoft.Framework.DependencyInjection
     {
         public static IServiceCollection AddMvc([NotNull] this IServiceCollection services)
         {
+            services.AddMinimalMvc();
+
             ConfigureDefaultServices(services);
 
             AddMvcServices(services);
@@ -48,18 +41,6 @@ namespace Microsoft.Framework.DependencyInjection
         public static void ConfigureAntiforgery(
             [NotNull] this IServiceCollection services,
             [NotNull] Action<AntiForgeryOptions> setupAction)
-        {
-            services.Configure(setupAction);
-        }
-
-        /// <summary>
-        /// Configures a set of <see cref="MvcOptions"/> for the application.
-        /// </summary>
-        /// <param name="services">The services available in the application.</param>
-        /// <param name="setupAction">The <see cref="MvcOptions"/> which need to be configured.</param>
-        public static void ConfigureMvc(
-            [NotNull] this IServiceCollection services,
-            [NotNull] Action<MvcOptions> setupAction)
         {
             services.Configure(setupAction);
         }
@@ -182,86 +163,25 @@ namespace Microsoft.Framework.DependencyInjection
                 ServiceDescriptor
                 .Transient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>());
 
-            services.TryAdd(ServiceDescriptor.Transient<MvcMarkerService, MvcMarkerService>());
-            services.TryAdd((ServiceDescriptor.Singleton<ITypeActivatorCache, DefaultTypeActivatorCache>()));
-            services.TryAdd(ServiceDescriptor.Scoped(typeof(IScopedInstance<>), typeof(ScopedInstance<>)));
-
-            // Core action discovery, filters and action execution.
-
-            // This are consumed only when creating action descriptors, then they can be de-allocated
-            services.TryAdd(ServiceDescriptor.Transient<IAssemblyProvider, DefaultAssemblyProvider>());
-            services.TryAdd(ServiceDescriptor.Transient<IControllerTypeProvider, DefaultControllerTypeProvider>()); ;
-            TryAddMultiRegistrationService(
-                services,
-                ServiceDescriptor.Transient<IApplicationModelProvider, DefaultApplicationModelProvider>());
+            // Cors
             TryAddMultiRegistrationService(
                 services,
                 ServiceDescriptor.Transient<IApplicationModelProvider, CorsApplicationModelProvider>());
+            services.TryAdd(ServiceDescriptor.Transient<CorsAuthorizationFilter, CorsAuthorizationFilter>());
+
+            // Auth
             TryAddMultiRegistrationService(
                 services,
                 ServiceDescriptor.Transient<IApplicationModelProvider, AuthorizationApplicationModelProvider>());
 
-            // This has a cache, so it needs to be a singleton
-            services.TryAdd(ServiceDescriptor.Singleton<IControllerFactory, DefaultControllerFactory>());
-
-            services.TryAdd(ServiceDescriptor.Transient<IControllerActivator, DefaultControllerActivator>());
-
-            // This accesses per-request services
-            services.TryAdd(ServiceDescriptor.Transient<IActionInvokerFactory, ActionInvokerFactory>());
-
-            // This provider needs access to the per-request services, but might be used many times for a given
-            // request.
-            TryAddMultiRegistrationService(
-                services,
-                ServiceDescriptor.Transient<IActionConstraintProvider, DefaultActionConstraintProvider>());
-
-            services.TryAdd(ServiceDescriptor
-                .Singleton<IActionSelectorDecisionTreeProvider, ActionSelectorDecisionTreeProvider>());
-            services.TryAdd(ServiceDescriptor.Singleton<IActionSelector, DefaultActionSelector>());
-            services.TryAdd(ServiceDescriptor
-                .Transient<IControllerActionArgumentBinder, DefaultControllerActionArgumentBinder>());
-            services.TryAdd(ServiceDescriptor.Transient<IObjectModelValidator>(serviceProvider =>
-            {
-                var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Options;
-                var modelMetadataProvider = serviceProvider.GetRequiredService<IModelMetadataProvider>();
-                return new DefaultObjectValidator(options.ValidationExcludeFilters, modelMetadataProvider);
-            }));
-
-            TryAddMultiRegistrationService(
-                services,
-                ServiceDescriptor.Transient<IActionDescriptorProvider, ControllerActionDescriptorProvider>());
-
-            TryAddMultiRegistrationService(
-                services,
-                ServiceDescriptor.Transient<IActionInvokerProvider, ControllerActionInvokerProvider>());
-
-            services.TryAdd(ServiceDescriptor
-                .Singleton<IActionDescriptorsCollectionProvider, DefaultActionDescriptorsCollectionProvider>());
-
-            TryAddMultiRegistrationService(
-                services,
-                ServiceDescriptor.Transient<IFilterProvider, DefaultFilterProvider>());
-
-            TryAddMultiRegistrationService(
-                services,
-                ServiceDescriptor.Transient<IControllerPropertyActivator, DefaultControllerPropertyActivator>());
+            // Support for activating ViewDataDictionary
             TryAddMultiRegistrationService(
                 services,
                 ServiceDescriptor
                     .Transient<IControllerPropertyActivator, ViewDataDictionaryControllerPropertyActivator>());
 
+            // Formatter Mappings
             services.TryAdd(ServiceDescriptor.Transient<FormatFilter, FormatFilter>());
-            services.TryAdd(ServiceDescriptor.Transient<CorsAuthorizationFilter, CorsAuthorizationFilter>());
-
-            // Dataflow - ModelBinding, Validation and Formatting
-            //
-            // The DefaultModelMetadataProvider does significant caching and should be a singleton.
-            services.TryAdd(ServiceDescriptor.Singleton<IModelMetadataProvider, DefaultModelMetadataProvider>());
-            services.TryAdd(ServiceDescriptor.Transient<ICompositeMetadataDetailsProvider>(serviceProvider =>
-            {
-                var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Options;
-                return new DefaultCompositeMetadataDetailsProvider(options.ModelMetadataDetailsProviders);
-            }));
 
             // JsonOutputFormatter should use the SerializerSettings on MvcOptions
             services.TryAdd(ServiceDescriptor.Singleton<JsonOutputFormatter>(serviceProvider =>
@@ -311,7 +231,6 @@ namespace Microsoft.Framework.DependencyInjection
             services.TryAdd(ServiceDescriptor.Transient<IHtmlHelper, HtmlHelper>());
             services.TryAdd(ServiceDescriptor.Transient(typeof(IHtmlHelper<>), typeof(HtmlHelper<>)));
             services.TryAdd(ServiceDescriptor.Transient<IJsonHelper, JsonHelper>());
-            services.TryAdd(ServiceDescriptor.Scoped<IUrlHelper, UrlHelper>());
 
             // Only want one ITagHelperActivator so it can cache Type activation information. Types won't conflict.
             services.TryAdd(ServiceDescriptor.Singleton<ITagHelperActivator, DefaultTagHelperActivator>());
@@ -348,11 +267,6 @@ namespace Microsoft.Framework.DependencyInjection
             TryAddMultiRegistrationService(
                 services,
                 ServiceDescriptor.Transient<IApiDescriptionProvider, DefaultApiDescriptionProvider>());
-
-            // Temp Data
-            services.TryAdd(ServiceDescriptor.Scoped<ITempDataDictionary, TempDataDictionary>());
-            // This does caching so it should stay singleton
-            services.TryAdd(ServiceDescriptor.Singleton<ITempDataProvider, SessionStateTempDataProvider>());
         }
 
         /// <summary>
@@ -406,15 +320,10 @@ namespace Microsoft.Framework.DependencyInjection
 
         private static void ConfigureDefaultServices(IServiceCollection services)
         {
-            services.AddOptions();
             services.AddDataProtection();
-            services.AddRouting();
             services.AddCors();
             services.AddAuthorization();
             services.AddWebEncoders();
-            services.AddNotifier();
-            services.Configure<RouteOptions>(
-                routeOptions => routeOptions.ConstraintMap.Add("exists", typeof(KnownRouteValueConstraint)));
         }
     }
 }

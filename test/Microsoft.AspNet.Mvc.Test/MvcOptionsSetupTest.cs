@@ -35,10 +35,12 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var mvcOptions = new MvcOptions();
-            var setup = new MvcOptionsSetup();
+            var setup1 = new CoreMvcOptionsSetup();
+            var setup2 = new MvcOptionsSetup();
 
             // Act
-            setup.Configure(mvcOptions);
+            setup1.Configure(mvcOptions);
+            setup2.Configure(mvcOptions);
 
             // Assert
             var i = 0;
@@ -63,10 +65,12 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var mvcOptions = new MvcOptions();
-            var setup = new MvcOptionsSetup();
+            var setup1 = new CoreMvcOptionsSetup();
+            var setup2 = new MvcOptionsSetup();
 
             // Act
-            setup.Configure(mvcOptions);
+            setup1.Configure(mvcOptions);
+            setup2.Configure(mvcOptions);
 
             // Assert
             var valueProviders = mvcOptions.ValueProviderFactories;
@@ -81,13 +85,15 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var mvcOptions = new MvcOptions();
-            var setup1 = new MvcOptionsSetup();
-            var setup2 = new JsonMvcOptionsSetup(new OptionsManager<MvcJsonOptions>(
+            var setup1 = new CoreMvcOptionsSetup();
+            var setup2 = new MvcOptionsSetup();
+            var setup3 = new JsonMvcOptionsSetup(new OptionsManager<MvcJsonOptions>(
                 Enumerable.Empty<IConfigureOptions<MvcJsonOptions>>()));
 
             // Act
             setup1.Configure(mvcOptions);
             setup2.Configure(mvcOptions);
+            setup3.Configure(mvcOptions);
 
             // Assert
             Assert.Equal(4, mvcOptions.OutputFormatters.Count);
@@ -102,13 +108,15 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var mvcOptions = new MvcOptions();
-            var setup1 = new MvcOptionsSetup();
-            var setup2 = new JsonMvcOptionsSetup(new OptionsManager<MvcJsonOptions>(
+            var setup1 = new CoreMvcOptionsSetup();
+            var setup2 = new MvcOptionsSetup();
+            var setup3 = new JsonMvcOptionsSetup(new OptionsManager<MvcJsonOptions>(
                 Enumerable.Empty<IConfigureOptions<MvcJsonOptions>>()));
 
             // Act
             setup1.Configure(mvcOptions);
             setup2.Configure(mvcOptions);
+            setup3.Configure(mvcOptions);
 
             // Assert
             Assert.Equal(2, mvcOptions.InputFormatters.Count);
@@ -121,10 +129,12 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var mvcOptions = new MvcOptions();
-            var setup = new MvcOptionsSetup();
+            var setup1 = new CoreMvcOptionsSetup();
+            var setup2 = new MvcOptionsSetup();
 
             // Act
-            setup.Configure(mvcOptions);
+            setup1.Configure(mvcOptions);
+            setup2.Configure(mvcOptions);
 
             // Assert
             Assert.Equal(2, mvcOptions.ModelValidatorProviders.Count);
@@ -153,7 +163,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var mvcOptions = new MvcOptions();
-            var setup = new MvcOptionsSetup();
+            var setup = new CoreMvcOptionsSetup();
 
             // Act
             setup.Configure(mvcOptions);
@@ -167,10 +177,12 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var mvcOptions = new MvcOptions();
-            var setup = new MvcOptionsSetup();
+            var setup1 = new CoreMvcOptionsSetup();
+            var setup2 = new MvcOptionsSetup();
 
             // Act
-            setup.Configure(mvcOptions);
+            setup1.Configure(mvcOptions);
+            setup2.Configure(mvcOptions);
 
             // Assert
             Assert.Equal(8, mvcOptions.ValidationExcludeFilters.Count);
@@ -178,20 +190,11 @@ namespace Microsoft.AspNet.Mvc
 
             // Verify if the delegates registered by default exclude the given types.
             Assert.IsType(typeof(SimpleTypesExcludeFilter), mvcOptions.ValidationExcludeFilters[i++]);
-            Assert.IsType(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i]);
-            var xObjectFilter
-                = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++]);
-            Assert.Equal(xObjectFilter.ExcludedType, typeof(XObject));
 
             Assert.IsType(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i]);
             var typeFilter
                 = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++]);
             Assert.Equal(typeFilter.ExcludedType, typeof(Type));
-
-            Assert.IsType(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i]);
-            var jTokenFilter 
-                = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++]);
-            Assert.Equal(jTokenFilter.ExcludedType, typeof(JToken));
 
             Assert.IsType(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i]);
             var cancellationTokenFilter
@@ -209,6 +212,16 @@ namespace Microsoft.AspNet.Mvc
             var formCollectionFilter
                 = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++]);
             Assert.Equal(formCollectionFilter.ExcludedType, typeof(Http.IFormCollection));
+
+            Assert.IsType(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i]);
+            var xObjectFilter
+                = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++]);
+            Assert.Equal(xObjectFilter.ExcludedType, typeof(XObject));
+
+            Assert.IsType(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i]);
+            var jTokenFilter 
+                = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++]);
+            Assert.Equal(jTokenFilter.ExcludedType, typeof(JToken));
 
             Assert.IsType(typeof(DefaultTypeNameBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i]);
             var xmlNodeFilter = 

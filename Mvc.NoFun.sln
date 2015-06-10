@@ -74,6 +74,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Extens
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Extensions.Test", "test\Microsoft.AspNet.Mvc.Extensions.Test\Microsoft.AspNet.Mvc.Extensions.Test.xproj", "{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MvcMinimalSample.Web", "samples\MvcMinimalSample.Web\MvcMinimalSample.Web.xproj", "{F21E225B-190B-4DAA-8B0A-05986D231F56}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -419,6 +421,18 @@ Global
 		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}.Release|x86.ActiveCfg = Release|Any CPU
 		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}.Release|x86.Build.0 = Release|Any CPU
+		{F21E225B-190B-4DAA-8B0A-05986D231F56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F21E225B-190B-4DAA-8B0A-05986D231F56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F21E225B-190B-4DAA-8B0A-05986D231F56}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{F21E225B-190B-4DAA-8B0A-05986D231F56}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{F21E225B-190B-4DAA-8B0A-05986D231F56}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F21E225B-190B-4DAA-8B0A-05986D231F56}.Debug|x86.Build.0 = Debug|Any CPU
+		{F21E225B-190B-4DAA-8B0A-05986D231F56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F21E225B-190B-4DAA-8B0A-05986D231F56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F21E225B-190B-4DAA-8B0A-05986D231F56}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{F21E225B-190B-4DAA-8B0A-05986D231F56}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{F21E225B-190B-4DAA-8B0A-05986D231F56}.Release|x86.ActiveCfg = Release|Any CPU
+		{F21E225B-190B-4DAA-8B0A-05986D231F56}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -454,5 +468,6 @@ Global
 		{4C2AD8AB-8AC0-46C4-80C6-C5577C7255F6} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 		{B2CA101A-87E6-4DD2-9BB2-28DA68EF1A94} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
 		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
+		{F21E225B-190B-4DAA-8B0A-05986D231F56} = {DAAE4C74-D06F-4874-A166-33305D2643CE}
 	EndGlobalSection
 EndGlobal

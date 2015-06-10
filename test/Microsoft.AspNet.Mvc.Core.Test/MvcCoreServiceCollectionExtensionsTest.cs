@@ -4,14 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNet.Mvc.ActionConstraints;
-using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.MvcServiceCollectionExtensionsTestControllers;
-using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Moq;
@@ -19,73 +15,8 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class MvcServiceCollectionExtensionsTest
+    public class MvcCoreServiceCollectionExtensionsTest
     {
-        [Fact]
-        public void WithControllersAsServices_AddsTypesToControllerTypeProviderAndServiceCollection()
-        {
-            // Arrange
-            var collection = new ServiceCollection();
-            var controllerTypes = new[] { typeof(ControllerTypeA).GetTypeInfo(), typeof(TypeBController).GetTypeInfo() };
-
-            // Act
-            MvcServiceCollectionExtensions.WithControllersAsServices(collection,
-                                                                     controllerTypes);
-
-            // Assert
-            var services = collection.ToList();
-            Assert.Equal(4, services.Count);
-            Assert.Equal(typeof(ControllerTypeA), services[0].ServiceType);
-            Assert.Equal(typeof(ControllerTypeA), services[0].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[0].Lifetime);
-
-            Assert.Equal(typeof(TypeBController), services[1].ServiceType);
-            Assert.Equal(typeof(TypeBController), services[1].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[1].Lifetime);
-
-            Assert.Equal(typeof(IControllerActivator), services[2].ServiceType);
-            Assert.Equal(typeof(ServiceBasedControllerActivator), services[2].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[2].Lifetime);
-
-            Assert.Equal(typeof(IControllerTypeProvider), services[3].ServiceType);
-            var typeProvider = Assert.IsType<FixedSetControllerTypeProvider>(services[3].ImplementationInstance);
-            Assert.Equal(controllerTypes, typeProvider.ControllerTypes.OrderBy(c => c.Name));
-            Assert.Equal(ServiceLifetime.Singleton, services[3].Lifetime);
-        }
-
-        [Fact]
-        public void WithControllersAsServices_ScansControllersFromSpecifiedAssemblies()
-        {
-            // Arrange
-            var collection = new ServiceCollection();
-            var assemblies = new[] { GetType().Assembly };
-            var controllerTypes = new[] { typeof(ControllerTypeA), typeof(TypeBController) };
-
-            // Act
-            MvcServiceCollectionExtensions.WithControllersAsServices(collection, assemblies);
-
-            // Assert
-            var services = collection.ToList();
-            Assert.Equal(4, services.Count);
-            Assert.Equal(typeof(ControllerTypeA), services[0].ServiceType);
-            Assert.Equal(typeof(ControllerTypeA), services[0].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[0].Lifetime);
-
-            Assert.Equal(typeof(TypeBController), services[1].ServiceType);
-            Assert.Equal(typeof(TypeBController), services[1].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[1].Lifetime);
-
-
-            Assert.Equal(typeof(IControllerActivator), services[2].ServiceType);
-            Assert.Equal(typeof(ServiceBasedControllerActivator), services[2].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[2].Lifetime);
-
-            Assert.Equal(typeof(IControllerTypeProvider), services[3].ServiceType);
-            var typeProvider = Assert.IsType<FixedSetControllerTypeProvider>(services[3].ImplementationInstance);
-            Assert.Equal(controllerTypes, typeProvider.ControllerTypes.OrderBy(c => c.Name));
-            Assert.Equal(ServiceLifetime.Singleton, services[3].Lifetime);
-        }
-
         // Some MVC services can be registered multiple times, for example, 'IConfigureOptions<MvcOptions>' can
         // be registered by calling 'ConfigureMvc(...)' before the call to 'AddMvc()' in which case the options
         // configuration is run in the order they were registered.
@@ -106,7 +37,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             // Act
-            MvcServiceCollectionExtensions.AddMvcServices(services);
+            MvcCoreServiceCollectionExtensions.AddMvcCoreServices(services);
 
             // Assert
             foreach (var serviceType in MutliRegistrationServiceTypes)
@@ -134,7 +65,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             // Act
-            MvcServiceCollectionExtensions.AddMvcServices(services);
+            MvcCoreServiceCollectionExtensions.AddMvcCoreServices(services);
 
             // Assert
             foreach (var singleRegistrationType in SingleRegistrationServiceTypes)
@@ -150,8 +81,8 @@ namespace Microsoft.AspNet.Mvc
             var services = new ServiceCollection();
 
             // Act
-            MvcServiceCollectionExtensions.AddMvcServices(services);
-            MvcServiceCollectionExtensions.AddMvcServices(services);
+            MvcCoreServiceCollectionExtensions.AddMvcCoreServices(services);
+            MvcCoreServiceCollectionExtensions.AddMvcCoreServices(services);
 
             // Assert
             var singleRegistrationServiceTypes = SingleRegistrationServiceTypes;
@@ -175,7 +106,7 @@ namespace Microsoft.AspNet.Mvc
             get
             {
                 var services = new ServiceCollection();
-                MvcServiceCollectionExtensions.AddMvcServices(services);
+                MvcCoreServiceCollectionExtensions.AddMvcCoreServices(services);
 
                 var multiRegistrationServiceTypes = MutliRegistrationServiceTypes;
                 return services
@@ -194,51 +125,49 @@ namespace Microsoft.AspNet.Mvc
                         typeof(IConfigureOptions<MvcOptions>),
                         new Type[]
                         {
-                            typeof(MvcOptionsSetup),
-                            typeof(JsonMvcOptionsSetup),
+                            typeof(CoreMvcOptionsSetup),
                         }
                     },
                     {
-                        typeof(IConfigureOptions<MvcFormatterMappingOptions>),
+                        typeof(IActionConstraintProvider),
                         new Type[]
                         {
-                            typeof(JsonMvcFormatterMappingOptionsSetup),
+                            typeof(DefaultActionConstraintProvider),
                         }
                     },
                     {
-                        typeof(IConfigureOptions<MvcViewOptions>),
+                        typeof(IActionDescriptorProvider),
                         new Type[]
                         {
-                            typeof(MvcViewOptionsSetup),
+                            typeof(ControllerActionDescriptorProvider),
                         }
                     },
                     {
-                        typeof(IConfigureOptions<RazorViewEngineOptions>),
+                        typeof(IActionInvokerProvider),
                         new Type[]
                         {
-                            typeof(RazorViewEngineOptionsSetup),
+                            typeof(ControllerActionInvokerProvider),
                         }
                     },
                     {
-                        typeof(IApiDescriptionProvider),
+                        typeof(IFilterProvider),
                         new Type[]
                         {
-                            typeof(DefaultApiDescriptionProvider),
+                            typeof(DefaultFilterProvider),
                         }
                     },
                     {
                         typeof(IControllerPropertyActivator),
                         new Type[]
                         {
-                            typeof(ViewDataDictionaryControllerPropertyActivator),
+                            typeof(DefaultControllerPropertyActivator),
                         }
                     },
                     {
                         typeof(IApplicationModelProvider),
                         new Type[]
                         {
-                            typeof(CorsApplicationModelProvider),
-                            typeof(AuthorizationApplicationModelProvider),
+                            typeof(DefaultApplicationModelProvider),
                         }
                     },
                 };
@@ -283,36 +212,5 @@ namespace Microsoft.AspNet.Mvc
                     $"Found multiple instances of {implementationType} registered as {serviceType}");
             }
         }
-
-        private class CustomActivator : IControllerActivator
-        {
-            public object Create(ActionContext context, Type controllerType)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public class CustomTypeProvider : IControllerTypeProvider
-        {
-            public IEnumerable<TypeInfo> ControllerTypes { get; set; }
-        }
-    }
-}
-
-// These controllers are used to test the UseControllersAsServices implementation
-// which REQUIRES that they be public top-level classes. To avoid having to stub out the
-// implementation of this class to test it, they are just top level classes. Don't reuse
-// these outside this test - find a better way or use nested classes to keep the tests
-// independent.
-namespace Microsoft.AspNet.Mvc.MvcServiceCollectionExtensionsTestControllers
-{
-    public class ControllerTypeA : Controller
-    {
-
-    }
-
-    public class TypeBController
-    {
-
     }
 }
