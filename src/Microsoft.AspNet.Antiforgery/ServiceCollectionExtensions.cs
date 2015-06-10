@@ -12,9 +12,11 @@ namespace Microsoft.Framework.DependencyInjection
         public static IServiceCollection AddAntiforgery([NotNull] this IServiceCollection services)
         {
             services.AddDataProtection();
+            services.AddWebEncoders();
 
             services.TryAdd(ServiceDescriptor.Singleton<IClaimUidExtractor, DefaultClaimUidExtractor>());
             services.TryAdd(ServiceDescriptor.Singleton<Antiforgery, Antiforgery>());
+            services.TryAdd(ServiceDescriptor.Scoped<IAntiforgeryContextAccessor, AntiforgeryContextAccessor>());
             services.TryAdd(
                 ServiceDescriptor.Singleton<IAntiforgeryAdditionalDataProvider, DefaultAntiforgeryAdditionalDataProvider>());
             return services;
