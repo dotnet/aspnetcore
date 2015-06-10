@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ReturningTaskFromAction_ProducesNoContentResult()
+        public async Task ReturningTaskFromAction_ProducesEmptyResult()
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -139,8 +139,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var response = await client.GetAsync("http://localhost/Home/ActionReturningTask");
 
             // Assert
-            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("Hello, World!", Assert.Single(response.Headers.GetValues("Message")));
+            Assert.Empty(await response.Content.ReadAsStringAsync());
         }
 
         [Fact]

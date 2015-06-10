@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Theory]
         [InlineData("ReturnTask")]
         [InlineData("ReturnVoid")]
-        public async Task NoContentFormatter_ForVoidAndTaskReturnType_GetsSelectedAndWritesResponse(string actionName)
+        public async Task NoContentFormatter_ForVoidAndTaskReturnType_DoesNotRun(string actionName)
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await response.Content.ReadAsStringAsync();
             // Response body is empty instead of null.
             Assert.Empty(body);
-            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(0, response.Content.Headers.ContentLength);
         }
 

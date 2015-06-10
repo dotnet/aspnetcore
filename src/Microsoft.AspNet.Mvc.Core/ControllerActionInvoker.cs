@@ -108,11 +108,7 @@ namespace Microsoft.AspNet.Mvc.Core
             if (declaredReturnType == typeof(void) ||
                 declaredReturnType == typeof(Task))
             {
-                return new ObjectResult(null)
-                {
-                    // Treat the declared type as void, which is the unwrapped type for Task.
-                    DeclaredType = typeof(void)
-                };
+                return new EmptyResult();
             }
 
             // Unwrap potential Task<T> types.

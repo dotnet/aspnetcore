@@ -1920,17 +1920,13 @@ namespace Microsoft.AspNet.Mvc
         [Theory]
         [InlineData(typeof(void))]
         [InlineData(typeof(Task))]
-        public void CreateActionResult_Types_ReturnsObjectResultForTaskAndVoidReturnTypes(Type type)
+        public void CreateActionResult_Types_ReturnsEmptyResultForTaskAndVoidReturnTypes(Type type)
         {
             // Arrange & Act
             var result = ControllerActionInvoker.CreateActionResult(type, null);
 
             // Assert
-            var objectResult = Assert.IsType<ObjectResult>(result);
-
-            // Since we unwrap the Task type to void, the expected type will always be void.
-            Assert.Equal(typeof(void), objectResult.DeclaredType);
-            Assert.Null(objectResult.Value);
+            Assert.IsType<EmptyResult>(result);
         }
 
         public static IEnumerable<object[]> CreateActionResult_ReturnsObjectContentResultData
