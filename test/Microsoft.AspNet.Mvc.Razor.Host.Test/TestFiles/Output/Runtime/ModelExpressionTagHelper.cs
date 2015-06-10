@@ -60,7 +60,9 @@ __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__mo
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("for", __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            BeginContext(122, 24, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
+            EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             BeginContext(146, 2, true);
             WriteLiteral("\r\n");
@@ -77,7 +79,9 @@ __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__mo
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("for", __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            BeginContext(148, 27, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
+            EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
         }
         #pragma warning restore 1998
