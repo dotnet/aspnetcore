@@ -1,16 +1,20 @@
 {
-    "webroot": "wwwroot",
-    "exclude": "wwwroot/**/*.*",
+    "commands": {
+        "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001",
+        "install-sqlservercache": "Microsoft.Framework.Caching.SqlServer"
+    },
     "dependencies": {
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
         "Microsoft.AspNet.Session": "1.0.0-*",
         "Microsoft.Framework.Caching.Memory": "1.0.0-*",
         "Microsoft.Framework.Caching.Redis": "1.0.0-*",
+        "Microsoft.Framework.Caching.SqlServer": "1.0.0-*",
         "Microsoft.Framework.Logging.Console": "1.0.0-*"
     },
-    "commands": { "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
-    "frameworks" : {
-        "dnx451" : { }
-    }
+    "exclude": "wwwroot/**/*.*",
+    "frameworks": {
+        "dnx451": { }
+    },
+    "webroot": "wwwroot"
 }

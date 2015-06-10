@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.Caching.Distributed;
 using Microsoft.Framework.Caching.Redis;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
@@ -26,11 +27,20 @@ namespace SessionSample
             // This will override any previously registered IDistributedCache service.
             //services.AddTransient<IDistributedCache, RedisCache>();
 
+            // Uncomment the following line to use the Microsoft SQL Server implementation of IDistributedCache.
+            // Note that this would require setting up the session state database.
+            // This will override any previously registered IDistributedCache service.
+            //services.AddSqlServerCache(o =>
+            //{
+            //    o.ConnectionString = "Server=.;Database=ASPNET5SessionState;Trusted_Connection=True;";
+            //    o.TableName = "Sessions";
+            //});
+
             services.AddSession();
 
             services.ConfigureSession(o =>
             {
-                o.IdleTimeout = TimeSpan.FromSeconds(30);
+                o.IdleTimeout = TimeSpan.FromSeconds(10);
             });
         }
 
