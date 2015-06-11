@@ -32,9 +32,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
                 {
                     _uv.close(memory, _destroyMemory);
                 }
-                else
+                else if (_queueCloseHandle != null)
                 {
-                    _queueCloseHandle(memory2 => _uv.close(memory2, _destroyMemory), memory);
+                    // This can be called from the finalizer.
+                    // Ensure the closure doesn't reference "this".
+                    var uv = _uv;
+                    _queueCloseHandle(memory2 => uv.close(memory2, _destroyMemory), memory);
                 }
             }
             return true;
