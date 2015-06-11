@@ -170,11 +170,11 @@ namespace Microsoft.AspNet.Mvc.Routing
                             // would throw.
 #if DNX451
                             throw new InvalidEnumArgumentException(
-                                "item",
+                                nameof(item),
                                 (int)constraint.KeyHandling,
                                 typeof(RouteKeyHandling));
 #else
-                            throw new ArgumentOutOfRangeException("item");
+                            throw new ArgumentOutOfRangeException(nameof(item));
 #endif
                         }
 

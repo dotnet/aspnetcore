@@ -1744,7 +1744,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     if (value < DateOfBirth)
                     {
-                        throw new ArgumentOutOfRangeException("value", "Date of death can't be before date of birth.");
+                        throw new ArgumentOutOfRangeException(nameof(value), "Date of death can't be before date of birth.");
                     }
                     _dateOfDeath = value;
                 }
