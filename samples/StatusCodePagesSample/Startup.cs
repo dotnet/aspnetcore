@@ -16,7 +16,7 @@ namespace StatusCodePagesSample
     {
         public void Configure(IApplicationBuilder app)
         {
-            app.UseErrorPage(ErrorPageOptions.ShowAll);
+            app.UseErrorPage();
             app.UseStatusCodePages(); // There is a default response but any of the following can be used to change the behavior.
 
             // app.UseStatusCodePages(context => context.HttpContext.Response.SendAsync("Handler, status code: " + context.HttpContext.Response.StatusCode, "text/plain"));

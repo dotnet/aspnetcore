@@ -12,8 +12,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Diagnostics
 {
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Diagnostics
     {
         private readonly RequestDelegate _next;
         private readonly ErrorPageOptions _options;
-        private static bool IsMono = Type.GetType("Mono.Runtime") != null;
+        private static readonly bool IsMono = Type.GetType("Mono.Runtime") != null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ErrorPageMiddleware"/> class
@@ -70,17 +70,16 @@ namespace Microsoft.AspNet.Diagnostics
             var compilationException = ex as ICompilationException;
             if (compilationException != null)
             {
-                return DisplayCompilationException(context, ex, compilationException);
+                return DisplayCompilationException(context, compilationException);
             }
 
             return DisplayRuntimeException(context, ex);
         }
 
         private Task DisplayCompilationException(HttpContext context,
-                                                 Exception ex,
                                                  ICompilationException compilationException)
         {
-            var model = new CompilationErrorPageModel()
+            var model = new CompilationErrorPageModel
             {
                 Options = _options,
             };
@@ -93,7 +92,7 @@ namespace Microsoft.AspNet.Diagnostics
                     StackFrames = stackFrames
                 };
                 var fileContent = compilationFailure.SourceFileContent
-                                                       .Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+                                                    .Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
                 foreach (var item in compilationFailure.Messages)
                 {
@@ -104,11 +103,8 @@ namespace Microsoft.AspNet.Diagnostics
                         Function = string.Empty
                     };
 
-                    if (_options.ShowSourceCode)
-                    {
-                        ReadFrameContent(frame, fileContent, item.StartLine, item.EndLine);
-                        frame.ErrorDetails = item.Message;
-                    }
+                    ReadFrameContent(frame, fileContent, item.StartLine, item.EndLine);
+                    frame.ErrorDetails = item.Message;
 
                     stackFrames.Add(frame);
                 }
@@ -128,62 +124,49 @@ namespace Microsoft.AspNet.Diagnostics
         {
             var request = context.Request;
 
-            ErrorPageModel model = new ErrorPageModel()
+            var model = new ErrorPageModel
             {
                 Options = _options,
+                ErrorDetails = GetErrorDetails(ex).Reverse(),
+                Query = request.Query,
+                Cookies = request.Cookies,
+                Headers = request.Headers
             };
-
-            if (_options.ShowExceptionDetails)
-            {
-                model.ErrorDetails = GetErrorDetails(ex, _options.ShowSourceCode).Reverse();
-            }
-            if (_options.ShowQuery)
-            {
-                model.Query = request.Query;
-            }/* TODO:
-            if (_options.ShowCookies)
-            {
-                model.Cookies = request.Cookies;
-            }*/
-            if (_options.ShowHeaders)
-            {
-                model.Headers = request.Headers;
-            }/* TODO:
-            if (_options.ShowEnvironment)
-            {
+            
+            /* TODO:
                 model.Environment = context;
-            }*/
+            */
 
             var errorPage = new ErrorPage(model);
             return errorPage.ExecuteAsync(context);
         }
 
-        private IEnumerable<ErrorDetails> GetErrorDetails(Exception ex, bool showSource)
+        private IEnumerable<ErrorDetails> GetErrorDetails(Exception ex)
         {
-            for (Exception scan = ex; scan != null; scan = scan.InnerException)
+            for (var scan = ex; scan != null; scan = scan.InnerException)
             {
                 yield return new ErrorDetails
                 {
                     Error = scan,
-                    StackFrames = StackFrames(scan, showSource)
+                    StackFrames = StackFrames(scan)
                 };
             }
         }
 
-        private IEnumerable<StackFrame> StackFrames(Exception ex, bool showSource)
+        private IEnumerable<StackFrame> StackFrames(Exception ex)
         {
             var stackTrace = ex.StackTrace;
             if (!string.IsNullOrEmpty(stackTrace))
             {
                 var heap = new Chunk { Text = stackTrace + Environment.NewLine, End = stackTrace.Length + Environment.NewLine.Length };
-                for (Chunk line = heap.Advance(Environment.NewLine); line.HasValue; line = heap.Advance(Environment.NewLine))
+                for (var line = heap.Advance(Environment.NewLine); line.HasValue; line = heap.Advance(Environment.NewLine))
                 {
-                    yield return StackFrame(line, showSource);
+                    yield return StackFrame(line);
                 }
             }
         }
 
-        private StackFrame StackFrame(Chunk line, bool showSource)
+        private StackFrame StackFrame(Chunk line)
         {
             line.Advance("  at ");
             string function = line.Advance(" in ").ToString();
@@ -198,16 +181,16 @@ namespace Microsoft.AspNet.Diagnostics
             int lineNumber = line.ToInt32();
 
             return string.IsNullOrEmpty(file)
-                ? LoadFrame(string.IsNullOrEmpty(function) ? line.ToString() : function, string.Empty, 0, showSource)
-                : LoadFrame(function, file, lineNumber, showSource);
+                ? LoadFrame(string.IsNullOrEmpty(function) ? line.ToString() : function, string.Empty, 0)
+                : LoadFrame(function, file, lineNumber);
         }
 
-        private StackFrame LoadFrame(string function, string file, int lineNumber, bool showSource)
+        private StackFrame LoadFrame(string function, string file, int lineNumber)
         {
             var frame = new StackFrame { Function = function, File = file, Line = lineNumber };
-            if (showSource && File.Exists(file))
+            if (File.Exists(file))
             {
-                IEnumerable<string> code = File.ReadLines(file);
+                var code = File.ReadLines(file);
                 ReadFrameContent(frame, code, lineNumber, lineNumber);
             }
             return frame;
@@ -230,10 +213,7 @@ namespace Microsoft.AspNet.Diagnostics
             public int Start { get; set; }
             public int End { get; set; }
 
-            public bool HasValue
-            {
-                get { return Text != null; }
-            }
+            public bool HasValue => Text != null;
 
             public Chunk Advance(string delimiter)
             {
@@ -256,7 +236,7 @@ namespace Microsoft.AspNet.Diagnostics
             public int ToInt32()
             {
                 int value;
-                return HasValue && Int32.TryParse(
+                return HasValue && int.TryParse(
                     Text.Substring(Start, End - Start),
                     NumberStyles.Integer,
                     CultureInfo.InvariantCulture,

@@ -23,69 +23,62 @@
     </head>
     <body>
         <h1>@Resources.ErrorPageHtml_CompilationException</h1>
-        @if (!Model.Options.ShowExceptionDetails)
+        @foreach (var errorDetail in Model.ErrorDetails)
         {
-            <h2>@Resources.ErrorPageHtml_EnableShowExceptions</h2>
-        }
-        @if (Model.Options.ShowExceptionDetails)
-        {
-            foreach (var errorDetail in Model.ErrorDetails)
-            {
-                <div id="stackpage" class="page">
-                    @{ int tabIndex = 6; }
-                    @{
-                        var fileName = errorDetail.StackFrames.FirstOrDefault()?.File;
-                        if (!string.IsNullOrEmpty(fileName))
-                        {
-                            <div class="titleerror">@fileName</div>
-                        }
-                    }
-                    <br />
-                    <ul>
-                    @foreach (var frame in errorDetail.StackFrames)
+            <div id="stackpage" class="page">
+                @{ int tabIndex = 6; }
+                @{
+                    var fileName = errorDetail.StackFrames.FirstOrDefault()?.File;
+                    if (!string.IsNullOrEmpty(fileName))
                     {
-                        <li class="frame" tabindex="@tabIndex">
-                            @{ tabIndex++; }
-                            @if (!string.IsNullOrEmpty(frame.ErrorDetails))
-                            {
-                                <h3>@frame.ErrorDetails</h3>
-                            }
+                        <div class="titleerror">@fileName</div>
+                    }
+                }
+                <br />
+                <ul>
+                @foreach (var frame in errorDetail.StackFrames)
+                {
+                    <li class="frame" tabindex="@tabIndex">
+                        @{ tabIndex++; }
+                        @if (!string.IsNullOrEmpty(frame.ErrorDetails))
+                        {
+                            <h3>@frame.ErrorDetails</h3>
+                        }
 
-                            @if (frame.Line != 0 && frame.ContextCode.Any())
-                            {
-                                <div class="source">
-                                    @if (frame.PreContextCode != null)
-                                    {
-                                        <ol start="@frame.PreContextLine" class="collapsible">
-                                            @foreach (var line in frame.PreContextCode)
-                                            {
-                                                <li><span>@line</span></li>
-                                            }
-                                        </ol>
-                                    }
-                                    <ol start="@frame.Line" class="highlight">
-                                        @foreach (var line in frame.ContextCode)
+                        @if (frame.Line != 0 && frame.ContextCode.Any())
+                        {
+                            <div class="source">
+                                @if (frame.PreContextCode != null)
+                                {
+                                    <ol start="@frame.PreContextLine" class="collapsible">
+                                        @foreach (var line in frame.PreContextCode)
                                         {
                                             <li><span>@line</span></li>
                                         }
                                     </ol>
-                                    @if (frame.PostContextCode != null)
+                                }
+                                <ol start="@frame.Line" class="highlight">
+                                    @foreach (var line in frame.ContextCode)
                                     {
-                                        <ol start='@(frame.Line + 1)' class="collapsible">
-                                            @foreach (var line in frame.PostContextCode)
-                                            {
-                                                <li><span>@line</span></li>
-                                            }
-                                        </ol>
-                                    } 
-                                </div>
-                            } 
-                        </li>
-                    }
-                    </ul>
-                    <br />
-                </div>
-            }
+                                        <li><span>@line</span></li>
+                                    }
+                                </ol>
+                                @if (frame.PostContextCode != null)
+                                {
+                                    <ol start='@(frame.Line + 1)' class="collapsible">
+                                        @foreach (var line in frame.PostContextCode)
+                                        {
+                                            <li><span>@line</span></li>
+                                        }
+                                    </ol>
+                                } 
+                            </div>
+                        } 
+                    </li>
+                }
+                </ul>
+                <br />
+            </div>
         }
         <script>
             //<!--

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 
-using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 
@@ -19,28 +18,28 @@ namespace Microsoft.AspNet.Diagnostics.Views
         public ErrorPageOptions Options { get; set; }
 
         /// <summary>
-        /// Detailed information about each exception in the stack
+        /// Detailed information about each exception in the stack.
         /// </summary>
         public IEnumerable<ErrorDetails> ErrorDetails { get; set; }
 
         /// <summary>
-        /// Parsed query data
+        /// Parsed query data.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Model class contains collection")]
         public IReadableStringCollection Query { get; set; }
-
-        /* TODO:
+        
         /// <summary>
-        /// Request cookies
+        /// Request cookies.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Model class contains collection")]
-        public RequestCookieCollection Cookies { get; set; }
-        */
+        public IReadableStringCollection Cookies { get; set; }
+        
         /// <summary>
-        /// Request headers
+        /// Request headers.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Model class contains collection")]
         public IDictionary<string, string[]> Headers { get; set; }
+
         /* TODO:
         /// <summary>
         /// The request environment
