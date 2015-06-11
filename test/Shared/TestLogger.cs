@@ -7,9 +7,14 @@ using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Identity.Test
 {
-    public class TestLogger : ILogger
+    public interface ITestLogger
     {
-        public IList<string> LogMessages { get; private set; } = new List<string>();
+        IList<string> LogMessages { get; }
+    }
+
+    public class TestLogger<TName> : ILogger<TName>, ITestLogger
+    {
+        public IList<string> LogMessages { get; } = new List<string>();
 
         public IDisposable BeginScopeImpl(object state)
         {

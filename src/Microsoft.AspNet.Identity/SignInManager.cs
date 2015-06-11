@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Identity.Logging;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 

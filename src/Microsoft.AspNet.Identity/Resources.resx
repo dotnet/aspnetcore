@@ -277,16 +277,4 @@
     <value>User is not in role '{0}'.</value>
     <comment>Error when a user is not in the role</comment>
   </data>
-  <data name="LoggingResult" xml:space="preserve">
-    <value>{0} : {1}</value>
-    <comment>Logging statement for a result object</comment>
-  </data>
-  <data name="LoggingResultMessageForUser" xml:space="preserve">
-    <value>{0} for user: {1}</value>
-    <comment>Message prefix for Identity result</comment>
-  </data>
-  <data name="LoggingResultMessageForRole" xml:space="preserve">
-    <value>{0} for role: {1}</value>
-    <comment>Message prefix for Identity result for role operation</comment>
-  </data>
 </root>

@@ -423,8 +423,6 @@ namespace Microsoft.AspNet.Identity.Test
             store.Setup(s => s.GetPasswordHashAsync(user, CancellationToken.None))
                 .ReturnsAsync(hashed)
                 .Verifiable();
-            store.Setup(x => x.GetUserIdAsync(It.IsAny<TestUser>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(Guid.NewGuid().ToString()));
             store.Setup(x => x.UpdateAsync(It.IsAny<TestUser>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(IdentityResult.Success));
 
             hasher.Setup(s => s.VerifyHashedPassword(user, hashed, pwd)).Returns(PasswordVerificationResult.SuccessRehashNeeded).Verifiable();

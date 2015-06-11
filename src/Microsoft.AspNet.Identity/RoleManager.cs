@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Identity.Logging;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Identity
@@ -170,10 +169,7 @@ namespace Microsoft.AspNet.Identity
             }
             await UpdateNormalizedRoleNameAsync(role);
             result = await Store.CreateAsync(role, CancellationToken);
-            using (await BeginLoggingScopeAsync(role))
-            {
-                return Logger.Log(result);
-            }
+            return result;
         }
 
         /// <summary>
@@ -196,7 +192,7 @@ namespace Microsoft.AspNet.Identity
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> for the update.
         /// </returns>
-        public virtual async Task<IdentityResult> UpdateAsync(TRole role)
+        public virtual Task<IdentityResult> UpdateAsync(TRole role)
         {
             ThrowIfDisposed();
             if (role == null)
@@ -204,10 +200,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("role");
             }
 
-            using (await BeginLoggingScopeAsync(role))
-            {
-                return Logger.Log(await UpdateRoleAsync(role));
-            }
+            return UpdateRoleAsync(role);
         }
 
         /// <summary>
@@ -217,7 +210,7 @@ namespace Microsoft.AspNet.Identity
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> for the delete.
         /// </returns>
-        public virtual async Task<IdentityResult> DeleteAsync(TRole role)
+        public virtual Task<IdentityResult> DeleteAsync(TRole role)
         {
             ThrowIfDisposed();
             if (role == null)
@@ -225,10 +218,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("role");
             }
 
-            using (await BeginLoggingScopeAsync(role))
-            {
-                return Logger.Log(await Store.DeleteAsync(role, CancellationToken));
-            }
+            return Store.DeleteAsync(role, CancellationToken);
         }
 
         /// <summary>
@@ -267,10 +257,10 @@ namespace Microsoft.AspNet.Identity
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the role 
         /// associated with the specified <paramref name="roleId"/>
         /// </returns>
-        public virtual async Task<TRole> FindByIdAsync(string roleId)
+        public virtual Task<TRole> FindByIdAsync(string roleId)
         {
             ThrowIfDisposed();
-            return await Store.FindByIdAsync(roleId, CancellationToken);
+            return Store.FindByIdAsync(roleId, CancellationToken);
         }
 
         /// <summary>
@@ -281,10 +271,10 @@ namespace Microsoft.AspNet.Identity
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the name of the 
         /// specified <paramref name="role"/>.
         /// </returns>
-        public virtual async Task<string> GetRoleNameAsync(TRole role)
+        public virtual Task<string> GetRoleNameAsync(TRole role)
         {
             ThrowIfDisposed();
-            return await Store.GetRoleNameAsync(role, CancellationToken);
+            return Store.GetRoleNameAsync(role, CancellationToken);
         }
 
         /// <summary>
@@ -300,12 +290,9 @@ namespace Microsoft.AspNet.Identity
         {
             ThrowIfDisposed();
 
-            using (await BeginLoggingScopeAsync(role))
-            {
-                await Store.SetRoleNameAsync(role, name, CancellationToken);
-                await UpdateNormalizedRoleNameAsync(role);
-                return Logger.Log(IdentityResult.Success);
-            }
+            await Store.SetRoleNameAsync(role, name, CancellationToken);
+            await UpdateNormalizedRoleNameAsync(role);
+            return IdentityResult.Success;
         }
 
         /// <summary>
@@ -316,10 +303,10 @@ namespace Microsoft.AspNet.Identity
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the ID of the 
         /// specified <paramref name="role"/>.
         /// </returns>
-        public virtual async Task<string> GetRoleIdAsync(TRole role)
+        public virtual Task<string> GetRoleIdAsync(TRole role)
         {
             ThrowIfDisposed();
-            return await Store.GetRoleIdAsync(role, CancellationToken);
+            return Store.GetRoleIdAsync(role, CancellationToken);
         }
 
         /// <summary>
@@ -330,7 +317,7 @@ namespace Microsoft.AspNet.Identity
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the role 
         /// associated with the specified <paramref name="roleName"/>
         /// </returns>
-        public virtual async Task<TRole> FindByNameAsync(string roleName)
+        public virtual Task<TRole> FindByNameAsync(string roleName)
         {
             ThrowIfDisposed();
             if (roleName == null)
@@ -338,7 +325,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("roleName");
             }
 
-            return await Store.FindByNameAsync(NormalizeKey(roleName), CancellationToken);
+            return Store.FindByNameAsync(NormalizeKey(roleName), CancellationToken);
         }
 
         /// <summary>
@@ -363,11 +350,8 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("role");
             }
 
-            using (await BeginLoggingScopeAsync(role))
-            {
-                await claimStore.AddClaimAsync(role, claim, CancellationToken);
-                return Logger.Log(await UpdateRoleAsync(role));
-            }
+            await claimStore.AddClaimAsync(role, claim, CancellationToken);
+            return await UpdateRoleAsync(role);
         }
 
         /// <summary>
@@ -388,11 +372,8 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("role");
             }
 
-            using (await BeginLoggingScopeAsync(role))
-            {
-                await claimStore.RemoveClaimAsync(role, claim, CancellationToken);
-                return Logger.Log(await UpdateRoleAsync(role));
-            }
+            await claimStore.RemoveClaimAsync(role, claim, CancellationToken);
+            return await UpdateRoleAsync(role);
         }
 
         /// <summary>
@@ -403,7 +384,7 @@ namespace Microsoft.AspNet.Identity
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the list of <see cref="Claim"/>s
         /// associated with the specified <paramref name="role"/>.
         /// </returns>
-        public virtual async Task<IList<Claim>> GetClaimsAsync(TRole role)
+        public virtual Task<IList<Claim>> GetClaimsAsync(TRole role)
         {
             ThrowIfDisposed();
             var claimStore = GetClaimStore();
@@ -411,7 +392,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException("role");
             }
-            return await claimStore.GetClaimsAsync(role, CancellationToken);
+            return claimStore.GetClaimsAsync(role, CancellationToken);
         }
 
         /// <summary>
@@ -436,12 +417,6 @@ namespace Microsoft.AspNet.Identity
             _disposed = true;
         }
 
-        protected virtual async Task<IDisposable> BeginLoggingScopeAsync(TRole role, [CallerMemberName] string methodName = null)
-        {
-            var state = Resources.FormatLoggingResultMessageForRole(methodName, await GetRoleIdAsync(role));
-            return Logger?.BeginScope(state);
-        }
-
         private async Task<IdentityResult> ValidateRoleInternal(TRole role)
         {
             var errors = new List<IdentityError>();
@@ -453,7 +428,12 @@ namespace Microsoft.AspNet.Identity
                     errors.AddRange(result.Errors);
                 }
             }
-            return errors.Count > 0 ? IdentityResult.Failed(errors.ToArray()) : IdentityResult.Success;
+            if (errors.Count > 0)
+            {
+                Logger.LogWarning("Role {roleId} validation failed: {errors}.", await GetRoleIdAsync(role), string.Join(";", errors.Select(e => e.Code)));
+                return IdentityResult.Failed(errors.ToArray());
+            }
+            return IdentityResult.Success;
         }
 
         private async Task<IdentityResult> UpdateRoleAsync(TRole role)

@@ -63,14 +63,5 @@ namespace Microsoft.AspNet.Identity
                    "Succeeded" : 
                    string.Format("{0} : {1}", "Failed", string.Join(",", Errors.Select(x => x.Code).ToList()));
         }
-
-        /// <summary>
-        /// Gets the <see cref="LogLevel"/> for use with any <see cref="ILogger"/> instance.
-        /// </summary>
-        /// <returns>The <see cref="LogLevel"/> for this result.</returns>
-        public virtual LogLevel GetLogLevel()
-        {
-            return Succeeded ? LogLevel.Verbose : LogLevel.Warning;
-        }
     }
 }

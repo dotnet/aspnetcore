@@ -87,14 +87,5 @@ namespace Microsoft.AspNet.Identity
 			       RequiresTwoFactor ? "RequiresTwoFactor" : 
 			       Succeeded ? "Succeeded" : "Failed";
         }
-
-        /// <summary>
-        /// Gets the log level for the current <see cref="SignInResult"/> object.
-        /// </summary>
-        /// <returns>The log level for the current <see cref="SignInResult"/> object.</returns>
-        public virtual LogLevel GetLogLevel()
-        {
-            return Succeeded || RequiresTwoFactor ? LogLevel.Verbose : LogLevel.Warning;
-        }
     }
 }

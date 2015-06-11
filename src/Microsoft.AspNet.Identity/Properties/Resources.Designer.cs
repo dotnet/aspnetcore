@@ -650,54 +650,6 @@ namespace Microsoft.AspNet.Identity
             return string.Format(CultureInfo.CurrentCulture, GetString("UserNotInRole"), p0);
         }
 
-        /// <summary>
-        /// {0} : {1}
-        /// </summary>
-        internal static string LoggingResult
-        {
-            get { return GetString("LoggingResult"); }
-        }
-
-        /// <summary>
-        /// {0} : {1}
-        /// </summary>
-        internal static string FormatLoggingResult(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("LoggingResult"), p0, p1);
-        }
-
-        /// <summary>
-        /// {0} for user: {1}
-        /// </summary>
-        internal static string LoggingResultMessageForUser
-        {
-            get { return GetString("LoggingResultMessageForUser"); }
-        }
-
-        /// <summary>
-        /// {0} for user: {1}
-        /// </summary>
-        internal static string FormatLoggingResultMessageForUser(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("LoggingResultMessageForUser"), p0, p1);
-        }
-
-        /// <summary>
-        /// {0} for role: {1}
-        /// </summary>
-        internal static string LoggingResultMessageForRole
-        {
-            get { return GetString("LoggingResultMessageForRole"); }
-        }
-
-        /// <summary>
-        /// {0} for role: {1}
-        /// </summary>
-        internal static string FormatLoggingResultMessageForRole(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("LoggingResultMessageForRole"), p0, p1);
-        }
-
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
