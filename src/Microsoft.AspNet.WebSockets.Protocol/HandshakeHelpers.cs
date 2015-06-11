@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.WebSockets.Protocol
 {
@@ -123,13 +124,8 @@ namespace Microsoft.AspNet.WebSockets.Protocol
         /// </summary>
         /// <param name="requestKey"></param>
         /// <returns></returns>
-        public static string CreateResponseKey(string requestKey)
+        public static string CreateResponseKey([NotNull] string requestKey)
         {
-            if (string.IsNullOrWhiteSpace(requestKey))
-            {
-                throw new ArgumentNullException("requestKey");
-            }
-
             using (var algorithm = SHA1.Create())
             {
                 string merged = requestKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
