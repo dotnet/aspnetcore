@@ -53,12 +53,16 @@ namespace Microsoft.AspNet.Server.Kestrel
             Post(OnStop, null);
             if (!_thread.Join((int)timeout.TotalMilliseconds))
             {
-                Post(OnStopImmediate, null);
+                Post(OnStopRude, null);
                 if (!_thread.Join((int)timeout.TotalMilliseconds))
                 {
+                    Post(OnStopImmediate, null);
+                    if (!_thread.Join((int)timeout.TotalMilliseconds))
+                    {
 #if DNX451
-                    _thread.Abort();
+                        _thread.Abort();
 #endif
+                    }
                 }
             }
             if (_closeError != null)
@@ -70,6 +74,21 @@ namespace Microsoft.AspNet.Server.Kestrel
         private void OnStop(object obj)
         {
             _post.Unreference();
+        }
+
+        private void OnStopRude(object obj)
+        {
+            _engine.Libuv.walk(
+                _loop,
+                (ptr, arg) =>
+                {
+                    var handle = UvMemory.FromIntPtr<UvHandle>(ptr);
+                    if (handle != _post)
+                    {
+                        handle.Dispose();
+                    }
+                },
+                IntPtr.Zero);
         }
 
         private void OnStopImmediate(object obj)
@@ -133,14 +152,8 @@ namespace Microsoft.AspNet.Server.Kestrel
                 // run the loop one more time to delete the open handles
                 _post.Reference();
                 _post.DangerousClose();
-                _engine.Libuv.walk(
-                    _loop,
-                    (ptr, arg) =>
-                    {
-                        var handle = UvMemory.FromIntPtr<UvHandle>(ptr);
-                        handle.Dispose();
-                    },
-                    IntPtr.Zero);
+
+                // Ensure the "DangerousClose" operation completes in the event loop.
                 var ran2 = _loop.Run();
 
                 _loop.Dispose();
@@ -203,7 +216,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                 queue = _closeHandleAdding;
                 _closeHandleAdding = _closeHandleRunning;
                 _closeHandleRunning = queue;
-            }            
+            }
             while (queue.Count != 0)
             {
                 var closeHandle = queue.Dequeue();
