@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Authentication
 
             if (_validSubjectKeyIdentifiers.Count == 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(_validSubjectKeyIdentifiers));
+                throw new ArgumentOutOfRangeException(nameof(validSubjectKeyIdentifiers));
             }
         }
 

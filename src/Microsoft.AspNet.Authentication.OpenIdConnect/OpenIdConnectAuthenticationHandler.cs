@@ -528,9 +528,9 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// The value of the cookie is: "N".</remarks>
         private void WriteNonceCookie(string nonce)
         {
-            if (string.IsNullOrWhiteSpace(nonce))
+            if (string.IsNullOrEmpty(nonce))
             {
-                throw new ArgumentNullException("nonce");
+                throw new ArgumentNullException(nameof(nonce));
             }
 
             Response.Cookies.Append(

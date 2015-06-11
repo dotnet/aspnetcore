@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens;
 using System.Net.Http;
-using Microsoft.IdentityModel.Protocols;
 using Microsoft.Framework.Internal;
+using Microsoft.IdentityModel.Protocols;
 
 namespace Microsoft.AspNet.Authentication.OAuthBearer
 {
@@ -140,14 +140,9 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
             {
                 return _tokenValidationParameters;
             }
-
+            [param: NotNull]
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("TokenValidationParameters");
-                }
-
                 _tokenValidationParameters = value;
             }
         }

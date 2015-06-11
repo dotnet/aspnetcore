@@ -8,8 +8,8 @@ using System.IdentityModel.Tokens;
 using System.Net.Http;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.IdentityModel.Protocols;
 using Microsoft.Framework.Internal;
+using Microsoft.IdentityModel.Protocols;
 
 namespace Microsoft.AspNet.Authentication.OpenIdConnect
 {
@@ -252,13 +252,9 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             {
                 return _stateDataFormat;
             }
+            [param: NotNull]
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-
                 _stateDataFormat = value;
             }
         }
@@ -272,13 +268,9 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             {
                 return _stringDataFormat;
             }
+            [param: NotNull]
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-
                 _stringDataFormat = value;
             }
         }
@@ -315,14 +307,9 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             {
                 return _tokenValidationParameters;
             }
-
+            [param: NotNull]
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-
                 _tokenValidationParameters = value;
             }
         }
