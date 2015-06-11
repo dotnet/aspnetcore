@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.WebSockets.Protocol
             if (messageType != WebSocketMessageType.Binary && messageType != WebSocketMessageType.Text)
             {
                 // Block control frames
-                throw new ArgumentOutOfRangeException("messageType", messageType, string.Empty);
+                throw new ArgumentOutOfRangeException(nameof(messageType), messageType, string.Empty);
             }
 
             // Check concurrent writes, pings & pongs, or closes
@@ -588,15 +588,15 @@ namespace Microsoft.AspNet.WebSockets.Protocol
         {
             if (buffer.Array == null)
             {
-                throw new ArgumentNullException("buffer");
+                throw new ArgumentNullException(nameof(buffer));
             }
             if (buffer.Offset < 0 || buffer.Offset > buffer.Array.Length)
             {
-                throw new ArgumentOutOfRangeException("buffer.Offset", buffer.Offset, string.Empty);
+                throw new ArgumentOutOfRangeException(nameof(buffer.Offset), buffer.Offset, string.Empty);
             }
             if (buffer.Count < 0 || buffer.Count > buffer.Array.Length - buffer.Offset)
             {
-                throw new ArgumentOutOfRangeException("buffer.Count", buffer.Count, string.Empty);
+                throw new ArgumentOutOfRangeException(nameof(buffer.Count), buffer.Count, string.Empty);
             }
         }
 

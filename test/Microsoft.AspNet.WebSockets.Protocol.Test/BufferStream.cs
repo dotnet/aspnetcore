@@ -263,12 +263,12 @@ namespace Microsoft.AspNet.WebSockets.Protocol.Test
             }
             if (offset < 0 || offset > buffer.Length)
             {
-                throw new ArgumentOutOfRangeException("offset", offset, string.Empty);
+                throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
             }
             if (count < 0 || count > buffer.Length - offset
                 || (!allowEmpty && count == 0))
             {
-                throw new ArgumentOutOfRangeException("count", count, string.Empty);
+                throw new ArgumentOutOfRangeException(nameof(count), count, string.Empty);
             }
         }
 
