@@ -15,11 +15,11 @@ namespace Microsoft.AspNet.TestHost
 
             // Assert
             Assert.Equal(200, responseInformation.StatusCode);
-            Assert.False(responseInformation.HeadersSent);
+            Assert.False(responseInformation.HasStarted);
 
             responseInformation.FireOnSendingHeaders();
 
-            Assert.True(responseInformation.HeadersSent);
+            Assert.True(responseInformation.HasStarted);
         }
     }
 }

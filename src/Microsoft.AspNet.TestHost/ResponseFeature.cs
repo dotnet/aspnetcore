@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.TestHost
 {
     internal class ResponseFeature : IHttpResponseFeature
     {
-        private Action _sendingHeaders = () => { };
+        private Action _responseStarting = () => { };
         private Action _responseCompleted = () => { };
 
         public ResponseFeature()
@@ -31,12 +31,12 @@ namespace Microsoft.AspNet.TestHost
 
         public Stream Body { get; set; }
 
-        public bool HeadersSent { get; set; }
+        public bool HasStarted { get; set; }
 
-        public void OnSendingHeaders(Action<object> callback, object state)
+        public void OnResponseStarting(Action<object> callback, object state)
         {
-            var prior = _sendingHeaders;
-            _sendingHeaders = () =>
+            var prior = _responseStarting;
+            _responseStarting = () =>
             {
                 callback(state);
                 prior();
@@ -55,8 +55,8 @@ namespace Microsoft.AspNet.TestHost
 
         public void FireOnSendingHeaders()
         {
-            _sendingHeaders();
-            HeadersSent = true;
+            _responseStarting();
+            HasStarted = true;
         }
 
         public void FireOnResponseCompleted()
