@@ -25,14 +25,14 @@ namespace Microsoft.Net.Http.Headers
 
         public StringWithQualityHeaderValue(string value)
         {
-            HeaderUtilities.CheckValidToken(value, "value");
+            HeaderUtilities.CheckValidToken(value, nameof(value));
 
             _value = value;
         }
 
         public StringWithQualityHeaderValue(string value, double quality)
         {
-            HeaderUtilities.CheckValidToken(value, "value");
+            HeaderUtilities.CheckValidToken(value, nameof(value));
 
             if ((quality < 0) || (quality > 1))
             {

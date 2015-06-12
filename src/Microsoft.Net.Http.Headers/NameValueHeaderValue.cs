@@ -363,7 +363,7 @@ namespace Microsoft.Net.Http.Headers
 
         private static void CheckNameValueFormat(string name, string value)
         {
-            HeaderUtilities.CheckValidToken(name, "name");
+            HeaderUtilities.CheckValidToken(name, nameof(name));
             CheckValueFormat(value);
         }
 

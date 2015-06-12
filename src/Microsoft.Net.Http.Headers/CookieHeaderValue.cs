@@ -39,7 +39,7 @@ namespace Microsoft.Net.Http.Headers
             get { return _name; }
             set
             {
-                CheckNameFormat(value, "name");
+                CheckNameFormat(value, nameof(value));
                 _name = value;
             }
         }
@@ -49,7 +49,7 @@ namespace Microsoft.Net.Http.Headers
             get { return _value; }
             set
             {
-                CheckValueFormat(value, "value");
+                CheckValueFormat(value, nameof(value));
                 _value = value;
             }
         }

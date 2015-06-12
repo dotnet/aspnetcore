@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.Owin
                     _webSocket.Abort();
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("state", _webSocket.State, string.Empty);
+                    throw new ArgumentOutOfRangeException(nameof(_webSocket.State), _webSocket.State, string.Empty);
             }
         }
 

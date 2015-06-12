@@ -49,7 +49,7 @@ namespace Microsoft.Net.Http.Headers
             get { return _name; }
             set
             {
-                CookieHeaderValue.CheckNameFormat(value, "name");
+                CookieHeaderValue.CheckNameFormat(value, nameof(value));
                 _name = value;
             }
         }
@@ -59,7 +59,7 @@ namespace Microsoft.Net.Http.Headers
             get { return _value; }
             set
             {
-                CookieHeaderValue.CheckValueFormat(value, "value");
+                CookieHeaderValue.CheckValueFormat(value, nameof(value));
                 _value = value;
             }
         }
