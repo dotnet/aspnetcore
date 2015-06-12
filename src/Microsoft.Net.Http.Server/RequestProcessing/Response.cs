@@ -48,7 +48,7 @@ namespace Microsoft.Net.Http.Server
         private long _expectedBodyLength;
         private BoundaryType _boundaryType;
         private HttpApi.HTTP_RESPONSE_V2 _nativeResponse;
-        private IList<Tuple<Action<object>, object>> _onSendingHeadersActions;
+        private IList<Tuple<Action<object>, object>> _onResponseStartingActions;
         private IList<Tuple<Action<object>, object>> _onResponseCompletedActions;
 
         private RequestContext _requestContext;
@@ -80,7 +80,7 @@ namespace Microsoft.Net.Http.Server
             _nativeResponse.Response_V1.Version.MajorVersion = 1;
             _nativeResponse.Response_V1.Version.MinorVersion = 1;
             _responseState = ResponseState.Created;
-            _onSendingHeadersActions = new List<Tuple<Action<object>, object>>();
+            _onResponseStartingActions = new List<Tuple<Action<object>, object>>();
             _onResponseCompletedActions = new List<Tuple<Action<object>, object>>();
             _bufferingEnabled = _requestContext.Server.BufferResponses;
             _expectedBodyLength = 0;
@@ -778,12 +778,12 @@ namespace Microsoft.Net.Http.Server
             _nativeStream.SwitchToOpaqueMode();
         }
 
-        public void OnSendingHeaders(Action<object> callback, object state)
+        public void OnResponseStarting(Action<object> callback, object state)
         {
-            IList<Tuple<Action<object>, object>> actions = _onSendingHeadersActions;
+            IList<Tuple<Action<object>, object>> actions = _onResponseStartingActions;
             if (actions == null)
             {
-                throw new InvalidOperationException("Headers already sent");
+                throw new InvalidOperationException("Response already started");
             }
 
             actions.Add(new Tuple<Action<object>, object>(callback, state));
@@ -802,7 +802,7 @@ namespace Microsoft.Net.Http.Server
 
         private void NotifyOnSendingHeaders()
         {
-            var actions = Interlocked.Exchange(ref _onSendingHeadersActions, null);
+            var actions = Interlocked.Exchange(ref _onResponseStartingActions, null);
             if (actions == null)
             {
                 // Something threw the first time, do not try again.

@@ -216,9 +216,9 @@ namespace Microsoft.AspNet.Server.WebListener
                     responseHeaders.Add("Custom1", new string[] { "value1a", "value1b" });
                     responseHeaders.Add("Custom2", new string[] { "value2a, value2b" });
                     var body = responseInfo.Body;
-                    Assert.False(responseInfo.HeadersSent);
+                    Assert.False(responseInfo.HasStarted);
                     body.Flush();
-                    Assert.True(responseInfo.HeadersSent);
+                    Assert.True(responseInfo.HasStarted);
                     Assert.Throws<InvalidOperationException>(() => responseInfo.StatusCode = 404);
                     Assert.Throws<InvalidOperationException>(() => responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }));
                     return Task.FromResult(0);
@@ -248,9 +248,9 @@ namespace Microsoft.AspNet.Server.WebListener
                     responseHeaders.Add("Custom1", new string[] { "value1a", "value1b" });
                     responseHeaders.Add("Custom2", new string[] { "value2a, value2b" });
                     var body = responseInfo.Body;
-                    Assert.False(responseInfo.HeadersSent);
+                    Assert.False(responseInfo.HasStarted);
                     await body.FlushAsync();
-                    Assert.True(responseInfo.HeadersSent);
+                    Assert.True(responseInfo.HasStarted);
                     Assert.Throws<InvalidOperationException>(() => responseInfo.StatusCode = 404);
                     Assert.Throws<InvalidOperationException>(() => responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }));
                 }))

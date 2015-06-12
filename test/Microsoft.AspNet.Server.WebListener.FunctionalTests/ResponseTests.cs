@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.Equal(200, httpContext.Response.StatusCode);
-                Assert.False(httpContext.Response.HeadersSent);
+                Assert.False(httpContext.Response.HasStarted);
                 return Task.FromResult(0);
             }))
             {

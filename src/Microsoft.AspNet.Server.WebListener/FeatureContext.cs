@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Server.WebListener
             _features = new FeatureCollection();
             _authHandler = new AuthenticationHandler(requestContext);
             _enableResponseCaching = enableResponseCaching;
-            requestContext.Response.OnSendingHeaders(OnStartDelegate, this);
+            requestContext.Response.OnResponseStarting(OnStartDelegate, this);
             PopulateFeatures();
         }
 
@@ -372,14 +372,14 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _responseHeaders = value; }
         }
 
-        bool IHttpResponseFeature.HeadersSent
+        bool IHttpResponseFeature.HasStarted
         {
             get { return Response.HasStarted; }
         }
 
-        void IHttpResponseFeature.OnSendingHeaders(Action<object> callback, object state)
+        void IHttpResponseFeature.OnResponseStarting(Action<object> callback, object state)
         {
-            Response.OnSendingHeaders(callback, state);
+            Response.OnResponseStarting(callback, state);
         }
 
         void IHttpResponseFeature.OnResponseCompleted(Action<object> callback, object state)
