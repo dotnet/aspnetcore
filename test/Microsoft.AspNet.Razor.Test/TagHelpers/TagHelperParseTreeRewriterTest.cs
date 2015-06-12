@@ -910,7 +910,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         typeName: "mythTagHelper",
                         assemblyName: "SomeAssembly",
                         attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                        requiredAttributes: Enumerable.Empty<string>()),
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        usageDescriptor: null),
                     new TagHelperDescriptor(
                         prefix: "th:",
                         tagName: "myth2",
@@ -922,9 +923,11 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 name: "bound",
                                 propertyName: "Bound",
                                 typeName: typeof(bool).FullName,
-                                isIndexer: false),
+                                isIndexer: false,
+                                usageDescriptor: null),
                         },
-                        requiredAttributes: Enumerable.Empty<string>())
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        usageDescriptor: null)
                 };
                 var availableDescriptorsText = new TagHelperDescriptor[]
                 {
@@ -934,7 +937,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         typeName: "mythTagHelper",
                         assemblyName: "SomeAssembly",
                         attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                        requiredAttributes: Enumerable.Empty<string>()),
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        usageDescriptor: null),
                     new TagHelperDescriptor(
                         prefix: "PREFIX",
                         tagName: "myth2",
@@ -946,9 +950,11 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 name: "bound",
                                 propertyName: "Bound",
                                 typeName: typeof(bool).FullName,
-                                isIndexer: false),
+                                isIndexer: false,
+                                usageDescriptor: null),
                         },
-                        requiredAttributes: Enumerable.Empty<string>())
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        usageDescriptor: null)
                 };
                 var availableDescriptorsCatchAll = new TagHelperDescriptor[]
                 {
@@ -958,7 +964,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         typeName: "mythTagHelper",
                         assemblyName: "SomeAssembly",
                         attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                        requiredAttributes: Enumerable.Empty<string>()),
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        usageDescriptor: null),
                 };
 
                 // documentContent, expectedOutput, availableDescriptors

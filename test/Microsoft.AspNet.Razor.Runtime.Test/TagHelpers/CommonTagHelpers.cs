@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
     public class Valid_PlainTagHelper : TagHelper
@@ -31,5 +33,34 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         protected string InvalidProtectedAttribute { get; set; }
         internal string InvalidInternalAttribute { get; set; }
         protected internal string InvalidProtectedInternalAttribute { get; set; }
+    }
+
+    /// <summary>
+    /// The summary for <see cref="DocumentedTagHelper"/>.
+    /// </summary>
+    /// <remarks>
+    /// Inherits from <see cref="TagHelper"/>.
+    /// </remarks>
+    public class DocumentedTagHelper : TagHelper
+    {
+        /// <summary>
+        /// This <see cref="SummaryProperty"/> is of type <see cref="string"/>.
+        /// </summary>
+        public string SummaryProperty { get; set; }
+
+        /// <remarks>
+        /// The <see cref="SummaryProperty"/> may be <c>null</c>.
+        /// </remarks>
+        public int RemarksProperty { get; set; }
+
+        /// <summary>
+        /// This is a complex <see cref="IDictionary{string, bool}"/>.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="SummaryProperty"/><see cref="RemarksProperty"/>
+        /// </remarks>
+        public IDictionary<string, bool> RemarksAndSummaryProperty { get; set; }
+
+        public bool UndocumentedProperty { get; set; }
     }
 }

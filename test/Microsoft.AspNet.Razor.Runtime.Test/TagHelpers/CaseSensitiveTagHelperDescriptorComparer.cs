@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     StringComparer.Ordinal) &&
                 descriptorX.Attributes.SequenceEqual(
                     descriptorY.Attributes,
-                    CaseSensitiveTagHelperAttributeDescriptorComparer.Default);
+                    TagHelperAttributeDescriptorComparer.Default);
         }
 
         public override int GetHashCode(TagHelperDescriptor descriptor)
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             foreach (var attribute in descriptor.Attributes)
             {
-                hashCodeCombiner.Add(CaseSensitiveTagHelperAttributeDescriptorComparer.Default.GetHashCode(attribute));
+                hashCodeCombiner.Add(TagHelperAttributeDescriptorComparer.Default.GetHashCode(attribute));
             }
 
             return hashCodeCombiner.CombinedHash;

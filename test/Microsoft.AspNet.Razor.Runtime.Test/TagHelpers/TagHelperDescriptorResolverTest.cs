@@ -1368,7 +1368,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 typeName,
                 assemblyName,
                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                requiredAttributes: Enumerable.Empty<string>());
+                requiredAttributes: Enumerable.Empty<string>(),
+                usageDescriptor: null);
         }
 
         private static TagHelperDescriptor CreatePrefixedValidPlainDescriptor(string prefix)
@@ -1403,7 +1404,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         private class TestTagHelperDescriptorResolver : TagHelperDescriptorResolver
         {
             public TestTagHelperDescriptorResolver(TagHelperTypeResolver typeResolver)
-                : base(typeResolver)
+                : base(typeResolver, designTime: false)
             {
             }
 
@@ -1444,6 +1445,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         private class AssemblyCheckingTagHelperDescriptorResolver : TagHelperDescriptorResolver
         {
+            public AssemblyCheckingTagHelperDescriptorResolver()
+                : base(designTime: false)
+            {
+            }
+
             public string CalledWithAssemblyName { get; set; }
 
             protected override IEnumerable<TagHelperDescriptor> ResolveDescriptorsInAssembly(
@@ -1462,6 +1468,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             private readonly Exception _error;
 
             public ThrowingTagHelperDescriptorResolver(Exception error)
+                : base(designTime: false)
             {
                 _error = error;
             }
