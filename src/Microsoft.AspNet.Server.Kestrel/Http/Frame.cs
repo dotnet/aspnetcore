@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         Mode _mode;
         private bool _resultStarted;
-        private bool _headersSent;
+        private bool _responseStarted;
         private bool _keepAlive;
 
         /*
@@ -63,9 +63,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         CancellationTokenSource _cts = new CancellationTokenSource();
         */
 
-        List<KeyValuePair<Action<object>, object>> _onSendingHeaders;
+        List<KeyValuePair<Action<object>, object>> _onResponseStarting;
         List<KeyValuePair<Action<object>, object>> _onResponseCompleted;
-        object _onSendingHeadersSync = new Object();
+        object _onResponseStartingSync = new Object();
         object _onResponseCompletedSync = new Object();
 
         public Frame(ConnectionContext context) : base(context)
@@ -92,9 +92,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public Stream DuplexStream { get; set; }
 
-        public bool HeadersSent
+        public bool HasResponseStarted
         {
-            get { return _headersSent; }
+            get { return _responseStarted; }
         }
 
 
@@ -190,15 +190,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Task.Run(ExecuteAsync);
         }
 
-        public void OnSendingHeaders(Action<object> callback, object state)
+        public void OnResponseStarting(Action<object> callback, object state)
         {
-            lock (_onSendingHeadersSync)
+            lock (_onResponseStartingSync)
             {
-                if (_onSendingHeaders == null)
+                if (_onResponseStarting == null)
                 {
-                    _onSendingHeaders = new List<KeyValuePair<Action<object>, object>>();
+                    _onResponseStarting = new List<KeyValuePair<Action<object>, object>>();
                 }
-                _onSendingHeaders.Add(new KeyValuePair<Action<object>, object>(callback, state));
+                _onResponseStarting.Add(new KeyValuePair<Action<object>, object>(callback, state));
             }
         }
 
@@ -214,17 +214,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        private void FireOnSendingHeaders()
+        private void FireOnResponseStarting()
         {
-            List<KeyValuePair<Action<object>, object>> onSendingHeaders = null;
-            lock (_onSendingHeadersSync)
+            List<KeyValuePair<Action<object>, object>> onResponseStarting = null;
+            lock (_onResponseStartingSync)
             {
-                onSendingHeaders = _onSendingHeaders;
-                _onSendingHeaders = null;
+                onResponseStarting = _onResponseStarting;
+                _onResponseStarting = null;
             }
-            if (onSendingHeaders != null)
+            if (onResponseStarting != null)
             {
-                foreach (var entry in onSendingHeaders)
+                foreach (var entry in onResponseStarting)
                 {
                     entry.Key.Invoke(entry.Value);
                 }
@@ -318,9 +318,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             if (_resultStarted) return;
             _resultStarted = true;
 
-            FireOnSendingHeaders();
+            FireOnResponseStarting();
 
-            _headersSent = true;
+            _responseStarted = true;
 
             var status = ReasonPhrases.ToStatus(StatusCode, ReasonPhrase);
 

@@ -194,14 +194,14 @@ namespace Kestrel
             }
         }
 
-        bool IHttpResponseFeature.HeadersSent
+        bool IHttpResponseFeature.HasStarted
         {
-            get { return _frame.HeadersSent; }
+            get { return _frame.HasResponseStarted; }
         }
 
-        void IHttpResponseFeature.OnSendingHeaders(Action<object> callback, object state)
+        void IHttpResponseFeature.OnResponseStarting(Action<object> callback, object state)
         {
-            _frame.OnSendingHeaders(callback, state);
+            _frame.OnResponseStarting(callback, state);
         }
 
         void IHttpResponseFeature.OnResponseCompleted(Action<object> callback, object state)
