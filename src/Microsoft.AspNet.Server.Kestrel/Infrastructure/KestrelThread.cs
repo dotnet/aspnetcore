@@ -153,6 +153,18 @@ namespace Microsoft.AspNet.Server.Kestrel
                 _post.Reference();
                 _post.DangerousClose();
 
+                _engine.Libuv.walk(
+                    _loop,
+                    (ptr, arg) =>
+                    {
+                        var handle = UvMemory.FromIntPtr<UvHandle>(ptr);
+                        if (handle != _post)
+                        {
+                            handle.Dispose();
+                        }
+                    },
+                    IntPtr.Zero);
+
                 // Ensure the "DangerousClose" operation completes in the event loop.
                 var ran2 = _loop.Run();
 
