@@ -5,7 +5,6 @@
     "warningsAsErrors": false
   },
   "dependencies": {
-    "Microsoft.AspNet.Diagnostics.Abstractions": "1.0.0-*",
     "Microsoft.AspNet.Mvc.Common": { "version": "6.0.0-*", "type": "build" },
     "Microsoft.AspNet.Mvc.Extensions": "6.0.0-*",
     "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",
