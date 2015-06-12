@@ -28,17 +28,15 @@ namespace Microsoft.AspNet.Diagnostics
 
         public async Task Invoke(HttpContext context)
         {
-            var responseStarted = false;
             try
             {
-                context.Response.OnSendingHeaders(state => responseStarted = true, null);
                 await _next(context);
             }
             catch (Exception ex)
             {
                 _logger.LogError("An unhandled exception has occurred: " + ex.Message, ex);
                 // We can't do anything if the response has already started, just abort.
-                if (responseStarted)
+                if (context.Response.HasStarted)
                 {
                     _logger.LogWarning("The response has already started, the error handler will not be executed.");
                     throw;
