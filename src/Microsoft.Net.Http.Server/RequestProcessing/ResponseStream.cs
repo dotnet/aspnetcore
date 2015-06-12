@@ -583,7 +583,6 @@ namespace Microsoft.Net.Http.Server
 
             uint statusCode;
             uint bytesSent = 0;
-            flags |= _leftToWrite == count ? HttpApi.HTTP_FLAGS.NONE : HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
             bool startedSending = _requestContext.Response.HasStartedSending;
             var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
             ResponseStreamAsyncResult asyncResult = new ResponseStreamAsyncResult(this, fileName, offset, count, chunked, cancellationRegistration);
@@ -602,6 +601,7 @@ namespace Microsoft.Net.Http.Server
                 bytesWritten = asyncResult.FileLength - offset;
             }
             // Update _leftToWrite now so we can queue up additional calls to SendFileAsync.
+            flags |= _leftToWrite == bytesWritten ? HttpApi.HTTP_FLAGS.NONE : HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
             UpdateWritenCount((uint)bytesWritten);
 
             try

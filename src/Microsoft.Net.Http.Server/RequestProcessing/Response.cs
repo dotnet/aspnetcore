@@ -85,6 +85,7 @@ namespace Microsoft.Net.Http.Server
             _bufferingEnabled = _requestContext.Server.BufferResponses;
             _expectedBodyLength = 0;
             _nativeStream = null;
+            CacheTtl = null;
         }
 
         private enum ResponseState
@@ -306,6 +307,8 @@ namespace Microsoft.Net.Http.Server
             get { return _responseState >= ResponseState.StartedSending; }
         }
 
+        public TimeSpan? CacheTtl { get; set; }
+
         private void EnsureResponseStream()
         {
             if (_nativeStream == null)
@@ -391,6 +394,14 @@ namespace Microsoft.Net.Http.Server
                     _nativeResponse.Response_V1.pEntityChunks = null;
                 }
 
+                var cachePolicy = new HttpApi.HTTP_CACHE_POLICY();
+                var cacheTtl = CacheTtl;
+                if (cacheTtl.HasValue && cacheTtl.Value > TimeSpan.Zero)
+                {
+                    cachePolicy.Policy = HttpApi.HTTP_CACHE_POLICY_TYPE.HttpCachePolicyTimeToLive;
+                    cachePolicy.SecondsToLive = (uint)Math.Min(cacheTtl.Value.Ticks / TimeSpan.TicksPerSecond, Int32.MaxValue);
+                }
+
                 byte[] reasonPhraseBytes = new byte[HeaderEncoding.GetByteCount(reasonPhrase)];
                 fixed (byte* pReasonPhrase = reasonPhraseBytes)
                 {
@@ -405,7 +416,7 @@ namespace Microsoft.Net.Http.Server
                                 Request.RequestId,
                                 (uint)flags,
                                 pResponse,
-                                null,
+                                &cachePolicy,
                                 &bytesSent,
                                 SafeLocalFree.Zero,
                                 0,

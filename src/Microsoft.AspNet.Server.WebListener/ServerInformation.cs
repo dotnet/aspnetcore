@@ -50,5 +50,11 @@ namespace Microsoft.AspNet.Server.WebListener
             get { return _messagePump.MaxAccepts; }
             set { _messagePump.MaxAccepts = value; }
         }
+
+        public bool EnableResponseCaching
+        {
+            get { return _messagePump.EnableResponseCaching; }
+            set { _messagePump.EnableResponseCaching = value; }
+        }
     }
 }

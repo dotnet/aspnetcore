@@ -212,7 +212,7 @@ namespace Microsoft.Net.Http.Server
             internal static extern uint HttpReceiveHttpRequest(SafeHandle requestQueueHandle, ulong requestId, uint flags, HTTP_REQUEST* pRequestBuffer, uint requestBufferLength, uint* pBytesReturned, SafeNativeOverlapped pOverlapped);
 
             [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
-            internal static extern uint HttpSendHttpResponse(SafeHandle requestQueueHandle, ulong requestId, uint flags, HTTP_RESPONSE_V2* pHttpResponse, void* pCachePolicy, uint* pBytesSent, SafeLocalFree pRequestBuffer, uint requestBufferLength, SafeNativeOverlapped pOverlapped, IntPtr pLogData);
+            internal static extern uint HttpSendHttpResponse(SafeHandle requestQueueHandle, ulong requestId, uint flags, HTTP_RESPONSE_V2* pHttpResponse, HTTP_CACHE_POLICY* pCachePolicy, uint* pBytesSent, SafeLocalFree pRequestBuffer, uint requestBufferLength, SafeNativeOverlapped pOverlapped, IntPtr pLogData);
 
             [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
             internal static extern uint HttpSendResponseEntityBody(SafeHandle requestQueueHandle, ulong requestId, uint flags, ushort entityChunkCount, HTTP_DATA_CHUNK* pEntityChunks, uint* pBytesSent, SafeLocalFree pRequestBuffer, uint requestBufferLength, SafeNativeOverlapped pOverlapped, IntPtr pLogData);
@@ -367,6 +367,21 @@ namespace Microsoft.Net.Http.Server
                 internal ushort* pHost;
                 internal ushort* pAbsPath;
                 internal ushort* pQueryString;
+            }
+
+            // Only cache unauthorized GETs + HEADs.
+            [StructLayout(LayoutKind.Sequential)]
+            internal struct HTTP_CACHE_POLICY
+            {
+                internal HTTP_CACHE_POLICY_TYPE Policy;
+                internal uint SecondsToLive;
+            }
+
+            internal enum HTTP_CACHE_POLICY_TYPE : int
+            {
+                HttpCachePolicyNocache = 0,
+                HttpCachePolicyUserInvalidates = 1,
+                HttpCachePolicyTimeToLive = 2,
             }
 
             [StructLayout(LayoutKind.Sequential)]

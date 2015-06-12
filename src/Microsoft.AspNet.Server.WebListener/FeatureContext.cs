@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Authentication;
+using Microsoft.Net.Http.Headers;
 using Microsoft.Net.Http.Server;
 using Microsoft.Net.WebSockets;
 
@@ -46,8 +47,11 @@ namespace Microsoft.AspNet.Server.WebListener
         IHttpUpgradeFeature,
         IRequestIdentifierFeature
     {
+        private static Action<object> OnStartDelegate = OnStart;
+
         private RequestContext _requestContext;
         private FeatureCollection _features;
+        private bool _enableResponseCaching;
 
         private Stream _requestBody;
         private IDictionary<string, string[]> _requestHeaders;
@@ -69,11 +73,13 @@ namespace Microsoft.AspNet.Server.WebListener
         private Stream _responseStream;
         private IDictionary<string, string[]> _responseHeaders;
 
-        internal FeatureContext(RequestContext requestContext)
+        internal FeatureContext(RequestContext requestContext, bool enableResponseCaching)
         {
             _requestContext = requestContext;
             _features = new FeatureCollection();
             _authHandler = new AuthenticationHandler(requestContext);
+            _enableResponseCaching = enableResponseCaching;
+            requestContext.Response.OnSendingHeaders(OnStartDelegate, this);
             PopulateFeatures();
         }
 
@@ -470,6 +476,70 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 return _requestContext.TraceIdentifier;
             }
+        }
+
+        private static void OnStart(object obj)
+        {
+            var featureContext = (FeatureContext)obj;
+
+            ConsiderEnablingResponseCache(featureContext);
+        }
+
+        private static void ConsiderEnablingResponseCache(FeatureContext featureContext)
+        {
+            if (featureContext._enableResponseCaching)
+            {
+                // We don't have to worry too much about what Http.Sys supports, caching is a best-effort feature.
+                // If there's something about the request or response that prevents it from caching then the response
+                // will complete normally without caching.
+                featureContext._requestContext.Response.CacheTtl = GetCacheTtl(featureContext._requestContext);
+            }
+        }
+
+        private static TimeSpan? GetCacheTtl(RequestContext requestContext)
+        {
+            var response = requestContext.Response;
+            // Only consider kernel-mode caching if the Cache-Control response header is present.
+            var cacheControlHeader = response.Headers[HeaderNames.CacheControl];
+            if (string.IsNullOrEmpty(cacheControlHeader))
+            {
+                return null;
+            }
+
+            // Before we check the header value, check for the existence of other headers which would
+            // make us *not* want to cache the response.
+            if (response.Headers.ContainsKey(HeaderNames.SetCookie)
+                || response.Headers.ContainsKey(HeaderNames.Vary)
+                || response.Headers.ContainsKey(HeaderNames.Pragma))
+            {
+                return null;
+            }
+
+            // We require 'public' and 's-max-age' or 'max-age' or the Expires header.
+            CacheControlHeaderValue cacheControl;
+            if (CacheControlHeaderValue.TryParse(cacheControlHeader, out cacheControl) && cacheControl.Public)
+            {
+                if (cacheControl.SharedMaxAge.HasValue)
+                {
+                    return cacheControl.SharedMaxAge;
+                }
+                else if (cacheControl.MaxAge.HasValue)
+                {
+                    return cacheControl.MaxAge;
+                }
+
+                DateTimeOffset expirationDate;
+                if (HeaderUtilities.TryParseDate(response.Headers[HeaderNames.Expires], out expirationDate))
+                {
+                    var expiresOffset = expirationDate - DateTimeOffset.UtcNow;
+                    if (expiresOffset > TimeSpan.Zero)
+                    {
+                        return expiresOffset;
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -78,6 +78,8 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
+        internal bool EnableResponseCaching { get; set; } = true;
+
         internal void Start(AppFunc app)
         {
             // Can't call Start twice
@@ -160,7 +162,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 try
                 {
                     Interlocked.Increment(ref _outstandingRequests);
-                    FeatureContext featureContext = new FeatureContext(requestContext);
+                    FeatureContext featureContext = new FeatureContext(requestContext, EnableResponseCaching);
                     await _appFunc(featureContext.Features).SupressContext();
                     requestContext.Dispose();
                 }
