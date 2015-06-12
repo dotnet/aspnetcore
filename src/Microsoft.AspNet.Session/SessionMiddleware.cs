@@ -92,10 +92,10 @@ namespace Microsoft.AspNet.Session
                 _context = context;
                 _sessionKey = sessionKey;
                 _options = options;
-                context.Response.OnSendingHeaders(OnSendingHeadersCallback, state: this);
+                context.Response.OnResponseStarting(OnResponseStartingCallback, state: this);
             }
 
-            private static void OnSendingHeadersCallback(object state)
+            private static void OnResponseStartingCallback(object state)
             {
                 var establisher = (SessionEstablisher)state;
                 if (establisher._shouldEstablishSession)
@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.Session
             // Returns true if the session has already been established, or if it still can be because the response has not been sent.
             internal bool TryEstablishSession()
             {
-                return (_shouldEstablishSession |= !_context.Response.HeadersSent);
+                return (_shouldEstablishSession |= !_context.Response.HasStarted);
             }
         }
     }
