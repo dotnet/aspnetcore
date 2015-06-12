@@ -89,14 +89,14 @@ namespace Microsoft.AspNet.Http.Internal
             get { return ResponseCookiesFeature.Cookies; }
         }
 
-        public override bool HeadersSent
+        public override bool HasStarted
         {
-            get { return HttpResponseFeature.HeadersSent; }
+            get { return HttpResponseFeature.HasStarted; }
         }
 
-        public override void OnSendingHeaders(Action<object> callback, object state)
+        public override void OnResponseStarting(Action<object> callback, object state)
         {
-            HttpResponseFeature.OnSendingHeaders(callback, state);
+            HttpResponseFeature.OnResponseStarting(callback, state);
         }
 
         public override void OnResponseCompleted(Action<object> callback, object state)

@@ -13,8 +13,8 @@ namespace Microsoft.AspNet.Http.Features
         string ReasonPhrase { get; set; }
         IDictionary<string, string[]> Headers { get; set; }
         Stream Body { get; set; }
-        bool HeadersSent { get; }
-        void OnSendingHeaders(Action<object> callback, object state);
+        bool HasStarted { get; }
+        void OnResponseStarting(Action<object> callback, object state);
         void OnResponseCompleted(Action<object> callback, object state);
     }
 }

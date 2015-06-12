@@ -142,12 +142,12 @@ namespace Microsoft.AspNet.Owin
             set { Prop(OwinConstants.ResponseBody, value); }
         }
 
-        bool IHttpResponseFeature.HeadersSent
+        bool IHttpResponseFeature.HasStarted
         {
             get { return _headersSent; }
         }
 
-        void IHttpResponseFeature.OnSendingHeaders(Action<object> callback, object state)
+        void IHttpResponseFeature.OnResponseStarting(Action<object> callback, object state)
         {
             var register = Prop<Action<Action<object>, object>>(OwinConstants.CommonKeys.OnSendingHeaders);
             if (register == null)

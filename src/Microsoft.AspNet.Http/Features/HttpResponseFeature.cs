@@ -24,12 +24,12 @@ namespace Microsoft.AspNet.Http.Features.Internal
 
         public Stream Body { get; set; }
 
-        public bool HeadersSent
+        public bool HasStarted
         {
             get { return false; }
         }
 
-        public void OnSendingHeaders(Action<object> callback, object state)
+        public void OnResponseStarting(Action<object> callback, object state)
         {
             throw new NotSupportedException();
         }
