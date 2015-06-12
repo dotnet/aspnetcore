@@ -6,7 +6,7 @@
     },
     "dependencies": {
         "Microsoft.AspNet.Authorization": "1.0.0-*",
-        "Microsoft.AspNet.Cors": "1.0.0-*",
+        "Microsoft.AspNet.Cors.Core": "1.0.0-*",
         "Microsoft.AspNet.Mvc.ApiExplorer": "6.0.0-*",
         "Microsoft.AspNet.Mvc.Extensions": "6.0.0-*",
         "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
