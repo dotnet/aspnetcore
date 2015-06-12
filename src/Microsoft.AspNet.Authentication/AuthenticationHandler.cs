@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Authentication
 
             RegisterAuthenticationHandler();
 
-            Response.OnSendingHeaders(OnSendingHeaderCallback, this);
+            Response.OnResponseStarting(OnSendingHeaderCallback, this);
 
             await InitializeCoreAsync();
 
