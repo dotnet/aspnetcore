@@ -358,7 +358,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
             }
 
             // Unwrap the type if it's a Task<T>. The Task (non-generic) case was already handled.
-            var unwrappedType = TypeHelper.GetTaskInnerTypeOrNull(declaredReturnType) ?? declaredReturnType;
+            var unwrappedType = GetTaskInnerTypeOrNull(declaredReturnType) ?? declaredReturnType;
 
             // If the method is declared to return IActionResult or a derived class, that information
             // isn't valuable to the formatter.
@@ -370,6 +370,13 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
             {
                 return unwrappedType;
             }
+        }
+
+        private static Type GetTaskInnerTypeOrNull(Type type)
+        {
+            var genericType = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(Task<>));
+
+            return genericType?.GenericTypeArguments[0];
         }
 
         private Type GetRuntimeReturnType(Type declaredReturnType, IApiResponseMetadataProvider[] metadataAttributes)
@@ -550,7 +557,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
                 //      public class OrderDTO
                 //      {
                 //          public int AccountId { get; set; }
-                //          
+                //
                 //          [FromBody]
                 //          public Order { get; set; }
                 //      }

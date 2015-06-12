@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>The created dictionary of property names and property values.</returns>
         public static IDictionary<string, object> ObjectToDictionary(object value)
         {
-            return TypeHelper.ObjectToDictionary(value);
+            return PropertyHelper.ObjectToDictionary(value);
         }
 
         /// <summary>

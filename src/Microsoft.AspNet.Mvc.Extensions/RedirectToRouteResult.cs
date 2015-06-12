@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc
             bool permanent)
         {
             RouteName = routeName;
-            RouteValues = TypeHelper.ObjectToDictionary(routeValues);
+            RouteValues = PropertyHelper.ObjectToDictionary(routeValues);
             Permanent = permanent;
         }
 

@@ -24,14 +24,14 @@ namespace Microsoft.AspNet.Mvc.Xml
         private DataContractSerializerSettings _serializerSettings;
         private ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
         private readonly XmlDictionaryReaderQuotas _readerQuotas = FormattingUtilities.GetDefaultXmlReaderQuotas();
-        
+
         /// <summary>
         /// Initializes a new instance of DataContractSerializerInputFormatter
         /// </summary>
         public XmlDataContractSerializerInputFormatter()
         {
-            SupportedEncodings.Add(Encodings.UTF8EncodingWithoutBOM);
-            SupportedEncodings.Add(Encodings.UTF16EncodingLittleEndian);
+            SupportedEncodings.Add(UTF8EncodingWithoutBOM);
+            SupportedEncodings.Add(UTF16EncodingLittleEndian);
 
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/xml"));
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/xml"));
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.Xml
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="DataContractSerializerSettings"/> used to configure the 
+        /// Gets or sets the <see cref="DataContractSerializerSettings"/> used to configure the
         /// <see cref="DataContractSerializer"/>.
         /// </summary>
         public DataContractSerializerSettings SerializerSettings

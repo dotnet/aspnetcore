@@ -113,9 +113,9 @@ namespace Microsoft.AspNet.Mvc.Test
             testFormatter.WriteResponseHeaders(formatterContext);
 
             // Assert
-            Assert.Equal(Encodings.UTF16EncodingLittleEndian.WebName, formatterContext.SelectedEncoding.WebName);
-            Assert.Equal(Encodings.UTF16EncodingLittleEndian, formatterContext.SelectedEncoding);
-            Assert.Equal("application/doesNotSetContext; charset=" + Encodings.UTF16EncodingLittleEndian.WebName,
+            Assert.Equal(Encoding.Unicode.WebName, formatterContext.SelectedEncoding.WebName);
+            Assert.Equal(Encoding.Unicode, formatterContext.SelectedEncoding);
+            Assert.Equal("application/doesNotSetContext; charset=" + Encoding.Unicode.WebName,
                          formatterContext.SelectedContentType.ToString());
         }
 
@@ -307,7 +307,7 @@ namespace Microsoft.AspNet.Mvc.Test
             public DoesNotSetContext()
             {
                 SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/doesNotSetContext"));
-                SupportedEncodings.Add(Encodings.UTF16EncodingLittleEndian);
+                SupportedEncodings.Add(Encoding.Unicode);
             }
 
             public override bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
@@ -330,7 +330,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("image/png"));
                 SupportedEncodings.Add(Encoding.UTF8);
             }
-            
+
             public override Task WriteResponseBodyAsync([NotNull] OutputFormatterContext context)
             {
                 return Task.FromResult(true);

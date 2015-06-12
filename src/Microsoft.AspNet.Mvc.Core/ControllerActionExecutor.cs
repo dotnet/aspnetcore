@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -79,7 +80,7 @@ namespace Microsoft.AspNet.Mvc
                     return CastToObject(resultAsTask);
                 }
 
-                var taskValueType = TypeHelper.GetTaskInnerTypeOrNull(returnType);
+                var taskValueType = GetTaskInnerTypeOrNull(returnType);
                 if (taskValueType != null)
                 {
                     // for: public Task<T> Action()
@@ -154,7 +155,7 @@ namespace Microsoft.AspNet.Mvc
             // This most likely indicates that the developer forgot to call Unwrap() somewhere.
             if (actualTypeReturned != typeof(Task))
             {
-                var innerTaskType = TypeHelper.GetTaskInnerTypeOrNull(actualTypeReturned);
+                var innerTaskType = GetTaskInnerTypeOrNull(actualTypeReturned);
                 if (innerTaskType != null && typeof(Task).IsAssignableFrom(innerTaskType))
                 {
                     throw new InvalidOperationException(
@@ -181,6 +182,13 @@ namespace Microsoft.AspNet.Mvc
         private static async Task<object> CastToObject<T>(Task<T> task)
         {
             return (object)await task;
+        }
+
+        private static Type GetTaskInnerTypeOrNull(Type type)
+        {
+            var genericType = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(Task<>));
+
+            return genericType?.GenericTypeArguments[0];
         }
     }
 }

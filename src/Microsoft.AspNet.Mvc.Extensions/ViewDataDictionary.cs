@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection;
 using Microsoft.AspNet.Mvc.Extensions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
@@ -404,7 +405,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // IsCompatibleObject verifies if the value is either an instance of _declaredModelType or (if value is
             // null) that _declaredModelType is a nullable type.
-            var castWillSucceed = TypeHelper.IsCompatibleWith(_declaredModelType, value);
+            var castWillSucceed = IsCompatibleWith(_declaredModelType, value);
             if (!castWillSucceed)
             {
                 string message;
@@ -424,6 +425,18 @@ namespace Microsoft.AspNet.Mvc
         private Type GetModelType(object value)
         {
             return (value == null) ? _declaredModelType : value.GetType();
+        }
+
+        private static bool IsCompatibleWith([NotNull] Type type, object value)
+        {
+            if (value == null)
+            {
+                return !type.GetTypeInfo().IsValueType || Nullable.GetUnderlyingType(type) != null;
+            }
+            else
+            {
+                return type.GetTypeInfo().IsAssignableFrom(value.GetType().GetTypeInfo());
+            }
         }
 
         #region IDictionary methods

@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         public virtual string Action(UrlActionContext actionContext)
         {
-            var valuesDictionary = TypeHelper.ObjectToDictionary(actionContext.Values);
+            var valuesDictionary = PropertyHelper.ObjectToDictionary(actionContext.Values);
 
             if (actionContext.Action != null)
             {
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         public virtual string RouteUrl(UrlRouteContext routeContext)
         {
-            var valuesDictionary = TypeHelper.ObjectToDictionary(routeContext.Values);
+            var valuesDictionary = PropertyHelper.ObjectToDictionary(routeContext.Values);
 
             var path = GeneratePathFromRoute(routeContext.RouteName, valuesDictionary);
             if (path == null)

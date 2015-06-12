@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Internal
                         {
                             var viewContext = new ViewContext(_viewContext, viewEngineResult.View, _viewData, writer);
                             var renderTask = viewEngineResult.View.RenderAsync(viewContext);
-                            TaskHelper.WaitAndThrowIfFaulted(renderTask);
+                            renderTask.GetAwaiter().GetResult();
                             return writer.ToString();
                         }
                     }

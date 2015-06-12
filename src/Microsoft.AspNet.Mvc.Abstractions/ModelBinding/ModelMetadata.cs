@@ -317,7 +317,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         public bool IsNullableValueType
         {
-            get { return TypeHelper.IsNullableValueType(ModelType); }
+            get
+            {
+                return Nullable.GetUnderlyingType(ModelType) != null;
+            }
         }
 
         /// <summary>

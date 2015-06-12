@@ -8,12 +8,12 @@ using System.Reflection;
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     /// <summary>
-    /// Identifies the simple types that the default model binding validation will exclude. 
+    /// Identifies the simple types that the default model binding validation will exclude.
     /// </summary>
     public class SimpleTypesExcludeFilter : IExcludeTypeValidationFilter
     {
         /// <summary>
-        /// Returns true if the given type will be excluded from the default model validation. 
+        /// Returns true if the given type will be excluded from the default model validation.
         /// </summary>
         public bool IsTypeExcluded(Type type)
         {
@@ -46,7 +46,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         /// </summary>
         protected virtual bool IsSimpleType(Type type)
         {
-            return TypeHelper.IsSimpleType(type);
+            return type.GetTypeInfo().IsPrimitive ||
+                type.Equals(typeof(decimal)) ||
+                type.Equals(typeof(string)) ||
+                type.Equals(typeof(DateTime)) ||
+                type.Equals(typeof(Guid)) ||
+                type.Equals(typeof(DateTimeOffset)) ||
+                type.Equals(typeof(TimeSpan)) ||
+                type.Equals(typeof(Uri));
         }
     }
 }

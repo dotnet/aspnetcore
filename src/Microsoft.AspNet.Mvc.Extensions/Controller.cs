@@ -505,7 +505,7 @@ namespace Microsoft.AspNet.Mvc
         public virtual RedirectToActionResult RedirectToAction(string actionName, string controllerName,
                                         object routeValues)
         {
-            return new RedirectToActionResult(actionName, controllerName, TypeHelper.ObjectToDictionary(routeValues))
+            return new RedirectToActionResult(actionName, controllerName, PropertyHelper.ObjectToDictionary(routeValues))
             {
                 UrlHelper = Url,
             };
@@ -565,7 +565,7 @@ namespace Microsoft.AspNet.Mvc
             return new RedirectToActionResult(
                 actionName,
                 controllerName,
-                TypeHelper.ObjectToDictionary(routeValues),
+                PropertyHelper.ObjectToDictionary(routeValues),
                 permanent: true)
             {
                 UrlHelper = Url,

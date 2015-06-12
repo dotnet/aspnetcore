@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Framework.Internal;
 using Moq;
 using Xunit;
 
@@ -148,13 +149,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         private string GetRouteValuesAsString(object routeValues)
         {
-            var dict = TypeHelper.ObjectToDictionary(routeValues);
+            var dict = PropertyHelper.ObjectToDictionary(routeValues);
             return string.Join(string.Empty, dict.Select(kvp => string.Format("{0}={1}", kvp.Key, kvp.Value.ToString())));
         }
 
         private string GetHtmlAttributesAsString(object routeValues)
         {
-            var dict = TypeHelper.ObjectToDictionary(routeValues);
+            var dict = PropertyHelper.ObjectToDictionary(routeValues);
             return string.Join(string.Empty, dict.Select(kvp => string.Format(" {0}=\"HtmlEncode[[{1}]]\"", kvp.Key, kvp.Value.ToString())));
         }
     }

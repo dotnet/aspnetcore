@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Mvc
                 if (propertyHelper.Property.CanWrite && propertyHelper.Property.SetMethod?.IsPublic == true)
                 {
                     // Handle settable property. Do not set the property if the type is a non-nullable type.
-                    if (source != null || TypeHelper.AllowsNullValue(propertyType))
+                    if (source != null || AllowsNullValue(propertyType))
                     {
                         propertyHelper.SetValue(controller, source);
                     }
@@ -217,6 +217,11 @@ namespace Microsoft.AspNet.Mvc
                 HttpContext = actionContext.HttpContext,
                 ValueProvider = bindingContext.ValueProvider,
             };
+        }
+
+        private static bool AllowsNullValue([NotNull] Type type)
+        {
+            return !type.GetTypeInfo().IsValueType || Nullable.GetUnderlyingType(type) != null;
         }
     }
 }

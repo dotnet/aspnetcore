@@ -225,7 +225,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             actualType = actualType ?? itemType;
-            if (!TypeHelper.IsSimpleType(actualType))
+            if (!IsSimpleType(actualType))
             {
                 var underlyingType = Nullable.GetUnderlyingType(actualType) ?? actualType;
                 var message = Resources.FormatTempData_CannotSerializeToSession(
@@ -247,6 +247,18 @@ namespace Microsoft.AspNet.Mvc
                 convertedDictionary.Add(item.Key, jObject.Value<TVal>(item.Key));
             }
             return convertedDictionary;
+        }
+
+        private static bool IsSimpleType(Type type)
+        {
+            return type.GetTypeInfo().IsPrimitive ||
+                type.Equals(typeof(decimal)) ||
+                type.Equals(typeof(string)) ||
+                type.Equals(typeof(DateTime)) ||
+                type.Equals(typeof(Guid)) ||
+                type.Equals(typeof(DateTimeOffset)) ||
+                type.Equals(typeof(TimeSpan)) ||
+                type.Equals(typeof(Uri));
         }
     }
 }

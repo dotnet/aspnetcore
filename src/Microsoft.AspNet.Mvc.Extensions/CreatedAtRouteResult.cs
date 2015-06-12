@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc
             : base(value)
         {
             RouteName = routeName;
-            RouteValues = TypeHelper.ObjectToDictionary(routeValues);
+            RouteValues = PropertyHelper.ObjectToDictionary(routeValues);
             StatusCode = StatusCodes.Status201Created;
         }
 

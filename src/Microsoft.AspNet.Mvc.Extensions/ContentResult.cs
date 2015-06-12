@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -15,7 +13,7 @@ namespace Microsoft.AspNet.Mvc
     {
         private readonly MediaTypeHeaderValue DefaultContentType = new MediaTypeHeaderValue("text/plain")
         {
-            Encoding = Encodings.UTF8EncodingWithoutBOM
+            Encoding = Encoding.UTF8
         };
 
         /// <summary>
@@ -42,7 +40,7 @@ namespace Microsoft.AspNet.Mvc
             if (contentTypeHeader == null)
             {
                 contentTypeHeader = DefaultContentType;
-                encoding = Encodings.UTF8EncodingWithoutBOM;
+                encoding = Encoding.UTF8;
             }
             else
             {
@@ -51,9 +49,9 @@ namespace Microsoft.AspNet.Mvc
                     // 1. Do not modify the user supplied content type
                     // 2. Parse here to handle parameters apart from charset
                     contentTypeHeader = MediaTypeHeaderValue.Parse(contentTypeHeader.ToString());
-                    contentTypeHeader.Encoding = Encodings.UTF8EncodingWithoutBOM;
+                    contentTypeHeader.Encoding = Encoding.UTF8;
 
-                    encoding = Encodings.UTF8EncodingWithoutBOM;
+                    encoding = Encoding.UTF8;
                 }
                 else
                 {

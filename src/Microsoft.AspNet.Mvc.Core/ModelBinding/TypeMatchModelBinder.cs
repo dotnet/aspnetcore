@@ -1,7 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -41,12 +44,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return null; // the value doesn't exist
             }
 
-            if (!TypeHelper.IsCompatibleWith(context.ModelType, valueProviderResult.RawValue))
+            if (!IsCompatibleWith(context.ModelType, valueProviderResult.RawValue))
             {
                 return null; // value is of incompatible type
             }
 
             return valueProviderResult;
+        }
+
+        private static bool IsCompatibleWith([NotNull] Type type, object value)
+        {
+            if (value == null)
+            {
+                return !type.GetTypeInfo().IsValueType || Nullable.GetUnderlyingType(type) != null;
+            }
+            else
+            {
+                return type.GetTypeInfo().IsAssignableFrom(value.GetType().GetTypeInfo());
+            }
         }
     }
 }

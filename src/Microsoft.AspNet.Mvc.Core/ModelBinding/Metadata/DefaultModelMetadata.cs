@@ -7,9 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-#if DNXCORE50
 using System.Reflection;
-#endif
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
@@ -403,7 +401,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                     }
                     else
                     {
-                        _isRequired = !TypeHelper.AllowsNullValue(ModelType);
+                        _isRequired = !AllowsNullValue(ModelType);
                     }
                 }
 
@@ -520,6 +518,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             {
                 return _details.PropertySetter;
             }
+        }
+
+        private static bool AllowsNullValue([NotNull] Type type)
+        {
+            return !type.GetTypeInfo().IsValueType || Nullable.GetUnderlyingType(type) != null;
         }
     }
 }

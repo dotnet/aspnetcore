@@ -289,10 +289,10 @@ namespace Microsoft.AspNet.Mvc.Xml
             var expectedMessage = TestPlatformHelper.IsMono ?
                 "Expected element 'TestLevelTwo' in namespace '', but found Element node 'DummyClass' in namespace ''" :
                 "The expected encoding 'utf-8' does not match the actual encoding 'utf-16LE'.";
-            var inpStart = Encodings.UTF16EncodingLittleEndian.GetBytes("<?xml version=\"1.0\" encoding=\"UTF-16\"?>" +
+            var inpStart = Encoding.Unicode.GetBytes("<?xml version=\"1.0\" encoding=\"UTF-16\"?>" +
                 "<DummyClass><SampleInt>");
             byte[] inp = { 192, 193 };
-            var inpEnd = Encodings.UTF16EncodingLittleEndian.GetBytes("</SampleInt></DummyClass>");
+            var inpEnd = Encoding.Unicode.GetBytes("</SampleInt></DummyClass>");
 
             var contentBytes = new byte[inpStart.Length + inp.Length + inpEnd.Length];
             Buffer.BlockCopy(inpStart, 0, contentBytes, 0, inpStart.Length);
@@ -316,7 +316,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             var expectedMessage = TestPlatformHelper.IsMono ?
                 "Expected element 'TestLevelTwo' in namespace '', but found Element node 'DummyClass' in namespace ''" :
                 "The expected encoding 'utf-16LE' does not match the actual encoding 'utf-8'.";
-            var inputBytes = Encodings.UTF8EncodingWithoutBOM.GetBytes("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            var inputBytes = Encoding.UTF8.GetBytes("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<DummyClass><SampleInt>1000</SampleInt></DummyClass>");
 
             var formatter = new XmlDataContractSerializerInputFormatter();
@@ -374,13 +374,13 @@ namespace Microsoft.AspNet.Mvc.Xml
                                 "<sampleString>" + expectedString + "</sampleString></TestLevelOne>";
 
             var formatter = new XmlDataContractSerializerInputFormatter();
-            var contentBytes = Encodings.UTF16EncodingLittleEndian.GetBytes(input);
+            var contentBytes = Encoding.Unicode.GetBytes(input);
 
             var modelState = new ModelStateDictionary();
             var httpContext = GetHttpContext(contentBytes, contentType: "application/xml; charset=utf-16");
 
             var context = new InputFormatterContext(httpContext, modelState, typeof(TestLevelOne));
-            
+
             // Act
             var model = await formatter.ReadAsync(context);
 

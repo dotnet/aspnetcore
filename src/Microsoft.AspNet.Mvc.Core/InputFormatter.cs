@@ -18,6 +18,18 @@ namespace Microsoft.AspNet.Mvc
     public abstract class InputFormatter : IInputFormatter
     {
         /// <summary>
+        /// Returns UTF8 Encoding without BOM and throws on invalid bytes.
+        /// </summary>
+        protected static readonly Encoding UTF8EncodingWithoutBOM
+            = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
+        /// <summary>
+        /// Returns UTF16 Encoding which uses littleEndian byte order with BOM and throws on invalid bytes.
+        /// </summary>
+        protected static readonly Encoding UTF16EncodingLittleEndian
+            = new UnicodeEncoding(bigEndian: false, byteOrderMark: true, throwOnInvalidBytes: true);
+
+        /// <summary>
         /// Gets the mutable collection of character encodings supported by
         /// this <see cref="InputFormatter"/>. The encodings are
         /// used when reading the data.

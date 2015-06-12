@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.Http.Formatting;
+using System.Reflection;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 
@@ -159,8 +160,20 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
         private static bool CanConvertFromString(Type destinationType)
         {
             destinationType = Nullable.GetUnderlyingType(destinationType) ?? destinationType;
-            return TypeHelper.IsSimpleType(destinationType) ||
+            return IsSimpleType(destinationType) ||
                    TypeDescriptor.GetConverter(destinationType).CanConvertFrom(typeof(string));
+        }
+
+        private static bool IsSimpleType(Type type)
+        {
+            return type.GetTypeInfo().IsPrimitive ||
+                type.Equals(typeof(decimal)) ||
+                type.Equals(typeof(string)) ||
+                type.Equals(typeof(DateTime)) ||
+                type.Equals(typeof(Guid)) ||
+                type.Equals(typeof(DateTimeOffset)) ||
+                type.Equals(typeof(TimeSpan)) ||
+                type.Equals(typeof(Uri));
         }
 
         private class OverloadedParameter

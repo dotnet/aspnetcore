@@ -8,6 +8,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.Internal;
 using Moq;
 using Xunit;
 
@@ -33,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.Core
                                                   new ActionDescriptor());
 
             var urlHelper = GetMockUrlHelper(expectedUrl);
-            var result = new RedirectToRouteResult(null, TypeHelper.ObjectToDictionary(values))
+            var result = new RedirectToRouteResult(null, PropertyHelper.ObjectToDictionary(values))
             {
                 UrlHelper = urlHelper,
             };

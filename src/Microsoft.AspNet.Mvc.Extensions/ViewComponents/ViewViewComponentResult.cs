@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Mvc
         public void Execute([NotNull] ViewComponentContext context)
         {
             var task = ExecuteAsync(context);
-            TaskHelper.WaitAndThrowIfFaulted(task);
+            task.GetAwaiter().GetResult();
         }
 
         /// <summary>

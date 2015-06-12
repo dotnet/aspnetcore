@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc
         {
             ActionName = actionName;
             ControllerName = controllerName;
-            RouteValues = TypeHelper.ObjectToDictionary(routeValues);
+            RouteValues = PropertyHelper.ObjectToDictionary(routeValues);
             StatusCode = StatusCodes.Status201Created;
         }
 
