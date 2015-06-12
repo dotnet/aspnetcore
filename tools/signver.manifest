@@ -11,13 +11,22 @@
     <File Name="dnx.mono.managed.dll" Ignore="yes" />
     <File Name="dnx.clr.dll" Ignore="yes" />
     <File Name="dnx.clr.managed.dll" Ignore="yes" />
+    <File Name="clrcompression.dll" Ignore="yes" />
+    <File Name="clretwrc.dll" Ignore="yes" />
+    <File Name="coreclr.dll" Ignore="yes" />
+    <File Name="crossgen.exe" Ignore="yes" />
+    <File Name="dbgshim.dll" Ignore="yes" />
+    <File Name="mscordaccore.dll" Ignore="yes" />
+    <File Name="mscordbi.dll" Ignore="yes" />
+    <File Name="mscorrc.debug.dll" Ignore="yes" />
+    <File Name="mscorrc.dll" Ignore="yes" />
     <File Name="libuv.dll" Ignore="yes" />    
     <File Name="Microsoft.CodeAnalysis.CSharp.dll" Ignore="yes" />
     <File Name="Microsoft.CodeAnalysis.dll" Ignore="yes" />
     <File Name="Microsoft.Win32.Primitives.dll" Ignore="yes" />
     <File Name="Newtonsoft.Json.dll" Ignore="yes" />
     <File Name="PageGenerator.dll" Ignore="yes" />
-	<File Name="Placeholder.dll" Ignore="yes" />
+    <File Name="Placeholder.dll" Ignore="yes" />
     <File Name="SampleApp.dll" Ignore="yes" />
     <File Name="sos.dll" Ignore="yes" />
     <File Name="sqlite3.dll" Ignore="yes" />
