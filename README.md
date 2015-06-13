@@ -46,6 +46,7 @@ On OS X the best way to get DNVM is to use [Homebrew](http://www.brew.sh). If yo
 brew tap aspnet/dnx
 brew update
 brew install dnvm
+source dnvm.sh
 ```
 
 Add dnvm to your bash profile (./bash_profile)
