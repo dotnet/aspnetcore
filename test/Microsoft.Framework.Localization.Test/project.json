@@ -1,17 +1,16 @@
 {
   "dependencies": {
-    "xunit": "2.1.0-*",
-    "xunit.runner.dnx": "2.1.0-*",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*",
     "Microsoft.Framework.Localization": "1.0.0-*"
   },
 
   "commands": {
-    "test": "xunit.runner.dnx"
+    "test": "xunit.runner.aspnet"
   },
 
   "frameworks": {
     "dnx451": { },
-    "dnxcore50": { 
+    "dnxcore50": {
       "dependencies": {
         "System.Reflection": "4.0.10-beta-*"
       }
