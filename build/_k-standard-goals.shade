@@ -30,6 +30,8 @@ default Quiet='${ false }'
     Configuration = "Debug";
     E("Configuration", Configuration);
   }
+  
+  Log.Info("Build v2: " + IsBuildV2);
 }
 
 #restore-npm-modules
@@ -88,19 +90,27 @@ default Quiet='${ false }'
 
 #build-compile target='compile' if='Directory.Exists("src")'
   @{
-    var projectFiles = Files.Include("src/**/project.json").ToList();
-    if (ShouldRunInParallel)
+    if (IsBuildV2) 
     {
-        Parallel.ForEach(projectFiles, projectFile => DnuPack(projectFile, BUILD_DIR, Configuration));
+        const string buildPattern = "src/**";
+        DnuPack(buildPattern, BUILD_DIR, Configuration);
     }
     else
     {
-        projectFiles.ForEach(projectFile => DnuPack(projectFile, BUILD_DIR, Configuration));
+        var projectFiles = Files.Include("src/**/project.json").ToList();
+        if (ShouldRunInParallel)
+        {
+            Parallel.ForEach(projectFiles, projectFile => DnuPack(projectFile, BUILD_DIR, Configuration));
+        }
+        else
+        {
+            projectFiles.ForEach(projectFile => DnuPack(projectFile, BUILD_DIR, Configuration));
+        }
     }
-
+    
     foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg")))
     {
-      File.Copy(nupkg, Path.Combine(BUILD_DIR, Path.GetFileName(nupkg)), true);
+        File.Copy(nupkg, Path.Combine(BUILD_DIR, Path.GetFileName(nupkg)), true);
     }
   }
 
@@ -227,16 +237,16 @@ functions @{
       if(!IsLinux)
       {
         processStartInfo = new ProcessStartInfo {
-      	UseShellExecute = false,
-      	FileName = "cmd",
-      	Arguments = "/C " + program + " " + commandline,
+        UseShellExecute = false,
+        FileName = "cmd",
+        Arguments = "/C " + program + " " + commandline,
         };
       } else
       {
-      	processStartInfo = new ProcessStartInfo {
-      	UseShellExecute = false,
-      	FileName = program,
-      	Arguments = commandline,
+        processStartInfo = new ProcessStartInfo {
+        UseShellExecute = false,
+        FileName = program,
+        Arguments = commandline,
         };
       }
       try
@@ -283,4 +293,9 @@ macro name="DnuBuild" projectFile='string' configuration='string'
 
 macro name="DnuPack" projectFile='string' kpmPackOutputDir='string' configuration='string'
     kpm-pack
+    
+macro name="DeleteFolder" delete='string'
+    directory
 
+macro name="CopyFolder" sourceDir='string' outputDir='string'
+    copy

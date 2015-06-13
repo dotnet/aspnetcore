@@ -12,10 +12,47 @@ configuration=''
 
 default configuration = 'Debug'
 default build_options='${E("NUGET3_build_options")}'
-var projectFolder='${Path.GetDirectoryName(projectFile)}'
-var projectName='${Path.GetFileName(projectFolder)}'
-var projectBin='${Path.Combine(projectFolder, "bin", configuration)}'
 
-directory delete="${projectBin}"
-exec program='cmd' commandline='/C dnu build${build_options} ${projectFolder} --configuration ${configuration}' if='!IsMono'
-exec program='dnu' commandline='build${build_options} ${projectFolder} --configuration ${configuration}' if='IsMono'
+@{
+    if (IsBuildV2)
+    {
+        var projectFolders = projectFile.Split((char)';')
+            .SelectMany(pattern => Files.Include(pattern + "/project.json"))
+            .Select(proj => Path.GetDirectoryName(proj))
+            .ToList();
+            
+        foreach(var projFolder in projectFolders) 
+        { 
+            DeleteFolder(Path.Combine(projFolder, "bin", configuration));
+        }
+        
+        var projectsArg=projectFile.Replace(";", " ");
+        var dnuArgs=string.Format("build{0} {1} --configuration {2}", build_options, projectsArg, configuration);
+        if (!IsMono) 
+        {
+            Exec("cmd", "/C dnu " + dnuArgs);
+        }
+        else
+        {
+            Exec("dnu", dnuArgs);
+        }
+    }
+    else
+    {
+        var projectFolder=Path.GetDirectoryName(projectFile);
+        var projectName=Path.GetFileName(projectFolder);
+        var projectBin=Path.Combine(projectFolder, "bin", configuration);
+        
+        DeleteFolder(projectBin);
+        
+        var dnuArgs=string.Format("build{0} {1} --configuration {2}", build_options, projectFolder, configuration);
+        if (!IsMono) 
+        {
+            Exec("cmd", "/C dnu " + dnuArgs);
+        }
+        else
+        {
+            Exec("dnu", dnuArgs);
+        }
+    }
+}

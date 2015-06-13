@@ -33,4 +33,12 @@ functions
             return Environment.GetEnvironmentVariable("TEAMCITY_PROJECT_NAME") != null;
         }
     }
+    
+    bool IsBuildV2
+    {
+        get 
+        { 
+            return Environment.GetEnvironmentVariable("KOREBUILD_BUILD_V2") == "1"; 
+        }
+    }
   }

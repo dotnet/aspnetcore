@@ -15,11 +15,56 @@ configuration=''
 
 default configuration = 'Debug'
 default pack_options='${E("NUGET3_pack_options")}'
-var projectFolder='${Path.GetDirectoryName(projectFile)}'
-var projectName='${Path.GetFileName(projectFolder)}'
-var projectBin='${Path.Combine(projectFolder, "bin", configuration)}'
 
-directory delete="${projectBin}"
-exec program='cmd' commandline='/C dnu pack${pack_options} ${projectFolder} --configuration ${configuration}' if='!IsMono'
-exec program='dnu' commandline='pack${pack_options} ${projectFolder} --configuration ${configuration}' if='IsMono'
-copy sourceDir='${projectBin}' outputDir='${Path.Combine(kpmPackOutputDir, projectName)}'
+@{
+    if (IsBuildV2)
+    {
+        var projectFolders = projectFile.Split((char)';')
+            .SelectMany(pattern => Files.Include(pattern + "/project.json"))
+            .Select(proj => Path.GetDirectoryName(proj))
+            .ToList();
+            
+        foreach(var projFolder in projectFolders) 
+        { 
+            DeleteFolder(Path.Combine(projFolder, "bin", configuration));
+        }
+        
+        var projectsArg=projectFile.Replace(";", " ");
+        var dnuArgs=string.Format("pack{0} {1} --configuration {2}", pack_options, projectsArg, configuration);
+        if (!IsMono) 
+        {
+            Exec("cmd", "/C dnu " + dnuArgs);
+        }
+        else
+        {
+            Exec("dnu", dnuArgs);
+        }
+        
+        foreach(var projFolder in projectFolders) 
+        { 
+            CopyFolder(
+                Path.Combine(projFolder, "bin", configuration), 
+                Path.Combine(kpmPackOutputDir, Path.GetFileName(projFolder)));
+        }
+    }
+    else
+    {
+        var projectFolder=Path.GetDirectoryName(projectFile);
+        var projectName=Path.GetFileName(projectFolder);
+        var projectBin=Path.Combine(projectFolder, "bin", configuration);
+        
+        DeleteFolder(projectBin);
+        
+        var dnuArgs=string.Format("pack{0} {1} --configuration {2}", pack_options, projectFolder, configuration);
+        if (!IsMono) 
+        {
+            Exec("cmd", "/C dnu " + dnuArgs);
+        }
+        else
+        {
+            Exec("dnu", dnuArgs);
+        }
+
+        CopyFolder(projectBin, Path.Combine(kpmPackOutputDir, projectName));
+    }
+}
