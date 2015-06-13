@@ -91,7 +91,7 @@ You should also be able to run `dnx` and see the help text of the `dnx` command.
     - For the console app run  `dnx . run`.
     - For the web apps run `dnx . web` on Windows or `dnx . kestrel` on OS X/Linux.
 6. You should see the output of the console app or a message that says the site is now started.
-7. You can navigate to the web apps in a browser by navigating to `http://localhost:5001` or `http://localhost:5004` if running on OS X/Linux.
+7. You can navigate to the web apps in a browser by navigating to `http://localhost:5000` or `http://localhost:5004` if running on OS X/Linux.
 
 # Documentation and Further Learning
 
