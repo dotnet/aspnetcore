@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Microsoft.AspNet.Cors.Core;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
@@ -15,6 +14,10 @@ namespace Microsoft.AspNet.Mvc
         public static readonly int HttpMethodConstraintOrder = 100;
 
         private readonly IReadOnlyList<string> _methods;
+
+        private readonly string OriginHeader = "Origin";
+        private readonly string AccessControlRequestMethod = "Access-Control-Request-Method";
+        private readonly string PreflightHttpMethod = "OPTIONS";
 
         // Empty collection means any method will be accepted.
         public HttpMethodConstraint([NotNull] IEnumerable<string> httpMethods)
@@ -56,13 +59,13 @@ namespace Microsoft.AspNet.Mvc
 
             var request = context.RouteContext.HttpContext.Request;
             var method = request.Method;
-            if (request.Headers.ContainsKey(CorsConstants.Origin))
+            if (request.Headers.ContainsKey(OriginHeader))
             {
                 // Update the http method if it is preflight request.
-                var accessControlRequestMethod = request.Headers.Get(CorsConstants.AccessControlRequestMethod);
+                var accessControlRequestMethod = request.Headers.Get(AccessControlRequestMethod);
                 if (string.Equals(
                         request.Method,
-                        CorsConstants.PreflightHttpMethod,
+                        PreflightHttpMethod,
                         StringComparison.Ordinal) &&
                     accessControlRequestMethod != null)
                 {

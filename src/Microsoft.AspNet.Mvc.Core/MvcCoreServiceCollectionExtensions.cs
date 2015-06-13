@@ -152,7 +152,6 @@ namespace Microsoft.Framework.DependencyInjection
         {
             services.AddOptions();
             services.AddRouting();
-            services.AddCors();
             services.AddNotifier();
             services.Configure<RouteOptions>(
                 routeOptions => routeOptions.ConstraintMap.Add("exists", typeof(KnownRouteValueConstraint)));
