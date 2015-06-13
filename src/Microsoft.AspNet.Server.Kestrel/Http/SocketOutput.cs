@@ -4,6 +4,7 @@
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
@@ -37,25 +38,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             var req = new ThisWriteReq();
             req.Init(_thread.Loop);
             req.Contextualize(this, _socket, buffer, callback, state);
-            _thread.Post(x =>
-            {
-                ((ThisWriteReq)x).Write();
-            }, req);
+            req.Write();
         }
 
         public class ThisWriteReq : UvWriteReq
         {
-            private static readonly Action<UvWriteReq, int, Exception, object> _writeCallback = WriteCallback;
-            private static void WriteCallback(UvWriteReq req, int status, Exception error, object state)
-            {
-                ((ThisWriteReq)state).OnWrite(req, status, error);
-            }
-
             SocketOutput _self;
             ArraySegment<byte> _buffer;
             UvStreamHandle _socket;
             Action<Exception, object> _callback;
             object _state;
+            Exception _callbackError;
 
             internal void Contextualize(
                 SocketOutput socketOutput,
@@ -73,27 +66,33 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             public void Write()
             {
-                Write(
-                    _socket,
-                    new ArraySegment<ArraySegment<byte>>(
-                        new[]{_buffer}),
-                    _writeCallback,
-                    this);
+                _self._thread.Post(obj =>
+                {
+                    var req = (ThisWriteReq)obj;
+                    req.Write(
+                        req._socket,
+                        new ArraySegment<ArraySegment<byte>>(
+                            new[] { req._buffer }),
+                        (r, status, error, state) => ((ThisWriteReq)state).OnWrite(status, error),
+                        req);
+                }, this);
             }
 
-            private void OnWrite(UvWriteReq req, int status, Exception error)
+            private void OnWrite(int status, Exception error)
             {
                 KestrelTrace.Log.ConnectionWriteCallback(0, status);
                 //NOTE: pool this?
 
-                var callback = _callback;
-                _callback = null;
-                var state = _state;
-                _state = null;
-
                 Dispose();
-                callback(error, state);
-            }
+
+                // Get off the event loop before calling user code!
+                _callbackError = error;
+                ThreadPool.QueueUserWorkItem(obj =>
+                {
+                    var req = (ThisWriteReq)obj;
+                    req._callback(req._callbackError, req._state);
+                }, this);
+           }
         }
 
 
