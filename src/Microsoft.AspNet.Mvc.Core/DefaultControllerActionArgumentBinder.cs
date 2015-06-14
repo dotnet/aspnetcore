@@ -196,6 +196,7 @@ namespace Microsoft.AspNet.Mvc
                 bindingInfo,
                 parameterName);
 
+            modelBindingContext.IsTopLevelObject = true;
             modelBindingContext.ModelState = modelState;
             modelBindingContext.ValueProvider = operationBindingContext.ValueProvider;
             modelBindingContext.OperationBindingContext = operationBindingContext;

@@ -65,13 +65,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task DictionaryModelBinder_DoesNotCreateCollection_ForTopLevelModel_OnFirstPass()
+        public async Task DictionaryModelBinder_DoesNotCreateCollection_IfIsTopLevelObjectAndIsFirstChanceBinding()
         {
             // Arrange
             var binder = new DictionaryModelBinder<string, string>();
 
             var context = CreateContext();
-            context.ModelName = "param";
+            context.IsTopLevelObject = true;
+            context.IsFirstChanceBinding = true;
+
+            // Explicit prefix and empty model name both ignored.
+            context.BinderModelName = "prefix";
+            context.ModelName = string.Empty;
 
             var metadataProvider = context.OperationBindingContext.MetadataProvider;
             context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(Dictionary<string, string>));
@@ -86,13 +91,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task DictionaryModelBinder_CreatesEmptyCollection_ForTopLevelModel_OnFallback()
+        public async Task DictionaryModelBinder_CreatesEmptyCollection_IfIsTopLevelObjectAndNotIsFirstChanceBinding()
         {
             // Arrange
             var binder = new DictionaryModelBinder<string, string>();
 
             var context = CreateContext();
-            context.ModelName = string.Empty;
+            context.IsTopLevelObject = true;
+
+            // Lack of prefix and non-empty model name both ignored.
+            context.ModelName = "modelName";
 
             var metadataProvider = context.OperationBindingContext.MetadataProvider;
             context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(Dictionary<string, string>));
@@ -106,37 +114,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.NotNull(result);
 
             Assert.Empty(Assert.IsType<Dictionary<string, string>>(result.Model));
-            Assert.Equal(string.Empty, result.Key);
-            Assert.True(result.IsModelSet);
-
-            Assert.Same(result.ValidationNode.Model, result.Model);
-            Assert.Same(result.ValidationNode.Key, result.Key);
-            Assert.Same(result.ValidationNode.ModelMetadata, context.ModelMetadata);
-        }
-
-        [Fact]
-        public async Task DictionaryModelBinder_CreatesEmptyCollection_ForTopLevelModel_WithExplicitPrefix()
-        {
-            // Arrange
-            var binder = new DictionaryModelBinder<string, string>();
-
-            var context = CreateContext();
-            context.ModelName = "prefix";
-            context.BinderModelName = "prefix";
-
-            var metadataProvider = context.OperationBindingContext.MetadataProvider;
-            context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(Dictionary<string, string>));
-
-            context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
-
-            // Act
-            var result = await binder.BindModelAsync(context);
-
-            // Assert
-            Assert.NotNull(result);
-
-            Assert.Empty(Assert.IsType<Dictionary<string, string>>(result.Model));
-            Assert.Equal("prefix", result.Key);
+            Assert.Equal("modelName", result.Key);
             Assert.True(result.IsModelSet);
 
             Assert.Same(result.ValidationNode.Model, result.Model);
@@ -147,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         [Theory]
         [InlineData("")]
         [InlineData("param")]
-        public async Task DictionaryModelBinder_DoesNotCreateCollection_ForNonTopLevelModel(string prefix)
+        public async Task DictionaryModelBinder_DoesNotCreateCollection_IfNotIsTopLevelObject(string prefix)
         {
             // Arrange
             var binder = new DictionaryModelBinder<string, string>();

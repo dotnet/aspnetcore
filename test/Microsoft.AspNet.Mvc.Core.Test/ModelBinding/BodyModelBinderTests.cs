@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -279,6 +278,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var bindingContext = new ModelBindingContext
             {
+                IsTopLevelObject = true,
                 ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "someName",
                 ValueProvider = Mock.Of<IValueProvider>(),

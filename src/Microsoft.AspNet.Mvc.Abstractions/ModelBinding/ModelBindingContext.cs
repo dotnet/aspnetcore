@@ -174,7 +174,30 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// Gets or sets a value that indicates whether the binder should use an empty prefix to look up
         /// values in <see cref="IValueProvider"/> when no values are found using the <see cref="ModelName"/> prefix.
         /// </summary>
+        /// <remarks>
+        /// Passed into the model binding system. Should not be <c>true</c> when <see cref="IsTopLevelObject"/> is
+        /// <c>false</c>.
+        /// </remarks>
         public bool FallbackToEmptyPrefix { get; set; }
+
+        /// <summary>
+        /// Gets or sets an indication that the current binder is handling the top-level object.
+        /// </summary>
+        /// <remarks>Passed into the model binding system.</remarks>
+        public bool IsTopLevelObject { get; set; }
+
+        /// <summary>
+        /// Gets or sets an indication that the model binding system will make another binding attempt (e.g. fall back
+        /// to the empty prefix) after this one.
+        /// </summary>
+        /// <remarks>
+        /// Not passed into the model binding system but instead set by the top-level binder. With built-in binders,
+        /// <c>true</c> only in binders called directly from a
+        /// <c>Microsoft.AspNet.Mvc.ModelBinding.CompositeModelBinder</c> that was passed a
+        /// <see cref="ModelBindingContext"/> with <see cref="FallbackToEmptyPrefix"/> <c>true</c>. <c>false</c>
+        /// otherwise.
+        /// </remarks>
+        public bool IsFirstChanceBinding { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="IValueProvider"/> associated with this context.

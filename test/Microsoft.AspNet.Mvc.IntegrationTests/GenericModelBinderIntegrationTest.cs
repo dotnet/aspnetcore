@@ -181,10 +181,9 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             };
 
             // Need to have a key here so that the GenericModelBinder will recurse to bind elements.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
-            {
-                request.QueryString = new QueryString("?parameter.index=0");
-            });
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request => request.QueryString = new QueryString("?parameter.index=0"),
+                options => options.ModelBinders.Add(new AddressBinder()));
 
             var modelState = new ModelStateDictionary();
 
@@ -198,6 +197,41 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var model = Assert.IsType<Address[]>(modelBindingResult.Model);
             Assert.Equal(1, model.Length);
             Assert.NotNull(model[0]);
+
+            Assert.Equal(0, modelState.Count);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+        }
+
+        // Similar to the GenericModelBinder_BindsCollection_ElementTypeUsesGreedyModelBinder_WithPrefix_Success
+        // scenario but mis-configured. Model using a BindingSource for which no ModelBinder is enabled.
+        [Fact]
+        public async Task GenericModelBinder_BindsCollection_ElementTypeUsesGreedyBindingSource_WithPrefix_NullElement()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Address[])
+            };
+
+            // Need to have a key here so that the GenericModelBinder will recurse to bind elements.
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request => request.QueryString = new QueryString("?parameter.index=0"));
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Address[]>(modelBindingResult.Model);
+            Assert.Equal(1, model.Length);
+            Assert.Null(model[0]);
 
             Assert.Equal(0, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);

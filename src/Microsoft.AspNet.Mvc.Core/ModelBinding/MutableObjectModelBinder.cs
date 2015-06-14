@@ -71,9 +71,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         internal async Task<bool> CanCreateModel(MutableObjectBinderContext context)
         {
             var bindingContext = context.ModelBindingContext;
-
-            var isTopLevelObject = bindingContext.ModelMetadata.ContainerType == null;
-            var hasExplicitAlias = bindingContext.BinderModelName != null;
+            var isTopLevelObject = bindingContext.IsTopLevelObject;
 
             // If we get here the model is a complex object which was not directly bound by any previous model binder,
             // so we want to decide if we want to continue binding. This is important to get right to avoid infinite
@@ -83,34 +81,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // will always include value provider data. For instance if the model is marked with [FromBody], then we
             // can just skip it. A greedy source cannot be a value provider.
             //
-            // If the model isn't marked with ANY binding source, then we assume it's ok also.
+            // If the model isn't marked with ANY binding source, then we assume it's OK also.
             //
             // We skip this check if it is a top level object because we want to always evaluate
             // the creation of top level object (this is also required for ModelBinderAttribute to work.)
             var bindingSource = bindingContext.BindingSource;
-            if (!isTopLevelObject &&
-                bindingSource != null &&
-                bindingSource.IsGreedy)
+            if (!isTopLevelObject && bindingSource != null && bindingSource.IsGreedy)
             {
                 return false;
             }
 
-            // Create the object if :
-            // 1. It is a top level model with an explicit user supplied prefix.
-            //    In this case since it will never fallback to empty prefix, we need to create the model here.
-            if (isTopLevelObject && hasExplicitAlias)
+            // Create the object if:
+            // 1. It is a top level model and no later fallback (to empty prefix) will occur.
+            if (isTopLevelObject && !bindingContext.IsFirstChanceBinding)
             {
                 return true;
             }
 
-            // 2. It is a top level object and there is no model name ( Fallback to empty prefix case ).
-            //    This is necessary as we do not want to depend on a value provider to contain an empty prefix.
-            if (isTopLevelObject && bindingContext.ModelName == string.Empty)
-            {
-                return true;
-            }
-
-            // 3. Any of the model properties can be bound using a value provider.
+            // 2. Any of the model properties can be bound using a value provider.
             if (await CanValueBindAnyModelProperties(context))
             {
                 return true;

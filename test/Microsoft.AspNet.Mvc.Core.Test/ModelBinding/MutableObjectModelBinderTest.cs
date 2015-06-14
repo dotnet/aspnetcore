@@ -20,23 +20,42 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class MutableObjectModelBinderTest
     {
         [Theory]
-        [InlineData(typeof(Person), true)]
-        [InlineData(typeof(Person), false)]
-        [InlineData(typeof(EmptyModel), true)]
-        [InlineData(typeof(EmptyModel), false)]
-        public async Task CanCreateModel_CreatesModel_ForTopLevelObjectIfThereIsExplicitPrefix(
-            Type modelType,
-            bool isPrefixProvided)
+        [InlineData(true, true, "", "", false)]
+        [InlineData(true, false, "", "", true)]
+        [InlineData(false, true, "", "", false)] // !isTopLevelObject && isFirstChanceBinding cases are unexpected
+        [InlineData(false, false, "", "", false)]
+        [InlineData(true, true, "prefix", "", false)]
+        [InlineData(true, false, "prefix", "", true)]
+        [InlineData(false, true, "prefix", "", false)]
+        [InlineData(false, false, "prefix", "", false)]
+        [InlineData(true, true, "", "dummyModelName", false)]
+        [InlineData(true, false, "", "dummyModelName", true)]
+        [InlineData(false, true, "", "dummyModelName", false)]
+        [InlineData(false, false, "", "dummyModelName", false)]
+        [InlineData(true, true, "prefix", "dummyModelName", false)]
+        [InlineData(true, false, "prefix", "dummyModelName", true)]
+        [InlineData(false, true, "prefix", "dummyModelName", false)]
+        [InlineData(false, false, "prefix", "dummyModelName", false)]
+        public async Task CanCreateModel_ReturnsTrue_IfIsTopLevelObjectAndNotIsFirstChanceBinding(
+            bool isTopLevelObject,
+            bool isFirstChanceBinding,
+            string binderModelName,
+            string modelName,
+            bool expectedCanCreate)
         {
             var mockValueProvider = new Mock<IValueProvider>();
-            mockValueProvider.Setup(o => o.ContainsPrefixAsync(It.IsAny<string>()))
-                             .Returns(Task.FromResult(false));
+            mockValueProvider
+                .Setup(o => o.ContainsPrefixAsync(It.IsAny<string>()))
+                .Returns(Task.FromResult(false));
 
             var metadataProvider = new TestModelMetadataProvider();
             var bindingContext = new MutableObjectBinderContext
             {
                 ModelBindingContext = new ModelBindingContext
                 {
+                    IsTopLevelObject = isTopLevelObject,
+                    IsFirstChanceBinding = isFirstChanceBinding,
+
                     // Random type.
                     ModelMetadata = metadataProvider.GetMetadataForType(typeof(Person)),
                     ValueProvider = mockValueProvider.Object,
@@ -47,65 +66,25 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
                     },
 
-                    // Setting it to empty ensures that model does not get created becasue of no model name.
-                    ModelName = "dummyModelName",
-                    BinderModelName = isPrefixProvided ? "prefix" : null,
-                }
+                    // CanCreateModel() ignores the BinderModelName and ModelName properties.
+                    BinderModelName = binderModelName,
+                    ModelName = modelName,
+                },
             };
 
             var mutableBinder = new TestableMutableObjectModelBinder();
             bindingContext.PropertyMetadata = mutableBinder.GetMetadataForProperties(
-                                                                bindingContext.ModelBindingContext);
+                bindingContext.ModelBindingContext);
 
             // Act
-            var retModel = await mutableBinder.CanCreateModel(bindingContext);
+            var canCreate = await mutableBinder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.Equal(isPrefixProvided, retModel);
-        }
-
-        [Theory]
-        [InlineData(typeof(Person), true)]
-        [InlineData(typeof(Person), false)]
-        [InlineData(typeof(EmptyModel), true)]
-        [InlineData(typeof(EmptyModel), false)]
-        public async Task
-            CanCreateModel_CreatesModel_ForTopLevelObjectIfThereIsEmptyModelName(Type modelType, bool emptyModelName)
-        {
-            var mockValueProvider = new Mock<IValueProvider>();
-            mockValueProvider.Setup(o => o.ContainsPrefixAsync(It.IsAny<string>()))
-                             .Returns(Task.FromResult(false));
-
-            var bindingContext = new MutableObjectBinderContext
-            {
-                ModelBindingContext = new ModelBindingContext
-                {
-                    // Random type.
-                    ModelMetadata = GetMetadataForType(typeof(Person)),
-                    ValueProvider = mockValueProvider.Object,
-                    OperationBindingContext = new OperationBindingContext
-                    {
-                        ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
-                        ValueProvider = mockValueProvider.Object,
-                        MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider()
-                    }
-                }
-            };
-
-            bindingContext.ModelBindingContext.ModelName = emptyModelName ? string.Empty : "dummyModelName";
-            var mutableBinder = new TestableMutableObjectModelBinder();
-            bindingContext.PropertyMetadata = mutableBinder.GetMetadataForProperties(
-                                                                bindingContext.ModelBindingContext);
-
-            // Act
-            var retModel = await mutableBinder.CanCreateModel(bindingContext);
-
-            // Assert
-            Assert.Equal(emptyModelName, retModel);
+            Assert.Equal(expectedCanCreate, canCreate);
         }
 
         [Fact]
-        public async Task CanCreateModel_ReturnsFalse_ForNonTopLevelModel_IfModelIsMarkedWithBinderMetadata()
+        public async Task CanCreateModel_ReturnsFalse_IfNotIsTopLevelObjectAndModelIsMarkedWithBinderMetadata()
         {
             // Get the property metadata so that it is not a top level object.
             var modelMetadata = GetMetadataForType(typeof(Document))
@@ -135,13 +114,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task CanCreateModel_ReturnsTrue_ForTopLevelModel_IfModelIsMarkedWithBinderMetadata()
+        public async Task CanCreateModel_ReturnsTrue_IfIsTopLevelObjectAndModelIsMarkedWithBinderMetadata()
         {
             var bindingContext = new MutableObjectBinderContext
             {
                 ModelBindingContext = new ModelBindingContext
                 {
                     // Here the metadata represents a top level object.
+                    IsTopLevelObject = true,
+
                     ModelMetadata = GetMetadataForType(typeof(Document)),
                     OperationBindingContext = new OperationBindingContext
                     {
@@ -198,7 +179,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task CanCreateModel_ReturnsTrue_ForNonTopLevelModel_BasedOnValueAvailability(bool valueAvailable)
+        public async Task CanCreateModel_ReturnsTrue_IfNotIsTopLevelObject_BasedOnValueAvailability(
+            bool valueAvailable)
         {
             // Arrange
             var mockValueProvider = new Mock<IValueProvider>(MockBehavior.Strict);
@@ -434,7 +416,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task BindModel_InitsInstance_ForEmptyModelName()
+        public async Task BindModel_InitsInstance_IfIsTopLevelObjectAndNotIsFirstChanceBinding()
         {
             // Arrange
             var mockValueProvider = new Mock<IValueProvider>();
@@ -444,6 +426,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var mockDtoBinder = new Mock<IModelBinder>();
             var bindingContext = new ModelBindingContext
             {
+                IsTopLevelObject = true,
                 ModelMetadata = GetMetadataForType(typeof(Person)),
                 ModelName = "",
                 ValueProvider = mockValueProvider.Object,

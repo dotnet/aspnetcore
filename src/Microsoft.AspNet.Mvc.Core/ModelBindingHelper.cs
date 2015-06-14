@@ -2,10 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -303,8 +300,9 @@ namespace Microsoft.AspNet.Mvc
                 ModelState = modelState,
                 ValueProvider = valueProvider,
                 FallbackToEmptyPrefix = true,
+                IsTopLevelObject = true,
                 OperationBindingContext = operationBindingContext,
-                PropertyFilter = predicate
+                PropertyFilter = predicate,
             };
 
             var modelBindingResult = await modelBinder.BindModelAsync(modelBindingContext);

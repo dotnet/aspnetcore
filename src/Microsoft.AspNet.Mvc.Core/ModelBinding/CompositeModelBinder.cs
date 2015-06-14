@@ -34,12 +34,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public virtual async Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
         {
+            // Will there be a last chance (fallback) binding attempt?
+            var isFirstChanceBinding = bindingContext.FallbackToEmptyPrefix &&
+                !string.IsNullOrEmpty(bindingContext.ModelName);
+
             var newBindingContext = CreateNewBindingContext(bindingContext, bindingContext.ModelName);
+            newBindingContext.IsFirstChanceBinding = isFirstChanceBinding;
             var modelBindingResult = await TryBind(newBindingContext);
 
-            if (modelBindingResult == null &&
-                bindingContext.FallbackToEmptyPrefix &&
-                !string.IsNullOrEmpty(bindingContext.ModelName))
+            if (modelBindingResult == null && isFirstChanceBinding)
             {
                 // Fall back to empty prefix.
                 newBindingContext = CreateNewBindingContext(bindingContext, modelName: string.Empty);
@@ -142,6 +145,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 BinderModelName = oldBindingContext.BinderModelName,
                 BindingSource = oldBindingContext.BindingSource,
                 BinderType = oldBindingContext.BinderType,
+                IsTopLevelObject = oldBindingContext.IsTopLevelObject,
             };
 
             newBindingContext.OperationBindingContext.BodyBindingState = GetBodyBindingState(oldBindingContext);
