@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc
                 currentUsername.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
                 currentUsername.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
 
-            if (!String.Equals(fieldToken.Username,
+            if (!string.Equals(fieldToken.Username,
                                 currentUsername,
                                 (useCaseSensitiveUsernameComparison) ?
                                                  StringComparison.Ordinal :

@@ -138,7 +138,7 @@ namespace System.Net.Http
             HttpContentHeaders contentHeaders = null;
             try
             {
-                tempContent = new StringContent(String.Empty);
+                tempContent = new StringContent(string.Empty);
                 contentHeaders = tempContent.Headers;
                 contentHeaders.Clear();
             }
@@ -155,9 +155,9 @@ namespace System.Net.Http
         }
 
         /// <summary>
-        /// Create a default reader quotas with a default depth quota of 1K
+        /// Create a default reader quotas with a default depth quota of 1K.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A default <see cref="XmlDictionaryReaderQuotas"/> with a default depth quota of 1K.</returns>
         public static XmlDictionaryReaderQuotas CreateDefaultReaderQuotas()
         {
             // MaxDepth is a DOS mitigation. We don't support MaxDepth in portable libraries because it is strictly
@@ -167,11 +167,11 @@ namespace System.Net.Http
 #else
             return new XmlDictionaryReaderQuotas()
             {
-                MaxArrayLength = Int32.MaxValue,
-                MaxBytesPerRead = Int32.MaxValue,
+                MaxArrayLength = int.MaxValue,
+                MaxBytesPerRead = int.MaxValue,
                 MaxDepth = DefaultMaxDepth,
-                MaxNameTableCharCount = Int32.MaxValue,
-                MaxStringContentLength = Int32.MaxValue
+                MaxNameTableCharCount = int.MaxValue,
+                MaxStringContentLength = int.MaxValue
             };
 #endif
         }
@@ -183,7 +183,7 @@ namespace System.Net.Http
         /// <returns>Unquoted token.</returns>
         public static string UnquoteToken(string token)
         {
-            if (String.IsNullOrWhiteSpace(token))
+            if (string.IsNullOrWhiteSpace(token))
             {
                 return token;
             }
@@ -237,7 +237,7 @@ namespace System.Net.Http
         /// <returns>True if value was valid; false otherwise.</returns>
         public static bool TryParseInt32(string value, out int result)
         {
-            return Int32.TryParse(value, NumberStyles.None, NumberFormatInfo.InvariantInfo, out result);
+            return int.TryParse(value, NumberStyles.None, NumberFormatInfo.InvariantInfo, out result);
         }
     }
 }

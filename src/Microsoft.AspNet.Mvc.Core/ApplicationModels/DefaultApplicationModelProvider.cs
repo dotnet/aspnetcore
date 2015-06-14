@@ -427,8 +427,8 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// <summary>
         /// Returns <c>true</c> if the <paramref name="methodInfo"/> is an action. Otherwise <c>false</c>.
         /// </summary>
-        /// <param name="methodInfo">The <see cref="MethodInfo"/>.</param>
         /// <param name="typeInfo">The <see cref="TypeInfo"/>.</param>
+        /// <param name="methodInfo">The <see cref="MethodInfo"/>.</param>
         /// <returns><c>true</c> if the <paramref name="methodInfo"/> is an action. Otherwise <c>false</c>.</returns>
         /// <remarks>
         /// Override this method to provide custom logic to determine which methods are considered actions.

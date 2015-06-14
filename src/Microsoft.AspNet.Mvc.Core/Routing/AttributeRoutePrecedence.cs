@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 var digit = ComputeDigit(segment);
                 Debug.Assert(digit >= 0 && digit < 10);
 
-                precedence += Decimal.Divide(digit, (decimal)Math.Pow(10, i));
+                precedence += decimal.Divide(digit, (decimal)Math.Pow(10, i));
             }
 
             return precedence;

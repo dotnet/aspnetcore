@@ -177,7 +177,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             // We are in the case where the string is "/" or "~/"
             if (startIndex == result.Length)
             {
-                return "";
+                return string.Empty;
             }
 
             var subStringLength = result.Length - startIndex;

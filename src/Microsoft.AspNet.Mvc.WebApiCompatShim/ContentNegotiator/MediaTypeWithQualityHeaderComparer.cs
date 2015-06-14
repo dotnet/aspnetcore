@@ -37,13 +37,17 @@ namespace System.Net.Http.Formatting
         /// </summary>
         /// <param name="mediaType1">The first <see cref="MediaTypeWithQualityHeaderValue"/> to compare.</param>
         /// <param name="mediaType2">The second <see cref="MediaTypeWithQualityHeaderValue"/> to compare.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// <c>0</c> if <paramref name="mediaType1"/> and <paramref name="mediaType2"/> are considered equal.
+        /// <c>1</c> if <paramref name="mediaType1"/> is considered greater than <paramref name="mediaType2"/>.
+        /// <c>-1</c> otherwise (<paramref name="mediaType1"/> is considered less than <paramref name="mediaType2"/>).
+        /// </returns>
         public int Compare(MediaTypeWithQualityHeaderValue mediaType1, MediaTypeWithQualityHeaderValue mediaType2)
         {
             Debug.Assert(mediaType1 != null, "The 'mediaType1' parameter should not be null.");
             Debug.Assert(mediaType2 != null, "The 'mediaType2' parameter should not be null.");
 
-            if (Object.ReferenceEquals(mediaType1, mediaType2))
+            if (ReferenceEquals(mediaType1, mediaType2))
             {
                 return 0;
             }

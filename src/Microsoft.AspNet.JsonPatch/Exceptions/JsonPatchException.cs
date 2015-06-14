@@ -11,7 +11,8 @@ namespace Microsoft.AspNet.JsonPatch.Exceptions
         public Operation<TModel> FailedOperation { get; private set; }
         public new TModel AffectedObject { get; private set; }
 
-        private string _message = "";
+        private string _message = string.Empty;
+
         public override string Message
         {
             get

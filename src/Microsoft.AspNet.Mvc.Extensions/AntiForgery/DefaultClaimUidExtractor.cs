@@ -31,9 +31,8 @@ namespace Microsoft.AspNet.Mvc
 
         internal static IEnumerable<string> GetUniqueIdentifierParameters(ClaimsIdentity claimsIdentity)
         {
-            var nameIdentifierClaim = claimsIdentity.FindFirst(claim =>
-                                                            String.Equals(ClaimTypes.NameIdentifier,
-                                                                        claim.Type, StringComparison.Ordinal));
+            var nameIdentifierClaim = claimsIdentity.FindFirst(
+                claim => string.Equals(ClaimTypes.NameIdentifier, claim.Type, StringComparison.Ordinal));
             if (nameIdentifierClaim != null && !string.IsNullOrEmpty(nameIdentifierClaim.Value))
             {
                 return new string[]

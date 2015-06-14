@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Initializes a new <see cref="ContentViewComponentResult"/>.
         /// </summary>
-        /// <param name="content">
+        /// <param name="encodedContent">
         /// Content to write. The content is treated as already HTML encoded, and no further encoding
         /// will be performed.
         /// </param>

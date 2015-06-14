@@ -11,10 +11,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             [NotNull] ModelBindingContext bindingContext,
             [NotNull] ModelExplorer modelExplorer)
             : this(
-                 bindingContext.BindingSource,
-                 bindingContext.OperationBindingContext.ValidatorProvider,
-                 bindingContext.ModelState,
-                 modelExplorer)
+                  bindingContext.BindingSource,
+                  bindingContext.OperationBindingContext.ValidatorProvider,
+                  bindingContext.ModelState,
+                  modelExplorer)
         {
         }
 
@@ -35,9 +35,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         /// <paramref name="parentContext" /> and <paramref name="modelExplorer"/>.
         /// </summary>
         /// <param name="parentContext">Existing <see cref="ModelValidationContext"/>.</param>
-        /// <param name="modelExplorer"><see cref="ModelExplorer"/> associated with the new 
-        /// <see cref="ModelValidationContext"/>.</param>
-        /// <returns></returns>
+        /// <param name="modelExplorer">
+        /// <see cref="ModelExplorer"/> associated with the new <see cref="ModelValidationContext"/>.
+        /// </param>
+        /// <returns>
+        /// A new instance of the <see cref="ModelValidationContext"/> class using the
+        /// <paramref name="parentContext" /> and <paramref name="modelExplorer"/>.
+        /// </returns>
         public static ModelValidationContext GetChildValidationContext(
             [NotNull] ModelValidationContext parentContext,
             [NotNull] ModelExplorer modelExplorer)

@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         /// <summary>
         /// Initializes a new instance of <see cref="SetBaseTypeChunkMerger"/>.
         /// </summary>
-        /// <param name="defaultModelType">The type name of the model used by default.</param>
+        /// <param name="modelType">The type name of the model used by default.</param>
         public SetBaseTypeChunkMerger(string modelType)
         {
             _modelType = "<" + modelType + ">";

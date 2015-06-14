@@ -59,9 +59,9 @@ namespace Microsoft.AspNet.JsonPatch.Helpers
                     }
                 case ExpressionType.Parameter:
                     // Fits "x => x" (the whole document which is "" as JSON pointer)
-                    return firstTime ? "" : null;
+                    return firstTime ? string.Empty : null;
                 default:
-                    return "";
+                    return string.Empty;
             }
         }
 

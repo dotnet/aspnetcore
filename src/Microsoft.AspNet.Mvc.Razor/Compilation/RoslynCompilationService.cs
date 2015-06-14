@@ -43,8 +43,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// Initalizes a new instance of the <see cref="RoslynCompilationService"/> class.
         /// </summary>
         /// <param name="environment">The environment for the executing application.</param>
-        /// <param name="loaderEngine">The loader used to load compiled assemblies.</param>
+        /// <param name="loaderAccessor">
+        /// The accessor for the <see cref="IAssemblyLoadContext"/> used to load compiled assemblies.
+        /// </param>
         /// <param name="libraryManager">The library manager that provides export and reference information.</param>
+        /// <param name="compilerOptionsProvider">
+        /// The <see cref="ICompilerOptionsProvider"/> that provides Roslyn compilation settings.
+        /// </param>
         /// <param name="host">The <see cref="IMvcRazorHost"/> that was used to generate the code.</param>
         public RoslynCompilationService(IApplicationEnvironment environment,
                                         IAssemblyLoadContextAccessor loaderAccessor,

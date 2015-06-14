@@ -230,7 +230,7 @@ namespace System.Net.Http
         /// <param name="request">The request.</param>
         /// <param name="statusCode">The status code of the created response.</param>
         /// <param name="value">The value to wrap. Can be <c>null</c>.</param>
-        /// <param name="configuration">The configuration to use. Can be <c>null</c>.</param>
+        /// <param name="formatters">The set of <see cref="MediaTypeFormatter"/> objects from which to choose.</param>
         /// <returns>A response wrapping <paramref name="value"/> with <paramref name="statusCode"/>.</returns>
         public static HttpResponseMessage CreateResponse<T>(
             [NotNull] this HttpRequestMessage request,

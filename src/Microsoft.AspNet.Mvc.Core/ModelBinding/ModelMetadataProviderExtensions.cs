@@ -19,7 +19,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="provider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="modelType">The declared <see cref="Type"/> of the model object.</param>
         /// <param name="model">The model object.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// A <see cref="ModelExplorer"/> for the <paramref name="modelType"/> and <paramref name="model"/>.
+        /// </returns>
         public static ModelExplorer GetModelExplorerForType(
             [NotNull] this IModelMetadataProvider provider,
             [NotNull] Type modelType,

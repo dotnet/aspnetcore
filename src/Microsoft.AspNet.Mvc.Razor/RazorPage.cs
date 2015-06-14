@@ -506,6 +506,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Output"/>.
         /// </summary>
+        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
         /// <param name="value">The <see cref="string"/> to write.</param>
         public virtual void WriteLiteralTo([NotNull] TextWriter writer, string value)
         {

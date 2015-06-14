@@ -139,6 +139,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <summary>
         /// Returns HTML markup for the specified partial view.
         /// </summary>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="partialViewName">
         /// The name of the partial view used to create the HTML markup. Must not be <c>null</c>.
         /// </param>

@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Authorize filter for a specific policy.
         /// </summary>
-        /// <param name="policy"></param>
+        /// <param name="policy">Authorization policy to be used.</param>
         public AuthorizeFilter([NotNull] AuthorizationPolicy policy)
         {
             Policy = policy;

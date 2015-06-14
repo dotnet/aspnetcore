@@ -11,19 +11,18 @@ namespace Microsoft.AspNet.JsonPatch.Exceptions
 
         public object AffectedObject { get; private set; }
 
-        private string _message = "";
+        private string _message = string.Empty;
+
         public override string Message
         {
             get
             {
                 return _message;
             }
-
         }
 
         public JsonPatchException()
         {
-
         }
 
         public JsonPatchException(string message, Exception innerException)

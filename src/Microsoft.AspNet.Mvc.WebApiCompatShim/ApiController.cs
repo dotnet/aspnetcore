@@ -180,7 +180,7 @@ namespace System.Web.Http
         /// <summary>
         /// Creates a <see cref="CreatedResult"/> (201 Created) with the specified values.
         /// </summary>
-        /// <param name="location">The location at which the content has been created.</param>
+        /// <param name="uri">The location at which the content has been created.</param>
         /// <param name="content">The content value to format in the entity body.</param>
         /// <returns>A <see cref="CreatedResult"/> with the specified values.</returns>
         [NonAction]

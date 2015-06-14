@@ -2,12 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Cors.Core;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
@@ -21,9 +15,9 @@ namespace Microsoft.AspNet.Mvc
         private readonly string _policyName;
 
         /// <summary>
-        /// Creates a new insntace of <see cref="CorsAuthorizationFilterFactory"/>.
+        /// Creates a new instance of <see cref="CorsAuthorizationFilterFactory"/>.
         /// </summary>
-        /// <param name="policyName"></param>
+        /// <param name="policyName">Name used to fetch a CORS policy.</param>
         public CorsAuthorizationFilterFactory(string policyName)
         {
             _policyName = policyName;

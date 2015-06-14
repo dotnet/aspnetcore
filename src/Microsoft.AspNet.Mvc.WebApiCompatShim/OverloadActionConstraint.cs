@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
     public class OverloadActionConstraint : IActionConstraint
     {
-        public int Order { get; } = Int32.MaxValue;
+        public int Order { get; } = int.MaxValue;
 
         public bool Accept(ActionConstraintContext context)
         {

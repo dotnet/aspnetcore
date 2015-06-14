@@ -117,7 +117,7 @@ namespace System.Web.Http
         /// </summary>
         public string Message
         {
-            get { return GetPropertyValue<String>(HttpErrorKeys.MessageKey); }
+            get { return GetPropertyValue<string>(HttpErrorKeys.MessageKey); }
             set { this[HttpErrorKeys.MessageKey] = value; }
         }
 
@@ -145,7 +145,7 @@ namespace System.Web.Http
         /// </remarks>
         public string MessageDetail
         {
-            get { return GetPropertyValue<String>(HttpErrorKeys.MessageDetailKey); }
+            get { return GetPropertyValue<string>(HttpErrorKeys.MessageDetailKey); }
             set { this[HttpErrorKeys.MessageDetailKey] = value; }
         }
 
@@ -159,7 +159,7 @@ namespace System.Web.Http
         /// </remarks>
         public string ExceptionMessage
         {
-            get { return GetPropertyValue<String>(HttpErrorKeys.ExceptionMessageKey); }
+            get { return GetPropertyValue<string>(HttpErrorKeys.ExceptionMessageKey); }
             set { this[HttpErrorKeys.ExceptionMessageKey] = value; }
         }
 
@@ -173,7 +173,7 @@ namespace System.Web.Http
         /// </remarks>
         public string ExceptionType
         {
-            get { return GetPropertyValue<String>(HttpErrorKeys.ExceptionTypeKey); }
+            get { return GetPropertyValue<string>(HttpErrorKeys.ExceptionTypeKey); }
             set { this[HttpErrorKeys.ExceptionTypeKey] = value; }
         }
 
@@ -187,7 +187,7 @@ namespace System.Web.Http
         /// </remarks>
         public string StackTrace
         {
-            get { return GetPropertyValue<String>(HttpErrorKeys.StackTraceKey); }
+            get { return GetPropertyValue<string>(HttpErrorKeys.StackTraceKey); }
             set { this[HttpErrorKeys.StackTraceKey] = value; }
         }
 

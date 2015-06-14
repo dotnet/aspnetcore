@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Finds the specified partial view by using the specified action context.
         /// </summary>
         /// <param name="context">The action context.</param>
-        /// <param name="viewName">The name or full path to the view.</param>
+        /// <param name="partialViewName">The name or full path to the view.</param>
         /// <returns>A result representing the result of locating the view.</returns>
         ViewEngineResult FindPartialView(ActionContext context, string partialViewName);
     }

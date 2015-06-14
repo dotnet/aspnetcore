@@ -21,7 +21,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <summary>
         /// Initializes a new instance of <see cref="HtmlString"/> that is backed by <paramref name="writer"/>.
         /// </summary>
-        /// <param name="writer"></param>
+        /// <param name="writer">
+        /// A <see cref="StringCollectionTextWriter"/> instance to back this <see cref="HtmlString"/>.
+        /// </param>
         public HtmlString([NotNull] StringCollectionTextWriter writer)
         {
             _writer = writer;
@@ -36,7 +38,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Writes the value in this instance of <see cref="HtmlString"/> to the target <paramref name="targetWriter"/>.
+        /// Writes the value in this instance of <see cref="HtmlString"/> to the target
+        /// <paramref name="targetWriter"/>.
         /// </summary>
         /// <param name="targetWriter">The <see cref="TextWriter"/> to write contents to.</param>
         public void WriteTo(TextWriter targetWriter)

@@ -16,7 +16,6 @@ namespace Microsoft.AspNet.Mvc.Internal
         /// in the list of services.
         /// </summary>
         /// <param name="services">The list of services.</param>
-        /// <param name="serviceType">The type of service which needs to be searched for.</param>
         public static void ThrowIfMvcNotRegistered(IServiceProvider services)
         {
             if (services.GetService(typeof(MvcMarkerService)) == null)

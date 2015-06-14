@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             else
             {
                 indexNamesIsFinite = false;
-                indexNames = Enumerable.Range(0, Int32.MaxValue)
+                indexNames = Enumerable.Range(0, int.MaxValue)
                                        .Select(i => i.ToString(CultureInfo.InvariantCulture));
             }
 

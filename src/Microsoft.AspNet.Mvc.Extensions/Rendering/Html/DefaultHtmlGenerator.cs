@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 if (modelExplorer.Model != null)
                 {
                     bool modelChecked;
-                    if (Boolean.TryParse(modelExplorer.Model.ToString(), out modelChecked))
+                    if (bool.TryParse(modelExplorer.Model.ToString(), out modelChecked))
                     {
                         isChecked = modelChecked;
                     }
