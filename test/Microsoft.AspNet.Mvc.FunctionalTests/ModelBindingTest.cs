@@ -11,7 +11,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
 using ModelBindingWebSite.Models;
 using ModelBindingWebSite.ViewModels;
@@ -39,9 +38,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var response = await client.GetStringAsync("http://localhost/Validation/DoNotValidateParameter");
 
             // Assert
-            var modelState = JsonConvert.DeserializeObject<ModelStateDictionary>(response);
-            Assert.Empty(modelState);
-            Assert.True(modelState.IsValid);
+            Assert.Equal("true", response);
         }
 
         [Fact]
@@ -52,13 +49,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
 
             // Act
-            var response = await client.GetAsync(
-                "http://localhost/Validation/AvoidRecursive?Name=selfish");
+            var response = await client.GetStringAsync("http://localhost/Validation/AvoidRecursive?Name=selfish");
 
             // Assert
-            var stringValue = await response.Content.ReadAsStringAsync();
-            var json = JsonConvert.DeserializeObject<ModelStateDictionary>(stringValue);
-            Assert.True(json.IsValid);
+            Assert.Equal("true", response);
         }
 
         [Theory]

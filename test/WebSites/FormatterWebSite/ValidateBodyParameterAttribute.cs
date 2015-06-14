@@ -19,8 +19,10 @@ namespace FormatterWebSite
                                               parameter.BindingInfo?.BindingSource));
                 if (bodyParameter != null)
                 {
-                    var parameterBindingErrors = context.ModelState[bodyParameter.Name].Errors;
-                    if (parameterBindingErrors.Count != 0)
+                    // Body model binder normally reports errors for parameters using the empty name.
+                    var parameterBindingErrors = context.ModelState[bodyParameter.Name]?.Errors ??
+                        context.ModelState[string.Empty]?.Errors;
+                    if (parameterBindingErrors != null && parameterBindingErrors.Count != 0)
                     {
                         var errorInfo = new ErrorInfo
                         {

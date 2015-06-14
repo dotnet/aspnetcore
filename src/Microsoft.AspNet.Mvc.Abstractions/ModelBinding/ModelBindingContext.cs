@@ -39,16 +39,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             [NotNull] string modelName,
             [NotNull] ModelMetadata modelMetadata)
         {
-            var modelBindingContext = new ModelBindingContext();
-            modelBindingContext.ModelName = modelName;
-            modelBindingContext.ModelMetadata = modelMetadata;
-            modelBindingContext.ModelState = bindingContext.ModelState;
-            modelBindingContext.ValueProvider = bindingContext.ValueProvider;
-            modelBindingContext.OperationBindingContext = bindingContext.OperationBindingContext;
+            var modelBindingContext = new ModelBindingContext
+            {
+                ModelName = modelName,
+                ModelMetadata = modelMetadata,
 
-            modelBindingContext.BindingSource = modelMetadata.BindingSource;
-            modelBindingContext.BinderModelName = modelMetadata.BinderModelName;
-            modelBindingContext.BinderType = modelMetadata.BinderType;
+                ModelState = bindingContext.ModelState,
+                ValueProvider = bindingContext.ValueProvider,
+                OperationBindingContext = bindingContext.OperationBindingContext,
+
+                BindingSource = modelMetadata.BindingSource,
+                BinderModelName = modelMetadata.BinderModelName,
+                BinderType = modelMetadata.BinderType,
+            };
+
             return modelBindingContext;
         }
 
@@ -66,9 +70,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             string modelName)
         {
             var binderModelName = bindingInfo?.BinderModelName ?? metadata.BinderModelName;
-            var propertyPredicateProvider = 
+            var propertyPredicateProvider =
                 bindingInfo?.PropertyBindingPredicateProvider ?? metadata.PropertyBindingPredicateProvider;
-            return new ModelBindingContext()
+            return new ModelBindingContext
             {
                 ModelMetadata = metadata,
                 BindingSource = bindingInfo?.BindingSource ?? metadata.BindingSource,
@@ -149,27 +153,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Gets or sets a model name which is explicitly set using an <see cref="IModelNameProvider"/>. 
+        /// Gets or sets a model name which is explicitly set using an <see cref="IModelNameProvider"/>.
         /// <see cref="Model"/>.
         /// </summary>
         public string BinderModelName { get; set; }
 
         /// <summary>
-        /// Gets or sets a value which represents the <see cref="BindingSource"/> associated with the 
+        /// Gets or sets a value which represents the <see cref="BindingSource"/> associated with the
         /// <see cref="Model"/>.
         /// </summary>
         public BindingSource BindingSource { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="Type"/> of an <see cref="IModelBinder"/> associated with the 
+        /// Gets the <see cref="Type"/> of an <see cref="IModelBinder"/> associated with the
         /// <see cref="Model"/>.
         /// </summary>
         public Type BinderType { get; set; }
 
         /// <summary>
         /// Gets or sets a value that indicates whether the binder should use an empty prefix to look up
-        /// values in <see cref="IValueProvider"/> when no values are found using the
-        /// <see cref="ModelName"/> prefix.
+        /// values in <see cref="IValueProvider"/> when no values are found using the <see cref="ModelName"/> prefix.
         /// </summary>
         public bool FallbackToEmptyPrefix { get; set; }
 

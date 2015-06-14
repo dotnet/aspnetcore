@@ -79,10 +79,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var result = await BindModelCoreAsync(context);
 
-            var modelBindingResult =
-                result != null ?
-                    new ModelBindingResult(result.Model, result.Key, result.IsModelSet, result.ValidationNode) :
-                    new ModelBindingResult(model: null, key: context.ModelName, isModelSet: false);
+            var modelBindingResult = result != null ?
+                result :
+                new ModelBindingResult(model: null, key: context.ModelName, isModelSet: false);
 
             // This model binder is the only handler for its binding source.
             // Always tell the model binding system to skip other model binders i.e. return non-null.

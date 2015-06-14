@@ -9,6 +9,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class ModelBindingResult
     {
         /// <summary>
+        /// Creates a new <see cref="ModelBindingResult"/> indicating a fatal error.
+        /// </summary>
+        /// <param name="key">The key using which was used to attempt binding the model.</param>
+        public ModelBindingResult(string key)
+        {
+            Key = key;
+            IsFatalError = true;
+        }
+
+        /// <summary>
         /// Creates a new <see cref="ModelBindingResult"/>.
         /// </summary>
         /// <param name="model">The model which was created by the <see cref="IModelBinder"/>.</param>
@@ -16,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="isModelSet">A value that represents if the model has been set by the
         /// <see cref="IModelBinder"/>.</param>
         public ModelBindingResult(object model, string key, bool isModelSet)
-            : this (model, key, isModelSet, validationNode: null)
+            : this(model, key, isModelSet, validationNode: null)
         {
         }
 
@@ -51,6 +61,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </para>
         /// </summary>
         public string Key { get; }
+
+        /// <summary>
+        /// Gets a value indicating the caller should not attempt binding again. This attempt encountered a fatal
+        /// error.
+        /// </summary>
+        public bool IsFatalError { get; }
 
         /// <summary>
         /// <para>

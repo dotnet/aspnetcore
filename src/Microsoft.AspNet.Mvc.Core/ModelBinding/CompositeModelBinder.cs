@@ -42,8 +42,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 !string.IsNullOrEmpty(bindingContext.ModelName))
             {
                 // Fall back to empty prefix.
-                newBindingContext = CreateNewBindingContext(bindingContext,
-                                                            modelName: string.Empty);
+                newBindingContext = CreateNewBindingContext(bindingContext, modelName: string.Empty);
                 modelBindingResult = await TryBind(newBindingContext);
             }
 
@@ -99,13 +98,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var result = await binder.BindModelAsync(bindingContext);
                 if (result != null)
                 {
-                    // Use returned ModelBindingResult if it either indicates the model was set or is related to a
-                    // ModelState entry. The second condition is necessary because the ModelState entry would never be
-                    // validated if caller fell back to the empty prefix, leading to an possibly-incorrect !IsValid.
+                    // Use returned ModelBindingResult if it indicates the model was set, indicates the binder
+                    // encountered a fatal error, or is related to a ModelState entry.
                     //
-                    // In most (hopefully all) cases, the ModelState entry exists because some binders add errors
-                    // before returning a result with !IsModelSet. Those binders often cannot run twice anyhow.
-                    if (result.IsModelSet || bindingContext.ModelState.ContainsKey(bindingContext.ModelName))
+                    // The second condition is necessary because the BodyModelBinder unconditionally binds during the
+                    // first attempt and does not always create ModelState values using ModelName.
+                    //
+                    // The third condition is necessary because the ModelState entry would never be validated if
+                    // caller fell back to the empty prefix, leading to an possibly-incorrect !IsValid. In most
+                    // (hopefully all) cases, the ModelState entry exists because some binders add errors before
+                    // returning a result with !IsModelSet. Those binders often cannot run twice anyhow.
+                    if (result.IsFatalError ||
+                        result.IsModelSet ||
+                        bindingContext.ModelState.ContainsKey(bindingContext.ModelName))
                     {
                         return result;
                     }
@@ -121,8 +126,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return null;
         }
 
-        private static ModelBindingContext CreateNewBindingContext(ModelBindingContext oldBindingContext,
-                                                                   string modelName)
+        private static ModelBindingContext CreateNewBindingContext(
+            ModelBindingContext oldBindingContext,
+            string modelName)
         {
             var newBindingContext = new ModelBindingContext
             {

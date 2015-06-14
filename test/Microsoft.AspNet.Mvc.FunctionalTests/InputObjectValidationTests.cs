@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Act
             var response = await client.PostAsync("http://localhost/Validation/Index", content);
 
-            //Assert
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("User has been registerd : " + sampleName,
                 await response.Content.ReadAsStringAsync());
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Act
             var response = await client.PostAsync("http://localhost/Validation/Index", content);
 
-            //Assert
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("The field Id must be between 1 and 2000.," +
                 "The field Name must be a string or array type with a minimum length of '5'.," +
@@ -109,9 +109,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Act
             var response = await client.PostAsync("http://localhost/Validation/GetDeveloperName", content);
 
-            //Assert
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("No model validation for developer, even though developer.Name is empty.", 
+            Assert.Equal("No model validation for developer, even though developer.Name is empty.",
                          await response.Content.ReadAsStringAsync());
         }
 
@@ -123,33 +123,33 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
             var requestData = "{\"Name\":\"Library Manager\", \"Suppliers\": [{\"Name\":\"Contoso Corp\"}]}";
             var content = new StringContent(requestData, Encoding.UTF8, "application/json");
-            var expectedModelStateErrorMessage 
+            var expectedModelStateErrorMessage
                                  = "The field Suppliers must be a string or array type with a minimum length of '2'.";
-            var shouldNotContainMessage 
+            var shouldNotContainMessage
                                  = "The field Name must be a string or array type with a maximum length of '5'.";
 
             // Act
             var response = await client.PostAsync("http://localhost/Validation/CreateProject", content);
 
-            //Assert
+            // Assert
             Assert.Equal(StatusCodes.Status400BadRequest, (int)response.StatusCode);
 
             var responseContent = await response.Content.ReadAsStringAsync();
-            var responseObject = JsonConvert.DeserializeObject<Dictionary<string, ErrorCollection>>(responseContent);
-            var errorCollection = Assert.Single(responseObject, modelState => modelState.Value.Errors.Any());
-            var error = Assert.Single(errorCollection.Value.Errors);
-            Assert.Equal(expectedModelStateErrorMessage, error.ErrorMessage);
+            var responseObject = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(responseContent);
+            var errorKeyValuePair = Assert.Single(responseObject, keyValuePair => keyValuePair.Value.Length > 0);
+            var errorMessage = Assert.Single(errorKeyValuePair.Value);
+            Assert.Equal(expectedModelStateErrorMessage, errorMessage);
 
             // verifies that the excluded type is not validated
-            Assert.NotEqual(shouldNotContainMessage, error.ErrorMessage);
+            Assert.NotEqual(shouldNotContainMessage, errorMessage);
         }
 
         [Theory]
         [MemberData(nameof(SimpleTypePropertiesModelRequestData))]
-        public async Task ShallowValidation_HappensOnExlcuded_SimpleTypeProperties(
-                                                            string requestContent,
-                                                            int expectedStatusCode,
-                                                            string expectedModelStateErrorMessage)
+        public async Task ShallowValidation_HappensOnExcluded_SimpleTypeProperties(
+            string requestContent,
+            int expectedStatusCode,
+            string expectedModelStateErrorMessage)
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -157,17 +157,18 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var content = new StringContent(requestContent, Encoding.UTF8, "application/json");
 
             // Act
-            var response = await client.PostAsync("http://localhost/Validation/CreateSimpleTypePropertiesModel",
-                                                  content);
+            var response = await client.PostAsync(
+                "http://localhost/Validation/CreateSimpleTypePropertiesModel",
+                content);
 
-            //Assert
+            // Assert
             Assert.Equal(expectedStatusCode, (int)response.StatusCode);
 
             var responseContent = await response.Content.ReadAsStringAsync();
-            var responseObject = JsonConvert.DeserializeObject<Dictionary<string, ErrorCollection>>(responseContent);
-            var errorCollection = Assert.Single(responseObject, modelState => modelState.Value.Errors.Any());
-            var error = Assert.Single(errorCollection.Value.Errors);
-            Assert.Equal(expectedModelStateErrorMessage, error.ErrorMessage);
+            var responseObject = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(responseContent);
+            var errorKeyValuePair = Assert.Single(responseObject, keyValuePair => keyValuePair.Value.Length > 0);
+            var errorMessage = Assert.Single(errorKeyValuePair.Value);
+            Assert.Equal(expectedModelStateErrorMessage, errorMessage);
         }
 
         [Fact]
@@ -183,27 +184,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Act
             var response = await client.PostAsync("http://localhost/Validation/GetDeveloperAlias", content);
 
-            //Assert
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("xyz", await response.Content.ReadAsStringAsync());
-        }
-
-        private class ErrorCollection
-        {
-            public IEnumerable<Error> Errors
-            {
-                get;
-                set;
-            }
-        }
-
-        private class Error
-        {
-            public string ErrorMessage
-            {
-                get;
-                set;
-            }
         }
     }
 }

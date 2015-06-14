@@ -77,10 +77,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Returns true because it understands the metadata type.
             Assert.NotNull(binderResult);
+            Assert.True(binderResult.IsFatalError);
             Assert.False(binderResult.IsModelSet);
             Assert.Null(binderResult.ValidationNode);
             Assert.Null(binderResult.Model);
-            Assert.True(bindingContext.ModelState.ContainsKey("someName"));
+
+            // Key is empty because this was a top-level binding.
+            var entry = Assert.Single(bindingContext.ModelState);
+            Assert.Equal(string.Empty, entry.Key);
+            Assert.Single(entry.Value.Errors);
         }
 
         [Fact]
@@ -99,6 +104,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.NotNull(binderResult);
+            Assert.True(binderResult.IsFatalError);
             Assert.False(binderResult.IsModelSet);
             Assert.Null(binderResult.ValidationNode);
         }
@@ -167,11 +173,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Returns true because it understands the metadata type.
             Assert.NotNull(binderResult);
+            Assert.True(binderResult.IsFatalError);
             Assert.False(binderResult.IsModelSet);
             Assert.Null(binderResult.ValidationNode);
             Assert.Null(binderResult.Model);
-            Assert.True(bindingContext.ModelState.ContainsKey("someName"));
-            var errorMessage = bindingContext.ModelState["someName"].Errors[0].Exception.Message;
+
+            // Key is empty because this was a top-level binding.
+            var entry = Assert.Single(bindingContext.ModelState);
+            Assert.Equal(string.Empty, entry.Key);
+            var errorMessage = Assert.Single(entry.Value.Errors).Exception.Message;
             Assert.Equal("Your input is bad!", errorMessage);
         }
 
@@ -198,13 +208,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
 
-            // Returns true because it understands the metadata type.
+            // Returns non-null result because it understands the metadata type.
             Assert.NotNull(binderResult);
+            Assert.True(binderResult.IsFatalError);
             Assert.False(binderResult.IsModelSet);
             Assert.Null(binderResult.Model);
             Assert.Null(binderResult.ValidationNode);
-            Assert.True(bindingContext.ModelState.ContainsKey("someName"));
-            var errorMessage = bindingContext.ModelState["someName"].Errors[0].ErrorMessage;
+
+            // Key is empty because this was a top-level binding.
+            var entry = Assert.Single(bindingContext.ModelState);
+            Assert.Equal(string.Empty, entry.Key);
+            var errorMessage = Assert.Single(entry.Value.Errors).ErrorMessage;
             Assert.Equal("Unsupported content type 'text/xyz'.", errorMessage);
         }
 

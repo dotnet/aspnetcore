@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+#if DNXCORE50
 using System.Reflection;
+#endif
 using System.Threading.Tasks;
 using Microsoft.Framework.Internal;
 
@@ -39,8 +41,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     model = value;
                 }
             }
-            else if (typeof(IEnumerable<string>).GetTypeInfo().IsAssignableFrom(
-                bindingContext.ModelType.GetTypeInfo()))
+            else if (typeof(IEnumerable<string>).IsAssignableFrom(bindingContext.ModelType))
             {
                 var values = request.Headers.GetCommaSeparatedValues(headerName);
                 if (values != null)

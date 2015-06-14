@@ -1963,38 +1963,6 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The value '{0}' is not valid for {1}.
-        /// </summary>
-        internal static string ModelBinderUtil_ValueInvalid
-        {
-            get { return GetString("ModelBinderUtil_ValueInvalid"); }
-        }
-
-        /// <summary>
-        /// The value '{0}' is not valid for {1}.
-        /// </summary>
-        internal static string FormatModelBinderUtil_ValueInvalid(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ModelBinderUtil_ValueInvalid"), p0, p1);
-        }
-
-        /// <summary>
-        /// The supplied value is invalid for {0}.
-        /// </summary>
-        internal static string ModelBinderUtil_ValueInvalidGeneric
-        {
-            get { return GetString("ModelBinderUtil_ValueInvalidGeneric"); }
-        }
-
-        /// <summary>
-        /// The supplied value is invalid for {0}.
-        /// </summary>
-        internal static string FormatModelBinderUtil_ValueInvalidGeneric(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ModelBinderUtil_ValueInvalidGeneric"), p0);
-        }
-
-        /// <summary>
         /// A value for the '{0}' property was not provided.
         /// </summary>
         internal static string ModelBinding_MissingBindRequiredMember

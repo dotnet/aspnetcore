@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -28,36 +27,45 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected async override Task<ModelBindingResult> BindModelCoreAsync(
             [NotNull] ModelBindingContext bindingContext)
         {
+            // For compatibility with MVC 5.0 for top level object we want to consider an empty key instead of
+            // the parameter name/a custom name. In all other cases (like when binding body to a property) we
+            // consider the entire ModelName as a prefix.
+            var isTopLevelObject = bindingContext.ModelMetadata.ContainerType == null;
+            var modelBindingKey = isTopLevelObject ? string.Empty : bindingContext.ModelName;
+
             var httpContext = bindingContext.OperationBindingContext.HttpContext;
-            var formatters = bindingContext.OperationBindingContext.InputFormatters;
 
             var formatterContext = new InputFormatterContext(
-                httpContext, 
-                bindingContext.ModelState, 
+                httpContext,
+                bindingContext.ModelState,
                 bindingContext.ModelType);
+            var formatters = bindingContext.OperationBindingContext.InputFormatters;
             var formatter = formatters.FirstOrDefault(f => f.CanRead(formatterContext));
 
             if (formatter == null)
             {
                 var unsupportedContentType = Resources.FormatUnsupportedContentType(
                     bindingContext.OperationBindingContext.HttpContext.Request.ContentType);
-                bindingContext.ModelState.AddModelError(bindingContext.ModelName, unsupportedContentType);
+                bindingContext.ModelState.AddModelError(modelBindingKey, unsupportedContentType);
 
-                // This model binder is the only handler for the Body binding source.
-                // Always tell the model binding system to skip other model binders i.e. return non-null.
-                return new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
+                // This model binder is the only handler for the Body binding source and it cannot run twice. Always
+                // tell the model binding system to skip other model binders and never to fall back i.e. indicate a
+                // fatal error.
+                return new ModelBindingResult(modelBindingKey);
             }
 
             try
             {
+                var previousCount = bindingContext.ModelState.ErrorCount;
                 var model = await formatter.ReadAsync(formatterContext);
 
-                var isTopLevelObject = bindingContext.ModelMetadata.ContainerType == null;
+                if (bindingContext.ModelState.ErrorCount != previousCount)
+                {
+                    // Formatter added an error. Do not use the model it returned. As above, tell the model binding
+                    // system to skip other model binders and never to fall back.
+                    return new ModelBindingResult(modelBindingKey);
+                }
 
-                // For compatibility with MVC 5.0 for top level object we want to consider an empty key instead of
-                // the parameter name/a custom name. In all other cases (like when binding body to a property) we
-                // consider the entire ModelName as a prefix.
-                var modelBindingKey = isTopLevelObject ? string.Empty : bindingContext.ModelName;
 
                 var validationNode = new ModelValidationNode(modelBindingKey, bindingContext.ModelMetadata, model)
                 {
@@ -72,11 +80,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
             catch (Exception ex)
             {
-                bindingContext.ModelState.AddModelError(bindingContext.ModelName, ex);
+                bindingContext.ModelState.AddModelError(modelBindingKey, ex);
 
-                // This model binder is the only handler for the Body binding source.
-                // Always tell the model binding system to skip other model binders i.e. return non-null.
-                return new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
+                // This model binder is the only handler for the Body binding source and it cannot run twice. Always
+                // tell the model binding system to skip other model binders and never to fall back i.e. indicate a
+                // fatal error.
+                return new ModelBindingResult(modelBindingKey);
             }
         }
     }

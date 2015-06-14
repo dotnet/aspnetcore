@@ -14,8 +14,10 @@ namespace FormatterWebSite.Controllers
         {
             if (!ActionContext.ModelState.IsValid)
             {
-                var parameterBindingErrors = ActionContext.ModelState["dummy"].Errors;
-                if (parameterBindingErrors.Count != 0)
+                // Body model binder normally reports errors for parameters using the empty name.
+                var parameterBindingErrors = ActionContext.ModelState["dummy"]?.Errors ??
+                    ActionContext.ModelState[string.Empty]?.Errors;
+                if (parameterBindingErrors != null && parameterBindingErrors.Count != 0)
                 {
                     return new ErrorInfo
                     {

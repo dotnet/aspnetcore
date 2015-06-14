@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 
 namespace FormatterWebSite
@@ -56,10 +54,10 @@ namespace FormatterWebSite
             }
         }
 
-        // 'Developer' type is excluded but the shallow validation on the 
+        // 'Developer' type is excluded but the shallow validation on the
         // property Developers should happen
         [ModelStateValidationFilter]
-        public IActionResult CreateProject([FromBody]Project project)
+        public IActionResult CreateProject([FromBody] Project project)
         {
             return Json(project);
         }
