@@ -47,7 +47,20 @@ brew tap aspnet/dnx
 brew update
 brew install dnvm
 ```
+
+Add dnvm to your bash profile (./bash_profile)
+```bash
+source dnvm
+```
+
+
 Note that on Windows the .NET Framework is already installed, whereas on OS X the brew formula uses a particular version of [Mono](http://www.mono-project.com/) that we know works with ASP.NET 5.
+
+To verify that everything works run the `dnvm` command. 
+
+Should that fail, for example with `-bash: dnvm: command not found`, run the command `source dnvm.sh`. This means that `dnvm` will be available in this session. 
+
+To make sure `dnvm` is available for *every* session, add the command to your `~/.bashrc` with the following command `echo "source dnvm.sh" >> ~/.bashrc`. 
 
 ## Linux
 
@@ -74,7 +87,7 @@ You should also be able to run `dnx` and see the help text of the `dnx` command.
 2. Change directory to the folder of the sample you want to run
 3. Run ```dnu restore``` to restore the packages required by that sample.
 4. You should see a bunch of output as all the dependencies of the app are downloaded from MyGet.
-5. Run the sample using the appropriate K command:
+5. Run the sample using the appropriate DNX command:
     - For the console app run  `dnx . run`.
     - For the web apps run `dnx . web` on Windows or `dnx . kestrel` on OS X/Linux.
 6. You should see the output of the console app or a message that says the site is now started.
@@ -110,5 +123,5 @@ A description of all the repos is [here](https://github.com/aspnet/Home/wiki/Rep
 
 # Feedback
 
-Check out the [contributing](https://github.com/aspnet/Home/blob/release/CONTRIBUTING.md) page to see the best places to log issues and start discussions.
+Check out the [contributing](CONTRIBUTING.md) page to see the best places to log issues and start discussions.
 
