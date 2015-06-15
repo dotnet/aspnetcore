@@ -411,6 +411,7 @@
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\RestoreCommand.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\KpmPackageFolder.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\NuGetv2Feed.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\NuGetv3Feed.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\PackageFeed.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Shims\ConsoleColor.cs;
                                     $(PoliCheckPath)**\Microsoft.Framework.PackageManager.dll">
