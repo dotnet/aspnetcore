@@ -133,9 +133,6 @@
     <value>Cookies</value>
     <comment>as in http request cookies</comment>
   </data>
-  <data name="ErrorPageHtml_EnableShowExceptions" xml:space="preserve">
-    <value>Enable development mode or ErrorPageOptions.ShowExceptionDetails for additional information.</value>
-  </data>
   <data name="ErrorPageHtml_EnvironmentButton" xml:space="preserve">
     <value>Environment</value>
     <comment>as in environment dictionary</comment>

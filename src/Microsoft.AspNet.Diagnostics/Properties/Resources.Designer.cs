@@ -91,22 +91,6 @@ namespace Microsoft.AspNet.Diagnostics
         }
 
         /// <summary>
-        /// Enable development mode or ErrorPageOptions.ShowExceptionDetails for additional information.
-        /// </summary>
-        internal static string ErrorPageHtml_EnableShowExceptions
-        {
-            get { return GetString("ErrorPageHtml_EnableShowExceptions"); }
-        }
-
-        /// <summary>
-        /// Enable development mode or ErrorPageOptions.ShowExceptionDetails for additional information.
-        /// </summary>
-        internal static string FormatErrorPageHtml_EnableShowExceptions()
-        {
-            return GetString("ErrorPageHtml_EnableShowExceptions");
-        }
-
-        /// <summary>
         /// Environment
         /// </summary>
         internal static string ErrorPageHtml_EnvironmentButton
