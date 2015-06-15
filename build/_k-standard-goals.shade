@@ -297,5 +297,5 @@ macro name="DnuPack" projectFile='string' kpmPackOutputDir='string' configuratio
 macro name="DeleteFolder" delete='string'
     directory
 
-macro name="CopyFolder" sourceDir='string' outputDir='string'
+macro name="CopyFolder" sourceDir='string' outputDir='string' overwrite='bool'
     copy

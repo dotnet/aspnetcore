@@ -19,12 +19,22 @@ default pack_options='${E("NUGET3_pack_options")}'
 @{
     if (IsBuildV2)
     {
-        var projectFolders = projectFile.Split((char)';')
-            .SelectMany(pattern => Files.Include(pattern + "/project.json"))
-            .Select(proj => Path.GetDirectoryName(proj))
-            .ToList();
-            
-        foreach(var projFolder in projectFolders) 
+        var projectsToPack = new List<string>();
+    
+        foreach(var arg in projectFile.Split((char)';'))
+        {
+            if (!arg.Contains("*")) 
+            {
+                projectsToPack.Add(Path.GetDirectoryName(arg));
+            }
+            else
+            {
+                var projectFolders = Files.Include(arg + "/project.json").Select(proj => Path.GetDirectoryName(proj));
+                projectsToPack.AddRange(projectFolders);
+            }
+        }
+
+        foreach(var projFolder in projectsToPack) 
         { 
             DeleteFolder(Path.Combine(projFolder, "bin", configuration));
         }
@@ -40,11 +50,12 @@ default pack_options='${E("NUGET3_pack_options")}'
             Exec("dnu", dnuArgs);
         }
         
-        foreach(var projFolder in projectFolders) 
+        foreach(var projFolder in projectsToPack) 
         { 
             CopyFolder(
                 Path.Combine(projFolder, "bin", configuration), 
-                Path.Combine(kpmPackOutputDir, Path.GetFileName(projFolder)));
+                Path.Combine(kpmPackOutputDir, Path.GetFileName(projFolder)),
+                true);
         }
     }
     else
@@ -65,6 +76,6 @@ default pack_options='${E("NUGET3_pack_options")}'
             Exec("dnu", dnuArgs);
         }
 
-        CopyFolder(projectBin, Path.Combine(kpmPackOutputDir, projectName));
+        CopyFolder(projectBin, Path.Combine(kpmPackOutputDir, projectName), true);
     }
 }

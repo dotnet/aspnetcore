@@ -16,12 +16,22 @@ default build_options='${E("NUGET3_build_options")}'
 @{
     if (IsBuildV2)
     {
-        var projectFolders = projectFile.Split((char)';')
-            .SelectMany(pattern => Files.Include(pattern + "/project.json"))
-            .Select(proj => Path.GetDirectoryName(proj))
-            .ToList();
+        var projectsToPack = new List<string>();
+    
+        foreach(var arg in projectFile.Split((char)';'))
+        {
+            if (!arg.Contains("*")) 
+            {
+                projectsToPack.Add(Path.GetDirectoryName(arg));
+            }
+            else
+            {
+                var projectFolders = Files.Include(arg + "/project.json").Select(proj => Path.GetDirectoryName(proj));
+                projectsToPack.AddRange(projectFolders);
+            }
+        }
             
-        foreach(var projFolder in projectFolders) 
+        foreach(var projFolder in projectsToPack) 
         { 
             DeleteFolder(Path.Combine(projFolder, "bin", configuration));
         }
