@@ -530,6 +530,7 @@ namespace Microsoft.AspNet.Mvc
         [InlineData("POST")]
         [InlineData("DELETE")]
         [InlineData("PATCH")]
+        [InlineData("HEAD")]
         public async Task HttpMethodAttribute_ActionWithMultipleHttpMethodAttributes_ORsMultipleHttpMethods(string verb)
         {
             // Arrange
@@ -873,22 +874,6 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private class HttpMethodAttributeTests_DefaultMethodValidationController
-        {
-            public void Index()
-            {
-            }
-
-            // Method with custom attribute.
-            [HttpGet]
-            public void Get()
-            { }
-
-            // InvalidMethod ( since its private)
-            private void Post()
-            { }
-        }
-
         private class ActionNameController
         {
             [ActionName("CustomActionName_Verb")]
@@ -914,6 +899,7 @@ namespace Microsoft.AspNet.Mvc
             [HttpPost]
             [HttpDelete]
             [HttpPatch]
+            [HttpHead]
             public void Put()
             {
             }
@@ -922,10 +908,6 @@ namespace Microsoft.AspNet.Mvc
             public void Patch()
             {
             }
-        }
-
-        private class HttpMethodAttributeTests_DerivedController : HttpMethodAttributeTests_RestOnlyController
-        {
         }
     }
 }

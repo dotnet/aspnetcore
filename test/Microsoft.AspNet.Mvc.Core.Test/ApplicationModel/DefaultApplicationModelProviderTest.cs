@@ -464,13 +464,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
             // Assert
             var action = Assert.Single(actions);
+            Assert.Contains("DELETE", action.HttpMethods);
+            Assert.Contains("HEAD", action.HttpMethods);
+
             Assert.Equal("Delete", action.ActionName);
-
-            var httpMethod = Assert.Single(action.HttpMethods);
-            Assert.Equal("DELETE", httpMethod);
             Assert.Null(action.AttributeRouteModel);
-
-            Assert.IsType<HttpDeleteAttribute>(Assert.Single(action.Attributes));
+            Assert.Single(action.Attributes.OfType<HttpDeleteAttribute>());
+            Assert.Single(action.Attributes.OfType<HttpHeadAttribute>());
         }
 
         [Fact]
@@ -488,6 +488,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var action = Assert.Single(actions);
             Assert.Contains("GET", action.HttpMethods);
             Assert.Contains("POST", action.HttpMethods);
+            Assert.Contains("HEAD", action.HttpMethods);
             Assert.Equal("Details", action.ActionName);
             Assert.Null(action.AttributeRouteModel);
         }
@@ -529,12 +530,12 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Assert.Equal("Edit", action.ActionName);
 
             var httpMethod = Assert.Single(action.HttpMethods);
-            Assert.Equal("POST", httpMethod);
+            Assert.Equal("HEAD", httpMethod);
 
             Assert.NotNull(action.AttributeRouteModel);
             Assert.Equal("Change", action.AttributeRouteModel.Template);
 
-            Assert.IsType<HttpPostAttribute>(Assert.Single(action.Attributes));
+            Assert.IsType<HttpHeadAttribute>(Assert.Single(action.Attributes));
         }
 
         [Fact]
@@ -1010,7 +1011,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             [HttpPost("List")]
             public void Index() { }
 
-            [HttpPost("Change")]
+            [HttpHead("Change")]
             public void Edit() { }
 
             public void Remove() { }
@@ -1089,11 +1090,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             [CustomHttpMethods("PUT", "PATCH")]
             public void Update() { }
 
+            [HttpHead]
             [HttpDelete]
             public void Delete() { }
 
             [HttpPost]
             [HttpGet]
+            [HttpHead]
             public void Details() { }
 
             [HttpGet]

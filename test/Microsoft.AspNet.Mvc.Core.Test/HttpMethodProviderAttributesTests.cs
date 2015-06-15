@@ -28,6 +28,7 @@ namespace Microsoft.AspNet.Mvc
                 data.Add(new HttpPutAttribute(), new[] { "PUT" });
                 data.Add(new HttpPatchAttribute(), new[] { "PATCH" });
                 data.Add(new HttpDeleteAttribute(), new[] { "DELETE" });
+                data.Add(new HttpHeadAttribute(), new[] { "HEAD" });
                 data.Add(new AcceptVerbsAttribute("MERGE", "OPTIONS"), new[] { "MERGE", "OPTIONS" });
 
                 return data;

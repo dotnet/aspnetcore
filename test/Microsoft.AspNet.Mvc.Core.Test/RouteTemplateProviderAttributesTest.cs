@@ -26,6 +26,7 @@ namespace Microsoft.AspNet.Mvc
                 data.Add(new HttpPutAttribute());
                 data.Add(new HttpPatchAttribute());
                 data.Add(new HttpDeleteAttribute());
+                data.Add(new HttpHeadAttribute());
                 data.Add(new RouteAttribute(""));
 
                 return data;
