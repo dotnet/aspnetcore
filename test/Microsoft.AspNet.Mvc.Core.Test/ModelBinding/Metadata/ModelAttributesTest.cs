@@ -165,19 +165,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var attributes = ModelAttributes.GetAttributesForProperty(typeof(MergedAttributes), property);
 
             // Assert
-            Assert.Equal(4, attributes.Attributes.Count);
+            Assert.Equal(3, attributes.Attributes.Count);
             Assert.IsType<RequiredAttribute>(attributes.Attributes[0]);
             Assert.IsType<RangeAttribute>(attributes.Attributes[1]);
             Assert.IsType<ClassValidator>(attributes.Attributes[2]);
-            Assert.IsType<BindAttribute>(attributes.Attributes[3]);
 
             Assert.Equal(2, attributes.PropertyAttributes.Count);
             Assert.IsType<RequiredAttribute>(attributes.PropertyAttributes[0]);
             Assert.IsType<RangeAttribute>(attributes.PropertyAttributes[1]);
 
-            Assert.Equal(2, attributes.TypeAttributes.Count);
-            Assert.IsType<ClassValidator>(attributes.TypeAttributes[0]);
-            Assert.IsType<BindAttribute>(attributes.TypeAttributes[1]);
+            var attribute = Assert.Single(attributes.TypeAttributes);
+            Assert.IsType<ClassValidator>(attribute);
         }
 
         [ClassValidator]
@@ -207,7 +205,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             [Range(10,100)]
             public override int VirtualProperty { get; set; }
-            
+
         }
 
         [ModelMetadataType(typeof(BaseModel))]

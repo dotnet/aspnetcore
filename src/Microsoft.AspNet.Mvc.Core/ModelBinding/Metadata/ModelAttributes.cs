@@ -77,9 +77,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 if (metadataProperty != null)
                 {
                     propertyAttributes = propertyAttributes.Concat(metadataProperty.GetCustomAttributes());
-
-                    var propertyMetadataType = metadataProperty.PropertyType;
-                    typeAttributes = typeAttributes.Concat(propertyMetadataType.GetTypeInfo().GetCustomAttributes());
                 }
             }
 
