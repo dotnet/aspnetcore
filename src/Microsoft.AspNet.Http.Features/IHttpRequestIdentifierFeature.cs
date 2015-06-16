@@ -8,11 +8,11 @@ namespace Microsoft.AspNet.Http.Features
     /// <summary>
     /// Feature to identify a request.
     /// </summary>
-    public interface IRequestIdentifierFeature
+    public interface IHttpRequestIdentifierFeature
     {
         /// <summary>
         /// Identifier to trace a request.
         /// </summary>
-        Guid TraceIdentifier { get; }
+        string TraceIdentifier { get; set; }
     }
 }

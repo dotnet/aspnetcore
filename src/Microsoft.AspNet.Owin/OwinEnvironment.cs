@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication.Internal;
 
@@ -80,6 +81,11 @@ namespace Microsoft.AspNet.Owin
                 { OwinConstants.Security.User, new FeatureMap<IHttpAuthenticationFeature>(feature => feature.User,
                     ()=> null, (feature, value) => feature.User = Utilities.MakeClaimsPrincipal((IPrincipal)value),
                     () => new HttpAuthenticationFeature())
+                },
+
+                { OwinConstants.RequestId, new FeatureMap<IHttpRequestIdentifierFeature>(feature => feature.TraceIdentifier,
+                    ()=> null, (feature, value) => feature.TraceIdentifier = (string)value,
+                    () => new HttpRequestIdentifierFeature())
                 }
             };
 
@@ -113,9 +119,6 @@ namespace Microsoft.AspNet.Owin
             }
 
             _context.Items[typeof(HttpContext).FullName] = _context; // Store for lookup when we transition back out of OWIN
-
-            // The request identifier is a string per the spec.
-            _entries[OwinConstants.RequestId] = new FeatureMap<IRequestIdentifierFeature>(feature => feature.TraceIdentifier.ToString());
         }
 
         // Public in case there's a new/custom feature interface that needs to be added.
