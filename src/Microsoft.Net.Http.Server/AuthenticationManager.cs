@@ -38,13 +38,8 @@ namespace Microsoft.Net.Http.Server
     /// </summary>
     public sealed class AuthenticationManager
     {
-#if DNXCORE50
         private static readonly int AuthInfoSize =
             Marshal.SizeOf<UnsafeNclNativeMethods.HttpApi.HTTP_SERVER_AUTHENTICATION_INFO>();
-#else
-        private static readonly int AuthInfoSize =
-            Marshal.SizeOf(typeof(UnsafeNclNativeMethods.HttpApi.HTTP_SERVER_AUTHENTICATION_INFO));
-#endif
 
         private WebListener _server;
         private AuthenticationSchemes _authSchemes;

@@ -667,12 +667,7 @@ namespace Microsoft.Net.Http.Server
                             }
 
                             knownHeaderInfo[_nativeResponse.ResponseInfoCount].Type = HttpApi.HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
-                            knownHeaderInfo[_nativeResponse.ResponseInfoCount].Length =
-#if DNXCORE50
-                                (uint)Marshal.SizeOf<HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS>();
-#else
-                                (uint)Marshal.SizeOf(typeof(HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS));
-#endif
+                            knownHeaderInfo[_nativeResponse.ResponseInfoCount].Length = (uint)Marshal.SizeOf<HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS>();
 
                             HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS header = new HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS();
 

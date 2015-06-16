@@ -5,7 +5,8 @@
     },
     "compilationOptions": { "allowUnsafe": true },
     "frameworks": {
-        "net45": { },
+        "net451": { },
+        "dnx451": { },
         "dnxcore50": {
             "dependencies": {
                 "System.Collections": "4.0.10-beta-*",
