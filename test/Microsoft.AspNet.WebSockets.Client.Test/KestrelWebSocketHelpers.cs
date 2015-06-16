@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
                     }
                     catch (Exception ex)
                     {
-                        if (ct.Response.HeadersSent)
+                        if (ct.Response.HasStarted)
                         {
                             throw;
                         }
