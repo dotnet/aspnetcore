@@ -79,7 +79,7 @@ namespace IdentitySamples
 
             loggerFactory.AddNLog(new global::NLog.LogFactory(config));
 #endif
-            app.UseErrorPage(ErrorPageOptions.ShowAll)
+            app.UseErrorPage()
                .UseStaticFiles()
                .UseIdentity()
                .UseFacebookAuthentication()
