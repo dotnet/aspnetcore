@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         public virtual async Task<SignInResult> PasswordSignInAsync(TUser user, string password,
-            bool isPersistent, bool shouldLockout)
+            bool isPersistent, bool lockoutOnFailure)
         {
             if (user == null)
             {
@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.Identity
                     await ResetLockout(user);
                     return Logger.Log(await SignInOrTwoFactorAsync(user, isPersistent));
                 }
-                if (UserManager.SupportsUserLockout && shouldLockout)
+                if (UserManager.SupportsUserLockout && lockoutOnFailure)
                 {
                     // If lockout is requested, increment access failed count which might lock out the user
                     await UserManager.AccessFailedAsync(user);
@@ -198,7 +198,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         public virtual async Task<SignInResult> PasswordSignInAsync(string userName, string password,
-            bool isPersistent, bool shouldLockout)
+            bool isPersistent, bool lockoutOnFailure)
         {
             var user = await UserManager.FindByNameAsync(userName);
             if (user == null)
@@ -206,7 +206,7 @@ namespace Microsoft.AspNet.Identity
                 return SignInResult.Failed;
             }
 
-            return await PasswordSignInAsync(user, password, isPersistent, shouldLockout);
+            return await PasswordSignInAsync(user, password, isPersistent, lockoutOnFailure);
         }
 
         private static ClaimsIdentity CreateIdentity(TwoFactorAuthenticationInfo info)

@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Identity.Test
         public void VerifyDefaultOptions()
         {
             var options = new IdentityOptions();
-            Assert.False(options.Lockout.EnabledByDefault);
+            Assert.True(options.Lockout.AllowedForNewUsers);
             Assert.Equal(TimeSpan.FromMinutes(5), options.Lockout.DefaultLockoutTimeSpan);
             Assert.Equal(5, options.Lockout.MaxFailedAccessAttempts);
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Identity.Test
                 {"identity:password:RequireUpperCase", "false"},
                 {"identity:password:RequireDigit", "false"},
                 {"identity:password:RequireLowerCase", "false"},
-                {"identity:lockout:EnabledByDefault", "TRUe"},
+                {"identity:lockout:AllowedForNewUsers", "FALSe"},
                 {"identity:lockout:MaxFailedAccessAttempts", "1000"}
             };
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.False(options.Password.RequireNonLetterOrDigit);
             Assert.False(options.Password.RequireUppercase);
             Assert.Equal(10, options.Password.RequiredLength);
-            Assert.True(options.Lockout.EnabledByDefault);
+            Assert.False(options.Lockout.AllowedForNewUsers);
             Assert.Equal(1000, options.Lockout.MaxFailedAccessAttempts);
         }
 

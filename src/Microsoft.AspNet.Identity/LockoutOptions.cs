@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         ///     If true, will enable user lockout when users are created
         /// </summary>
-        public bool EnabledByDefault { get; set; } = false;
+        public bool AllowedForNewUsers { get; set; } = true;
 
         /// <summary>
         ///     Number of access attempts allowed for a user before lockout (if enabled)

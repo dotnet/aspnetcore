@@ -324,7 +324,7 @@ namespace Microsoft.AspNet.Identity
             {
                 return result;
             }
-            if (Options.Lockout.EnabledByDefault && SupportsUserLockout)
+            if (Options.Lockout.AllowedForNewUsers && SupportsUserLockout)
             {
                 await GetUserLockoutStore().SetLockoutEnabledAsync(user, true, CancellationToken);
             }

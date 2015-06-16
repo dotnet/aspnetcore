@@ -826,7 +826,6 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var mgr = CreateManager();
             mgr.Options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromHours(1);
-            mgr.Options.Lockout.EnabledByDefault = true;
             mgr.Options.Lockout.MaxFailedAccessAttempts = 0;
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
@@ -843,7 +842,6 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var mgr = CreateManager();
             mgr.Options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromHours(1);
-            mgr.Options.Lockout.EnabledByDefault = true;
             mgr.Options.Lockout.MaxFailedAccessAttempts = 2;
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
@@ -864,7 +862,6 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var mgr = CreateManager();
             mgr.Options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromHours(1);
-            mgr.Options.Lockout.EnabledByDefault = true;
             mgr.Options.Lockout.MaxFailedAccessAttempts = 2;
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
@@ -890,6 +887,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var mgr = CreateManager();
             mgr.Options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromHours(1);
+            mgr.Options.Lockout.AllowedForNewUsers = false;
             mgr.Options.Lockout.MaxFailedAccessAttempts = 2;
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
@@ -913,7 +911,6 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task UserNotLockedOutWithNullDateTimeAndIsSetToNullDate()
         {
             var mgr = CreateManager();
-            mgr.Options.Lockout.EnabledByDefault = true;
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
@@ -927,6 +924,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task LockoutFailsIfNotEnabled()
         {
             var mgr = CreateManager();
+            mgr.Options.Lockout.AllowedForNewUsers = false;
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.False(await mgr.GetLockoutEnabledAsync(user));
@@ -939,7 +937,6 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task LockoutEndToUtcNowMinus1SecInUserShouldNotBeLockedOut()
         {
             var mgr = CreateManager();
-            mgr.Options.Lockout.EnabledByDefault = true;
             var user = CreateTestUser(lockoutEnd: DateTimeOffset.UtcNow.AddSeconds(-1));
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
@@ -950,7 +947,6 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task LockoutEndToUtcNowSubOneSecondWithManagerShouldNotBeLockedOut()
         {
             var mgr = CreateManager();
-            mgr.Options.Lockout.EnabledByDefault = true;
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
@@ -962,7 +958,6 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task LockoutEndToUtcNowPlus5ShouldBeLockedOut()
         {
             var mgr = CreateManager();
-            mgr.Options.Lockout.EnabledByDefault = true;
             var lockoutEnd = DateTimeOffset.UtcNow.AddMinutes(5);
             var user = CreateTestUser(lockoutEnd: lockoutEnd);
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
@@ -974,7 +969,6 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task UserLockedOutWithDateTimeLocalKindNowPlus30()
         {
             var mgr = CreateManager();
-            mgr.Options.Lockout.EnabledByDefault = true;
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
             Assert.True(await mgr.GetLockoutEnabledAsync(user));
