@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.TestConfiguration
             }
             catch (Exception exception)
             {
-                if (context.Response.HeadersSent)
+                if (context.Response.HasStarted)
                 {
                     throw;
                 }
