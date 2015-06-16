@@ -691,14 +691,14 @@ using Views
 #line default
 #line hidden
 
-            WriteLiteral("        </div>\r\n        }\r\n        <div id=\"headerspage\" class=\"page\">\r\n");
-#line 197 "ErrorPage.cshtml"
+            WriteLiteral("        </div>\r\n        <div id=\"headerspage\" class=\"page\">\r\n");
+#line 196 "ErrorPage.cshtml"
             
 
 #line default
 #line hidden
 
-#line 197 "ErrorPage.cshtml"
+#line 196 "ErrorPage.cshtml"
              if (Model.Headers.Any())
             {
 
@@ -707,26 +707,26 @@ using Views
 
             WriteLiteral("                <table>\r\n                    <thead>\r\n                        <tr" +
 ">\r\n                            <th>");
-#line 202 "ErrorPage.cshtml"
+#line 201 "ErrorPage.cshtml"
                            Write(Resources.ErrorPageHtml_VariableColumn);
 
 #line default
 #line hidden
             WriteLiteral("</th>\r\n                            <th>");
-#line 203 "ErrorPage.cshtml"
+#line 202 "ErrorPage.cshtml"
                            Write(Resources.ErrorPageHtml_ValueColumn);
 
 #line default
 #line hidden
             WriteLiteral("</th>\r\n                        </tr>\r\n                    </thead>\r\n             " +
 "       <tbody>\r\n");
-#line 207 "ErrorPage.cshtml"
+#line 206 "ErrorPage.cshtml"
                         
 
 #line default
 #line hidden
 
-#line 207 "ErrorPage.cshtml"
+#line 206 "ErrorPage.cshtml"
                          foreach (var kv in Model.Headers.OrderBy(kv => kv.Key))
                         {
                             foreach (var v in kv.Value)
@@ -736,19 +736,19 @@ using Views
 #line hidden
 
             WriteLiteral("                                <tr>\r\n                                    <td>");
-#line 212 "ErrorPage.cshtml"
+#line 211 "ErrorPage.cshtml"
                                    Write(kv.Key);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                                    <td>");
-#line 213 "ErrorPage.cshtml"
+#line 212 "ErrorPage.cshtml"
                                    Write(v);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                                </tr>\r\n");
-#line 215 "ErrorPage.cshtml"
+#line 214 "ErrorPage.cshtml"
                             }
                         }
 
@@ -756,7 +756,7 @@ using Views
 #line hidden
 
             WriteLiteral("                    </tbody>\r\n                </table>\r\n");
-#line 219 "ErrorPage.cshtml"
+#line 218 "ErrorPage.cshtml"
             }
             else
             {
@@ -765,26 +765,26 @@ using Views
 #line hidden
 
             WriteLiteral("                <p>");
-#line 222 "ErrorPage.cshtml"
+#line 221 "ErrorPage.cshtml"
               Write(Resources.ErrorPageHtml_NoHeaderData);
 
 #line default
 #line hidden
             WriteLiteral("</p>\r\n");
-#line 223 "ErrorPage.cshtml"
+#line 222 "ErrorPage.cshtml"
             }
 
 #line default
 #line hidden
 
             WriteLiteral("        </div>\r\n        \r\n");
-#line 226 "ErrorPage.cshtml"
+#line 225 "ErrorPage.cshtml"
         
 
 #line default
 #line hidden
 
-#line 226 "ErrorPage.cshtml"
+#line 225 "ErrorPage.cshtml"
           
             /* TODO:
             <div id="environmentpage" class="page">
