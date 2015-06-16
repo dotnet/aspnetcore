@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta6-10386"
+$BuildVersion="beta6-10387"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -94,7 +94,7 @@ Set-Variable -Option Constant "DefaultRuntime" "clr"
 Set-Variable -Option Constant "AliasExtension" ".txt"
 
 # These are intentionally using "%" syntax. The environment variables are expanded whenever the value is used.
-Set-Variable -Option Constant "OldUserHomes" @("%USERPROFILE%\.kre","%USERPROFILE%\.k")
+Set-Variable -Option Constant "OldUserHomes" @("%USERPROFILE%\.kre", "%USERPROFILE%\.k")
 Set-Variable -Option Constant "DefaultUserHome" "%USERPROFILE%\$DefaultUserDirectoryName"
 Set-Variable -Option Constant "HomeEnvVar" "DNX_HOME"
 
@@ -679,7 +679,7 @@ function Ngen-Library(
     [Parameter(Mandatory=$true)]
     [string]$runtimeBin,
 
-    [ValidateSet("x86","x64")]
+    [ValidateSet("x86", "x64")]
     [Parameter(Mandatory=$true)]
     [string]$architecture) {
 
@@ -823,7 +823,7 @@ function dnvm-help {
             if($help.description) {
                 _WriteOut
                 _WriteOut -ForegroundColor $ColorScheme.Help_Header "remarks:"
-                $help.description.Text.Split(@("`r","`n"), "RemoveEmptyEntries") | 
+                $help.description.Text.Split(@("`r", "`n"), "RemoveEmptyEntries") | 
                     ForEach-Object { _WriteOut "  $_" }
             }
 
@@ -912,11 +912,11 @@ function dnvm-alias {
         [string]$Version,
 
         [Alias("arch")]
-        [ValidateSet("", "x86","x64")]
+        [ValidateSet("", "x86", "x64", "arm")]
         [string]$Architecture = "",
 
         [Alias("r")]
-        [ValidateSet("", "clr","coreclr")]
+        [ValidateSet("", "clr", "coreclr")]
         [string]$Runtime = "")
 
     if($Version) {
@@ -968,12 +968,12 @@ function dnvm-upgrade {
         [string]$Alias = "default",
 
         [Alias("arch")]
-        [ValidateSet("", "x86","x64")]
+        [ValidateSet("", "x86", "x64", "arm")]
         [Parameter(Mandatory=$false)]
         [string]$Architecture = "",
 
         [Alias("r")]
-        [ValidateSet("", "clr","coreclr")]
+        [ValidateSet("", "clr", "coreclr")]
         [Parameter(Mandatory=$false)]
         [string]$Runtime = "",
 
@@ -1030,12 +1030,12 @@ function dnvm-install {
         [string]$VersionNuPkgOrAlias,
 
         [Alias("arch")]
-        [ValidateSet("", "x86","x64")]
+        [ValidateSet("", "x86", "x64", "arm")]
         [Parameter(Mandatory=$false)]
         [string]$Architecture = "",
 
         [Alias("r")]
-        [ValidateSet("", "clr","coreclr")]
+        [ValidateSet("", "clr", "coreclr")]
         [Parameter(Mandatory=$false)]
         [string]$Runtime = "",
 
@@ -1244,12 +1244,12 @@ function dnvm-use {
         [string]$VersionOrAlias,
 
         [Alias("arch")]
-        [ValidateSet("", "x86","x64")]
+        [ValidateSet("", "x86", "x64", "arm")]
         [Parameter(Mandatory=$false)]
         [string]$Architecture = "",
 
         [Alias("r")]
-        [ValidateSet("", "clr","coreclr")]
+        [ValidateSet("", "clr", "coreclr")]
         [Parameter(Mandatory=$false)]
         [string]$Runtime = "",
 
