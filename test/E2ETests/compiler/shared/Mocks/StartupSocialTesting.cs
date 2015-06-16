@@ -183,9 +183,9 @@ namespace MusicStore
 
             app.UseStatusCodePagesWithRedirects("~/Home/StatusCodePage");
 
-            //Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
-            //Note: ErrorPageOptions.ShowAll to be used only at development time. Not recommended for production.
-            app.UseErrorPage(ErrorPageOptions.ShowAll);
+            // Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
+            // Note: Not recommended for production.
+            app.UseErrorPage();
 
             app.UseDatabaseErrorPage(DatabaseErrorPageOptions.ShowAll);
 
