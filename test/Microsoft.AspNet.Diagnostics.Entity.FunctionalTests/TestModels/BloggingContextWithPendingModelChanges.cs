@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 {
     public class BloggingContextWithPendingModelChanges : BloggingContext
     {
-        public BloggingContextWithPendingModelChanges(IServiceProvider provider, EntityOptions options)
+        public BloggingContextWithPendingModelChanges(IServiceProvider provider, DbContextOptions options)
             : base(provider, options)
         { }
 

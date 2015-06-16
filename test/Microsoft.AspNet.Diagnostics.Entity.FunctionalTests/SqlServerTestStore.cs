@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         {
             if (!PlatformHelper.IsMono)
             {
-                var optionsBuilder = new EntityOptionsBuilder();
+                var optionsBuilder = new DbContextOptionsBuilder();
                 optionsBuilder.UseSqlServer(_connectionString);
 
                 using (var db = new DbContext(optionsBuilder.Options))

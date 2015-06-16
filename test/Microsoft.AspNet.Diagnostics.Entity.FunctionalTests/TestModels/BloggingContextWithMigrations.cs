@@ -12,16 +12,16 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 {
     public class BloggingContextWithMigrations : BloggingContext
     {
-        protected BloggingContextWithMigrations(EntityOptions options)
+        protected BloggingContextWithMigrations(DbContextOptions options)
             : base(options)
         { }
 
-        public BloggingContextWithMigrations(IServiceProvider provider, EntityOptions options)
+        public BloggingContextWithMigrations(IServiceProvider provider, DbContextOptions options)
             : base(provider, options)
         { }
 
         // Providing a factory method so that the ctor is hidden from DI
-        public static BloggingContextWithMigrations CreateWithoutExternalServiceProvider(EntityOptions options)
+        public static BloggingContextWithMigrations CreateWithoutExternalServiceProvider(DbContextOptions options)
         {
             return new BloggingContextWithMigrations(options);
         }

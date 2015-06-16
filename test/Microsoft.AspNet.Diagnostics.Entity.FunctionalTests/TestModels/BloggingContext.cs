@@ -19,11 +19,11 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             .Single()
             .InformationalVersion;
 
-        protected BloggingContext(EntityOptions options)
+        protected BloggingContext(DbContextOptions options)
             : base(options)
         { }
 
-        public BloggingContext(IServiceProvider provider, EntityOptions options)
+        public BloggingContext(IServiceProvider provider, DbContextOptions options)
             : base(provider, options)
         { }
 

@@ -13,7 +13,7 @@ namespace Microsoft.Data.Entity.Tests
             return entityServicesBuilder.AddInMemoryStore();
         }
 
-        public static EntityOptions UseProviderOptions(this EntityOptions options)
+        public static DbContextOptions UseProviderOptions(this DbContextOptions options)
         {
             return options;
         }
