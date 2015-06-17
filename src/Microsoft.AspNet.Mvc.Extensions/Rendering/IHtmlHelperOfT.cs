@@ -171,6 +171,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string htmlFieldName,
             object additionalViewData);
 
+        /// <inheritdoc cref="IHtmlHelper.Encode(object)"/>
+        new string Encode(object value);
+
+        /// <inheritdoc cref="IHtmlHelper.Encode(string)"/>
+        new string Encode(string value);
+
         /// <summary>
         /// Returns an &lt;input&gt; element of type "hidden" for the specified <paramref name="expression"/>.
         /// </summary>
@@ -332,6 +338,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] Expression<Func<TModel, TResult>> expression,
             [NotNull] object value,
             object htmlAttributes);
+
+        /// <inheritdoc cref="IHtmlHelper.Raw(object)"/>
+        new HtmlString Raw(object value);
+
+        /// <inheritdoc cref="IHtmlHelper.Raw(string)"/>
+        new HtmlString Raw(string value);
 
         /// <summary>
         /// Returns a &lt;textarea&gt; element for the specified <paramref name="expression"/>.
