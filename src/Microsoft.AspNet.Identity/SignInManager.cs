@@ -186,11 +186,11 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user">The user to sign in.</param>
         /// <param name="password">The password to attempt to sign in with.</param>
         /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
-        /// <param name="shouldLockout">Flag indicating if the user account should be locked if the sign in fails.</param>
+        /// <param name="lockoutOnFailure">Flag indicating if the user account should be locked if the sign in fails.</param>
         /// <returns>The task object representing the asynchronous operation containing the <see name="SignInResult"/>
         /// for the sign-in attempt.</returns>
         public virtual async Task<SignInResult> PasswordSignInAsync(TUser user, string password,
-            bool isPersistent, bool shouldLockout)
+            bool isPersistent, bool lockoutOnFailure)
         {
             if (user == null)
             {
@@ -213,7 +213,7 @@ namespace Microsoft.AspNet.Identity
             }
             Logger.LogWarning("User {userId} failed to provide the correct password.", await UserManager.GetUserIdAsync(user));
 
-            if (UserManager.SupportsUserLockout && shouldLockout)
+            if (UserManager.SupportsUserLockout && lockoutOnFailure)
             {
                 // If lockout is requested, increment access failed count which might lock out the user
                 await UserManager.AccessFailedAsync(user);
@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.Identity
         /// <returns>The task object representing the asynchronous operation containing the <see name="SignInResult"/>
         /// for the sign-in attempt.</returns>
         public virtual async Task<SignInResult> PasswordSignInAsync(string userName, string password,
-            bool isPersistent, bool shouldLockout)
+            bool isPersistent, bool lockoutOnFailure)
         {
             var user = await UserManager.FindByNameAsync(userName);
             if (user == null)
@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.Identity
                 return SignInResult.Failed;
             }
 
-            return await PasswordSignInAsync(user, password, isPersistent, shouldLockout);
+            return await PasswordSignInAsync(user, password, isPersistent, lockoutOnFailure);
         }
 
         /// <summary>
