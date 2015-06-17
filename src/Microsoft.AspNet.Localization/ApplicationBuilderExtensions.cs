@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Builder
     /// <summary>
     /// Extension methods for adding the <see cref="RequestLocalizationMiddleware"/> to an application.
     /// </summary>
-    public static class IApplicationBuilderExtensions
+    public static class ApplicationBuilderExtensions
     {
         /// <summary>
         /// Adds the <see cref="RequestLocalizationMiddleware"/> to automatically set culture information for
