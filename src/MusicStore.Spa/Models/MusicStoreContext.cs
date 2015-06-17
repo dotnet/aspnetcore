@@ -34,11 +34,6 @@ namespace MusicStore.Models
             builder.Entity<CartItem>().Table("CartItems");
             builder.Entity<OrderDetail>().Table("OrderDetails");
 
-            // TODO: Remove this when we start using auto generated values
-            builder.Entity<Artist>().Property(a => a.ArtistId).GenerateValueOnAdd(generateValue: false);
-            builder.Entity<Album>().Property(a => a.ArtistId).GenerateValueOnAdd(generateValue: false);
-            builder.Entity<Genre>().Property(g => g.GenreId).GenerateValueOnAdd(generateValue: false);
-
             base.OnModelCreating(builder);
         }
     }
