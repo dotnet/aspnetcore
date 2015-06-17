@@ -15,6 +15,11 @@ namespace Microsoft.AspNet.Routing
         /// </summary>
         public bool LowercaseUrls { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether a trailing slash should be appended to the generated URLs.
+        /// </summary>
+        public bool AppendTrailingSlash { get; set; }
+
         private IDictionary<string, Type> _constraintTypeMap = GetDefaultConstraintMap();
 
         public IDictionary<string, Type> ConstraintMap

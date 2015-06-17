@@ -203,23 +203,30 @@ namespace Microsoft.AspNet.Routing
         {
             var url = path.Value;
 
-            if (!string.IsNullOrEmpty(url) && _options.LowercaseUrls)
+            if (!string.IsNullOrEmpty(url) && (_options.LowercaseUrls || _options.AppendTrailingSlash))
             {
                 var indexOfSeparator = url.IndexOfAny(new char[] { '?', '#' });
+                var urlWithoutQueryString = url;
+                var queryString = string.Empty;
 
-                // No query string, lowercase the url
-                if (indexOfSeparator == -1)
+                if (indexOfSeparator != -1)
                 {
-                    url = url.ToLowerInvariant();
+                    urlWithoutQueryString = url.Substring(0, indexOfSeparator);
+                    queryString = url.Substring(indexOfSeparator);
                 }
-                else
-                {
-                    var lowercaseUrl = url.Substring(0, indexOfSeparator).ToLowerInvariant();
-                    var queryString = url.Substring(indexOfSeparator);
 
-                    // queryString will contain the delimiter ? or # as the first character, so it's safe to append.
-                    url = lowercaseUrl + queryString;
+                if (_options.LowercaseUrls)
+                {
+                    urlWithoutQueryString = urlWithoutQueryString.ToLowerInvariant();
                 }
+
+                if (_options.AppendTrailingSlash && !urlWithoutQueryString.EndsWith("/"))
+                {
+                    urlWithoutQueryString += "/";
+                }
+
+                // queryString will contain the delimiter ? or # as the first character, so it's safe to append.
+                url = urlWithoutQueryString + queryString;
 
                 return new PathString(url);
             }

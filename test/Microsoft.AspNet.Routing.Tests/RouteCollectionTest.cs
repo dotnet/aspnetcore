@@ -20,16 +20,22 @@ namespace Microsoft.AspNet.Routing
     public class RouteCollectionTest
     {
         [Theory]
-        [InlineData(@"Home/Index/23", "/home/index/23", true)]
-        [InlineData(@"Home/Index/23", "/Home/Index/23", false)]
-        [InlineData(@"Home/Index/23?Param1=ABC&Param2=Xyz", "/Home/Index/23?Param1=ABC&Param2=Xyz", false)]
-        [InlineData(@"Home/Index/23?Param1=ABC&Param2=Xyz", "/home/index/23?Param1=ABC&Param2=Xyz", true)]
-        [InlineData(@"Home/Index/23#Param1=ABC&Param2=Xyz", "/Home/Index/23#Param1=ABC&Param2=Xyz", false)]
-        [InlineData(@"Home/Index/23#Param1=ABC&Param2=Xyz", "/home/index/23#Param1=ABC&Param2=Xyz", true)]
-        public void GetVirtualPath_CanLowerCaseUrls_BasedOnOptions(
+        [InlineData(@"Home/Index/23", "/home/index/23", true, false)]
+        [InlineData(@"Home/Index/23", "/Home/Index/23", false, false)]
+        [InlineData(@"Home/Index/23", "/home/index/23/", true, true)]
+        [InlineData(@"Home/Index/23", "/Home/Index/23/", false, true)]
+        [InlineData(@"Home/Index/23?Param1=ABC&Param2=Xyz", "/Home/Index/23/?Param1=ABC&Param2=Xyz", false, true)]
+        [InlineData(@"Home/Index/23?Param1=ABC&Param2=Xyz", "/Home/Index/23?Param1=ABC&Param2=Xyz", false, false)]
+        [InlineData(@"Home/Index/23?Param1=ABC&Param2=Xyz", "/home/index/23/?Param1=ABC&Param2=Xyz", true, true)]
+        [InlineData(@"Home/Index/23#Param1=ABC&Param2=Xyz", "/Home/Index/23/#Param1=ABC&Param2=Xyz", false, true)]
+        [InlineData(@"Home/Index/23#Param1=ABC&Param2=Xyz", "/home/index/23#Param1=ABC&Param2=Xyz", true, false)]
+        [InlineData(@"Home/Index/23/?Param1=ABC&Param2=Xyz", "/home/index/23/?Param1=ABC&Param2=Xyz", true, true)]
+        [InlineData(@"Home/Index/23/#Param1=ABC&Param2=Xyz", "/home/index/23/#Param1=ABC&Param2=Xyz", true, false)]
+        public void GetVirtualPath_CanLowerCaseUrls_And_AppendTrailingSlash_BasedOnOptions(
             string returnUrl,
-            string lowercaseUrl,
-            bool lowercaseUrls)
+            string expectedUrl,
+            bool lowercaseUrls,
+            bool appendTrailingSlash)
         {
             // Arrange
             var target = new Mock<IRouter>(MockBehavior.Strict);
@@ -39,17 +45,21 @@ namespace Microsoft.AspNet.Routing
 
             var routeCollection = new RouteCollection();
             routeCollection.Add(target.Object);
-            var virtualPathContext = CreateVirtualPathContext(options: GetRouteOptions(lowercaseUrls));
+            var virtualPathContext = CreateVirtualPathContext(
+                options: GetRouteOptions(
+                    lowerCaseUrls: lowercaseUrls,
+                    useBestEffortLinkGeneration: true,
+                    appendTrailingSlash: appendTrailingSlash));
 
             // Act
             var pathData = routeCollection.GetVirtualPath(virtualPathContext);
 
             // Assert
-            Assert.Equal(new PathString(lowercaseUrl), pathData.VirtualPath);
+            Assert.Equal(new PathString(expectedUrl), pathData.VirtualPath);
             Assert.Same(target.Object, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
-        
+
         [Theory]
         [InlineData(@"\u0130", @"/\u0130", true)]
         [InlineData(@"\u0049", @"/\u0049", true)]
@@ -114,7 +124,7 @@ namespace Microsoft.AspNet.Routing
                 Assert.Equal(dataToken.Value, pathData.DataTokens[dataToken.Key]);
             }
         }
-        
+
         [Fact]
         public async Task RouteAsync_FirstMatches()
         {
@@ -225,7 +235,7 @@ namespace Microsoft.AspNet.Routing
             // Assert
             Assert.Null(stringVirtualPath);
         }
-        
+
         [Fact]
         public void NamedRouteTests_GetNamedRoute_AmbiguousRoutesInCollection_DoesNotThrowForUnambiguousRoute()
         {
@@ -245,7 +255,7 @@ namespace Microsoft.AspNet.Routing
             Assert.Equal("Route1", namedRouter.Name);
             Assert.Empty(pathData.DataTokens);
         }
-        
+
         [Fact]
         public void NamedRouteTests_GetNamedRoute_AmbiguousRoutesInCollection_ThrowsForAmbiguousRoute()
         {
@@ -880,11 +890,16 @@ namespace Microsoft.AspNet.Routing
             return target;
         }
 
-        private static RouteOptions GetRouteOptions(bool lowerCaseUrls = false, bool useBestEffortLinkGeneration = true)
+        private static RouteOptions GetRouteOptions(
+            bool lowerCaseUrls = false,
+            bool useBestEffortLinkGeneration = true,
+            bool appendTrailingSlash = false)
         {
             var routeOptions = new RouteOptions();
             routeOptions.LowercaseUrls = lowerCaseUrls;
             routeOptions.UseBestEffortLinkGeneration = useBestEffortLinkGeneration;
+            routeOptions.AppendTrailingSlash = appendTrailingSlash;
+
             return routeOptions;
         }
     }
