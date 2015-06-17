@@ -239,7 +239,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             Assert.Equal(expected, result.ToString());
         }
 
-        [Fact(Skip = "#1485, unable to get Model value.")]
+        [Fact]
         public void HiddenInTemplate_GetsModelValue_IfModelStateAndViewDataEmpty()
         {
             // Arrange

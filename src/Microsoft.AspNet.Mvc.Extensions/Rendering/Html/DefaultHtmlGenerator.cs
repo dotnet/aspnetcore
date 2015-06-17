@@ -322,11 +322,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
                     // isChecked not provided nor found in the given attributes; fall back to view data.
                     var valueString = Convert.ToString(value, CultureInfo.CurrentCulture);
-                    isChecked = !string.IsNullOrEmpty(expression) &&
-                        string.Equals(
-                            EvalString(viewContext, expression),
-                            valueString,
-                            StringComparison.OrdinalIgnoreCase);
+                    isChecked = string.Equals(
+                        EvalString(viewContext, expression),
+                        valueString,
+                        StringComparison.OrdinalIgnoreCase);
                 }
             }
             else
@@ -419,14 +418,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // If we got a null selectList, try to use ViewData to get the list of items.
             if (selectList == null)
             {
-                if (string.IsNullOrEmpty(expression))
-                {
-                    // Do not call ViewData.Eval(); that would return ViewData.Model, which is not correct here.
-                    // Note this case has a simple workaround: users must pass a non-null selectList to use
-                    // DropDownList() or ListBox() in a template, where a null or empty name has meaning.
-                    throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(expression));
-                }
-
                 selectList = GetSelectListItems(viewContext, expression);
             }
 
@@ -1012,7 +1003,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
                     if (!usedModelState && useViewData)
                     {
-                        isChecked = EvalBoolean(viewContext, fullName);
+                        isChecked = EvalBoolean(viewContext, expression);
                     }
 
                     if (isChecked)
@@ -1036,7 +1027,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     var attributeValue = (string)GetModelStateValue(viewContext, fullName, typeof(string));
                     if (attributeValue == null)
                     {
-                        attributeValue = useViewData ? EvalString(viewContext, fullName, format) : valueParameter;
+                        attributeValue = useViewData ? EvalString(viewContext, expression, format) : valueParameter;
                     }
 
                     var addValue = true;
@@ -1193,14 +1184,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] ViewContext viewContext,
             string expression)
         {
+            // Method is called only if user did not pass a select list in. They must provide select list items in the
+            // ViewData dictionary and definitely not as the Model. (Even if the Model datatype were correct, a
+            // <select> element generated for a collection of SelectListItems would be useless.)
             var value = viewContext.ViewData.Eval(expression);
-            if (value == null)
+
+            // First check whether above evaluation was successful and did not match ViewData.Model.
+            if (value == null || value == viewContext.ViewData.Model)
             {
                 throw new InvalidOperationException(Resources.FormatHtmlHelper_MissingSelectData(
                     $"IEnumerable<{nameof(SelectListItem)}>",
                     expression));
             }
 
+            // Second check the Eval() call returned a collection of SelectListItems.
             var selectList = value as IEnumerable<SelectListItem>;
             if (selectList == null)
             {

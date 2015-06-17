@@ -1,5 +1,4 @@
 ﻿@using HtmlGenerationWebSite.Models
 @model Gender
 @Html.RadioButtonFor(m => m, value: "Male") Male
-@* Due to #2662 radio button will not be checked because help ignores this expression." *@
 @Html.RadioButton(expression: string.Empty, value: "Female") Female

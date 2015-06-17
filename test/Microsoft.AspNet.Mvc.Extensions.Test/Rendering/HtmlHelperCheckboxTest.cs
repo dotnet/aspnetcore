@@ -225,7 +225,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             Assert.Equal(expected, html.ToString());
         }
 
-        [Fact(Skip = "#1485, unable to get Model value.")]
+        [Fact]
         public void CheckBoxInTemplate_GetsModelValue_IfModelStateAndViewDataEmpty()
         {
             // Arrange

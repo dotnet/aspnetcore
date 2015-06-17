@@ -124,8 +124,7 @@ namespace HtmlGenerationWebSite.Controllers
                 },
             };
 
-            // Extra data that should be ignored within a template. But #1487 currently affects RadioButton and
-            // TextArea as well as ModelMetadata for <select> tag helper.
+            // Extra data that should be ignored / not used within a template.
             ViewData[nameof(Employee.Gender)] = "Gender value that will not match.";
             ViewData[nameof(Employee.Name)] = "Name value that should not be seen.";
 

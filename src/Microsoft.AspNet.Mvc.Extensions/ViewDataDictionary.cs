@@ -5,7 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Reflection;
 using Microsoft.AspNet.Mvc.Extensions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
@@ -301,12 +300,37 @@ namespace Microsoft.AspNet.Mvc
             get { return _data; }
         }
 
+        /// <summary>
+        /// Gets value of named <paramref name="expression"/> in this <see cref="ViewDataDictionary"/>.
+        /// </summary>
+        /// <param name="expression">Expression name, relative to the current model.</param>
+        /// <returns>Value of named <paramref name="expression"/> in this <see cref="ViewDataDictionary"/>.</returns>
+        /// <remarks>
+        /// Looks up <paramref name="expression"/> in the dictionary first. Falls back to evaluating it against
+        /// <see cref="Model"/>.
+        /// </remarks>
         public object Eval(string expression)
         {
             var info = GetViewDataInfo(expression);
             return (info != null) ? info.Value : null;
         }
 
+        /// <summary>
+        /// Gets value of named <paramref name="expression"/> in this <see cref="ViewDataDictionary"/>, formatted
+        /// using given <paramref name="format"/>.
+        /// </summary>
+        /// <param name="expression">Expression name, relative to the current model.</param>
+        /// <param name="format">
+        /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
+        /// </param>
+        /// <returns>
+        /// Value of named <paramref name="expression"/> in this <see cref="ViewDataDictionary"/>, formatted using
+        /// given <paramref name="format"/>.
+        /// </returns>
+        /// <remarks>
+        /// Looks up <paramref name="expression"/> in the dictionary first. Falls back to evaluating it against
+        /// <see cref="Model"/>.
+        /// </remarks>
         public string Eval(string expression, string format)
         {
             var value = Eval(expression);
@@ -330,14 +354,21 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
+        /// <summary>
+        /// Gets <see cref="ViewDataInfo"/> for named <paramref name="expression"/> in this
+        /// <see cref="ViewDataDictionary"/>.
+        /// </summary>
+        /// <param name="expression">Expression name, relative to the current model.</param>
+        /// <returns>
+        /// <see cref="ViewDataInfo"/> for named <paramref name="expression"/> in this
+        /// <see cref="ViewDataDictionary"/>.
+        /// </returns>
+        /// <remarks>
+        /// Looks up <paramref name="expression"/> in the dictionary first. Falls back to evaluating it against
+        /// <see cref="Model"/>.
+        /// </remarks>
         public ViewDataInfo GetViewDataInfo(string expression)
         {
-            if (string.IsNullOrEmpty(expression))
-            {
-                // Null or empty expression name means current model.
-                return new ViewDataInfo(container: null, value: Model);
-            }
-
             return ViewDataEvaluator.Eval(this, expression);
         }
 

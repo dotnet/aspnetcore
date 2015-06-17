@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
             ModelMetadata metadata;
             if (propertyName == null)
             {
-                // Ex: 
+                // Ex:
                 //    m => 5 (arbitrary expression)
                 //    m => foo (arbitrary expression)
                 //    m => m.Widgets[0] (expression ending with non-property-access)
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
             }
             else
             {
-                // Ex: 
+                // Ex:
                 //    m => m.Color (simple property access)
                 //    m => m.Color.Red (nested property access)
                 //    m => m.Widgets[0].Size (expression ending with property-access)
@@ -89,22 +89,27 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
             return viewData.ModelExplorer.GetExplorerForExpression(metadata, modelAccessor);
         }
 
+        /// <summary>
+        /// Gets <see cref="ModelExplorer"/> for named <paramref name="expression"/> in given
+        /// <paramref name="viewData"/>.
+        /// </summary>
+        /// <param name="expression">Expression name, relative to <c>viewData.Model</c>.</param>
+        /// <param name="viewData">
+        /// The <see cref="ViewDataDictionary"/> that may contain the <paramref name="expression"/> value.
+        /// </param>
+        /// <param name="metadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
+        /// <returns>
+        /// <see cref="ModelExplorer"/> for named <paramref name="expression"/> in given <paramref name="viewData"/>.
+        /// </returns>
         public static ModelExplorer FromStringExpression(
             string expression,
             [NotNull] ViewDataDictionary viewData,
             IModelMetadataProvider metadataProvider)
         {
-            if (string.IsNullOrEmpty(expression))
-            {
-                // Empty string really means "ModelMetadata for the current model".
-                return FromModel(viewData, metadataProvider);
-            }
-
             var viewDataInfo = ViewDataEvaluator.Eval(viewData, expression);
-
             if (viewDataInfo == null)
             {
-                //  Try getting a property from ModelMetadata if we couldn't find an answer in ViewData
+                // Try getting a property from ModelMetadata if we couldn't find an answer in ViewData
                 var propertyExplorer = viewData.ModelExplorer.GetExplorerForProperty(expression);
                 if (propertyExplorer != null)
                 {
@@ -114,11 +119,20 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
 
             if (viewDataInfo != null)
             {
+                if (viewDataInfo.Container == viewData &&
+                    viewDataInfo.Value == viewData.Model &&
+                    string.IsNullOrEmpty(expression))
+                {
+                    // Nothing for empty expression in ViewData and ViewDataEvaluator just returned the model. Handle
+                    // using FromModel() for its object special case.
+                    return FromModel(viewData, metadataProvider);
+                }
+
                 ModelExplorer containerExplorer = viewData.ModelExplorer;
                 if (viewDataInfo.Container != null)
                 {
                     containerExplorer = metadataProvider.GetModelExplorerForType(
-                        viewDataInfo.Container.GetType(), 
+                        viewDataInfo.Container.GetType(),
                         viewDataInfo.Container);
                 }
 

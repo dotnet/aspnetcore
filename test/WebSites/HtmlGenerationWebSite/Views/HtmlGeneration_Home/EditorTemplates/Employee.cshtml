@@ -4,13 +4,11 @@
 
 <div>
     @Html.LabelFor(m => m.Number)
-    @* Due to #1485, text box will be empty though all employees have Number values. *@
     @Html.TextBox(nameof(Model.Number), value: null, htmlAttributes: new { disabled = "disabled", @readonly = "readonly" })
     <input asp-for="Number" type="number" class="form-control" />
 </div>
 <div>
     <label asp-for="Name" class="employee"></label>
-    @* Due to #1487, text area will contain incorrect "Value that should not be seen." *@
     @Html.TextArea(nameof(Model.Name))
 </div>
 <div>
@@ -22,9 +20,7 @@
         var genders = new SelectList(new string[] { "Male", "Female" });
     }
     <label asp-for="Gender" class="employee"></label>
-    @* Due to #1487, radio button will not be checked. Employee is Female but incorrect information does not match. *@
     @Html.RadioButton(nameof(Model.Gender), "Female", htmlAttributes: new { disabled = "disabled", @readonly = "readonly" })
-    @* Due to #1487, <select> tag helper will not generate expected validation attributes. *@
     <select asp-for="Gender" asp-items="genders"></select>
 </div>
 <div>

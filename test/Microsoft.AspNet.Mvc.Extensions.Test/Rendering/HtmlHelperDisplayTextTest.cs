@@ -248,7 +248,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
-        public void DisplayText_ReturnsModelStateEntry()
+        public void DisplayText_IgnoresModelStateEntry_ReturnsViewDataEntry()
         {
             // Arrange
             var model = new OverriddenToStringModel("Model value")
@@ -257,7 +257,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             };
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
             var viewData = helper.ViewData;
-            viewData["Name"] = "View data dictionary value";
+            viewData["FieldPrefix.Name"] = "View data dictionary value";
             viewData.TemplateInfo.HtmlFieldPrefix = "FieldPrefix";
 
             var modelState = new ModelState();

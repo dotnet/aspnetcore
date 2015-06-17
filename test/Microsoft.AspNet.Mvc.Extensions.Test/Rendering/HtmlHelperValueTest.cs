@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Core
             Assert.Equal("ViewDataValue", html);
         }
 
-        [Fact(Skip = "$1487, finds 'StringProperty' entry (without prefix) instead.")]
+        [Fact]
         public void ValueInTemplate_GetsValueFromPrefixedViewDataEntry()
         {
             // Arrange
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.Core
             Assert.Equal("ContainedViewDataValue", html);
         }
 
-        [Fact(Skip = "$1487, finds 'StringProperty' entry (without prefix) instead.")]
+        [Fact]
         public void ValueInTemplate_GetsValueFromPropertyOfViewDataEntry()
         {
             // Arrange
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.Core
             Assert.Empty(html);
         }
 
-        [Fact(Skip = "$1487, finds 'StringProperty' entry (without prefix) instead.")]
+        [Fact]
         public void ValueInTemplate_GetsValueFromViewData_EvenIfNull()
         {
             // Arrange

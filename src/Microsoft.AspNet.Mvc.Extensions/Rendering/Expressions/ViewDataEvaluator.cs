@@ -1,24 +1,34 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.Extensions;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering.Expressions
 {
     public static class ViewDataEvaluator
     {
+        /// <summary>
+        /// Gets <see cref="ViewDataInfo"/> for named <paramref name="expression"/> in given
+        /// <paramref name="viewData"/>.
+        /// </summary>
+        /// <param name="viewData">
+        /// The <see cref="ViewDataDictionary"/> that may contain the <paramref name="expression"/> value.
+        /// </param>
+        /// <param name="expression">Expression name, relative to <c>viewData.Model</c>.</param>
+        /// <returns>
+        /// <see cref="ViewDataInfo"/> for named <paramref name="expression"/> in given <paramref name="viewData"/>.
+        /// </returns>
         public static ViewDataInfo Eval([NotNull] ViewDataDictionary viewData, string expression)
         {
-            if (string.IsNullOrEmpty(expression))
-            {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(expression));
-            }
+            // While it is not valid to generate a field for the top-level model itself because the result is an
+            // unnamed input element, do not throw here if full name is null or empty. Support is needed for cases
+            // such as Html.Label() and Html.Value(), where the user's code is not creating a name attribute. Checks
+            // are in place at higher levels for the invalid cases.
+            var fullName = viewData.TemplateInfo.GetFullHtmlFieldName(expression);
 
-            // Given an expression "one.two.three.four" we look up the following (pseudocode):
+            // Given an expression "one.two.three.four" we look up the following (pseudo-code):
             //  this["one.two.three.four"]
             //  this["one.two.three"]["four"]
             //  this["one.two"]["three.four]
@@ -28,21 +38,60 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
             //  this["one"]["two"]["three.four"]
             //  this["one"]["two"]["three"]["four"]
 
-            return EvalComplexExpression(viewData, expression);
-        }
-
-        public static ViewDataInfo Eval(object indexableObject, string expression)
-        {
-            if (string.IsNullOrEmpty(expression))
+            // Try to find a matching ViewData entry using the full expression name. If that fails, fall back to
+            // ViewData.Model using the expression's relative name.
+            var result = EvalComplexExpression(viewData, fullName);
+            if (result == null)
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(expression));
+                if (string.IsNullOrEmpty(expression))
+                {
+                    // Null or empty expression name means current model even if that model is null.
+                    result = new ViewDataInfo(container: viewData, value: viewData.Model);
+                }
+                else
+                {
+                    result = EvalComplexExpression(viewData.Model, expression);
+                }
             }
 
-            // Run through same cases as other Eval() overload but allow a null container.
-            return (indexableObject == null) ? null : EvalComplexExpression(indexableObject, expression);
+            return result;
+        }
+
+        /// <summary>
+        /// Gets <see cref="ViewDataInfo"/> for named <paramref name="expression"/> in given
+        /// <paramref name="indexableObject"/>.
+        /// </summary>
+        /// <param name="indexableObject">
+        /// The <see cref="object"/> that may contain the <paramref name="expression"/> value.
+        /// </param>
+        /// <param name="expression">Expression name, relative to <paramref name="indexableObject"/>.</param>
+        /// <returns>
+        /// <see cref="ViewDataInfo"/> for named <paramref name="expression"/> in given
+        /// <paramref name="indexableObject"/>.
+        /// </returns>
+        public static ViewDataInfo Eval(object indexableObject, string expression)
+        {
+            // Run through many of the same cases as other Eval() overload.
+            return EvalComplexExpression(indexableObject, expression);
         }
 
         private static ViewDataInfo EvalComplexExpression(object indexableObject, string expression)
+        {
+            if (indexableObject == null)
+            {
+                return null;
+            }
+
+            if (expression == null)
+            {
+                // In case a Dictionary indexableObject contains a "" entry, don't short-circuit the logic below.
+                expression = string.Empty;
+            }
+
+            return InnerEvalComplexExpression(indexableObject, expression);
+        }
+
+        private static ViewDataInfo InnerEvalComplexExpression(object indexableObject, string expression)
         {
             foreach (var expressionPair in GetRightToLeftExpressions(expression))
             {
@@ -59,7 +108,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
 
                     if (subTargetInfo.Value != null)
                     {
-                        var potential = EvalComplexExpression(subTargetInfo.Value, postExpression);
+                        var potential = InnerEvalComplexExpression(subTargetInfo.Value, postExpression);
                         if (potential != null)
                         {
                             return potential;
@@ -71,12 +120,15 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
             return null;
         }
 
+        // Produces an enumeration of combinations of property names given a complex expression in the following order:
+        //  this["one.two.three.four"]
+        //  this["one.two.three][four"]
+        //  this["one.two][three.four"]
+        //  this["one][two.three.four"]
+        // Recursion of InnerEvalComplexExpression() further sub-divides these cases to cover the full set of
+        // combinations shown in Eval(ViewDataDictionary, string) comments.
         private static IEnumerable<ExpressionPair> GetRightToLeftExpressions(string expression)
         {
-            // Produces an enumeration of all the combinations of complex property names
-            // given a complex expression. See the list above for an example of the result
-            // of the enumeration.
-
             yield return new ExpressionPair(expression, string.Empty);
 
             var lastDot = expression.LastIndexOf('.');
@@ -122,34 +174,24 @@ namespace Microsoft.AspNet.Mvc.Rendering.Expressions
             return null;
         }
 
+        // This method handles one "segment" of a complex property expression
         private static ViewDataInfo GetPropertyValue(object container, string propertyName)
         {
-            // This method handles one "segment" of a complex property expression
-
-            // First, we try to evaluate the property based on its indexer
+            // First, try to evaluate the property based on its indexer.
             var value = GetIndexedPropertyValue(container, propertyName);
             if (value != null)
             {
                 return value;
             }
 
-            // If the indexer didn't return anything useful, continue...
-
-            // If the container is a ViewDataDictionary then treat its Model property
-            // as the container instead of the ViewDataDictionary itself.
-            var viewData = container as ViewDataDictionary;
-            if (viewData != null)
-            {
-                container = viewData.Model;
-            }
-
-            // If the container is null, we're out of options
-            if (container == null)
+            // Do not attempt to find a property with an empty name and or of a ViewDataDictionary.
+            if (string.IsNullOrEmpty(propertyName) || container is ViewDataDictionary)
             {
                 return null;
             }
 
-            // Finally try to use PropertyInfo and treat the expression as a property name
+            // If the indexer didn't return anything useful, try to use PropertyInfo and treat the expression
+            // as a property name.
             var propertyInfo = container.GetType().GetRuntimeProperty(propertyName);
             if (propertyInfo == null)
             {
