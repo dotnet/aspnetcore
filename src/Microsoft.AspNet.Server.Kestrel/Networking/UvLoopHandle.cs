@@ -28,17 +28,20 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             _uv.stop(this);
         }
 
-        protected override bool ReleaseHandle()
+        unsafe protected override bool ReleaseHandle()
         {
             var memory = this.handle;
             if (memory != IntPtr.Zero)
             {
+                // loop_close clears the gcHandlePtr
+                var gcHandlePtr = *(IntPtr*)memory;
+
                 _uv.loop_close(this);
                 handle = IntPtr.Zero;
-                DestroyMemory(memory);
+
+                DestroyMemory(memory, gcHandlePtr);
             }
             return true;
         }
-
     }
 }

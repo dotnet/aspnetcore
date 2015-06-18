@@ -54,6 +54,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         unsafe protected static void DestroyMemory(IntPtr memory)
         {
             var gcHandlePtr = *(IntPtr*)memory;
+            DestroyMemory(memory, gcHandlePtr);
+        }
+
+        unsafe protected static void DestroyMemory(IntPtr memory, IntPtr gcHandlePtr)
+        {
             if (gcHandlePtr != IntPtr.Zero)
             {
                 var gcHandle = GCHandle.FromIntPtr(gcHandlePtr);
