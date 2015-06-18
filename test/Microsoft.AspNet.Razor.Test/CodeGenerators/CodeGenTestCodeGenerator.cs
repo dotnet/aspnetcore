@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         {
         }
 
-        internal override CSharpCodeWriter CreateCodeWriter()
+        protected override CSharpCodeWriter CreateCodeWriter()
         {
             return new TestCodeWriter();
         }
