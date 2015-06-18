@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Server.WebListener
         IHttpWebSocketFeature,
         IHttpAuthenticationFeature,
         IHttpUpgradeFeature,
-        IRequestIdentifierFeature
+        IHttpRequestIdentifierFeature
     {
         private static Action<object> OnStartDelegate = OnStart;
 
@@ -66,6 +66,7 @@ namespace Microsoft.AspNet.Server.WebListener
         private int? _remotePort;
         private int? _localPort;
         private bool? _isLocal;
+        private string _requestId;
         private X509Certificate2 _clientCert;
         private ClaimsPrincipal _user;
         private IAuthenticationHandler _authHandler;
@@ -107,7 +108,7 @@ namespace Microsoft.AspNet.Server.WebListener
             _features.Add(typeof(IHttpBufferingFeature), this);
             _features.Add(typeof(IHttpRequestLifetimeFeature), this);
             _features.Add(typeof(IHttpAuthenticationFeature), this);
-            _features.Add(typeof(IRequestIdentifierFeature), this);
+            _features.Add(typeof(IHttpRequestIdentifierFeature), this);
 
             if (Request.IsSecureConnection)
             {
@@ -470,12 +471,17 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _authHandler = value; }
         }
 
-        Guid IRequestIdentifierFeature.TraceIdentifier
+        string IHttpRequestIdentifierFeature.TraceIdentifier
         {
             get
             {
-                return _requestContext.TraceIdentifier;
+                if (_requestId == null)
+                {
+                    _requestId = _requestContext.TraceIdentifier.ToString();
+                }
+                return _requestId;
             }
+            set { _requestId = value; }
         }
 
         private static void OnStart(object obj)

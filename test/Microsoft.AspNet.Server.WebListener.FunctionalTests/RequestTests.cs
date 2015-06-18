@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     Assert.True(connectionInfo.IsLocal);
 
                     // Trace identifier
-                    var requestIdentifierFeature = httpContext.GetFeature<IRequestIdentifierFeature>();
+                    var requestIdentifierFeature = httpContext.GetFeature<IHttpRequestIdentifierFeature>();
                     Assert.NotNull(requestIdentifierFeature);
                     Assert.NotNull(requestIdentifierFeature.TraceIdentifier);
 
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 {
                     var requestInfo = httpContext.GetFeature<IHttpRequestFeature>();
                     var connectionInfo = httpContext.GetFeature<IHttpConnectionFeature>();
-                    var requestIdentifierFeature = httpContext.GetFeature<IRequestIdentifierFeature>();
+                    var requestIdentifierFeature = httpContext.GetFeature<IHttpRequestIdentifierFeature>();
 
                     // Request Keys
                     Assert.Equal("http", requestInfo.Scheme);
@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var requestInfo = httpContext.GetFeature<IHttpRequestFeature>();
-                var requestIdentifierFeature = httpContext.GetFeature<IRequestIdentifierFeature>();
+                var requestIdentifierFeature = httpContext.GetFeature<IHttpRequestIdentifierFeature>();
                 try
                 {
                     Assert.Equal(expectedPath, requestInfo.Path);
