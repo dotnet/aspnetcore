@@ -13,6 +13,7 @@ using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
@@ -241,7 +242,7 @@ namespace Microsoft.AspNet.Hosting
 
             // Assert
             Assert.NotNull(httpContext);
-            Assert.IsType<DefaultRequestIdentifierFeature>(httpContext.GetFeature<IRequestIdentifierFeature>());
+            Assert.IsType<HttpRequestIdentifierFeature>(httpContext.GetFeature<IHttpRequestIdentifierFeature>());
         }
 
         [Fact]
@@ -270,7 +271,7 @@ namespace Microsoft.AspNet.Hosting
 
             // Assert
             Assert.NotNull(httpContext);
-            Assert.IsType<DefaultRequestIdentifierFeature>(httpContext.GetFeature<IRequestIdentifierFeature>());
+            Assert.IsType<HttpRequestIdentifierFeature>(httpContext.GetFeature<IHttpRequestIdentifierFeature>());
         }
 
         [Fact]
@@ -283,8 +284,8 @@ namespace Microsoft.AspNet.Hosting
                 httpContext = innerHttpContext;
                 return Task.FromResult(0);
             });
-            var requestIdentifierFeature = new Mock<IRequestIdentifierFeature>().Object;
-            _featuresSupportedByThisHost.Add(typeof(IRequestIdentifierFeature), requestIdentifierFeature);
+            var requestIdentifierFeature = new Mock<IHttpRequestIdentifierFeature>().Object;
+            _featuresSupportedByThisHost.Add(typeof(IHttpRequestIdentifierFeature), requestIdentifierFeature);
             var hostingEngine = CreateHostingEngine(requestDelegate);
 
             // Act
@@ -292,7 +293,7 @@ namespace Microsoft.AspNet.Hosting
 
             // Assert
             Assert.NotNull(httpContext);
-            Assert.Same(requestIdentifierFeature, httpContext.GetFeature<IRequestIdentifierFeature>());
+            Assert.Same(requestIdentifierFeature, httpContext.GetFeature<IHttpRequestIdentifierFeature>());
         }
 
         [Fact]

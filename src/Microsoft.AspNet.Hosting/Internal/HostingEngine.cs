@@ -11,6 +11,7 @@ using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
@@ -158,12 +159,15 @@ namespace Microsoft.AspNet.Hosting.Internal
             return builder.Build();
         }
 
-        private Guid GetRequestIdentifier(HttpContext httpContext)
+        private string GetRequestIdentifier(HttpContext httpContext)
         {
-            var requestIdentifierFeature = httpContext.GetFeature<IRequestIdentifierFeature>();
+            var requestIdentifierFeature = httpContext.GetFeature<IHttpRequestIdentifierFeature>();
             if (requestIdentifierFeature == null)
             {
-                requestIdentifierFeature = new DefaultRequestIdentifierFeature();
+                requestIdentifierFeature = new HttpRequestIdentifierFeature()
+                {
+                    TraceIdentifier = Guid.NewGuid().ToString()
+                };
                 httpContext.SetFeature(requestIdentifierFeature);
             }
 
