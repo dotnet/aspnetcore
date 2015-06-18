@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Cors.Core
             {
                 if (value < TimeSpan.Zero)
                 {
-                    throw new ArgumentOutOfRangeException("value", Resources.PreflightMaxAgeOutOfRange);
+                    throw new ArgumentOutOfRangeException(nameof(value), Resources.PreflightMaxAgeOutOfRange);
                 }
                 _preflightMaxAge = value;
             }
