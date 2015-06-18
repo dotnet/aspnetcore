@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Testing;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 using Xunit.Sdk;
 
@@ -41,6 +43,14 @@ namespace Microsoft.AspNet.Mvc.Xml
         [InlineData("<A><![CDATA[<greeting></greeting>]]></A>", "<A><![CDATA[<greeting></greeting>]]></A>")]
         public void ReturnsSuccessfully_WithEmptyElements(string input1, string input2)
         {
+            // DeepEquals returns false even though the generated XML documents are equal.
+            // This is fixed in Mono 4.3.0
+            if (TestPlatformHelper.IsMono
+                && input1 == "<A><![CDATA[<greeting></greeting>]]></A>")
+            {
+                return;
+            }
+
             XmlAssert.Equal(input1, input2);
         }
 
@@ -54,7 +64,10 @@ namespace Microsoft.AspNet.Mvc.Xml
             Assert.Throws<EqualException>(() => XmlAssert.Equal(input1, input2));
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // DeepEquals returns false even though the generated XML documents are equal.
+        // This is fixed in Mono 4.3.0
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void ReturnsSuccessfully_WithMatchingXmlDeclaration_IgnoringCase()
         {
             // Arrange

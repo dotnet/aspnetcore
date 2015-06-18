@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Text;
 using Microsoft.AspNet.Http;
@@ -36,7 +37,9 @@ namespace Microsoft.AspNet.Mvc
             result.Execute(viewComponentContext);
 
             // Assert
-            Assert.Equal("{\r\n  \"foo\": \"abcd\"\r\n}", Encoding.UTF8.GetString(buffer.ToArray()));
+            Assert.Equal(
+                $"{{{Environment.NewLine}  \"foo\": \"abcd\"{Environment.NewLine}}}",
+                Encoding.UTF8.GetString(buffer.ToArray()));
         }
 
         [Fact]

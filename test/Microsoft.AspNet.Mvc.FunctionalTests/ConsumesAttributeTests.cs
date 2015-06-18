@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ActionConstraintsWebSite;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
@@ -56,10 +57,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             Assert.Equal(typeof(AmbiguousActionException).FullName, exception.ExceptionType);
+            // Mono issue - https://github.com/aspnet/External/issues/19
             Assert.Equal(
-                "Multiple actions matched. The following actions matched route data and had all constraints "+
-                "satisfied:____ActionConstraintsWebSite.ConsumesAttribute_NoFallBackActionController."+
-                "CreateProduct__ActionConstraintsWebSite.ConsumesAttribute_NoFallBackActionController.CreateProduct",
+                "Multiple actions matched. The following actions matched route data and had all constraints " +
+                "satisfied:" + PlatformNormalizer.GetNewLinesAsUnderscores(2) + "ActionConstraintsWebSite." +
+                    "ConsumesAttribute_NoFallBackActionController." +
+                "CreateProduct" + PlatformNormalizer.GetNewLinesAsUnderscores(1) + "ActionConstraintsWebSite." +
+                    "ConsumesAttribute_NoFallBackActionController.CreateProduct",
                 exception.ExceptionMessage);
         }
 
@@ -131,7 +135,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedString, product.SampleString);
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task DerivedClassLevelAttribute_OveridesBaseClassLevel()
         {
             // Arrange

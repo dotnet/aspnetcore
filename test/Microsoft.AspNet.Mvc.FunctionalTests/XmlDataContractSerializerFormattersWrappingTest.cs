@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Xml;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
@@ -19,7 +20,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly Action<IApplicationBuilder> _app = new XmlFormattersWebSite.Startup().Configure;
         private readonly Action<IServiceCollection> _configureServices = new XmlFormattersWebSite.Startup().ConfigureServices;
 
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("http://localhost/IEnumerable/ValueTypes")]
         [InlineData("http://localhost/IQueryable/ValueTypes")]
         public async Task CanWrite_ValueTypes(string url)
@@ -42,7 +45,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                          result);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("http://localhost/IEnumerable/NonWrappedTypes")]
         [InlineData("http://localhost/IQueryable/NonWrappedTypes")]
         public async Task CanWrite_NonWrappedTypes(string url)
@@ -65,7 +70,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                          result);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("http://localhost/IEnumerable/NonWrappedTypes_Empty")]
         [InlineData("http://localhost/IQueryable/NonWrappedTypes_Empty")]
         public async Task CanWrite_NonWrappedTypes_Empty(string url)
@@ -87,7 +94,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                          result);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("http://localhost/IEnumerable/NonWrappedTypes_NullInstance")]
         [InlineData("http://localhost/IQueryable/NonWrappedTypes_NullInstance")]
         public async Task CanWrite_NonWrappedTypes_NullInstance(string url)
@@ -109,7 +118,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                          result);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("http://localhost/IEnumerable/WrappedTypes")]
         [InlineData("http://localhost/IQueryable/WrappedTypes")]
         public async Task CanWrite_WrappedTypes(string url)
@@ -133,7 +144,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 result);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("http://localhost/IEnumerable/WrappedTypes_Empty")]
         [InlineData("http://localhost/IQueryable/WrappedTypes_Empty")]
         public async Task CanWrite_WrappedTypes_Empty(string url)
@@ -155,7 +168,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 result);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("http://localhost/IEnumerable/WrappedTypes_NullInstance")]
         [InlineData("http://localhost/IQueryable/WrappedTypes_NullInstance")]
         public async Task CanWrite_WrappedTypes_NullInstance(string url)
@@ -177,7 +192,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 result);
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanWrite_IEnumerableOf_SerializableErrors()
         {
             // Arrange

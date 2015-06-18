@@ -11,6 +11,7 @@ using System.Text;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Razor.Precompilation;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Runtime;
 using Moq;
 using Xunit;
@@ -348,7 +349,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             mockFileProvider.Verify(v => v.GetFileInfo(ViewPath), Times.Once());
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Skipping for now since this is going to change.
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void GetOrAdd_IgnoresCachedValueIfFileIsIdentical_ButViewImportsWasAdedSinceTheCacheWasCreated()
         {
             // Arrange
@@ -390,7 +393,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             Assert.Equal(expectedType, actual2.CompiledType);
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Skipping for now since this is going to change.
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void GetOrAdd_IgnoresCachedValueIfFileIsIdentical_ButGlobalWasDeletedSinceCacheWasCreated()
         {
             // Arrange

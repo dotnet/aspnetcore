@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.Xml
             var wrapperProvider = new SerializableErrorWrapperProvider();
             var person = new Person() { Id = 10, Name = "John" };
             var expectedMessage = string.Format("The object to be wrapped must be of type '{0}'" +
-                                    " but was of type 'Person'.\r\nParameter name: original",
+                                    $" but was of type 'Person'.{Environment.NewLine}Parameter name: original",
                                     typeof(SerializableErrorWrapper).Name);
 
             // Act and Assert

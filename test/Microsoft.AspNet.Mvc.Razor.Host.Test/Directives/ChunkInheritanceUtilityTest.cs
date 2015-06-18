@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Razor.Chunks;
+using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor.Directives
@@ -13,10 +14,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            fileProvider.AddFile(@"Views\accounts\_ViewImports.cshtml", "@using AccountModels");
-            fileProvider.AddFile(@"Views\Shared\_ViewImports.cshtml", "@inject SharedHelper Shared");
-            fileProvider.AddFile(@"Views\home\_ViewImports.cshtml", "@using MyNamespace");
-            fileProvider.AddFile(@"Views\_ViewImports.cshtml",
+            fileProvider.AddFile(PlatformNormalizer.NormalizePath(@"Views\accounts\_ViewImports.cshtml"), "@using AccountModels");
+            fileProvider.AddFile(PlatformNormalizer.NormalizePath(@"Views\Shared\_ViewImports.cshtml"), "@inject SharedHelper Shared");
+            fileProvider.AddFile(PlatformNormalizer.NormalizePath(@"Views\home\_ViewImports.cshtml"), "@using MyNamespace");
+            fileProvider.AddFile(PlatformNormalizer.NormalizePath(@"Views\_ViewImports.cshtml"),
 @"@inject MyHelper<TModel> Helper
 @inherits MyBaseType
 
@@ -35,13 +36,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             var utility = new ChunkInheritanceUtility(host, cache, defaultChunks);
 
             // Act
-            var chunkTrees = utility.GetInheritedChunkTrees(@"Views\home\Index.cshtml");
+            var chunkTrees = utility.GetInheritedChunkTrees(PlatformNormalizer.NormalizePath(@"Views\home\Index.cshtml"));
 
             // Assert
             Assert.Collection(chunkTrees,
                 chunkTree =>
                 {
-                    var viewImportsPath = @"Views\home\_ViewImports.cshtml";
+                    var viewImportsPath = PlatformNormalizer.NormalizePath(@"Views\home\_ViewImports.cshtml");
                     Assert.Collection(chunkTree.Chunks,
                         chunk =>
                         {
@@ -62,7 +63,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                 },
                 chunkTree =>
                 {
-                    var viewImportsPath = @"Views\_ViewImports.cshtml";
+                    var viewImportsPath = PlatformNormalizer.NormalizePath(@"Views\_ViewImports.cshtml");
                     Assert.Collection(chunkTree.Chunks,
                         chunk =>
                         {
@@ -112,8 +113,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             // Arrange
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(@"_ViewImports.cs", string.Empty);
-            fileProvider.AddFile(@"Views\_Layout.cshtml", string.Empty);
-            fileProvider.AddFile(@"Views\home\_not-viewimports.cshtml", string.Empty);
+            fileProvider.AddFile(PlatformNormalizer.NormalizePath(@"Views\_Layout.cshtml"), string.Empty);
+            fileProvider.AddFile(PlatformNormalizer.NormalizePath(@"Views\home\_not-viewimports.cshtml"), string.Empty);
             var cache = new DefaultChunkTreeCache(fileProvider);
             var host = new MvcRazorHost(cache);
             var defaultChunks = new Chunk[]
@@ -124,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             var utility = new ChunkInheritanceUtility(host, cache, defaultChunks);
 
             // Act
-            var chunkTrees = utility.GetInheritedChunkTrees(@"Views\home\Index.cshtml");
+            var chunkTrees = utility.GetInheritedChunkTrees(PlatformNormalizer.NormalizePath(@"Views\home\Index.cshtml"));
 
             // Assert
             Assert.Empty(chunkTrees);
@@ -135,7 +136,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            fileProvider.AddFile(@"Views\_ViewImports.cshtml",
+            fileProvider.AddFile(PlatformNormalizer.NormalizePath(@"Views\_ViewImports.cshtml"),
                                "@inject DifferentHelper<TModel> Html");
             var cache = new DefaultChunkTreeCache(fileProvider);
             var host = new MvcRazorHost(cache);

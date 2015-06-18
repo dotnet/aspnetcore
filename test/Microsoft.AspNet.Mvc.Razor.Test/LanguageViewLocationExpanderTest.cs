@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewLocationExpanderContext = new ViewLocationExpanderContext(new ActionContext(), "testView", false);
             var languageViewLocationExpander = new LanguageViewLocationExpander();
             viewLocationExpanderContext.Values = new Dictionary<string, string>();
-            viewLocationExpanderContext.Values["language"] = "gb";
+            viewLocationExpanderContext.Values["language"] = "!-invalid-culture-!";
 
             // Act
             var expandedViewLocations = languageViewLocationExpander.ExpandViewLocations(

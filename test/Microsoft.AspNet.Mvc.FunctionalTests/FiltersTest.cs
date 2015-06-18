@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Xml;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
@@ -505,7 +506,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         // Action has two Exception filters.
         // Verifies that the second Exception Filter was not executed.
-        [Fact]
+        [ConditionalTheory]
+        // https://github.com/aspnet/Mvc/issues/2757
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ExceptionFilterShortCircuitsAnotherExceptionFilter()
         {
             // Arrange

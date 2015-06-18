@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using FormatterWebSite;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Xml;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
@@ -20,7 +21,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
         private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono.Xml2.XmlTextReader.ReadText is unable to read the XML. This is fixed in mono 4.3.0.
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task XmlDataContractSerializerOutputFormatterIsCalled()
         {
             // Arrange
@@ -65,7 +68,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 await response.Content.ReadAsStringAsync());
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task XmlSerializerFailsAndDataContractSerializerIsCalled()
         {
             // Arrange
@@ -111,7 +116,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 await response.Content.ReadAsStringAsync());
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono.Xml2.XmlTextReader.ReadText is unable to read the XML. This is fixed in mono 4.3.0.
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task XmlDataContractSerializerOutputFormatter_WhenDerivedClassIsReturned()
         {
             // Arrange

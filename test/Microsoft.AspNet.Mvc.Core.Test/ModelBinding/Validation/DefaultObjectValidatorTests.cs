@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 if (!TestPlatformHelper.IsMono)
                 {
                     // In Mono this throws a NullRef Exception.
-                    // Should be investigated - https://github.com/aspnet/Mvc/issues/1261
+                    // https://github.com/aspnet/External/issues/23
                     yield return new object[]
                     {
                         new Dictionary<string, Person> { { "Joe", new Person() } , { "Mark", new Person() } },
@@ -275,10 +275,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                     typeof(Uri),
                     new List<Type>() { typeof(Uri) }
                 };
-                yield return new object[] { new Dictionary<string, Uri> {
-                    { "values",  new Uri("/api/values", UriKind.Relative) },
-                    { "hello",  new Uri("/api/hello", UriKind.Relative) }
-                }, typeof(Dictionary<string, Uri>), new List<Type>() { typeof(Uri) } };
+
+                // https://github.com/aspnet/External/issues/23
+                if (!TestPlatformHelper.IsMono)
+                {
+                    yield return new object[] { new Dictionary<string, Uri> {
+                        { "values",  new Uri("/api/values", UriKind.Relative) },
+                        { "hello",  new Uri("/api/hello", UriKind.Relative) }
+                    }, typeof(Dictionary<string, Uri>), new List<Type>() { typeof(Uri) } };
+                }
             }
         }
 

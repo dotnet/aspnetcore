@@ -11,6 +11,8 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Testing;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
@@ -207,7 +209,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("The field ID must be between 0 and 100.", json["ID"]);
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/24
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ApiController_RequestProperty()
         {
             // Arrange
@@ -229,7 +233,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expected, content);
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/24
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ApiController_RequestParameter()
         {
             // Arrange
@@ -301,7 +307,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert		
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(response.Content);
-            Assert.NotNull(response.Content.Headers.ContentLength);
+            if (!TestPlatformHelper.IsMono)
+            {
+                // Mono issue - https://github.com/aspnet/External/issues/20
+                Assert.NotNull(response.Content.Headers.ContentLength);
+            }
+
             Assert.Null(response.Headers.TransferEncodingChunked);
 
             // When HttpClient by default reads and buffers the resposne body, it diposes the

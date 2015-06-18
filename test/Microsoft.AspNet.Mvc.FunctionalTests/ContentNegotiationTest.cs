@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using ContentNegotiationWebSite;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Xml;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
@@ -48,7 +49,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
             var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
-            var expectedBody = "{\r\n  \"Name\": \"My name\",\r\n  \"Address\": \"My address\"\r\n}";
+            var expectedBody = $"{{{Environment.NewLine}  \"Name\": \"My name\",{Environment.NewLine}" +
+                $"  \"Address\": \"My address\"{Environment.NewLine}}}";
 
             // Act
             var response = await client.GetAsync("http://localhost/Normal/MultipleAllowedContentTypes");
@@ -112,7 +114,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedOutput, actual);
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ProducesAttribute_WithTypeAndContentType_UsesContentType()
         {
             // Arrange
@@ -319,7 +323,9 @@ END:VCARD
             Assert.Equal(expectedBody, body);
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task XmlFormatter_SupportedMediaType_DoesNotChangeAcrossRequests()
         {
             // Arrange

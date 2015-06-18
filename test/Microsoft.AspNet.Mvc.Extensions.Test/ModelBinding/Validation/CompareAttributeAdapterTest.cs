@@ -31,7 +31,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             // Assert
             var rule = Assert.Single(rules);
-            Assert.Equal("'MyPropertyDisplayName' and 'OtherPropertyDisplayName' do not match.", rule.ErrorMessage);
+            // Mono issue - https://github.com/aspnet/External/issues/19
+            Assert.Equal(
+                PlatformNormalizer.NormalizeContent(
+                    "'MyPropertyDisplayName' and 'OtherPropertyDisplayName' do not match."),
+                rule.ErrorMessage);
         }
 
         [Fact]
@@ -52,7 +56,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             // Assert
             var rule = Assert.Single(rules);
-            Assert.Equal("'MyProperty' and 'OtherProperty' do not match.", rule.ErrorMessage);
+            // Mono issue - https://github.com/aspnet/External/issues/19
+            Assert.Equal(
+                PlatformNormalizer.NormalizeContent("'MyProperty' and 'OtherProperty' do not match."),
+                rule.ErrorMessage);
         }
 
         [Fact]

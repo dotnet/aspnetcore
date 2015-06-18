@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Xml;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
@@ -41,7 +42,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("{\"Id\":10,\"Name\":\"John\"}", responseData);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("application/xml,*/*;0.2")]
         [InlineData("application/xml,*/*")]
         public async Task AllMediaRangeAcceptHeader_ProducesAttributeIsHonored(string acceptHeader)
@@ -66,7 +69,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             XmlAssert.Equal(expectedResponseData, responseData);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("application/xml,*/*;0.2")]
         [InlineData("application/xml,*/*")]
         public async Task AllMediaRangeAcceptHeader_WithContentTypeHeader_ContentTypeIsHonored(string acceptHeader)

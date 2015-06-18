@@ -19,6 +19,7 @@ using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
 using Microsoft.AspNet.Razor.Parser;
+using Microsoft.AspNet.Testing;
 using Microsoft.Framework.Internal;
 using Xunit;
 
@@ -28,11 +29,26 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private static Assembly _assembly = typeof(MvcRazorHostTest).Assembly;
 
+        public static TheoryData NormalizeChunkInheritanceUtilityPaths_Data
+        {
+            get
+            {
+                var data = new TheoryData<string> { "//" };
+
+                // The following scenarios are not relevant in Mono.
+                if (!TestPlatformHelper.IsMono)
+                {
+                    data.Add("C:/");
+                    data.Add(@"\\");
+                    data.Add(@"C:\");
+                }
+
+                return data;
+            }
+        }
+
         [Theory]
-        [InlineData("//")]
-        [InlineData("C:/")]
-        [InlineData(@"\\")]
-        [InlineData(@"C:\")]
+        [MemberData(nameof(NormalizeChunkInheritanceUtilityPaths_Data))]
         public void DecorateRazorParser_DesignTimeRazorPathNormalizer_NormalizesChunkInheritanceUtilityPaths(
             string rootPrefix)
         {
@@ -57,10 +73,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Theory]
-        [InlineData("//")]
-        [InlineData("C:/")]
-        [InlineData(@"\\")]
-        [InlineData(@"C:\")]
+        [MemberData(nameof(NormalizeChunkInheritanceUtilityPaths_Data))]
         public void DecorateCodeGenerator_DesignTimeRazorPathNormalizer_NormalizesChunkInheritanceUtilityPaths(
             string rootPrefix)
         {
@@ -108,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHost(new DefaultChunkTreeCache(fileProvider))
+            var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
             };
@@ -118,7 +131,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 7,
                     documentLineIndex: 0,
                     documentCharacterIndex: 7,
-                    generatedAbsoluteIndex: 444,
+                    generatedAbsoluteIndex: 432,
                     generatedLineIndex: 12,
                     generatedCharacterIndex: 7,
                     contentLength: 8),
@@ -126,7 +139,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 31,
                     documentLineIndex: 2,
                     documentCharacterIndex: 14,
-                    generatedAbsoluteIndex: 823,
+                    generatedAbsoluteIndex: 798,
                     generatedLineIndex: 25,
                     generatedCharacterIndex: 14,
                     contentLength: 85),
@@ -134,7 +147,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 135,
                     documentLineIndex: 4,
                     documentCharacterIndex: 17,
-                    generatedAbsoluteIndex: 2313,
+                    generatedAbsoluteIndex: 2258,
                     generatedLineIndex: 55,
                     generatedCharacterIndex: 95,
                     contentLength: 3),
@@ -142,7 +155,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 161,
                     documentLineIndex: 5,
                     documentCharacterIndex: 18,
-                    generatedAbsoluteIndex: 2626,
+                    generatedAbsoluteIndex: 2565,
                     generatedLineIndex: 61,
                     generatedCharacterIndex: 87,
                     contentLength: 5),
@@ -176,7 +189,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHost(new DefaultChunkTreeCache(fileProvider))
+            var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
             };
@@ -187,7 +200,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 13,
                     documentLineIndex: 0,
                     documentCharacterIndex: 13,
-                    generatedAbsoluteIndex: 1269,
+                    generatedAbsoluteIndex: 1237,
                     generatedLineIndex: 32,
                     generatedCharacterIndex: 13,
                     contentLength: 4),
@@ -195,7 +208,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 41,
                     documentLineIndex: 2,
                     documentCharacterIndex: 5,
-                    generatedAbsoluteIndex: 1353,
+                    generatedAbsoluteIndex: 1316,
                     generatedLineIndex: 37,
                     generatedCharacterIndex: 6,
                     contentLength: 21),
@@ -210,7 +223,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHost(new DefaultChunkTreeCache(fileProvider))
+            var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
             };
@@ -221,7 +234,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 1,
                     documentLineIndex: 0,
                     documentCharacterIndex: 1,
-                    generatedAbsoluteIndex: 59,
+                    generatedAbsoluteIndex: 56,
                     generatedLineIndex: 3,
                     generatedCharacterIndex: 0,
                     contentLength: 17),
@@ -229,7 +242,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 27,
                     documentLineIndex: 1,
                     documentCharacterIndex: 8,
-                    generatedAbsoluteIndex: 706,
+                    generatedAbsoluteIndex: 680,
                     generatedLineIndex: 26,
                     generatedCharacterIndex: 8,
                     contentLength: 20),
@@ -244,7 +257,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHost(new DefaultChunkTreeCache(fileProvider))
+            var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
             };
@@ -255,7 +268,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 7,
                     documentLineIndex: 0,
                     documentCharacterIndex: 7,
-                    generatedAbsoluteIndex: 214,
+                    generatedAbsoluteIndex: 208,
                     generatedLineIndex: 6,
                     generatedCharacterIndex: 7,
                     contentLength: 7),
@@ -263,7 +276,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 23,
                     documentLineIndex: 1,
                     documentCharacterIndex: 8,
-                    generatedAbsoluteIndex: 731,
+                    generatedAbsoluteIndex: 705,
                     generatedLineIndex: 26,
                     generatedCharacterIndex: 8,
                     contentLength: 20),
@@ -271,7 +284,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 52,
                     documentLineIndex: 2,
                     documentCharacterIndex: 8,
-                    generatedAbsoluteIndex: 957,
+                    generatedAbsoluteIndex: 923,
                     generatedLineIndex: 34,
                     generatedCharacterIndex: 8,
                     contentLength: 23),
@@ -286,7 +299,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHost(new DefaultChunkTreeCache(fileProvider))
+            var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
             };
@@ -297,7 +310,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 7,
                     documentLineIndex: 0,
                     documentCharacterIndex: 7,
-                    generatedAbsoluteIndex: 222,
+                    generatedAbsoluteIndex: 216,
                     generatedLineIndex: 6,
                     generatedCharacterIndex: 7,
                     contentLength: 7),
@@ -305,7 +318,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 23,
                     documentLineIndex: 1,
                     documentCharacterIndex: 8,
-                    generatedAbsoluteIndex: 747,
+                    generatedAbsoluteIndex: 721,
                     generatedLineIndex: 26,
                     generatedCharacterIndex: 8,
                     contentLength: 20),
@@ -313,7 +326,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 56,
                     documentLineIndex: 2,
                     documentCharacterIndex: 8,
-                    generatedAbsoluteIndex: 977,
+                    generatedAbsoluteIndex: 943,
                     generatedLineIndex: 34,
                     generatedCharacterIndex: 8,
                     contentLength: 23),
@@ -321,7 +334,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 90,
                     documentLineIndex: 3,
                     documentCharacterIndex: 8,
-                    generatedAbsoluteIndex: 1210,
+                    generatedAbsoluteIndex: 1168,
                     generatedLineIndex: 42,
                     generatedCharacterIndex: 8,
                     contentLength: 21),
@@ -329,7 +342,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 125,
                     documentLineIndex: 4,
                     documentCharacterIndex: 8,
-                    generatedAbsoluteIndex: 1441,
+                    generatedAbsoluteIndex: 1391,
                     generatedLineIndex: 50,
                     generatedCharacterIndex: 8,
                     contentLength: 24),
@@ -344,14 +357,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHost(new DefaultChunkTreeCache(fileProvider))
+            var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
             };
             host.NamespaceImports.Clear();
             var expectedLineMappings = new[]
             {
-                BuildLineMapping(7, 0, 7, 194, 6, 7, 30),
+                BuildLineMapping(7, 0, 7, 188, 6, 7, 30),
             };
 
             // Act and Assert
@@ -478,6 +491,55 @@ namespace Microsoft.AspNet.Mvc.Razor
                 InheritedChunkTreePagePath = pagePath;
 
                 return new ChunkTree[0];
+            }
+        }
+
+        // Normalizes the newlines in different OS platforms.
+        private class MvcRazorHostWithNormalizedNewLine : MvcRazorHost
+        {
+            public MvcRazorHostWithNormalizedNewLine(IChunkTreeCache codeTreeCache)
+                : base(codeTreeCache)
+            { }
+
+            public override CodeGenerator DecorateCodeGenerator(
+                CodeGenerator incomingBuilder,
+                CodeGeneratorContext context)
+            {
+                base.DecorateCodeGenerator(incomingBuilder, context);
+
+                return new TestCSharpCodeGenerator(
+                    context,
+                    DefaultModel,
+                    "Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute",
+                    new GeneratedTagHelperAttributeContext
+                    {
+                        ModelExpressionTypeName = ModelExpressionType,
+                        CreateModelExpressionMethodName = CreateModelExpressionMethod
+                    });
+            }
+
+            protected class TestCSharpCodeGenerator : MvcCSharpCodeGenerator
+            {
+                private readonly GeneratedTagHelperAttributeContext _tagHelperAttributeContext;
+
+                public TestCSharpCodeGenerator(CodeGeneratorContext context,
+                                             string defaultModel,
+                                             string activateAttribute,
+                                             GeneratedTagHelperAttributeContext tagHelperAttributeContext)
+                    : base(context, defaultModel, activateAttribute, tagHelperAttributeContext)
+                {
+                    _tagHelperAttributeContext = tagHelperAttributeContext;
+                }
+
+                protected override CSharpCodeWriter CreateCodeWriter()
+                {
+                    // We normalize newlines so no matter what platform we're on 
+                    // they're consistent (for code generation tests).
+                    var codeWriter = base.CreateCodeWriter();
+                    codeWriter.NewLine = "\n";
+
+                    return codeWriter;
+                }
             }
         }
 

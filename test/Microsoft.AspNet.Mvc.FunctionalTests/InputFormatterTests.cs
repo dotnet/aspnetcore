@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
@@ -21,7 +22,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly Action<IServiceCollection> _configureServices = new FormatterWebSite.Startup().ConfigureServices;
 
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CheckIfXmlInputFormatterIsBeingCalled()
         {
             // Arrange

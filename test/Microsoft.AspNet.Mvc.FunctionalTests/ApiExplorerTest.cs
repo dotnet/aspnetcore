@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Xml;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
@@ -568,7 +569,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(type, description.ResponseType);
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ApiExplorer_ResponseContentType_Unset()
         {
             // Arrange
@@ -644,7 +647,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Empty(formats);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("Controller", "text/xml", "Microsoft.AspNet.Mvc.Xml.XmlDataContractSerializerOutputFormatter")]
         [InlineData("Action", "application/json", "Microsoft.AspNet.Mvc.JsonOutputFormatter")]
         public async Task ApiExplorer_ResponseContentType_OverrideOnAction(

@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     new[] { "Hello world", "2346098258" },
                     new[] { "hello world", "222957957" },
                     new[] { "The quick brown fox jumped over the lazy dog", "2765681502" },
-                    new[] { longString, "1994223647" },
+                    new[] { longString, TestPlatformHelper.IsMono ? "4106555590" : "1994223647" },
                     new[] { stringWith4kChars.Substring(1), "2679155331" }, // 4095 chars
                     new[] { stringWith4kChars, "2627329139" },
                     new[] { stringWith4kChars + "a", "556205849" }, // 4097 chars

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,9 +20,6 @@ namespace Microsoft.AspNet.Mvc
     {
         private static readonly byte[] _abcdUTF8Bytes
             = new byte[] { 123, 34, 102, 111, 111, 34, 58, 34, 97, 98, 99, 100, 34, 125 };
-
-        private static readonly byte[] _abcdIndentedUTF8Bytes
-            = new byte[] { 123, 13, 10, 32, 32, 34, 102, 111, 111, 34, 58, 32, 34, 97, 98, 99, 100, 34, 13, 10, 125 };
 
         [Fact]
         public async Task ExecuteResultAsync_UsesDefaultContentType_IfNoContentTypeSpecified()
@@ -88,11 +86,25 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal("text/json; charset=us-ascii", context.Response.ContentType);
         }
 
+        private static List<byte> AbcdIndentedUTF8Bytes
+        {
+            get
+            {
+                var bytes = new List<byte>();
+                bytes.Add(123);
+                bytes.AddRange(Encoding.UTF8.GetBytes(Environment.NewLine));
+                bytes.AddRange(new byte[] { 32, 32, 34, 102, 111, 111, 34, 58, 32, 34, 97, 98, 99, 100, 34 });
+                bytes.AddRange(Encoding.UTF8.GetBytes(Environment.NewLine));
+                bytes.Add(125);
+                return bytes;
+            }
+        }
+
         [Fact]
         public async Task ExecuteResultAsync_UsesPassedInSerializerSettings()
         {
             // Arrange
-            var expected = _abcdIndentedUTF8Bytes;
+            var expected = AbcdIndentedUTF8Bytes;
 
             var context = GetHttpContext();
             var actionContext = new ActionContext(context, new RouteData(), new ActionDescriptor());

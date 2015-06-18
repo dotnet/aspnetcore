@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Xunit;
 
@@ -538,7 +539,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             provider.GetDisplayMetadata(context);
 
             // Assert
-            Assert.Equal(expectedKeyValuePairs, context.DisplayMetadata.EnumDisplayNamesAndValues);
+            // OrderBy is used because the order of the results may very depending on the platform / client.
+            Assert.Equal(
+                expectedKeyValuePairs?.OrderBy(item => item.Key, StringComparer.Ordinal),
+                context.DisplayMetadata.EnumDisplayNamesAndValues?.OrderBy(item => item.Key, StringComparer.Ordinal));
         }
 
         [Fact]

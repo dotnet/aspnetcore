@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
 
@@ -51,8 +50,8 @@ namespace Microsoft.AspNet.Mvc.Test
         public async Task TryUpdateModel_ReturnsFalse_IfModelValidationFails()
         {
             // Arrange
-            var expectedMessage = TestPlatformHelper.IsMono ? "The field MyProperty is invalid." :
-                                                               "The MyProperty field is required.";
+            // Mono issue - https://github.com/aspnet/External/issues/19
+            var expectedMessage = PlatformNormalizer.NormalizeContent("The MyProperty field is required.");
             var binders = new IModelBinder[]
             {
                 new TypeConverterModelBinder(),

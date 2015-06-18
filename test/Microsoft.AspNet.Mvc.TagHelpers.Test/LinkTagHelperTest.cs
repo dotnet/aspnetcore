@@ -15,6 +15,7 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Caching;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Logging;
@@ -572,7 +573,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 output.Content.GetContent());
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/21
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void RendersLinkTags_AddsFileVersion()
         {
             // Arrange
@@ -613,7 +616,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 output.Content.GetContent());
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/21
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void RendersLinkTags_AddsFileVersion_WithRequestPathBase()
         {
             // Arrange
@@ -654,7 +659,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 output.Content.GetContent());
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/21
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void RendersLinkTags_GlobbedHref_AddsFileVersion()
         {
             // Arrange

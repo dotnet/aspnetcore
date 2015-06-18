@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Caching;
 using Microsoft.Framework.Caching.Memory;
 using Moq;
@@ -16,7 +17,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 {
     public class FileVersionProviderTest
     {
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/21
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("/hello/world", "/hello/world?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk")]
         [InlineData("/hello/world?q=test", "/hello/world?q=test&v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk")]
         [InlineData("/hello/world?q=foo&bar", "/hello/world?q=foo&bar&v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk")]
@@ -37,7 +40,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         }
 
         // Verifies if the stream is closed after reading.
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/21
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void AddsVersionToFiles_DoesNotLockFileAfterReading()
         {
             // Arrange
@@ -68,7 +73,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             Assert.Throws<ObjectDisposedException>(() => fileVersionProvider.AddFileVersionToPath("/hello/world"));
         }
 
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/21
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("/testApp/hello/world", true, "/testApp")]
         [InlineData("/testApp/foo/bar/hello/world", true, "/testApp/foo/bar")]
         [InlineData("/test/testApp/hello/world", false, "/testApp")]
@@ -91,7 +98,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             Assert.Equal(filePath + "?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", result);
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/21
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void DoesNotAddVersion_IfFileNotFound()
         {
             // Arrange
@@ -109,7 +118,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             Assert.Equal("http://contoso.com/hello/world", result);
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/21
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void ReturnsValueFromCache()
         {
             // Arrange
@@ -127,7 +138,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             Assert.Equal("FromCache", result);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/21
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("/hello/world", "/hello/world", null)]
         [InlineData("/testApp/hello/world", "/hello/world", "/testApp")]
         public void SetsValueInCache(string filePath, string watchPath, string requestPathBase)

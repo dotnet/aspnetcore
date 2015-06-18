@@ -1468,7 +1468,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var result = htmlHelper.GetEnumSelectList(type);
 
             // Assert
-            VerifySelectList(expected, result);
+            // OrderBy is used because the order of the results may very depending on the platform / client.
+            VerifySelectList(
+                expected.OrderBy(item => item.Text, StringComparer.Ordinal),
+                result.OrderBy(item => item.Text, StringComparer.Ordinal));
         }
 
         private static string GetExpectedSelectElement(SelectSources source, bool allowMultiple)

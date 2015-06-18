@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Razor.Precompilation;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime;
 using PrecompilationWebSite;
@@ -23,7 +24,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
         private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task PrecompiledView_RendersCorrectly()
         {
             // Arrange
@@ -186,7 +188,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.StartsWith(expected, responseContent.Trim());
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task DeletingPrecompiledGlobalFile_PriorToFirstRequestToAView_CausesViewToBeRecompiled()
         {
             // Arrange
@@ -230,7 +233,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task TagHelpersFromTheApplication_CanBeAdded()
         {
             // Arrange
@@ -252,7 +256,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expected, responseLines[1]);
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task TagHelpersFromTheApplication_CanBeRemoved()
         {
             // Arrange

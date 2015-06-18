@@ -6,6 +6,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.IntegrationTests
@@ -60,7 +61,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("CustomParameter.Address", key);
             Assert.False(modelState.IsValid);
             var error = Assert.Single(modelState[key].Errors);
-            Assert.Equal("The Address field is required.", error.ErrorMessage);
+            // Mono issue - https://github.com/aspnet/External/issues/19
+            Assert.Equal(PlatformNormalizer.NormalizeContent("The Address field is required."), error.ErrorMessage);
         }
 
         [Fact]
@@ -209,7 +211,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var street = Assert.Single(modelState, kvp => kvp.Key == "CustomParameter.Address.Street").Value;
             Assert.Equal(ModelValidationState.Invalid, street.ValidationState);
             var error = Assert.Single(street.Errors);
-            Assert.Equal("The Street field is required.", error.ErrorMessage);
+            // Mono issue - https://github.com/aspnet/External/issues/19
+            Assert.Equal(PlatformNormalizer.NormalizeContent("The Street field is required."), error.ErrorMessage);
         }
 
         private class Person3

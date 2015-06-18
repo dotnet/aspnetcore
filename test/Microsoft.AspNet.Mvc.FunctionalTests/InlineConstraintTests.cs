@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using InlineConstraints;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
@@ -48,10 +49,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var exception = response.GetServerException();
-            Assert.Equal("The view 'Index' was not found." +
-                         " The following locations were searched:__/Areas/Users/Views/Home/Index.cshtml__" +
-                         "/Areas/Users/Views/Shared/Index.cshtml__/Views/Shared/Index.cshtml.",
-                         exception.ExceptionMessage);
+            // Mono issue - https://github.com/aspnet/External/issues/19
+            Assert.Equal(
+                "The view 'Index' was not found." +
+                " The following locations were searched:" + PlatformNormalizer.GetNewLinesAsUnderscores(1) +
+                "/Areas/Users/Views/Home/Index.cshtml" + PlatformNormalizer.GetNewLinesAsUnderscores(1) +
+                "/Areas/Users/Views/Shared/Index.cshtml" + PlatformNormalizer.GetNewLinesAsUnderscores(1) +
+                "/Views/Shared/Index.cshtml.",
+                exception.ExceptionMessage);
         }
 
         [Fact]

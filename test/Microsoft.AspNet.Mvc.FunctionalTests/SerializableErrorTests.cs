@@ -9,6 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Xml;
+using Microsoft.AspNet.Testing;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
@@ -20,9 +22,27 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly Action<IApplicationBuilder> _app = new XmlFormattersWebSite.Startup().Configure;
         private readonly Action<IServiceCollection> _configureServices = new XmlFormattersWebSite.Startup().ConfigureServices;
 
+        public static TheoryData AcceptHeadersData
+        {
+            get
+            {
+                var data = new TheoryData<string>
+                {
+                    "application/xml-xmlser"
+                };
+
+                // Mono issue - https://github.com/aspnet/External/issues/18
+                if (!TestPlatformHelper.IsMono)
+                {
+                    data.Add("application/xml-dcs");
+                }
+
+                return data;
+            }
+        }
+
         [Theory]
-        [InlineData("application/xml-xmlser")]
-        [InlineData("application/xml-dcs")]
+        [MemberData(nameof(AcceptHeadersData))]
         public async Task ModelStateErrors_AreSerialized(string acceptHeader)
         {
             // Arrange
@@ -43,7 +63,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             XmlAssert.Equal(expectedXml, responseData);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        // XmlSerializer test is disabled Mono.Xml2.XmlTextReader.ReadText is unable to read the XML.
+        // This is fixed in mono 4.3.0.
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("application/xml-xmlser")]
         [InlineData("application/xml-dcs")]
         public async Task PostedSerializableError_IsBound(string acceptHeader)
@@ -67,7 +91,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             XmlAssert.Equal(expectedXml, responseData);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        // XmlSerializer test is disabled Mono.Xml2.XmlTextReader.ReadText is unable to read the XML.
+        // This is fixed in mono 4.3.0.
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("application/xml-xmlser")]
         [InlineData("application/xml-dcs")]
         public async Task IsReturnedInExpectedFormat(string acceptHeader)

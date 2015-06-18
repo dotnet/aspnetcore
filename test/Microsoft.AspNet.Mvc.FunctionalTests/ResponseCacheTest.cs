@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
@@ -29,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
-            Assert.Equal("public, max-age=100", data);
+            AssertHeaderEquals("public, max-age=100", data);
             data = Assert.Single(response.Headers.GetValues("Vary"));
             Assert.Equal("Accept", data);
         }
@@ -58,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
-            Assert.Equal(expected, data);
+            AssertHeaderEquals(expected, data);
         }
 
         [Fact]
@@ -74,12 +75,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var data = Assert.Single(response1.Headers.GetValues("Cache-control"));
-            Assert.Equal("public, max-age=100", data);
+            AssertHeaderEquals("public, max-age=100", data);
             data = Assert.Single(response1.Headers.GetValues("Vary"));
             Assert.Equal("Accept", data);
 
             data = Assert.Single(response2.Headers.GetValues("Cache-control"));
-            Assert.Equal("public, max-age=100", data);
+            AssertHeaderEquals("public, max-age=100", data);
             data = Assert.Single(response2.Headers.GetValues("Vary"));
             Assert.Equal("Accept", data);
         }
@@ -96,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
-            Assert.Equal("public, max-age=20", data);
+            AssertHeaderEquals("public, max-age=20", data);
         }
 
         [Fact]
@@ -111,7 +112,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
-            Assert.Equal("no-store, no-cache", data);
+            AssertHeaderEquals("no-store, no-cache", data);
         }
 
         [Fact]
@@ -128,7 +129,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var data = Assert.Single(response.Headers.GetValues("Vary"));
             Assert.Equal("Accept", data);
             data = Assert.Single(response.Headers.GetValues("Cache-control"));
-            Assert.Equal("public, max-age=10", data);
+            AssertHeaderEquals("public, max-age=10", data);
             IEnumerable<string> pragmaValues;
             response.Headers.TryGetValues("Pragma", out pragmaValues);
             Assert.Null(pragmaValues);
@@ -146,7 +147,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
-            Assert.Equal("public, max-age=40", data);
+            AssertHeaderEquals("public, max-age=40", data);
         }
 
         [Fact]
@@ -177,7 +178,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
-            Assert.Equal("public, max-age=30", data);
+            AssertHeaderEquals("public, max-age=30", data);
         }
 
         [Fact]
@@ -192,7 +193,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
-            Assert.Equal("max-age=30, private", data);
+            AssertHeaderEquals("max-age=30, private", data);
         }
 
         [Fact]
@@ -207,7 +208,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
-            Assert.Equal("no-store, no-cache", data);
+            AssertHeaderEquals("no-store, no-cache", data);
             data = Assert.Single(response.Headers.GetValues("Pragma"));
             Assert.Equal("no-cache", data);
         }
@@ -224,7 +225,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
-            Assert.Equal("public, max-age=30", data);
+            AssertHeaderEquals("public, max-age=30", data);
             data = Assert.Single(response.Headers.GetValues("Vary"));
             Assert.Equal("Accept", data);
         }
@@ -241,7 +242,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
-            Assert.Equal("public, max-age=10", data);
+            AssertHeaderEquals("public, max-age=10", data);
         }
 
         [Fact]
@@ -275,7 +276,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var data = Assert.Single(response.Headers.GetValues("Vary"));
             Assert.Equal("Accept", data);
             data = Assert.Single(response.Headers.GetValues("Cache-control"));
-            Assert.Equal("public, max-age=30", data);
+            AssertHeaderEquals("public, max-age=30", data);
             IEnumerable<string> pragmaValues;
             response.Headers.TryGetValues("Pragma", out pragmaValues);
             Assert.Null(pragmaValues);
@@ -294,7 +295,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
-            Assert.Equal("public, max-age=15", data);
+            AssertHeaderEquals("public, max-age=15", data);
         }
 
         [Fact]
@@ -309,7 +310,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
-            Assert.Equal("max-age=30, private", data);
+            AssertHeaderEquals("max-age=30, private", data);
         }
 
         [Fact]
@@ -339,7 +340,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var cacheControl = Assert.Single(response.Headers.GetValues("Cache-control"));
-            Assert.Equal("public, max-age=30", cacheControl);
+            AssertHeaderEquals("public, max-age=30", cacheControl);
             var vary = Assert.Single(response.Headers.GetValues("Vary"));
             Assert.Equal("Test", vary);
         }
@@ -356,8 +357,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var cacheControl = Assert.Single(response.Headers.GetValues("Cache-control"));
-            Assert.Equal("public, max-age=30", cacheControl);
+            AssertHeaderEquals("public, max-age=30", cacheControl);
             Assert.Throws<InvalidOperationException>(() => response.Headers.GetValues("Vary"));
+        }
+
+        private void AssertHeaderEquals(string expected, string actual)
+        {
+            // OrderBy is used because the order of the results may very depending on the platform / client.
+            Assert.Equal(
+                expected.Split(',').Select(p => p.Trim()).OrderBy(item => item, StringComparer.Ordinal),
+                actual.Split(',').Select(p => p.Trim()).OrderBy(item => item, StringComparer.Ordinal));
         }
     }
 }

@@ -12,6 +12,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.DependencyInjection;
 using XmlFormattersWebSite;
 using Xunit;
@@ -32,7 +33,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             nameof(DataMemberAttribute.IsRequired),
             bool.TrueString);
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ThrowsOnInvalidInput_AndAddsToModelState()
         {
             // Arrange
@@ -54,7 +57,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 data);
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task RequiredDataIsProvided_AndModelIsBound_NoValidationErrors()
         {
             // Arrange
@@ -83,7 +88,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         // Verifies that the model state has errors related to body model validation.
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task DataMissingForRefereneceTypeProperties_AndModelIsBound_AndHasMixedValidationErrors()
         {
             // Arrange

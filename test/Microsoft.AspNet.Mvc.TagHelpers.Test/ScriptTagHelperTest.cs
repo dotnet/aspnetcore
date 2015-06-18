@@ -15,6 +15,7 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Caching;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Logging;
@@ -617,7 +618,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 "<script src=\"HtmlEncode[[/common.js]]\"></script>", output.Content.GetContent());
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/21
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task RenderScriptTags_WithFileVersion()
         {
             // Arrange
@@ -654,7 +657,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 "</script>", output.Content.GetContent());
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/21
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task RenderScriptTags_WithFileVersion_AndRequestPathBase()
         {
             // Arrange
@@ -691,7 +696,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 "</script>", output.Content.GetContent());
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/21
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task RenderScriptTags_FallbackSrc_WithFileVersion()
         {
             // Arrange
@@ -729,12 +736,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             Assert.Equal(
                 "<script src=\"HtmlEncode[[/js/site.js?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\">" +
-                "</script>\r\n<script>(isavailable()||document.write(\"<script src=\\\"JavaScriptStringEncode[[fallback.js" +
+                $"</script>{Environment.NewLine}" +
+                "<script>(isavailable()||document.write(\"<script src=\\\"JavaScriptStringEncode[[fallback.js" +
                 "?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\\\"><\\/script>\"));</script>",
                 output.Content.GetContent());
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/21
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task RenderScriptTags_GlobbedSrc_WithFileVersion()
         {
             // Arrange

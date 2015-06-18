@@ -62,7 +62,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var key = Assert.Single(modelState.Keys);
             Assert.Equal("CustomParameter.Address.Header", key);
             var error = Assert.Single(modelState[key].Errors);
-            Assert.Equal("The Street field is required.", error.ErrorMessage);
+            // Mono issue - https://github.com/aspnet/External/issues/19
+            Assert.Equal(PlatformNormalizer.NormalizeContent("The Street field is required."), error.ErrorMessage);
         }
 
         [Fact]

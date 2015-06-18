@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Newtonsoft.Json;
@@ -133,15 +134,22 @@ namespace Microsoft.AspNet.Mvc.Core.Test.Formatters
         {
             get
             {
-                return new TheoryData<string, string, bool>
+                var data = new TheoryData<string, string, bool>
                 {
                     { "This is a test 激光這兩個字是甚麼意思 string written using utf-8", "utf-8", true },
                     { "This is a test 激光這兩個字是甚麼意思 string written using utf-16", "utf-16", true },
                     { "This is a test 激光這兩個字是甚麼意思 string written using utf-32", "utf-32", false },
                     { "This is a test 激光這兩個字是甚麼意思 string written using shift_jis", "shift_jis", false },
                     { "This is a test æøå string written using iso-8859-1", "iso-8859-1", false },
-                    { "This is a test 레이저 단어 뜻 string written using iso-2022-kr", "iso-2022-kr", false },
                 };
+
+                if (!TestPlatformHelper.IsMono)
+                {
+                    // Mono issue - https://github.com/aspnet/External/issues/28
+                    data.Add("This is a test 레이저 단어 뜻 string written using iso-2022-kr", "iso-2022-kr", false);
+                }
+
+                return data;
             }
         }
 

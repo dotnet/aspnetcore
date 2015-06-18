@@ -82,8 +82,9 @@ namespace Microsoft.AspNet.Mvc.Xml
         public void ThrowsArugmentExceptionFor_ConcreteEnumerableOfT(Type declaredType)
         {
             // Arrange
-            var expectedMessage = "The type must be an interface and must be or derive from 'IEnumerable`1'." +
-                                  "\r\nParameter name: sourceEnumerableOfT";
+            var expectedMessage =
+                "The type must be an interface and must be or derive from 'IEnumerable`1'." +
+                $"{Environment.NewLine}Parameter name: sourceEnumerableOfT";
 
             // Act and Assert
             var ex = Assert.Throws<ArgumentException>(() => new EnumerableWrapperProvider(

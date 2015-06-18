@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using LocalizationWebSite;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -42,14 +43,17 @@ mypartial
 </fr-language-layout>";
                 yield return new[] { "fr", expected2 };
 
-                var expected3 =
+                if (!TestPlatformHelper.IsMono)
+                {
+                    // https://github.com/aspnet/Mvc/issues/2759
+                    var expected3 =
  @"<language-layout>
 index
 partial
 mypartial
 </language-layout>";
-                yield return new[] { "na", expected3 };
-
+                    yield return new[] { "!-invalid-!", expected3 };
+                }
             }
         }
 

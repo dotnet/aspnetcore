@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -62,7 +63,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
             var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains(@"Views\ErrorFromViewImports\_ViewImports.cshtml", content);
+            Assert.Contains(
+                PlatformNormalizer.NormalizePath(@"Views\ErrorFromViewImports\_ViewImports.cshtml"),
+                content);
+
             Assert.Contains(expectedMessage, content);
         }
     }

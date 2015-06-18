@@ -12,6 +12,7 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Caching;
@@ -80,7 +81,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/21
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void RendersImageTag_AddsFileVersion()
         {
             // Arrange
@@ -152,7 +155,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal("/images/test-image.png", srcAttribute.Value);
         }
 
-        [Fact]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/21
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void RendersImageTag_AddsFileVersion_WithRequestPathBase()
         {
             // Arrange

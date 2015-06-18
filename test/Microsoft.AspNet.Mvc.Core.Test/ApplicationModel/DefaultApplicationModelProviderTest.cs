@@ -726,11 +726,12 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             // Assert
             Assert.Equal(2, actions.Count());
 
+            // OrderBy is used because the order of the results may very depending on the platform / client.
             var action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "Products");
-            Assert.Equal<string>(new string[] { "GET", "POST" }, action.HttpMethods);
+            Assert.Equal(new [] { "GET", "POST" }, action.HttpMethods.OrderBy(key => key, StringComparer.Ordinal));
 
             action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "v2/Products");
-            Assert.Equal<string>(new string[] { "GET", "POST" }, action.HttpMethods);
+            Assert.Equal(new [] { "GET", "POST" }, action.HttpMethods.OrderBy(key => key, StringComparer.Ordinal));
         }
 
         [Fact]

@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
@@ -60,10 +61,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(6, json.Count);
             Assert.Equal("CompanyName cannot be null or empty.", json["CompanyName"]);
             Assert.Equal("The field Price must be between 20 and 100.", json["Price"]);
-            Assert.Equal("The Category field is required.", json["Category"]);
-            Assert.Equal("The Contact Us field is required.", json["Contact"]);
-            Assert.Equal("The Detail2 field is required.", json["ProductDetails.Detail2"]);
-            Assert.Equal("The Detail3 field is required.", json["ProductDetails.Detail3"]);
+            // Mono issue - https://github.com/aspnet/External/issues/19
+            Assert.Equal(PlatformNormalizer.NormalizeContent("The Category field is required."), json["Category"]);
+            Assert.Equal(PlatformNormalizer.NormalizeContent("The Contact Us field is required."), json["Contact"]);
+            Assert.Equal(
+                PlatformNormalizer.NormalizeContent("The Detail2 field is required."),
+                json["ProductDetails.Detail2"]);
+            Assert.Equal(
+                PlatformNormalizer.NormalizeContent("The Detail3 field is required."),
+                json["ProductDetails.Detail3"]);
         }
 
         [Fact]
@@ -85,7 +91,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await response.Content.ReadAsStringAsync();
             var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(body);
             Assert.Equal(1, json.Count);
-            Assert.Equal("The ProductDetails field is required.", json["ProductDetails"]);
+            // Mono issue - https://github.com/aspnet/External/issues/19
+            Assert.Equal(
+                PlatformNormalizer.NormalizeContent("The ProductDetails field is required."),
+                json["ProductDetails"]);
         }
 
         [Fact]

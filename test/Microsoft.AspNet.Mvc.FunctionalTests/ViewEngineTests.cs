@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using RazorWebSite;
@@ -143,9 +144,13 @@ gb-partial";
 fr-partial";
                 yield return new[] { "fr", expected2 };
 
-                var expected3 = @"expander-index
+                if (!TestPlatformHelper.IsMono)
+                {
+                    // https://github.com/aspnet/Mvc/issues/2759
+                    var expected3 = @"expander-index
 expander-partial";
-                yield return new[] { "na", expected3 };
+                    yield return new[] { "!-invalid-!", expected3 };
+                }
             }
         }
 
@@ -288,7 +293,12 @@ View With Layout
 </language-layout>";
 
                 yield return new[] { "en-GB", expected1 };
-                yield return new[] { "na", expected1 };
+
+                if (!TestPlatformHelper.IsMono)
+                {
+                    // https://github.com/aspnet/Mvc/issues/2759
+                    yield return new[] { "!-invalid-!", expected1 };
+                }
 
                 var expected2 =
  @"<fr-language-layout>
@@ -443,7 +453,10 @@ Partial that does not specify Layout
 #if GENERATE_BASELINES
             ResourceFile.UpdateFile(_assembly, outputFile, expectedContent, responseContent);
 #else
-            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
+            Assert.Equal(
+                PlatformNormalizer.NormalizePath(expectedContent),
+                responseContent,
+                ignoreLineEndingDifferences: true);
 #endif
         }
     }

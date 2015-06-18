@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
@@ -45,8 +46,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-
-            Assert.Equal(expected, response.Headers.Location.ToString());
+            // Location.ToString() in mono returns file://url. (https://github.com/aspnet/External/issues/21)
+            Assert.Equal(
+                TestPlatformHelper.IsMono ? new Uri(expected) : new Uri(expected, UriKind.Relative),
+                response.Headers.Location);
         }
 
         [Fact]

@@ -11,6 +11,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Xml;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
@@ -583,7 +584,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             response.VerifySet(resp => resp.ContentType = expectedResponseContentType);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
             "application/xml; charset=utf-8")] // Chrome & Opera
         [InlineData("text/html, application/xhtml+xml, */*",
@@ -621,7 +624,9 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             response.VerifySet(resp => resp.ContentType = expectedResponseContentType);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("application/xml;q=0.9,text/plain;q=0.5", "application/xml; charset=utf-8", false)]
         [InlineData("application/xml;q=0.9,*/*;q=0.5", "application/json; charset=utf-8", false)]
         [InlineData("application/xml;q=0.9,text/plain;q=0.5", "application/xml; charset=utf-8", true)]
