@@ -15,15 +15,7 @@ namespace IdentitySample.Models
         {
             using (var db = serviceProvider.GetRequiredService<ApplicationDbContext>())
             {
-                var sqlServerDatabase = db.Database as SqlServerDatabase;
-                if (sqlServerDatabase != null)
-                {
-                    if (await sqlServerDatabase.EnsureCreatedAsync())
-                    {
-                        await CreateAdminUser(serviceProvider);
-                    }
-                }
-                else
+                if (await db.Database.EnsureCreatedAsync())
                 {
                     await CreateAdminUser(serviceProvider);
                 }
