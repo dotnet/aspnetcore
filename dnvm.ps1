@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta6-10390"
+$BuildVersion="beta6-10392"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -1455,11 +1455,7 @@ if(!$cmd) {
 try {
     if(Get-Command -Name "$CommandPrefix$cmd" -ErrorAction SilentlyContinue) {
         _WriteDebug "& dnvm-$cmd $cmdargs"
-        if($host.Version.Major -lt 3) {
-            Invoke-Command ([ScriptBlock]::Create("dnvm-$cmd $cmdargs"))
-        } else {
-            & "dnvm-$cmd" @cmdargs
-        }
+        Invoke-Command ([ScriptBlock]::Create("dnvm-$cmd $cmdargs"))
     }
     else {
         _WriteOut "Unknown command: '$cmd'"
