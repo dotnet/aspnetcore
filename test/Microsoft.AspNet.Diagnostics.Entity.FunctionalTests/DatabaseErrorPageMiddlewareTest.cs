@@ -15,6 +15,7 @@ using Microsoft.AspNet.TestHost;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
 using Microsoft.Data.Entity.Internal;
+using Microsoft.Data.Entity.Relational;
 using Microsoft.Data.Entity.Relational.Migrations;
 using Microsoft.Data.Entity.Relational.Migrations.Infrastructure;
 using Microsoft.Data.Entity.Utilities;
@@ -161,8 +162,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             {
                 using (var db = context.ApplicationServices.GetService<BloggingContextWithPendingModelChanges>())
                 {
-                    var migrator = ((IAccessor<IMigrator>)db.Database).Service;
-                    migrator.ApplyMigrations();
+                    db.Database.ApplyMigrations();
 
                     db.Blogs.Add(new Blog());
                     db.SaveChanges();
