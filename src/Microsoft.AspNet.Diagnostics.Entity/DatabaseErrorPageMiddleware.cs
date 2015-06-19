@@ -13,6 +13,7 @@ using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
 using Microsoft.Data.Entity.Relational;
 using Microsoft.Data.Entity.Relational.Migrations;
+using Microsoft.Data.Entity.Storage;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Diagnostics.Entity
