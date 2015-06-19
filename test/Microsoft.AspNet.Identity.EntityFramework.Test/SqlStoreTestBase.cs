@@ -115,10 +115,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
 
         internal static void VerifyDefaultSchema(TestDbContext dbContext)
         {
-            var sqlDb = dbContext.Database as RelationalDatabase;
-            var sqlConn = sqlDb?.Connection;
+            var sqlConn = dbContext.Database.GetDbConnection();
 
-            Assert.NotNull(sqlConn);
             using (var db = new SqlConnection(sqlConn.ConnectionString))
             {
                 db.Open();
