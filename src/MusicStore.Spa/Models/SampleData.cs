@@ -21,16 +21,7 @@ namespace MusicStore.Models
         {
             using (var db = serviceProvider.GetService<MusicStoreContext>())
             {
-                var sqlServerDatabase = db.Database as RelationalDatabase;
-                if (sqlServerDatabase != null)
-                {
-                    if (await sqlServerDatabase.EnsureCreatedAsync())
-                    {
-                        await InsertTestData(serviceProvider);
-                        await CreateAdminUser(serviceProvider);
-                    }
-                }
-                else
+                if (await db.Database.EnsureCreatedAsync())
                 {
                     await InsertTestData(serviceProvider);
                     await CreateAdminUser(serviceProvider);
