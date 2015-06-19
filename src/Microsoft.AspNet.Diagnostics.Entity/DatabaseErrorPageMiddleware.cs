@@ -71,13 +71,14 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                         }
                         else
                         {
-                            if (!(dbContext.Database is RelationalDatabase))
+                            var creator = dbContext.GetService<IDataStoreCreator>() as IRelationalDataStoreCreator;
+                            if (creator == null)
                             {
                                 _logger.LogVerbose(Strings.DatabaseErrorPage_NotRelationalDatabase);
                             }
                             else
                             {
-                                var databaseExists = dbContext.GetService<IRelationalDataStoreCreator>().Exists();
+                                var databaseExists = creator.Exists();
 
                                 var migrator = ((IAccessor<IMigrator>)dbContext.Database).Service;
 
