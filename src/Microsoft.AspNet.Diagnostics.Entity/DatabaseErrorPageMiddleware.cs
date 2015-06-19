@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                             }
                             else
                             {
-                                var databaseExists = dbContext.Database.AsRelational().Exists();
+                                var databaseExists = dbContext.GetService<IRelationalDataStoreCreator>().Exists();
 
                                 var migrator = ((IAccessor<IMigrator>)dbContext.Database).Service;
 
