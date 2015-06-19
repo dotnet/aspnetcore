@@ -37,7 +37,7 @@ namespace MvcMusicStore.Infrastructure
 
             if (source == null)
             {
-                throw new ArgumentNullException("source");
+                throw new ArgumentNullException(nameof(source));
             }
 
             if (String.IsNullOrWhiteSpace(sortExpression))

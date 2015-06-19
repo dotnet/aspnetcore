@@ -44,7 +44,7 @@ namespace MvcMusicStore.Infrastructure
         {
             if (query == null)
             {
-                throw new ArgumentNullException("query");
+                throw new ArgumentNullException(nameof(query));
             }
 
             var pagingConfig = new PagingConfig(page, pageSize);
@@ -69,7 +69,7 @@ namespace MvcMusicStore.Infrastructure
         {
             if (query == null)
             {
-                throw new ArgumentNullException("query");
+                throw new ArgumentNullException(nameof(query));
             }
 
             var pagingConfig = new PagingConfig(page, pageSize);
