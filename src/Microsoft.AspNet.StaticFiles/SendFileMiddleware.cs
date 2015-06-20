@@ -74,13 +74,13 @@ namespace Microsoft.AspNet.StaticFiles
                 var fileInfo = new FileInfo(fileName);
                 if (offset < 0 || offset > fileInfo.Length)
                 {
-                    throw new ArgumentOutOfRangeException("offset", offset, string.Empty);
+                    throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
                 }
 
                 if (length.HasValue &&
                     (length.Value < 0 || length.Value > fileInfo.Length - offset))
                 {
-                    throw new ArgumentOutOfRangeException("length", length, string.Empty);
+                    throw new ArgumentOutOfRangeException(nameof(length), length, string.Empty);
                 }
 
 #if DNX451
