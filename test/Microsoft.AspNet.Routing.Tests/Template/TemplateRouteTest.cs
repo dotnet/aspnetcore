@@ -101,26 +101,6 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         [Fact]
-        public async Task RouteAsync_MatchFailOnValues_LogsCorrectValues()
-        {
-            // Arrange & Act
-            var routeName = "Default";
-            var template = "{controller}/{action}";
-            var result = await SetUp(
-                routeName: routeName,
-                template: template,
-                requestPath: "/Home/Index/Failure",
-                loggerEnabled: true);
-            var sink = result.Item1;
-            var expected = $"Request did not match the route with name '{routeName}' and template '{template}'.";
-
-            // Assert
-            Assert.Empty(sink.Scopes);
-            Assert.Single(sink.Writes);
-            Assert.Equal(expected, sink.Writes[0].State?.ToString());
-        }
-
-        [Fact]
         public async Task RouteAsync_MatchFailOnConstraints_LogsCorrectValues()
         {
             // Arrange & Act

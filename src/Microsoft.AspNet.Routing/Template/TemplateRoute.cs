@@ -110,12 +110,6 @@ namespace Microsoft.AspNet.Routing.Template
             if (values == null)
             {
                 // If we got back a null value set, that means the URI did not match
-
-                _logger.LogVerbose(
-                    "Request did not match the route with name '{RouteName}' and template '{RouteTemplate}'.",
-                    Name,
-                    RouteTemplate);
-
                 return;
             }
 
