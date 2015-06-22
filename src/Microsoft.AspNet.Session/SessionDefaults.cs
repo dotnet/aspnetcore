@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Session
 {
     public static class SessionDefaults
     {
-        public static string CookieName = ".AspNet.Session";
-        public static string CookiePath = "/";
+        public static readonly string CookieName = ".AspNet.Session";
+        public static readonly string CookiePath = "/";
     }
 }
