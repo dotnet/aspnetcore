@@ -32,14 +32,14 @@ namespace Microsoft.AspNet.Antiforgery
             var contextAccessor = new AntiforgeryContextAccessor();
             mockHttpContext.SetupGet(o => o.RequestServices)
                            .Returns(GetServiceProvider(contextAccessor));
-            var config = new AntiforgeryOptions()
+            var options = new AntiforgeryOptions()
             {
                 CookieName = _cookieName
             };
 
             var tokenStore = new AntiforgeryTokenStore(
-                config: config,
-                serializer: null);
+                optionsAccessor: new TestOptionsManager(options),
+                tokenSerializer: null);
 
             // Act
             var token = tokenStore.GetCookieToken(mockHttpContext.Object);
@@ -67,14 +67,14 @@ namespace Microsoft.AspNet.Antiforgery
             // add a cookie explicitly.
             var cookie = new AntiforgeryToken();
             contextAccessor.Value = new AntiforgeryContext() { CookieToken = cookie };
-            var config = new AntiforgeryOptions()
+            var options = new AntiforgeryOptions()
             {
                 CookieName = _cookieName
             };
 
             var tokenStore = new AntiforgeryTokenStore(
-                config: config,
-                serializer: null);
+                optionsAccessor: new TestOptionsManager(options),
+                tokenSerializer: null);
 
             // Act
             var token = tokenStore.GetCookieToken(mockHttpContext.Object);
@@ -89,14 +89,14 @@ namespace Microsoft.AspNet.Antiforgery
             // Arrange
             var mockHttpContext = GetMockHttpContext(_cookieName, string.Empty);
 
-            var config = new AntiforgeryOptions()
+            var options = new AntiforgeryOptions()
             {
                 CookieName = _cookieName
             };
 
             var tokenStore = new AntiforgeryTokenStore(
-                config: config,
-                serializer: null);
+                optionsAccessor: new TestOptionsManager(options),
+                tokenSerializer: null);
 
             // Act
             var token = tokenStore.GetCookieToken(mockHttpContext);
@@ -110,10 +110,6 @@ namespace Microsoft.AspNet.Antiforgery
         {
             // Arrange
             var mockHttpContext = GetMockHttpContext(_cookieName, "invalid-value");
-            var config = new AntiforgeryOptions()
-            {
-                CookieName = _cookieName
-            };
 
             var expectedException = new InvalidOperationException("some exception");
             var mockSerializer = new Mock<IAntiforgeryTokenSerializer>();
@@ -121,9 +117,14 @@ namespace Microsoft.AspNet.Antiforgery
                 .Setup(o => o.Deserialize("invalid-value"))
                 .Throws(expectedException);
 
+            var options = new AntiforgeryOptions()
+            {
+                CookieName = _cookieName
+            };
+
             var tokenStore = new AntiforgeryTokenStore(
-                config: config,
-                serializer: mockSerializer.Object);
+                optionsAccessor: new TestOptionsManager(options),
+                tokenSerializer: mockSerializer.Object);
 
             // Act & assert
             var ex = Assert.Throws<InvalidOperationException>(() => tokenStore.GetCookieToken(mockHttpContext));
@@ -137,19 +138,19 @@ namespace Microsoft.AspNet.Antiforgery
             var expectedToken = new AntiforgeryToken();
             var mockHttpContext = GetMockHttpContext(_cookieName, "valid-value");
 
-            var config = new AntiforgeryOptions()
-            {
-                CookieName = _cookieName
-            };
-
             var mockSerializer = new Mock<IAntiforgeryTokenSerializer>();
             mockSerializer
                 .Setup(o => o.Deserialize("valid-value"))
                 .Returns(expectedToken);
 
+            var options = new AntiforgeryOptions()
+            {
+                CookieName = _cookieName
+            };
+
             var tokenStore = new AntiforgeryTokenStore(
-                config: config,
-                serializer: mockSerializer.Object);
+                optionsAccessor: new TestOptionsManager(options),
+                tokenSerializer: mockSerializer.Object);
 
             // Act
             AntiforgeryToken retVal = tokenStore.GetCookieToken(mockHttpContext);
@@ -170,14 +171,15 @@ namespace Microsoft.AspNet.Antiforgery
                           .Returns(Task.FromResult(formCollection.Object));
             mockHttpContext.Setup(o => o.Request)
                            .Returns(requestContext.Object);
-            var config = new AntiforgeryOptions()
+
+            var options = new AntiforgeryOptions()
             {
-                FormFieldName = "form-field-name"
+                FormFieldName = "form-field-name",
             };
 
             var tokenStore = new AntiforgeryTokenStore(
-                config: config,
-                serializer: null);
+                optionsAccessor: new TestOptionsManager(options),
+                tokenSerializer: null);
 
             // Act
             var token = await tokenStore.GetFormTokenAsync(mockHttpContext.Object);
@@ -201,26 +203,24 @@ namespace Microsoft.AspNet.Antiforgery
             mockHttpContext.Setup(o => o.Request)
                            .Returns(requestContext.Object);
 
-            var config = new AntiforgeryOptions()
-            {
-                FormFieldName = "form-field-name"
-            };
-
             var expectedException = new InvalidOperationException("some exception");
             var mockSerializer = new Mock<IAntiforgeryTokenSerializer>();
             mockSerializer.Setup(o => o.Deserialize("invalid-value"))
                           .Throws(expectedException);
 
+            var options = new AntiforgeryOptions()
+            {
+                FormFieldName = "form-field-name",
+            };
+
             var tokenStore = new AntiforgeryTokenStore(
-                config: config,
-                serializer: mockSerializer.Object);
+                optionsAccessor: new TestOptionsManager(options),
+                tokenSerializer: mockSerializer.Object);
 
             // Act & assert
-            var ex =
-                await
-                    Assert.ThrowsAsync<InvalidOperationException>(
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
                         async () => await tokenStore.GetFormTokenAsync(mockHttpContext.Object));
-            Assert.Same(expectedException, ex);
+            Assert.Same(expectedException, exception);
         }
 
         [Fact]
@@ -239,18 +239,18 @@ namespace Microsoft.AspNet.Antiforgery
             mockHttpContext.Setup(o => o.Request)
                            .Returns(requestContext.Object);
 
-            var config = new AntiforgeryOptions()
-            {
-                FormFieldName = "form-field-name"
-            };
-
             var mockSerializer = new Mock<IAntiforgeryTokenSerializer>();
             mockSerializer.Setup(o => o.Deserialize("valid-value"))
                           .Returns(expectedToken);
 
+            var options = new AntiforgeryOptions()
+            {
+                FormFieldName = "form-field-name",
+            };
+
             var tokenStore = new AntiforgeryTokenStore(
-                config: config,
-                serializer: mockSerializer.Object);
+                optionsAccessor: new TestOptionsManager(options),
+                tokenSerializer: mockSerializer.Object);
 
             // Act
             var retVal = await tokenStore.GetFormTokenAsync(mockHttpContext.Object);
@@ -283,15 +283,15 @@ namespace Microsoft.AspNet.Antiforgery
             mockSerializer.Setup(o => o.Serialize(token))
                           .Returns("serialized-value");
 
-            var config = new AntiforgeryOptions()
+            var options = new AntiforgeryOptions()
             {
                 CookieName = _cookieName,
                 RequireSSL = requireSsl
             };
 
             var tokenStore = new AntiforgeryTokenStore(
-                config: config,
-                serializer: mockSerializer.Object);
+                optionsAccessor: new TestOptionsManager(options),
+                tokenSerializer: mockSerializer.Object);
 
             // Act
             tokenStore.SaveCookieToken(mockHttpContext.Object, token);

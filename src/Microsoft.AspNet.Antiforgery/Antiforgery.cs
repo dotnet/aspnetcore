@@ -2,14 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
+using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Antiforgery.Internal;
-using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.WebEncoders;
@@ -20,27 +15,26 @@ namespace Microsoft.AspNet.Antiforgery
     /// Provides access to the anti-forgery system, which provides protection against
     /// Cross-site Request Forgery (XSRF, also called CSRF) attacks.
     /// </summary>
-    public sealed class Antiforgery
+    public class Antiforgery
     {
-        private static readonly string _purpose = "Microsoft.AspNet.Antiforgery.AntiforgeryToken.v1";
-        private readonly AntiforgeryWorker _worker;
+        private readonly IHtmlEncoder _htmlEncoder;
+        private readonly AntiforgeryOptions _options;
+        private readonly IAntiforgeryTokenGenerator _tokenGenerator;
+        private readonly IAntiforgeryTokenSerializer _tokenSerializer;
+        private readonly IAntiforgeryTokenStore _tokenStore;
 
         public Antiforgery(
-            [NotNull] IClaimUidExtractor claimUidExtractor,
-            [NotNull] IDataProtectionProvider dataProtectionProvider,
-            [NotNull] IAntiforgeryAdditionalDataProvider additionalDataProvider,
-            [NotNull] IOptions<AntiforgeryOptions> AntiforgeryOptionsAccessor,
-            [NotNull] IHtmlEncoder htmlEncoder,
-            [NotNull] IOptions<DataProtectionOptions> dataProtectionOptions)
+            IOptions<AntiforgeryOptions> antiforgeryOptionsAccessor,
+            IAntiforgeryTokenGenerator tokenGenerator,
+            IAntiforgeryTokenSerializer tokenSerializer,
+            IAntiforgeryTokenStore tokenStore,
+            IHtmlEncoder htmlEncoder)
         {
-            var AntiforgeryOptions = AntiforgeryOptionsAccessor.Options;
-            var applicationId = dataProtectionOptions.Options.ApplicationDiscriminator ?? string.Empty;
-            AntiforgeryOptions.CookieName = AntiforgeryOptions.CookieName ?? ComputeCookieName(applicationId);
-
-            var serializer = new AntiforgeryTokenSerializer(dataProtectionProvider.CreateProtector(_purpose));
-            var tokenStore = new AntiforgeryTokenStore(AntiforgeryOptions, serializer);
-            var tokenProvider = new AntiforgeryTokenProvider(AntiforgeryOptions, claimUidExtractor, additionalDataProvider);
-            _worker = new AntiforgeryWorker(serializer, AntiforgeryOptions, tokenStore, tokenProvider, tokenProvider, htmlEncoder);
+            _options = antiforgeryOptionsAccessor.Options;
+            _tokenGenerator = tokenGenerator;
+            _tokenSerializer = tokenSerializer;
+            _tokenStore = tokenStore;
+            _htmlEncoder = htmlEncoder;
         }
 
         /// <summary>
@@ -56,8 +50,21 @@ namespace Microsoft.AspNet.Antiforgery
         /// </remarks>
         public string GetHtml([NotNull] HttpContext context)
         {
-            var html = _worker.GetFormInputElement(context);
-            return html;
+            CheckSSLConfig(context);
+
+            var cookieToken = GetCookieTokenDoesNotThrow(context);
+            var tokenSet = GetTokens(context, cookieToken);
+            cookieToken = tokenSet.CookieToken;
+            var formToken = tokenSet.FormToken;
+
+            SaveCookieTokenAndHeader(context, cookieToken);
+
+            var inputTag = string.Format(
+                "<input name=\"{0}\" type=\"{1}\" value=\"{2}\" />",
+                _htmlEncoder.HtmlEncode(_options.FormFieldName),
+                _htmlEncoder.HtmlEncode("hidden"),
+                _htmlEncoder.HtmlEncode(_tokenSerializer.Serialize(formToken)));
+            return inputTag;
         }
 
         /// <summary>
@@ -82,7 +89,14 @@ namespace Microsoft.AspNet.Antiforgery
             // must persist this value in the form of a response cookie, and the existing cookie value
             // should be discarded. If this value is null when the method completes, the existing
             // cookie value was valid and needn't be modified.
-            return _worker.GetTokens(context, oldCookieToken);
+            CheckSSLConfig(context);
+
+            var deserializedcookieToken = DeserializeTokenDoesNotThrow(oldCookieToken);
+            var tokenSet = GetTokens(context, deserializedcookieToken);
+
+            var serializedCookieToken = Serialize(tokenSet.CookieToken);
+            var serializedFormToken = Serialize(tokenSet.FormToken);
+            return new AntiforgeryTokenSet(serializedFormToken, serializedCookieToken);
         }
 
         /// <summary>
@@ -92,7 +106,14 @@ namespace Microsoft.AspNet.Antiforgery
         /// <param name="context">The HTTP context associated with the current call.</param>
         public async Task ValidateAsync([NotNull] HttpContext context)
         {
-            await _worker.ValidateAsync(context);
+            CheckSSLConfig(context);
+
+            // Extract cookie & form tokens
+            var cookieToken = _tokenStore.GetCookieToken(context);
+            var formToken = await _tokenStore.GetFormTokenAsync(context);
+
+            // Validate
+            _tokenGenerator.ValidateTokens(context, cookieToken, formToken);
         }
 
         /// <summary>
@@ -103,7 +124,17 @@ namespace Microsoft.AspNet.Antiforgery
         /// <param name="formToken">The token that was supplied in the request form body.</param>
         public void Validate([NotNull] HttpContext context, string cookieToken, string formToken)
         {
-            _worker.Validate(context, cookieToken, formToken);
+            CheckSSLConfig(context);
+
+            // Extract cookie & form tokens
+            var deserializedCookieToken = DeserializeToken(cookieToken);
+            var deserializedFormToken = DeserializeToken(formToken);
+
+            // Validate
+            _tokenGenerator.ValidateTokens(
+                context,
+                deserializedCookieToken,
+                deserializedFormToken);
         }
 
         /// <summary>
@@ -123,17 +154,117 @@ namespace Microsoft.AspNet.Antiforgery
         /// <param name="context">The HTTP context associated with the current call.</param>
         public void SetCookieTokenAndHeader([NotNull] HttpContext context)
         {
-            _worker.SetCookieTokenAndHeader(context);
+            CheckSSLConfig(context);
+
+            var cookieToken = GetCookieTokenDoesNotThrow(context);
+            cookieToken = ValidateAndGenerateNewCookieToken(cookieToken);
+
+            SaveCookieTokenAndHeader(context, cookieToken);
         }
 
-        private string ComputeCookieName(string applicationId)
+        // This method returns null if oldCookieToken is valid.
+        private AntiforgeryToken ValidateAndGenerateNewCookieToken(AntiforgeryToken cookieToken)
         {
-            using (var sha256 = SHA256.Create())
+            if (!_tokenGenerator.IsCookieTokenValid(cookieToken))
             {
-                var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(applicationId));
-                var subHash = hash.Take(8).ToArray();
-                return WebEncoders.Base64UrlEncode(subHash);
+                // Need to make sure we're always operating with a good cookie token.
+                var newCookieToken = _tokenGenerator.GenerateCookieToken();
+                Debug.Assert(_tokenGenerator.IsCookieTokenValid(newCookieToken));
+                return newCookieToken;
             }
+
+            return null;
+        }
+
+        private void SaveCookieTokenAndHeader(
+            [NotNull] HttpContext httpContext,
+            AntiforgeryToken cookieToken)
+        {
+            if (cookieToken != null)
+            {
+                // Persist the new cookie if it is not null.
+                _tokenStore.SaveCookieToken(httpContext, cookieToken);
+            }
+
+            if (!_options.SuppressXFrameOptionsHeader)
+            {
+                // Adding X-Frame-Options header to prevent ClickJacking. See
+                // http://tools.ietf.org/html/draft-ietf-websec-x-frame-options-10
+                // for more information.
+                httpContext.Response.Headers.Set("X-Frame-Options", "SAMEORIGIN");
+            }
+        }
+
+        private void CheckSSLConfig(HttpContext httpContext)
+        {
+            if (_options.RequireSSL && !httpContext.Request.IsHttps)
+            {
+                throw new InvalidOperationException(Resources.AntiforgeryWorker_RequireSSL);
+            }
+        }
+
+        private AntiforgeryToken DeserializeToken(string serializedToken)
+        {
+            return (!string.IsNullOrEmpty(serializedToken))
+                ? _tokenSerializer.Deserialize(serializedToken)
+                : null;
+        }
+
+        private AntiforgeryToken DeserializeTokenDoesNotThrow(string serializedToken)
+        {
+            try
+            {
+                return DeserializeToken(serializedToken);
+            }
+            catch
+            {
+                // ignore failures since we'll just generate a new token
+                return null;
+            }
+        }
+
+        private AntiforgeryToken GetCookieTokenDoesNotThrow(HttpContext httpContext)
+        {
+            try
+            {
+                return _tokenStore.GetCookieToken(httpContext);
+            }
+            catch
+            {
+                // ignore failures since we'll just generate a new token
+                return null;
+            }
+        }
+
+        private AntiforgeryTokenSetInternal GetTokens(HttpContext httpContext, AntiforgeryToken cookieToken)
+        {
+            var newCookieToken = ValidateAndGenerateNewCookieToken(cookieToken);
+            if (newCookieToken != null)
+            {
+                cookieToken = newCookieToken;
+            }
+            var formToken = _tokenGenerator.GenerateFormToken(
+                httpContext,
+                cookieToken);
+
+            return new AntiforgeryTokenSetInternal()
+            {
+                // Note : The new cookie would be null if the old cookie is valid.
+                CookieToken = newCookieToken,
+                FormToken = formToken
+            };
+        }
+
+        private string Serialize(AntiforgeryToken token)
+        {
+            return (token != null) ? _tokenSerializer.Serialize(token) : null;
+        }
+
+        private class AntiforgeryTokenSetInternal
+        {
+            public AntiforgeryToken FormToken { get; set; }
+
+            public AntiforgeryToken CookieToken { get; set; }
         }
     }
 }

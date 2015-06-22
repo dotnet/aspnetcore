@@ -9,14 +9,16 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Antiforgery
 {
-    public sealed class AntiforgeryTokenSerializer : IAntiforgeryTokenSerializer
+    public class AntiforgeryTokenSerializer : IAntiforgeryTokenSerializer
     {
+        private static readonly string Purpose = "Microsoft.AspNet.Antiforgery.AntiforgeryToken.v1";
+
         private readonly IDataProtector _cryptoSystem;
         private const byte TokenVersion = 0x01;
 
-        public AntiforgeryTokenSerializer([NotNull] IDataProtector cryptoSystem)
+        public AntiforgeryTokenSerializer([NotNull] IDataProtectionProvider provider)
         {
-            _cryptoSystem = cryptoSystem;
+            _cryptoSystem = provider.CreateProtector(Purpose);
         }
 
         public AntiforgeryToken Deserialize(string serializedToken)

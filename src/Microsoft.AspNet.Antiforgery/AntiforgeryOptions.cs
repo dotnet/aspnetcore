@@ -12,9 +12,6 @@ namespace Microsoft.AspNet.Antiforgery
     {
         private const string AntiforgeryTokenFieldName = "__RequestVerificationToken";
 
-        private string _cookieName;
-        private string _formFieldName = AntiforgeryTokenFieldName;
-
         /// <summary>
         /// Specifies the name of the cookie that is used by the anti-forgery
         /// system.
@@ -23,47 +20,19 @@ namespace Microsoft.AspNet.Antiforgery
         /// If an explicit name is not provided, the system will automatically
         /// generate a name.
         /// </remarks>
-        public string CookieName
-        {
-            get
-            {
-                return _cookieName;
-            }
-
-            [param: NotNull]
-            set
-            {
-                _cookieName = value;
-            }
-        }
+        public string CookieName { get; [param: NotNull] set; }
 
         /// <summary>
         /// Specifies the name of the anti-forgery token field that is used by the anti-forgery system.
         /// </summary>
-        public string FormFieldName
-        {
-            get
-            {
-                return _formFieldName;
-            }
-
-            [param: NotNull]
-            set
-            {
-                _formFieldName = value;
-            }
-        }
+        public string FormFieldName { get; [param: NotNull] set; } = AntiforgeryTokenFieldName;
 
         /// <summary>
         /// Specifies whether SSL is required for the anti-forgery system
         /// to operate. If this setting is 'true' and a non-SSL request
         /// comes into the system, all anti-forgery APIs will fail.
         /// </summary>
-        public bool RequireSSL
-        {
-            get;
-            set;
-        }
+        public bool RequireSSL { get; set; }
 
         /// <summary>
         /// Specifies whether to suppress the generation of X-Frame-Options header
@@ -71,10 +40,6 @@ namespace Microsoft.AspNet.Antiforgery
         /// header is generated with the value SAMEORIGIN. If this setting is 'true',
         /// the X-Frame-Options header will not be generated for the response.
         /// </summary>
-        public bool SuppressXFrameOptionsHeader
-        {
-            get;
-            set;
-        }
+        public bool SuppressXFrameOptionsHeader { get; set; }
     }
 }

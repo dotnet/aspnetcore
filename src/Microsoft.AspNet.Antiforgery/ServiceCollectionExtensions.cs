@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Antiforgery;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -14,11 +15,17 @@ namespace Microsoft.Framework.DependencyInjection
             services.AddDataProtection();
             services.AddWebEncoders();
 
-            services.TryAdd(ServiceDescriptor.Singleton<IClaimUidExtractor, DefaultClaimUidExtractor>());
-            services.TryAdd(ServiceDescriptor.Singleton<Antiforgery, Antiforgery>());
-            services.TryAdd(ServiceDescriptor.Scoped<IAntiforgeryContextAccessor, AntiforgeryContextAccessor>());
-            services.TryAdd(
-                ServiceDescriptor.Singleton<IAntiforgeryAdditionalDataProvider, DefaultAntiforgeryAdditionalDataProvider>());
+            // Don't overwrite any options setups that a user may have added.
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IConfigureOptions<AntiforgeryOptions>, AntiforgeryOptionsSetup>());
+
+            services.TryAddSingleton<IAntiforgeryTokenGenerator, AntiforgeryTokenGenerator>();
+            services.TryAddSingleton<IAntiforgeryTokenSerializer, AntiforgeryTokenSerializer>();
+            services.TryAddSingleton<IAntiforgeryTokenStore, AntiforgeryTokenStore>();
+            services.TryAddSingleton<IClaimUidExtractor, DefaultClaimUidExtractor>();
+            services.TryAddSingleton<Antiforgery, Antiforgery>();
+            services.TryAddScoped<IAntiforgeryContextAccessor, AntiforgeryContextAccessor>();
+            services.TryAddSingleton<IAntiforgeryAdditionalDataProvider, DefaultAntiforgeryAdditionalDataProvider>();
             return services;
         }
 

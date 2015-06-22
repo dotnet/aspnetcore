@@ -5,21 +5,22 @@ using System;
 using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Antiforgery
 {
-    public sealed class AntiforgeryTokenProvider : IAntiforgeryTokenValidator, IAntiforgeryTokenGenerator
+    public class AntiforgeryTokenGenerator : IAntiforgeryTokenGenerator
     {
         private readonly IClaimUidExtractor _claimUidExtractor;
-        private readonly AntiforgeryOptions _config;
+        private readonly AntiforgeryOptions _options;
         private readonly IAntiforgeryAdditionalDataProvider _additionalDataProvider;
 
-        internal AntiforgeryTokenProvider(
-            AntiforgeryOptions config,
+        public AntiforgeryTokenGenerator(
+            IOptions<AntiforgeryOptions> optionsAccessor,
             IClaimUidExtractor claimUidExtractor,
             IAntiforgeryAdditionalDataProvider additionalDataProvider)
         {
-            _config = config;
+            _options = optionsAccessor.Options;
             _claimUidExtractor = claimUidExtractor;
             _additionalDataProvider = additionalDataProvider;
         }
@@ -33,9 +34,9 @@ namespace Microsoft.AspNet.Antiforgery
             };
         }
 
-        public AntiforgeryToken GenerateFormToken(HttpContext httpContext,
-                                                  ClaimsIdentity identity,
-                                                  AntiforgeryToken cookieToken)
+        public AntiforgeryToken GenerateFormToken(
+            HttpContext httpContext,
+            AntiforgeryToken cookieToken)
         {
             Debug.Assert(IsCookieTokenValid(cookieToken));
 
@@ -46,6 +47,7 @@ namespace Microsoft.AspNet.Antiforgery
             };
 
             var isIdentityAuthenticated = false;
+            var identity = httpContext.User?.Identity as ClaimsIdentity;
 
             // populate Username and ClaimUid
             if (identity != null && identity.IsAuthenticated)
@@ -84,7 +86,6 @@ namespace Microsoft.AspNet.Antiforgery
 
         public void ValidateTokens(
             HttpContext httpContext,
-            ClaimsIdentity identity,
             AntiforgeryToken sessionToken,
             AntiforgeryToken fieldToken)
         {
@@ -92,19 +93,19 @@ namespace Microsoft.AspNet.Antiforgery
             if (sessionToken == null)
             {
                 throw new InvalidOperationException(
-                    Resources.FormatAntiforgeryToken_CookieMissing(_config.CookieName));
+                    Resources.FormatAntiforgeryToken_CookieMissing(_options.CookieName));
             }
             if (fieldToken == null)
             {
                 throw new InvalidOperationException(
-                    Resources.FormatAntiforgeryToken_FormFieldMissing(_config.FormFieldName));
+                    Resources.FormatAntiforgeryToken_FormFieldMissing(_options.FormFieldName));
             }
 
             // Do the tokens have the correct format?
             if (!sessionToken.IsSessionToken || fieldToken.IsSessionToken)
             {
                 throw new InvalidOperationException(
-                    Resources.FormatAntiforgeryToken_TokensSwapped(_config.CookieName, _config.FormFieldName));
+                    Resources.FormatAntiforgeryToken_TokensSwapped(_options.CookieName, _options.FormFieldName));
             }
 
             // Are the security tokens embedded in each incoming token identical?
@@ -117,6 +118,7 @@ namespace Microsoft.AspNet.Antiforgery
             var currentUsername = string.Empty;
             BinaryBlob currentClaimUid = null;
 
+            var identity = httpContext.User?.Identity as ClaimsIdentity;
             if (identity != null && identity.IsAuthenticated)
             {
                 currentClaimUid = GetClaimUidBlob(_claimUidExtractor.ExtractClaimUid(identity));

@@ -6,7 +6,9 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Antiforgery
 {
-    // Provides configuration information about the anti-forgery system.
+    /// <summary>
+    /// Generates and validates antiforgery tokens.
+    /// </summary>
     public interface IAntiforgeryTokenGenerator
     {
         // Generates a new random cookie token.
@@ -16,7 +18,16 @@ namespace Microsoft.AspNet.Antiforgery
         // The incoming cookie token must be valid.
         AntiforgeryToken GenerateFormToken(
             HttpContext httpContext,
-            ClaimsIdentity identity,
             AntiforgeryToken cookieToken);
+
+        // Determines whether an existing cookie token is valid (well-formed).
+        // If it is not, the caller must call GenerateCookieToken() before calling GenerateFormToken().
+        bool IsCookieTokenValid(AntiforgeryToken cookieToken);
+
+        // Validates a (cookie, form) token pair.
+        void ValidateTokens(
+            HttpContext httpContext,
+            AntiforgeryToken cookieToken,
+            AntiforgeryToken formToken);
     }
 }
