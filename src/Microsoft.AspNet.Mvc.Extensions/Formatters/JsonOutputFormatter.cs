@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Internal;
@@ -14,14 +13,6 @@ namespace Microsoft.AspNet.Mvc
     /// <summary>
     /// An output formatter that specializes in writing JSON content.
     /// </summary>
-    /// <remarks>
-    /// The <see cref="JsonResult"/> class filter the collection of
-    /// <see cref="MvcOptions.OutputFormatters"/> and use only those of type
-    /// <see cref="JsonOutputFormatter"/>.
-    ///
-    /// To create a custom formatter that can be used by <see cref="JsonResult"/>, derive from
-    /// <see cref="JsonOutputFormatter"/>.
-    /// </remarks>
     public class JsonOutputFormatter : OutputFormatter
     {
         private JsonSerializerSettings _serializerSettings;
@@ -66,7 +57,12 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private JsonWriter CreateJsonWriter(TextWriter writer)
+        /// <summary>
+        /// Called during serialization to create the <see cref="JsonWriter"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="TextWriter"/> used to write.</param>
+        /// <returns>The <see cref="JsonWriter"/> used during serialization.</returns>
+        protected virtual JsonWriter CreateJsonWriter([NotNull] TextWriter writer)
         {
             var jsonWriter = new JsonTextWriter(writer);
             jsonWriter.CloseOutput = false;
@@ -74,10 +70,13 @@ namespace Microsoft.AspNet.Mvc
             return jsonWriter;
         }
 
-        private JsonSerializer CreateJsonSerializer()
+        /// <summary>
+        /// Called during serialization to create the <see cref="JsonSerializer"/>.
+        /// </summary>
+        /// <returns>The <see cref="JsonSerializer"/> used during serialization and deserialization.</returns>
+        protected virtual JsonSerializer CreateJsonSerializer()
         {
-            var jsonSerializer = JsonSerializer.Create(_serializerSettings);
-            return jsonSerializer;
+            return JsonSerializer.Create(SerializerSettings);
         }
 
         public override Task WriteResponseBodyAsync(OutputFormatterContext context)

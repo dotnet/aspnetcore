@@ -101,9 +101,10 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="readStream">The <see cref="Stream"/> from which to read.</param>
         /// <param name="effectiveEncoding">The <see cref="Encoding"/> to use when reading.</param>
         /// <returns>The <see cref="JsonReader"/> used during deserialization.</returns>
-        public virtual JsonReader CreateJsonReader([NotNull] InputFormatterContext context,
-                                                   [NotNull] Stream readStream,
-                                                   [NotNull] Encoding effectiveEncoding)
+        protected virtual JsonReader CreateJsonReader(
+            [NotNull] InputFormatterContext context,
+            [NotNull] Stream readStream,
+            [NotNull] Encoding effectiveEncoding)
         {
             return new JsonTextReader(new StreamReader(readStream, effectiveEncoding));
         }
@@ -112,7 +113,7 @@ namespace Microsoft.AspNet.Mvc
         /// Called during deserialization to get the <see cref="JsonSerializer"/>.
         /// </summary>
         /// <returns>The <see cref="JsonSerializer"/> used during serialization and deserialization.</returns>
-        public virtual JsonSerializer CreateJsonSerializer()
+        protected virtual JsonSerializer CreateJsonSerializer()
         {
             return JsonSerializer.Create(SerializerSettings);
         }
