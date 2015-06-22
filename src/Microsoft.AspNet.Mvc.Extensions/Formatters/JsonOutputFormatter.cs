@@ -11,7 +11,18 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class JsonOutputFormatter : OutputFormatter, IJsonOutputFormatter
+    /// <summary>
+    /// An output formatter that specializes in writing JSON content.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="JsonResult"/> class filter the collection of
+    /// <see cref="MvcOptions.OutputFormatters"/> and use only those of type
+    /// <see cref="JsonOutputFormatter"/>.
+    ///
+    /// To create a custom formatter that can be used by <see cref="JsonResult"/>, derive from
+    /// <see cref="JsonOutputFormatter"/>.
+    /// </remarks>
+    public class JsonOutputFormatter : OutputFormatter
     {
         private JsonSerializerSettings _serializerSettings;
 

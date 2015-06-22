@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Mvc
                     .GetRequiredService<IOptions<MvcOptions>>()
                     .Options
                     .OutputFormatters
-                    .OfType<IJsonOutputFormatter>()
+                    .OfType<JsonOutputFormatter>()
                     .ToArray();
 
                 var formatter = objectResult.SelectFormatter(formatterContext, formatters);
