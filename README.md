@@ -1,7 +1,7 @@
 ASP.NET Security
 ========
 
-AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/m1l7adh2cwv488dt/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/Security/branch/dev)
+AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/fujhh8n956v5ohfd/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/Security/branch/dev)
 
 Travis:   [![Travis](https://travis-ci.org/aspnet/Security.svg?branch=dev)](https://travis-ci.org/aspnet/Security)
 
