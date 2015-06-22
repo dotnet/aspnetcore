@@ -158,11 +158,6 @@ namespace Microsoft.AspNet.Mvc.Routing
                     break;
                 }
             }
-
-            if (!context.IsHandled)
-            {
-                _logger.LogVerbose("Request did not match any attribute route.");
-            }
         }
 
         /// <inheritdoc />
