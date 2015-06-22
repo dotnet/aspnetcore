@@ -3,6 +3,7 @@
     "description": "ASP.NET 5 middleware that enables an application to support OpenIdConnect authentication workflow.",
     "dependencies": {
         "Microsoft.AspNet.Authentication": "1.0.0-*",
+        "Microsoft.Framework.Caching.Abstractions": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.IdentityModel.Protocol.Extensions": "2.0.0-beta5-*"
     },

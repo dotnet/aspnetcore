@@ -437,6 +437,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 },
                 services =>
                 {
+                    services.AddAuthentication();
                     services.AddWebEncoders();
                     services.AddDataProtection();
                 }
@@ -456,6 +457,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 },
                 services =>
                 {
+                    services.AddAuthentication();
                     services.AddWebEncoders();
                     services.AddDataProtection();
                 }
@@ -571,11 +573,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
             IUrlEncoder encoder,
+            IServiceProvider services,
             IOptions<ExternalAuthenticationOptions> externalOptions,
             IOptions<OpenIdConnectAuthenticationOptions> options,
             ConfigureOptions<OpenIdConnectAuthenticationOptions> configureOptions = null
             )
-        : base(next, dataProtectionProvider, loggerFactory, encoder, externalOptions, options, configureOptions)
+        : base(next, dataProtectionProvider, loggerFactory, encoder, services, externalOptions, options, configureOptions)
         {
             Logger = (loggerFactory as CustomLoggerFactory).Logger;
         }

@@ -147,8 +147,8 @@
   <data name="OIDCH_0032_UsingCurrentUriRedirectUri" xml:space="preserve">
     <value>OIDCH_0032: using the CurrentUri for 'local redirect' post authentication: '{0}'.</value>
   </data>
-  <data name="OIDCH_0033_TryAddNonceFailed" xml:space="preserve">
-    <value>OIDCH_0033: ProtocolValidator.RequireNonce == true. Options.NonceCache.TryAddNonce returned false. This usually indicates the nonce is not unique or has been used. The nonce is: '{0}'.</value>
+  <data name="OIDCH_0033_NonceAlreadyExists" xml:space="preserve">
+    <value>OIDCH_0033: ProtocolValidator.RequireNonce == true. The generated nonce already exists: this usually indicates the nonce is not unique or has been used. The nonce is: '{0}'.</value>
   </data>
   <data name="OIDCH_0034_RedirectToIdentityProviderNotificationHandledResponse" xml:space="preserve">
     <value>OIDCH_0034: redirectToIdentityProviderNotification.HandledResponse</value>

@@ -13,11 +13,13 @@ using Microsoft.AspNet.Authentication.DataHandler.Serializer;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.Caching.Distributed;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
-using Microsoft.IdentityModel.Protocols;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
+using Microsoft.IdentityModel.Protocols;
 
 namespace Microsoft.AspNet.Authentication.OpenIdConnect
 {
@@ -42,6 +44,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             [NotNull] IDataProtectionProvider dataProtectionProvider,
             [NotNull] ILoggerFactory loggerFactory,
             [NotNull] IUrlEncoder encoder,
+            [NotNull] IServiceProvider services,
             [NotNull] IOptions<ExternalAuthenticationOptions> externalOptions,
             [NotNull] IOptions<OpenIdConnectAuthenticationOptions> options,
             ConfigureOptions<OpenIdConnectAuthenticationOptions> configureOptions = null)
@@ -124,6 +127,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     httpClient.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
                     Options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(Options.MetadataAddress, httpClient);
                 }
+            }
+
+            if (Options.CacheNonces && Options.NonceCache == null)
+            {
+                // Use the global distributed cache if the user has not provided his own instance.
+                // Note: GetRequiredService will throw an exception if caching services have not been registered.
+                Options.NonceCache = services.GetRequiredService<IDistributedCache>();
             }
         }
 

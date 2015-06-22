@@ -32,6 +32,5 @@ namespace Microsoft.Framework.DependencyInjection
         {
             return services.Configure<ClaimsTransformationOptions>(o => o.Transformer = new ClaimsTransformer { TransformAsyncDelegate = asyncTransform });
         }
-
     }
 }

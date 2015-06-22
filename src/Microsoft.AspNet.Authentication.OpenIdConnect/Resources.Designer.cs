@@ -141,11 +141,11 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0033: ProtocolValidator.RequireNonce == true. Options.NonceCache.TryAddNonce returned false. This usually indicates the nonce is not unique or has been used. The nonce is: '{0}'.
+        /// OIDCH_0033: ProtocolValidator.RequireNonce == true. The generated nonce already exists: this usually indicates the nonce is not unique or has been used. The nonce is: '{0}'.
         /// </summary>
-        internal static string OIDCH_0033_TryAddNonceFailed
+        internal static string OIDCH_0033_NonceAlreadyExists
         {
-            get { return ResourceManager.GetString("OIDCH_0033_TryAddNonceFailed"); }
+            get { return ResourceManager.GetString("OIDCH_0033_NonceAlreadyExists"); }
         }
 
         /// <summary>

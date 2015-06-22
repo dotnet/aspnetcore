@@ -12,6 +12,7 @@ using Microsoft.AspNet.Authentication.Notifications;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
+using Microsoft.Framework.Caching.Distributed;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.IdentityModel.Protocols;
@@ -149,13 +150,18 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             if (Options.ProtocolValidator.RequireNonce)
             {
                 message.Nonce = Options.ProtocolValidator.GenerateNonce();
-                if (Options.NonceCache != null)
+                if (Options.CacheNonces)
                 {
-                    if (!Options.NonceCache.TryAddNonce(message.Nonce))
+                    if (await Options.NonceCache.GetAsync(message.Nonce) != null)
                     {
-                        Logger.LogError(Resources.OIDCH_0033_TryAddNonceFailed, message.Nonce);
-                        throw new OpenIdConnectProtocolException(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0033_TryAddNonceFailed, message.Nonce));
+                        Logger.LogError(Resources.OIDCH_0033_NonceAlreadyExists, message.Nonce);
+                        throw new OpenIdConnectProtocolException(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0033_NonceAlreadyExists, message.Nonce));
                     }
+
+                    await Options.NonceCache.SetAsync(message.Nonce, new byte[0], new DistributedCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = Options.ProtocolValidator.NonceLifetime
+                    });
                 }
                 else
                 {
@@ -389,11 +395,16 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     }
 
                     string nonce = jwt.Payload.Nonce;
-                    if (Options.NonceCache != null)
+                    if (Options.CacheNonces)
                     {
-                        // if the nonce cannot be removed, it was used
-                        if (!Options.NonceCache.TryRemoveNonce(nonce))
+                        if (await Options.NonceCache.GetAsync(nonce) != null)
                         {
+                            await Options.NonceCache.RemoveAsync(nonce);
+                        }
+                        else
+                        {
+                            // If the nonce cannot be removed, it was
+                            // already used and MUST be rejected.
                             nonce = null;
                         }
                     }
