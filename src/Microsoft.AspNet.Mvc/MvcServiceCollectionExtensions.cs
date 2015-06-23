@@ -145,38 +145,30 @@ namespace Microsoft.Framework.DependencyInjection
         internal static void AddMvcServices(IServiceCollection services)
         {
             // Options - all of these are multi-registration
-            TryAddMultiRegistrationService(
-                services,
+            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, MvcOptionsSetup>());
-            TryAddMultiRegistrationService(
-                services,
+            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, JsonMvcOptionsSetup>());
-            TryAddMultiRegistrationService(
-                services,
+            services.TryAddEnumerable(
                 ServiceDescriptor
                 .Transient<IConfigureOptions<MvcFormatterMappingOptions>, JsonMvcFormatterMappingOptionsSetup>());
-            TryAddMultiRegistrationService(
-                services,
+            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcViewOptions>, MvcViewOptionsSetup>());
-            TryAddMultiRegistrationService(
-                services,
+            services.TryAddEnumerable(
                 ServiceDescriptor
                 .Transient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>());
 
             // Cors
-            TryAddMultiRegistrationService(
-                services,
+            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApplicationModelProvider, CorsApplicationModelProvider>());
             services.TryAdd(ServiceDescriptor.Transient<CorsAuthorizationFilter, CorsAuthorizationFilter>());
 
             // Auth
-            TryAddMultiRegistrationService(
-                services,
+            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApplicationModelProvider, AuthorizationApplicationModelProvider>());
 
             // Support for activating ViewDataDictionary
-            TryAddMultiRegistrationService(
-                services,
+            services.TryAddEnumerable(
                 ServiceDescriptor
                     .Transient<IControllerPropertyActivator, ViewDataDictionaryControllerPropertyActivator>());
 
@@ -264,8 +256,7 @@ namespace Microsoft.Framework.DependencyInjection
             // Api Description
             services.TryAdd(ServiceDescriptor
                 .Singleton<IApiDescriptionGroupCollectionProvider, ApiDescriptionGroupCollectionProvider>());
-            TryAddMultiRegistrationService(
-                services,
+            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApiDescriptionProvider, DefaultApiDescriptionProvider>());
         }
 
@@ -295,27 +286,6 @@ namespace Microsoft.Framework.DependencyInjection
             });
 
             return services;
-        }
-
-        // Adds a service if the service type and implementation type hasn't been added yet. This is needed for
-        // services like IConfigureOptions<MvcOptions> or IApplicationModelProvider where you need the ability
-        // to register multiple implementation types for the same service type.
-        private static bool TryAddMultiRegistrationService(IServiceCollection services, ServiceDescriptor descriptor)
-        {
-            // This can't work when registering a factory or instance, you have to register a type.
-            // Additionally, if any existing registrations use a factory or instance, we can't check those, but we don't
-            // assert that because it might be added by user-code.
-            Debug.Assert(descriptor.ImplementationType != null);
-
-            if (services.Any(d =>
-                d.ServiceType == descriptor.ServiceType &&
-                d.ImplementationType == descriptor.ImplementationType))
-            {
-                return false;
-            }
-
-            services.Add(descriptor);
-            return true;
         }
 
         private static void ConfigureDefaultServices(IServiceCollection services)

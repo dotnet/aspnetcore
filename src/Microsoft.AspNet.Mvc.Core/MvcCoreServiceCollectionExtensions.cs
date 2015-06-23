@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
-using System.Linq;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.ApplicationModels;
@@ -48,8 +46,7 @@ namespace Microsoft.Framework.DependencyInjection
         {
             // Options
             //
-            TryAddMultiRegistrationService(
-                services,
+            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, CoreMvcOptionsSetup>());
 
             // Action Discovery
@@ -57,11 +54,9 @@ namespace Microsoft.Framework.DependencyInjection
             // These are consumed only when creating action descriptors, then they can be de-allocated
             services.TryAdd(ServiceDescriptor.Transient<IAssemblyProvider, DefaultAssemblyProvider>());
             services.TryAdd(ServiceDescriptor.Transient<IControllerTypeProvider, DefaultControllerTypeProvider>()); ;
-            TryAddMultiRegistrationService(
-                services,
+            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApplicationModelProvider, DefaultApplicationModelProvider>());
-            TryAddMultiRegistrationService(
-                services,
+            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IActionDescriptorProvider, ControllerActionDescriptorProvider>());
             services.TryAdd(ServiceDescriptor
                 .Singleton<IActionDescriptorsCollectionProvider, DefaultActionDescriptorsCollectionProvider>());
@@ -74,8 +69,7 @@ namespace Microsoft.Framework.DependencyInjection
                 .Singleton<IActionSelectorDecisionTreeProvider, ActionSelectorDecisionTreeProvider>());
             // This provider needs access to the per-request services, but might be used many times for a given
             // request.
-            TryAddMultiRegistrationService(
-                services,
+            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IActionConstraintProvider, DefaultActionConstraintProvider>());
 
             // Action Invoker
@@ -87,14 +81,11 @@ namespace Microsoft.Framework.DependencyInjection
             services.TryAdd(ServiceDescriptor.Transient<IActionInvokerFactory, ActionInvokerFactory>());
             services.TryAdd(ServiceDescriptor
                 .Transient<IControllerActionArgumentBinder, DefaultControllerActionArgumentBinder>());
-            TryAddMultiRegistrationService(
-                services,
+            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IActionInvokerProvider, ControllerActionInvokerProvider>());
-            TryAddMultiRegistrationService(
-                services,
+            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IFilterProvider, DefaultFilterProvider>());
-            TryAddMultiRegistrationService(
-                services,
+            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IControllerPropertyActivator, DefaultControllerPropertyActivator>());
 
             // ModelBinding, Validation and Formatting
@@ -127,34 +118,14 @@ namespace Microsoft.Framework.DependencyInjection
             services.TryAdd(ServiceDescriptor.Scoped<IUrlHelper, UrlHelper>());
         }
 
-        // Adds a service if the service type and implementation type hasn't been added yet. This is needed for
-        // services like IConfigureOptions<MvcOptions> or IApplicationModelProvider where you need the ability
-        // to register multiple implementation types for the same service type.
-        private static bool TryAddMultiRegistrationService(IServiceCollection services, ServiceDescriptor descriptor)
-        {
-            // This can't work when registering a factory or instance, you have to register a type.
-            // Additionally, if any existing registrations use a factory or instance, we can't check those, but we don't
-            // assert that because it might be added by user-code.
-            Debug.Assert(descriptor.ImplementationType != null);
-
-            if (services.Any(d =>
-                d.ServiceType == descriptor.ServiceType &&
-                d.ImplementationType == descriptor.ImplementationType))
-            {
-                return false;
-            }
-
-            services.Add(descriptor);
-            return true;
-        }
-
         private static void ConfigureDefaultServices(IServiceCollection services)
         {
             services.AddOptions();
             services.AddRouting();
             services.AddNotifier();
-            services.Configure<RouteOptions>(
-                routeOptions => routeOptions.ConstraintMap.Add("exists", typeof(KnownRouteValueConstraint)));
+
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IConfigureOptions<RouteOptions>, MvcRouteOptionsSetup>());
         }
     }
 }

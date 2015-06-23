@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Net.Http;
 using System.Net.Http.Formatting;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -12,15 +12,14 @@ namespace Microsoft.Framework.DependencyInjection
     {
         public static IServiceCollection AddWebApiConventions(this IServiceCollection services)
         {
-            services.ConfigureOptions<WebApiCompatShimOptionsSetup>();
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, WebApiCompatShimOptionsSetup>());
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IConfigureOptions<WebApiCompatShimOptions>, WebApiCompatShimOptionsSetup>());
 
             // The constructors on DefaultContentNegotiator aren't DI friendly, so just
             // new it up.
-            services.AddInstance<IContentNegotiator>(new DefaultContentNegotiator());
-            services.Configure<MvcOptions>(options =>
-            {
-                options.ValidationExcludeFilters.Add(typeof(HttpRequestMessage));
-            });
+            services.TryAdd(ServiceDescriptor.Instance<IContentNegotiator>(new DefaultContentNegotiator()));
 
             return services;
         }

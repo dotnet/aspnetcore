@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Net.Http;
 using System.Net.Http.Formatting;
 using Microsoft.Framework.OptionsModel;
 
@@ -35,6 +36,8 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 
             // Add a formatter to write out an HttpResponseMessage to the response
             options.OutputFormatters.Insert(0, new HttpResponseMessageOutputFormatter());
+
+            options.ValidationExcludeFilters.Add(typeof(HttpResponseMessage));
         }
 
         public void Configure(WebApiCompatShimOptions options, string name = "")
