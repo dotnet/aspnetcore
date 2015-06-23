@@ -166,6 +166,7 @@ __InputTagHelper2.IntDictionaryProperty["grabber"] = 42;
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("int-prefix-pepper", __InputTagHelper2.IntDictionaryProperty["pepper"]);
             __InputTagHelper1.IntDictionaryProperty["pepper"] = __InputTagHelper2.IntDictionaryProperty["pepper"];
+            __tagHelperExecutionContext.AddHtmlAttribute("int-prefix-salt", Html.Raw("8"));
             __InputTagHelper2.StringDictionaryProperty["grabber"] = "string";
             __tagHelperExecutionContext.AddTagHelperAttribute("string-prefix-grabber", __InputTagHelper2.StringDictionaryProperty["grabber"]);
             __InputTagHelper1.StringProperty = __InputTagHelper2.StringDictionaryProperty["grabber"];

@@ -879,6 +879,36 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                 contentLength: 2),
                         }
                     },
+                    {
+                        "DuplicateAttributeTagHelpers",
+                        "DuplicateAttributeTagHelpers.DesignTime",
+                        DefaultPAndInputTagHelperDescriptors,
+                        new List<LineMapping>
+                        {
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 14,
+                                documentLineIndex: 0,
+                                generatedAbsoluteIndex: 501,
+                                generatedLineIndex: 15,
+                                characterOffsetIndex: 14,
+                                contentLength: 17),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 146,
+                                documentLineIndex: 4,
+                                generatedAbsoluteIndex: 1567,
+                                generatedLineIndex: 43,
+                                characterOffsetIndex: 34,
+                                contentLength: 4),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 43,
+                                documentLineIndex: 2,
+                                documentCharacterOffsetIndex: 8,
+                                generatedAbsoluteIndex: 1730,
+                                generatedLineIndex: 49,
+                                generatedCharacterOffsetIndex: 19,
+                                contentLength: 1),
+                        }
+                    },
                 };
             }
         }
@@ -921,6 +951,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                         "PrefixedAttributeTagHelpers.Reversed",
                         PrefixedAttributeTagHelperDescriptors.Reverse()
                     },
+                    { "DuplicateAttributeTagHelpers", null, DefaultPAndInputTagHelperDescriptors },
                 };
             }
         }

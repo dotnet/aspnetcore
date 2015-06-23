@@ -229,15 +229,10 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                     descriptor.Attributes.Any(attributeDescriptor => attributeDescriptor.IsNameMatch(attributeName)));
 
 
-                // Bound attributes have associated descriptors.
-                if (associatedDescriptors.Any())
+                // Bound attributes have associated descriptors. First attribute value wins if there are duplicates;
+                // later values of duplicate bound attributes are treated as if they were unbound.
+                if (associatedDescriptors.Any() && renderedBoundAttributeNames.Add(attributeName))
                 {
-                    if (!renderedBoundAttributeNames.Add(attributeName))
-                    {
-                        // First attribute value wins if there are duplicates.
-                        continue;
-                    }
-
                     if (attributeValueChunk == null)
                     {
                         // Minimized attributes are not valid for bound attributes. TagHelperBlockRewriter has already
