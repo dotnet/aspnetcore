@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
 
             // Act
             var result = corsService.EvaluatePolicy(requestContext, new CorsPolicy());
-            
+
             // Assert
             Assert.Null(result.AllowedOrigin);
             Assert.False(result.VaryByOrigin);
@@ -303,7 +303,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
 
             // Act
             var result = corsService.EvaluatePolicy(requestContext, policy);
-            
+
             // Assert
             Assert.Equal(TimeSpan.FromSeconds(10), result.PreflightMaxAge);
         }
@@ -380,7 +380,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
 
             // Act
             var result = corsService.EvaluatePolicy(requestContext, policy);
-            
+
             // Assert
             Assert.Equal(2, result.AllowedHeaders.Count);
             Assert.Contains("foo", result.AllowedHeaders);
@@ -430,7 +430,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
 
             // Act
             var result = corsService.EvaluatePolicy(requestContext, policy);
-            
+
             // Assert
             Assert.Empty(result.AllowedHeaders);
             Assert.Empty(result.AllowedMethods);
@@ -447,7 +447,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var policy = new CorsPolicy();
             policy.Methods.Add("POST");
             var httpContext = GetHttpContext(origin: null, accessControlRequestMethod: "post");
-            
+
             // Act
             var result = corsService.EvaluatePolicy(httpContext, policy);
 
@@ -487,7 +487,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
@@ -506,7 +506,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
@@ -525,7 +525,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
@@ -543,7 +543,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
 
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             var httpContext = new DefaultHttpContext();
             service.ApplyResult(result, httpContext.Response);
 
@@ -563,7 +563,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
@@ -582,7 +582,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
@@ -601,7 +601,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
@@ -618,7 +618,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
@@ -638,11 +638,13 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
             Assert.Contains("Access-Control-Allow-Methods", httpContext.Response.Headers.Keys);
+            var value = Assert.Single(httpContext.Response.Headers.Values);
+            Assert.Equal(new[] { "PUT,DELETE" }, value);
             var methods = httpContext.Response.Headers["Access-Control-Allow-Methods"].Split(',');
             Assert.Equal(2, methods.Length);
             Assert.Contains("PUT", methods);
@@ -661,7 +663,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
@@ -680,7 +682,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
@@ -697,7 +699,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
@@ -716,11 +718,13 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
             Assert.Contains("Access-Control-Allow-Headers", httpContext.Response.Headers.Keys);
+            var value = Assert.Single(httpContext.Response.Headers.Values);
+            Assert.Equal(new[] { "foo,bar,baz" }, value);
             string[] headerValues = httpContext.Response.Headers["Access-Control-Allow-Headers"].Split(',');
             Assert.Equal(3, headerValues.Length);
             Assert.Contains("foo", headerValues);
@@ -741,7 +745,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
@@ -764,7 +768,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
@@ -783,7 +787,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
@@ -800,7 +804,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
@@ -819,11 +823,13 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
             Assert.Contains("Access-Control-Expose-Headers", httpContext.Response.Headers.Keys);
+            var value = Assert.Single(httpContext.Response.Headers.Values);
+            Assert.Equal(new[] { "foo,bar,baz" }, value);
             string[] exposedHeaderValues = httpContext.Response.Headers["Access-Control-Expose-Headers"].Split(',');
             Assert.Equal(3, exposedHeaderValues.Length);
             Assert.Contains("foo", exposedHeaderValues);
@@ -843,7 +849,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
@@ -861,14 +867,14 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var httpContext = new DefaultHttpContext();
             var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
 
-            // Act 
+            // Act
             service.ApplyResult(result, httpContext.Response);
 
             // Assert
             Assert.Equal("30", httpContext.Response.Headers["Access-Control-Max-Age"]);
         }
 
-       
+
 
         private static HttpContext GetHttpContext(
             string method = null,
