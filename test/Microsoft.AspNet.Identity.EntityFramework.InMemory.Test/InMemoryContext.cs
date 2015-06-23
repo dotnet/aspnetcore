@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             // Want fresh in memory store for tests always for now
-            optionsBuilder.UseInMemoryStore(persist: false);
+            optionsBuilder.UseInMemoryDatabase(persist: false);
         }
     }
 }

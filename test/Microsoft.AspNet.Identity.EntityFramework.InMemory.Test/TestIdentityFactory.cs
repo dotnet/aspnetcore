@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
         public static InMemoryContext CreateContext()
         {
             var services = new ServiceCollection();
-            services.AddEntityFramework().AddInMemoryStore();
+            services.AddEntityFramework().AddInMemoryDatabase();
             var serviceProvider = services.BuildServiceProvider();
 
             var db = new InMemoryContext();
