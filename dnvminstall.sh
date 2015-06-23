@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 _dnvmsetup_has() {
     type "$1" > /dev/null 2>&1

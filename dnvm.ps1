@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta6-10383"
+$BuildVersion="beta6-10393"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -87,13 +87,14 @@ Set-Variable -Option Constant "RuntimePackageName" "dnx"
 Set-Variable -Option Constant "DefaultFeed" "https://www.nuget.org/api/v2"
 Set-Variable -Option Constant "DefaultUnstableFeed" "https://www.myget.org/F/aspnetvnext/api/v2"
 Set-Variable -Option Constant "CrossGenCommand" "dnx-crossgen"
+Set-Variable -Option Constant "OldCrossGenCommand" "k-crossgen"
 Set-Variable -Option Constant "CommandPrefix" "dnvm-"
 Set-Variable -Option Constant "DefaultArchitecture" "x86"
 Set-Variable -Option Constant "DefaultRuntime" "clr"
 Set-Variable -Option Constant "AliasExtension" ".txt"
 
 # These are intentionally using "%" syntax. The environment variables are expanded whenever the value is used.
-Set-Variable -Option Constant "OldUserHomes" @("%USERPROFILE%\.kre","%USERPROFILE%\.k")
+Set-Variable -Option Constant "OldUserHomes" @("%USERPROFILE%\.kre", "%USERPROFILE%\.k")
 Set-Variable -Option Constant "DefaultUserHome" "%USERPROFILE%\$DefaultUserDirectoryName"
 Set-Variable -Option Constant "HomeEnvVar" "DNX_HOME"
 
@@ -678,7 +679,7 @@ function Ngen-Library(
     [Parameter(Mandatory=$true)]
     [string]$runtimeBin,
 
-    [ValidateSet("x86","x64")]
+    [ValidateSet("x86", "x64")]
     [Parameter(Mandatory=$true)]
     [string]$architecture) {
 
@@ -751,7 +752,11 @@ function dnvm-help {
             $Script:ExitCodes = $ExitCodes.UnknownCommand
             return
         }
-        $help = Get-Help "dnvm-$Command" -ShowWindow:$false
+        if($Host.Version.Major -lt 3) {
+            $help = Get-Help "dnvm-$Command"
+        } else {
+            $help = Get-Help "dnvm-$Command" -ShowWindow:$false
+        }
         if($PassThru -Or $Host.Version.Major -lt 3) {
             $help
         } else {
@@ -818,7 +823,7 @@ function dnvm-help {
             if($help.description) {
                 _WriteOut
                 _WriteOut -ForegroundColor $ColorScheme.Help_Header "remarks:"
-                $help.description.Text.Split(@("`r","`n"), "RemoveEmptyEntries") | 
+                $help.description.Text.Split(@("`r", "`n"), "RemoveEmptyEntries") | 
                     ForEach-Object { _WriteOut "  $_" }
             }
 
@@ -833,7 +838,11 @@ function dnvm-help {
         _WriteOut -ForegroundColor $ColorScheme.Help_Header "commands: "
         Get-Command "$CommandPrefix*" | 
             ForEach-Object {
-                $h = Get-Help $_.Name -ShowWindow:$false
+                if($Host.Version.MajorVersion -lt 3) {
+                    $h = Get-Help $_.Name
+                } else {
+                    $h = Get-Help $_.Name -ShowWindow:$false
+                }
                 $name = $_.Name.Substring($CommandPrefix.Length)
                 if($DeprecatedCommands -notcontains $name) {
                     _WriteOut -NoNewLine "    "
@@ -896,31 +905,26 @@ function dnvm-list {
 function dnvm-alias {
     param(
         [Alias("d")]
-        [Parameter(ParameterSetName="Delete",Mandatory=$true)]
         [switch]$Delete,
 
-        [Parameter(ParameterSetName="Read",Mandatory=$false,Position=0)]
-        [Parameter(ParameterSetName="Write",Mandatory=$true,Position=0)]
-        [Parameter(ParameterSetName="Delete",Mandatory=$true,Position=0)]
         [string]$Name,
-        
-        [Parameter(ParameterSetName="Write",Mandatory=$true,Position=1)]
+
         [string]$Version,
 
         [Alias("arch")]
-        [ValidateSet("", "x86","x64")]
-        [Parameter(ParameterSetName="Write", Mandatory=$false)]
+        [ValidateSet("", "x86", "x64", "arm")]
         [string]$Architecture = "",
 
         [Alias("r")]
-        [ValidateSet("", "clr","coreclr")]
-        [Parameter(ParameterSetName="Write")]
+        [ValidateSet("", "clr", "coreclr")]
         [string]$Runtime = "")
 
-    switch($PSCmdlet.ParameterSetName) {
-        "Read" { Read-Alias $Name }
-        "Write" { Write-Alias $Name $Version -Architecture $Architecture -Runtime $Runtime }
-        "Delete" { Delete-Alias $Name }
+    if($Version) {
+        Write-Alias $Name $Version -Architecture $Architecture -Runtime $Runtime
+    } elseif ($Delete) {
+        Delete-Alias $Name
+    } else {
+        Read-Alias $Name
     }
 }
 
@@ -964,12 +968,12 @@ function dnvm-upgrade {
         [string]$Alias = "default",
 
         [Alias("arch")]
-        [ValidateSet("", "x86","x64")]
+        [ValidateSet("", "x86", "x64", "arm")]
         [Parameter(Mandatory=$false)]
         [string]$Architecture = "",
 
         [Alias("r")]
-        [ValidateSet("", "clr","coreclr")]
+        [ValidateSet("", "clr", "coreclr")]
         [Parameter(Mandatory=$false)]
         [string]$Runtime = "",
 
@@ -1026,12 +1030,12 @@ function dnvm-install {
         [string]$VersionNuPkgOrAlias,
 
         [Alias("arch")]
-        [ValidateSet("", "x86","x64")]
+        [ValidateSet("", "x86", "x64", "arm")]
         [Parameter(Mandatory=$false)]
         [string]$Architecture = "",
 
         [Alias("r")]
-        [ValidateSet("", "clr","coreclr")]
+        [ValidateSet("", "clr", "coreclr")]
         [Parameter(Mandatory=$false)]
         [string]$Runtime = "",
 
@@ -1124,7 +1128,8 @@ function dnvm-install {
     else {
         $Architecture = GetArch $Architecture
         $Runtime = GetRuntime $Runtime
-        $UnpackFolder = Join-Path $RuntimesDir "temp"
+        $TempFolder = Join-Path $RuntimesDir "temp" 
+        $UnpackFolder = Join-Path $TempFolder $runtimeFullName
         $DownloadFile = Join-Path $UnpackFolder "$runtimeFullName.nupkg"
 
         if(Test-Path $UnpackFolder) {
@@ -1155,7 +1160,19 @@ function dnvm-install {
         else {
             _WriteOut "Installing to $RuntimeFolder"
             _WriteDebug "Moving package contents to $RuntimeFolder"
-            Move-Item $UnpackFolder $RuntimeFolder
+            try {
+                Move-Item $UnpackFolder $RuntimeFolder
+            } catch {
+                if(Test-Path $RuntimeFolder) {
+                    #Attempt to cleanup the runtime folder if it is there after a fail.
+                    Remove-Item $RuntimeFolder -Recurse -Force
+                    throw
+                }
+            }
+            #If there is nothing left in the temp folder remove it. There could be other installs happening at the same time as this.
+            if(-Not(Test-Path $(Join-Path $TempFolder "*"))) {
+                Remove-Item $TempFolder -Recurse
+            }
         }
 
         dnvm-use $PackageVersion -Architecture:$Architecture -Runtime:$Runtime -Persistent:$Persistent
@@ -1179,11 +1196,18 @@ function dnvm-install {
             else {
                 _WriteOut "Compiling native images for $runtimeFullName to improve startup performance..."
                 Write-Progress -Activity "Installing runtime" -Status "Generating runtime native images" -Id 1
+ 
+                if(Get-Command $CrossGenCommand -ErrorAction SilentlyContinue) {
+                    $crossGenCommand = $CrossGenCommand
+                } else {
+                    $crossGenCommand = $OldCrossGenCommand
+                }
+
                 if ($DebugPreference -eq 'SilentlyContinue') {
-                    Start-Process $CrossGenCommand -Wait -WindowStyle Hidden
+                    Start-Process $crossGenCommand -Wait -WindowStyle Hidden
                 }
                 else {
-                    Start-Process $CrossGenCommand -Wait -NoNewWindow
+                    Start-Process $crossGenCommand -Wait -NoNewWindow
                 }
                 _WriteOut "Finished native image compilation."
             }
@@ -1220,12 +1244,12 @@ function dnvm-use {
         [string]$VersionOrAlias,
 
         [Alias("arch")]
-        [ValidateSet("", "x86","x64")]
+        [ValidateSet("", "x86", "x64", "arm")]
         [Parameter(Mandatory=$false)]
         [string]$Architecture = "",
 
         [Alias("r")]
-        [ValidateSet("", "clr","coreclr")]
+        [ValidateSet("", "clr", "coreclr")]
         [Parameter(Mandatory=$false)]
         [string]$Runtime = "",
 
@@ -1431,11 +1455,7 @@ if(!$cmd) {
 try {
     if(Get-Command -Name "$CommandPrefix$cmd" -ErrorAction SilentlyContinue) {
         _WriteDebug "& dnvm-$cmd $cmdargs"
-        if($host.Version.Major -lt 3) {
-            Invoke-Command ([ScriptBlock]::Create("dnvm-$cmd $cmdargs"))
-        } else {
-            & "dnvm-$cmd" @cmdargs
-        }
+        Invoke-Command ([ScriptBlock]::Create("dnvm-$cmd $cmdargs"))
     }
     else {
         _WriteOut "Unknown command: '$cmd'"
