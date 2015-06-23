@@ -3,19 +3,10 @@
 
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
-using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
-    /// <summary>
-    ///   Operations performed for buffered socket output
-    /// </summary>
-    public interface ISocketOutput
-    {
-        void Write(ArraySegment<byte> buffer, Action<Exception, object> callback, object state);
-    }
-
     public class SocketOutput : ISocketOutput
     {
         private readonly KestrelThread _thread;

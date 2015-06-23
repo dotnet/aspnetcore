@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {

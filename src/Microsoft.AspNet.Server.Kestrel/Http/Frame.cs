@@ -13,35 +13,6 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
-
-    public enum ProduceEndType
-    {
-        SocketShutdownSend,
-        SocketDisconnect,
-        ConnectionKeepAlive,
-    }
-
-    public class FrameContext : ConnectionContext
-    {
-        public FrameContext()
-        {
-
-        }
-
-        public FrameContext(ConnectionContext context) : base(context)
-        {
-
-        }
-
-        public IFrameControl FrameControl { get; set; }
-    }
-
-    public interface IFrameControl
-    {
-        void ProduceContinue();
-        void Write(ArraySegment<byte> data, Action<Exception, object> callback, object state);
-    }
-
     public class Frame : FrameContext, IFrameControl
     {
         enum Mode

@@ -1,6 +1,3 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -115,16 +112,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             {
                 Trace.WriteLine("UvWriteCb " + ex.ToString());
             }
-        }
-    }
-
-    public abstract class UvReq : UvMemory
-    {
-        protected override bool ReleaseHandle()
-        {
-            DestroyMemory(handle);
-            handle = IntPtr.Zero;
-            return true;
         }
     }
 }
