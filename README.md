@@ -1,7 +1,7 @@
 Session
 ================
 
-AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/m1l7adh2cwv488dt/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/Session/branch/dev)
+AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/yyivj6uwu3uj2x40/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/Session/branch/dev)
 
 Travis:   [![Travis](https://travis-ci.org/aspnet/Session.svg?branch=dev)](https://travis-ci.org/aspnet/Session)
 
