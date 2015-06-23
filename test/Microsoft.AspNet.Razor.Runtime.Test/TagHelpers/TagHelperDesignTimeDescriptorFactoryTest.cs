@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
-    public class TagHelperUsageDescriptorFactoryTest
+    public class TagHelperDesignTimeDescriptorFactoryTest
     {
         private const string TypeSummary = "The summary for <see cref=\"T:Microsoft.AspNet.Razor.Runtime." +
             "TagHelpers.DocumentedTagHelper\" />.";
@@ -40,6 +40,45 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             "file:" + new string(Path.DirectorySeparatorChar, 3) +
             DocumentedAssemblyLocation.TrimStart(Path.DirectorySeparatorChar);
 
+        public static TheoryData OutputElementHintData
+        {
+            get
+            {
+                // tagHelperType, expectedDescriptor
+                return new TheoryData<Type, TagHelperDesignTimeDescriptor>
+                {
+                    { typeof(InheritedOutputElementHintTagHelper), null },
+                    {
+                        typeof(OutputElementHintTagHelper),
+                        new TagHelperDesignTimeDescriptor(
+                            summary: null,
+                            remarks: null,
+                            outputElementHint: "hinted-value")
+                    },
+                    {
+                        typeof(OverriddenOutputElementHintTagHelper),
+                        new TagHelperDesignTimeDescriptor(
+                            summary: null,
+                            remarks: null,
+                            outputElementHint: "overridden")
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(OutputElementHintData))]
+        public void CreateDescriptor_CapturesOutputElementHint(
+            Type tagHelperType,
+            TagHelperDesignTimeDescriptor expectedDescriptor)
+        {
+            // Act
+            var descriptors = TagHelperDesignTimeDescriptorFactory.CreateDescriptor(tagHelperType);
+
+            // Assert
+            Assert.Equal(expectedDescriptor, descriptors, TagHelperDesignTimeDescriptorComparer.Default);
+        }
+
         public static TheoryData CreateDescriptor_TypeDocumentationData
         {
             get
@@ -50,28 +89,35 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 var nonExistentCodeBase = defaultCodeBase.Replace("TestFiles", "TestFile");
                 var invalidLocation = defaultLocation + '\0';
                 var invalidCodeBase = defaultCodeBase + '\0';
+                var onlyHint = new TagHelperDesignTimeDescriptor(
+                    summary: null,
+                    remarks: null,
+                    outputElementHint: "p");
 
-                // tagHelperType, expectedUsageDescriptor
-                return new TheoryData<Type, TagHelperUsageDescriptor>
+                // tagHelperType, expectedDesignTimeDescriptor
+                return new TheoryData<Type, TagHelperDesignTimeDescriptor>
                 {
-                    { CreateDocumentationTagHelperType(location: null, codeBase: null), null },
+                    { CreateDocumentationTagHelperType(location: null, codeBase: null), onlyHint },
                     {
                         CreateDocumentationTagHelperType(defaultLocation, codeBase: null),
-                        new TagHelperUsageDescriptor(TypeSummary, TypeRemarks)
+                        new TagHelperDesignTimeDescriptor(
+                            TypeSummary,
+                            TypeRemarks,
+                            outputElementHint: "p")
                     },
                     {
                         CreateDocumentationTagHelperType(location: null, codeBase: defaultCodeBase),
-                        new TagHelperUsageDescriptor(TypeSummary, TypeRemarks)
+                        new TagHelperDesignTimeDescriptor(TypeSummary, TypeRemarks, outputElementHint: "p")
                     },
                     {
                         CreateDocumentationTagHelperType(defaultLocation, defaultCodeBase),
-                        new TagHelperUsageDescriptor(TypeSummary, TypeRemarks)
+                        new TagHelperDesignTimeDescriptor(TypeSummary, TypeRemarks, outputElementHint: "p")
                     },
                     { CreateType<SingleAttributeTagHelper>(defaultLocation, defaultCodeBase), null },
-                    { CreateDocumentationTagHelperType(nonExistentLocation, codeBase: null), null },
-                    { CreateDocumentationTagHelperType(location: null, codeBase: nonExistentCodeBase), null },
+                    { CreateDocumentationTagHelperType(nonExistentLocation, codeBase: null), onlyHint },
+                    { CreateDocumentationTagHelperType(location: null, codeBase: nonExistentCodeBase), onlyHint },
                     { CreateType<SingleAttributeTagHelper>(invalidLocation, codeBase: null), null },
-                    { CreateDocumentationTagHelperType(location: null, codeBase: invalidCodeBase), null },
+                    { CreateDocumentationTagHelperType(location: null, codeBase: invalidCodeBase), onlyHint },
                 };
             }
         }
@@ -80,55 +126,60 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         [MemberData(nameof(CreateDescriptor_TypeDocumentationData))]
         public void CreateDescriptor_WithType_ReturnsExpectedDescriptors(
             Type tagHelperType,
-            TagHelperUsageDescriptor expectedUsageDescriptor)
+            TagHelperDesignTimeDescriptor expectedDesignTimeDescriptor)
         {
             // Act
-            var usageDescriptor = TagHelperUsageDescriptorFactory.CreateDescriptor(tagHelperType);
+            var designTimeDescriptor = TagHelperDesignTimeDescriptorFactory.CreateDescriptor(tagHelperType);
 
             // Assert
-            Assert.Equal(expectedUsageDescriptor, usageDescriptor, TagHelperUsageDescriptorComparer.Default);
+            Assert.Equal(expectedDesignTimeDescriptor, designTimeDescriptor, TagHelperDesignTimeDescriptorComparer.Default);
         }
 
         public static TheoryData CreateDescriptor_LocalizedTypeDocumentationData
         {
             get
             {
-                // tagHelperType, expectedUsageDescriptor, culture
-                return new TheoryData<Type, TagHelperUsageDescriptor, string>
+                // tagHelperType, expectedDesignTimeDescriptor, culture
+                return new TheoryData<Type, TagHelperDesignTimeDescriptor, string>
                 {
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperUsageDescriptor(
+                        new TagHelperDesignTimeDescriptor(
                             summary: "en-GB: " + TypeSummary,
-                            remarks: "en-GB: " + TypeRemarks),
+                            remarks: "en-GB: " + TypeRemarks,
+                            outputElementHint: "p"),
                         "en-GB"
                     },
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperUsageDescriptor(
+                        new TagHelperDesignTimeDescriptor(
                             summary: "en: " + TypeSummary,
-                            remarks: "en: " + TypeRemarks),
+                            remarks: "en: " + TypeRemarks,
+                            outputElementHint: "p"),
                         "en-US"
                     },
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperUsageDescriptor(
+                        new TagHelperDesignTimeDescriptor(
                             summary: "fr-FR: " + TypeSummary,
-                            remarks: "fr-FR: " + TypeRemarks),
+                            remarks: "fr-FR: " + TypeRemarks,
+                            outputElementHint: "p"),
                         "fr-FR"
                     },
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperUsageDescriptor(
+                        new TagHelperDesignTimeDescriptor(
                             summary: "fr: " + TypeSummary,
-                            remarks: "fr: " + TypeRemarks),
+                            remarks: "fr: " + TypeRemarks,
+                            outputElementHint: "p"),
                         "fr-BE"
                     },
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperUsageDescriptor(
+                        new TagHelperDesignTimeDescriptor(
                             summary: "nl-BE: " + TypeSummary,
-                            remarks: "nl-BE: " + TypeRemarks),
+                            remarks: "nl-BE: " + TypeRemarks,
+                            outputElementHint: "p"),
                         "nl-BE"
                     }
                 };
@@ -139,23 +190,23 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         [MemberData(nameof(CreateDescriptor_LocalizedTypeDocumentationData))]
         public void CreateDescriptor_WithLocalizedType_ReturnsExpectedDescriptors(
             Type tagHelperType,
-            TagHelperUsageDescriptor expectedUsageDescriptor,
+            TagHelperDesignTimeDescriptor expectedDesignTimeDescriptor,
             string culture)
         {
             // Arrange
-            TagHelperUsageDescriptor usageDescriptor;
+            TagHelperDesignTimeDescriptor designTimeDescriptor;
 
             // Act
             using (new CultureReplacer(culture))
             {
-                usageDescriptor = TagHelperUsageDescriptorFactory.CreateDescriptor(tagHelperType);
+                designTimeDescriptor = TagHelperDesignTimeDescriptorFactory.CreateDescriptor(tagHelperType);
             }
 
             // Assert
-            Assert.Equal(expectedUsageDescriptor, usageDescriptor, TagHelperUsageDescriptorComparer.Default);
+            Assert.Equal(expectedDesignTimeDescriptor, designTimeDescriptor, TagHelperDesignTimeDescriptorComparer.Default);
         }
 
-        public static TheoryData CreateDescriptor_PropertyDocumentationData
+        public static TheoryData CreateAttributeDescriptor_PropertyDocumentationData
         {
             get
             {
@@ -166,8 +217,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 var invalidLocation = defaultLocation + '\0';
                 var invalidCodeBase = defaultCodeBase + '\0';
 
-                // tagHelperType, propertyName, expectedUsageDescriptor
-                return new TheoryData<Type, string, TagHelperUsageDescriptor>
+                // tagHelperType, propertyName, expectedDesignTimeDescriptor
+                return new TheoryData<Type, string, TagHelperAttributeDesignTimeDescriptor>
                 {
                     {
                         CreateDocumentationTagHelperType(location: null, codeBase: null),
@@ -192,51 +243,51 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     {
                         CreateDocumentationTagHelperType(defaultLocation, codeBase: null),
                         nameof(DocumentedTagHelper.SummaryProperty),
-                        new TagHelperUsageDescriptor(PropertySummary, remarks: null)
+                        new TagHelperAttributeDesignTimeDescriptor(PropertySummary, remarks: null)
                     },
                     {
                         CreateDocumentationTagHelperType(defaultLocation, codeBase: null),
                         nameof(DocumentedTagHelper.RemarksProperty),
-                        new TagHelperUsageDescriptor(summary: null, remarks: PropertyRemarks)
+                        new TagHelperAttributeDesignTimeDescriptor(summary: null, remarks: PropertyRemarks)
                     },
                     {
                         CreateDocumentationTagHelperType(defaultLocation, codeBase: null),
                         nameof(DocumentedTagHelper.RemarksAndSummaryProperty),
-                        new TagHelperUsageDescriptor(
+                        new TagHelperAttributeDesignTimeDescriptor(
                             PropertyWithSummaryAndRemarks_Summary,
                             PropertyWithSummaryAndRemarks_Remarks)
                     },
                     {
                         CreateDocumentationTagHelperType(location: null, codeBase: defaultCodeBase),
                         nameof(DocumentedTagHelper.SummaryProperty),
-                        new TagHelperUsageDescriptor(PropertySummary, remarks: null)
+                        new TagHelperAttributeDesignTimeDescriptor(PropertySummary, remarks: null)
                     },
                     {
                         CreateDocumentationTagHelperType(location: null, codeBase: defaultCodeBase),
                         nameof(DocumentedTagHelper.RemarksProperty),
-                        new TagHelperUsageDescriptor(summary: null, remarks: PropertyRemarks)
+                        new TagHelperAttributeDesignTimeDescriptor(summary: null, remarks: PropertyRemarks)
                     },
                     {
                         CreateDocumentationTagHelperType(location: null, codeBase: defaultCodeBase),
                         nameof(DocumentedTagHelper.RemarksAndSummaryProperty),
-                        new TagHelperUsageDescriptor(
+                        new TagHelperAttributeDesignTimeDescriptor(
                             PropertyWithSummaryAndRemarks_Summary,
                             PropertyWithSummaryAndRemarks_Remarks)
                     },
                     {
                         CreateDocumentationTagHelperType(defaultLocation, defaultCodeBase),
                         nameof(DocumentedTagHelper.SummaryProperty),
-                        new TagHelperUsageDescriptor(PropertySummary, remarks: null)
+                        new TagHelperAttributeDesignTimeDescriptor(PropertySummary, remarks: null)
                     },
                     {
                         CreateDocumentationTagHelperType(defaultLocation, defaultCodeBase),
                         nameof(DocumentedTagHelper.RemarksProperty),
-                        new TagHelperUsageDescriptor(summary: null, remarks: PropertyRemarks)
+                        new TagHelperAttributeDesignTimeDescriptor(summary: null, remarks: PropertyRemarks)
                     },
                     {
                         CreateDocumentationTagHelperType(defaultLocation, defaultCodeBase),
                         nameof(DocumentedTagHelper.RemarksAndSummaryProperty),
-                        new TagHelperUsageDescriptor(
+                        new TagHelperAttributeDesignTimeDescriptor(
                             PropertyWithSummaryAndRemarks_Summary,
                             PropertyWithSummaryAndRemarks_Remarks)
                     },
@@ -265,11 +316,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Theory]
-        [MemberData(nameof(CreateDescriptor_PropertyDocumentationData))]
-        public void CreateDescriptor_WithProperty_ReturnsExpectedDescriptors(
+        [MemberData(nameof(CreateAttributeDescriptor_PropertyDocumentationData))]
+        public void CreateAttributeDescriptor_ReturnsExpectedDescriptors(
             Type tagHelperType,
             string propertyName,
-            TagHelperUsageDescriptor expectedUsageDescriptor)
+            TagHelperAttributeDesignTimeDescriptor expectedDesignTimeDescriptor)
         {
             // Arrange
             var mockPropertyInfo = new Mock<PropertyInfo>();
@@ -277,50 +328,54 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             mockPropertyInfo.Setup(propertyInfo => propertyInfo.Name).Returns(propertyName);
 
             // Act
-            var usageDescriptor = TagHelperUsageDescriptorFactory.CreateDescriptor(mockPropertyInfo.Object);
+            var designTimeDescriptor = TagHelperDesignTimeDescriptorFactory.CreateAttributeDescriptor(
+                mockPropertyInfo.Object);
 
             // Assert
-            Assert.Equal(expectedUsageDescriptor, usageDescriptor, TagHelperUsageDescriptorComparer.Default);
+            Assert.Equal(
+                expectedDesignTimeDescriptor,
+                designTimeDescriptor,
+                TagHelperAttributeDesignTimeDescriptorComparer.Default);
         }
 
-        public static TheoryData CreateDescriptor_LocalizedPropertyData
+        public static TheoryData CreateAttributeDescriptor_LocalizedPropertyData
         {
             get
             {
-                // tagHelperType, expectedUsageDescriptor, culture
-                return new TheoryData<Type, TagHelperUsageDescriptor, string>
+                // tagHelperType, expectedDesignTimeDescriptor, culture
+                return new TheoryData<Type, TagHelperAttributeDesignTimeDescriptor, string>
                 {
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperUsageDescriptor(
+                        new TagHelperAttributeDesignTimeDescriptor(
                             summary: "en-GB: " + PropertyWithSummaryAndRemarks_Summary,
                             remarks: "en-GB: " + PropertyWithSummaryAndRemarks_Remarks),
                         "en-GB"
                     },
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperUsageDescriptor(
+                        new TagHelperAttributeDesignTimeDescriptor(
                             summary: "en: " + PropertyWithSummaryAndRemarks_Summary,
                             remarks: "en: " + PropertyWithSummaryAndRemarks_Remarks),
                         "en-US"
                     },
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperUsageDescriptor(
+                        new TagHelperAttributeDesignTimeDescriptor(
                             summary: "fr-FR: " + PropertyWithSummaryAndRemarks_Summary,
                             remarks: "fr-FR: " + PropertyWithSummaryAndRemarks_Remarks),
                         "fr-FR"
                     },
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperUsageDescriptor(
+                        new TagHelperAttributeDesignTimeDescriptor(
                             summary: "fr: " + PropertyWithSummaryAndRemarks_Summary,
                             remarks: "fr: " + PropertyWithSummaryAndRemarks_Remarks),
                         "fr-BE"
                     },
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperUsageDescriptor(
+                        new TagHelperAttributeDesignTimeDescriptor(
                             summary: "nl-BE: " + PropertyWithSummaryAndRemarks_Summary,
                             remarks: "nl-BE: " + PropertyWithSummaryAndRemarks_Remarks),
                         "nl-BE"
@@ -330,10 +385,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Theory]
-        [MemberData(nameof(CreateDescriptor_LocalizedPropertyData))]
-        public void CreateDescriptor_WithLocalizedProperty_ReturnsExpectedDescriptors(
+        [MemberData(nameof(CreateAttributeDescriptor_LocalizedPropertyData))]
+        public void CreateAttributeDescriptor_WithLocalizedProperty_ReturnsExpectedDescriptors(
             Type tagHelperType,
-            TagHelperUsageDescriptor expectedUsageDescriptor,
+            TagHelperAttributeDesignTimeDescriptor expectedDesignTimeDescriptor,
             string culture)
         {
             // Arrange
@@ -342,16 +397,20 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             mockPropertyInfo
                 .Setup(propertyInfo => propertyInfo.Name)
                 .Returns(nameof(DocumentedTagHelper.RemarksAndSummaryProperty));
-            TagHelperUsageDescriptor usageDescriptor;
+            TagHelperAttributeDesignTimeDescriptor designTimeDescriptor;
 
             // Act
             using (new CultureReplacer(culture))
             {
-                usageDescriptor = TagHelperUsageDescriptorFactory.CreateDescriptor(mockPropertyInfo.Object);
+                designTimeDescriptor = TagHelperDesignTimeDescriptorFactory.CreateAttributeDescriptor(
+                    mockPropertyInfo.Object);
             }
 
             // Assert
-            Assert.Equal(expectedUsageDescriptor, usageDescriptor, TagHelperUsageDescriptorComparer.Default);
+            Assert.Equal(
+                expectedDesignTimeDescriptor,
+                designTimeDescriptor,
+                TagHelperAttributeDesignTimeDescriptorComparer.Default);
         }
 
         private static Type CreateDocumentationTagHelperType(string location, string codeBase)
@@ -367,6 +426,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             mockType.Setup(type => type.Assembly).Returns(testAssembly);
             mockType.Setup(type => type.FullName).Returns(wrappedType.FullName);
             mockType.Setup(type => type.DeclaringType).Returns(wrappedType.DeclaringType);
+            mockType
+                .Setup(type => type.GetCustomAttributes(false))
+                .Returns(wrappedType == typeof(DocumentedTagHelper) ?
+                    new[] { new OutputElementHintAttribute("p") } :
+                    null);
 
             return mockType.Object;
         }
@@ -382,6 +446,20 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             public override string Location { get; }
 
             public override string CodeBase { get; }
+        }
+
+        [OutputElementHint("hinted-value")]
+        private class OutputElementHintTagHelper : TagHelper
+        {
+        }
+
+        private class InheritedOutputElementHintTagHelper : OutputElementHintTagHelper
+        {
+        }
+
+        [OutputElementHint("overridden")]
+        private class OverriddenOutputElementHintTagHelper : OutputElementHintTagHelper
+        {
         }
     }
 }

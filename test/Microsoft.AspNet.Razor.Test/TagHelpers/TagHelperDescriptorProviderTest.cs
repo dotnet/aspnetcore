@@ -321,7 +321,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 assemblyName: "SomeAssembly",
                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                 requiredAttributes: Enumerable.Empty<string>(),
-                usageDescriptor: null);
+                designTimeDescriptor: null);
         }
     }
 }

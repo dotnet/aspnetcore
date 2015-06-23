@@ -41,6 +41,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// <remarks>
     /// Inherits from <see cref="TagHelper"/>.
     /// </remarks>
+    [OutputElementHint("p")]
     public class DocumentedTagHelper : TagHelper
     {
         /// <summary>

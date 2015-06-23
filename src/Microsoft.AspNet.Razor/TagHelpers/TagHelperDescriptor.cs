@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 assemblyName: assemblyName,
                 attributes: attributes,
                 requiredAttributes: requiredAttributes,
-                usageDescriptor: null)
+                designTimeDescriptor: null)
         {
         }
 
@@ -82,8 +82,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <param name="requiredAttributes">
         /// The attribute names required for the tag helper to target the HTML tag.
         /// </param>
-        /// <param name="usageDescriptor">The <see cref="TagHelperUsageDescriptor"/> that contains information about
-        /// how to use the tag helper at design time.</param>
+        /// <param name="designTimeDescriptor">The <see cref="TagHelperDesignTimeDescriptor"/> that contains design
+        /// time information about the tag helper.</param>
         public TagHelperDescriptor(
             string prefix,
             [NotNull] string tagName,
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             [NotNull] string assemblyName,
             [NotNull] IEnumerable<TagHelperAttributeDescriptor> attributes,
             [NotNull] IEnumerable<string> requiredAttributes,
-            TagHelperUsageDescriptor usageDescriptor)
+            TagHelperDesignTimeDescriptor designTimeDescriptor)
         {
             Prefix = prefix ?? string.Empty;
             TagName = tagName;
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             AssemblyName = assemblyName;
             Attributes = new List<TagHelperAttributeDescriptor>(attributes);
             RequiredAttributes = new List<string>(requiredAttributes);
-            UsageDescriptor = usageDescriptor;
+            DesignTimeDescriptor = designTimeDescriptor;
         }
 
         /// <summary>
@@ -144,9 +144,9 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         public IReadOnlyList<string> RequiredAttributes { get; }
 
         /// <summary>
-        /// The <see cref="TagHelperUsageDescriptor"/> that contains information about how to use the tag helper at
-        /// design time.
+        /// The <see cref="TagHelperDesignTimeDescriptor"/> that contains design time information about this
+        /// tag helper.
         /// </summary>
-        public TagHelperUsageDescriptor UsageDescriptor { get; }
+        public TagHelperDesignTimeDescriptor DesignTimeDescriptor { get; }
     }
 }

@@ -911,7 +911,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         assemblyName: "SomeAssembly",
                         attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                         requiredAttributes: Enumerable.Empty<string>(),
-                        usageDescriptor: null),
+                        designTimeDescriptor: null),
                     new TagHelperDescriptor(
                         prefix: "th:",
                         tagName: "myth2",
@@ -924,10 +924,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 propertyName: "Bound",
                                 typeName: typeof(bool).FullName,
                                 isIndexer: false,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                         },
                         requiredAttributes: Enumerable.Empty<string>(),
-                        usageDescriptor: null)
+                        designTimeDescriptor: null)
                 };
                 var availableDescriptorsText = new TagHelperDescriptor[]
                 {
@@ -938,7 +938,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         assemblyName: "SomeAssembly",
                         attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                         requiredAttributes: Enumerable.Empty<string>(),
-                        usageDescriptor: null),
+                        designTimeDescriptor: null),
                     new TagHelperDescriptor(
                         prefix: "PREFIX",
                         tagName: "myth2",
@@ -951,10 +951,10 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 propertyName: "Bound",
                                 typeName: typeof(bool).FullName,
                                 isIndexer: false,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                         },
                         requiredAttributes: Enumerable.Empty<string>(),
-                        usageDescriptor: null)
+                        designTimeDescriptor: null)
                 };
                 var availableDescriptorsCatchAll = new TagHelperDescriptor[]
                 {
@@ -965,7 +965,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         assemblyName: "SomeAssembly",
                         attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                         requiredAttributes: Enumerable.Empty<string>(),
-                        usageDescriptor: null),
+                        designTimeDescriptor: null),
                 };
 
                 // documentContent, expectedOutput, availableDescriptors

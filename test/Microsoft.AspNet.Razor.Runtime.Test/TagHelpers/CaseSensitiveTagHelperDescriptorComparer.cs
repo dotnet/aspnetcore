@@ -36,7 +36,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     StringComparer.Ordinal) &&
                 descriptorX.Attributes.SequenceEqual(
                     descriptorY.Attributes,
-                    TagHelperAttributeDescriptorComparer.Default);
+                    TagHelperAttributeDescriptorComparer.Default) &&
+                TagHelperDesignTimeDescriptorComparer.Default.Equals(
+                    descriptorX.DesignTimeDescriptor,
+                    descriptorY.DesignTimeDescriptor);
         }
 
         public override int GetHashCode(TagHelperDescriptor descriptor)
@@ -44,7 +47,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var hashCodeCombiner = HashCodeCombiner.Start()
                 .Add(base.GetHashCode(descriptor))
                 .Add(descriptor.TagName, StringComparer.Ordinal)
-                .Add(descriptor.Prefix);
+                .Add(descriptor.Prefix, StringComparer.Ordinal);
+
+            if (descriptor.DesignTimeDescriptor != null)
+            {
+                hashCodeCombiner.Add(
+                    TagHelperDesignTimeDescriptorComparer.Default.GetHashCode(descriptor.DesignTimeDescriptor));
+            }
 
             foreach (var requiredAttribute in descriptor.RequiredAttributes)
             {

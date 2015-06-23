@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         descriptor.AssemblyName,
                         descriptor.Attributes,
                         descriptor.RequiredAttributes,
-                        descriptor.UsageDescriptor));
+                        descriptor.DesignTimeDescriptor));
             }
 
             return descriptors;

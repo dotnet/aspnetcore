@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                   propertyInfo.PropertyType.FullName,
                   isIndexer: false,
                   isStringProperty: propertyInfo.PropertyType == typeof(string),
-                  usageDescriptor: null)
+                  designTimeDescriptor: null)
         {
         }
 
@@ -40,8 +40,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// If <c>true</c> this <see cref="TagHelperAttributeDescriptor"/> is used for dictionary indexer assignments.
         /// Otherwise this <see cref="TagHelperAttributeDescriptor"/> is used for property assignment.
         /// </param>
-        /// <param name="usageDescriptor">The <see cref="TagHelperUsageDescriptor"/> that contains information about
-        /// use of this attribute.</param>
+        /// <param name="designTimeDescriptor">The <see cref="TagHelperAttributeDesignTimeDescriptor"/> that contains
+        /// design time information about this attribute.</param>
         /// <remarks>
         /// HTML attribute names are matched case-insensitively, regardless of <paramref name="isIndexer"/>.
         /// </remarks>
@@ -50,14 +50,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             [NotNull] string propertyName,
             [NotNull] string typeName,
             bool isIndexer,
-            TagHelperUsageDescriptor usageDescriptor)
+            TagHelperAttributeDesignTimeDescriptor designTimeDescriptor)
             : this(
                   name,
                   propertyName,
                   typeName,
                   isIndexer,
                   isStringProperty: string.Equals(typeName, typeof(string).FullName, StringComparison.Ordinal),
-                  usageDescriptor: usageDescriptor)
+                  designTimeDescriptor: designTimeDescriptor)
         {
         }
 
@@ -68,14 +68,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             [NotNull] string typeName,
             bool isIndexer,
             bool isStringProperty,
-            TagHelperUsageDescriptor usageDescriptor)
+            TagHelperAttributeDesignTimeDescriptor designTimeDescriptor)
         {
             Name = name;
             PropertyName = propertyName;
             TypeName = typeName;
             IsIndexer = isIndexer;
             IsStringProperty = isStringProperty;
-            UsageDescriptor = usageDescriptor;
+            DesignTimeDescriptor = designTimeDescriptor;
         }
 
         /// <summary>
@@ -119,9 +119,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         public string TypeName { get; }
 
         /// <summary>
-        /// The <see cref="TagHelperUsageDescriptor"/> that contains information about use of this attribute.
+        /// The <see cref="TagHelperAttributeDesignTimeDescriptor"/> that contains design time information about
+        /// this attribute.
         /// </summary>
-        public TagHelperUsageDescriptor UsageDescriptor { get; }
+        public TagHelperAttributeDesignTimeDescriptor DesignTimeDescriptor { get; }
 
         /// <summary>
         /// Determines whether HTML attribute <paramref name="name"/> matches this

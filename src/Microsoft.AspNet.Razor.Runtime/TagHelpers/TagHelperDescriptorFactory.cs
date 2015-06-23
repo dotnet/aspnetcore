@@ -82,12 +82,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             IEnumerable<TargetElementAttribute> targetElementAttributes,
             bool designTime)
         {
-            TagHelperUsageDescriptor typeUsageDescriptor = null;
+            TagHelperDesignTimeDescriptor typeDesignTimeDescriptor = null;
 
 #if !DNXCORE50
             if (designTime)
             {
-                typeUsageDescriptor = TagHelperUsageDescriptorFactory.CreateDescriptor(typeInfo.GetType());
+                typeDesignTimeDescriptor = TagHelperDesignTimeDescriptorFactory.CreateDescriptor(typeInfo.GetType());
             }
 #endif
 
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         assemblyName,
                         attributeDescriptors,
                         requiredAttributes: Enumerable.Empty<string>(),
-                        usageDescriptor: typeUsageDescriptor)
+                        designTimeDescriptor: typeDesignTimeDescriptor)
                 };
             }
 
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         assemblyName,
                         attributeDescriptors,
                         attribute,
-                        typeUsageDescriptor));
+                        typeDesignTimeDescriptor));
         }
 
         private static TagHelperDescriptor BuildTagHelperDescriptor(
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             string assemblyName,
             IEnumerable<TagHelperAttributeDescriptor> attributeDescriptors,
             TargetElementAttribute targetElementAttribute,
-            TagHelperUsageDescriptor usageDescriptor)
+            TagHelperDesignTimeDescriptor designTimeDescriptor)
         {
             var requiredAttributes = GetCommaSeparatedValues(targetElementAttribute.Attributes);
 
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 assemblyName,
                 attributeDescriptors,
                 requiredAttributes,
-                usageDescriptor);
+                designTimeDescriptor);
         }
 
         private static TagHelperDescriptor BuildTagHelperDescriptor(
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             string assemblyName,
             IEnumerable<TagHelperAttributeDescriptor> attributeDescriptors,
             IEnumerable<string> requiredAttributes,
-            TagHelperUsageDescriptor usageDescriptor)
+            TagHelperDesignTimeDescriptor designTimeDescriptor)
         {
             return new TagHelperDescriptor(
                 prefix: string.Empty,
@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 assemblyName: assemblyName,
                 attributes: attributeDescriptors,
                 requiredAttributes: requiredAttributes,
-                usageDescriptor: usageDescriptor);
+                designTimeDescriptor: designTimeDescriptor);
         }
 
         /// <summary>
@@ -462,12 +462,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             bool isIndexer,
             bool designTime)
         {
-            TagHelperUsageDescriptor propertyUsageDescriptor = null;
+            TagHelperAttributeDesignTimeDescriptor propertyDesignTimeDescriptor = null;
 
 #if !DNXCORE50
             if (designTime)
             {
-                propertyUsageDescriptor = TagHelperUsageDescriptorFactory.CreateDescriptor(property);
+                propertyDesignTimeDescriptor =
+                    TagHelperDesignTimeDescriptorFactory.CreateAttributeDescriptor(property);
             }
 #endif
 
@@ -476,7 +477,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 property.Name,
                 typeName,
                 isIndexer,
-                propertyUsageDescriptor);
+                propertyDesignTimeDescriptor);
         }
 
         private static bool IsAccessibleProperty(PropertyInfo property)

@@ -771,19 +771,19 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                             propertyName: "Age",
                             typeName: typeof(int).FullName,
                             isIndexer: false,
-                            usageDescriptor: null),
+                            designTimeDescriptor: null),
                         new TagHelperAttributeDescriptor(
                             name: "birthday",
                             propertyName: "BirthDay",
                             typeName: typeof(DateTime).FullName,
                             isIndexer: false,
-                            usageDescriptor: null),
+                            designTimeDescriptor: null),
                         new TagHelperAttributeDescriptor(
                             name: "name",
                             propertyName: "Name",
                             typeName: typeof(string).FullName,
                             isIndexer: false,
-                            usageDescriptor: null),
+                            designTimeDescriptor: null),
                     })
             };
             var providerContext = new TagHelperDescriptorProvider(descriptors);
@@ -1784,13 +1784,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 propertyName: "Bound",
                                 typeName: typeof(bool).FullName,
                                 isIndexer: false,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "name",
                                 propertyName: "Name",
                                 typeName: typeof(string).FullName,
                                 isIndexer: false,
-                                usageDescriptor: null)
+                                designTimeDescriptor: null)
                         })
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
@@ -3280,7 +3280,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 "BoundRequiredString",
                                 typeof(string).FullName,
                                 isIndexer: false,
-                                usageDescriptor: null)
+                                designTimeDescriptor: null)
                         },
                         requiredAttributes: new[] { "unbound-required" }),
                     new TagHelperDescriptor(
@@ -3294,7 +3294,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 "BoundRequiredString",
                                 typeof(string).FullName,
                                 isIndexer: false,
-                                usageDescriptor: null)
+                                designTimeDescriptor: null)
                         },
                         requiredAttributes: new[] { "bound-required-string" }),
                     new TagHelperDescriptor(
@@ -3308,7 +3308,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 "BoundRequiredInt",
                                 typeof(int).FullName,
                                 isIndexer: false,
-                                usageDescriptor: null)
+                                designTimeDescriptor: null)
                         },
                         requiredAttributes: new[] { "bound-required-int" }),
                     new TagHelperDescriptor(
@@ -3322,25 +3322,25 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 "DictionaryOfIntProperty",
                                 typeof(IDictionary<string, int>).FullName,
                                 isIndexer: false,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 "string-dictionary",
                                 "DictionaryOfStringProperty",
                                 typeof(IDictionary<string, string>).FullName,
                                 isIndexer: false,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 "int-prefix-",
                                 "DictionaryOfIntProperty",
                                 typeof(int).FullName,
                                 isIndexer: true,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 "string-prefix-",
                                 "DictionaryOfStringProperty",
                                 typeof(string).FullName,
                                 isIndexer: true,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                         },
                         requiredAttributes: Enumerable.Empty<string>()),
                     new TagHelperDescriptor(
@@ -3354,13 +3354,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 "BoundRequiredString",
                                 typeof(string).FullName,
                                 isIndexer: false,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 "bound-int",
                                 "BoundRequiredString",
                                 typeof(int).FullName,
                                 isIndexer: false,
-                                usageDescriptor: null)
+                                designTimeDescriptor: null)
                         },
                         requiredAttributes: Enumerable.Empty<string>()),
                 };

@@ -412,7 +412,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         typeof(int).FullName,
                         isIndexer: false,
                         isStringProperty: false,
-                        usageDescriptor: null)
+                        designTimeDescriptor: null)
                 });
 
             // Act
@@ -533,7 +533,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         typeof(object).FullName,
                         isIndexer: false,
                         isStringProperty: false,
-                        usageDescriptor: null)
+                        designTimeDescriptor: null)
                 });
 
             // Act
@@ -588,7 +588,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             typeof(string).FullName,
                             isIndexer: false,
                             isStringProperty: true,
-                            usageDescriptor: null)
+                            designTimeDescriptor: null)
                     }),
                 new TagHelperDescriptor(
                     "p",
@@ -602,7 +602,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             typeof(string).FullName,
                             isIndexer: false,
                             isStringProperty: true,
-                            usageDescriptor: null)
+                            designTimeDescriptor: null)
                     })
             };
 
@@ -935,14 +935,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 typeName: typeof(IDictionary<string, string>).FullName,
                                 isIndexer: false,
                                 isStringProperty: false,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "dictionary-property-",
                                 propertyName: nameof(DefaultValidHtmlAttributePrefix.DictionaryProperty),
                                 typeName: typeof(string).FullName,
                                 isIndexer: true,
                                 isStringProperty: true,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                         },
                         new string[0]
                     },
@@ -956,14 +956,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 typeName: typeof(IDictionary<string, string>).FullName,
                                 isIndexer: false,
                                 isStringProperty: false,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-prefix",
                                 propertyName: nameof(SingleValidHtmlAttributePrefix.DictionaryProperty),
                                 typeName: typeof(string).FullName,
                                 isIndexer: true,
                                 isStringProperty: true,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                         },
                         new string[0]
                     },
@@ -977,77 +977,77 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 typeName: typeof(Dictionary<string, object>).FullName,
                                 isIndexer: false,
                                 isStringProperty: false,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-name2",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.DictionarySubclassProperty),
                                 typeName: typeof(DictionarySubclass).FullName,
                                 isIndexer: false,
                                 isStringProperty: false,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-name3",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.DictionaryWithoutParameterlessConstructorProperty),
                                 typeName: typeof(DictionaryWithoutParameterlessConstructor).FullName,
                                 isIndexer: false,
                                 isStringProperty: false,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-name4",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.GenericDictionarySubclassProperty),
                                 typeName: typeof(GenericDictionarySubclass<object>).FullName,
                                 isIndexer: false,
                                 isStringProperty: false,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-name5",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.SortedDictionaryProperty),
                                 typeName: typeof(SortedDictionary<string, int>).FullName,
                                 isIndexer: false,
                                 isStringProperty: false,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-name6",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.StringProperty),
                                 typeName: typeof(string).FullName,
                                 isIndexer: false,
                                 isStringProperty: true,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-prefix1-",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.DictionaryProperty),
                                 typeName: typeof(object).FullName,
                                 isIndexer: true,
                                 isStringProperty: false,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-prefix2-",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.DictionarySubclassProperty),
                                 typeName: typeof(string).FullName,
                                 isIndexer: true,
                                 isStringProperty: true,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-prefix3-",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.DictionaryWithoutParameterlessConstructorProperty),
                                 typeName: typeof(string).FullName,
                                 isIndexer: true,
                                 isStringProperty: true,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-prefix4-",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.GenericDictionarySubclassProperty),
                                 typeName: typeof(object).FullName,
                                 isIndexer: true,
                                 isStringProperty: false,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-prefix5-",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.SortedDictionaryProperty),
                                 typeName: typeof(int).FullName,
                                 isIndexer: true,
                                 isStringProperty: false,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                         },
                         new string[0]
                     },
@@ -1071,7 +1071,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 typeName: typeof(long).FullName,
                                 isIndexer: false,
                                 isStringProperty: false,
-                                usageDescriptor: null),
+                                designTimeDescriptor: null),
                         },
                         new[]
                         {
@@ -1156,7 +1156,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 propertyName: "ValidProperty",
                 typeName: "PropertyType",
                 isIndexer: false,
-                usageDescriptor: null);
+                designTimeDescriptor: null);
             var errorSink = new ErrorSink();
 
             // Act
@@ -1180,7 +1180,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 propertyName: "ValidProperty",
                 typeName: "PropertyType",
                 isIndexer: true,
-                usageDescriptor: null);
+                designTimeDescriptor: null);
             var errorSink = new ErrorSink();
 
             // Act
@@ -1226,7 +1226,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 propertyName: "InvalidProperty",
                 typeName: "PropertyType",
                 isIndexer: false,
-                usageDescriptor: null);
+                designTimeDescriptor: null);
             var errorSink = new ErrorSink();
 
             // Act
@@ -1280,7 +1280,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 propertyName: "InvalidProperty",
                 typeName: "ValuesType",
                 isIndexer: true,
-                usageDescriptor: null);
+                designTimeDescriptor: null);
             var errorSink = new ErrorSink();
 
             // Act

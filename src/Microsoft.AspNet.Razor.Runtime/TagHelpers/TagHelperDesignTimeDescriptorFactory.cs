@@ -14,40 +14,69 @@ using Microsoft.Framework.Internal;
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
     /// <summary>
-    /// Factory for providing <see cref="TagHelperUsageDescriptor"/>s from <see cref="Type"/>s and
-    /// <see cref="PropertyInfo"/>s.
+    /// Factory for providing <see cref="TagHelperDesignTimeDescriptor"/>s from <see cref="Type"/>s and
+    /// <see cref="TagHelperAttributeDesignTimeDescriptor"/>s from <see cref="PropertyInfo"/>s.
     /// </summary>
-    public static class TagHelperUsageDescriptorFactory
+    public static class TagHelperDesignTimeDescriptorFactory
     {
         /// <summary>
-        /// Creates a <see cref="TagHelperUsageDescriptor"/> from the given <paramref name="type"/>.
+        /// Creates a <see cref="TagHelperDesignTimeDescriptor"/> from the given <paramref name="type"/>.
         /// </summary>
-        /// <param name="type">The <see cref="Type"/> to create a <see cref="TagHelperUsageDescriptor"/> from.</param>
-        /// <returns>A <see cref="TagHelperUsageDescriptor"/> that describes the summary and remarks XML documentation
+        /// <param name="type">
+        /// The <see cref="Type"/> to create a <see cref="TagHelperDesignTimeDescriptor"/> from.
+        /// </param>
+        /// <returns>A <see cref="TagHelperDesignTimeDescriptor"/> that describes design time specific information
         /// for the given <paramref name="type"/>.</returns>
-        public static TagHelperUsageDescriptor CreateDescriptor([NotNull] Type type)
+        public static TagHelperDesignTimeDescriptor CreateDescriptor([NotNull] Type type)
         {
             var id = XmlDocumentationProvider.GetId(type);
+            var documentationDescriptor = CreateDocumentationDescriptor(type.Assembly, id);
 
-            return CreateDescriptorCore(type.Assembly, id);
+            // Purposefully not using the TypeInfo.GetCustomAttributes method here to make it easier to mock the Type.
+            var outputElementHintAttribute = type
+                .GetCustomAttributes(inherit: false)
+                ?.OfType<OutputElementHintAttribute>()
+                .FirstOrDefault();
+            var outputElementHint = outputElementHintAttribute?.OutputElement;
+
+            if (documentationDescriptor != null || outputElementHint != null)
+            {
+                return new TagHelperDesignTimeDescriptor(
+                    documentationDescriptor?.Summary,
+                    documentationDescriptor?.Remarks,
+                    outputElementHint);
+            }
+
+            return null;
         }
 
         /// <summary>
-        /// Creates a <see cref="TagHelperUsageDescriptor"/> from the given <paramref name="propertyInfo"/>.
+        /// Creates a <see cref="TagHelperAttributeDesignTimeDescriptor"/> from the given
+        /// <paramref name="propertyInfo"/>.
         /// </summary>
-        /// <param name="propertyInfo">The <see cref="PropertyInfo"/> to create a
-        /// <see cref="TagHelperUsageDescriptor"/> from.</param>
-        /// <returns>A <see cref="TagHelperUsageDescriptor"/> that describes the summary and remarks XML documentation
-        /// for the given <paramref name="propertyInfo"/>.</returns>
-        public static TagHelperUsageDescriptor CreateDescriptor([NotNull] PropertyInfo propertyInfo)
+        /// <param name="propertyInfo">
+        /// The <see cref="PropertyInfo"/> to create a <see cref="TagHelperAttributeDesignTimeDescriptor"/> from.
+        /// </param>
+        /// <returns>A <see cref="TagHelperAttributeDesignTimeDescriptor"/> that describes design time specific
+        /// information for the given <paramref name="propertyInfo"/>.</returns>
+        public static TagHelperAttributeDesignTimeDescriptor CreateAttributeDescriptor(
+            [NotNull] PropertyInfo propertyInfo)
         {
             var id = XmlDocumentationProvider.GetId(propertyInfo);
             var declaringAssembly = propertyInfo.DeclaringType.Assembly;
+            var documentationDescriptor = CreateDocumentationDescriptor(declaringAssembly, id);
 
-            return CreateDescriptorCore(declaringAssembly, id);
+            if (documentationDescriptor != null)
+            {
+                return new TagHelperAttributeDesignTimeDescriptor(
+                   documentationDescriptor.Summary,
+                   documentationDescriptor.Remarks);
+            }
+
+            return null;
         }
 
-        private static TagHelperUsageDescriptor CreateDescriptorCore(Assembly assembly, string id)
+        private static DocumentationDescriptor CreateDocumentationDescriptor(Assembly assembly, string id)
         {
             var assemblyLocation = assembly.Location;
 
@@ -77,7 +106,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
                 if (!string.IsNullOrEmpty(summary) || !string.IsNullOrEmpty(remarks))
                 {
-                    return new TagHelperUsageDescriptor(summary, remarks);
+                    return new DocumentationDescriptor
+                    {
+                        Summary = summary,
+                        Remarks = remarks
+                    };
                 }
             }
 
@@ -156,6 +189,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 .FirstOrDefault(file => file.Exists);
 
             return xmlDocumentationFile;
+        }
+
+        private class DocumentationDescriptor
+        {
+            public string Summary { get; set; }
+            public string Remarks { get; set; }
         }
     }
 }

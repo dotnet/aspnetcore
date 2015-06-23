@@ -8,15 +8,19 @@ using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
-    public class TagHelperUsageDescriptorComparer : IEqualityComparer<TagHelperUsageDescriptor>
+    public class TagHelperAttributeDesignTimeDescriptorComparer :
+        IEqualityComparer<TagHelperAttributeDesignTimeDescriptor>
     {
-        public static readonly TagHelperUsageDescriptorComparer Default = new TagHelperUsageDescriptorComparer();
+        public static readonly TagHelperAttributeDesignTimeDescriptorComparer Default =
+            new TagHelperAttributeDesignTimeDescriptorComparer();
 
-        private TagHelperUsageDescriptorComparer()
+        private TagHelperAttributeDesignTimeDescriptorComparer()
         {
         }
 
-        public bool Equals(TagHelperUsageDescriptor descriptorX, TagHelperUsageDescriptor descriptorY)
+        public bool Equals(
+            TagHelperAttributeDesignTimeDescriptor descriptorX,
+            TagHelperAttributeDesignTimeDescriptor descriptorY)
         {
             if (descriptorX == descriptorY)
             {
@@ -29,7 +33,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 string.Equals(descriptorX.Remarks, descriptorY.Remarks, StringComparison.Ordinal);
         }
 
-        public int GetHashCode(TagHelperUsageDescriptor descriptor)
+        public int GetHashCode(TagHelperAttributeDesignTimeDescriptor descriptor)
         {
             return HashCodeCombiner
                 .Start()
