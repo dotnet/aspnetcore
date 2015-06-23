@@ -25,6 +25,7 @@ functions
             "Caching",
             "DataProtection",
             "DependencyInjection",
+            "EventNotification",
             "Options",
             "Logging",
             "Testing",
