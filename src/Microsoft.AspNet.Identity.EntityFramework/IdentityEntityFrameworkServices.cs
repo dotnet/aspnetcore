@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Identity
     /// </summary>
     public class IdentityEntityFrameworkServices
     {
-        public static IServiceCollection GetDefaultServices(Type userType, Type roleType, Type contextType, Type keyType = null, IConfiguration config = null)
+        public static IServiceCollection GetDefaultServices(Type userType, Type roleType, Type contextType, Type keyType = null)
         {
             Type userStoreType;
             Type roleStoreType;
