@@ -12,7 +12,7 @@ namespace Microsoft.Framework.DependencyInjection
         public static IdentityBuilder AddEntityFrameworkStores<TContext>(this IdentityBuilder builder)
             where TContext : DbContext
         {
-            builder.Services.Add(IdentityEntityFrameworkServices.GetDefaultServices(builder.UserType, builder.RoleType, typeof(TContext)));
+            builder.Services.TryAdd(IdentityEntityFrameworkServices.GetDefaultServices(builder.UserType, builder.RoleType, typeof(TContext)));
             return builder;
         }
 
@@ -20,7 +20,7 @@ namespace Microsoft.Framework.DependencyInjection
             where TContext : DbContext
             where TKey : IEquatable<TKey>
         {
-            builder.Services.Add(IdentityEntityFrameworkServices.GetDefaultServices(builder.UserType, builder.RoleType, typeof(TContext), typeof(TKey)));
+            builder.Services.TryAdd(IdentityEntityFrameworkServices.GetDefaultServices(builder.UserType, builder.RoleType, typeof(TContext), typeof(TKey)));
             return builder;
         }
     }
