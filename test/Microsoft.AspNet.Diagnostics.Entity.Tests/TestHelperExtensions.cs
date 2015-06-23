@@ -10,7 +10,7 @@ namespace Microsoft.Data.Entity.Tests
     {
         public static EntityFrameworkServicesBuilder AddProviderServices(this EntityFrameworkServicesBuilder entityServicesBuilder)
         {
-            return entityServicesBuilder.AddInMemoryStore();
+            return entityServicesBuilder.AddInMemoryDatabase();
         }
 
         public static DbContextOptions UseProviderOptions(this DbContextOptions options)

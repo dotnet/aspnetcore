@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 
         public virtual void Log(LogLevel logLevel, int eventId, [CanBeNull] object state, [CanBeNull] Exception exception, [CanBeNull] Func<object, Exception, string> formatter)
         {
-            var errorState = state as DataStoreErrorLogState;
+            var errorState = state as DatabaseErrorLogState;
             if (errorState != null && exception != null && LastError != null)
             {
                 LastError.SetError(errorState.ContextType, exception);

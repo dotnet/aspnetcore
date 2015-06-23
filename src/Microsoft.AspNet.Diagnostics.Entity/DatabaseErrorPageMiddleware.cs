@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                         }
                         else
                         {
-                            var creator = dbContext.GetService<IDataStoreCreator>() as IRelationalDataStoreCreator;
+                            var creator = dbContext.GetService<IDatabaseCreator>() as IRelationalDatabaseCreator;
                             if (creator == null)
                             {
                                 _logger.LogVerbose(Strings.DatabaseErrorPage_NotRelationalDatabase);

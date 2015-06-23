@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     }
                     else
                     {
-                        optionsBuilder.UseInMemoryStore();
+                        optionsBuilder.UseInMemoryDatabase();
                     }
                     services.AddInstance<DbContextOptions>(optionsBuilder.Options);
                 });
@@ -322,7 +322,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     }
                     else
                     {
-                        optionsBuilder.UseInMemoryStore();
+                        optionsBuilder.UseInMemoryDatabase();
                     }
                     services.AddInstance(optionsBuilder.Options);
                 });
