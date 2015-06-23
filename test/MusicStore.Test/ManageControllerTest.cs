@@ -23,7 +23,7 @@ namespace MusicStore.Controllers
         {
             var services = new ServiceCollection();
             services.AddEntityFramework()
-                    .AddInMemoryStore()
+                    .AddInMemoryDatabase()
                     .AddDbContext<MusicStoreContext>();
 
             services.AddIdentity<ApplicationUser, IdentityRole>()

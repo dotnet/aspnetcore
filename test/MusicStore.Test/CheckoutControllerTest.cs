@@ -27,7 +27,7 @@ namespace MusicStore.Controllers
             var services = new ServiceCollection();
 
             services.AddEntityFramework()
-                      .AddInMemoryStore()
+                      .AddInMemoryDatabase()
                       .AddDbContext<MusicStoreContext>();
 
             _serviceProvider = services.BuildServiceProvider();

@@ -48,7 +48,7 @@ namespace MusicStore
             if (useInMemoryStore)
             {
                 services.AddEntityFramework()
-                        .AddInMemoryStore()
+                        .AddInMemoryDatabase()
                         .AddDbContext<MusicStoreContext>();
             }
             else

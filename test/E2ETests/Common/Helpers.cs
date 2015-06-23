@@ -48,7 +48,7 @@ namespace E2ETests
                             "..", "approot", "src", "MusicStore", "configoverride.json"));
                 }
 
-                File.WriteAllText(overrideConfig, "{\"UseInMemoryStore\": \"true\"}");
+                File.WriteAllText(overrideConfig, "{\"UseInMemoryDatabase\": \"true\"}");
             }
         }
     }
