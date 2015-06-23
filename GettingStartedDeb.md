@@ -53,6 +53,7 @@ sudo ldconfig
 Now let's get DNVM. To do this run:
 
 ```
+sudo apt-get install unzip
 curl -sSL https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.sh | DNX_BRANCH=dev sh && source ~/.dnx/dnvm/dnvm.sh
 ```
 
