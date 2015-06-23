@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
@@ -55,10 +56,60 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal("RequestServices:True", result);
         }
 
+        public class TestService { }
+
+        public class TestRequestServiceMiddleware
+        {
+            private RequestDelegate _next;
+
+            public TestRequestServiceMiddleware(RequestDelegate next)
+            {
+                _next = next;
+            }
+
+            public Task Invoke(HttpContext httpContext)
+            {
+                var services = new ServiceCollection();
+                services.AddTransient<TestService>();
+                httpContext.RequestServices = services.BuildServiceProvider();
+
+                return _next.Invoke(httpContext);
+            }
+        }
+
+        public class RequestServicesFilter : IStartupFilter
+        {
+            public Action<IApplicationBuilder> Configure(IApplicationBuilder app, Action<IApplicationBuilder> next)
+            {
+                return builder =>
+                {
+                    app.UseMiddleware<TestRequestServiceMiddleware>();
+                    next(builder);
+                };
+            }
+        }
+
+        [Fact]
+        public async Task ExistingRequestServicesWillNotBeReplaced()
+        {
+            var server = TestServer.Create(app =>
+            {
+                app.Run(context =>
+                {
+                    var service = context.RequestServices.GetService<TestService>();
+                    return context.Response.WriteAsync("Found:" + (service != null));
+                });
+            },
+            services => services.AddTransient<IStartupFilter, RequestServicesFilter>());
+            string result = await server.CreateClient().GetStringAsync("/path");
+            Assert.Equal("Found:True", result);
+        }
+
+
         [Fact]
         public async Task CanAccessLogger()
         {
-            TestServer server = TestServer.Create(app =>
+            var server = TestServer.Create(app =>
             {
                 app.Run(context =>
                 {
