@@ -227,7 +227,7 @@ namespace Microsoft.AspNet.Mvc
                 optionsAccessor = new MockMvcOptionsAccessor();
             }
 
-            var notifier = new Notifier(new NotifierMethodAdapter());
+            var notifier = new Notifier(new ProxyNotifierMethodAdapter());
             if (notificationListener != null)
             {
                 notifier.EnlistTarget(notificationListener);
