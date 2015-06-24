@@ -17,21 +17,10 @@ namespace BasicWebSite.Controllers
             return Json(new { Message = "hello" });
         }
 
-        public JsonResult CustomFormatter()
-        {
-            var formatter = new JsonOutputFormatter();
-            formatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-
-            return new JsonResult(new { Message = "hello" }, formatter);
-        }
-
         public JsonResult CustomContentType()
         {
-            var formatter = new JsonOutputFormatter();
-            formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/message+json"));
-
-            var result = new JsonResult(new { Message = "hello" }, formatter);
-            result.ContentTypes.Add(MediaTypeHeaderValue.Parse("application/message+json"));
+            var result = new JsonResult(new { Message = "hello" });
+            result.ContentType = MediaTypeHeaderValue.Parse("application/message+json");
             return result;
         }
 

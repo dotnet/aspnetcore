@@ -228,8 +228,6 @@ namespace Microsoft.AspNet.Mvc
             Assert.NotNull(jsonResult.Value);
             Assert.Same(model, jsonResult.Value);
             Assert.IsType<MyModel>(jsonResult.Value);
-            var jsonFormatter = jsonResult.Formatter as JsonOutputFormatter;
-            Assert.Same(serializerSettings, jsonFormatter.SerializerSettings);
         }
 
         [Fact]

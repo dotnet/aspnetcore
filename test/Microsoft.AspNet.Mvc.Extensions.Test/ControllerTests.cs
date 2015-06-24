@@ -1033,7 +1033,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
-        public void Controller_Json_WithParameterValueAndSerializerSettings_SetsRespectiveValues()
+        public void Controller_Json_WithParameterValue_SetsRespectiveProperty()
         {
             // Arrange
             var controller = new TestableController();
@@ -1046,8 +1046,6 @@ namespace Microsoft.AspNet.Mvc.Test
             // Assert
             Assert.IsType<JsonResult>(actualJsonResult);
             Assert.Same(data, actualJsonResult.Value);
-            var jsonFormatter = actualJsonResult.Formatter as JsonOutputFormatter;
-            Assert.Same(serializerSettings, jsonFormatter.SerializerSettings);
         }
 
         [Fact]
@@ -1094,8 +1092,6 @@ namespace Microsoft.AspNet.Mvc.Test
             // Assert
             Assert.IsType<JsonResult>(result);
             Assert.Same(input, result.Value);
-            var jsonFormatter = result.Formatter as JsonOutputFormatter;
-            Assert.Same(serializerSettings, jsonFormatter.SerializerSettings);
             mockHttpContext.Verify(
                 x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()),
                 Times.Once());

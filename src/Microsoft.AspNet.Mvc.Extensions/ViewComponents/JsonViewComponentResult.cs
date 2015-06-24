@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Framework.Internal;
 using Newtonsoft.Json;
 
@@ -13,12 +13,14 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class JsonViewComponentResult : IViewComponentResult
     {
+        private readonly JsonSerializerSettings _serializerSettings;
+
         /// <summary>
         /// Initializes a new <see cref="JsonViewComponentResult"/>.
         /// </summary>
         /// <param name="value">The value to format as JSON text.</param>
         public JsonViewComponentResult(object value)
-            : this(value, formatter: null)
+            : this(value, serializerSettings: SerializerSettingsProvider.CreateSerializerSettings())
         {
         }
 
@@ -29,19 +31,9 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="serializerSettings">The <see cref="JsonSerializerSettings"/> to be used by
         /// the formatter.</param>
         public JsonViewComponentResult(object value, [NotNull] JsonSerializerSettings serializerSettings)
-            : this(value, new JsonOutputFormatter(serializerSettings))
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new <see cref="JsonViewComponentResult"/>.
-        /// </summary>
-        /// <param name="value">The value to format as JSON text.</param>
-        /// <param name="formatter">The <see cref="JsonOutputFormatter"/> to use.</param>
-        public JsonViewComponentResult(object value, JsonOutputFormatter formatter)
         {
             Value = value;
-            Formatter = formatter;
+            _serializerSettings = serializerSettings;
         }
 
         /// <summary>
@@ -50,18 +42,17 @@ namespace Microsoft.AspNet.Mvc
         public object Value { get; }
 
         /// <summary>
-        /// Gets the formatter.
-        /// </summary>
-        public JsonOutputFormatter Formatter { get; }
-
-        /// <summary>
         /// Renders JSON text to the output.
         /// </summary>
         /// <param name="context">The <see cref="ViewComponentContext"/>.</param>
         public void Execute([NotNull] ViewComponentContext context)
         {
-            var formatter = Formatter ?? ResolveFormatter(context);
-            formatter.WriteObject(context.Writer, Value);
+            using (var jsonWriter = new JsonTextWriter(context.Writer))
+            {
+                jsonWriter.CloseOutput = false;
+                var jsonSerializer = JsonSerializer.Create(_serializerSettings);
+                jsonSerializer.Serialize(jsonWriter, Value);
+            }
         }
 
         /// <summary>
@@ -73,12 +64,6 @@ namespace Microsoft.AspNet.Mvc
         {
             Execute(context);
             return Task.FromResult(true);
-        }
-
-        private static JsonOutputFormatter ResolveFormatter(ViewComponentContext context)
-        {
-            var services = context.ViewContext.HttpContext.RequestServices;
-            return services.GetRequiredService<JsonOutputFormatter>();
         }
     }
 }

@@ -250,26 +250,7 @@ namespace System.Web.Http
         }
 
         [Fact]
-        public void ApiController_Json_Settings()
-        {
-            // Arrange
-            var controller = new ConcreteApiController();
-            var product = new Product();
-            var settings = new JsonSerializerSettings();
-
-            // Act
-            var result = controller.Json(product, settings);
-
-            // Assert
-            var jsonResult = Assert.IsType<JsonResult>(result);
-            Assert.Same(product, jsonResult.Value);
-
-            var formatter = Assert.IsType<JsonOutputFormatter>(jsonResult.Formatter);
-            Assert.Same(settings, formatter.SerializerSettings);
-        }
-
-        [Fact]
-        public void ApiController_Json_Settings_Encoding()
+        public void ApiController_Json_Encoding()
         {
             // Arrange
             var controller = new ConcreteApiController();
@@ -283,9 +264,7 @@ namespace System.Web.Http
             var jsonResult = Assert.IsType<JsonResult>(result);
             Assert.Same(product, jsonResult.Value);
 
-            var formatter = Assert.IsType<JsonOutputFormatter>(jsonResult.Formatter);
-            Assert.Same(settings, formatter.SerializerSettings);
-            Assert.Same(Encoding.UTF8, Assert.Single(formatter.SupportedEncodings));
+            Assert.Same(Encoding.UTF8, jsonResult.ContentType.Encoding);
         }
 
         [Fact]

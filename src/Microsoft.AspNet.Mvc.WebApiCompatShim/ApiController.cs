@@ -11,6 +11,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.Framework.Internal;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 
 namespace System.Web.Http
@@ -257,9 +258,7 @@ namespace System.Web.Http
         [NonAction]
         public virtual JsonResult Json<T>([NotNull] T content, [NotNull] JsonSerializerSettings serializerSettings)
         {
-            var formatter = new JsonOutputFormatter(serializerSettings);
-
-            return new JsonResult(content, formatter);
+            return new JsonResult(content, serializerSettings);
         }
 
         /// <summary>
@@ -276,12 +275,13 @@ namespace System.Web.Http
             [NotNull] JsonSerializerSettings serializerSettings,
             [NotNull] Encoding encoding)
         {
-            var formatter = new JsonOutputFormatter(serializerSettings);
+            var result = new JsonResult(content, serializerSettings);
+            result.ContentType = new MediaTypeHeaderValue("application/json")
+            {
+                Encoding = encoding
+            };
 
-            formatter.SupportedEncodings.Clear();
-            formatter.SupportedEncodings.Add(encoding);
-
-            return new JsonResult(content, formatter);
+            return result;
         }
 
         /// <summary>
