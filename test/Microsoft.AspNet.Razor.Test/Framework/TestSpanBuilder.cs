@@ -385,6 +385,12 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             return Builder.Build();
         }
 
+        public SpanConstructor As(SpanKind spanKind)
+        {
+            Builder.Kind = spanKind;
+            return this;
+        }
+
         public SpanConstructor With(ISpanChunkGenerator generator)
         {
             Builder.ChunkGenerator = generator;

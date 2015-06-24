@@ -1131,7 +1131,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                             new MarkupBlock(
                                                 new MarkupBlock(
                                                     new ExpressionBlock(
-                                                        factory.CodeTransition(),
+                                                        factory.CodeTransition().As(SpanKind.Code),
                                                         factory.Code("DateTime.Now")
                                                             .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                                             .Accepts(AcceptedCharacters.NonWhiteSpace)))))
@@ -1153,7 +1153,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                             new MarkupBlock(
                                                 new MarkupBlock(
                                                     new ExpressionBlock(
-                                                        factory.CodeTransition(),
+                                                        factory.CodeTransition().As(SpanKind.Code),
                                                         factory.Code("DateTime.Now")
                                                             .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                                             .Accepts(AcceptedCharacters.NonWhiteSpace)))))
@@ -1174,12 +1174,12 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                             "bound",
                                             new MarkupBlock(
                                                 new MarkupBlock(
-                                                    factory.Markup("@").Accepts(AcceptedCharacters.None),
-                                                    factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                                    factory.CodeMarkup("@").Accepts(AcceptedCharacters.None),
+                                                    factory.CodeMarkup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
                                                 new MarkupBlock(
-                                                    factory.EmptyHtml(),
+                                                    factory.EmptyHtml().As(SpanKind.Code),
                                                     new ExpressionBlock(
-                                                        factory.CodeTransition(),
+                                                        factory.CodeTransition().As(SpanKind.Code),
                                                         factory.Code("DateTime.Now")
                                                             .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                                             .Accepts(AcceptedCharacters.NonWhiteSpace)))))

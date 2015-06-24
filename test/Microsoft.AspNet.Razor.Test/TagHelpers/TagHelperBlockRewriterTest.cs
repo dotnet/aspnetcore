@@ -604,6 +604,58 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 }))
                     },
                     {
+                        "<person age=\"1 + @value + 2\" birthday='(bool)@Bag[\"val\"] ? @@DateTime : @DateTime.Now'/>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("person",
+                                selfClosing: true,
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "age",
+                                        new MarkupBlock(
+                                            factory.CodeMarkup("1"),
+                                            factory.CodeMarkup(" +"),
+                                            new MarkupBlock(
+                                                factory.CodeMarkup(" "),
+                                                new ExpressionBlock(
+                                                    factory.CodeTransition().As(SpanKind.Code),
+                                                    factory
+                                                        .Code("value")
+                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                                        .Accepts(AcceptedCharacters.NonWhiteSpace))),
+                                            factory.CodeMarkup(" +"),
+                                            factory.CodeMarkup(" 2"))),
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "birthday",
+                                        new MarkupBlock(
+                                            factory.CodeMarkup("(bool)"),
+                                            new MarkupBlock(
+                                                new ExpressionBlock(
+                                                    factory.CodeTransition().As(SpanKind.Code),
+                                                    factory
+                                                        .Code("Bag[\"val\"]")
+                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                                        .Accepts(AcceptedCharacters.NonWhiteSpace))),
+                                            factory.CodeMarkup(" ?"),
+                                            new MarkupBlock(
+                                                factory.CodeMarkup(" @").Accepts(AcceptedCharacters.None),
+                                                factory.CodeMarkup("@")
+                                                    .With(SpanChunkGenerator.Null)
+                                                    .Accepts(AcceptedCharacters.None)),
+                                            factory.CodeMarkup("DateTime"),
+                                            factory.CodeMarkup(" :"),
+                                            new MarkupBlock(
+                                                factory.CodeMarkup(" "),
+                                                new ExpressionBlock(
+                                                    factory.CodeTransition().As(SpanKind.Code),
+                                                        factory
+                                                            .Code("DateTime.Now")
+                                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                                            .Accepts(AcceptedCharacters.NonWhiteSpace)))
+                                        ))
+                                }))
+                    },
+                    {
                         "<person age=\"12\" birthday=\"DateTime.Now\" name=\"Time: @DateTime.Now\" />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
@@ -675,17 +727,21 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                         "age",
                                         new MarkupBlock(
                                             new MarkupBlock(
-                                                factory.Markup("@").Accepts(AcceptedCharacters.None),
-                                                factory.Markup("@")
+                                                factory.CodeMarkup("@").Accepts(AcceptedCharacters.None),
+                                                factory.CodeMarkup("@")
                                                     .With(SpanChunkGenerator.Null)
                                                     .Accepts(AcceptedCharacters.None)),
                                             new MarkupBlock(
-                                                factory.EmptyHtml(),
+                                                factory.EmptyHtml().As(SpanKind.Code),
                                                 new ExpressionBlock(
-                                                    factory.CodeTransition(),
-                                                    factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                                                    factory.CodeTransition().As(SpanKind.Code),
+                                                    factory.MetaCode("(")
+                                                        .Accepts(AcceptedCharacters.None)
+                                                        .As(SpanKind.Code),
                                                     factory.Code("11+1").AsExpression(),
-                                                    factory.MetaCode(")").Accepts(AcceptedCharacters.None))))),
+                                                    factory.MetaCode(")")
+                                                        .Accepts(AcceptedCharacters.None)
+                                                        .As(SpanKind.Code))))),
                                     new KeyValuePair<string, SyntaxTreeNode>(
                                         "birthday",
                                         factory.CodeMarkup("DateTime.Now")),
@@ -1653,13 +1709,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                             "bound",
                                             new MarkupBlock(
                                                 new MarkupBlock(
-                                                factory.Markup("    "),
+                                                factory.CodeMarkup("    "),
                                                 new ExpressionBlock(
-                                                    factory.CodeTransition(),
+                                                    factory.CodeTransition().As(SpanKind.Code),
                                                     factory.Code("true")
                                                         .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                                         .Accepts(AcceptedCharacters.NonWhiteSpace))),
-                                                factory.Markup("  ")))
+                                                factory.CodeMarkup("  ")))
                                     }
                                 })),
                         new RazorError[0]
@@ -1677,13 +1733,17 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                             "bound",
                                             new MarkupBlock(
                                                 new MarkupBlock(
-                                                factory.Markup("    "),
+                                                factory.CodeMarkup("    "),
                                                 new ExpressionBlock(
-                                                    factory.CodeTransition(),
-                                                    factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                                                    factory.CodeTransition().As(SpanKind.Code),
+                                                    factory.MetaCode("(")
+                                                        .Accepts(AcceptedCharacters.None)
+                                                        .As(SpanKind.Code),
                                                     factory.Code("true").AsExpression(),
-                                                    factory.MetaCode(")").Accepts(AcceptedCharacters.None))),
-                                                factory.Markup("  ")))
+                                                    factory.MetaCode(")")
+                                                        .Accepts(AcceptedCharacters.None)
+                                                        .As(SpanKind.Code))),
+                                                factory.CodeMarkup("  ")))
                                     }
                                 })),
                         new RazorError[0]

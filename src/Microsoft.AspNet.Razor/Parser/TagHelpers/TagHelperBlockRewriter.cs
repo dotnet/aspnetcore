@@ -254,7 +254,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             // If we're not after an equal then we should treat the value as if it were a minimized attribute.
             var attributeValueBuilder = afterEquals ? builder : null;
             result.AttributeValueNode =
-                CreateMarkupAttribute(name, attributeValueBuilder, result.IsBoundNonStringAttribute);
+                CreateMarkupAttribute(attributeValueBuilder, result.IsBoundNonStringAttribute);
 
             return result;
         }
@@ -337,15 +337,43 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     var spanBuilder = new SpanBuilder(child);
 
                     result.AttributeValueNode =
-                        CreateMarkupAttribute(name, spanBuilder, result.IsBoundNonStringAttribute);
+                        CreateMarkupAttribute(spanBuilder, result.IsBoundNonStringAttribute);
 
                     return result;
                 }
             }
 
-            result.AttributeValueNode = block;
+            result.AttributeValueNode = ConvertToMarkupAttributeBlock(block, result.IsBoundNonStringAttribute);
 
             return result;
+        }
+
+        private static Block ConvertToMarkupAttributeBlock(Block block, bool isBoundNonStringAttribute)
+        {
+            var blockBuilder = new BlockBuilder
+            {
+                ChunkGenerator = block.ChunkGenerator,
+                Type = block.Type
+            };
+
+            foreach (var child in block.Children)
+            {
+                SyntaxTreeNode markupAttributeChild;
+
+                if (child.IsBlock)
+                {
+                    markupAttributeChild = ConvertToMarkupAttributeBlock((Block)child, isBoundNonStringAttribute);
+                }
+                else
+                {
+                    var spanBuilder = new SpanBuilder((Span)child);
+                    markupAttributeChild = CreateMarkupAttribute(spanBuilder, isBoundNonStringAttribute);
+                }
+
+                blockBuilder.Children.Add(markupAttributeChild);
+            }
+
+            return blockBuilder.Build();
         }
 
         private static Block RebuildChunkGenerators(Block block)
@@ -440,10 +468,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             return nodeStart + firstNonWhitespaceSymbol.Start;
         }
 
-        private static SyntaxTreeNode CreateMarkupAttribute(
-            string name,
-            SpanBuilder builder,
-            bool isBoundNonStringAttribute)
+        private static SyntaxTreeNode CreateMarkupAttribute(SpanBuilder builder, bool isBoundNonStringAttribute)
         {
             Span value = null;
 
