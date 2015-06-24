@@ -9,13 +9,13 @@ using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Antiforgery
 {
-    public class AntiforgeryTokenGenerator : IAntiforgeryTokenGenerator
+    public class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenerator
     {
         private readonly IClaimUidExtractor _claimUidExtractor;
         private readonly AntiforgeryOptions _options;
         private readonly IAntiforgeryAdditionalDataProvider _additionalDataProvider;
 
-        public AntiforgeryTokenGenerator(
+        public DefaultAntiforgeryTokenGenerator(
             IOptions<AntiforgeryOptions> optionsAccessor,
             IClaimUidExtractor claimUidExtractor,
             IAntiforgeryAdditionalDataProvider additionalDataProvider)

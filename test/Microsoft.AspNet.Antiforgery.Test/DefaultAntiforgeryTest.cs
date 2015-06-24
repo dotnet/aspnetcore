@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Antiforgery
     public class AntiforgeryTest
     {
         [Fact]
-        public async Task ChecksSSL_ValidateAsync_Throws()
+        public async Task ChecksSSL_ValidateRequestAsync_Throws()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                        async () => await antiforgery.ValidateAsync(httpContext));
+                        async () => await antiforgery.ValidateRequestAsync(httpContext));
             Assert.Equal(
              @"The anti-forgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
              "but the current request is not an SSL request.",
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         [Fact]
-        public void ChecksSSL_Validate_Throws()
+        public void ChecksSSL_ValidateTokens_Throws()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(
-                () => antiforgery.Validate(httpContext, cookieToken: null, formToken: null));
+                () => antiforgery.ValidateTokens(httpContext, new AntiforgeryTokenSet("hello", "world")));
             Assert.Equal(
              @"The anti-forgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
              "but the current request is not an SSL request.",
@@ -84,6 +84,28 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         [Fact]
+        public void ChecksSSL_GetAndStoreTokens_Throws()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+
+            var options = new AntiforgeryOptions()
+            {
+                RequireSSL = true
+            };
+
+            var antiforgery = GetAntiforgery(options);
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => antiforgery.GetAndStoreTokens(httpContext));
+            Assert.Equal(
+                 @"The anti-forgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
+                 "but the current request is not an SSL request.",
+                 exception.Message);
+        }
+
+        [Fact]
         public void ChecksSSL_GetTokens_Throws()
         {
             // Arrange
@@ -98,7 +120,29 @@ namespace Microsoft.AspNet.Antiforgery
 
             // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(
-                () => antiforgery.GetTokens(httpContext, "dkfkfkf"));
+                () => antiforgery.GetTokens(httpContext));
+            Assert.Equal(
+                 @"The anti-forgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
+                 "but the current request is not an SSL request.",
+                 exception.Message);
+        }
+
+        [Fact]
+        public void ChecksSSL_SetCookieTokenAndHeader_Throws()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+
+            var options = new AntiforgeryOptions()
+            {
+                RequireSSL = true
+            };
+
+            var antiforgery = GetAntiforgery(options);
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => antiforgery.SetCookieTokenAndHeader(httpContext));
             Assert.Equal(
                  @"The anti-forgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
                  "but the current request is not an SSL request.",
@@ -108,7 +152,7 @@ namespace Microsoft.AspNet.Antiforgery
 #if DNX451
 
         [Fact]
-        public void GetFormInputElement_ExistingInvalidCookieToken_GeneratesANewCookieAndAnAntiforgeryToken()
+        public void GetHtml_ExistingInvalidCookieToken_GeneratesANewCookieAndAnAntiforgeryToken()
         {
             // Arrange
             var options = new AntiforgeryOptions()
@@ -132,7 +176,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         [Fact]
-        public void GetFormInputElement_ExistingInvalidCookieToken_SwallowsExceptions()
+        public void GetHtml_ExistingInvalidCookieToken_SwallowsExceptions()
         {
             // Arrange
             var options = new AntiforgeryOptions()
@@ -164,7 +208,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         [Fact]
-        public void GetFormInputElement_ExistingValidCookieToken_GeneratesAnAntiforgeryToken()
+        public void GetHtml_ExistingValidCookieToken_GeneratesAnAntiforgeryToken()
         {
             // Arrange
             var options = new AntiforgeryOptions()
@@ -189,7 +233,7 @@ namespace Microsoft.AspNet.Antiforgery
         [Theory]
         [InlineData(false, "SAMEORIGIN")]
         [InlineData(true, null)]
-        public void GetFormInputElement_AddsXFrameOptionsHeader(bool suppressXFrameOptions, string expectedHeaderValue)
+        public void GetHtml_AddsXFrameOptionsHeader(bool suppressXFrameOptions, string expectedHeaderValue)
         {
             // Arrange
             var options = new AntiforgeryOptions()
@@ -221,7 +265,7 @@ namespace Microsoft.AspNet.Antiforgery
             var antiforgery = GetAntiforgery(context);
 
             // Act
-            var tokenset = antiforgery.GetTokens(context.HttpContext, "serialized-old-cookie-token");
+            var tokenset = antiforgery.GetTokens(context.HttpContext);
 
             // Assert
             Assert.Equal("serialized-new-cookie-token", tokenset.CookieToken);
@@ -248,7 +292,7 @@ namespace Microsoft.AspNet.Antiforgery
             var antiforgery = GetAntiforgery(context);
 
             // Act
-            var tokenset = antiforgery.GetTokens(context.HttpContext, "serialized-old-cookie-token");
+            var tokenset = antiforgery.GetTokens(context.HttpContext);
 
             // Assert
             Assert.Equal("serialized-new-cookie-token", tokenset.CookieToken);
@@ -263,11 +307,10 @@ namespace Microsoft.AspNet.Antiforgery
                 new AntiforgeryOptions(),
                 useOldCookie: true,
                 isOldCookieValid: true);
-            context.TokenStore = null;
             var antiforgery = GetAntiforgery(context);
 
             // Act
-            var tokenset = antiforgery.GetTokens(context.HttpContext, "serialized-old-cookie-token");
+            var tokenset = antiforgery.GetTokens(context.HttpContext);
 
             // Assert
             Assert.Null(tokenset.CookieToken);
@@ -294,7 +337,9 @@ namespace Microsoft.AspNet.Antiforgery
 
             // Act & assert
             var exception = Assert.Throws<InvalidOperationException>(
-                    () => antiforgery.Validate(context.HttpContext, "cookie-token", "form-token"));
+                    () => antiforgery.ValidateTokens(
+                        context.HttpContext, 
+                        new AntiforgeryTokenSet("form-token", "cookie-token")));
             Assert.Equal("my-message", exception.Message);
         }
 
@@ -317,7 +362,7 @@ namespace Microsoft.AspNet.Antiforgery
             var antiforgery = GetAntiforgery(context);
 
             // Act
-            antiforgery.Validate(context.HttpContext, "cookie-token", "form-token");
+            antiforgery.ValidateTokens(context.HttpContext, new AntiforgeryTokenSet("form-token", "cookie-token"));
 
             // Assert
             context.TokenGenerator.Verify();
@@ -338,7 +383,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             // Act & assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                        async () => await antiforgery.ValidateAsync(context.HttpContext));
+                        async () => await antiforgery.ValidateRequestAsync(context.HttpContext));
             Assert.Equal("my-message", exception.Message);
         }
 
@@ -356,7 +401,7 @@ namespace Microsoft.AspNet.Antiforgery
             var antiforgery = GetAntiforgery(context);
 
             // Act
-            await antiforgery.ValidateAsync(context.HttpContext);
+            await antiforgery.ValidateRequestAsync(context.HttpContext);
 
             // Assert
             context.TokenGenerator.Verify();
@@ -389,7 +434,7 @@ namespace Microsoft.AspNet.Antiforgery
 
 #endif
 
-        private Antiforgery GetAntiforgery(
+        private DefaultAntiforgery GetAntiforgery(
             AntiforgeryOptions options = null,
             IAntiforgeryTokenGenerator tokenGenerator = null,
             IAntiforgeryTokenSerializer tokenSerializer = null,
@@ -401,7 +446,7 @@ namespace Microsoft.AspNet.Antiforgery
                 optionsManager.Options = options;
             }
 
-            return new Antiforgery(
+            return new DefaultAntiforgery(
                 antiforgeryOptionsAccessor: optionsManager,
                 tokenGenerator: tokenGenerator,
                 tokenSerializer: tokenSerializer,
@@ -418,7 +463,7 @@ namespace Microsoft.AspNet.Antiforgery
 
 #if DNX451
 
-        private Antiforgery GetAntiforgery(AntiforgeryMockContext context)
+        private DefaultAntiforgery GetAntiforgery(AntiforgeryMockContext context)
         {
             return GetAntiforgery(
                 context.Options, 

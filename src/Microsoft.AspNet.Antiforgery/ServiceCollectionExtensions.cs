@@ -19,12 +19,12 @@ namespace Microsoft.Framework.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<AntiforgeryOptions>, AntiforgeryOptionsSetup>());
 
-            services.TryAddSingleton<IAntiforgeryTokenGenerator, AntiforgeryTokenGenerator>();
-            services.TryAddSingleton<IAntiforgeryTokenSerializer, AntiforgeryTokenSerializer>();
-            services.TryAddSingleton<IAntiforgeryTokenStore, AntiforgeryTokenStore>();
+            services.TryAddSingleton<IAntiforgery, DefaultAntiforgery>();
+            services.TryAddSingleton<IAntiforgeryTokenGenerator, DefaultAntiforgeryTokenGenerator>();
+            services.TryAddSingleton<IAntiforgeryTokenSerializer, DefaultAntiforgeryTokenSerializer>();
+            services.TryAddSingleton<IAntiforgeryTokenStore, DefaultAntiforgeryTokenStore>();
             services.TryAddSingleton<IClaimUidExtractor, DefaultClaimUidExtractor>();
-            services.TryAddSingleton<Antiforgery, Antiforgery>();
-            services.TryAddScoped<IAntiforgeryContextAccessor, AntiforgeryContextAccessor>();
+            services.TryAddScoped<IAntiforgeryContextAccessor, DefaultAntiforgeryContextAccessor>();
             services.TryAddSingleton<IAntiforgeryAdditionalDataProvider, DefaultAntiforgeryAdditionalDataProvider>();
             return services;
         }

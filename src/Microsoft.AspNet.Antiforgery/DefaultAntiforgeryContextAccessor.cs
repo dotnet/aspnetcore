@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNet.Antiforgery
 {
-    public class AntiforgeryContextAccessor : IAntiforgeryContextAccessor
+    public class DefaultAntiforgeryContextAccessor : IAntiforgeryContextAccessor
     {
         public AntiforgeryContext Value { get; set; }
     }

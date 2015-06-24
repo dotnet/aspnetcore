@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Antiforgery
 {
-    public class AntiforgeryTokenSerializerTest
+    public class DefaultAntiforgeryTokenSerializerTest
     {
         private static readonly Mock<IDataProtectionProvider> _dataProtector = GetDataProtector();
         private static readonly BinaryBlob _claimUid = new BinaryBlob(256, new byte[] { 0x6F, 0x16, 0x48, 0xE9, 0x72, 0x49, 0xAA, 0x58, 0x75, 0x40, 0x36, 0xA6, 0x7E, 0x24, 0x8C, 0xF0, 0x44, 0xF0, 0x7E, 0xCF, 0xB0, 0xED, 0x38, 0x75, 0x56, 0xCE, 0x02, 0x9A, 0x4F, 0x9A, 0x40, 0xE0 });
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Antiforgery
         public void Deserialize_BadToken_Throws(string serializedToken)
         {
             // Arrange
-            var testSerializer = new AntiforgeryTokenSerializer(_dataProtector.Object);
+            var testSerializer = new DefaultAntiforgeryTokenSerializer(_dataProtector.Object);
 
             // Act & assert
             var ex = Assert.Throws<InvalidOperationException>(() => testSerializer.Deserialize(serializedToken));
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Antiforgery
         public void Serialize_FieldToken_WithClaimUid_TokenRoundTripSuccessful()
         {
             // Arrange
-            var testSerializer = new AntiforgeryTokenSerializer(_dataProtector.Object);
+            var testSerializer = new DefaultAntiforgeryTokenSerializer(_dataProtector.Object);
 
             //"01" // Version
             //+ "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Antiforgery
         public void Serialize_FieldToken_WithUsername_TokenRoundTripSuccessful()
         {
             // Arrange
-            var testSerializer = new AntiforgeryTokenSerializer(_dataProtector.Object);
+            var testSerializer = new DefaultAntiforgeryTokenSerializer(_dataProtector.Object);
 
             //"01" // Version
             //+ "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.Antiforgery
         public void Serialize_SessionToken_TokenRoundTripSuccessful()
         {
             // Arrange
-            var testSerializer = new AntiforgeryTokenSerializer(_dataProtector.Object);
+            var testSerializer = new DefaultAntiforgeryTokenSerializer(_dataProtector.Object);
 
             //"01" // Version
             //+ "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken

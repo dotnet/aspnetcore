@@ -11,12 +11,12 @@ using Microsoft.Framework.OptionsModel;
 namespace Microsoft.AspNet.Antiforgery
 {
     // Saves anti-XSRF tokens split between HttpRequest.Cookies and HttpRequest.Form
-    public class AntiforgeryTokenStore : IAntiforgeryTokenStore
+    public class DefaultAntiforgeryTokenStore : IAntiforgeryTokenStore
     {
         private readonly AntiforgeryOptions _options;
         private readonly IAntiforgeryTokenSerializer _tokenSerializer;
 
-        public AntiforgeryTokenStore(
+        public DefaultAntiforgeryTokenStore(
             [NotNull] IOptions<AntiforgeryOptions> optionsAccessor,
             [NotNull] IAntiforgeryTokenSerializer tokenSerializer)
         {

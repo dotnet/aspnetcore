@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Antiforgery
 {
-    public class AntiforgeryTokenStoreTest
+    public class DefaultAntiforgeryTokenStoreTest
     {
         private readonly string _cookieName = "cookie-name";
 
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Antiforgery
             mockHttpContext
                 .Setup(o => o.Request.Cookies)
                 .Returns(requestCookies.Object);
-            var contextAccessor = new AntiforgeryContextAccessor();
+            var contextAccessor = new DefaultAntiforgeryContextAccessor();
             mockHttpContext.SetupGet(o => o.RequestServices)
                            .Returns(GetServiceProvider(contextAccessor));
             var options = new AntiforgeryOptions()
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Antiforgery
                 CookieName = _cookieName
             };
 
-            var tokenStore = new AntiforgeryTokenStore(
+            var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
                 tokenSerializer: null);
 
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Antiforgery
             mockHttpContext
                 .Setup(o => o.Request.Cookies)
                 .Returns(requestCookies.Object);
-            var contextAccessor = new AntiforgeryContextAccessor();
+            var contextAccessor = new DefaultAntiforgeryContextAccessor();
             mockHttpContext.SetupGet(o => o.RequestServices)
                            .Returns(GetServiceProvider(contextAccessor));
 
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Antiforgery
                 CookieName = _cookieName
             };
 
-            var tokenStore = new AntiforgeryTokenStore(
+            var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
                 tokenSerializer: null);
 
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Antiforgery
                 CookieName = _cookieName
             };
 
-            var tokenStore = new AntiforgeryTokenStore(
+            var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
                 tokenSerializer: null);
 
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Antiforgery
                 CookieName = _cookieName
             };
 
-            var tokenStore = new AntiforgeryTokenStore(
+            var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
                 tokenSerializer: mockSerializer.Object);
 
@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.Antiforgery
                 CookieName = _cookieName
             };
 
-            var tokenStore = new AntiforgeryTokenStore(
+            var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
                 tokenSerializer: mockSerializer.Object);
 
@@ -177,7 +177,7 @@ namespace Microsoft.AspNet.Antiforgery
                 FormFieldName = "form-field-name",
             };
 
-            var tokenStore = new AntiforgeryTokenStore(
+            var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
                 tokenSerializer: null);
 
@@ -213,7 +213,7 @@ namespace Microsoft.AspNet.Antiforgery
                 FormFieldName = "form-field-name",
             };
 
-            var tokenStore = new AntiforgeryTokenStore(
+            var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
                 tokenSerializer: mockSerializer.Object);
 
@@ -248,7 +248,7 @@ namespace Microsoft.AspNet.Antiforgery
                 FormFieldName = "form-field-name",
             };
 
-            var tokenStore = new AntiforgeryTokenStore(
+            var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
                 tokenSerializer: mockSerializer.Object);
 
@@ -275,7 +275,7 @@ namespace Microsoft.AspNet.Antiforgery
             var mockHttpContext = new Mock<HttpContext>();
             mockHttpContext.Setup(o => o.Response.Cookies)
                            .Returns(cookies);
-            var contextAccessor = new AntiforgeryContextAccessor();
+            var contextAccessor = new DefaultAntiforgeryContextAccessor();
             mockHttpContext.SetupGet(o => o.RequestServices)
                            .Returns(GetServiceProvider(contextAccessor));
 
@@ -289,7 +289,7 @@ namespace Microsoft.AspNet.Antiforgery
                 RequireSSL = requireSsl
             };
 
-            var tokenStore = new AntiforgeryTokenStore(
+            var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
                 tokenSerializer: mockSerializer.Object);
 
@@ -317,7 +317,7 @@ namespace Microsoft.AspNet.Antiforgery
             mockHttpContext.Setup(o => o.Request)
                            .Returns(request.Object);
 
-            var contextAccessor = new AntiforgeryContextAccessor();
+            var contextAccessor = new DefaultAntiforgeryContextAccessor();
             mockHttpContext.SetupGet(o => o.RequestServices)
                            .Returns(GetServiceProvider(contextAccessor));
 

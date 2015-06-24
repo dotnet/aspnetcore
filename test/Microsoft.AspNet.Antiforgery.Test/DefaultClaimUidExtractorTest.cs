@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Antiforgery
 {
-    public class ClaimUidExtractorTest
+    public class DefaultClaimUidExtractorTest
     {
         [Fact]
         public void ExtractClaimUid_NullIdentity()

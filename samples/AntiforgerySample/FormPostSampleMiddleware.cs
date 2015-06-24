@@ -11,13 +11,13 @@ namespace AntiforgerySample
 {
     public class FormPostSampleMiddleware
     {
-        private readonly Antiforgery _antiforgery;
+        private readonly IAntiforgery _antiforgery;
         private readonly AntiforgeryOptions _options;
         private readonly RequestDelegate _next;
 
         public FormPostSampleMiddleware(
             RequestDelegate next,
-            Antiforgery antiforgery,
+            IAntiforgery antiforgery,
             IOptions<AntiforgeryOptions> options)
         {
             _next = next;
@@ -39,20 +39,19 @@ namespace AntiforgerySample
 </body>
 </html>";
 
-                var tokenSet = _antiforgery.GetTokens(context, oldCookieToken: null);
-                context.Response.Cookies.Delete(_options.CookieName);
-                context.Response.Cookies.Append(_options.CookieName, tokenSet.CookieToken);
+                var tokenSet = _antiforgery.GetAndStoreTokens(context);
                 await context.Response.WriteAsync(string.Format(page, _options.FormFieldName, tokenSet.FormToken));
             }
             else if (context.Request.Method == "POST")
             {
                 // This will throw if invalid.
-                await _antiforgery.ValidateAsync(context);
+                await _antiforgery.ValidateRequestAsync(context);
 
                 var page =
 @"<html>
 <body>
 <h1>Everything is fine</h1>
+<h2><a href=""/"">Try Again</a></h2>
 </form>
 </body>
 </html>";
