@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                new[] { "true" },
                responseHeaders.GetValues(CorsConstants.AccessControlAllowCredentials).ToArray());
             Assert.Equal(
-               new[] { "exposed1", "exposed2" },
+               new[] { "exposed1,exposed2" },
                responseHeaders.GetValues(CorsConstants.AccessControlExposeHeaders).ToArray());
 
             var content = await response.Content.ReadAsStringAsync();
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                new[] { "true" },
                responseHeaders.GetValues(CorsConstants.AccessControlAllowCredentials).ToArray());
             Assert.Equal(
-               new[] { "header1", "header2" },
+               new[] { "header1,header2" },
                responseHeaders.GetValues(CorsConstants.AccessControlAllowHeaders).ToArray());
             Assert.Equal(
                new[] { "PUT" },
