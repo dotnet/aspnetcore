@@ -66,6 +66,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     return new ModelBindingResult(modelBindingKey);
                 }
 
+                var valueProviderResult = new ValueProviderResult(rawValue: model);
+                bindingContext.ModelState.SetModelValue(modelBindingKey, valueProviderResult);
 
                 var validationNode = new ModelValidationNode(modelBindingKey, bindingContext.ModelMetadata, model)
                 {

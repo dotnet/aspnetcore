@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public byte[] Token { get; set; }
         }
 
-        [Theory(Skip = "ModelState.Value not set due to #2445")]
+        [Theory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task BindProperty_WithData_GetsBound(bool fallBackScenario)
@@ -61,19 +61,12 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(2, modelState.Keys.Count);
-            Assert.Single(modelState.Keys, k => k == prefix);
-            Assert.Single(modelState.Keys, k => k == queryStringKey);
-
-            var key = Assert.Single(modelState.Keys, k => k == queryStringKey + "[0]");
-            Assert.NotNull(modelState[key].Value); // should be non null bug #2445.
-            Assert.Empty(modelState[key].Errors);
-            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
-
-            key = Assert.Single(modelState.Keys, k => k == queryStringKey + "[1]");
-            Assert.NotNull(modelState[key].Value); // should be non null bug #2445.
-            Assert.Empty(modelState[key].Errors);
-            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
+            var entry = Assert.Single(modelState);
+            Assert.Equal(queryStringKey, entry.Key);
+            Assert.Empty(entry.Value.Errors);
+            Assert.Equal(ModelValidationState.Valid, entry.Value.ValidationState);
+            Assert.Equal(value, entry.Value.Value.AttemptedValue);
+            Assert.Equal(value, entry.Value.Value.RawValue);
         }
 
         [Fact]
@@ -109,19 +102,18 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Empty(modelState.Keys);
         }
 
-        [Fact(Skip = "ModelState.Value not set due to #2445")]
+        [Fact]
         public async Task BindParameter_WithData_GetsBound()
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
-            var parameter = new ParameterDescriptor()
+            var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
-                BindingInfo = new BindingInfo()
+                BindingInfo = new BindingInfo
                 {
                     BinderModelName = "CustomParameter",
                 },
-
                 ParameterType = typeof(byte[])
             };
 
@@ -151,16 +143,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // ModelState
             Assert.True(modelState.IsValid);
-
-            Assert.Equal(3, modelState.Count);
-            Assert.Single(modelState.Keys, k => k == "CustomParameter[0]");
-            Assert.Single(modelState.Keys, k => k == "CustomParameter[1]");
-            var key = Assert.Single(modelState.Keys, k => k == "CustomParameter[2]");
-
-            Assert.NotNull(modelState[key].Value);
-            Assert.Equal(value, modelState[key].Value.AttemptedValue);
-            Assert.Equal(expectedValue, modelState[key].Value.RawValue);
-            Assert.Empty(modelState[key].Errors);
+            var entry = Assert.Single(modelState);
+            Assert.Equal("CustomParameter", entry.Key);
+            Assert.Empty(entry.Value.Errors);
+            Assert.Equal(value, entry.Value.Value.AttemptedValue);
+            Assert.Equal(value, entry.Value.Value.RawValue);
         }
     }
 }

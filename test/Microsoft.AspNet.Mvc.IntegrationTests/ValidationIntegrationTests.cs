@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 Name = "parameter",
                 ParameterType = typeof(Order1)
             };
-            
+
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
                 request.QueryString = new QueryString("?parameter.CustomerName=bill");
@@ -1020,6 +1020,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         private class Address
         {
             public int Street { get; set; }
+
             public string State { get; set; }
 
             [Range(10000, 99999)]
@@ -1032,30 +1033,32 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         {
             public string Name { get; set; }
         }
+
         [Fact]
         public async Task TypeBasedExclusion_ForBodyAndNonBodyBoundModels()
         {
             // Arrange
-            var parameter = new ParameterDescriptor()
+            var parameter = new ParameterDescriptor
             {
                 Name = "parameter",
                 ParameterType = typeof(Order11)
             };
 
             MvcOptions testOptions = null;
-            var input = "{\"OfficeAddress.Zip\":\"45\"}";
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
-            {
-                request.QueryString =
-                    new QueryString("?HomeAddress.Country.Name=US&ShippingAddresses[0].Zip=45&HomeAddress.Zip=46");
-                request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
-                request.ContentType = "application/json";
-            },
-            options => {
-
-                options.ValidationExcludeFilters.Add(typeof(Address));
-                testOptions = options;
-            });
+            var input = "{\"Zip\":\"47\"}";
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request =>
+                {
+                    request.QueryString =
+                        new QueryString("?HomeAddress.Country.Name=US&ShippingAddresses[0].Zip=45&HomeAddress.Zip=46");
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
+                    request.ContentType = "application/json";
+                },
+                options =>
+                {
+                    options.ValidationExcludeFilters.Add(typeof(Address));
+                    testOptions = options;
+                });
 
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(testOptions);
             var modelState = new ModelStateDictionary();
@@ -1063,7 +1066,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // Act
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
-            Assert.Equal(3, modelState.Count);
+            Assert.Equal(4, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -1081,6 +1084,14 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("46", entry.Value.AttemptedValue);
             Assert.Equal("46", entry.Value.RawValue);
             Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+
+            entry = Assert.Single(modelState, e => e.Key == "OfficeAddress").Value;
+            Assert.Null(entry.Value.AttemptedValue);
+            var address = Assert.IsType<Address>(entry.Value.RawValue);
+            Assert.Equal(47, address.Zip);
+
+            // Address itself is not excluded from validation.
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
         }
 
         private static void AssertRequiredError(string key, ModelError error)

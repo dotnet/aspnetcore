@@ -3,12 +3,9 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.IntegrationTests
@@ -71,10 +68,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
-            var parameter = new ParameterDescriptor()
+            var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
-                BindingInfo = new BindingInfo()
+                BindingInfo = new BindingInfo
                 {
                     BinderModelName = "CustomParameter",
                     BindingSource = BindingSource.Body
@@ -99,8 +96,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
             Assert.Null(modelBindingResult.Model);
-            Assert.Empty(modelState.Keys);
+
             Assert.True(modelState.IsValid);
+            var entry = Assert.Single(modelState);
+            Assert.Empty(entry.Key);
+            Assert.Null(entry.Value.Value.RawValue);
         }
 
         private class Person4
@@ -111,14 +111,14 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task FromBodyAndRequiredOnValueTypeProperty_EmptyBody_AddsModelStateError()
+        public async Task FromBodyAndRequiredOnValueTypeProperty_EmptyBody_JsonFormatterAddsModelStateError()
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
-            var parameter = new ParameterDescriptor()
+            var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
-                BindingInfo = new BindingInfo()
+                BindingInfo = new BindingInfo
                 {
                     BinderModelName = "CustomParameter",
                 },
@@ -141,16 +141,16 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
             var boundPerson = Assert.IsType<Person4>(modelBindingResult.Model);
-            Assert.NotNull(boundPerson);
-            Assert.False(modelState.IsValid);
 
-            // The error with an empty key is a bug(#2416)  in our implementation which does not append the prefix and
-            // use that along with the path. The expected key here would be CustomParameter.Address.
-            var key = Assert.Single(modelState.Keys, k => k == "");
-            var error = Assert.Single(modelState[""].Errors);
-            Assert.StartsWith(
-                "No JSON content found and type 'System.Int32' is not nullable.",
-                error.Exception.Message);
+            Assert.False(modelState.IsValid);
+            var entry = Assert.Single(modelState);
+            Assert.Equal(string.Empty, entry.Key);
+            var error = Assert.Single(entry.Value.Errors);
+            Assert.NotNull(error.Exception);
+
+            // Json.NET currently throws an exception starting with "No JSON content found and type 'System.Int32' is
+            // not nullable." but do not tie test to a particular Json.NET build.
+            Assert.NotEmpty(error.Exception.Message);
         }
 
         private class Person2
@@ -167,16 +167,16 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public int Zip { get; set; }
         }
 
-        [Theory(Skip = "There should be entries for all model properties which are bound. #2445")]
+        [Theory]
         [InlineData("{ \"Zip\" : 123 }")]
         [InlineData("{}")]
         public async Task FromBodyOnTopLevelProperty_RequiredOnSubProperty_AddsModelStateError(string inputText)
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
-            var parameter = new ParameterDescriptor()
+            var parameter = new ParameterDescriptor
             {
-                BindingInfo = new BindingInfo()
+                BindingInfo = new BindingInfo
                 {
                     BinderModelName = "CustomParameter",
                 },
@@ -200,14 +200,15 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.True(modelBindingResult.IsModelSet);
             var boundPerson = Assert.IsType<Person2>(modelBindingResult.Model);
             Assert.NotNull(boundPerson);
+
             Assert.False(modelState.IsValid);
             Assert.Equal(2, modelState.Keys.Count);
-            var zip = Assert.Single(modelState.Keys, k => k == "CustomParameter.Address.Zip");
-            Assert.Equal(ModelValidationState.Valid, modelState[zip].ValidationState);
+            var address = Assert.Single(modelState, kvp => kvp.Key == "CustomParameter.Address").Value;
+            Assert.Equal(ModelValidationState.Unvalidated, address.ValidationState);
 
-            var street = Assert.Single(modelState.Keys, k => k == "CustomParameter.Address.Street");
-            Assert.Equal(ModelValidationState.Invalid, modelState[street].ValidationState);
-            var error = Assert.Single(modelState[street].Errors);
+            var street = Assert.Single(modelState, kvp => kvp.Key == "CustomParameter.Address.Street").Value;
+            Assert.Equal(ModelValidationState.Invalid, street.ValidationState);
+            var error = Assert.Single(street.Errors);
             Assert.Equal("The Street field is required.", error.ErrorMessage);
         }
 
@@ -225,16 +226,16 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public int Zip { get; set; }
         }
 
-        [Theory(Skip = "There should be entries for all model properties which are bound. #2445")]
+        [Theory]
         [InlineData("{ \"Street\" : \"someStreet\" }")]
         [InlineData("{}")]
-        public async Task FromBodyOnProperty_RequiredOnValueTypeSubProperty_AddsModelStateError(string inputText)
+        public async Task FromBodyOnProperty_Succeeds_IgnoresRequiredOnValueTypeSubProperty(string inputText)
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
-            var parameter = new ParameterDescriptor()
+            var parameter = new ParameterDescriptor
             {
-                BindingInfo = new BindingInfo()
+                BindingInfo = new BindingInfo
                 {
                     BinderModelName = "CustomParameter",
                 },
@@ -255,20 +256,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // Assert
             Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
-            var boundPerson = Assert.IsType<Person3>(modelBindingResult.Model);
-            Assert.NotNull(boundPerson);
-            Assert.False(modelState.IsValid);
-            var street = Assert.Single(modelState.Keys, k => k == "CustomParameter.Address.Street");
-            Assert.Equal(ModelValidationState.Valid, modelState[street].ValidationState);
+            Assert.IsType<Person3>(modelBindingResult.Model);
 
-            // The error with an empty key is a bug(#2416) in our implementation which does not append the prefix and
-            // use that along with the path. The expected key here would be Address.
-            var zip = Assert.Single(modelState.Keys, k => k == "CustomParameter.Address.Zip");
-            Assert.Equal(ModelValidationState.Valid, modelState[zip].ValidationState);
-            var error = Assert.Single(modelState[""].Errors);
-            Assert.StartsWith(
-                "Required property 'Zip' not found in JSON. Path ''",
-                error.Exception.Message);
+            Assert.True(modelState.IsValid);
+            var entry = Assert.Single(modelState);
+            Assert.Equal("CustomParameter.Address", entry.Key);
         }
     }
 }

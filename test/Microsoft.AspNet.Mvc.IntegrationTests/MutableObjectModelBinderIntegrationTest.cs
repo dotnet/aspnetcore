@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public string Street { get; set; }
         }
 
-        [Fact(Skip = "ModelState.Value not set due to #2445.")]
+        [Fact]
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithBodyModelBinder_WithPrefix_Success()
         {
             // Arrange
@@ -85,13 +85,12 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("bill", entry.Value.AttemptedValue);
             Assert.Equal("bill", entry.Value.RawValue);
 
-            // These fail due to #2445
             entry = Assert.Single(modelState, e => e.Key == "parameter.Customer.Address").Value;
             Assert.Null(entry.Value.AttemptedValue); // ModelState entries for body don't include original text.
             Assert.Same(model.Customer.Address, entry.Value.RawValue);
         }
 
-        [Fact(Skip = "ModelState.Value not set due to #2445.")]
+        [Fact]
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithBodyModelBinder_WithEmptyPrefix_Success()
         {
             // Arrange
@@ -132,7 +131,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("bill", entry.Value.AttemptedValue);
             Assert.Equal("bill", entry.Value.RawValue);
 
-            // These fail due to #2445
             entry = Assert.Single(modelState, e => e.Key == "Customer.Address").Value;
             Assert.Null(entry.Value.AttemptedValue); // ModelState entries for body don't include original text.
             Assert.Same(model.Customer.Address, entry.Value.RawValue);
@@ -170,11 +168,14 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("bill", model.Customer.Name);
             Assert.Null(model.Customer.Address);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
-            var entry = Assert.Single(modelState, e => e.Key == "parameter.Customer.Name").Value;
+            var entry = Assert.Single(modelState, e => e.Key == "parameter.Customer.Address").Value;
+            Assert.Null(entry.Value.AttemptedValue);
+            Assert.Null(entry.Value.RawValue);
+            entry = Assert.Single(modelState, e => e.Key == "parameter.Customer.Name").Value;
             Assert.Equal("bill", entry.Value.AttemptedValue);
             Assert.Equal("bill", entry.Value.RawValue);
         }
@@ -446,7 +447,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public byte[] Token { get; set; }
         }
 
-        [Fact(Skip = "Greedy model binders should set value. #2445")]
+        [Fact]
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithByteArrayModelBinder_WithPrefix_Success()
         {
             // Arrange
@@ -478,7 +479,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("bill", model.Customer.Name);
             Assert.Equal(ByteArrayContent, model.Customer.Token);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2445
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -486,13 +487,12 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("bill", entry.Value.AttemptedValue);
             Assert.Equal("bill", entry.Value.RawValue);
 
-            // These fail due to #2445
             entry = Assert.Single(modelState, e => e.Key == "parameter.Customer.Token").Value;
             Assert.Equal(ByteArrayEncoded, entry.Value.AttemptedValue);
             Assert.Equal(ByteArrayEncoded, entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Greedy model binders should set value. #2445")]
+        [Fact]
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithByteArrayModelBinder_WithEmptyPrefix_Success()
         {
             // Arrange
@@ -544,17 +544,13 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
-                ParameterType = typeof(Order1)
+                ParameterType = typeof(Order3)
             };
 
             // Need to have a key here so that the MutableObjectModelBinder will recurse to bind elements.
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
                 request.QueryString = new QueryString("?parameter.Customer.Name=bill");
-
-                // This is set so that the input formatter does not add an error to model state.
-                // Thus this prevents addition of an extra error unrelated to the test scenario.
-                request.ContentType = "application/json";
             });
 
             var modelState = new ModelStateDictionary();
@@ -566,10 +562,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
 
-            var model = Assert.IsType<Order1>(modelBindingResult.Model);
+            var model = Assert.IsType<Order3>(modelBindingResult.Model);
             Assert.NotNull(model.Customer);
             Assert.Equal("bill", model.Customer.Name);
-            Assert.Null(model.Customer.Address);
+            Assert.Null(model.Customer.Token);
 
             Assert.Equal(1, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
@@ -594,7 +590,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public IEnumerable<IFormFile> Documents { get; set; }
         }
 
-        [Fact(Skip = "Greedy model binders should set value. #2445")]
+        [Fact]
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithFormFileModelBinder_WithPrefix_Success()
         {
             // Arrange
@@ -626,7 +622,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("bill", model.Customer.Name);
             Assert.Single(model.Customer.Documents);
 
-            Assert.Equal(2, modelState.Count); // This fails due to #2445
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -639,7 +635,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Same(model.Customer.Documents, entry.Value.RawValue);
         }
 
-        [Fact(Skip = "Greedy model binders should set value. #2445")]
+        [Fact]
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithFormFileModelBinder_WithEmptyPrefix_Success()
         {
             // Arrange
@@ -717,11 +713,16 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("bill", model.Customer.Name);
             Assert.Empty(model.Customer.Documents);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
-            var entry = Assert.Single(modelState, e => e.Key == "parameter.Customer.Name").Value;
+            var entry = Assert.Single(modelState, e => e.Key == "parameter.Customer.Documents").Value;
+            Assert.Null(entry.Value.AttemptedValue);
+            var documents = Assert.IsAssignableFrom<IEnumerable<IFormFile>>(entry.Value.RawValue);
+            Assert.Empty(documents);
+
+            entry = Assert.Single(modelState, e => e.Key == "parameter.Customer.Name").Value;
             Assert.Equal("bill", entry.Value.AttemptedValue);
             Assert.Equal("bill", entry.Value.RawValue);
         }
@@ -1529,7 +1530,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         // If a nested POCO object has all properties bound from a greedy source, then it should be populated
         // if the top-level object is created.
-        [Fact(Skip = "ModelState.Value not set due to #2445.")]
+        [Fact]
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithAllGreedyBoundProperties()
         {
             // Arrange
@@ -1567,7 +1568,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.True(modelState.IsValid);
 
             var entry = Assert.Single(modelState, e => e.Key == "Customer.Address").Value;
-            Assert.Null(entry.Value.AttemptedValue); // This fails due to #2445
+            Assert.Null(entry.Value.AttemptedValue);
             Assert.Same(model.Customer.Address, entry.Value.RawValue);
         }
 

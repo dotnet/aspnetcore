@@ -12,45 +12,83 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
+    /// <summary>
+    /// Result of an <see cref="IValueProvider.GetValueAsync"/> operation.
+    /// </summary>
     public class ValueProviderResult
     {
         private static readonly CultureInfo _staticCulture = CultureInfo.InvariantCulture;
-        private CultureInfo _instanceCulture;
 
-        // default constructor so that subclassed types can set the properties themselves
-        protected ValueProviderResult()
+        /// <summary>
+        /// Instantiates a new instance of the <see cref="ValueProviderResult"/> class with given
+        /// <paramref name="rawValue"/>. Initializes <see cref="Culture"/> to
+        /// <see cref="CultureInfo.InvariantCulture"/>.
+        /// </summary>
+        /// <param name="rawValue">The <see cref="RawValue"/> value of the new instance.</param>
+        public ValueProviderResult(object rawValue)
+            : this(rawValue, attemptedValue: null, culture: _staticCulture)
         {
         }
 
+        /// <summary>
+        /// Instantiates a new instance of the <see cref="ValueProviderResult"/> class with given
+        /// <paramref name="rawValue"/>, <paramref name="attemptedValue"/>, and <paramref name="culture"/>.
+        /// </summary>
+        /// <param name="rawValue">The <see cref="RawValue"/> value of the new instance.</param>
+        /// <param name="attemptedValue">The <see cref="AttemptedValue"/> value of the new instance.</param>
+        /// <param name="culture">The <see cref="Culture"/> value of the new instance.</param>
         public ValueProviderResult(object rawValue, string attemptedValue, CultureInfo culture)
         {
             RawValue = rawValue;
             AttemptedValue = attemptedValue;
-            Culture = culture;
+            Culture = culture ?? _staticCulture;
         }
 
-        public string AttemptedValue { get; protected set; }
+        /// <summary>
+        /// <see cref="string"/> conversion of <see cref="RawValue"/>.
+        /// </summary>
+        /// <remarks>
+        /// Used in helpers that generate <c>&lt;textarea&gt;</c> elements as well as some error messages.
+        /// </remarks>
+        public string AttemptedValue { get; }
 
-        public CultureInfo Culture
-        {
-            get
-            {
-                if (_instanceCulture == null)
-                {
-                    _instanceCulture = _staticCulture;
-                }
-                return _instanceCulture;
-            }
-            protected set { _instanceCulture = value; }
-        }
+        /// <summary>
+        /// <see cref="CultureInfo"/> to use in <see cref="ConvertTo(Type)"/> or
+        /// <see cref="ConvertTo(Type, CultureInfo)"/> if passed <see cref="CultureInfo"/> is <c>null</c>.
+        /// </summary>
+        public CultureInfo Culture { get; }
 
-        public object RawValue { get; protected set; }
+        /// <summary>
+        /// The provided <see cref="object"/>.
+        /// </summary>
+        public object RawValue { get; }
 
+        /// <summary>
+        /// Converts <see cref="RawValue"/> to the given <paramref name="type"/>. Uses <see cref="Culture"/> for
+        /// <see cref="TypeConverter"/> operations.
+        /// </summary>
+        /// <param name="type">The target <see cref="Type"/> of the conversion.</param>
+        /// <returns>
+        /// <see cref="RawValue"/> converted to the given <paramref name="type"/>. <c>null</c> if the conversion fails.
+        /// </returns>
         public object ConvertTo(Type type)
         {
             return ConvertTo(type, culture: null);
         }
 
+        /// <summary>
+        /// Converts <see cref="RawValue"/> to the given <paramref name="type"/> using the given
+        /// <paramref name="culture"/>.
+        /// </summary>
+        /// <param name="type">The target <see cref="Type"/> of the conversion.</param>
+        /// <param name="culture">
+        /// The <see cref="CultureInfo"/> to use for <see cref="TypeConverter"/> operations. Uses
+        /// <see cref="Culture"/> if this parameter is <c>null</c>.
+        /// </param>
+        /// <returns>
+        /// <see cref="RawValue"/> converted to the given <paramref name="type"/> using the given
+        /// <paramref name="culture"/>. <c>null</c> if the conversion fails.
+        /// </returns>
         public virtual object ConvertTo([NotNull] Type type, CultureInfo culture)
         {
             var value = RawValue;

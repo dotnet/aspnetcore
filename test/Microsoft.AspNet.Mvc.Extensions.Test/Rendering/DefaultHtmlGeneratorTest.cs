@@ -166,10 +166,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             viewContext.ViewData[nameof(Model.Name)] = "ignored ViewData value";
 
 
-            var valueProviderResult = new ValueProviderResult(
-                rawValue,
-                attemptedValue: null,
-                culture: CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue);
             viewContext.ModelState.SetModelValue(nameof(Model.Name), valueProviderResult);
 
             // Act
@@ -201,10 +198,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), "ignored model value");
 
-            var valueProviderResult = new ValueProviderResult(
-                rawValue,
-                attemptedValue: null,
-                culture: CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue);
             viewContext.ModelState.SetModelValue(nameof(Model.Name), valueProviderResult);
 
             // Act
@@ -254,10 +248,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), rawValue);
 
-            var valueProviderResult = new ValueProviderResult(
-                rawValue: null,
-                attemptedValue: null,
-                culture: CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: null);
             viewContext.ModelState.SetModelValue(nameof(Model.Name), valueProviderResult);
 
             // Act
@@ -285,10 +276,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var viewContext = GetViewContext<Model>(model, metadataProvider);
             viewContext.ViewData[nameof(Model.Name)] = rawValue;
 
-            var valueProviderResult = new ValueProviderResult(
-                rawValue: null,
-                attemptedValue: null,
-                culture: CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: null);
             viewContext.ModelState.SetModelValue(nameof(Model.Name), valueProviderResult);
 
             // Act
@@ -313,10 +301,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var viewContext = GetViewContext<Model>(model, metadataProvider);
 
-            var valueProviderResult = new ValueProviderResult(
-                rawValue: null,
-                attemptedValue: null,
-                culture: CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: null);
             viewContext.ModelState.SetModelValue(nameof(Model.Name), valueProviderResult);
 
             // Act
@@ -376,10 +361,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var modelExplorer =
                 metadataProvider.GetModelExplorerForType(typeof(List<string>), new List<string>(rawValue));
 
-            var valueProviderResult = new ValueProviderResult(
-                rawValue: null,
-                attemptedValue: null,
-                culture: CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: null);
             viewContext.ModelState.SetModelValue(nameof(Model.Collection), valueProviderResult);
 
             // Act
@@ -407,10 +389,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var viewContext = GetViewContext<Model>(model, metadataProvider);
             viewContext.ViewData[nameof(Model.Collection)] = rawValue;
 
-            var valueProviderResult = new ValueProviderResult(
-                rawValue: null,
-                attemptedValue: null,
-                culture: CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: null);
             viewContext.ModelState.SetModelValue(nameof(Model.Collection), valueProviderResult);
 
             // Act
@@ -438,10 +417,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var viewContext = GetViewContext<Model>(model, metadataProvider);
 
-            var valueProviderResult = new ValueProviderResult(
-                rawValue: null,
-                attemptedValue: null,
-                culture: CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: null);
             viewContext.ModelState.SetModelValue(nameof(Model.Collection), valueProviderResult);
 
             // Act
@@ -552,10 +528,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var htmlGenerator = GetGenerator(metadataProvider);
             var viewContext = GetViewContext<Model>(model: null, metadataProvider: metadataProvider);
 
-            var valueProviderResult = new ValueProviderResult(
-                rawValue,
-                attemptedValue: null,
-                culture: CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue);
             viewContext.ModelState.SetModelValue(propertyName, valueProviderResult);
 
             // Act

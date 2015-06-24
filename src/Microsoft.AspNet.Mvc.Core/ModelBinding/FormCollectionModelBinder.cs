@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return null;
             }
 
-            object model = null;
+            object model;
             var request = bindingContext.OperationBindingContext.HttpContext.Request;
             if (request.HasFormContentType)
             {
@@ -36,8 +36,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
                 else
                 {
-                    var formValuesLookup = form.ToDictionary(p => p.Key,
-                                                             p => p.Value);
+                    var formValuesLookup = form.ToDictionary(p => p.Key, p => p.Value);
                     model = new FormCollection(formValuesLookup, form.Files);
                 }
             }

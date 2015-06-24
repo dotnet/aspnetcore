@@ -34,7 +34,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal("foo", binderResult.Key);
             Assert.Null(binderResult.Model);
 
-            Assert.Empty(bindingContext.ModelState); // No submitted value for "foo".
+            var modelState = Assert.Single(bindingContext.ModelState);
+            Assert.Equal("foo", modelState.Key);
+            Assert.NotNull(modelState.Value.Value);
+            Assert.Equal(value, modelState.Value.Value.RawValue);
         }
 
         [Fact]
@@ -64,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Arrange
             var expected = TestPlatformHelper.IsMono ?
                 "Invalid length." :
-                 "The supplied value is invalid for foo.";
+                "The value '\"Fys1\"' is not valid for foo.";
 
             var valueProvider = new SimpleHttpValueProvider()
             {

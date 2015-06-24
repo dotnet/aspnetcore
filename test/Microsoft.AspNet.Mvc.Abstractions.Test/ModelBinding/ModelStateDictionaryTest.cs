@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Framework.Internal;
 using Xunit;
@@ -75,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Act
             var exception = Assert.Throws<InvalidOperationException>(() => source.MarkFieldSkipped("key"));
-            
+
             // Assert
             Assert.Equal(
                 "A field previously marked invalid should not be marked skipped.",
@@ -138,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Act
             var exception = Assert.Throws<InvalidOperationException>(() => source.MarkFieldValid("key"));
-            
+
             // Assert
             Assert.Equal(
                 "A field previously marked invalid should not be marked valid.",
@@ -278,7 +277,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var validState = new ModelState
             {
-                Value = new ValueProviderResult(null, null, null),
+                Value = new ValueProviderResult(rawValue: null),
                 ValidationState = ModelValidationState.Valid
             };
             var msd = new ModelStateDictionary
@@ -317,7 +316,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var validState = new ModelState
             {
-                Value = new ValueProviderResult(null, null, null),
+                Value = new ValueProviderResult(rawValue: null),
                 ValidationState = ModelValidationState.Valid
             };
             var msd = new ModelStateDictionary

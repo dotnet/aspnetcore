@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
 
-            // Returns true because it understands the metadata type.
+            // Returns non-null because it understands the metadata type.
             Assert.NotNull(binderResult);
             Assert.True(binderResult.IsFatalError);
             Assert.False(binderResult.IsModelSet);
@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
 
-            // Returns true because it understands the metadata type.
+            // Returns non-null because it understands the metadata type.
             Assert.NotNull(binderResult);
             Assert.True(binderResult.IsFatalError);
             Assert.False(binderResult.IsModelSet);

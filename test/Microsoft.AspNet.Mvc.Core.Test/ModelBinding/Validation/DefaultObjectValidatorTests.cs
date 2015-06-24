@@ -490,9 +490,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var validationContext = testValidationContext.ModelValidationContext;
 
             // Set the value on model state as a model binder would.
-            validationContext.ModelState.SetModelValue(
-                "user.Password",
-                Mock.Of<ValueProviderResult>());
+            var valueProviderResult = new ValueProviderResult(rawValue: "password");
+            validationContext.ModelState.SetModelValue("user.Password", valueProviderResult);
             var validator = new DefaultObjectValidator(
                 testValidationContext.ExcludeFilters,
                 testValidationContext.ModelMetadataProvider);
@@ -513,6 +512,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             Assert.Equal("user.Password", entry.Key);
             Assert.Empty(entry.Value.Errors);
             Assert.Equal(entry.Value.ValidationState, ModelValidationState.Skipped);
+            Assert.Same(valueProviderResult, entry.Value.Value);
         }
 
         private class Person2
@@ -536,7 +536,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             validationContext.ModelState.Add("person.Address", new ModelState());
 
             var validator = new DefaultObjectValidator(
-                testValidationContext.ExcludeFilters, 
+                testValidationContext.ExcludeFilters,
                 testValidationContext.ModelMetadataProvider);
             var modelExplorer = testValidationContext.ModelValidationContext.ModelExplorer;
             var topLevelValidationNode = new ModelValidationNode(

@@ -27,12 +27,12 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public FormCollection FileCollection { get; set; }
         }
 
-        [Fact(Skip = "ModelState.Value not set due to #2445")]
+        [Fact]
         public async Task BindProperty_WithData_WithEmptyPrefix_GetsBound()
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
-            var parameter = new ParameterDescriptor()
+            var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
                 BindingInfo = new BindingInfo(),
@@ -69,12 +69,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // ModelState
             Assert.True(modelState.IsValid);
-            Assert.Equal(2, modelState.Count);
-            Assert.Single(modelState.Keys, k => k == "Address.Zip");
-            var key = Assert.Single(modelState.Keys, k => k == "Address.File");
-            Assert.NotNull(modelState[key].Value); // should be non null bug #2445.
-            Assert.Empty(modelState[key].Errors);
-            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
+            var entry = Assert.Single(modelState);
+            Assert.Equal("Address.Zip", entry.Key);
+            Assert.Empty(entry.Value.Errors);
+            Assert.Equal(ModelValidationState.Valid, entry.Value.ValidationState);
         }
 
         [Fact]
@@ -82,15 +80,14 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
-            var parameter = new ParameterDescriptor()
+            var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
-                BindingInfo = new BindingInfo()
+                BindingInfo = new BindingInfo
                 {
                     // Setting a custom parameter prevents it from falling back to an empty prefix.
                     BinderModelName = "CustomParameter",
                 },
-
                 ParameterType = typeof(FormCollection)
             };
 
@@ -113,7 +110,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // Model
             var formCollection = Assert.IsType<FormCollection>(modelBindingResult.Model);
-            Assert.NotNull(formCollection);
             var file = Assert.Single(formCollection.Files);
             Assert.NotNull(file);
             Assert.Equal("form-data; name=CustomParameter; filename=text.txt", file.ContentDisposition);
@@ -122,10 +118,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // ModelState
             Assert.True(modelState.IsValid);
-
-            // Validation should be skipped because we do not validate any parameters and since IFormFile is not
-            // IValidatableObject, we should have no entries in the model state dictionary.
-            Assert.Empty(modelState.Keys);
+            Assert.Empty(modelState);
         }
 
         [Fact]
@@ -133,21 +126,18 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
-            var parameter = new ParameterDescriptor()
+            var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
-                BindingInfo = new BindingInfo()
+                BindingInfo = new BindingInfo
                 {
                     BinderModelName = "CustomParameter",
                 },
-
                 ParameterType = typeof(FormCollection)
             };
 
             // No data is passed.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
-            {
-            });
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
 
             var modelState = new ModelStateDictionary();
 
@@ -162,7 +152,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // ModelState
             Assert.True(modelState.IsValid);
-            Assert.Empty(modelState.Keys);
+            Assert.Empty(modelState);
 
             // FormCollection
             Assert.Empty(collection);

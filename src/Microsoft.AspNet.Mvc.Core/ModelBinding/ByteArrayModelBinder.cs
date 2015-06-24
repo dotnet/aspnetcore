@@ -21,17 +21,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return null;
             }
 
-            var valueProviderResult = await bindingContext.ValueProvider.GetValueAsync(bindingContext.ModelName);
-
             // Check for missing data case 1: There was no <input ... /> element containing this data.
+            var valueProviderResult = await bindingContext.ValueProvider.GetValueAsync(bindingContext.ModelName);
             if (valueProviderResult == null)
             {
                 return new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
             }
 
-            var value = valueProviderResult.AttemptedValue;
+            bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
 
             // Check for missing data case 2: There was an <input ... /> element but it was left blank.
+            var value = valueProviderResult.AttemptedValue;
             if (string.IsNullOrEmpty(value))
             {
                 return new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);

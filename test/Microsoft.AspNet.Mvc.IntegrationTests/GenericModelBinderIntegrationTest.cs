@@ -18,8 +18,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         // This isn't an especially useful scenario - but it exercises what happens when you
         // try to use a Collection of something that is bound greedily by model-type.
         //
-        // In this example we choose IFormCollection - because IFormCollection has a dedicated
-        // model  binder.
+        // In this example we choose IFormCollection because IFormCollection has a dedicated
+        // model binder.
         [Fact]
         public async Task GenericModelBinder_BindsCollection_ElementTypeFromGreedyModelBinder_WithPrefix_Success()
         {
@@ -47,12 +47,12 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<List<IFormCollection>>(modelBindingResult.Model);
-            Assert.Equal(1, model.Count);
-            Assert.NotNull(model[0]);
+            var formCollection = Assert.Single(model);
+            Assert.NotNull(formCollection);
 
-            Assert.Equal(0, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
+            Assert.Empty(modelState);
         }
 
         // This isn't an especially useful scenario - but it exercises what happens when you
@@ -86,12 +86,12 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<List<IFormCollection>>(modelBindingResult.Model);
-            Assert.Equal(1, model.Count);
-            Assert.NotNull(model[0]);
+            var formCollection = Assert.Single(model);
+            Assert.NotNull(formCollection);
 
-            Assert.Equal(0, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
+            Assert.Empty(modelState);
         }
 
         // This isn't an especially useful scenario - but it exercises what happens when you
@@ -217,7 +217,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Dictionary<string, int>[])
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext((request) =>
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
                 request.QueryString = new QueryString("?parameter[0][0].Key=key0&parameter[0][0].Value=10");
             });
@@ -263,7 +263,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Dictionary<string, int>[])
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext((request) =>
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
                 request.QueryString = new QueryString("?[0][0].Key=key0&[0][0].Value=10");
             });
@@ -309,7 +309,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Dictionary<string, int>[])
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext((request) =>
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
                 request.QueryString = new QueryString("?");
             });
@@ -345,7 +345,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(ICollection<KeyValuePair<string, int>>)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext((request) =>
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
                 request.QueryString = new QueryString("?parameter[0].Key=key0&parameter[0].Value=10");
             });
@@ -390,7 +390,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(ICollection<KeyValuePair<string, int>>)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext((request) =>
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
                 request.QueryString = new QueryString("?[0].Key=key0&[0].Value=10");
             });
@@ -435,7 +435,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Collection<KeyValuePair<string, int>>)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext((request) =>
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
                 request.QueryString = new QueryString("?");
             });
@@ -471,7 +471,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Dictionary<string, List<int>>)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext((request) =>
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
                 request.QueryString = new QueryString(
                     "?parameter[0].Key=key0&parameter[0].Value[0]=10&parameter[0].Value[1]=11");
@@ -521,7 +521,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Dictionary<string, List<int>>)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext((request) =>
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
                 request.QueryString = new QueryString("?[0].Key=key0&[0].Value[0]=10&[0].Value[1]=11");
             });
@@ -570,7 +570,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 ParameterType = typeof(Dictionary<string, List<int>>)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext((request) =>
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
                 request.QueryString = new QueryString("?");
             });

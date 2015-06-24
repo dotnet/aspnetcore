@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [Fact]
         public void ConvertTo_ReturnsNullForReferenceTypes_WhenValueIsNull()
         {
-            var valueProviderResult = new ValueProviderResult(null, null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: null);
 
             var convertedValue = valueProviderResult.ConvertTo(typeof(string));
 
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [Fact]
         public void ConvertTo_ReturnsDefaultForValueTypes_WhenValueIsNull()
         {
-            var valueProviderResult = new ValueProviderResult(null, null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: null);
 
             var convertedValue = valueProviderResult.ConvertTo(typeof(int));
 
@@ -34,10 +34,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToCanConvertArraysToSingleElements()
         {
             // Arrange
-            var vpr = new ValueProviderResult(new int[] { 1, 20, 42 }, "", CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(
+                new int[] { 1, 20, 42 },
+                string.Empty,
+                CultureInfo.InvariantCulture);
 
             // Act
-            var converted = (string)vpr.ConvertTo(typeof(string));
+            var converted = (string)valueProviderResult.ConvertTo(typeof(string));
 
             // Assert
             Assert.Equal("1", converted);
@@ -47,10 +50,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToCanConvertSingleElementsToArrays()
         {
             // Arrange
-            var vpr = new ValueProviderResult(42, "", CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(42, string.Empty, CultureInfo.InvariantCulture);
 
             // Act
-            var converted = (string[])vpr.ConvertTo(typeof(string[]));
+            var converted = (string[])valueProviderResult.ConvertTo(typeof(string[]));
 
             // Assert
             Assert.NotNull(converted);
@@ -62,10 +65,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToCanConvertSingleElementsToSingleElements()
         {
             // Arrange
-            var vpr = new ValueProviderResult(42, "", CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(42, string.Empty, CultureInfo.InvariantCulture);
 
             // Act
-            var converted = (string)vpr.ConvertTo(typeof(string));
+            var converted = (string)valueProviderResult.ConvertTo(typeof(string));
 
             // Assert
             Assert.NotNull(converted);
@@ -77,10 +80,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             object original = null;
-            var vpr = new ValueProviderResult(original, "", CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(original, string.Empty, CultureInfo.InvariantCulture);
 
             // Act
-            var returned = (int?)vpr.ConvertTo(typeof(int?));
+            var returned = (int?)valueProviderResult.ConvertTo(typeof(int?));
 
             // Assert
             Assert.Equal(returned, null);
@@ -91,10 +94,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var original = " ";
-            var vpr = new ValueProviderResult(original, "", CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(original, string.Empty, CultureInfo.InvariantCulture);
 
             // Act
-            var returned = (int?)vpr.ConvertTo(typeof(int?));
+            var returned = (int?)valueProviderResult.ConvertTo(typeof(int?));
 
             // Assert
             Assert.Equal(returned, null);
@@ -104,10 +107,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToReturnsNullIfArrayElementValueIsNull()
         {
             // Arrange
-            var vpr = new ValueProviderResult(new string[] { null }, null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: new string[] { null });
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(int));
+            var outValue = valueProviderResult.ConvertTo(typeof(int));
 
             // Assert
             Assert.Null(outValue);
@@ -117,10 +120,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToReturnsNullIfTryingToConvertEmptyArrayToSingleElement()
         {
             // Arrange
-            var vpr = new ValueProviderResult(new int[0], "", CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(new int[0], string.Empty, CultureInfo.InvariantCulture);
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(int));
+            var outValue = valueProviderResult.ConvertTo(typeof(int));
 
             // Assert
             Assert.Null(outValue);
@@ -132,10 +135,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToReturnsNullIfTrimmedValueIsEmptyString(object value)
         {
             // Arrange
-            var vpr = new ValueProviderResult(value, null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: value);
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(int));
+            var outValue = valueProviderResult.ConvertTo(typeof(int));
 
             // Assert
             Assert.Null(outValue);
@@ -145,12 +148,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToReturnsNullIfTrimmedValueIsEmptyString()
         {
             // Arrange
-            var vpr = new ValueProviderResult(rawValue: null,
-                                              attemptedValue: null,
-                                              culture: CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: null);
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(int[]));
+            var outValue = valueProviderResult.ConvertTo(typeof(int[]));
 
             // Assert
             Assert.Null(outValue);
@@ -160,7 +161,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToReturnsValueIfArrayElementIsIntegerAndDestinationTypeIsEnum()
         {
             // Arrange
-            var result = new ValueProviderResult(new object[] { 1 }, null, CultureInfo.InvariantCulture);
+            var result = new ValueProviderResult(rawValue: new object[] { 1 });
 
             // Act
             var outValue = result.ConvertTo(typeof(IntEnum));
@@ -194,7 +195,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             object expected)
         {
             // Arrange
-            var result = new ValueProviderResult(new object[] { input }, null, CultureInfo.InvariantCulture);
+            var result = new ValueProviderResult(rawValue: new object[] { input });
 
             // Act
             var outValue = result.ConvertTo(enumType);
@@ -207,10 +208,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToReturnsValueIfArrayElementIsStringValueAndDestinationTypeIsEnum()
         {
             // Arrange
-            var vpr = new ValueProviderResult(new object[] { "1" }, null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: new object[] { "1" });
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(IntEnum));
+            var outValue = valueProviderResult.ConvertTo(typeof(IntEnum));
 
             // Assert
             Assert.Equal(outValue, IntEnum.Value1);
@@ -220,10 +221,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToReturnsValueIfArrayElementIsStringKeyAndDestinationTypeIsEnum()
         {
             // Arrange
-            var vpr = new ValueProviderResult(new object[] { "Value1" }, null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: new object[] { "Value1" });
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(IntEnum));
+            var outValue = valueProviderResult.ConvertTo(typeof(IntEnum));
 
             // Assert
             Assert.Equal(outValue, IntEnum.Value1);
@@ -233,10 +234,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToReturnsValueIfElementIsStringAndDestinationIsNullableInteger()
         {
             // Arrange
-            var vpr = new ValueProviderResult("12", null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: "12");
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(int?));
+            var outValue = valueProviderResult.ConvertTo(typeof(int?));
 
             // Assert
             Assert.Equal(12, outValue);
@@ -246,10 +247,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToReturnsValueIfElementIsStringAndDestinationIsNullableDouble()
         {
             // Arrange
-            var vpr = new ValueProviderResult("12.5", null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: "12.5");
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(double?));
+            var outValue = valueProviderResult.ConvertTo(typeof(double?));
 
             // Assert
             Assert.Equal(12.5, outValue);
@@ -259,10 +260,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToReturnsValueIfElementIsDecimalAndDestinationIsNullableInteger()
         {
             // Arrange
-            var vpr = new ValueProviderResult(12M, null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: 12M);
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(int?));
+            var outValue = valueProviderResult.ConvertTo(typeof(int?));
 
             // Assert
             Assert.Equal(12, outValue);
@@ -272,10 +273,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToReturnsValueIfElementIsDecimalAndDestinationIsNullableDouble()
         {
             // Arrange
-            var vpr = new ValueProviderResult(12.5M, null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: 12.5M);
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(double?));
+            var outValue = valueProviderResult.ConvertTo(typeof(double?));
 
             // Assert
             Assert.Equal(12.5, outValue);
@@ -285,10 +286,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToReturnsValueIfElementIsDecimalDoubleAndDestinationIsNullableInteger()
         {
             // Arrange
-            var vpr = new ValueProviderResult(12.5M, null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: 12.5M);
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(int?));
+            var outValue = valueProviderResult.ConvertTo(typeof(int?));
 
             // Assert
             Assert.Equal(12, outValue);
@@ -298,10 +299,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToReturnsValueIfElementIsDecimalDoubleAndDestinationIsNullableLong()
         {
             // Arrange
-            var vpr = new ValueProviderResult(12.5M, null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: 12.5M);
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(long?));
+            var outValue = valueProviderResult.ConvertTo(typeof(long?));
 
             // Assert
             Assert.Equal(12L, outValue);
@@ -311,10 +312,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToReturnsValueIfArrayElementInstanceOfDestinationType()
         {
             // Arrange
-            var vpr = new ValueProviderResult(new object[] { "some string" }, null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: new object[] { "some string" });
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(string));
+            var outValue = valueProviderResult.ConvertTo(typeof(string));
 
             // Assert
             Assert.Equal("some string", outValue);
@@ -327,10 +328,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertTo_ConvertsEnumArrays(object value)
         {
             // Arrange
-            var vpr = new ValueProviderResult(value, null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: value);
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(IntEnum[]));
+            var outValue = valueProviderResult.ConvertTo(typeof(IntEnum[]));
 
             // Assert
             var result = Assert.IsType<IntEnum[]>(outValue);
@@ -346,10 +347,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertTo_ConvertsFlagsEnumArrays(object value, FlagsEnum[] expected)
         {
             // Arrange
-            var vpr = new ValueProviderResult(value, null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: value);
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(FlagsEnum[]));
+            var outValue = valueProviderResult.ConvertTo(typeof(FlagsEnum[]));
 
             // Assert
             var result = Assert.IsType<FlagsEnum[]>(outValue);
@@ -363,10 +364,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var original = new[] { "some string" };
-            var vpr = new ValueProviderResult(original, null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: original);
 
             // Act
-            var outValue = vpr.ConvertTo(typeof(string[]));
+            var outValue = valueProviderResult.ConvertTo(typeof(string[]));
 
             // Assert
             Assert.Same(original, outValue);
@@ -379,21 +380,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToThrowsIfConverterThrows(Type destinationType)
         {
             // Arrange
-            var vpr = new ValueProviderResult("this-is-not-a-valid-value", null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: "this-is-not-a-valid-value");
 
             // Act & Assert
-            var ex = Assert.Throws(typeof(FormatException), () => vpr.ConvertTo(destinationType));
+            var ex = Assert.Throws(typeof(FormatException), () => valueProviderResult.ConvertTo(destinationType));
         }
 
         [Fact]
         public void ConvertToThrowsIfNoConverterExists()
         {
             // Arrange
-            var vpr = new ValueProviderResult("x", null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: "x");
             var destinationType = typeof(MyClassWithoutConverter);
 
             // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() => vpr.ConvertTo(destinationType));
+            var ex = Assert.Throws<InvalidOperationException>(() => valueProviderResult.ConvertTo(destinationType));
             Assert.Equal("The parameter conversion from type 'System.String' to type " +
                         "'Microsoft.AspNet.Mvc.ModelBinding.ValueProviderResultTest+MyClassWithoutConverter' " +
                         "failed because no type converter can convert between these types.",
@@ -405,22 +406,25 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var original = "12,5";
-            var vpr = new ValueProviderResult(original, null, new CultureInfo("en-GB"));
+            var valueProviderResult = new ValueProviderResult(
+                rawValue: original,
+                attemptedValue: null,
+                culture: new CultureInfo("en-GB"));
             var frCulture = new CultureInfo("fr-FR");
 
             // Act
-            var cultureResult = vpr.ConvertTo(typeof(decimal), frCulture);
+            var cultureResult = valueProviderResult.ConvertTo(typeof(decimal), frCulture);
 
             // Assert
             Assert.Equal(12.5M, cultureResult);
-            Assert.Throws<FormatException>(() => vpr.ConvertTo(typeof(decimal)));
+            Assert.Throws<FormatException>(() => valueProviderResult.ConvertTo(typeof(decimal)));
         }
 
         [Fact]
         public void CulturePropertyDefaultsToInvariantCulture()
         {
             // Arrange
-            var result = new ValueProviderResult(null, null, null);
+            var result = new ValueProviderResult(rawValue: null, attemptedValue: null, culture: null);
 
             // Act & assert
             Assert.Same(CultureInfo.InvariantCulture, result.Culture);
@@ -431,7 +435,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertToCanConvertIntrinsics<T>(object initialValue, T expectedValue)
         {
             // Arrange
-            var result = new ValueProviderResult(initialValue, "", CultureInfo.InvariantCulture);
+            var result = new ValueProviderResult(initialValue, string.Empty, CultureInfo.InvariantCulture);
 
             // Act & Assert
             Assert.Equal(expectedValue, result.ConvertTo(typeof(T)));
@@ -471,7 +475,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertTo_Throws_IfValueIsNotStringData(Type destinationType)
         {
             // Arrange
-            var result = new ValueProviderResult(new MyClassWithoutConverter(), "", CultureInfo.InvariantCulture);
+            var result = new ValueProviderResult(
+                new MyClassWithoutConverter(),
+                string.Empty,
+                CultureInfo.InvariantCulture);
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() => result.ConvertTo(destinationType));
@@ -489,7 +496,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var value = "Hello world";
             var destinationType = typeof(MyClassWithoutConverter);
-            var result = new ValueProviderResult(value, "", CultureInfo.InvariantCulture);
+            var result = new ValueProviderResult(value, string.Empty, CultureInfo.InvariantCulture);
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() => result.ConvertTo(destinationType));
@@ -513,10 +520,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ConvertTo_ConvertsEnumFlags(object value, object expected)
         {
             // Arrange
-            var vpr = new ValueProviderResult(value, null, CultureInfo.InvariantCulture);
+            var valueProviderResult = new ValueProviderResult(rawValue: value);
 
             // Act
-            var outValue = (FlagsEnum)vpr.ConvertTo(typeof(FlagsEnum));
+            var outValue = (FlagsEnum)valueProviderResult.ConvertTo(typeof(FlagsEnum));
 
             // Assert
             Assert.Equal(expected, outValue);
