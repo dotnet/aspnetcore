@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("Image", null)]
         // Testing InputTagHelper with File
         [InlineData("Input", null)]
-        public async Task HtmlGenerationWebSite_GeneratesExpectedResults(string action, string antiForgeryPath)
+        public async Task HtmlGenerationWebSite_GeneratesExpectedResults(string action, string antiforgeryPath)
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
             responseContent = responseContent.Trim();
-            if (antiForgeryPath == null)
+            if (antiforgeryPath == null)
             {
 #if GENERATE_BASELINES
                 ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             }
             else
             {
-                var forgeryToken = AntiForgeryTestHelper.RetrieveAntiForgeryToken(responseContent, antiForgeryPath);
+                var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, antiforgeryPath);
 #if GENERATE_BASELINES
                 // Reverse usual substitution and insert a format item into the new file content.
                 responseContent = responseContent.Replace(forgeryToken, "{0}");
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("OrderUsingHtmlHelpers", "/HtmlGeneration_Order/Submit")]
         [InlineData("Product", null)]
         [InlineData("Script", null)]
-        public async Task HtmlGenerationWebSite_GenerateEncodedResults(string action, string antiForgeryPath)
+        public async Task HtmlGenerationWebSite_GenerateEncodedResults(string action, string antiforgeryPath)
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, services =>
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
             responseContent = responseContent.Trim();
-            if (antiForgeryPath == null)
+            if (antiforgeryPath == null)
             {
 #if GENERATE_BASELINES
                 ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             }
             else
             {
-                var forgeryToken = AntiForgeryTestHelper.RetrieveAntiForgeryToken(responseContent, antiForgeryPath);
+                var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, antiforgeryPath);
 #if GENERATE_BASELINES
                 // Reverse usual substitution and insert a format item into the new file content.
                 responseContent = responseContent.Replace(forgeryToken, "{0}");
@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             responseContent = responseContent.Trim();
             var forgeryToken =
-                AntiForgeryTestHelper.RetrieveAntiForgeryToken(responseContent, "Customer/HtmlGeneration_Customer");
+                AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, "Customer/HtmlGeneration_Customer");
 
 #if GENERATE_BASELINES
             // Reverse usual substitution and insert a format item into the new file content.
@@ -461,11 +461,11 @@ Products: Laptops (3)";
         [InlineData(null)]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task FormTagHelper_GeneratesExpectedContent(bool? optionsAntiForgery)
+        public async Task FormTagHelper_GeneratesExpectedContent(bool? optionsAntiforgery)
         {
             // Arrange
             var newServices = new ServiceCollection();
-            newServices.InitializeTagHelper<FormTagHelper>((helper, _) => helper.AntiForgery = optionsAntiForgery);
+            newServices.InitializeTagHelper<FormTagHelper>((helper, _) => helper.Antiforgery = optionsAntiforgery);
             var server = TestHelper.CreateServer(_app, SiteName,
                 services =>
                 {
@@ -476,8 +476,8 @@ Products: Laptops (3)";
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
 
             var outputFile = string.Format(
-                "compiler/resources/HtmlGenerationWebSite.HtmlGeneration_Home.Form.Options.AntiForgery.{0}.html",
-                optionsAntiForgery?.ToString() ?? "null");
+                "compiler/resources/HtmlGenerationWebSite.HtmlGeneration_Home.Form.Options.Antiforgery.{0}.html",
+                optionsAntiforgery?.ToString() ?? "null");
             var expectedContent =
                 await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
 
@@ -491,7 +491,7 @@ Products: Laptops (3)";
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
             responseContent = responseContent.Trim();
-            var forgeryTokens = AntiForgeryTestHelper.RetrieveAntiForgeryTokens(responseContent).ToArray();
+            var forgeryTokens = AntiforgeryTestHelper.RetrieveAntiforgeryTokens(responseContent).ToArray();
 
 #if GENERATE_BASELINES
             // Reverse usual substitutions and insert format items into the new file content.

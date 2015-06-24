@@ -3,7 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace AntiForgeryWebSite
+namespace AntiforgeryTokenWebSite
 {
     public class LoginViewModel
     {

@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Antiforgery;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -781,8 +782,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <remarks>The value returned is a token value that allows FlushAsync to work directly in an HTML
         /// section. However the value does not represent the rendered content.
         /// This method also writes out headers, so any modifications to headers must be done before
-        /// <see cref="FlushAsync"/> is called. For example, call <see cref="SetAntiForgeryCookieAndHeader"/> to send
-        /// anti-forgery cookie token and X-Frame-Options header to client before this method flushes headers out.
+        /// <see cref="FlushAsync"/> is called. For example, call <see cref="SetAntiforgeryCookieAndHeader"/> to send
+        /// antiforgery cookie token and X-Frame-Options header to client before this method flushes headers out.
         /// </remarks>
         public async Task<HtmlString> FlushAsync()
         {
@@ -843,15 +844,15 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// Sets anti-forgery cookie and X-Frame-Options header on the response.
+        /// Sets antiforgery cookie and X-Frame-Options header on the response.
         /// </summary>
         /// <returns>A <see cref="HtmlString"/> that returns a <see cref="HtmlString.Empty"/>.</returns>
-        /// <remarks> Call this method to send anti-forgery cookie token and X-Frame-Options header to client
+        /// <remarks> Call this method to send antiforgery cookie token and X-Frame-Options header to client
         /// before <see cref="FlushAsync"/> flushes the headers. </remarks>
-        public virtual HtmlString SetAntiForgeryCookieAndHeader()
+        public virtual HtmlString SetAntiforgeryCookieAndHeader()
         {
-            var antiForgery = Context.RequestServices.GetRequiredService<AntiForgery>();
-            antiForgery.SetCookieTokenAndHeader(Context);
+            var antiforgery = Context.RequestServices.GetRequiredService<IAntiforgery>();
+            antiforgery.SetCookieTokenAndHeader(Context);
 
             return HtmlString.Empty;
         }

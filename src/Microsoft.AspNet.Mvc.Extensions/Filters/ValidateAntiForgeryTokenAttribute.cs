@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Antiforgery;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
@@ -13,8 +14,8 @@ namespace Microsoft.AspNet.Mvc
 
         public IFilter CreateInstance(IServiceProvider serviceProvider)
         {
-            var antiForgery = serviceProvider.GetRequiredService<AntiForgery>();
-            return new ValidateAntiForgeryTokenAuthorizationFilter(antiForgery);
+            var antiforgery = serviceProvider.GetRequiredService<IAntiforgery>();
+            return new ValidateAntiforgeryTokenAuthorizationFilter(antiforgery);
         }
     }
 }

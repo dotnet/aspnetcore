@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22823.1
+VisualStudioVersion = 14.0.23017.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{DAAE4C74-D06F-4874-A166-33305D2643CE}"
 EndProject
@@ -57,8 +57,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ContentNegotiationWebSite", "test\WebSites\ContentNegotiationWebSite\ContentNegotiationWebSite.xproj", "{C6E5AFFA-890A-448F-8DE3-878B1D3C9FC7}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AntiForgeryWebSite", "test\WebSites\AntiForgeryWebSite\AntiForgeryWebSite.xproj", "{A353B17E-A940-4CE8-8BF9-179E24A9041F}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AddServicesWebSite", "test\WebSites\AddServicesWebSite\AddServicesWebSite.xproj", "{6A0B65CE-6B01-40D0-840D-EFF3680D1547}"
 EndProject
@@ -173,6 +171,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Extensions", "src\Microsoft.AspNet.Mvc.Extensions\Microsoft.AspNet.Mvc.Extensions.xproj", "{B2CA101A-87E6-4DD2-9BB2-28DA68EF1A94}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Extensions.Test", "test\Microsoft.AspNet.Mvc.Extensions.Test\Microsoft.AspNet.Mvc.Extensions.Test.xproj", "{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AntiforgeryTokenWebSite", "test\WebSites\AntiforgeryTokenWebSite\AntiforgeryTokenWebSite.xproj", "{A353B17E-A940-4CE8-8BF9-179E24A9041F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -394,16 +394,6 @@ Global
 		{C6E5AFFA-890A-448F-8DE3-878B1D3C9FC7}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{C6E5AFFA-890A-448F-8DE3-878B1D3C9FC7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{C6E5AFFA-890A-448F-8DE3-878B1D3C9FC7}.Release|x86.ActiveCfg = Release|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Release|x86.ActiveCfg = Release|Any CPU
 		{6A0B65CE-6B01-40D0-840D-EFF3680D1547}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6A0B65CE-6B01-40D0-840D-EFF3680D1547}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A0B65CE-6B01-40D0-840D-EFF3680D1547}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -1052,6 +1042,18 @@ Global
 		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}.Release|x86.ActiveCfg = Release|Any CPU
 		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C}.Release|x86.Build.0 = Release|Any CPU
+		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Debug|x86.Build.0 = Debug|Any CPU
+		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Release|x86.ActiveCfg = Release|Any CPU
+		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1079,7 +1081,6 @@ Global
 		{62735776-46FF-4170-9392-02E128A69B89} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{EE1AB716-F102-4CA3-AD2C-214A44B459A0} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{C6E5AFFA-890A-448F-8DE3-878B1D3C9FC7} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{6A0B65CE-6B01-40D0-840D-EFF3680D1547} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{1976AC4A-FEA4-4587-A158-D9F79736D2B6} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{A192E504-2881-41DC-90D1-B7F1DD1134E8} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
@@ -1137,5 +1138,6 @@ Global
 		{FCFE6024-2720-49B4-8257-9DBC6114F0F1} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{B2CA101A-87E6-4DD2-9BB2-28DA68EF1A94} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
 		{5DF6EFA5-865E-450B-BF83-DE9CE88EB77C} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
+		{A353B17E-A940-4CE8-8BF9-179E24A9041F} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 	EndGlobalSection
 EndGlobal

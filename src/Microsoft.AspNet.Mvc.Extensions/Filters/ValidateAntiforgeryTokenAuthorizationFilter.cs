@@ -2,22 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNet.Antiforgery;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class ValidateAntiForgeryTokenAuthorizationFilter : IAsyncAuthorizationFilter
+    public class ValidateAntiforgeryTokenAuthorizationFilter : IAsyncAuthorizationFilter
     {
-        private readonly AntiForgery _antiForgery;
+        private readonly IAntiforgery _antiforgery;
 
-        public ValidateAntiForgeryTokenAuthorizationFilter([NotNull] AntiForgery antiForgery)
+        public ValidateAntiforgeryTokenAuthorizationFilter([NotNull] IAntiforgery antiforgery)
         {
-            _antiForgery = antiForgery;
+            _antiforgery = antiforgery;
         }
 
         public async Task OnAuthorizationAsync([NotNull] AuthorizationContext context)
         {
-            await _antiForgery.ValidateAsync(context.HttpContext);
+            await _antiforgery.ValidateRequestAsync(context.HttpContext);
         }
     }
 }

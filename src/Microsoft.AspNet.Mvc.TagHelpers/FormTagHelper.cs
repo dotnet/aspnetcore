@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <see cref="ITagHelper"/> implementation targeting &lt;form&gt; elements.
     /// </summary>
     [TargetElement("form", Attributes = ActionAttributeName)]
-    [TargetElement("form", Attributes = AntiForgeryAttributeName)]
+    [TargetElement("form", Attributes = AntiforgeryAttributeName)]
     [TargetElement("form", Attributes = ControllerAttributeName)]
     [TargetElement("form", Attributes = RouteAttributeName)]
     [TargetElement("form", Attributes = RouteValuesDictionaryName)]
@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     public class FormTagHelper : TagHelper
     {
         private const string ActionAttributeName = "asp-action";
-        private const string AntiForgeryAttributeName = "asp-anti-forgery";
+        private const string AntiforgeryAttributeName = "asp-antiforgery";
         private const string ControllerAttributeName = "asp-controller";
         private const string RouteAttributeName = "asp-route";
         private const string RouteValuesDictionaryName = "asp-all-route-data";
@@ -56,11 +56,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public string Controller { get; set; }
 
         /// <summary>
-        /// Whether the anti-forgery token should be generated.
+        /// Whether the antiforgery token should be generated.
         /// </summary>
         /// <value>Defaults to <c>false</c> if user provides an <c>action</c> attribute; <c>true</c> otherwise.</value>
-        [HtmlAttributeName(AntiForgeryAttributeName)]
-        public bool? AntiForgery { get; set; }
+        [HtmlAttributeName(AntiforgeryAttributeName)]
+        public bool? Antiforgery { get; set; }
 
         /// <summary>
         /// Name of the route.
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         /// <inheritdoc />
         /// <remarks>
-        /// Does nothing if user provides an <c>action</c> attribute and <see cref="AntiForgery"/> is <c>null</c> or
+        /// Does nothing if user provides an <c>action</c> attribute and <see cref="Antiforgery"/> is <c>null</c> or
         /// <c>false</c>.
         /// </remarks>
         /// <exception cref="InvalidOperationException">
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// </exception>
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            var antiForgeryDefault = true;
+            var antiforgeryDefault = true;
 
             // If "action" is already set, it means the user is attempting to use a normal <form>.
             if (output.Attributes.ContainsName(HtmlActionAttributeName))
@@ -107,9 +107,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                             RouteValuesPrefix));
                 }
 
-                // User is using the FormTagHelper like a normal <form> tag. Anti-forgery default should be false to
-                // not force the anti-forgery token on the user.
-                antiForgeryDefault = false;
+                // User is using the FormTagHelper like a normal <form> tag. Antiforgery default should be false to
+                // not force the antiforgery token on the user.
+                antiforgeryDefault = false;
             }
             else
             {
@@ -158,12 +158,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 }
             }
 
-            if (AntiForgery ?? antiForgeryDefault)
+            if (Antiforgery ?? antiforgeryDefault)
             {
-                var antiForgeryTagBuilder = Generator.GenerateAntiForgery(ViewContext);
-                if (antiForgeryTagBuilder != null)
+                var antiforgeryTag = Generator.GenerateAntiforgery(ViewContext);
+                if (antiforgeryTag != null)
                 {
-                    output.PostContent.Append(antiForgeryTagBuilder.ToString(TagRenderMode.SelfClosing));
+                    output.PostContent.Append(antiforgeryTag.ToString());
                 }
             }
         }

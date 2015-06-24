@@ -34,18 +34,6 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         /// <summary>
-        /// Configures a set of <see cref="AntiForgeryOptions"/> for the application.
-        /// </summary>
-        /// <param name="services">The services available in the application.</param>
-        /// <param name="setupAction">The <see cref="AntiForgeryOptions"/> which need to be configured.</param>
-        public static void ConfigureAntiforgery(
-            [NotNull] this IServiceCollection services,
-            [NotNull] Action<AntiForgeryOptions> setupAction)
-        {
-            services.Configure(setupAction);
-        }
-
-        /// <summary>
         /// Configures a set of <see cref="MvcFormatterMappingOptions"/> for the application.
         /// </summary>
         /// <param name="services">The services available in the application.</param>
@@ -245,11 +233,6 @@ namespace Microsoft.Framework.DependencyInjection
             services.TryAddSingleton<IViewComponentInvokerFactory, DefaultViewComponentInvokerFactory>();
             services.TryAddTransient<IViewComponentHelper, DefaultViewComponentHelper>();
 
-            // Security and Authorization
-            services.TryAddSingleton<IClaimUidExtractor, DefaultClaimUidExtractor>();
-            services.TryAddSingleton<AntiForgery, AntiForgery>();
-            services.TryAddSingleton<IAntiForgeryAdditionalDataProvider, DefaultAntiForgeryAdditionalDataProvider>();
-
             // Api Description
             services.TryAddSingleton<IApiDescriptionGroupCollectionProvider, ApiDescriptionGroupCollectionProvider>();
             services.TryAddEnumerable(
@@ -287,6 +270,7 @@ namespace Microsoft.Framework.DependencyInjection
         private static void ConfigureDefaultServices(IServiceCollection services)
         {
             services.AddDataProtection();
+            services.AddAntiforgery();
             services.AddCors();
             services.AddAuthorization();
             services.AddWebEncoders();

@@ -31,7 +31,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object routeValues,
             object htmlAttributes);
 
-        TagBuilder GenerateAntiForgery([NotNull] ViewContext viewContext);
+        /// <summary>
+        /// Genrate an &lt;input type="hidden".../&gt; element containing an antiforgery token.
+        /// </summary>
+        /// <param name="viewContext">The <see cref="ViewContext"/> instance for the current scope.</param>
+        /// <returns>An <see cref="HtmlString"/> instance for the &lt;input type="hidden".../&gt; element.</returns>
+        HtmlString GenerateAntiforgery([NotNull] ViewContext viewContext);
 
         /// <summary>
         /// Generate a &lt;input type="checkbox".../&gt; element. 

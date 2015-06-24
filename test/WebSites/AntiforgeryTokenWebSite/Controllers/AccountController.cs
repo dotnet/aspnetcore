@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Mvc;
 
-namespace AntiForgeryWebSite
+namespace AntiforgeryTokenWebSite
 {
     // This controller is reachable via traditional routing.
     public class AccountController : Controller

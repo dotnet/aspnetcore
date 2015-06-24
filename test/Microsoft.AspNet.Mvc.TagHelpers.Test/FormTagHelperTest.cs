@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { "asp-action", "index" },
                     { "asp-controller", "home" },
                     { "method", "post" },
-                    { "asp-anti-forgery", true }
+                    { "asp-antiforgery", true }
                 },
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
@@ -58,12 +58,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = TestableHtmlGenerator.GetViewContext(model: null,
                                                                    htmlGenerator: htmlGenerator,
                                                                    metadataProvider: metadataProvider);
-            var expectedPostContent = "Something" + htmlGenerator.GenerateAntiForgery(viewContext)
-                                                                 .ToString(TagRenderMode.SelfClosing);
+            var expectedPostContent = "Something" + htmlGenerator.GenerateAntiforgery(viewContext);
             var formTagHelper = new FormTagHelper(htmlGenerator)
             {
                 Action = "index",
-                AntiForgery = true,
+                Antiforgery = true,
                 Controller = "home",
                 ViewContext = viewContext,
                 RouteValues =
@@ -93,8 +92,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [InlineData(null, "<input />")]
         [InlineData(true, "<input />")]
         [InlineData(false, "")]
-        public async Task ProcessAsync_GeneratesAntiForgeryCorrectly(
-            bool? antiForgery,
+        public async Task ProcessAsync_GeneratesAntiforgeryCorrectly(
+            bool? antiforgery,
             string expectedPostContent)
         {
             // Arrange
@@ -124,12 +123,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     It.IsAny<object>()))
                 .Returns(new TagBuilder("form", new CommonTestEncoder()));
 
-            generator.Setup(mock => mock.GenerateAntiForgery(viewContext))
-                     .Returns(new TagBuilder("input", new CommonTestEncoder()));
+            generator.Setup(mock => mock.GenerateAntiforgery(viewContext))
+                     .Returns(new HtmlString("<input />"));
             var formTagHelper = new FormTagHelper(generator.Object)
             {
                 Action = "Index",
-                AntiForgery = antiForgery,
+                Antiforgery = antiforgery,
                 ViewContext = viewContext,
             };
 
@@ -195,7 +194,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var formTagHelper = new FormTagHelper(generator.Object)
             {
                 Action = "Index",
-                AntiForgery = false,
+                Antiforgery = false,
                 ViewContext = testViewContext,
                 RouteValues =
                 {
@@ -250,7 +249,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var formTagHelper = new FormTagHelper(generator.Object)
             {
                 Action = "Index",
-                AntiForgery = false,
+                Antiforgery = false,
                 Controller = "Home",
                 ViewContext = viewContext,
             };
@@ -299,7 +298,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 .Verifiable();
             var formTagHelper = new FormTagHelper(generator.Object)
             {
-                AntiForgery = false,
+                Antiforgery = false,
                 Route = "Default",
                 ViewContext = viewContext,
                 RouteValues =
@@ -326,19 +325,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [InlineData(true, "<input />")]
         [InlineData(false, "")]
         [InlineData(null, "")]
-        public async Task ProcessAsync_SupportsAntiForgeryIfActionIsSpecified(
-            bool? antiForgery,
+        public async Task ProcessAsync_SupportsAntiforgeryIfActionIsSpecified(
+            bool? antiforgery,
             string expectedPostContent)
         {
             // Arrange
             var viewContext = CreateViewContext();
             var generator = new Mock<IHtmlGenerator>();
 
-            generator.Setup(mock => mock.GenerateAntiForgery(It.IsAny<ViewContext>()))
-                     .Returns(new TagBuilder("input", new CommonTestEncoder()));
+            generator.Setup(mock => mock.GenerateAntiforgery(It.IsAny<ViewContext>()))
+                     .Returns(new HtmlString("<input />"));
             var formTagHelper = new FormTagHelper(generator.Object)
             {
-                AntiForgery = antiForgery,
+                Antiforgery = antiforgery,
                 ViewContext = viewContext,
             };
 

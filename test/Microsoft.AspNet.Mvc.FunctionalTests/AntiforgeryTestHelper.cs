@@ -10,18 +10,18 @@ using System.Xml.Linq;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public static class AntiForgeryTestHelper
+    public static class AntiforgeryTestHelper
     {
-        public static string RetrieveAntiForgeryToken(string htmlContent, string actionUrl)
+        public static string RetrieveAntiforgeryToken(string htmlContent, string actionUrl)
         {
-            return RetrieveAntiForgeryTokens(
+            return RetrieveAntiforgeryTokens(
                 htmlContent,
                 attribute => attribute.Value.EndsWith(actionUrl, StringComparison.OrdinalIgnoreCase) ||
                     attribute.Value.EndsWith($"HtmlEncode[[{ actionUrl }]]", StringComparison.OrdinalIgnoreCase))
                 .FirstOrDefault();
         }
 
-        public static IEnumerable<string> RetrieveAntiForgeryTokens(
+        public static IEnumerable<string> RetrieveAntiforgeryTokens(
             string htmlContent,
             Func<XAttribute, bool> predicate = null)
         {
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             }
         }
 
-        public static CookieMetadata RetrieveAntiForgeryCookie(HttpResponseMessage response)
+        public static CookieMetadata RetrieveAntiforgeryCookie(HttpResponseMessage response)
         {
             var setCookieArray = response.Headers.GetValues("Set-Cookie").ToArray();
             var cookie = setCookieArray[0].Split(';').First().Split('=');

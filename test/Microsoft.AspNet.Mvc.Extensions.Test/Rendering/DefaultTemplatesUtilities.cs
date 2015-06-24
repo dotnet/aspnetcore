@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Antiforgery;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -236,7 +237,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             if (htmlGenerator == null)
             {
                 htmlGenerator = new DefaultHtmlGenerator(
-                    GetAntiForgeryInstance(),
+                    Mock.Of<IAntiforgery>(),
                     optionsAccessor.Object,
                     provider,
                     urlHelper,
@@ -305,26 +306,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 .Returns(ViewEngineResult.Found("MyView", view.Object));
 
             return viewEngine.Object;
-        }
-
-        private static AntiForgery GetAntiForgeryInstance()
-        {
-            var claimExtractor = new Mock<IClaimUidExtractor>();
-            var dataProtectionProvider = new Mock<IDataProtectionProvider>();
-            var additionalDataProvider = new Mock<IAntiForgeryAdditionalDataProvider>();
-            var optionsAccessor = new Mock<IOptions<AntiForgeryOptions>>();
-            var mockDataProtectionOptions = new Mock<IOptions<DataProtectionOptions>>();
-            mockDataProtectionOptions
-                .SetupGet(options => options.Options)
-                .Returns(Mock.Of<DataProtectionOptions>());
-            optionsAccessor.SetupGet(o => o.Options).Returns(new AntiForgeryOptions());
-            return new AntiForgery(
-                claimExtractor.Object,
-                dataProtectionProvider.Object,
-                additionalDataProvider.Object,
-                optionsAccessor.Object,
-                new CommonTestEncoder(),
-                mockDataProtectionOptions.Object);
         }
 
         private static string FormatOutput(ModelExplorer modelExplorer)

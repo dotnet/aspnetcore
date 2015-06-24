@@ -4,7 +4,7 @@
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
 
-namespace AntiForgeryWebSite
+namespace AntiforgeryTokenWebSite
 {
     public class Startup
     {

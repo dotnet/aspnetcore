@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Microsoft.AspNet.Antiforgery;
 using Microsoft.AspNet.Mvc.Extensions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private static readonly MethodInfo ConvertEnumFromStringMethod =
             typeof(DefaultHtmlGenerator).GetTypeInfo().GetDeclaredMethod(nameof(ConvertEnumFromString));
 
-        private readonly AntiForgery _antiForgery;
+        private readonly IAntiforgery _antiforgery;
         private readonly IClientModelValidatorProvider _clientModelValidatorProvider;
         private readonly IModelMetadataProvider _metadataProvider;
         private readonly IUrlHelper _urlHelper;
@@ -34,20 +35,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultHtmlGenerator"/> class.
         /// </summary>
-        /// <param name="antiForgery">The <see cref="AntiForgery"/> instance which is used to generate anti-forgery
+        /// <param name="antiforgery">The <see cref="IAntiforgery"/> instance which is used to generate antiforgery
         /// tokens.</param>
         /// <param name="optionsAccessor">The accessor for <see cref="MvcOptions"/>.</param>
         /// <param name="metadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="htmlEncoder">The <see cref="IHtmlEncoder"/>.</param>
         public DefaultHtmlGenerator(
-            [NotNull] AntiForgery antiForgery,
+            [NotNull] IAntiforgery antiforgery,
             [NotNull] IOptions<MvcViewOptions> optionsAccessor,
             [NotNull] IModelMetadataProvider metadataProvider,
             [NotNull] IUrlHelper urlHelper,
             [NotNull] IHtmlEncoder htmlEncoder)
         {
-            _antiForgery = antiForgery;
+            _antiforgery = antiforgery;
             var clientValidatorProviders = optionsAccessor.Options.ClientModelValidatorProviders;
             _clientModelValidatorProvider = new CompositeClientModelValidatorProvider(clientValidatorProviders);
             _metadataProvider = metadataProvider;
@@ -95,10 +96,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public virtual TagBuilder GenerateAntiForgery([NotNull] ViewContext viewContext)
+        public virtual HtmlString GenerateAntiforgery([NotNull] ViewContext viewContext)
         {
-            var tagBuilder = _antiForgery.GetHtml(viewContext.HttpContext);
-            return tagBuilder;
+            var tag = _antiforgery.GetHtml(viewContext.HttpContext);
+            return new HtmlString(tag);
         }
 
         /// <inheritdoc />

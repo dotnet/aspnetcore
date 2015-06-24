@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNet.Antiforgery;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.OptionsModel;
@@ -544,20 +545,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
         // GetCurrentValues uses only the IModelMetadataProvider passed to the DefaultHtmlGenerator constructor.
         private static IHtmlGenerator GetGenerator(IModelMetadataProvider metadataProvider)
         {
-            var antiforgeryOptionsAccessor = new Mock<IOptions<AntiForgeryOptions>>();
-            antiforgeryOptionsAccessor.SetupGet(accessor => accessor.Options).Returns(new AntiForgeryOptions());
             var mvcViewOptionsAccessor = new Mock<IOptions<MvcViewOptions>>();
             mvcViewOptionsAccessor.SetupGet(accessor => accessor.Options).Returns(new MvcViewOptions());
             var htmlEncoder = Mock.Of<IHtmlEncoder>();
-            var dataOptionsAccessor = new Mock<IOptions<DataProtectionOptions>>();
-            dataOptionsAccessor.SetupGet(accessor => accessor.Options).Returns(new DataProtectionOptions());
-            var antiForgery = new AntiForgery(
-                Mock.Of<IClaimUidExtractor>(),
-                Mock.Of<IDataProtectionProvider>(),
-                Mock.Of<IAntiForgeryAdditionalDataProvider>(),
-                antiforgeryOptionsAccessor.Object,
-                htmlEncoder,
-                dataOptionsAccessor.Object);
+            var antiforgery = Mock.Of<IAntiforgery>();
 
             var optionsAccessor = new Mock<IOptions<MvcOptions>>();
             optionsAccessor
@@ -565,7 +556,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 .Returns(new MvcOptions());
 
             return new DefaultHtmlGenerator(
-                antiForgery,
+                antiforgery,
                 mvcViewOptionsAccessor.Object,
                 metadataProvider,
                 Mock.Of<IUrlHelper>(),

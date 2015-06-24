@@ -8,9 +8,9 @@
 
 <h2>Create</h2>
 
-@* anti-forgery is on by default *@
-@* <form/> tag helper will special-case only elements with an "asp-action" or "asp-anti-forgery" attribute. *@
-<form asp-anti-forgery="false" asp-action="Create">
+@* antiforgery is on by default *@
+@* <form/> tag helper will special-case only elements with an "asp-action" or "asp-antiforgery" attribute. *@
+<form asp-antiforgery="false" asp-action="Create">
     <div class="form-horizontal">
         @* validation summary tag helper will target just <div/> elements and append the list of errors *@
         @* - i.e. this helper, like <select/> helper appends content. *@

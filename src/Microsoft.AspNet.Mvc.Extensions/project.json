@@ -5,6 +5,7 @@
         "warningsAsErrors": true
     },
     "dependencies": {
+        "Microsoft.AspNet.Antiforgery": "1.0.0-*",
         "Microsoft.AspNet.Authentication": "1.0.0-*",
         "Microsoft.AspNet.Authorization": "1.0.0-*",
         "Microsoft.AspNet.Cors.Core": "1.0.0-*",
