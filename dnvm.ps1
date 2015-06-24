@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta6-10393"
+$BuildVersion="beta6-10394"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -1299,6 +1299,17 @@ function dnvm-run {
     param(
         [Parameter(Mandatory=$true, Position=0)]
         [string]$VersionOrAlias,
+
+        [Alias("arch")]
+        [ValidateSet("", "x86", "x64", "arm")]
+        [Parameter(Mandatory=$false)]
+        [string]$Architecture = "",
+
+        [Alias("r")]
+        [ValidateSet("", "clr", "coreclr")]
+        [Parameter(Mandatory=$false)]
+        [string]$Runtime = "",
+
         [Parameter(Mandatory=$false, Position=1, ValueFromRemainingArguments=$true)]
         [object[]]$DnxArguments)
 
@@ -1329,6 +1340,16 @@ function dnvm-exec {
         [string]$VersionOrAlias,
         [Parameter(Mandatory=$false, Position=1)]
         [string]$Command,
+
+        [Alias("arch")]
+        [ValidateSet("", "x86", "x64", "arm")]
+        [Parameter(Mandatory=$false)]
+        [string]$Architecture = "",
+
+        [Alias("r")]
+        [ValidateSet("", "clr", "coreclr")]
+        [Parameter(Mandatory=$false)]
+        [string]$Runtime = "",
         [Parameter(Mandatory=$false, Position=2, ValueFromRemainingArguments=$true)]
         [object[]]$Arguments)
 
