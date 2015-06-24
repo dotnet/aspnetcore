@@ -22,12 +22,12 @@ If you don't want to install Visual Studio or want to upgrade DNVM to the latest
 
 ####CMD
 ```
-@powershell -NoProfile -ExecutionPolicy unrestricted -Command "&{$Branch='dev';iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1'))}"
+@powershell -NoProfile -ExecutionPolicy Unrestricted -Command "Invoke-WebRequest 'https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1' | Invoke-Expression"
 ```
 
 ####Powershell
 ```
-&{$Branch='dev';iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1'))}
+Invoke-WebRequest 'https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1' | Invoke-Expression
 ```
 
 This will download the DNVM script and put it in your user profile. You can check the location of DNVM by running the following in a cmd prompt:
