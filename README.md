@@ -50,7 +50,7 @@ brew install dnvm
 
 Add dnvm to your bash profile (./bash_profile)
 ```bash
-source dnvm
+source dnvm.sh
 ```
 
 
