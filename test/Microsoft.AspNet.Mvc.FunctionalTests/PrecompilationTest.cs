@@ -8,7 +8,6 @@ using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Razor.Precompilation;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime;
@@ -236,7 +235,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var assemblyNamePrefix = GetAssemblyNamePrefix();
-            var expected = 
+            var expected =
                 @"<root data-root=""true""><input class=""form-control"" type=""number"" data-val=""true""" +
                 @" data-val-range=""The field Age must be between 10 and 100."" data-val-range-max=""100"" "+
                 @"data-val-range-min=""10"" data-val-required=""The Age field is required."" " +
@@ -248,7 +247,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var response = await client.GetStringAsync("http://localhost/TagHelpers/Add");
 
             // Assert
-            var responseLines = response.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            var responseLines = response.Split(new[] { "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
             Assert.StartsWith(assemblyNamePrefix, responseLines[0]);
             Assert.Equal(expected, responseLines[1]);
         }
@@ -266,7 +265,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var response = await client.GetStringAsync("http://localhost/TagHelpers/Remove");
 
             // Assert
-            var responseLines = response.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            var responseLines = response.Split(new[] { "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
             Assert.StartsWith(assemblyNamePrefix, responseLines[0]);
             Assert.Equal(expected, responseLines[1]);
         }
@@ -291,10 +290,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             public ParsedResponse(string responseContent)
             {
-                var results = responseContent.Split(new[] { Environment.NewLine },
-                                                    StringSplitOptions.RemoveEmptyEntries)
-                                             .Select(s => s.Trim())
-                                             .ToArray();
+                var results = responseContent
+                    .Split(new[] { "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(s => s.Trim())
+                    .ToArray();
 
                 Assert.True(results[0].StartsWith("Layout:"));
                 Layout = results[0].Substring("Layout:".Length);

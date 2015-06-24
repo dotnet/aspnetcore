@@ -74,14 +74,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             waitService.WaitForServer();
 
             // Assert - 4
-            Assert.Equal(@"After flush inside partial
+            Assert.Equal(
+                @"After flush inside partial
 <form action=""/FlushPoint/PageWithoutLayout"" method=""post""><input id=""Name1"" name=""Name1"" type=""text"" value="""" />",
-            GetTrimmedString(stream));
+                GetTrimmedString(stream),
+                ignoreLineEndingDifferences: true);
             waitService.WaitForServer();
 
             // Assert - 5
-            Assert.Equal(@"<input id=""Name2"" name=""Name2"" type=""text"" value="""" /></form>",
-                        GetTrimmedString(stream));
+            Assert.Equal(
+                @"<input id=""Name2"" name=""Name2"" type=""text"" value="""" /></form>",
+                GetTrimmedString(stream));
         }
 
         [Theory]
@@ -102,28 +105,32 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var stream = await client.GetStreamAsync("http://localhost/FlushPoint/" + action);
 
             // Assert - 1
-            Assert.Equal(string.Join(Environment.NewLine,
-                                     "<title>" + title + "</title>",
-                                     "",
-                                     "RenderBody content"), GetTrimmedString(stream));
+            Assert.Equal(
+                $@"<title>{ title }</title>
+
+RenderBody content",
+                GetTrimmedString(stream),
+                ignoreLineEndingDifferences: true);
             waitService.WaitForServer();
 
             // Assert - 2
-            Assert.Equal(string.Join(
-                Environment.NewLine,
-                "partial-content",
-                "",
-                "Value from TaskReturningString",
-                "<p>section-content</p>"), GetTrimmedString(stream));
+            Assert.Equal(
+                @"partial-content
+
+Value from TaskReturningString
+<p>section-content</p>",
+                GetTrimmedString(stream),
+                ignoreLineEndingDifferences: true);
             waitService.WaitForServer();
 
             // Assert - 3
-            Assert.Equal(string.Join(
-                Environment.NewLine,
-                "component-content",
-                "    <span>Content that takes time to produce</span>",
-                "",
-                "More content from layout"), GetTrimmedString(stream));
+            Assert.Equal(
+                @"component-content
+    <span>Content that takes time to produce</span>
+
+More content from layout",
+                GetTrimmedString(stream),
+                ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -143,10 +150,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var stream = await client.GetStreamAsync("http://localhost/FlushPoint/PageWithNestedLayout");
 
             // Assert - 1
-            Assert.Equal(@"Inside Nested Layout
+            Assert.Equal(
+                @"Inside Nested Layout
 
 <title>Nested Page With Layout</title>",
-                GetTrimmedString(stream));
+                GetTrimmedString(stream),
+                ignoreLineEndingDifferences: true);
             waitService.WaitForServer();
 
             // Assert - 2

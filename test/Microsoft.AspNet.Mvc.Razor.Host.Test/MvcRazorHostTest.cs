@@ -3,10 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+#if GENERATE_BASELINES
 using System.IO;
 using System.Linq;
+#endif
 using System.Reflection;
+#if GENERATE_BASELINES
 using System.Text;
+#endif
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Razor;
@@ -110,29 +114,32 @@ namespace Microsoft.AspNet.Mvc.Razor
             };
             var expectedLineMappings = new List<LineMapping>
             {
-                BuildLineMapping(documentAbsoluteIndex: 7,
-                                 documentLineIndex: 0,
-                                 documentCharacterIndex: 7,
-                                 generatedAbsoluteIndex: 444,
-                                 generatedLineIndex: 12,
-                                 generatedCharacterIndex: 7,
-                                 contentLength: 8),
-                BuildLineMapping(documentAbsoluteIndex: 33,
-                                 documentLineIndex: 2,
-                                 documentCharacterIndex: 14,
-                                 generatedAbsoluteIndex: 823,
-                                 generatedLineIndex: 25,
-                                 generatedCharacterIndex: 14,
-                                 contentLength: 85),
-                BuildLineMapping(documentAbsoluteIndex: 139,
-                                 documentLineIndex: 4,
-                                 documentCharacterIndex: 17,
-                                 generatedAbsoluteIndex: 2313,
-                                 generatedLineIndex: 55,
-                                 generatedCharacterIndex: 95,
-                                 contentLength: 3),
                 BuildLineMapping(
-                    documentAbsoluteIndex: 166,
+                    documentAbsoluteIndex: 7,
+                    documentLineIndex: 0,
+                    documentCharacterIndex: 7,
+                    generatedAbsoluteIndex: 444,
+                    generatedLineIndex: 12,
+                    generatedCharacterIndex: 7,
+                    contentLength: 8),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 31,
+                    documentLineIndex: 2,
+                    documentCharacterIndex: 14,
+                    generatedAbsoluteIndex: 823,
+                    generatedLineIndex: 25,
+                    generatedCharacterIndex: 14,
+                    contentLength: 85),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 135,
+                    documentLineIndex: 4,
+                    documentCharacterIndex: 17,
+                    generatedAbsoluteIndex: 2313,
+                    generatedLineIndex: 55,
+                    generatedCharacterIndex: 95,
+                    contentLength: 3),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 161,
                     documentLineIndex: 5,
                     documentCharacterIndex: 18,
                     generatedAbsoluteIndex: 2626,
@@ -185,7 +192,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     generatedCharacterIndex: 13,
                     contentLength: 4),
                 BuildLineMapping(
-                    documentAbsoluteIndex: 43,
+                    documentAbsoluteIndex: 41,
                     documentLineIndex: 2,
                     documentCharacterIndex: 5,
                     generatedAbsoluteIndex: 1353,
@@ -210,8 +217,22 @@ namespace Microsoft.AspNet.Mvc.Razor
             host.NamespaceImports.Clear();
             var expectedLineMappings = new List<LineMapping>
             {
-                BuildLineMapping(1, 0, 1, 59, 3, 0, 17),
-                BuildLineMapping(28, 1, 8, 706, 26, 8, 20)
+                BuildLineMapping(
+                    documentAbsoluteIndex: 1,
+                    documentLineIndex: 0,
+                    documentCharacterIndex: 1,
+                    generatedAbsoluteIndex: 59,
+                    generatedLineIndex: 3,
+                    generatedCharacterIndex: 0,
+                    contentLength: 17),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 27,
+                    documentLineIndex: 1,
+                    documentCharacterIndex: 8,
+                    generatedAbsoluteIndex: 706,
+                    generatedLineIndex: 26,
+                    generatedCharacterIndex: 8,
+                    contentLength: 20),
             };
 
             // Act and Assert
@@ -230,9 +251,30 @@ namespace Microsoft.AspNet.Mvc.Razor
             host.NamespaceImports.Clear();
             var expectedLineMappings = new[]
             {
-                BuildLineMapping(7, 0, 7, 214, 6, 7, 7),
-                BuildLineMapping(24, 1, 8, 731, 26, 8, 20),
-                BuildLineMapping(54, 2, 8, 957, 34, 8, 23)
+                BuildLineMapping(
+                    documentAbsoluteIndex: 7,
+                    documentLineIndex: 0,
+                    documentCharacterIndex: 7,
+                    generatedAbsoluteIndex: 214,
+                    generatedLineIndex: 6,
+                    generatedCharacterIndex: 7,
+                    contentLength: 7),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 23,
+                    documentLineIndex: 1,
+                    documentCharacterIndex: 8,
+                    generatedAbsoluteIndex: 731,
+                    generatedLineIndex: 26,
+                    generatedCharacterIndex: 8,
+                    contentLength: 20),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 52,
+                    documentLineIndex: 2,
+                    documentCharacterIndex: 8,
+                    generatedAbsoluteIndex: 957,
+                    generatedLineIndex: 34,
+                    generatedCharacterIndex: 8,
+                    contentLength: 23),
             };
 
             // Act and Assert
@@ -251,11 +293,46 @@ namespace Microsoft.AspNet.Mvc.Razor
             host.NamespaceImports.Clear();
             var expectedLineMappings = new[]
             {
-                BuildLineMapping(7, 0, 7, 222, 6, 7, 7),
-                BuildLineMapping(24, 1, 8, 747, 26, 8, 20),
-                BuildLineMapping(58, 2, 8, 977, 34, 8, 23),
-                BuildLineMapping(93, 3, 8, 1210, 42, 8, 21),
-                BuildLineMapping(129, 4, 8, 1441, 50, 8, 24),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 7,
+                    documentLineIndex: 0,
+                    documentCharacterIndex: 7,
+                    generatedAbsoluteIndex: 222,
+                    generatedLineIndex: 6,
+                    generatedCharacterIndex: 7,
+                    contentLength: 7),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 23,
+                    documentLineIndex: 1,
+                    documentCharacterIndex: 8,
+                    generatedAbsoluteIndex: 747,
+                    generatedLineIndex: 26,
+                    generatedCharacterIndex: 8,
+                    contentLength: 20),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 56,
+                    documentLineIndex: 2,
+                    documentCharacterIndex: 8,
+                    generatedAbsoluteIndex: 977,
+                    generatedLineIndex: 34,
+                    generatedCharacterIndex: 8,
+                    contentLength: 23),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 90,
+                    documentLineIndex: 3,
+                    documentCharacterIndex: 8,
+                    generatedAbsoluteIndex: 1210,
+                    generatedLineIndex: 42,
+                    generatedCharacterIndex: 8,
+                    contentLength: 21),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 125,
+                    documentLineIndex: 4,
+                    documentCharacterIndex: 8,
+                    generatedAbsoluteIndex: 1441,
+                    generatedLineIndex: 50,
+                    generatedCharacterIndex: 8,
+                    contentLength: 24),
             };
 
             // Act and Assert
@@ -302,7 +379,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 #if GENERATE_BASELINES
             ResourceFile.UpdateFile(_assembly, outputFile, expectedCode, results.GeneratedCode);
 #else
-            Assert.Equal(expectedCode, results.GeneratedCode);
+            Assert.Equal(expectedCode, results.GeneratedCode, ignoreLineEndingDifferences: true);
 #endif
         }
 
@@ -362,7 +439,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 ResourceFile.UpdateFile(_assembly, lineMappingFile, previousContent: null, content: lineMappings.ToString());
             }
 #else
-            Assert.Equal(expectedCode, results.GeneratedCode);
+            Assert.Equal(expectedCode, results.GeneratedCode, ignoreLineEndingDifferences: true);
             Assert.Equal(expectedLineMappings, results.DesignTimeLineMappings);
 #endif
         }

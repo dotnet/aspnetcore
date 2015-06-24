@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(ExpectedOutput, content);
+            Assert.Equal(ExpectedOutput, content, ignoreLineEndingDifferences: true);
         }
     }
 }

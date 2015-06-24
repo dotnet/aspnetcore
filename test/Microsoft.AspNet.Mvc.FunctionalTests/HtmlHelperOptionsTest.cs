@@ -47,7 +47,7 @@ False";
             var body = await client.GetStringAsync("http://localhost/HtmlHelperOptions/HtmlHelperOptionsDefaultsInView");
 
             // Assert
-            Assert.Equal(expected, body.Trim());
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -83,7 +83,7 @@ True";
             var body = await client.GetStringAsync("http://localhost/HtmlHelperOptions/OverrideAppWideDefaultsInView");
 
             // Assert
-            Assert.Equal(expected, body.Trim());
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
         }
     }
 }

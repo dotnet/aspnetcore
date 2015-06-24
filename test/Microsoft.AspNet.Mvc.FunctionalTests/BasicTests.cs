@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 #if GENERATE_BASELINES
             ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
-            Assert.Equal(expectedContent, responseContent);
+            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
 #endif
         }
 
@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 #if GENERATE_BASELINES
             ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
-            Assert.Equal(expectedContent, responseContent);
+            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
 #endif
         }
 
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 #if GENERATE_BASELINES
             ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
-            Assert.Equal(expectedContent, responseContent);
+            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
 #endif
         }
 
@@ -258,9 +258,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 Name = "John <b>Smith</b>"
             });
 
-            var expectedBody = string.Format(@"<script type=""text/javascript"">" + Environment.NewLine +
-                                             @"    var json = {0};" + Environment.NewLine +
-                                             @"</script>", json);
+            var expectedBody = string.Format(
+                @"<script type=""text/javascript"">
+    var json = {0};
+</script>",
+                json);
 
             // Act
             var response = await client.GetAsync("https://localhost/Home/JsonHelperInView");
@@ -270,7 +272,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
 
             var actualBody = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedBody, actualBody);
+            Assert.Equal(expectedBody, actualBody, ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -286,9 +288,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 Name = "John <b>Smith</b>"
             }, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
 
-            var expectedBody = string.Format(@"<script type=""text/javascript"">" + Environment.NewLine +
-                                             @"    var json = {0};" + Environment.NewLine +
-                                             @"</script>", json);
+            var expectedBody = string.Format(
+                @"<script type=""text/javascript"">
+    var json = {0};
+</script>",
+                json);
 
             // Act
             var response = await client.GetAsync("https://localhost/Home/JsonHelperWithSettingsInView");
@@ -298,7 +302,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
 
             var actualBody = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedBody, actualBody);
+            Assert.Equal(expectedBody, actualBody, ignoreLineEndingDifferences: true);
         }
 
         public static IEnumerable<object[]> HtmlHelperLinkGenerationData

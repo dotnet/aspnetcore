@@ -1,4 +1,4 @@
-#pragma checksum "TestFiles/Input/Basic.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "63d2634be31f68aa89a0c1561d67c73cc446f3d4"
+#pragma checksum "TestFiles/Input/Basic.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "4901c9b2325c62315b9048c930cac987201ccbab"
 namespace Asp
 {
     using System;
@@ -34,18 +34,18 @@ namespace Asp
             EndContext();
             WriteAttribute("class", Tuple.Create(" class=\"", 4), Tuple.Create("\"", 17), 
             Tuple.Create(Tuple.Create("", 12), Tuple.Create<System.Object, System.Int32>(logo, 12), false));
-            BeginContext(18, 24, true);
-            WriteLiteral(">\r\n    Hello world\r\n    ");
+            BeginContext(18, 22, true);
+            WriteLiteral(">\n    Hello world\n    ");
             EndContext();
-            BeginContext(43, 21, false);
+            BeginContext(41, 21, false);
 #line 3 "TestFiles/Input/Basic.cshtml"
 Write(Html.Input("SomeKey"));
 
 #line default
 #line hidden
             EndContext();
-            BeginContext(64, 8, true);
-            WriteLiteral("\r\n</div>");
+            BeginContext(62, 7, true);
+            WriteLiteral("\n</div>");
             EndContext();
         }
         #pragma warning restore 1998

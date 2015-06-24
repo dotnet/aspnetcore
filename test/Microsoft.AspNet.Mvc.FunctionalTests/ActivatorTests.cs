@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var expected = "<body><h2>Activation Test</h2>" +
                            Environment.NewLine +
                            "<div>FakeFakeFake</div>" +
-                           Environment.NewLine + 
+                           Environment.NewLine +
                            "<span>" +
                            "<input id=\"foo\" name=\"foo\" type=\"hidden\" value=\"test content\" />" +
                            "</span>" +
@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await client.GetStringAsync("http://localhost/View/UseTagHelper");
 
             // Assert
-            Assert.Equal(expected, body.Trim());
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
         }
     }
 }

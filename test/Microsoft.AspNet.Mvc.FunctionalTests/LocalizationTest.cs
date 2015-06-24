@@ -69,7 +69,7 @@ mypartial
             var body = await client.GetStringAsync("http://localhost/");
 
             // Assert
-            Assert.Equal(expected, body.Trim());
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
         }
     }
 }

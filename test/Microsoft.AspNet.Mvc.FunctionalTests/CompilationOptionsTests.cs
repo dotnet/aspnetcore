@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
 This method is only defined in DNX451";
 #elif DNXCORE50
-            var expected = 
+            var expected =
 @"This method is running from DNXCORE50
 
 This method is only defined in DNXCORE50";
@@ -40,7 +40,7 @@ This method is only defined in DNXCORE50";
             var body = await client.GetStringAsync("http://localhost/ViewsConsumingCompilationOptions/");
 
             // Assert
-            Assert.Equal(expected, body.Trim());
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
         }
     }
 }

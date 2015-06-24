@@ -169,17 +169,29 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("ContactInfoUsingV3Format", "text/vcard; version=v3.0; charset=utf-8", "BEGIN:VCARD#FN:John Williams#END:VCARD#")]
-        [InlineData("ContactInfoUsingV4Format", "text/vcard; version=v4.0; charset=utf-8", "BEGIN:VCARD#FN:John Williams#GENDER:M#END:VCARD#")]
+        [InlineData(
+            "ContactInfoUsingV3Format",
+            "text/vcard; version=v3.0; charset=utf-8",
+            @"BEGIN:VCARD
+FN:John Williams
+END:VCARD
+")]
+        [InlineData(
+            "ContactInfoUsingV4Format",
+            "text/vcard; version=v4.0; charset=utf-8",
+            @"BEGIN:VCARD
+FN:John Williams
+GENDER:M
+END:VCARD
+")]
         public async Task ProducesAttribute_WithMediaTypeHavingParameters_IsCaseInsensitiveMatch(
-                                                                                            string action,
-                                                                                            string expectedMediaType,
-                                                                                            string expectedResponseBody)
+            string action,
+            string expectedMediaType,
+            string expectedResponseBody)
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
-            expectedResponseBody = expectedResponseBody.Replace("#", Environment.NewLine);
 
             // Act
             var response = await client.GetAsync("http://localhost/ProducesWithMediaTypeParameters/" + action);
@@ -192,7 +204,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedMediaType, contentType.ToString());
 
             var actualResponseBody = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedResponseBody, actualResponseBody);
+            Assert.Equal(expectedResponseBody, actualResponseBody, ignoreLineEndingDifferences: true);
         }
 
         [Fact]

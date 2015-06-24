@@ -24,17 +24,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 yield return new[]
                 {
                     "ViewWithAsyncComponents",
-                    string.Join(Environment.NewLine,
-                                       "<test-component>value-from-component value-from-view</test-component>",
-                                        "ViewWithAsyncComponents InvokeAsync: hello from viewdatacomponent")
+                    @"<test-component>value-from-component value-from-view</test-component>
+ViewWithAsyncComponents InvokeAsync: hello from viewdatacomponent"
                 };
 
                 yield return new[]
                 {
                     "ViewWithSyncComponents",
-                    string.Join(Environment.NewLine,
-                                       "<test-component>value-from-component value-from-view</test-component>",
-                                        "ViewWithSyncComponents Invoke: hello from viewdatacomponent")
+                    @"<test-component>value-from-component value-from-view</test-component>
+ViewWithSyncComponents Invoke: hello from viewdatacomponent"
                 };
             }
         }
@@ -50,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await client.GetStringAsync("http://localhost/Home/" + actionName);
 
             // Assert
-            Assert.Equal(expected, body.Trim());
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]

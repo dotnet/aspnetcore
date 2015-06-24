@@ -35,7 +35,7 @@ _ViewStart that specifies partial Layout
             var body = await client.GetStringAsync(BaseUrl + action);
 
             // Assert
-            Assert.Equal(expected, body.Trim());
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Theory]
@@ -56,7 +56,7 @@ Layout specified in page
             var body = await client.GetStringAsync(BaseUrl + actionName);
 
             // Assert
-            Assert.Equal(expected, body.Trim());
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Theory]
@@ -75,7 +75,7 @@ Page With Non Partial Layout
             var body = await client.GetStringAsync(BaseUrl + actionName);
 
             // Assert
-            Assert.Equal(expected, body.Trim());
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Theory]
@@ -97,7 +97,7 @@ Non Shared Partial
             var body = await client.GetStringAsync(BaseUrl + actionName);
 
             // Assert
-            Assert.Equal(expected, body.Trim());
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
         }
     }
 }

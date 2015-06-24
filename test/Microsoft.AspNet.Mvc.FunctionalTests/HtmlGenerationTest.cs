@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 #if GENERATE_BASELINES
                 ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
-                Assert.Equal(expectedContent.Trim(), responseContent);
+                Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
 #endif
             }
             else
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
                 expectedContent = string.Format(expectedContent, forgeryToken);
-                Assert.Equal(expectedContent.Trim(), responseContent);
+                Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
 #endif
             }
         }
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 #if GENERATE_BASELINES
                 ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
-                Assert.Equal(expectedContent.Trim(), responseContent);
+                Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
 #endif
             }
             else
@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
                 expectedContent = string.Format(expectedContent, forgeryToken);
-                Assert.Equal(expectedContent.Trim(), responseContent);
+                Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
 #endif
             }
         }
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
             expectedContent = string.Format(expectedContent, forgeryToken);
-            Assert.Equal(expectedContent.Trim(), responseContent);
+            Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
 #endif
         }
 
@@ -223,8 +223,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 #if GENERATE_BASELINES
             ResourceFile.UpdateFile(_resourcesAssembly, outputFile1, expected1, response1.Trim());
 #else
-            Assert.Equal(expected1, response1.Trim());
-            Assert.Equal(expected1, response2.Trim());
+            Assert.Equal(expected1, response1.Trim(), ignoreLineEndingDifferences: true);
+            Assert.Equal(expected1, response2.Trim(), ignoreLineEndingDifferences: true);
 #endif
 
             // Act - 2
@@ -237,8 +237,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 #if GENERATE_BASELINES
             ResourceFile.UpdateFile(_resourcesAssembly, outputFile2, expected2, response3.Trim());
 #else
-            Assert.Equal(expected2, response3.Trim());
-            Assert.Equal(expected2, response4.Trim());
+            Assert.Equal(expected2, response3.Trim(), ignoreLineEndingDifferences: true);
+            Assert.Equal(expected2, response4.Trim(), ignoreLineEndingDifferences: true);
 #endif
 
             // Act - 3
@@ -254,8 +254,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 #if GENERATE_BASELINES
             ResourceFile.UpdateFile(_resourcesAssembly, outputFile3, expected3, response5.Trim());
 #else
-            Assert.Equal(expected3, response5.Trim());
-            Assert.Equal(expected3, response6.Trim());
+            Assert.Equal(expected3, response5.Trim(), ignoreLineEndingDifferences: true);
+            Assert.Equal(expected3, response6.Trim(), ignoreLineEndingDifferences: true);
 #endif
         }
 
@@ -413,7 +413,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var expected1 =
 @"Category: Books
 Products: Book1, Book2 (1)";
-            Assert.Equal(expected1, response1.Trim());
+            Assert.Equal(expected1, response1.Trim(), ignoreLineEndingDifferences: true);
 
             // Act - 2
             var response2 = await client.GetStringAsync("/categories/Electronics?correlationId=2");
@@ -422,7 +422,7 @@ Products: Book1, Book2 (1)";
             var expected2 =
 @"Category: Electronics
 Products: Book1, Book2 (1)";
-            Assert.Equal(expected2, response2.Trim());
+            Assert.Equal(expected2, response2.Trim(), ignoreLineEndingDifferences: true);
 
             // Act - 3
             // Trigger an expiration
@@ -435,7 +435,7 @@ Products: Book1, Book2 (1)";
             var expected3 =
 @"Category: Electronics
 Products: Laptops (3)";
-            Assert.Equal(expected3, response4.Trim());
+            Assert.Equal(expected3, response4.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -503,7 +503,7 @@ Products: Laptops (3)";
             ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
             expectedContent = string.Format(expectedContent, forgeryTokens);
-            Assert.Equal(expectedContent.Trim(), responseContent);
+            Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
 #endif
         }
     }

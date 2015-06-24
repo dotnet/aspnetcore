@@ -22,9 +22,18 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private readonly IMvcRazorHost _razorHost;
         private readonly IFileProvider _fileProvider;
 
-        public RazorCompilationService(ICompilationService compilationService,
-                                       IMvcRazorHost razorHost,
-                                       IOptions<RazorViewEngineOptions> viewEngineOptions)
+        /// <summary>
+        /// Instantiates a new instance of the <see cref="RazorCompilationService"/> class.
+        /// </summary>
+        /// <param name="compilationService">The <see cref="ICompilationService"/> to compile generated code.</param>
+        /// <param name="razorHost">The <see cref="IMvcRazorHost"/> to generate code from Razor files.</param>
+        /// <param name="viewEngineOptions">
+        /// The <see cref="IFileProvider"/> to read Razor files referenced in error messages.
+        /// </param>
+        public RazorCompilationService(
+            ICompilationService compilationService,
+            IMvcRazorHost razorHost,
+            IOptions<RazorViewEngineOptions> viewEngineOptions)
         {
             _compilationService = compilationService;
             _razorHost = razorHost;
@@ -37,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             GeneratorResults results;
             using (var inputStream = file.FileInfo.CreateReadStream())
             {
-                results = _razorHost.GenerateCode(file.RelativePath, inputStream);
+                results = GenerateCode(file.RelativePath, inputStream);
             }
 
             if (!results.Success)
@@ -46,6 +55,21 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             }
 
             return _compilationService.Compile(file, results.GeneratedCode);
+        }
+
+        /// <summary>
+        /// Generate code for the Razor file at <paramref name="relativePath"/> with content
+        /// <paramref name="inputStream"/>.
+        /// </summary>
+        /// <param name="relativePath">
+        /// The path of the Razor file relative to the root of the application. Used to generate line pragmas and
+        /// calculate the class name of the generated type.
+        /// </param>
+        /// <param name="inputStream">A <see cref="Stream"/> that contains the Razor content.</param>
+        /// <returns>A <see cref="GeneratorResults"/> instance containing results of code generation.</returns>
+        protected virtual GeneratorResults GenerateCode(string relativePath, Stream inputStream)
+        {
+            return _razorHost.GenerateCode(relativePath, inputStream);
         }
 
         // Internal for unit testing

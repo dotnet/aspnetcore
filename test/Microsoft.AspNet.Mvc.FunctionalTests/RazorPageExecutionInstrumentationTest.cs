@@ -21,72 +21,70 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             get
             {
-                var expected = string.Join(Environment.NewLine,
-                                           @"<div>",
-                                           @"2147483647",
-                                           "",
-                                           @"viewstart-content",
-                                           @"<p class=""Hello world"">",
-                                           @"page-content",
-                                           @"</p>",
-                                           @"</div>");
+                var expected = @"<div>
+2147483647
+
+viewstart-content
+<p class=""Hello world"">
+page-content
+</p>
+</div>";
 
                 var expectedLineMappings = new[]
                 {
-                    Tuple.Create(93, 2, true),
-                    Tuple.Create(96, 16, false),
-                    Tuple.Create(112, 2, true),
+                    Tuple.Create(90, 1, true),
+                    Tuple.Create(92, 16, false),
+                    Tuple.Create(108, 1, true),
                     Tuple.Create(0, 2, true),
                     Tuple.Create(2, 8, true),
                     Tuple.Create(10, 16, false),
                     Tuple.Create(26, 1, true),
-                    Tuple.Create(27, 21, true),
-                    Tuple.Create(0, 7, true),
-                    Tuple.Create(8, 12, false),
-                    Tuple.Create(20, 2, true),
-                    Tuple.Create(23, 12, false),
-                    Tuple.Create(35, 8, true),
+                    Tuple.Create(27, 19, true),
+                    Tuple.Create(0, 6, true),
+                    Tuple.Create(7, 12, false),
+                    Tuple.Create(19, 1, true),
+                    Tuple.Create(21, 12, false),
+                    Tuple.Create(33, 7, true),
                 };
 
                 yield return new object[] { "FullPath", expected, expectedLineMappings };
                 yield return new object[] { "ViewDiscoveryPath", expected, expectedLineMappings };
 
-                var expected2 = string.Join(Environment.NewLine,
-                                            "<div>",
-                                            "2147483647",
-                                            "",
-                                            "viewstart-content",
-                                            "view-with-partial-content",
-                                            "",
-                                            @"<p class=""class"">partial-content</p>",
-                                            "",
-                                            @"<p class=""class"">partial-content</p>",
-                                            "</div>");
+                var expected2 = @"<div>
+2147483647
+
+viewstart-content
+view-with-partial-content
+
+<p class=""class"">partial-content</p>
+
+<p class=""class"">partial-content</p>
+</div>";
                 var expectedLineMappings2 = new[]
                 {
-                    Tuple.Create(93, 2, true),
-                    Tuple.Create(96, 16, false),
-                    Tuple.Create(112, 2, true),
-                    Tuple.Create(0, 27, true),
-                    Tuple.Create(28, 39, false),
+                    Tuple.Create(90, 1, true),
+                    Tuple.Create(92, 16, false),
+                    Tuple.Create(108, 1, true),
+                    Tuple.Create(0, 26, true),
+                    Tuple.Create(27, 39, false),
                     // Html.PartialAsync()
-                    Tuple.Create(29, 4, true),
-                    Tuple.Create(33, 8, true),
-                    Tuple.Create(41, 4, false),
-                    Tuple.Create(45, 1, true),
-                    Tuple.Create(46, 20, true),
-                    Tuple.Create(67, 2, true),
+                    Tuple.Create(27, 3, true),
+                    Tuple.Create(30, 8, true),
+                    Tuple.Create(38, 4, false),
+                    Tuple.Create(42, 1, true),
+                    Tuple.Create(43, 20, true),
+                    Tuple.Create(66, 1, true),
                     // Html.RenderPartial()
-                    Tuple.Create(29, 4, true),
-                    Tuple.Create(33, 8, true),
-                    Tuple.Create(41, 4, false),
-                    Tuple.Create(45, 1, true),
-                    Tuple.Create(46, 20, true),
-                    Tuple.Create(0, 7, true),
-                    Tuple.Create(8, 12, false),
-                    Tuple.Create(20, 2, true),
-                    Tuple.Create(23, 12, false),
-                    Tuple.Create(35, 8, true)
+                    Tuple.Create(27, 3, true),
+                    Tuple.Create(30, 8, true),
+                    Tuple.Create(38, 4, false),
+                    Tuple.Create(42, 1, true),
+                    Tuple.Create(43, 20, true),
+                    Tuple.Create(0, 6, true),
+                    Tuple.Create(7, 12, false),
+                    Tuple.Create(19, 1, true),
+                    Tuple.Create(21, 12, false),
+                    Tuple.Create(33, 7, true)
                 };
                 yield return new object[] { "ViewWithPartial", expected2, expectedLineMappings2 };
             }
@@ -97,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ViewsAreServedWithoutInstrumentationByDefault(
             string actionName,
             string expected,
-            IEnumerable<Tuple<int, int, bool>> expectedLineMappings)
+            IEnumerable<Tuple<int, int, bool>> ignored)
         {
             // Arrange
             var context = new TestPageExecutionContext();
@@ -112,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await client.GetStringAsync("http://localhost/Home/" + actionName);
 
             // Assert
-            Assert.Equal(expected, body.Trim());
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
             Assert.Empty(context.Values);
         }
 
@@ -137,7 +135,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await client.GetStringAsync("http://localhost/Home/" + actionName);
 
             // Assert
-            Assert.Equal(expected, body.Trim());
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
             Assert.Equal(expectedLineMappings, context.Values);
         }
 
@@ -161,7 +159,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await client.GetStringAsync("http://localhost/Home/" + actionName);
 
             // Assert - 1
-            Assert.Equal(expected, body.Trim());
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
             Assert.Empty(context.Values);
 
             // Arrange - 2
@@ -171,7 +169,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             body = await client.GetStringAsync("http://localhost/Home/" + actionName);
 
             // Assert - 2
-            Assert.Equal(expected, body.Trim());
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
             Assert.Equal(expectedLineMappings, context.Values);
         }
 
@@ -181,19 +179,19 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange - 1
             var expectedLineMappings = new[]
             {
-                Tuple.Create(93, 2, true),
-                Tuple.Create(96, 16, false),
-                Tuple.Create(112, 2, true),
+                Tuple.Create(90, 1, true),
+                Tuple.Create(92, 16, false),
+                Tuple.Create(108, 1, true),
                 Tuple.Create(0, 2, true),
                 Tuple.Create(2, 8, true),
                 Tuple.Create(10, 16, false),
                 Tuple.Create(26, 1, true),
-                Tuple.Create(27, 21, true),
-                Tuple.Create(0, 7, true),
-                Tuple.Create(8, 12, false),
-                Tuple.Create(20, 2, true),
-                Tuple.Create(23, 12, false),
-                Tuple.Create(35, 8, true),
+                Tuple.Create(27, 19, true),
+                Tuple.Create(0, 6, true),
+                Tuple.Create(7, 12, false),
+                Tuple.Create(19, 1, true),
+                Tuple.Create(21, 12, false),
+                Tuple.Create(33, 7, true),
             };
             var context = new TestPageExecutionContext();
             var server = TestHelper.CreateServer(_app, SiteName, services =>

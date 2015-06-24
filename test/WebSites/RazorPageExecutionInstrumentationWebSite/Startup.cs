@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.Framework.DependencyInjection;
 
@@ -15,6 +16,9 @@ namespace RazorPageExecutionInstrumentationWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
+            // Normalize line endings to avoid changes in instrumentation locations between systems.
+            services.TryAdd(ServiceDescriptor.Transient<IRazorCompilationService, TestRazorCompilationService>());
+
             // Add MVC services to the services container
             services.AddMvc();
         }
