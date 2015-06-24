@@ -2,7 +2,7 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_DNVM_BUILDNUMBER="beta6-10390"
+_DNVM_BUILDNUMBER="beta6-10394"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
 _DNVM_RUNTIME_PACKAGE_NAME="dnx"
 _DNVM_RUNTIME_FRIENDLY_NAME=".NET Execution Environment"
@@ -413,7 +413,7 @@ dnvm()
                     fi
                     
                     if [[ $arch == "x86" && $runtime == "coreclr" ]]; then
-                        printf "%b\n" "${Red}Core CLR doesn't currently have a 32 bit build. You must use x64."
+                        printf "%b\n" "${Red}Core CLR doesn't currently have a 32 bit build. You must use x64.${RCol}"
                         return 1
                     fi
                     
