@@ -44,54 +44,63 @@ namespace Microsoft.Framework.DependencyInjection
         // To enable unit testing
         internal static void AddMvcCoreServices(IServiceCollection services)
         {
+            //
             // Options
             //
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, CoreMvcOptionsSetup>());
 
+            //
             // Action Discovery
             //
             // These are consumed only when creating action descriptors, then they can be de-allocated
-            services.TryAdd(ServiceDescriptor.Transient<IAssemblyProvider, DefaultAssemblyProvider>());
-            services.TryAdd(ServiceDescriptor.Transient<IControllerTypeProvider, DefaultControllerTypeProvider>()); ;
+            services.TryAddTransient<IAssemblyProvider, DefaultAssemblyProvider>();
+            services.TryAddTransient<IControllerTypeProvider, DefaultControllerTypeProvider>();
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApplicationModelProvider, DefaultApplicationModelProvider>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IActionDescriptorProvider, ControllerActionDescriptorProvider>());
-            services.TryAdd(ServiceDescriptor
-                .Singleton<IActionDescriptorsCollectionProvider, DefaultActionDescriptorsCollectionProvider>());
-
+            services.TryAddSingleton<IActionDescriptorsCollectionProvider, DefaultActionDescriptorsCollectionProvider>();
+            
+            //
             // Action Selection
             //
-            services.TryAdd(ServiceDescriptor.Singleton<IActionSelector, DefaultActionSelector>());
+            services.TryAddSingleton<IActionSelector, DefaultActionSelector>();
+
             // Performs caching
-            services.TryAdd(ServiceDescriptor
-                .Singleton<IActionSelectorDecisionTreeProvider, ActionSelectorDecisionTreeProvider>());
-            // This provider needs access to the per-request services, but might be used many times for a given
-            // request.
+            services.TryAddSingleton<IActionSelectorDecisionTreeProvider, ActionSelectorDecisionTreeProvider>();
+
+            // Will be cached by the DefaultActionSelector
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IActionConstraintProvider, DefaultActionConstraintProvider>());
 
-            // Action Invoker
+            //
+            // Controller Factory
             //
             // This has a cache, so it needs to be a singleton
-            services.TryAdd(ServiceDescriptor.Singleton<IControllerFactory, DefaultControllerFactory>());
-            services.TryAdd(ServiceDescriptor.Transient<IControllerActivator, DefaultControllerActivator>());
+            services.TryAddSingleton<IControllerFactory, DefaultControllerFactory>();
+
+            // Will be cached by the DefaultControllerFactory
+            services.TryAddTransient<IControllerActivator, DefaultControllerActivator>();
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IControllerPropertyActivator, DefaultControllerPropertyActivator>());
+
+            //
+            // Action Invoker
+            //
             // This accesses per-request services
-            services.TryAdd(ServiceDescriptor.Transient<IActionInvokerFactory, ActionInvokerFactory>());
-            services.TryAdd(ServiceDescriptor
-                .Transient<IControllerActionArgumentBinder, DefaultControllerActionArgumentBinder>());
+            services.TryAddTransient<IActionInvokerFactory, ActionInvokerFactory>();
+            services.TryAddTransient<IControllerActionArgumentBinder, DefaultControllerActionArgumentBinder>();
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IActionInvokerProvider, ControllerActionInvokerProvider>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IFilterProvider, DefaultFilterProvider>());
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IControllerPropertyActivator, DefaultControllerPropertyActivator>());
 
+            //
             // ModelBinding, Validation and Formatting
             //
             // The DefaultModelMetadataProvider does significant caching and should be a singleton.
-            services.TryAdd(ServiceDescriptor.Singleton<IModelMetadataProvider, DefaultModelMetadataProvider>());
+            services.TryAddSingleton<IModelMetadataProvider, DefaultModelMetadataProvider>();
             services.TryAdd(ServiceDescriptor.Transient<ICompositeMetadataDetailsProvider>(serviceProvider =>
             {
                 var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Options;
@@ -104,18 +113,22 @@ namespace Microsoft.Framework.DependencyInjection
                 return new DefaultObjectValidator(options.ValidationExcludeFilters, modelMetadataProvider);
             }));
 
+            //
             // Temp Data
             //
-            services.TryAdd(ServiceDescriptor.Scoped<ITempDataDictionary, TempDataDictionary>());
-            // This does caching so it should stay singleton
-            services.TryAdd(ServiceDescriptor.Singleton<ITempDataProvider, SessionStateTempDataProvider>());
+            // Holds per-request data so it should be scoped
+            services.TryAddScoped<ITempDataDictionary, TempDataDictionary>();
 
+            // This does caching so it should stay singleton
+            services.TryAddSingleton<ITempDataProvider, SessionStateTempDataProvider>();
+
+            //
             // Random Infrastructure
             //
-            services.TryAdd(ServiceDescriptor.Transient<MvcMarkerService, MvcMarkerService>());
-            services.TryAdd((ServiceDescriptor.Singleton<ITypeActivatorCache, DefaultTypeActivatorCache>()));
-            services.TryAdd(ServiceDescriptor.Scoped(typeof(IScopedInstance<>), typeof(ScopedInstance<>)));
-            services.TryAdd(ServiceDescriptor.Scoped<IUrlHelper, UrlHelper>());
+            services.TryAddTransient<MvcMarkerService, MvcMarkerService>();
+            services.TryAddSingleton<ITypeActivatorCache, DefaultTypeActivatorCache>();
+            services.TryAddScoped(typeof(IScopedInstance<>), typeof(ScopedInstance<>));
+            services.TryAddScoped<IUrlHelper, UrlHelper>();
         }
 
         private static void ConfigureDefaultServices(IServiceCollection services)
