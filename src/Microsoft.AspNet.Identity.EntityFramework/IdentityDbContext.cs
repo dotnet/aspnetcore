@@ -33,9 +33,9 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             builder.Entity<TUser>(b =>
                 {
                     b.Key(u => u.Id);
-                    b.Index(u => u.NormalizedUserName).Name("UserNameIndex");
-                    b.Index(u => u.NormalizedEmail).Name("EmailIndex");
-                    b.Table("AspNetUsers");
+                    b.Index(u => u.NormalizedUserName).IndexName("UserNameIndex");
+                    b.Index(u => u.NormalizedEmail).IndexName("EmailIndex");
+                    b.ToTable("AspNetUsers");
                     b.Property(u => u.ConcurrencyStamp).ConcurrencyToken();
 
                     b.Property(u => u.UserName).MaxLength(256);
@@ -50,8 +50,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             builder.Entity<TRole>(b =>
                 {
                     b.Key(r => r.Id);
-                    b.Index(r => r.NormalizedName).Name("RoleNameIndex");
-                    b.Table("AspNetRoles");
+                    b.Index(r => r.NormalizedName).IndexName("RoleNameIndex");
+                    b.ToTable("AspNetRoles");
                     b.Property(r => r.ConcurrencyStamp).ConcurrencyToken();
 
                     b.Property(u => u.Name).MaxLength(256);
@@ -64,19 +64,19 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             builder.Entity<IdentityUserClaim<TKey>>(b =>
                 {
                     b.Key(uc => uc.Id);
-                    b.Table("AspNetUserClaims");
+                    b.ToTable("AspNetUserClaims");
                 });
 
             builder.Entity<IdentityRoleClaim<TKey>>(b =>
                 {
                     b.Key(rc => rc.Id);
-                    b.Table("AspNetRoleClaims");
+                    b.ToTable("AspNetRoleClaims");
                 });
 
             builder.Entity<IdentityUserRole<TKey>>(b =>
                 {
                     b.Key(r => new { r.UserId, r.RoleId });
-                    b.Table("AspNetUserRoles");
+                    b.ToTable("AspNetUserRoles");
                 });
             // Blocks delete currently without cascade
             //.ForeignKeys(fk => fk.ForeignKey<TUser>(f => f.UserId))
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             builder.Entity<IdentityUserLogin<TKey>>(b =>
                 {
                     b.Key(l => new { l.LoginProvider, l.ProviderKey });
-                    b.Table("AspNetUserLogins");
+                    b.ToTable("AspNetUserLogins");
                 });
         }
     }
