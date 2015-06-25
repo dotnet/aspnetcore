@@ -28,10 +28,5 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         { }
 
         public DbSet<Blog> Blogs { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<Blog>().Property(e => e.BlogId).ForSqlServer().UseIdentity();
-        }
     }
 }
