@@ -88,13 +88,15 @@ namespace Microsoft.Framework.DependencyInjection
             //
             // Action Invoker
             //
-            // This accesses per-request services
+            // These two access per-request services
             services.TryAddTransient<IActionInvokerFactory, ActionInvokerFactory>();
-            services.TryAddTransient<IControllerActionArgumentBinder, DefaultControllerActionArgumentBinder>();
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IActionInvokerProvider, ControllerActionInvokerProvider>());
+
+            // These are stateless
+            services.TryAddSingleton<IControllerActionArgumentBinder, DefaultControllerActionArgumentBinder>();
             services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IFilterProvider, DefaultFilterProvider>());
+                ServiceDescriptor.Singleton<IFilterProvider, DefaultFilterProvider>());
 
             //
             // ModelBinding, Validation and Formatting
@@ -106,7 +108,7 @@ namespace Microsoft.Framework.DependencyInjection
                 var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Options;
                 return new DefaultCompositeMetadataDetailsProvider(options.ModelMetadataDetailsProviders);
             }));
-            services.TryAdd(ServiceDescriptor.Transient<IObjectModelValidator>(serviceProvider =>
+            services.TryAdd(ServiceDescriptor.Singleton<IObjectModelValidator>(serviceProvider =>
             {
                 var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Options;
                 var modelMetadataProvider = serviceProvider.GetRequiredService<IModelMetadataProvider>();
@@ -125,7 +127,7 @@ namespace Microsoft.Framework.DependencyInjection
             //
             // Random Infrastructure
             //
-            services.TryAddTransient<MvcMarkerService, MvcMarkerService>();
+            services.TryAddSingleton<MvcMarkerService, MvcMarkerService>();
             services.TryAddSingleton<ITypeActivatorCache, DefaultTypeActivatorCache>();
             services.TryAddScoped(typeof(IScopedInstance<>), typeof(ScopedInstance<>));
             services.TryAddScoped<IUrlHelper, UrlHelper>();

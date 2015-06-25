@@ -222,7 +222,7 @@ namespace Microsoft.Framework.DependencyInjection
             // View and rendering helpers
             services.TryAddTransient<IHtmlHelper, HtmlHelper>();
             services.TryAddTransient(typeof(IHtmlHelper<>), typeof(HtmlHelper<>));
-            services.TryAddTransient<IJsonHelper, JsonHelper>();
+            services.TryAddSingleton<IJsonHelper, JsonHelper>();
 
             // Only want one ITagHelperActivator so it can cache Type activation information. Types won't conflict.
             services.TryAddSingleton<ITagHelperActivator, DefaultTagHelperActivator>();
@@ -230,9 +230,9 @@ namespace Microsoft.Framework.DependencyInjection
             // Consumed by the Cache tag helper to cache results across the lifetime of the application.
             services.TryAddSingleton<IMemoryCache, MemoryCache>();
 
-            // DefaultHtmlGenerator is pretty much stateless but depends on Scoped services such as IUrlHelper and
-            // IActionBindingContextProvider. Therefore it too is scoped.
-            services.TryAddTransient<IHtmlGenerator, DefaultHtmlGenerator>();
+            // DefaultHtmlGenerator is pretty much stateless but depends on IUrlHelper, which is scoped.
+            // Therefore it too is scoped.
+            services.TryAddScoped<IHtmlGenerator, DefaultHtmlGenerator>();
 
             // These do caching so they should stay singleton
             services.TryAddSingleton<IViewComponentSelector, DefaultViewComponentSelector>();
@@ -242,7 +242,7 @@ namespace Microsoft.Framework.DependencyInjection
                 DefaultViewComponentDescriptorCollectionProvider>();
 
             services.TryAddTransient<IViewComponentDescriptorProvider, DefaultViewComponentDescriptorProvider>();
-            services.TryAddTransient<IViewComponentInvokerFactory, DefaultViewComponentInvokerFactory>();
+            services.TryAddSingleton<IViewComponentInvokerFactory, DefaultViewComponentInvokerFactory>();
             services.TryAddTransient<IViewComponentHelper, DefaultViewComponentHelper>();
 
             // Security and Authorization

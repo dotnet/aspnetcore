@@ -137,9 +137,7 @@ namespace Microsoft.AspNet.Mvc.Filters
 
         private DefaultFilterProvider CreateProvider()
         {
-            var services = new ServiceContainer();
-
-            return new DefaultFilterProvider(services);
+            return new DefaultFilterProvider();
         }
 
         private FilterProviderContext CreateFilterContext(List<FilterItem> items)

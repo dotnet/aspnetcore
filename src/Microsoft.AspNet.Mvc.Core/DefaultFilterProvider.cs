@@ -10,17 +10,10 @@ namespace Microsoft.AspNet.Mvc.Filters
 {
     public class DefaultFilterProvider : IFilterProvider
     {
-        public DefaultFilterProvider(IServiceProvider serviceProvider)
-        {
-            ServiceProvider = serviceProvider;
-        }
-
         public int Order
         {
             get { return DefaultOrder.DefaultFrameworkSortOrder; }
         }
-
-        protected IServiceProvider ServiceProvider { get; private set; }
 
         /// <inheritdoc />
         public void OnProvidersExecuting([NotNull] FilterProviderContext context)
@@ -55,7 +48,8 @@ namespace Microsoft.AspNet.Mvc.Filters
             }
             else
             {
-                filterItem.Filter = filterFactory.CreateInstance(ServiceProvider);
+                var services = context.ActionContext.HttpContext.RequestServices;
+                filterItem.Filter = filterFactory.CreateInstance(services);
 
                 if (filterItem.Filter == null)
                 {

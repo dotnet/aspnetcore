@@ -132,14 +132,15 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             [NotNull] ViewComponentDescriptor descriptor,
             object[] arguments)
         {
-            var invoker = _invokerFactory.CreateInstance(descriptor, arguments);
+            var context = new ViewComponentContext(descriptor, arguments, _viewContext, writer);
+
+            var invoker = _invokerFactory.CreateInstance(context);
             if (invoker == null)
             {
                 throw new InvalidOperationException(
                     Resources.FormatViewComponent_IViewComponentFactory_ReturnedNull(descriptor.Type.FullName));
             }
 
-            var context = new ViewComponentContext(descriptor, arguments, _viewContext, writer);
             await invoker.InvokeAsync(context);
         }
 
@@ -148,14 +149,15 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             [NotNull] ViewComponentDescriptor descriptor,
             object[] arguments)
         {
-            var invoker = _invokerFactory.CreateInstance(descriptor, arguments);
+            var context = new ViewComponentContext(descriptor, arguments, _viewContext, writer);
+
+            var invoker = _invokerFactory.CreateInstance(context);
             if (invoker == null)
             {
                 throw new InvalidOperationException(
                     Resources.FormatViewComponent_IViewComponentFactory_ReturnedNull(descriptor.Type.FullName));
             }
 
-            var context = new ViewComponentContext(descriptor, arguments, _viewContext, writer);
             invoker.Invoke(context);
         }
     }
