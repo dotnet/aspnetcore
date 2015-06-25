@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Antiforgery
 {
-    public class AntiforgeryTest
+    public class DefaultAntiforgeryTest
     {
         [Fact]
         public async Task ChecksSSL_ValidateRequestAsync_Throws()
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             var options = new AntiforgeryOptions()
             {
-                RequireSSL = true
+                RequireSsl = true
             };
 
             var antiforgery = GetAntiforgery(options);
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Antiforgery
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
                         async () => await antiforgery.ValidateRequestAsync(httpContext));
             Assert.Equal(
-             @"The anti-forgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
+             @"The antiforgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
              "but the current request is not an SSL request.",
              exception.Message);
         }
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             var options = new AntiforgeryOptions()
             {
-                RequireSSL = true
+                RequireSsl = true
             };
 
             var antiforgery = GetAntiforgery(options);
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Antiforgery
             var exception = Assert.Throws<InvalidOperationException>(
                 () => antiforgery.ValidateTokens(httpContext, new AntiforgeryTokenSet("hello", "world")));
             Assert.Equal(
-             @"The anti-forgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
+             @"The antiforgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
              "but the current request is not an SSL request.",
              exception.Message);
         }
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             var options = new AntiforgeryOptions()
             {
-                RequireSSL = true
+                RequireSsl = true
             };
 
             var antiforgery = GetAntiforgery(options);
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Antiforgery
             var exception = Assert.Throws<InvalidOperationException>(
                 () => antiforgery.GetHtml(httpContext));
             Assert.Equal(
-                 @"The anti-forgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
+                 @"The antiforgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
                  "but the current request is not an SSL request.",
                  exception.Message);
         }
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             var options = new AntiforgeryOptions()
             {
-                RequireSSL = true
+                RequireSsl = true
             };
 
             var antiforgery = GetAntiforgery(options);
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Antiforgery
             var exception = Assert.Throws<InvalidOperationException>(
                 () => antiforgery.GetAndStoreTokens(httpContext));
             Assert.Equal(
-                 @"The anti-forgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
+                 @"The antiforgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
                  "but the current request is not an SSL request.",
                  exception.Message);
         }
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             var options = new AntiforgeryOptions()
             {
-                RequireSSL = true
+                RequireSsl = true
             };
 
             var antiforgery = GetAntiforgery(options);
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Antiforgery
             var exception = Assert.Throws<InvalidOperationException>(
                 () => antiforgery.GetTokens(httpContext));
             Assert.Equal(
-                 @"The anti-forgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
+                 @"The antiforgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
                  "but the current request is not an SSL request.",
                  exception.Message);
         }
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             var options = new AntiforgeryOptions()
             {
-                RequireSSL = true
+                RequireSsl = true
             };
 
             var antiforgery = GetAntiforgery(options);
@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.Antiforgery
             var exception = Assert.Throws<InvalidOperationException>(
                 () => antiforgery.SetCookieTokenAndHeader(httpContext));
             Assert.Equal(
-                 @"The anti-forgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
+                 @"The antiforgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
                  "but the current request is not an SSL request.",
                  exception.Message);
         }

@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNet.Antiforgery
 {
-    // Abstracts out the serialization process for an anti-forgery token
+    // Abstracts out the serialization process for an antiforgery token
     public interface IAntiforgeryTokenSerializer
     {
         AntiforgeryToken Deserialize(string serializedToken);

@@ -286,7 +286,7 @@ namespace Microsoft.AspNet.Antiforgery
             var options = new AntiforgeryOptions()
             {
                 CookieName = _cookieName,
-                RequireSSL = requireSsl
+                RequireSsl = requireSsl
             };
 
             var tokenStore = new DefaultAntiforgeryTokenStore(

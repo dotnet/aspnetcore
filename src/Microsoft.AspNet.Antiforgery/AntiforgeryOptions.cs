@@ -6,14 +6,14 @@ using Microsoft.Framework.Internal;
 namespace Microsoft.AspNet.Antiforgery
 {
     /// <summary>
-    /// Provides programmatic configuration for the anti-forgery token system.
+    /// Provides programmatic configuration for the antiforgery token system.
     /// </summary>
     public class AntiforgeryOptions
     {
         private const string AntiforgeryTokenFieldName = "__RequestVerificationToken";
 
         /// <summary>
-        /// Specifies the name of the cookie that is used by the anti-forgery
+        /// Specifies the name of the cookie that is used by the antiforgery
         /// system.
         /// </summary>
         /// <remarks>
@@ -23,16 +23,16 @@ namespace Microsoft.AspNet.Antiforgery
         public string CookieName { get; [param: NotNull] set; }
 
         /// <summary>
-        /// Specifies the name of the anti-forgery token field that is used by the anti-forgery system.
+        /// Specifies the name of the antiforgery token field that is used by the antiforgery system.
         /// </summary>
         public string FormFieldName { get; [param: NotNull] set; } = AntiforgeryTokenFieldName;
 
         /// <summary>
-        /// Specifies whether SSL is required for the anti-forgery system
+        /// Specifies whether SSL is required for the antiforgery system
         /// to operate. If this setting is 'true' and a non-SSL request
-        /// comes into the system, all anti-forgery APIs will fail.
+        /// comes into the system, all antiforgery APIs will fail.
         /// </summary>
-        public bool RequireSSL { get; set; }
+        public bool RequireSsl { get; set; }
 
         /// <summary>
         /// Specifies whether to suppress the generation of X-Frame-Options header

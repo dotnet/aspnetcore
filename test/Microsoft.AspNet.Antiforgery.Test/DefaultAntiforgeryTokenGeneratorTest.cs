@@ -85,9 +85,10 @@ namespace Microsoft.AspNet.Antiforgery
                 "The provided identity of type " +
                 $"'{typeof(MyAuthenticatedIdentityWithoutUsername).FullName}' " +
                 "is marked IsAuthenticated = true but does not have a value for Name. " +
-                "By default, the anti-forgery system requires that all authenticated identities have a unique Name. " +
+                "By default, the antiforgery system requires that all authenticated identities have a unique Name. " +
                 "If it is not possible to provide a unique Name for this identity, " +
-                "consider extending IAdditionalDataProvider by overriding the DefaultAdditionalDataProvider " +
+                "consider extending IAntiforgeryAdditionalDataProvider by overriding the " +
+                "DefaultAntiforgeryAdditionalDataProvider " +
                 "or a custom type that can provide some form of unique identifier for the current user.",
                 exception.Message);
         }
@@ -281,7 +282,7 @@ namespace Microsoft.AspNet.Antiforgery
             var ex =
                 Assert.Throws<InvalidOperationException>(
                     () => tokenProvider.ValidateTokens(httpContext, null, fieldtoken));
-            Assert.Equal(@"The required anti-forgery cookie ""my-cookie-name"" is not present.", ex.Message);
+            Assert.Equal(@"The required antiforgery cookie ""my-cookie-name"" is not present.", ex.Message);
         }
 
         [Fact]
@@ -307,7 +308,7 @@ namespace Microsoft.AspNet.Antiforgery
             var ex =
                 Assert.Throws<InvalidOperationException>(
                     () => tokenProvider.ValidateTokens(httpContext, sessionToken, null));
-            Assert.Equal(@"The required anti-forgery form field ""my-form-field-name"" is not present.", ex.Message);
+            Assert.Equal(@"The required antiforgery form field ""my-form-field-name"" is not present.", ex.Message);
         }
 
         [Fact]
@@ -336,7 +337,7 @@ namespace Microsoft.AspNet.Antiforgery
                 Assert.Throws<InvalidOperationException>(
                     () => tokenProvider.ValidateTokens(httpContext, fieldtoken, fieldtoken));
             Assert.Equal(
-                "Validation of the provided anti-forgery token failed. " +
+                "Validation of the provided antiforgery token failed. " +
                 @"The cookie ""my-cookie-name"" and the form field ""my-form-field-name"" were swapped.",
                 ex1.Message);
 
@@ -344,7 +345,7 @@ namespace Microsoft.AspNet.Antiforgery
                 Assert.Throws<InvalidOperationException>(
                     () => tokenProvider.ValidateTokens(httpContext, sessionToken, sessionToken));
             Assert.Equal(
-                "Validation of the provided anti-forgery token failed. " +
+                "Validation of the provided antiforgery token failed. " +
                 @"The cookie ""my-cookie-name"" and the form field ""my-form-field-name"" were swapped.",
                 ex2.Message);
         }
@@ -368,7 +369,7 @@ namespace Microsoft.AspNet.Antiforgery
             var exception = Assert.Throws<InvalidOperationException>(
                     () => tokenProvider.ValidateTokens(httpContext, sessionToken, fieldtoken));
             Assert.Equal(
-                @"The anti-forgery cookie token and form field token do not match.",
+                @"The antiforgery cookie token and form field token do not match.",
                 exception.Message);
         }
 
@@ -406,7 +407,7 @@ namespace Microsoft.AspNet.Antiforgery
             var exception = Assert.Throws<InvalidOperationException>(
                     () => tokenProvider.ValidateTokens(httpContext, sessionToken, fieldtoken));
             Assert.Equal(
-                @"The provided anti-forgery token was meant for user """ + embeddedUsername +
+                @"The provided antiforgery token was meant for user """ + embeddedUsername +
                 @""", but the current user is """ + identityUsername + @""".",
                 exception.Message);
         }
@@ -441,7 +442,7 @@ namespace Microsoft.AspNet.Antiforgery
             var exception = Assert.Throws<InvalidOperationException>(
                     () => tokenProvider.ValidateTokens(httpContext, sessionToken, fieldtoken));
             Assert.Equal(
-                @"The provided anti-forgery token was meant for a different claims-based user than the current user.",
+                @"The provided antiforgery token was meant for a different claims-based user than the current user.",
                 exception.Message);
         }
 
@@ -474,7 +475,7 @@ namespace Microsoft.AspNet.Antiforgery
             // Act & assert
             var exception = Assert.Throws<InvalidOperationException>(
                     () => tokenProvider.ValidateTokens(httpContext, sessionToken, fieldtoken));
-            Assert.Equal(@"The provided anti-forgery token failed a custom data check.", exception.Message);
+            Assert.Equal(@"The provided antiforgery token failed a custom data check.", exception.Message);
         }
 
         [Fact]

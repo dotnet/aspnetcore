@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             // Act & assert
             var ex = Assert.Throws<InvalidOperationException>(() => testSerializer.Deserialize(serializedToken));
-            Assert.Equal(@"The anti-forgery token could not be decrypted.", ex.Message);
+            Assert.Equal(@"The antiforgery token could not be decrypted.", ex.Message);
         }
 
         [Fact]

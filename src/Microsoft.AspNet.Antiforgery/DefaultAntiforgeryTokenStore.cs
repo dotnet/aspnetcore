@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             // Note: don't use "newCookie.Secure = _options.RequireSSL;" since the default
             // value of newCookie.Secure is poulated out of band.
-            if (_options.RequireSSL)
+            if (_options.RequireSsl)
             {
                 options.Secure = true;
             }

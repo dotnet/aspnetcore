@@ -6,12 +6,12 @@ using System;
 namespace Microsoft.AspNet.Antiforgery
 {
     /// <summary>
-    /// The anti-forgery token pair (cookie and form token) for a request.
+    /// The antiforgery token pair (cookie and form token) for a request.
     /// </summary>
     public class AntiforgeryTokenSet
     {
         /// <summary>
-        /// Creates the anti-forgery token pair (cookie and form token) for a request.
+        /// Creates the antiforgery token pair (cookie and form token) for a request.
         /// </summary>
         /// <param name="formToken">The token that is supplied in the request form body.</param>
         /// <param name="cookieToken">The token that is supplied in the request cookie.</param>

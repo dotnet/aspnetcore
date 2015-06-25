@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Antiforgery
         /// <summary>
         /// Generates an input field for an antiforgery token. 
         /// </summary>
-        /// <param name="context">The <see cref="HttpContext"/> associated with the current call.</param>
+        /// <param name="context">The <see cref="HttpContext"/> associated with the current request.</param>
         /// <returns>
         /// A string containing an &lt;input type="hidden"&gt; element. This element should be put inside
         /// a &lt;form&gt;.
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Antiforgery
         /// Generates an <see cref="AntiforgeryTokenSet"/> for this request and stores the cookie token
         /// in the response.
         /// </summary>
-        /// <param name="context">The <see cref="HttpContext"/> associated with the current call.</param>
+        /// <param name="context">The <see cref="HttpContext"/> associated with the current request.</param>
         /// <returns>An <see cref="AntiforgeryTokenSet" /> with tokens for the response.</returns>
         /// <remarks>
         /// This method has a side effect:
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Antiforgery
         /// <summary>
         /// Generates an <see cref="AntiforgeryTokenSet"/> for this request.
         /// </summary>
-        /// <param name="context">The <see cref="HttpContext"/> associated with the current call.</param>
+        /// <param name="context">The <see cref="HttpContext"/> associated with the current request.</param>
         /// <remarks>
         /// Unlike <see cref="GetAndStoreTokens(HttpContext)"/>, this method has no side effect. The caller
         /// is responsible for setting the response cookie and injecting the returned
@@ -53,13 +53,13 @@ namespace Microsoft.AspNet.Antiforgery
         /// <summary>
         /// Validates an antiforgery token that was supplied as part of the request.
         /// </summary>
-        /// <param name="context">The <see cref="HttpContext"/> associated with the current call.</param>
+        /// <param name="context">The <see cref="HttpContext"/> associated with the current request.</param>
         Task ValidateRequestAsync([NotNull] HttpContext context);
 
         /// <summary>
         /// Validates an <see cref="AntiforgeryTokenSet"/> for the current request.
         /// </summary>
-        /// <param name="context">The <see cref="HttpContext"/> associated with the current call.</param>
+        /// <param name="context">The <see cref="HttpContext"/> associated with the current request.</param>
         /// <param name="antiforgeryTokenSet">
         /// The <see cref="AntiforgeryTokenSet"/> (cookie and form token) for this request.
         /// </param>
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Antiforgery
         /// <summary>
         /// Generates and stores an antiforgery cookie token if one is not available or not valid.
         /// </summary>
-        /// <param name="context">The <see cref="HttpContext"/> associated with the current call.</param>
+        /// <param name="context">The <see cref="HttpContext"/> associated with the current request.</param>
         void SetCookieTokenAndHeader([NotNull] HttpContext context);
     }
 }

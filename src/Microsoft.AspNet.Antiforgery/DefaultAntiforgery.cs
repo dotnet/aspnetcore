@@ -12,7 +12,7 @@ using Microsoft.Framework.WebEncoders;
 namespace Microsoft.AspNet.Antiforgery
 {
     /// <summary>
-    /// Provides access to the anti-forgery system, which provides protection against
+    /// Provides access to the antiforgery system, which provides protection against
     /// Cross-site Request Forgery (XSRF, also called CSRF) attacks.
     /// </summary>
     public class DefaultAntiforgery : IAntiforgery
@@ -145,9 +145,12 @@ namespace Microsoft.AspNet.Antiforgery
 
         private void CheckSSLConfig(HttpContext context)
         {
-            if (_options.RequireSSL && !context.Request.IsHttps)
+            if (_options.RequireSsl && !context.Request.IsHttps)
             {
-                throw new InvalidOperationException(Resources.AntiforgeryWorker_RequireSSL);
+                throw new InvalidOperationException(Resources.FormatAntiforgeryWorker_RequireSSL(
+                    nameof(AntiforgeryOptions),
+                    nameof(AntiforgeryOptions.RequireSsl),
+                    "true"));
             }
         }
 

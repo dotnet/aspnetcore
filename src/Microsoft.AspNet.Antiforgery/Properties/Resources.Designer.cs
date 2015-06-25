@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Antiforgery
             = new ResourceManager("Microsoft.AspNet.Antiforgery.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// The provided identity of type '{0}' is marked IsAuthenticated = true but does not have a value for Name. By default, the anti-forgery system requires that all authenticated identities have a unique Name. If it is not possible to provide a unique Name for this identity, consider extending IAdditionalDataProvider by overriding the DefaultAdditionalDataProvider or a custom type that can provide some form of unique identifier for the current user.
+        /// The provided identity of type '{0}' is marked {1} = {2} but does not have a value for {3}. By default, the antiforgery system requires that all authenticated identities have a unique {3}. If it is not possible to provide a unique {3} for this identity, consider extending {4} by overriding the {5} or a custom type that can provide some form of unique identifier for the current user.
         /// </summary>
         internal static string AntiforgeryTokenValidator_AuthenticatedUserWithoutUsername
         {
@@ -19,15 +19,15 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// The provided identity of type '{0}' is marked IsAuthenticated = true but does not have a value for Name. By default, the anti-forgery system requires that all authenticated identities have a unique Name. If it is not possible to provide a unique Name for this identity, consider extending IAdditionalDataProvider by overriding the DefaultAdditionalDataProvider or a custom type that can provide some form of unique identifier for the current user.
+        /// The provided identity of type '{0}' is marked {1} = {2} but does not have a value for {3}. By default, the antiforgery system requires that all authenticated identities have a unique {3}. If it is not possible to provide a unique {3} for this identity, consider extending {4} by overriding the {5} or a custom type that can provide some form of unique identifier for the current user.
         /// </summary>
-        internal static string FormatAntiforgeryTokenValidator_AuthenticatedUserWithoutUsername(object p0)
+        internal static string FormatAntiforgeryTokenValidator_AuthenticatedUserWithoutUsername(object p0, object p1, object p2, object p3, object p4, object p5)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("AntiforgeryTokenValidator_AuthenticatedUserWithoutUsername"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("AntiforgeryTokenValidator_AuthenticatedUserWithoutUsername"), p0, p1, p2, p3, p4, p5);
         }
 
         /// <summary>
-        /// The provided anti-forgery token failed a custom data check.
+        /// The provided antiforgery token failed a custom data check.
         /// </summary>
         internal static string AntiforgeryToken_AdditionalDataCheckFailed
         {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// The provided anti-forgery token failed a custom data check.
+        /// The provided antiforgery token failed a custom data check.
         /// </summary>
         internal static string FormatAntiforgeryToken_AdditionalDataCheckFailed()
         {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// The provided anti-forgery token was meant for a different claims-based user than the current user.
+        /// The provided antiforgery token was meant for a different claims-based user than the current user.
         /// </summary>
         internal static string AntiforgeryToken_ClaimUidMismatch
         {
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// The provided anti-forgery token was meant for a different claims-based user than the current user.
+        /// The provided antiforgery token was meant for a different claims-based user than the current user.
         /// </summary>
         internal static string FormatAntiforgeryToken_ClaimUidMismatch()
         {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// The required anti-forgery cookie "{0}" is not present.
+        /// The required antiforgery cookie "{0}" is not present.
         /// </summary>
         internal static string AntiforgeryToken_CookieMissing
         {
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// The required anti-forgery cookie "{0}" is not present.
+        /// The required antiforgery cookie "{0}" is not present.
         /// </summary>
         internal static string FormatAntiforgeryToken_CookieMissing(object p0)
         {
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// The anti-forgery token could not be decrypted.
+        /// The antiforgery token could not be decrypted.
         /// </summary>
         internal static string AntiforgeryToken_DeserializationFailed
         {
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// The anti-forgery token could not be decrypted.
+        /// The antiforgery token could not be decrypted.
         /// </summary>
         internal static string FormatAntiforgeryToken_DeserializationFailed()
         {
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// The required anti-forgery form field "{0}" is not present.
+        /// The required antiforgery form field "{0}" is not present.
         /// </summary>
         internal static string AntiforgeryToken_FormFieldMissing
         {
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// The required anti-forgery form field "{0}" is not present.
+        /// The required antiforgery form field "{0}" is not present.
         /// </summary>
         internal static string FormatAntiforgeryToken_FormFieldMissing(object p0)
         {
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// The anti-forgery cookie token and form field token do not match.
+        /// The antiforgery cookie token and form field token do not match.
         /// </summary>
         internal static string AntiforgeryToken_SecurityTokenMismatch
         {
@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// The anti-forgery cookie token and form field token do not match.
+        /// The antiforgery cookie token and form field token do not match.
         /// </summary>
         internal static string FormatAntiforgeryToken_SecurityTokenMismatch()
         {
@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// Validation of the provided anti-forgery token failed. The cookie "{0}" and the form field "{1}" were swapped.
+        /// Validation of the provided antiforgery token failed. The cookie "{0}" and the form field "{1}" were swapped.
         /// </summary>
         internal static string AntiforgeryToken_TokensSwapped
         {
@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// Validation of the provided anti-forgery token failed. The cookie "{0}" and the form field "{1}" were swapped.
+        /// Validation of the provided antiforgery token failed. The cookie "{0}" and the form field "{1}" were swapped.
         /// </summary>
         internal static string FormatAntiforgeryToken_TokensSwapped(object p0, object p1)
         {
@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// The provided anti-forgery token was meant for user "{0}", but the current user is "{1}".
+        /// The provided antiforgery token was meant for user "{0}", but the current user is "{1}".
         /// </summary>
         internal static string AntiforgeryToken_UsernameMismatch
         {
@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// The provided anti-forgery token was meant for user "{0}", but the current user is "{1}".
+        /// The provided antiforgery token was meant for user "{0}", but the current user is "{1}".
         /// </summary>
         internal static string FormatAntiforgeryToken_UsernameMismatch(object p0, object p1)
         {
@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// The anti-forgery system has the configuration value AntiforgeryOptions.RequireSsl = true, but the current request is not an SSL request.
+        /// The antiforgery system has the configuration value {0}.{1} = {2}, but the current request is not an SSL request.
         /// </summary>
         internal static string AntiforgeryWorker_RequireSSL
         {
@@ -163,11 +163,11 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// The anti-forgery system has the configuration value AntiforgeryOptions.RequireSsl = true, but the current request is not an SSL request.
+        /// The antiforgery system has the configuration value {0}.{1} = {2}, but the current request is not an SSL request.
         /// </summary>
-        internal static string FormatAntiforgeryWorker_RequireSSL()
+        internal static string FormatAntiforgeryWorker_RequireSSL(object p0, object p1, object p2)
         {
-            return GetString("AntiforgeryWorker_RequireSSL");
+            return string.Format(CultureInfo.CurrentCulture, GetString("AntiforgeryWorker_RequireSSL"), p0, p1, p2);
         }
 
         /// <summary>

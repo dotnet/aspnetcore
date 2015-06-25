@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Security.Principal;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.OptionsModel;
 
@@ -73,7 +74,13 @@ namespace Microsoft.AspNet.Antiforgery
             {
                 // Application says user is authenticated, but we have no identifier for the user.
                 throw new InvalidOperationException(
-                    Resources.FormatAntiforgeryTokenValidator_AuthenticatedUserWithoutUsername(identity.GetType()));
+                    Resources.FormatAntiforgeryTokenValidator_AuthenticatedUserWithoutUsername(
+                        identity.GetType(),
+                        nameof(IIdentity.IsAuthenticated),
+                        "true",
+                        nameof(IIdentity.Name),
+                        nameof(IAntiforgeryAdditionalDataProvider),
+                        nameof(DefaultAntiforgeryAdditionalDataProvider)));
             }
 
             return formToken;
