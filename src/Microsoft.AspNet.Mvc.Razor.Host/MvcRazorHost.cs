@@ -13,6 +13,7 @@ using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -44,6 +45,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly IChunkTreeCache _chunkTreeCache;
         private readonly RazorPathNormalizer _pathNormalizer;
         private ChunkInheritanceUtility _chunkInheritanceUtility;
+        private ITagHelperDescriptorResolver _tagHelperDescriptorResolver;
 
         internal MvcRazorHost(IChunkTreeCache chunkTreeCache, RazorPathNormalizer pathNormalizer)
             : base(new CSharpRazorCodeLanguage())
@@ -52,7 +54,6 @@ namespace Microsoft.AspNet.Mvc.Razor
             _baseType = BaseType;
             _chunkTreeCache = chunkTreeCache;
 
-            TagHelperDescriptorResolver = new TagHelperDescriptorResolver();
             DefaultBaseClass = BaseType + "<" + DefaultModel + ">";
             DefaultNamespace = "Asp";
             // Enable instrumentation by default to allow precompiled views to work with BrowserLink.
@@ -130,6 +131,27 @@ namespace Microsoft.AspNet.Mvc.Razor
         public MvcRazorHost(IChunkTreeCache chunkTreeCache)
             : this(chunkTreeCache, new RazorPathNormalizer())
         {
+        }
+
+        /// <inheritdoc />
+        public override ITagHelperDescriptorResolver TagHelperDescriptorResolver
+        {
+            get
+            {
+                // The initialization of the _tagHelperDescriptorResolver needs to be lazy to allow for the setting
+                // of DesignTimeMode.
+                if (_tagHelperDescriptorResolver == null)
+                {
+                    _tagHelperDescriptorResolver = new TagHelperDescriptorResolver(DesignTimeMode);
+                }
+
+                return _tagHelperDescriptorResolver;
+            }
+            [param: NotNull]
+            set
+            {
+                _tagHelperDescriptorResolver = value;
+            }
         }
 
         /// <summary>

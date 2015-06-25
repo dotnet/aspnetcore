@@ -29,7 +29,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 name: "MyAttribute",
                 propertyName: "SomeProperty",
                 typeName: propertyType,
-                isIndexer: false);
+                isIndexer: false,
+                usageDescriptor: null);
             var writer = new CSharpCodeWriter();
             var generatorContext = new ChunkGeneratorContext(
                 host: null,
