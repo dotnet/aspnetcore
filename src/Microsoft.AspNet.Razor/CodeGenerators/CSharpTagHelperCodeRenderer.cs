@@ -228,7 +228,6 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                 var associatedDescriptors = tagHelperDescriptors.Where(descriptor =>
                     descriptor.Attributes.Any(attributeDescriptor => attributeDescriptor.IsNameMatch(attributeName)));
 
-
                 // Bound attributes have associated descriptors. First attribute value wins if there are duplicates;
                 // later values of duplicate bound attributes are treated as if they were unbound.
                 if (associatedDescriptors.Any() && renderedBoundAttributeNames.Add(attributeName))
