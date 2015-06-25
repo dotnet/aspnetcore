@@ -20,5 +20,5 @@
       }
     }
   },
-  "resources": "..\\..\\unicode\\UnicodeData.txt"
+  "resource": "..\\..\\unicode\\UnicodeData.txt"
 }

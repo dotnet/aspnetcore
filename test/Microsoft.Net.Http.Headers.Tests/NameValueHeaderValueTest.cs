@@ -60,29 +60,71 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void Clone_NameOnly_SuccesfullyCopied()
+        public void Copy_NameOnly_SuccesfullyCopied()
         {
             var pair0 = new NameValueHeaderValue("name");
-            var pair1 = pair0.Clone();
+            var pair1 = pair0.Copy();
             Assert.NotSame(pair0, pair1);
             Assert.Same(pair0.Name, pair1.Name);
             Assert.Null(pair0.Value);
             Assert.Null(pair1.Value);
+
+            // Change one value and verify the other is unchanged.
+            pair0.Value = "othervalue";
+            Assert.Equal("othervalue", pair0.Value);
+            Assert.Equal(null, pair1.Value);
         }
 
         [Fact]
-        public void Clone_NameAndValue_SuccesfullyCopied()
+        public void CopyAsReadOnly_NameOnly_CopiedAndReadOnly()
+        {
+            var pair0 = new NameValueHeaderValue("name");
+            var pair1 = pair0.CopyAsReadOnly();
+            Assert.NotSame(pair0, pair1);
+            Assert.Same(pair0.Name, pair1.Name);
+            Assert.Null(pair0.Value);
+            Assert.Null(pair1.Value);
+            Assert.False(pair0.IsReadOnly);
+            Assert.True(pair1.IsReadOnly);
+
+            // Change one value and verify the other is unchanged.
+            pair0.Value = "othervalue";
+            Assert.Equal("othervalue", pair0.Value);
+            Assert.Equal(null, pair1.Value);
+            Assert.Throws<InvalidOperationException>(() => { pair1.Value = "othervalue"; });
+        }
+
+        [Fact]
+        public void Copy_NameAndValue_SuccesfullyCopied()
         {
             var pair0 = new NameValueHeaderValue("name", "value");
-            var pair1 = pair0.Clone();
+            var pair1 = pair0.Copy();
             Assert.NotSame(pair0, pair1);
             Assert.Same(pair0.Name, pair1.Name);
             Assert.Same(pair0.Value, pair1.Value);
 
             // Change one value and verify the other is unchanged.
-            pair1.Value = "othervalue";
-            Assert.Equal("value", pair0.Value);
-            Assert.Equal("othervalue", pair1.Value);
+            pair0.Value = "othervalue";
+            Assert.Equal("othervalue", pair0.Value);
+            Assert.Equal("value", pair1.Value);
+        }
+
+        [Fact]
+        public void CopyAsReadOnly_NameAndValue_CopiedAndReadOnly()
+        {
+            var pair0 = new NameValueHeaderValue("name", "value");
+            var pair1 = pair0.CopyAsReadOnly();
+            Assert.NotSame(pair0, pair1);
+            Assert.Same(pair0.Name, pair1.Name);
+            Assert.Same(pair0.Value, pair1.Value);
+            Assert.False(pair0.IsReadOnly);
+            Assert.True(pair1.IsReadOnly);
+
+            // Change one value and verify the other is unchanged.
+            pair0.Value = "othervalue";
+            Assert.Equal("othervalue", pair0.Value);
+            Assert.Equal("value", pair1.Value);
+            Assert.Throws<InvalidOperationException>(() => { pair1.Value = "othervalue"; });
         }
 
         [Fact]

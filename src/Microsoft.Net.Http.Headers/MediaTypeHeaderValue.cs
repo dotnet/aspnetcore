@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace Microsoft.Net.Http.Headers
@@ -19,9 +20,10 @@ namespace Microsoft.Net.Http.Headers
         private static readonly HttpHeaderParser<MediaTypeHeaderValue> MultipleValueParser
             = new GenericHeaderParser<MediaTypeHeaderValue>(true, GetMediaTypeLength);
 
-        // Use list instead of dictionary since we may have multiple parameters with the same name.
-        private ICollection<NameValueHeaderValue> _parameters;
+        // Use a collection instead of a dictionary since we may have multiple parameters with the same name.
+        private ObjectCollection<NameValueHeaderValue> _parameters;
         private string _mediaType;
+        private bool _isReadOnly;
 
         private MediaTypeHeaderValue()
         {
@@ -48,6 +50,7 @@ namespace Microsoft.Net.Http.Headers
             }
             set
             {
+                HeaderUtilities.ThrowIfReadOnly(IsReadOnly);
                 // We don't prevent a user from setting whitespace-only charsets. Like we can't prevent a user from
                 // setting a non-existing charset.
                 var charsetParameter = NameValueHeaderValue.Find(_parameters, CharsetString);
@@ -93,6 +96,7 @@ namespace Microsoft.Net.Http.Headers
             }
             set
             {
+                HeaderUtilities.ThrowIfReadOnly(IsReadOnly);
                 if (value == null)
                 {
                     Charset = null;
@@ -112,6 +116,7 @@ namespace Microsoft.Net.Http.Headers
             }
             set
             {
+                HeaderUtilities.ThrowIfReadOnly(IsReadOnly);
                 var boundaryParameter = NameValueHeaderValue.Find(_parameters, BoundaryString);
                 if (string.IsNullOrEmpty(value))
                 {
@@ -141,7 +146,14 @@ namespace Microsoft.Net.Http.Headers
             {
                 if (_parameters == null)
                 {
-                    _parameters = new ObjectCollection<NameValueHeaderValue>();
+                    if (IsReadOnly)
+                    {
+                        _parameters = ObjectCollection<NameValueHeaderValue>.EmptyReadOnlyCollection;
+                    }
+                    else
+                    {
+                        _parameters = new ObjectCollection<NameValueHeaderValue>();
+                    }
                 }
                 return _parameters;
             }
@@ -158,6 +170,7 @@ namespace Microsoft.Net.Http.Headers
             get { return _mediaType; }
             set
             {
+                HeaderUtilities.ThrowIfReadOnly(IsReadOnly);
                 CheckMediaTypeFormat(value, "value");
                 _mediaType = value;
             }
@@ -199,6 +212,11 @@ namespace Microsoft.Net.Http.Headers
             {
                 return SubType.Equals("*", StringComparison.Ordinal);
             }
+        }
+
+        public bool IsReadOnly
+        {
+            get { return _isReadOnly; }
         }
 
         public bool IsSubsetOf(MediaTypeHeaderValue otherMediaType)
@@ -253,19 +271,44 @@ namespace Microsoft.Net.Http.Headers
         /// while avoiding the cost of revalidating the components.
         /// </summary>
         /// <returns>A deep copy.</returns>
-        public MediaTypeHeaderValue Clone()
+        public MediaTypeHeaderValue Copy()
         {
+            if (IsReadOnly)
+            {
+                return this;
+            }
+
             var other = new MediaTypeHeaderValue();
             other._mediaType = _mediaType;
 
             if (_parameters != null)
             {
-                other._parameters = new ObjectCollection<NameValueHeaderValue>();
-                foreach (var pair in _parameters)
-                {
-                    other._parameters.Add(pair.Clone());
-                }
+                other._parameters = new ObjectCollection<NameValueHeaderValue>(
+                    _parameters.Select(item => item.Copy()));
             }
+            return other;
+        }
+
+        /// <summary>
+        /// Performs a deep copy of this object and all of it's NameValueHeaderValue sub components,
+        /// while avoiding the cost of revalidating the components. This copy is read-only.
+        /// </summary>
+        /// <returns>A deep, read-only, copy.</returns>
+        public MediaTypeHeaderValue CopyAsReadOnly()
+        {
+            if (IsReadOnly)
+            {
+                return this;
+            }
+
+            var other = new MediaTypeHeaderValue();
+            other._mediaType = _mediaType;
+            if (_parameters != null)
+            {
+                other._parameters = new ObjectCollection<NameValueHeaderValue>(
+                    _parameters.Select(item => item.CopyAsReadOnly()), isReadOnly: true);
+            }
+            other._isReadOnly = true;
             return other;
         }
 

@@ -228,5 +228,13 @@ namespace Microsoft.Net.Http.Headers
             }
             return input;
         }
+
+        internal static void ThrowIfReadOnly(bool isReadOnly)
+        {
+            if (isReadOnly)
+            {
+                throw new InvalidOperationException("The object cannot be modified because it is read-only.");
+            }
+        }
     }
 }

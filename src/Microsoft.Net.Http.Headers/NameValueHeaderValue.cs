@@ -20,6 +20,7 @@ namespace Microsoft.Net.Http.Headers
 
         private string _name;
         private string _value;
+        private bool _isReadOnly;
 
         private NameValueHeaderValue()
         {
@@ -49,21 +50,44 @@ namespace Microsoft.Net.Http.Headers
             get { return _value; }
             set
             {
+                HeaderUtilities.ThrowIfReadOnly(IsReadOnly);
                 CheckValueFormat(value);
                 _value = value;
             }
         }
 
+        public bool IsReadOnly { get { return _isReadOnly; } }
+
         /// <summary>
         /// Provides a copy of this object without the cost of re-validating the values.
         /// </summary>
         /// <returns>A copy.</returns>
-        public NameValueHeaderValue Clone()
+        public NameValueHeaderValue Copy()
         {
+            if (IsReadOnly)
+            {
+                return this;
+            }
+
             return new NameValueHeaderValue()
             {
                 _name = _name,
                 _value = _value
+            };
+        }
+
+        public NameValueHeaderValue CopyAsReadOnly()
+        {
+            if (IsReadOnly)
+            {
+                return this;
+            }
+
+            return new NameValueHeaderValue()
+            {
+                _name = _name,
+                _value = _value,
+                _isReadOnly = true
             };
         }
 

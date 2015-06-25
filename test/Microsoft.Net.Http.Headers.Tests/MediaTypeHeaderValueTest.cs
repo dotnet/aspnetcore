@@ -65,10 +65,10 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void Clone_SimpleMediaType_Copied()
+        public void Copy_SimpleMediaType_Copied()
         {
             var mediaType0 = new MediaTypeHeaderValue("text/plain");
-            var mediaType1 = mediaType0.Clone();
+            var mediaType1 = mediaType0.Copy();
             Assert.NotSame(mediaType0, mediaType1);
             Assert.Same(mediaType0.MediaType, mediaType1.MediaType);
             Assert.NotSame(mediaType0.Parameters, mediaType1.Parameters);
@@ -76,11 +76,26 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void Clone_WithParameters_Copied()
+        public void CopyAsReadOnly_SimpleMediaType_CopiedAndReadOnly()
+        {
+            var mediaType0 = new MediaTypeHeaderValue("text/plain");
+            var mediaType1 = mediaType0.CopyAsReadOnly();
+            Assert.NotSame(mediaType0, mediaType1);
+            Assert.Same(mediaType0.MediaType, mediaType1.MediaType);
+            Assert.NotSame(mediaType0.Parameters, mediaType1.Parameters);
+            Assert.Equal(mediaType0.Parameters.Count, mediaType1.Parameters.Count);
+
+            Assert.False(mediaType0.IsReadOnly);
+            Assert.True(mediaType1.IsReadOnly);
+            Assert.Throws<InvalidOperationException>(() => { mediaType1.MediaType = "some/value"; });
+        }
+
+        [Fact]
+        public void Copy_WithParameters_Copied()
         {
             var mediaType0 = new MediaTypeHeaderValue("text/plain");
             mediaType0.Parameters.Add(new NameValueHeaderValue("name", "value"));
-            var mediaType1 = mediaType0.Clone();
+            var mediaType1 = mediaType0.Copy();
             Assert.NotSame(mediaType0, mediaType1);
             Assert.Same(mediaType0.MediaType, mediaType1.MediaType);
             Assert.NotSame(mediaType0.Parameters, mediaType1.Parameters);
@@ -88,6 +103,34 @@ namespace Microsoft.Net.Http.Headers
             var pair0 = mediaType0.Parameters.First();
             var pair1 = mediaType1.Parameters.First();
             Assert.NotSame(pair0, pair1);
+            Assert.Same(pair0.Name, pair1.Name);
+            Assert.Same(pair0.Value, pair1.Value);
+        }
+
+        [Fact]
+        public void CopyAsReadOnly_WithParameters_CopiedAndReadOnly()
+        {
+            var mediaType0 = new MediaTypeHeaderValue("text/plain");
+            mediaType0.Parameters.Add(new NameValueHeaderValue("name", "value"));
+            var mediaType1 = mediaType0.CopyAsReadOnly();
+            Assert.NotSame(mediaType0, mediaType1);
+            Assert.False(mediaType0.IsReadOnly);
+            Assert.True(mediaType1.IsReadOnly);
+            Assert.Same(mediaType0.MediaType, mediaType1.MediaType);
+
+            Assert.NotSame(mediaType0.Parameters, mediaType1.Parameters);
+            Assert.False(mediaType0.Parameters.IsReadOnly);
+            Assert.True(mediaType1.Parameters.IsReadOnly);
+            Assert.Equal(mediaType0.Parameters.Count, mediaType1.Parameters.Count);
+            Assert.Throws<InvalidOperationException>(() => mediaType1.Parameters.Add(new NameValueHeaderValue("name")));
+            Assert.Throws<InvalidOperationException>(() => mediaType1.Parameters.Remove(new NameValueHeaderValue("name")));
+            Assert.Throws<InvalidOperationException>(() => mediaType1.Parameters.Clear());
+
+            var pair0 = mediaType0.Parameters.First();
+            var pair1 = mediaType1.Parameters.First();
+            Assert.NotSame(pair0, pair1);
+            Assert.False(pair0.IsReadOnly);
+            Assert.True(pair1.IsReadOnly);
             Assert.Same(pair0.Name, pair1.Name);
             Assert.Same(pair0.Value, pair1.Value);
         }

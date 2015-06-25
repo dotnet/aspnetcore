@@ -12,6 +12,7 @@
                 "System.Diagnostics.Contracts": "4.0.0-beta-*",
                 "System.Globalization": "4.0.10-beta-*",
                 "System.Globalization.Extensions": "4.0.0-beta-*",
+                "System.Linq": "4.0.0-beta-*",
                 "System.Text.Encoding": "4.0.10-beta-*",
                 "System.Runtime": "4.0.20-beta-*"
             }
