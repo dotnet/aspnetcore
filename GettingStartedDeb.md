@@ -15,6 +15,24 @@ Instructions on how to use the ASP.NET [Docker](https://www.docker.com/) image h
 
 The rest of this section deals with setting up a machine to run applications without the Docker image.
 
+---
+
+### Prerequisites
+
+* `Unzip`
+
+---
+
+### Get unzip
+
+`Unzip` is needed to unpack runtime packages.
+
+```
+sudo apt-get install unzip
+```
+
+---
+
 ### Get Mono
 
 Mono is how .NET applications can run on platforms other than Windows. Mono is an ongoing effort to port the .NET Framework to other platforms. In the process of developing ASP.NET 5 we worked with the Mono team to fix some bugs and add features that are needed to run ASP.NET applications. These changes are only in builds of mono that are greater than 4.0.1.
@@ -47,14 +65,6 @@ sudo ldconfig
 ```
 
 **NOTE:** `make install` puts `libuv.so.1` in `/usr/local/lib`, in the above commands `ldconfig` is used to update `ld.so.cache` so that `dlopen` (see `man dlopen`) can load it. If you are getting libuv some other way or not running `make install` then you need to ensure that dlopen is capable of loading `libuv.so.1`.
-
-### Get unzip
-
-Unzip is needed to unpack runtime packages.
-
-```
-sudo apt-get install unzip
-```
 
 ### Get DNVM
 
