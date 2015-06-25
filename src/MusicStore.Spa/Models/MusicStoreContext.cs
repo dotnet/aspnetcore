@@ -14,7 +14,6 @@ namespace MusicStore.Models
     {
         public MusicStoreContext()
         {
-
         }
 
         public DbSet<Album> Albums { get; set; }
@@ -27,12 +26,12 @@ namespace MusicStore.Models
         protected override void OnModelCreating(ModelBuilder builder)
         {
             // Configure pluralization
-            builder.Entity<Album>().Table("Albums");
-            builder.Entity<Artist>().Table("Artists");
-            builder.Entity<Order>().Table("Orders");
-            builder.Entity<Genre>().Table("Genres");
-            builder.Entity<CartItem>().Table("CartItems");
-            builder.Entity<OrderDetail>().Table("OrderDetails");
+            builder.Entity<Album>().ToTable("Albums");
+            builder.Entity<Artist>().ToTable("Artists");
+            builder.Entity<Order>().ToTable("Orders");
+            builder.Entity<Genre>().ToTable("Genres");
+            builder.Entity<CartItem>().ToTable("CartItems");
+            builder.Entity<OrderDetail>().ToTable("OrderDetails");
 
             base.OnModelCreating(builder);
         }

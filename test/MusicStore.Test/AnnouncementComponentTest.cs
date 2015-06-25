@@ -20,7 +20,8 @@ namespace MusicStore.Components
 
             services.AddEntityFramework()
                       .AddInMemoryDatabase()
-                      .AddDbContext<MusicStoreContext>();
+                      .AddDbContext<MusicStoreContext>(options =>
+                            options.UseInMemoryDatabase());
 
             _serviceProvider = services.BuildServiceProvider();
         }
