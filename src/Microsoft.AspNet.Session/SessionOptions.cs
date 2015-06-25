@@ -8,7 +8,8 @@ namespace Microsoft.AspNet.Session
     public class SessionOptions
     {
         /// <summary>
-        /// Determines the cookie name used to persist the session ID. The default value is ".AspNet.Session".
+        /// Determines the cookie name used to persist the session ID.
+        /// Defaults to <see cref="SessionDefaults.CookieName"/>.
         /// </summary>
         public string CookieName { get; set; } = SessionDefaults.CookieName;
 
@@ -18,7 +19,8 @@ namespace Microsoft.AspNet.Session
         public string CookieDomain { get; set; }
 
         /// <summary>
-        /// Determines the path used to create the cookie. The default value is "/" for highest browser compatibility.
+        /// Determines the path used to create the cookie.
+        /// Defaults to <see cref="SessionDefaults.CookiePath"/>.
         /// </summary>
         public string CookiePath { get; set; } = SessionDefaults.CookiePath;
 
