@@ -39,14 +39,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var tagHelperTypeResolver = new TagHelperTypeResolver();
             var errorSink = new ErrorSink();
             var documentLocation = new SourceLocation(1, 2, 3);
-            var expectedErrorMessage = "Cannot resolve TagHelper containing assembly 'abcd'. Error: " +
-                "Could not load file or assembly '" +
-#if DNX451
-                "abcd' or one of its dependencies. The system cannot find the file specified.";
-#else
-                "abcd, Culture=neutral, PublicKeyToken=null' or one of its dependencies. " +
-                "The system cannot find the file specified.";
-#endif
 
             // Act
             tagHelperTypeResolver.Resolve("abcd", documentLocation, errorSink);
@@ -55,7 +47,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var error = Assert.Single(errorSink.Errors);
             Assert.Equal(1, error.Length);
             Assert.Equal(documentLocation, error.Location);
-            Assert.Equal(expectedErrorMessage, error.Message);
+
+            // The framework throws the underlying Exception. Only confirm Message mentions expected assembly.
+            Assert.Contains("assembly 'abcd'", error.Message);
         }
 
         [Fact]
