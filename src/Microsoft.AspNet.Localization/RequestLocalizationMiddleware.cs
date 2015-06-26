@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Localization
         /// Creates a new <see cref="RequestLocalizationMiddleware"/>.
         /// </summary>
         /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
-        /// <param name="options"></param>
+        /// <param name="options">The <see cref="RequestLocalizationOptions"/> representing the options for the <see cref="RequestLocalizationMiddleware"/>.</param>
         public RequestLocalizationMiddleware([NotNull] RequestDelegate next, [NotNull] RequestLocalizationOptions options)
         {
             _next = next;
