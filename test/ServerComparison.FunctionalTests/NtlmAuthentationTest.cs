@@ -60,7 +60,7 @@ namespace ServerComparison.FunctionalTests
                         Assert.Equal("Anonymous?True", responseText);
 
                         response = await httpClient.GetAsync("/Restricted");
-                        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                         Assert.Contains("NTLM", response.Headers.WwwAuthenticate.ToString());
 
                         httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
