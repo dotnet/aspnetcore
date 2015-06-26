@@ -8,12 +8,12 @@ using Microsoft.Framework.Internal;
 namespace Microsoft.Framework.DependencyInjection
 {
     /// <summary>
-    /// Extension methods for adding session servics to the DI container.
+    /// Extension methods for adding session services to the DI container.
     /// </summary>
     public static class SessionServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds services required for application session.
+        /// Adds services required for application session state.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
