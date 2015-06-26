@@ -199,14 +199,14 @@ namespace Kestrel
             get { return _frame.HasResponseStarted; }
         }
 
-        void IHttpResponseFeature.OnResponseStarting(Action<object> callback, object state)
+        void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
         {
-            _frame.OnResponseStarting(callback, state);
+            _frame.OnStarting(callback, state);
         }
 
-        void IHttpResponseFeature.OnResponseCompleted(Action<object> callback, object state)
+        void IHttpResponseFeature.OnCompleted(Func<object, Task> callback, object state)
         {
-            _frame.OnResponseCompleted(callback, state);
+            _frame.OnCompleted(callback, state);
         }
 
         bool IHttpUpgradeFeature.IsUpgradableRequest

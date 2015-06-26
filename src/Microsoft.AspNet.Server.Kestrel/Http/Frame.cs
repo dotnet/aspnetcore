@@ -63,10 +63,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         CancellationTokenSource _cts = new CancellationTokenSource();
         */
 
-        List<KeyValuePair<Action<object>, object>> _onResponseStarting;
-        List<KeyValuePair<Action<object>, object>> _onResponseCompleted;
-        object _onResponseStartingSync = new Object();
-        object _onResponseCompletedSync = new Object();
+        List<KeyValuePair<Func<object, Task>, object>> _onStarting;
+        List<KeyValuePair<Func<object, Task>, object>> _onCompleted;
+        object _onStartingSync = new Object();
+        object _onCompletedSync = new Object();
 
         public Frame(ConnectionContext context) : base(context)
         {
@@ -190,58 +190,58 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Task.Run(ExecuteAsync);
         }
 
-        public void OnResponseStarting(Action<object> callback, object state)
+        public void OnStarting(Func<object, Task> callback, object state)
         {
-            lock (_onResponseStartingSync)
+            lock (_onStartingSync)
             {
-                if (_onResponseStarting == null)
+                if (_onStarting == null)
                 {
-                    _onResponseStarting = new List<KeyValuePair<Action<object>, object>>();
+                    _onStarting = new List<KeyValuePair<Func<object, Task>, object>>();
                 }
-                _onResponseStarting.Add(new KeyValuePair<Action<object>, object>(callback, state));
+                _onStarting.Add(new KeyValuePair<Func<object, Task>, object>(callback, state));
             }
         }
 
-        public void OnResponseCompleted(Action<object> callback, object state)
+        public void OnCompleted(Func<object, Task> callback, object state)
         {
-            lock (_onResponseCompletedSync)
+            lock (_onCompletedSync)
             {
-                if (_onResponseCompleted == null)
+                if (_onCompleted == null)
                 {
-                    _onResponseCompleted = new List<KeyValuePair<Action<object>, object>>();
+                    _onCompleted = new List<KeyValuePair<Func<object, Task>, object>>();
                 }
-                _onResponseCompleted.Add(new KeyValuePair<Action<object>, object>(callback, state));
+                _onCompleted.Add(new KeyValuePair<Func<object, Task>, object>(callback, state));
             }
         }
 
-        private void FireOnResponseStarting()
+        private void FireOnStarting()
         {
-            List<KeyValuePair<Action<object>, object>> onResponseStarting = null;
-            lock (_onResponseStartingSync)
+            List<KeyValuePair<Func<object, Task>, object>> onStarting = null;
+            lock (_onStartingSync)
             {
-                onResponseStarting = _onResponseStarting;
-                _onResponseStarting = null;
+                onStarting = _onStarting;
+                _onStarting = null;
             }
-            if (onResponseStarting != null)
+            if (onStarting != null)
             {
-                foreach (var entry in onResponseStarting)
+                foreach (var entry in onStarting)
                 {
                     entry.Key.Invoke(entry.Value);
                 }
             }
         }
 
-        private void FireOnResponseCompleted()
+        private void FireOnCompleted()
         {
-            List<KeyValuePair<Action<object>, object>> onResponseCompleted = null;
-            lock (_onResponseCompletedSync)
+            List<KeyValuePair<Func<object, Task>, object>> onCompleted = null;
+            lock (_onCompletedSync)
             {
-                onResponseCompleted = _onResponseCompleted;
-                _onResponseCompleted = null;
+                onCompleted = _onCompleted;
+                _onCompleted = null;
             }
-            if (onResponseCompleted != null)
+            if (onCompleted != null)
             {
-                foreach (var entry in onResponseCompleted)
+                foreach (var entry in onCompleted)
                 {
                     try
                     {
@@ -268,7 +268,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
             finally
             {
-                FireOnResponseCompleted();
+                FireOnCompleted();
                 ProduceEnd(error);
             }
         }
@@ -318,7 +318,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             if (_resultStarted) return;
             _resultStarted = true;
 
-            FireOnResponseStarting();
+            FireOnStarting();
 
             _responseStarted = true;
 
