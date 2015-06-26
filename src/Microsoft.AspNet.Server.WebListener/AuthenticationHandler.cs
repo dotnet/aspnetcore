@@ -43,14 +43,14 @@ namespace Microsoft.AspNet.Server.WebListener
             _customChallenges = AuthenticationSchemes.None;
         }
 
-        public void Authenticate(AuthenticateContext context)
+        public Task AuthenticateAsync(AuthenticateContext context)
         {
             var user = _requestContext.User;
             var identity = user == null ? null : (ClaimsIdentity)user.Identity;
 
             foreach (var authType in ListEnabledAuthSchemes())
             {
-                string authScheme = authType.ToString();
+                var authScheme = authType.ToString();
                 if (string.Equals(authScheme, context.AuthenticationScheme, StringComparison.Ordinal))
                 {
                     if (identity != null && identity.IsAuthenticated
@@ -64,29 +64,26 @@ namespace Microsoft.AspNet.Server.WebListener
                     }
                 }
             }
-        }
-
-        public Task AuthenticateAsync(AuthenticateContext context)
-        {
-            Authenticate(context);
             return Task.FromResult(0);
         }
 
-        public void Challenge(ChallengeContext context)
+        public Task ChallengeAsync(ChallengeContext context)
         {
             foreach (var scheme in ListEnabledAuthSchemes())
             {
                 var authScheme = scheme.ToString();
                 // Not including any auth types means it's a blanket challenge for any auth type.
-                if (context.AuthenticationScheme == null ||
+                if (context.AuthenticationScheme == string.Empty ||
                     string.Equals(context.AuthenticationScheme, authScheme, StringComparison.Ordinal))
                 {
+                    _requestContext.Response.StatusCode = 401;
                     _customChallenges |= scheme;
                     context.Accept();
                 }
             }
             // A challenge was issued, it overrides any pre-set auth types.
             _requestContext.AuthenticationChallenges = _customChallenges;
+            return Task.FromResult(0);
         }
 
         public void GetDescriptions(DescribeSchemesContext context)
@@ -98,14 +95,16 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        public void SignIn(SignInContext context)
+        public Task SignInAsync(SignInContext context)
         {
             // Not supported
+            return Task.FromResult(0);
         }
 
-        public void SignOut(SignOutContext context)
+        public Task SignOutAsync(SignOutContext context)
         {
             // Not supported
+            return Task.FromResult(0);
         }
 
         private IDictionary<string, object> GetDescription(string authenticationScheme)

@@ -48,8 +48,8 @@ namespace Microsoft.Net.Http.Server
         private long _expectedBodyLength;
         private BoundaryType _boundaryType;
         private HttpApi.HTTP_RESPONSE_V2 _nativeResponse;
-        private IList<Tuple<Action<object>, object>> _onResponseStartingActions;
-        private IList<Tuple<Action<object>, object>> _onResponseCompletedActions;
+        private IList<Tuple<Func<object, Task>, object>> _onResponseStartingActions;
+        private IList<Tuple<Func<object, Task>, object>> _onResponseCompletedActions;
 
         private RequestContext _requestContext;
         private bool _bufferingEnabled;
@@ -80,8 +80,8 @@ namespace Microsoft.Net.Http.Server
             _nativeResponse.Response_V1.Version.MajorVersion = 1;
             _nativeResponse.Response_V1.Version.MinorVersion = 1;
             _responseState = ResponseState.Created;
-            _onResponseStartingActions = new List<Tuple<Action<object>, object>>();
-            _onResponseCompletedActions = new List<Tuple<Action<object>, object>>();
+            _onResponseStartingActions = new List<Tuple<Func<object, Task>, object>>();
+            _onResponseCompletedActions = new List<Tuple<Func<object, Task>, object>>();
             _bufferingEnabled = _requestContext.Server.BufferResponses;
             _expectedBodyLength = 0;
             _nativeStream = null;
@@ -773,18 +773,18 @@ namespace Microsoft.Net.Http.Server
             _nativeStream.SwitchToOpaqueMode();
         }
 
-        public void OnResponseStarting(Action<object> callback, object state)
+        public void OnResponseStarting(Func<object, Task> callback, object state)
         {
-            IList<Tuple<Action<object>, object>> actions = _onResponseStartingActions;
+            var actions = _onResponseStartingActions;
             if (actions == null)
             {
                 throw new InvalidOperationException("Response already started");
             }
 
-            actions.Add(new Tuple<Action<object>, object>(callback, state));
+            actions.Add(new Tuple<Func<object, Task>, object>(callback, state));
         }
 
-        public void OnResponseCompleted(Action<object> callback, object state)
+        public void OnResponseCompleted(Func<object, Task> callback, object state)
         {
             var actions = _onResponseCompletedActions;
             if (actions == null)
@@ -792,7 +792,7 @@ namespace Microsoft.Net.Http.Server
                 throw new InvalidOperationException("Response already completed");
             }
 
-            actions.Add(new Tuple<Action<object>, object>(callback, state));
+            actions.Add(new Tuple<Func<object, Task>, object>(callback, state));
         }
 
         private void NotifyOnSendingHeaders()

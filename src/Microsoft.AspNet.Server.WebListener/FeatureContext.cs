@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Server.WebListener
         IHttpUpgradeFeature,
         IHttpRequestIdentifierFeature
     {
-        private static Action<object> OnStartDelegate = OnStart;
+        private static Func<object,Task> OnStartDelegate = OnStart;
 
         private RequestContext _requestContext;
         private FeatureCollection _features;
@@ -378,12 +378,12 @@ namespace Microsoft.AspNet.Server.WebListener
             get { return Response.HasStarted; }
         }
 
-        void IHttpResponseFeature.OnResponseStarting(Action<object> callback, object state)
+        void IHttpResponseFeature.OnResponseStarting(Func<object, Task> callback, object state)
         {
             Response.OnResponseStarting(callback, state);
         }
 
-        void IHttpResponseFeature.OnResponseCompleted(Action<object> callback, object state)
+        void IHttpResponseFeature.OnResponseCompleted(Func<object, Task> callback, object state)
         {
             Response.OnResponseCompleted(callback, state);
         }
@@ -484,11 +484,12 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _requestId = value; }
         }
 
-        private static void OnStart(object obj)
+        private static Task OnStart(object obj)
         {
             var featureContext = (FeatureContext)obj;
 
             ConsiderEnablingResponseCache(featureContext);
+            return Task.FromResult(0);
         }
 
         private static void ConsiderEnablingResponseCache(FeatureContext featureContext)
