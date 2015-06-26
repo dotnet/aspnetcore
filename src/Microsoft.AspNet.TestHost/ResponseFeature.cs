@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.TestHost
@@ -33,7 +34,7 @@ namespace Microsoft.AspNet.TestHost
 
         public bool HasStarted { get; set; }
 
-        public void OnResponseStarting(Action<object> callback, object state)
+        public void OnStarting(Func<object, Task> callback, object state)
         {
             var prior = _responseStarting;
             _responseStarting = () =>
@@ -43,7 +44,7 @@ namespace Microsoft.AspNet.TestHost
             };
         }
 
-        public void OnResponseCompleted(Action<object> callback, object state)
+        public void OnCompleted(Func<object, Task> callback, object state)
         {
             var prior = _responseCompleted;
             _responseCompleted = () =>
