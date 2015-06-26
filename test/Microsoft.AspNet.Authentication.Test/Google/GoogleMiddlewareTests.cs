@@ -47,6 +47,42 @@ namespace Microsoft.AspNet.Authentication.Google
         }
 
         [Fact]
+        public async Task SignInThrows()
+        {
+            var server = CreateServer(options =>
+            {
+                options.ClientId = "Test Id";
+                options.ClientSecret = "Test Secret";
+            });
+            var transaction = await server.SendAsync("https://example.com/signIn");
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+        [Fact]
+        public async Task SignOutThrows()
+        {
+            var server = CreateServer(options =>
+            {
+                options.ClientId = "Test Id";
+                options.ClientSecret = "Test Secret";
+            });
+            var transaction = await server.SendAsync("https://example.com/signOut");
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+        [Fact]
+        public async Task ForbidThrows()
+        {
+            var server = CreateServer(options =>
+            {
+                options.ClientId = "Test Id";
+                options.ClientSecret = "Test Secret";
+            });
+            var transaction = await server.SendAsync("https://example.com/signOut");
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+        [Fact]
         public async Task Challenge401WillTriggerRedirection()
         {
             var server = CreateServer(options =>
@@ -134,7 +170,7 @@ namespace Microsoft.AspNet.Authentication.Google
                     var res = context.Response;
                     if (req.Path == new PathString("/challenge2"))
                     {
-                        context.Authentication.Challenge("Google", new AuthenticationProperties(
+                        return context.Authentication.ChallengeAsync("Google", new AuthenticationProperties(
                             new Dictionary<string, string>()
                             {
                                 { "scope", "https://www.googleapis.com/auth/plus.login" },
@@ -142,7 +178,6 @@ namespace Microsoft.AspNet.Authentication.Google
                                 { "approval_prompt", "force" },
                                 { "login_hint", "test@example.com" }
                             }));
-                        res.StatusCode = 401;
                     }
 
                     return Task.FromResult<object>(null);
@@ -177,35 +212,6 @@ namespace Microsoft.AspNet.Authentication.Google
             query.ShouldContain("custom=test");
         }
 
-        // TODO: Fix these tests to path (Need some test logic for Authenticate("Google") to return a ticket still
-        //[Fact]
-        //public async Task GoogleTurns401To403WhenAuthenticated()
-        //{
-        //    TestServer server = CreateServer(options =>
-        //    {
-        //        options.ClientId = "Test Id";
-        //        options.ClientSecret = "Test Secret";
-        //    });
-
-        //    Transaction transaction1 = await SendAsync(server, "http://example.com/unauthorized");
-        //    transaction1.Response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
-        //}
-
-        //[Fact]
-        //public async Task GoogleTurns401To403WhenAutomatic()
-        //{
-        //    TestServer server = CreateServer(options =>
-        //    {
-        //        options.ClientId = "Test Id";
-        //        options.ClientSecret = "Test Secret";
-        //        options.AutomaticAuthentication = true;
-        //    });
-
-        //    Debugger.Launch();
-        //    Transaction transaction1 = await SendAsync(server, "http://example.com/unauthorizedAuto");
-        //    transaction1.Response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
-        //}
-
         [Fact]
         public async Task ReplyPathWithoutStateQueryStringWillBeRejected()
         {
@@ -217,8 +223,6 @@ namespace Microsoft.AspNet.Authentication.Google
             var transaction = await server.SendAsync("https://example.com/signin-google?code=TestCode");
             transaction.Response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
         }
-
-
 
         [Theory]
         [InlineData(null)]
@@ -459,24 +463,14 @@ namespace Microsoft.AspNet.Authentication.Google
                     options.AutomaticAuthentication = true;
                 });
                 app.UseGoogleAuthentication(configureOptions);
-                app.UseClaimsTransformation(o =>
-                {
-                    o.Transformation = p =>
-                    {
-                        var id = new ClaimsIdentity("xform");
-                        id.AddClaim(new Claim("xform", "yup"));
-                        p.AddIdentity(id);
-                        return p;
-                    };
-                });
+                app.UseClaimsTransformation();
                 app.Use(async (context, next) =>
                 {
                     var req = context.Request;
                     var res = context.Response;
                     if (req.Path == new PathString("/challenge"))
                     {
-                        context.Authentication.Challenge("Google");
-                        res.StatusCode = 401;
+                        await context.Authentication.ChallengeAsync("Google");
                     }
                     else if (req.Path == new PathString("/me"))
                     {
@@ -486,17 +480,28 @@ namespace Microsoft.AspNet.Authentication.Google
                     {
                         // Simulate Authorization failure 
                         var result = await context.Authentication.AuthenticateAsync("Google");
-                        context.Authentication.Challenge("Google");
+                        await context.Authentication.ChallengeAsync("Google");
                     }
                     else if (req.Path == new PathString("/unauthorizedAuto"))
                     {
                         var result = await context.Authentication.AuthenticateAsync("Google");
-                        res.StatusCode = 401;
-                        context.Authentication.Challenge();
+                        await context.Authentication.ChallengeAsync();
                     }
                     else if (req.Path == new PathString("/401"))
                     {
                         res.StatusCode = 401;
+                    }
+                    else if (req.Path == new PathString("/signIn"))
+                    {
+                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignInAsync("Google", new ClaimsPrincipal()));
+                    }
+                    else if (req.Path == new PathString("/signOut"))
+                    {
+                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignOutAsync("Google"));
+                    }
+                    else if (req.Path == new PathString("/forbid"))
+                    {
+                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.ForbidAsync("Google"));
                     }
                     else if (testpath != null)
                     {
@@ -515,8 +520,14 @@ namespace Microsoft.AspNet.Authentication.Google
                 {
                     options.SignInScheme = TestExtensions.CookieAuthenticationScheme;
                 });
+                services.ConfigureClaimsTransformation(p =>
+                {
+                    var id = new ClaimsIdentity("xform");
+                    id.AddClaim(new Claim("xform", "yup"));
+                    p.AddIdentity(id);
+                    return p;
+                });
             });
         }
-
     }
 }

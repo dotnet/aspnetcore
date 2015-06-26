@@ -549,26 +549,14 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             await base.BaseInitializeAsync(options, context, logger, encoder);
         }
 
-        public override bool ShouldHandleScheme(string authenticationScheme)
-        {
-            return true;
-        }
-
-        public override void Challenge(ChallengeContext context)
-        {
-        }
-
-        protected override void ApplyResponseChallenge()
-        {
-        }
-
-        protected override async Task ApplyResponseChallengeAsync()
+        protected override async Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
         {
             var redirectToIdentityProviderNotification = new RedirectToIdentityProviderNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
             {
             };
 
             await Options.Notifications.RedirectToIdentityProvider(redirectToIdentityProviderNotification);
+            return true;
         }
     }
 

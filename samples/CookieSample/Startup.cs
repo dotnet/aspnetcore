@@ -28,7 +28,7 @@ namespace CookieSample
                 if (string.IsNullOrEmpty(context.User.Identity.Name))
                 {
                     var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "bob") }));
-                    context.Authentication.SignIn(CookieAuthenticationDefaults.AuthenticationScheme, user);
+                    await context.Authentication.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, user);
                     context.Response.ContentType = "text/plain";
                     await context.Response.WriteAsync("Hello First timer");
                     return;

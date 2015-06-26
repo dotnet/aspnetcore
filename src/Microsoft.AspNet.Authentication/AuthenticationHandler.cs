@@ -3,7 +3,6 @@
 
 using System;
 using System.Security.Cryptography;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.DataHandler.Encoder;
 using Microsoft.AspNet.Http;
@@ -22,19 +21,12 @@ namespace Microsoft.AspNet.Authentication
     {
         private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
 
-        private Task<AuthenticationTicket> _authenticate;
-        private bool _authenticateInitialized;
-        private object _authenticateSyncLock;
-
-        private Task _applyResponse;
-        private bool _applyResponseInitialized;
-        private object _applyResponseSyncLock;
-
+        private bool _finishCalled;
         private AuthenticationOptions _baseOptions;
 
-        protected ChallengeContext ChallengeContext { get; set; }
-        protected SignInContext SignInContext { get; set; }
-        protected SignOutContext SignOutContext { get; set; }
+        protected bool SignInAccepted { get; set; }
+        protected bool SignOutAccepted { get; set; }
+        protected bool ChallengeCalled { get; set; }
 
         protected HttpContext Context { get; private set; }
 
@@ -59,12 +51,7 @@ namespace Microsoft.AspNet.Authentication
             get { return _baseOptions; }
         }
 
-        // REVIEW: Overriding Authenticate and not calling base requires manually calling this for 401-403 to work
-        protected bool AuthenticateCalled { get; set; }
-
         public IAuthenticationHandler PriorHandler { get; set; }
-
-        public bool Faulted { get; set; }
 
         protected async Task BaseInitializeAsync([NotNull] AuthenticationOptions options, [NotNull] HttpContext context, [NotNull] ILogger logger, [NotNull] IUrlEncoder encoder)
         {
@@ -76,9 +63,7 @@ namespace Microsoft.AspNet.Authentication
 
             RegisterAuthenticationHandler();
 
-            Response.OnResponseStarting(OnSendingHeaderCallback, this);
-
-            await InitializeCoreAsync();
+            Response.OnStarting(OnStartingCallback, this);
 
             if (BaseOptions.AutomaticAuthentication)
             {
@@ -90,48 +75,47 @@ namespace Microsoft.AspNet.Authentication
             }
         }
 
-        private static void OnSendingHeaderCallback(object state)
+        private static async Task OnStartingCallback(object state)
         {
-            AuthenticationHandler handler = (AuthenticationHandler)state;
-            handler.ApplyResponse();
+            var handler = (AuthenticationHandler)state;
+            await handler.FinishResponseOnce();
         }
 
-        protected virtual Task InitializeCoreAsync()
+        private async Task FinishResponseOnce()
+        {
+            if (!_finishCalled)
+            {
+                _finishCalled = true;
+                await FinishResponseAsync();
+                await HandleAutomaticChallengeIfNeeded();
+            }
+        }
+
+        /// <summary>
+        /// Hook that is called when the response about to be sent
+        /// </summary>
+        /// <returns></returns>
+        protected virtual Task FinishResponseAsync()
         {
             return Task.FromResult(0);
         }
 
+        private async Task HandleAutomaticChallengeIfNeeded()
+        {
+            if (!ChallengeCalled && BaseOptions.AutomaticAuthentication && Response.StatusCode == 401)
+            {
+                await HandleUnauthorizedAsync(new ChallengeContext(BaseOptions.AuthenticationScheme));
+            }
+        }
+
         /// <summary>
-        /// Called once per request after Initialize and Invoke.
+        /// Called once after Invoke by AuthenticationMiddleware.
         /// </summary>
         /// <returns>async completion</returns>
         internal async Task TeardownAsync()
         {
-            try
-            {
-                await ApplyResponseAsync();
-            }
-            catch (Exception)
-            {
-                try
-                {
-                    await TeardownCoreAsync();
-                }
-                catch (Exception)
-                {
-                    // Don't mask the original exception
-                }
-                UnregisterAuthenticationHandler();
-                throw;
-            }
-
-            await TeardownCoreAsync();
+            await FinishResponseOnce();
             UnregisterAuthenticationHandler();
-        }
-
-        protected virtual Task TeardownCoreAsync()
-        {
-            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -147,7 +131,7 @@ namespace Microsoft.AspNet.Authentication
             return Task.FromResult(false);
         }
 
-        public virtual void GetDescriptions(DescribeSchemesContext describeContext)
+        public void GetDescriptions(DescribeSchemesContext describeContext)
         {
             describeContext.Accept(BaseOptions.Description.Items);
 
@@ -157,36 +141,13 @@ namespace Microsoft.AspNet.Authentication
             }
         }
 
-        public virtual void Authenticate(AuthenticateContext context)
-        {
-            if (ShouldHandleScheme(context.AuthenticationScheme))
-            {
-                var ticket = Authenticate();
-                if (ticket?.Principal != null)
-                {
-                    AuthenticateCalled = true;
-                    context.Authenticated(ticket.Principal, ticket.Properties.Items, BaseOptions.Description.Items);
-                }
-                else
-                {
-                    context.NotAuthenticated();
-                }
-            }
-
-            if (PriorHandler != null)
-            {
-                PriorHandler.Authenticate(context);
-            }
-        }
-
-        public virtual async Task AuthenticateAsync(AuthenticateContext context)
+        public async Task AuthenticateAsync(AuthenticateContext context)
         {
             if (ShouldHandleScheme(context.AuthenticationScheme))
             {
                 var ticket = await AuthenticateAsync();
                 if (ticket?.Principal != null)
                 {
-                    AuthenticateCalled = true;
                     context.Authenticated(ticket.Principal, ticket.Properties.Items, BaseOptions.Description.Items);
                 }
                 else
@@ -201,193 +162,66 @@ namespace Microsoft.AspNet.Authentication
             }
         }
 
-        public AuthenticationTicket Authenticate()
-        {
-            return LazyInitializer.EnsureInitialized(
-                ref _authenticate,
-                ref _authenticateInitialized,
-                ref _authenticateSyncLock,
-                () =>
-                {
-                    return Task.FromResult(AuthenticateCore());
-                }).GetAwaiter().GetResult();
-        }
-
-        protected abstract AuthenticationTicket AuthenticateCore();
-
         /// <summary>
-        /// Causes the authentication logic in AuthenticateCore to be performed for the current request 
-        /// at most once and returns the results. Calling Authenticate more than once will always return 
-        /// the original value. 
-        /// 
-        /// This method should always be called instead of calling AuthenticateCore directly.
+        /// Calling Authenticate more than once should always return the original value. 
         /// </summary>
         /// <returns>The ticket data provided by the authentication logic</returns>
-        public Task<AuthenticationTicket> AuthenticateAsync()
-        {
-            return LazyInitializer.EnsureInitialized(
-                ref _authenticate,
-                ref _authenticateInitialized,
-                ref _authenticateSyncLock,
-                AuthenticateCoreAsync);
-        }
+        public abstract Task<AuthenticationTicket> AuthenticateAsync();
 
-        /// <summary>
-        /// The core authentication logic which must be provided by the handler. Will be invoked at most
-        /// once per request. Do not call directly, call the wrapping Authenticate method instead.
-        /// </summary>
-        /// <returns>The ticket data provided by the authentication logic</returns>
-        protected virtual Task<AuthenticationTicket> AuthenticateCoreAsync()
-        {
-            return Task.FromResult(AuthenticateCore());
-        }
-
-        private void ApplyResponse()
-        {
-            // If ApplyResponse already failed in the OnSendingHeaderCallback or TeardownAsync code path then a
-            // failed task is cached. If called again the same error will be re-thrown. This breaks error handling
-            // scenarios like the ability to display the error page or re-execute the request.
-            try
-            {
-                if (!Faulted)
-                {
-                    LazyInitializer.EnsureInitialized(
-                        ref _applyResponse,
-                        ref _applyResponseInitialized,
-                        ref _applyResponseSyncLock,
-                        () =>
-                        {
-                            ApplyResponseCore();
-                            return Task.FromResult(0);
-                        }).GetAwaiter().GetResult(); // Block if the async version is in progress.
-                }
-            }
-            catch (Exception)
-            {
-                Faulted = true;
-                throw;
-            }
-        }
-
-        protected virtual void ApplyResponseCore()
-        {
-            ApplyResponseGrant();
-            ApplyResponseChallenge();
-        }
-
-        /// <summary>
-        /// Causes the ApplyResponseCore to be invoked at most once per request. This method will be
-        /// invoked either earlier, when the response headers are sent as a result of a response write or flush,
-        /// or later, as the last step when the original async call to the middleware is returning.
-        /// </summary>
-        /// <returns></returns>
-        private async Task ApplyResponseAsync()
-        {
-            // If ApplyResponse already failed in the OnSendingHeaderCallback or TeardownAsync code path then a
-            // failed task is cached. If called again the same error will be re-thrown. This breaks error handling
-            // scenarios like the ability to display the error page or re-execute the request.
-            try
-            {
-                if (!Faulted)
-                {
-                    await LazyInitializer.EnsureInitialized(
-                        ref _applyResponse,
-                        ref _applyResponseInitialized,
-                        ref _applyResponseSyncLock,
-                        ApplyResponseCoreAsync);
-                }
-            }
-            catch (Exception)
-            {
-                Faulted = true;
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Core method that may be overridden by handler. The default behavior is to call two common response 
-        /// activities, one that deals with sign-in/sign-out concerns, and a second to deal with 401 challenges.
-        /// </summary>
-        /// <returns></returns>
-        protected virtual async Task ApplyResponseCoreAsync()
-        {
-            await ApplyResponseGrantAsync();
-            await ApplyResponseChallengeAsync();
-        }
-
-        protected abstract void ApplyResponseGrant();
-
-        /// <summary>
-        /// Override this method to dela with sign-in/sign-out concerns, if an authentication scheme in question
-        /// deals with grant/revoke as part of it's request flow. (like setting/deleting cookies)
-        /// </summary>
-        /// <returns></returns>
-        protected virtual Task ApplyResponseGrantAsync()
-        {
-            ApplyResponseGrant();
-            return Task.FromResult(0);
-        }
-
-        public virtual void SignIn(SignInContext context)
-        {
-            if (ShouldHandleScheme(context.AuthenticationScheme))
-            {
-                SignInContext = context;
-                SignOutContext = null;
-                context.Accept();
-            }
-
-            if (PriorHandler != null)
-            {
-                PriorHandler.SignIn(context);
-            }
-        }
-
-        public virtual void SignOut(SignOutContext context)
-        {
-            if (ShouldHandleScheme(context.AuthenticationScheme))
-            {
-                SignInContext = null;
-                SignOutContext = context;
-                context.Accept();
-            }
-
-            if (PriorHandler != null)
-            {
-                PriorHandler.SignOut(context);
-            }
-        }
-
-        public virtual void Challenge(ChallengeContext context)
-        {
-            if (ShouldHandleScheme(context.AuthenticationScheme))
-            {
-                ChallengeContext = context;
-                context.Accept();
-            }
-
-            if (PriorHandler != null)
-            {
-                PriorHandler.Challenge(context);
-            }
-        }
-
-        protected abstract void ApplyResponseChallenge();
-
-        public virtual bool ShouldHandleScheme(string authenticationScheme)
+        public bool ShouldHandleScheme(string authenticationScheme)
         {
             return string.Equals(BaseOptions.AuthenticationScheme, authenticationScheme, StringComparison.Ordinal) ||
                 (BaseOptions.AutomaticAuthentication && string.IsNullOrWhiteSpace(authenticationScheme));
         }
 
-        public virtual bool ShouldConvertChallengeToForbidden()
+        public async Task SignInAsync(SignInContext context)
         {
-            // Return 403 iff 401 and this handler's authenticate was called
-            // and the challenge is for the authentication type
-            return Response.StatusCode == 401 &&
-                AuthenticateCalled &&
-                ChallengeContext != null &&
-                ShouldHandleScheme(ChallengeContext.AuthenticationScheme);
+            if (ShouldHandleScheme(context.AuthenticationScheme))
+            {
+                SignInAccepted = true;
+                await HandleSignInAsync(context);
+                context.Accept();
+            }
+
+            if (PriorHandler != null)
+            {
+                await PriorHandler.SignInAsync(context);
+            }
+        }
+
+        protected virtual Task HandleSignInAsync(SignInContext context)
+        {
+            return Task.FromResult(0);
+        }
+
+        public async Task SignOutAsync(SignOutContext context)
+        {
+            if (ShouldHandleScheme(context.AuthenticationScheme))
+            {
+                SignOutAccepted = true;
+                await HandleSignOutAsync(context);
+                context.Accept();
+            }
+
+            if (PriorHandler != null)
+            {
+                await PriorHandler.SignOutAsync(context);
+            }
+        }
+
+        protected virtual Task HandleSignOutAsync(SignOutContext context)
+        {
+            return Task.FromResult(0);
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns>True if no other handlers should be called</returns>
+        protected virtual Task<bool> HandleForbiddenAsync(ChallengeContext context)
+        {
+            Response.StatusCode = 403;
+            return Task.FromResult(true);
         }
 
         /// <summary>
@@ -395,11 +229,48 @@ namespace Microsoft.AspNet.Authentication
         /// deals an authentication interaction as part of it's request flow. (like adding a response header, or
         /// changing the 401 result to 302 of a login page or external sign-in location.)
         /// </summary>
-        /// <returns></returns>
-        protected virtual Task ApplyResponseChallengeAsync()
+        /// <param name="context"></param>
+        /// <returns>True if no other handlers should be called</returns>
+        protected virtual Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
         {
-            ApplyResponseChallenge();
-            return Task.FromResult(0);
+            Response.StatusCode = 401;
+            return Task.FromResult(false);
+        }
+
+        public async Task ChallengeAsync(ChallengeContext context)
+        {
+            bool handled = false;
+            ChallengeCalled = true;
+            if (ShouldHandleScheme(context.AuthenticationScheme))
+            {
+                switch (context.Behavior)
+                {
+                    case ChallengeBehavior.Automatic:
+                        // If there is a principal already, invoke the forbidden code path
+                        var ticket = await AuthenticateAsync();
+                        if (ticket?.Principal != null)
+                        {
+                            handled = await HandleForbiddenAsync(context);
+                        }
+                        else
+                        {
+                            handled = await HandleUnauthorizedAsync(context);
+                        }
+                        break;
+                    case ChallengeBehavior.Unauthorized:
+                        handled = await HandleUnauthorizedAsync(context);
+                        break;
+                    case ChallengeBehavior.Forbidden:
+                        handled = await HandleForbiddenAsync(context);
+                        break;
+                }
+                context.Accept();
+            }
+
+            if (!handled && PriorHandler != null)
+            {
+                await PriorHandler.ChallengeAsync(context);
+            }
         }
 
         protected void GenerateCorrelationId([NotNull] AuthenticationProperties properties)

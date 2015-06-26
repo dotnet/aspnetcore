@@ -6,10 +6,11 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Extensions;
+using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.WebUtilities;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Newtonsoft.Json.Linq;
 
@@ -37,7 +38,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
 
         public async Task<bool> InvokeReturnPathAsync()
         {
-            AuthenticationTicket ticket = await AuthenticateAsync();
+            var ticket = await AuthenticateAsync();
             if (ticket == null)
             {
                 Logger.LogWarning("Invalid return state, unable to redirect.");
@@ -56,7 +57,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
 
             if (context.SignInScheme != null && context.Principal != null)
             {
-                Context.Authentication.SignIn(context.SignInScheme, context.Principal, context.Properties);
+                await Context.Authentication.SignInAsync(context.SignInScheme, context.Principal, context.Properties);
             }
 
             if (!context.IsRequestCompleted && context.RedirectUri != null)
@@ -73,17 +74,12 @@ namespace Microsoft.AspNet.Authentication.OAuth
             return context.IsRequestCompleted;
         }
 
-        protected override AuthenticationTicket AuthenticateCore()
-        {
-            return AuthenticateCoreAsync().GetAwaiter().GetResult();
-        }
-
-        protected override async Task<AuthenticationTicket> AuthenticateCoreAsync()
+        public override async Task<AuthenticationTicket> AuthenticateAsync()
         {
             AuthenticationProperties properties = null;
             try
             {
-                IReadableStringCollection query = Request.Query;
+                var query = Request.Query;
 
                 // TODO: Is this a standard error returned by servers?
                 var value = query.Get("error");
@@ -94,8 +90,8 @@ namespace Microsoft.AspNet.Authentication.OAuth
                     return null;
                 }
 
-                string code = query.Get("code");
-                string state = query.Get("state");
+                var code = query.Get("code");
+                var state = query.Get("state");
 
                 properties = Options.StateDataFormat.Unprotect(state);
                 if (properties == null)
@@ -115,8 +111,8 @@ namespace Microsoft.AspNet.Authentication.OAuth
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);
                 }
 
-                string requestPrefix = Request.Scheme + "://" + Request.Host;
-                string redirectUri = requestPrefix + RequestPathBase + Options.CallbackPath;
+                var requestPrefix = Request.Scheme + "://" + Request.Host;
+                var redirectUri = requestPrefix + RequestPathBase + Options.CallbackPath;
 
                 var tokens = await ExchangeCodeAsync(code, redirectUri);
 
@@ -151,11 +147,11 @@ namespace Microsoft.AspNet.Authentication.OAuth
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, Options.TokenEndpoint);
             requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             requestMessage.Content = requestContent;
-            HttpResponseMessage response = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
+            var response = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
             response.EnsureSuccessStatusCode();
-            string oauthTokenResponse = await response.Content.ReadAsStringAsync();
+            var oauthTokenResponse = await response.Content.ReadAsStringAsync();
 
-            JObject oauth2Token = JObject.Parse(oauthTokenResponse);
+            var oauth2Token = JObject.Parse(oauthTokenResponse);
             return new TokenResponse(oauth2Token);
         }
 
@@ -169,40 +165,13 @@ namespace Microsoft.AspNet.Authentication.OAuth
             return new AuthenticationTicket(context.Principal, context.Properties, Options.AuthenticationScheme);
         }
 
-        protected override void ApplyResponseChallenge()
+        protected override Task<bool> HandleUnauthorizedAsync([NotNull] ChallengeContext context)
         {
-            if (ShouldConvertChallengeToForbidden())
-            {
-                Response.StatusCode = 403;
-                return;
-            }
+            var baseUri = Request.Scheme + "://" + Request.Host + Request.PathBase;
+            var currentUri = baseUri + Request.Path + Request.QueryString;
+            var redirectUri = baseUri + Options.CallbackPath;
 
-            if (Response.StatusCode != 401)
-            {
-                return;
-            }
-
-            // When Automatic should redirect on 401 even if there wasn't an explicit challenge.
-            if (ChallengeContext == null && !Options.AutomaticAuthentication)
-            {
-                return;
-            }
-
-            string baseUri = Request.Scheme + "://" + Request.Host + Request.PathBase;
-
-            string currentUri = baseUri + Request.Path + Request.QueryString;
-
-            string redirectUri = baseUri + Options.CallbackPath;
-
-            AuthenticationProperties properties;
-            if (ChallengeContext == null)
-            {
-                properties = new AuthenticationProperties();
-            }
-            else
-            {
-                properties = new AuthenticationProperties(ChallengeContext.Properties);
-            }
+            var properties = new AuthenticationProperties(context.Properties);
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
                 properties.RedirectUri = currentUri;
@@ -211,19 +180,35 @@ namespace Microsoft.AspNet.Authentication.OAuth
             // OAuth2 10.12 CSRF
             GenerateCorrelationId(properties);
 
-            string authorizationEndpoint = BuildChallengeUrl(properties, redirectUri);
+            var authorizationEndpoint = BuildChallengeUrl(properties, redirectUri);
 
             var redirectContext = new OAuthApplyRedirectContext(
                 Context, Options,
                 properties, authorizationEndpoint);
             Options.Notifications.ApplyRedirect(redirectContext);
+            return Task.FromResult(true);
+        }
+
+        protected override Task HandleSignOutAsync(SignOutContext context)
+        {
+            throw new NotSupportedException();
+        }
+
+        protected override Task HandleSignInAsync(SignInContext context)
+        {
+            throw new NotSupportedException();
+        }
+
+        protected override Task<bool> HandleForbiddenAsync(ChallengeContext context)
+        {
+            throw new NotSupportedException();
         }
 
         protected virtual string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)
         {
-            string scope = FormatScope();
+            var scope = FormatScope();
 
-            string state = Options.StateDataFormat.Protect(properties);
+            var state = Options.StateDataFormat.Protect(properties);
 
             var queryBuilder = new QueryBuilder()
             {
@@ -240,11 +225,6 @@ namespace Microsoft.AspNet.Authentication.OAuth
         {
             // OAuth2 3.3 space separated
             return string.Join(" ", Options.Scope);
-        }
-
-        protected override void ApplyResponseGrant()
-        {
-            // N/A - No SignIn or SignOut support.
         }
     }
 }

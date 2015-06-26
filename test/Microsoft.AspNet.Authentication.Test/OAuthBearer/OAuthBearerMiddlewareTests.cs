@@ -41,6 +41,29 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
         }
 
         [Fact]
+        public async Task SignInThrows()
+        {
+            var server = CreateServer(options =>
+            {
+                options.AutomaticAuthentication = true;
+            });
+            var transaction = await server.SendAsync("https://example.com/signIn");
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+        [Fact]
+        public async Task SignOutThrows()
+        {
+            var server = CreateServer(options =>
+            {
+                options.AutomaticAuthentication = true;
+            });
+            var transaction = await server.SendAsync("https://example.com/signOut");
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+
+        [Fact]
         public async Task CustomHeaderReceived()
         {
             var server = CreateServer(options =>
@@ -326,9 +349,17 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
                     {
                         // Simulate Authorization failure 
                         var result = await context.Authentication.AuthenticateAsync(OAuthBearerAuthenticationDefaults.AuthenticationScheme);
-                        context.Authentication.Challenge(OAuthBearerAuthenticationDefaults.AuthenticationScheme);
+                        await context.Authentication.ChallengeAsync(OAuthBearerAuthenticationDefaults.AuthenticationScheme);
                     }
 
+                    else if (context.Request.Path == new PathString("/signIn"))
+                    {
+                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignInAsync(OAuthBearerAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal()));
+                    }
+                    else if (context.Request.Path == new PathString("/signOut"))
+                    {
+                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignOutAsync(OAuthBearerAuthenticationDefaults.AuthenticationScheme));
+                    }
                     else
                     {
                         await next();

@@ -34,12 +34,12 @@ namespace Microsoft.AspNet.Authentication
 
         public async Task Invoke(HttpContext context)
         {
-            var handler = new ClaimsTransformationAuthenticationHandler(Options.Transformation);
+            var handler = new ClaimsTransformationAuthenticationHandler(Options.Transformer);
             handler.RegisterAuthenticationHandler(context.GetAuthentication());
             try {
-                if (Options.Transformation != null)
+                if (Options.Transformer != null)
                 {
-                    context.User = Options.Transformation.Invoke(context.User);
+                    context.User = await Options.Transformer.TransformAsync(context.User);
                 }
                 await _next(context);
             }

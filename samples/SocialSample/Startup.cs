@@ -187,7 +187,7 @@ namespace CookieSample
                     {
                         // By default the client will be redirect back to the URL that issued the challenge (/login?authtype=foo),
                         // send them to the home page instead (/).
-                        context.Authentication.Challenge(authType, new AuthenticationProperties() { RedirectUri = "/" });
+                        await context.Authentication.ChallengeAsync(authType, new AuthenticationProperties() { RedirectUri = "/" });
                         return;
                     }
 
@@ -207,7 +207,7 @@ namespace CookieSample
             {
                 signoutApp.Run(async context =>
                 {
-                    context.Authentication.SignOut(CookieAuthenticationDefaults.AuthenticationScheme);
+                    await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     context.Response.ContentType = "text/html";
                     await context.Response.WriteAsync("<html><body>");
                     await context.Response.WriteAsync("You have been logged out. Goodbye " + context.User.Identity.Name + "<br>");
@@ -222,7 +222,7 @@ namespace CookieSample
                 if (string.IsNullOrEmpty(context.User.Identity.Name))
                 {
                     // The cookie middleware will intercept this 401 and redirect to /login
-                    context.Authentication.Challenge();
+                    await context.Authentication.ChallengeAsync();
                     return;
                 }
                 await next();

@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNet.Authorization
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public class AuthorizeAttribute : Attribute
+    public class AuthorizeAttribute : Attribute, IAuthorizeData
     {
         public AuthorizeAttribute() { }
 

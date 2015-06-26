@@ -20,15 +20,14 @@ namespace Microsoft.AspNet.Authorization
             ActiveAuthenticationSchemes = new List<string>(activeAuthenticationSchemes).AsReadOnly();
         }
 
-        public IReadOnlyList<IAuthorizationRequirement> Requirements { get; private set; }
-        public IReadOnlyList<string> ActiveAuthenticationSchemes { get; private set; }
+        public IReadOnlyList<IAuthorizationRequirement> Requirements { get; }
+        public IReadOnlyList<string> ActiveAuthenticationSchemes { get; }
 
         public static AuthorizationPolicy Combine([NotNull] params AuthorizationPolicy[] policies)
         {
             return Combine((IEnumerable<AuthorizationPolicy>)policies);
         }
 
-        // TODO: Add unit tests
         public static AuthorizationPolicy Combine([NotNull] IEnumerable<AuthorizationPolicy> policies)
         {
             var builder = new AuthorizationPolicyBuilder();

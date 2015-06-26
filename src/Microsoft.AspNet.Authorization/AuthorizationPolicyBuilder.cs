@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authorization
@@ -85,6 +85,12 @@ namespace Microsoft.AspNet.Authorization
         public AuthorizationPolicyBuilder RequireAuthenticatedUser()
         {
             Requirements.Add(new DenyAnonymousAuthorizationRequirement());
+            return this;
+        }
+
+        public AuthorizationPolicyBuilder RequireDelegate([NotNull] Action<AuthorizationContext, DelegateRequirement> handler)
+        {
+            Requirements.Add(new DelegateRequirement(handler));
             return this;
         }
 

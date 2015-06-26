@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Authorization
 
         public string RequiredName { get; }
 
-        public override void Handle(AuthorizationContext context, NameAuthorizationRequirement requirement)
+        protected override void Handle(AuthorizationContext context, NameAuthorizationRequirement requirement)
         {
             if (context.User != null)
             {

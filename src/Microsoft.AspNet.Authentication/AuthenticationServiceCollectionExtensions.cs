@@ -3,6 +3,7 @@
 
 using System;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication;
 using Microsoft.Framework.Internal;
 
@@ -24,7 +25,12 @@ namespace Microsoft.Framework.DependencyInjection
 
         public static IServiceCollection ConfigureClaimsTransformation([NotNull] this IServiceCollection services, [NotNull] Func<ClaimsPrincipal, ClaimsPrincipal> transform)
         {
-            return services.Configure<ClaimsTransformationOptions>(o => o.Transformation = transform);
+            return services.Configure<ClaimsTransformationOptions>(o => o.Transformer = new ClaimsTransformer { TransformSyncDelegate = transform });
+        }
+
+        public static IServiceCollection ConfigureClaimsTransformation([NotNull] this IServiceCollection services, [NotNull] Func<ClaimsPrincipal, Task<ClaimsPrincipal>> asyncTransform)
+        {
+            return services.Configure<ClaimsTransformationOptions>(o => o.Transformer = new ClaimsTransformer { TransformAsyncDelegate = asyncTransform });
         }
 
     }

@@ -17,14 +17,21 @@ namespace Microsoft.AspNet.Authorization
             }
         }
 
-        public virtual Task HandleAsync(AuthorizationContext context)
+        public virtual async Task HandleAsync(AuthorizationContext context)
         {
-            Handle(context);
-            return Task.FromResult(0);
+            foreach (var req in context.Requirements.OfType<TRequirement>())
+            {
+                await HandleAsync(context, req);
+            }
         }
 
-        // REVIEW: do we need an async hook too?
-        public abstract void Handle(AuthorizationContext context, TRequirement requirement);
+        protected abstract void Handle(AuthorizationContext context, TRequirement requirement);
+
+        protected virtual Task HandleAsync(AuthorizationContext context, TRequirement requirement)
+        {
+            Handle(context, requirement);
+            return Task.FromResult(0);
+        }
     }
 
     public abstract class AuthorizationHandler<TRequirement, TResource> : IAuthorizationHandler
@@ -34,17 +41,13 @@ namespace Microsoft.AspNet.Authorization
         public virtual async Task HandleAsync(AuthorizationContext context)
         {
             var resource = context.Resource as TResource;
-            // REVIEW: should we allow null resources?
-            if (resource != null)
+            foreach (var req in context.Requirements.OfType<TRequirement>())
             {
-                foreach (var req in context.Requirements.OfType<TRequirement>())
-                {
-                    await HandleAsync(context, req, resource);
-                }
+                await HandleAsync(context, req, resource);
             }
         }
 
-        public virtual Task HandleAsync(AuthorizationContext context, TRequirement requirement, TResource resource)
+        protected virtual Task HandleAsync(AuthorizationContext context, TRequirement requirement, TResource resource)
         {
             Handle(context, requirement, resource);
             return Task.FromResult(0);
@@ -63,6 +66,6 @@ namespace Microsoft.AspNet.Authorization
             }
         }
 
-        public abstract void Handle(AuthorizationContext context, TRequirement requirement, TResource resource);
+        protected abstract void Handle(AuthorizationContext context, TRequirement requirement, TResource resource);
     }
 }

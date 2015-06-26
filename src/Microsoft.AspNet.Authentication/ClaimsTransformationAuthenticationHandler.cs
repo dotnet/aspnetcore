@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features.Authentication;
 
@@ -13,56 +11,37 @@ namespace Microsoft.AspNet.Authentication
     /// </summary>
     public class ClaimsTransformationAuthenticationHandler : IAuthenticationHandler
     {
-        private readonly Func<ClaimsPrincipal, ClaimsPrincipal> _transform;
+        private readonly IClaimsTransformer _transform;
 
-        public ClaimsTransformationAuthenticationHandler(Func<ClaimsPrincipal, ClaimsPrincipal> transform)
+        public ClaimsTransformationAuthenticationHandler(IClaimsTransformer transform)
         {
             _transform = transform;
         }
 
         public IAuthenticationHandler PriorHandler { get; set; }
 
-        private void ApplyTransform(AuthenticateContext context)
-        {
-            if (_transform != null)
-            {
-                // REVIEW: this cast seems really bad (missing interface way to get the result back out?)
-                var authContext = context as AuthenticateContext;
-                if (authContext?.Principal != null)
-                {
-                    context.Authenticated(
-                        _transform.Invoke(authContext.Principal),
-                        authContext.Properties,
-                        authContext.Description);
-                }
-            }
-
-        }
-
-        public void Authenticate(AuthenticateContext context)
-        {
-            if (PriorHandler != null)
-            {
-                PriorHandler.Authenticate(context);
-                ApplyTransform(context);
-            }
-        }
-
         public async Task AuthenticateAsync(AuthenticateContext context)
         {
             if (PriorHandler != null)
             {
                 await PriorHandler.AuthenticateAsync(context);
-                ApplyTransform(context);
+                if (_transform != null && context?.Principal != null)
+                {
+                    context.Authenticated(
+                        await _transform.TransformAsync(context.Principal),
+                        context.Properties,
+                        context.Description);
+                }
             }
         }
 
-        public void Challenge(ChallengeContext context)
+        public Task ChallengeAsync(ChallengeContext context)
         {
             if (PriorHandler != null)
             {
-                PriorHandler.Challenge(context);
+                return PriorHandler.ChallengeAsync(context);
             }
+            return Task.FromResult(0);
         }
 
         public void GetDescriptions(DescribeSchemesContext context)
@@ -73,20 +52,22 @@ namespace Microsoft.AspNet.Authentication
             }
         }
 
-        public void SignIn(SignInContext context)
+        public Task SignInAsync(SignInContext context)
         {
             if (PriorHandler != null)
             {
-                PriorHandler.SignIn(context);
+                return PriorHandler.SignInAsync(context);
             }
+            return Task.FromResult(0);
         }
 
-        public void SignOut(SignOutContext context)
+        public Task SignOutAsync(SignOutContext context)
         {
             if (PriorHandler != null)
             {
-                PriorHandler.SignOut(context);
+                return PriorHandler.SignOutAsync(context);
             }
+            return Task.FromResult(0);
         }
 
         public void RegisterAuthenticationHandler(IHttpAuthenticationFeature auth)

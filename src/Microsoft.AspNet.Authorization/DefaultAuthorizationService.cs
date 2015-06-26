@@ -35,6 +35,7 @@ namespace Microsoft.AspNet.Authorization
             foreach (var handler in _handlers)
             {
                 handler.Handle(authContext);
+                //REVIEW: Do we want to consider short circuiting on failure
             }
             return authContext.HasSucceeded;
         }

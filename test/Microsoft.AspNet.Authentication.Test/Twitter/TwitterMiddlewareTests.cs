@@ -3,6 +3,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
@@ -19,8 +20,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
         [Fact]
         public async Task ChallengeWillTriggerApplyRedirectEvent()
         {
-            var server = CreateServer(
-                app => app.UseTwitterAuthentication(options =>
+            var server = CreateServer(options =>
                 {
                     options.ConsumerKey = "Test Consumer Key";
                     options.ConsumerSecret = "Test Consumer Secret";
@@ -49,10 +49,11 @@ namespace Microsoft.AspNet.Authentication.Twitter
                         }
                     };
                     options.BackchannelCertificateValidator = null;
-                }),
-                context =>
+                },
+                context => 
                 {
-                    context.Authentication.Challenge("Twitter");
+                    // REVIEW: Gross
+                    context.Authentication.ChallengeAsync("Twitter").GetAwaiter().GetResult();
                     return true;
                 });
             var transaction = await server.SendAsync("http://example.com/challenge");
@@ -62,10 +63,46 @@ namespace Microsoft.AspNet.Authentication.Twitter
         }
 
         [Fact]
+        public async Task SignInThrows()
+        {
+            var server = CreateServer(options =>
+            {
+                options.ConsumerKey = "Test Consumer Key";
+                options.ConsumerSecret = "Test Consumer Secret";
+            });
+            var transaction = await server.SendAsync("https://example.com/signIn");
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+        [Fact]
+        public async Task SignOutThrows()
+        {
+            var server = CreateServer(options =>
+            {
+                options.ConsumerKey = "Test Consumer Key";
+                options.ConsumerSecret = "Test Consumer Secret";
+            });
+            var transaction = await server.SendAsync("https://example.com/signOut");
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+        [Fact]
+        public async Task ForbidThrows()
+        {
+            var server = CreateServer(options =>
+            {
+                options.ConsumerKey = "Test Consumer Key";
+                options.ConsumerSecret = "Test Consumer Secret";
+            });
+            var transaction = await server.SendAsync("https://example.com/signOut");
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+
+        [Fact]
         public async Task ChallengeWillTriggerRedirection()
         {
-            var server = CreateServer(
-                app => app.UseTwitterAuthentication(options =>
+            var server = CreateServer(options =>
                 {
                     options.ConsumerKey = "Test Consumer Key";
                     options.ConsumerSecret = "Test Consumer Secret";
@@ -87,10 +124,11 @@ namespace Microsoft.AspNet.Authentication.Twitter
                         }
                     };
                     options.BackchannelCertificateValidator = null;
-                }),
+                },
                 context =>
                 {
-                    context.Authentication.Challenge("Twitter");
+                    // REVIEW: gross
+                    context.Authentication.ChallengeAsync("Twitter").GetAwaiter().GetResult();
                     return true;
                 });
             var transaction = await server.SendAsync("http://example.com/challenge");
@@ -99,7 +137,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             location.ShouldContain("https://twitter.com/oauth/authenticate?oauth_token=");
         }
 
-        private static TestServer CreateServer(Action<IApplicationBuilder> configure, Func<HttpContext, bool> handler)
+        private static TestServer CreateServer(Action<TwitterAuthenticationOptions> configure, Func<HttpContext, bool> handler = null)
         {
             return TestServer.Create(app =>
             {
@@ -107,13 +145,24 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 {
                     options.AuthenticationScheme = "External";
                 });
-                if (configure != null)
-                {
-                    configure(app);
-                }
+                app.UseTwitterAuthentication(configure);
                 app.Use(async (context, next) =>
                 {
-                    if (handler == null || !handler(context))
+                    var req = context.Request;
+                    var res = context.Response;
+                    if (req.Path == new PathString("/signIn"))
+                    {
+                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignInAsync("Twitter", new ClaimsPrincipal()));
+                    }
+                    else if (req.Path == new PathString("/signOut"))
+                    {
+                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignOutAsync("Twitter"));
+                    }
+                    else if (req.Path == new PathString("/forbid"))
+                    {
+                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.ForbidAsync("Twitter"));
+                    }
+                    else if (handler == null || !handler(context))
                     {
                         await next();
                     }

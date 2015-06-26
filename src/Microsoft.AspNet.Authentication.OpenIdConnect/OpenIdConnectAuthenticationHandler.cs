@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.Notifications;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.Http.Features.Authentication;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.IdentityModel.Protocols;
 
@@ -38,18 +40,12 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             }
         }
 
-        protected override void ApplyResponseGrant()
-        {
-            ApplyResponseGrantAsync().GetAwaiter().GetResult();
-        }
-
         /// <summary>
         /// Handles Signout
         /// </summary>
         /// <returns></returns>
-        protected override async Task ApplyResponseGrantAsync()
+        protected override async Task HandleSignOutAsync(SignOutContext signout)
         {
-            var signout = SignOutContext;
             if (signout != null)
             {
                 if (_configuration == null && Options.ConfigurationManager != null)
@@ -96,52 +92,19 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             }
         }
 
-        protected override void ApplyResponseChallenge()
-        {
-            ApplyResponseChallengeAsync().GetAwaiter().GetResult();
-        }
-
         /// <summary>
         /// Responds to a 401 Challenge. Sends an OpenIdConnect message to the 'identity authority' to obtain an identity.
         /// </summary>
         /// <returns></returns>
         /// <remarks>Uses log id's OIDCH-0026 - OIDCH-0050, next num: 37</remarks>
-        protected override async Task ApplyResponseChallengeAsync()
+        protected override async Task<bool> HandleUnauthorizedAsync([NotNull] ChallengeContext context)
         {
             Logger.LogDebug(Resources.OIDCH_0026_ApplyResponseChallengeAsync, this.GetType());
-
-            if (ShouldConvertChallengeToForbidden())
-            {
-                Logger.LogDebug(Resources.OIDCH_0027_401_ConvertedTo_403);
-                Response.StatusCode = 403;
-                return;
-            }
-
-            if (Response.StatusCode != 401)
-            {
-                Logger.LogDebug(Resources.OIDCH_0028_StatusCodeNot401, Response.StatusCode);
-                return;
-            }
-
-            // When Automatic should redirect on 401 even if there wasn't an explicit challenge.
-            if (ChallengeContext == null && !Options.AutomaticAuthentication)
-            {
-                Logger.LogDebug(Resources.OIDCH_0029_ChallengeContextEqualsNull);
-                return;
-            }
 
             // order for local RedirectUri
             // 1. challenge.Properties.RedirectUri
             // 2. CurrentUri if Options.DefaultToCurrentUriOnRedirect is true)
-            AuthenticationProperties properties;
-            if (ChallengeContext == null)
-            {
-                properties = new AuthenticationProperties();
-            }
-            else
-            {
-                properties = new AuthenticationProperties(ChallengeContext.Properties);
-            }
+            AuthenticationProperties properties = new AuthenticationProperties(context.Properties);
 
             if (!string.IsNullOrWhiteSpace(properties.RedirectUri))
             {
@@ -209,12 +172,12 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             if (redirectToIdentityProviderNotification.HandledResponse)
             {
                 Logger.LogInformation(Resources.OIDCH_0034_RedirectToIdentityProviderNotificationHandledResponse);
-                return;
+                return true; // REVIEW: Make sure this should stop all other handlers
             }
             else if (redirectToIdentityProviderNotification.Skipped)
             {
                 Logger.LogInformation(Resources.OIDCH_0035_RedirectToIdentityProviderNotificationSkipped);
-                return;
+                return false; // REVIEW: Make sure this should not stop all other handlers
             }
 
             var redirectUri = redirectToIdentityProviderNotification.ProtocolMessage.CreateAuthenticationRequestUrl();
@@ -224,11 +187,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             }
 
             Response.Redirect(redirectUri);
-        }
-
-        protected override AuthenticationTicket AuthenticateCore()
-        {
-            return AuthenticateCoreAsync().GetAwaiter().GetResult();
+            return true;
         }
 
         /// <summary>
@@ -236,7 +195,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// </summary>
         /// <returns>An <see cref="AuthenticationTicket"/> if successful.</returns>
         /// <remarks>Uses log id's OIDCH-0000 - OIDCH-0025</remarks>
-        protected override async Task<AuthenticationTicket> AuthenticateCoreAsync()
+        public override async Task<AuthenticationTicket> AuthenticateAsync()
         {
             Logger.LogDebug(Resources.OIDCH_0000_AuthenticateCoreAsync, this.GetType());
 
@@ -632,7 +591,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             {
                 if (ticket.Principal != null)
                 {
-                    Request.HttpContext.Authentication.SignIn(Options.SignInScheme, ticket.Principal, ticket.Properties);
+                    await Request.HttpContext.Authentication.SignInAsync(Options.SignInScheme, ticket.Principal, ticket.Properties);
                 }
 
                 // Redirect back to the original secured resource, if any.

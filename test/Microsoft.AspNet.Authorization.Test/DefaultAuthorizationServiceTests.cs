@@ -582,7 +582,7 @@ namespace Microsoft.AspNet.Authorization.Test
         public class CustomRequirement : IAuthorizationRequirement { }
         public class CustomHandler : AuthorizationHandler<CustomRequirement>
         {
-            public override void Handle(AuthorizationContext context, CustomRequirement requirement)
+            protected override void Handle(AuthorizationContext context, CustomRequirement requirement)
             {
                 context.Succeed(requirement);
             }
@@ -638,7 +638,7 @@ namespace Microsoft.AspNet.Authorization.Test
 
             public bool Succeed { get; set; }
 
-            public override void Handle(AuthorizationContext context, PassThroughRequirement requirement)
+            protected override void Handle(AuthorizationContext context, PassThroughRequirement requirement)
             {
                 if (Succeed) {
                     context.Succeed(requirement);
@@ -668,6 +668,7 @@ namespace Microsoft.AspNet.Authorization.Test
             Assert.Equal(shouldSucceed, allowed);
         }
 
+        [Fact]
         public async Task CanCombinePolicies()
         {
             // Arrange
@@ -695,6 +696,7 @@ namespace Microsoft.AspNet.Authorization.Test
             Assert.True(allowed);
         }
 
+        [Fact]
         public async Task CombinePoliciesWillFailIfBasePolicyFails()
         {
             // Arrange
@@ -721,6 +723,7 @@ namespace Microsoft.AspNet.Authorization.Test
             Assert.False(allowed);
         }
 
+        [Fact]
         public async Task CombinedPoliciesWillFailIfExtraRequirementFails()
         {
             // Arrange
@@ -765,7 +768,7 @@ namespace Microsoft.AspNet.Authorization.Test
 
             private IEnumerable<OperationAuthorizationRequirement> _allowed;
 
-            public override void Handle(AuthorizationContext context, OperationAuthorizationRequirement requirement, ExpenseReport resource)
+            protected override void Handle(AuthorizationContext context, OperationAuthorizationRequirement requirement, ExpenseReport resource)
             {
                 if (_allowed.Contains(requirement))
                 {
@@ -776,7 +779,7 @@ namespace Microsoft.AspNet.Authorization.Test
 
         public class SuperUserHandler : AuthorizationHandler<OperationAuthorizationRequirement>
         {
-            public override void Handle(AuthorizationContext context, OperationAuthorizationRequirement requirement)
+            protected override void Handle(AuthorizationContext context, OperationAuthorizationRequirement requirement)
             {
                 if (context.User.HasClaim("SuperUser", "yes"))
                 {
@@ -785,6 +788,7 @@ namespace Microsoft.AspNet.Authorization.Test
             }
         }
 
+        [Fact]
         public async Task CanAuthorizeAllSuperuserOperations()
         {
             // Arrange
@@ -808,6 +812,7 @@ namespace Microsoft.AspNet.Authorization.Test
             Assert.True(await authorizationService.AuthorizeAsync(user, null, Operations.Create));
         }
 
+        [Fact]
         public async Task CanAuthorizeOnlyAllowedOperations()
         {
             // Arrange
@@ -823,6 +828,25 @@ namespace Microsoft.AspNet.Authorization.Test
             Assert.True(await authorizationService.AuthorizeAsync(user, null, Operations.Edit));
             Assert.False(await authorizationService.AuthorizeAsync(user, null, Operations.Delete));
             Assert.False(await authorizationService.AuthorizeAsync(user, null, Operations.Create));
+        }
+
+        [Fact]
+        public void CanAuthorizeWithDelegateRequirement()
+        {
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                services.ConfigureAuthorization(options =>
+                {
+                    options.AddPolicy("Basic", policy => policy.RequireDelegate((context, req) => context.Succeed(req)));
+                });
+            });
+            var user = new ClaimsPrincipal();
+
+            // Act
+            var allowed = authorizationService.Authorize(user, "Basic");
+
+            // Assert
+            Assert.True(allowed);
         }
     }
 }

@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.Framework.Logging;
 using Xunit;
@@ -59,17 +61,7 @@ namespace Microsoft.AspNet.Authentication
                 Options.AuthenticationScheme = scheme;
             }
 
-            protected override void ApplyResponseChallenge()
-            {
-                throw new NotImplementedException();
-            }
-
-            protected override void ApplyResponseGrant()
-            {
-                throw new NotImplementedException();
-            }
-
-            protected override AuthenticationTicket AuthenticateCore()
+            public override Task<AuthenticationTicket> AuthenticateAsync()
             {
                 throw new NotImplementedException();
             }
@@ -94,17 +86,7 @@ namespace Microsoft.AspNet.Authentication
                 Options.AutomaticAuthentication = auto;
             }
 
-            protected override void ApplyResponseChallenge()
-            {
-                throw new NotImplementedException();
-            }
-
-            protected override void ApplyResponseGrant()
-            {
-                throw new NotImplementedException();
-            }
-
-            protected override AuthenticationTicket AuthenticateCore()
+            public override Task<AuthenticationTicket> AuthenticateAsync()
             {
                 throw new NotImplementedException();
             }

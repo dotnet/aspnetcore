@@ -67,7 +67,6 @@ namespace Microsoft.AspNet.Authentication
             {
                 try
                 {
-                    handler.Faulted = true;
                     await handler.TeardownAsync();
                 }
                 catch (Exception)

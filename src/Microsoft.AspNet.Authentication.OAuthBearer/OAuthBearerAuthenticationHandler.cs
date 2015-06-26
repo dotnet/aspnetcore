@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.Notifications;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.Framework.Logging;
 using Microsoft.IdentityModel.Protocols;
 
@@ -19,16 +18,11 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
     {
         private OpenIdConnectConfiguration _configuration;
 
-        protected override AuthenticationTicket AuthenticateCore()
-        {
-            return AuthenticateCoreAsync().GetAwaiter().GetResult();
-        }
-
         /// <summary>
         /// Searches the 'Authorization' header for a 'Bearer' token. If the 'Bearer' token is found, it is validated using <see cref="TokenValidationParameters"/> set in the options.
         /// </summary>
         /// <returns></returns>
-        protected override async Task<AuthenticationTicket> AuthenticateCoreAsync()
+        public override async Task<AuthenticationTicket> AuthenticateAsync()
         {
             string token = null;
             try
@@ -179,30 +173,21 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
             }
         }
 
-        protected override void ApplyResponseChallenge()
+        protected override async Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
         {
-            ApplyResponseChallengeAsync().GetAwaiter().GetResult();
-        }
-
-        protected override async Task ApplyResponseChallengeAsync()
-        {
-            if (ShouldConvertChallengeToForbidden())
-            {
-                Response.StatusCode = 403;
-                return;
-            }
-
-            if ((Response.StatusCode != 401) || (ChallengeContext == null && !Options.AutomaticAuthentication))
-            {
-                return;
-            }
-
+            Response.StatusCode = 401;
             await Options.Notifications.ApplyChallenge(new AuthenticationChallengeNotification<OAuthBearerAuthenticationOptions>(Context, Options));
+            return false;
         }
 
-        protected override void ApplyResponseGrant()
+        protected override Task HandleSignOutAsync(SignOutContext context)
         {
-            // N/A
+            throw new NotSupportedException();
+        }
+
+        protected override Task HandleSignInAsync(SignInContext context)
+        {
+            throw new NotSupportedException();
         }
     }
 }

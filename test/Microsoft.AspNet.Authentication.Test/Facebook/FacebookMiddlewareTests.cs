@@ -51,7 +51,8 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 },
                 context =>
                 {
-                    context.Authentication.Challenge("Facebook");
+                    // REVIEW: Gross.
+                    context.Authentication.ChallengeAsync("Facebook").GetAwaiter().GetResult();
                     return true;
                 });
             var transaction = await server.SendAsync("http://example.com/challenge");
@@ -88,7 +89,8 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 },
                 context =>
                 {
-                    context.Authentication.Challenge("Facebook");
+                    // REVIEW: gross
+                    context.Authentication.ChallengeAsync("Facebook").GetAwaiter().GetResult();
                     return true;
                 });
             var transaction = await server.SendAsync("http://example.com/challenge");

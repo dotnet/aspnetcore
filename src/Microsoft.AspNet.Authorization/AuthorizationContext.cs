@@ -9,7 +9,7 @@ using Microsoft.Framework.Internal;
 namespace Microsoft.AspNet.Authorization
 {
     /// <summary>
-    /// Contains authorization information used by <see cref="IAuthorizationPolicyHandler"/>.
+    /// Contains authorization information used by <see cref="IAuthorizationHandler"/>.
     /// </summary>
     public class AuthorizationContext
     {
@@ -28,9 +28,9 @@ namespace Microsoft.AspNet.Authorization
             _pendingRequirements = new HashSet<IAuthorizationRequirement>(requirements);
         }
 
-        public IEnumerable<IAuthorizationRequirement> Requirements { get; private set; }
-        public ClaimsPrincipal User { get; private set; }
-        public object Resource { get; private set; }
+        public IEnumerable<IAuthorizationRequirement> Requirements { get; }
+        public ClaimsPrincipal User { get; }
+        public object Resource { get; }
 
         public IEnumerable<IAuthorizationRequirement> PendingRequirements { get { return _pendingRequirements; } }
 

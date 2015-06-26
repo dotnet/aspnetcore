@@ -15,6 +15,7 @@ using System.Xml.Linq;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using Shouldly;
@@ -50,7 +51,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             transaction.Response.StatusCode.ShouldBe(auto ? HttpStatusCode.Redirect : HttpStatusCode.Unauthorized);
             if (auto)
             {
-                Uri location = transaction.Response.Headers.Location;
+                var location = transaction.Response.Headers.Location;
                 location.LocalPath.ShouldBe("/login");
                 location.Query.ShouldBe("?ReturnUrl=%2Fprotected");
             }
@@ -69,34 +70,32 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var transaction = await SendAsync(server, "http://example.com/protected/CustomRedirect");
 
-            transaction.Response.StatusCode.ShouldBe(auto ? HttpStatusCode.Redirect : HttpStatusCode.Unauthorized);
+            // REVIEW: Now when Cookies are not in auto, noone handles the challenge so the Status stays OK, is that reasonable??
+            transaction.Response.StatusCode.ShouldBe(auto ? HttpStatusCode.Redirect : HttpStatusCode.OK);
             if (auto)
             {
-                Uri location = transaction.Response.Headers.Location;
+                var location = transaction.Response.Headers.Location;
                 location.ToString().ShouldBe("http://example.com/login?ReturnUrl=%2FCustomRedirect");
             }
         }
 
         private Task SignInAsAlice(HttpContext context)
         {
-            context.Authentication.SignIn("Cookies",
+            return context.Authentication.SignInAsync("Cookies",
                 new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))),
                 new AuthenticationProperties());
-            return Task.FromResult<object>(null);
         }
 
         private Task SignInAsWrong(HttpContext context)
         {
-            context.Authentication.SignIn("Oops",
+            return context.Authentication.SignInAsync("Oops",
                 new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))),
                 new AuthenticationProperties());
-            return Task.FromResult<object>(null);
         }
 
         private Task SignOutAsWrong(HttpContext context)
         {
-            context.Authentication.SignOut("Oops");
-            return Task.FromResult<object>(null);
+            return context.Authentication.SignOutAsync("Oops");
         }
 
         [Fact]
@@ -241,17 +240,30 @@ namespace Microsoft.AspNet.Authentication.Cookies
             }, 
             SignInAsAlice, 
             baseAddress: null, 
-            claimsTransform: o => o.Transformation = (p =>
+            claimsTransform: o => o.Transformer = new ClaimsTransformer
             {
-                if (!p.Identities.Any(i => i.AuthenticationType == "xform"))
+                TransformSyncDelegate = p =>
                 {
-                    // REVIEW: Xform runs twice, once on Authenticate, and then once from the middleware
-                    var id = new ClaimsIdentity("xform");
-                    id.AddClaim(new Claim("xform", "yup"));
-                    p.AddIdentity(id);
+                    if (!p.Identities.Any(i => i.AuthenticationType == "xform"))
+                    {
+                        var id = new ClaimsIdentity("xform");
+                        id.AddClaim(new Claim("sync", "no"));
+                        p.AddIdentity(id);
+                    }
+                    return p;
+                },
+                TransformAsyncDelegate = p =>
+                {
+                    if (!p.Identities.Any(i => i.AuthenticationType == "xform"))
+                    {
+                        // REVIEW: Xform runs twice, once on Authenticate, and then once from the middleware
+                        var id = new ClaimsIdentity("xform");
+                        id.AddClaim(new Claim("xform", "yup"));
+                        p.AddIdentity(id);
+                    }
+                    return Task.FromResult(p);
                 }
-                return p;
-            }));
+            });
 
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
 
@@ -259,6 +271,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe("Alice");
             FindClaimValue(transaction2, "xform").ShouldBe("yup");
+            FindClaimValue(transaction2, "sync").ShouldBe(null);
 
         }
 
@@ -304,12 +317,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 options.SlidingExpiration = false;
             },
             context =>
-            {
-                context.Authentication.SignIn("Cookies",
+                context.Authentication.SignInAsync("Cookies",
                     new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))),
-                    new AuthenticationProperties() { ExpiresUtc = clock.UtcNow.Add(TimeSpan.FromMinutes(5)) });
-                    return Task.FromResult<object>(null);
-            });
+                    new AuthenticationProperties() { ExpiresUtc = clock.UtcNow.Add(TimeSpan.FromMinutes(5)) }));
 
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
 
@@ -433,9 +443,8 @@ namespace Microsoft.AspNet.Authentication.Cookies
             context =>
             {
                 Assert.Equal(new PathString("/base"), context.Request.PathBase);
-                context.Authentication.SignIn("Cookies", 
+                return context.Authentication.SignInAsync("Cookies", 
                     new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))));
-                return Task.FromResult<object>(null);
             },
             new Uri("http://example.com/base"));
 
@@ -446,7 +455,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task CookieTurns401To403IfAuthenticated(bool automatic)
+        public async Task CookieTurns401To403WithCookie(bool automatic)
         {
             var clock = new TestClock();
             var server = CreateServer(options =>
@@ -458,18 +467,56 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
 
-            var url = "http://example.com/unauthorized";
-            if (automatic)
-            {
-                url += "auto";
-            }
+            var url = "http://example.com/challenge";
             var transaction2 = await SendAsync(server, url, transaction1.CookieNameValue);
 
             transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task CookieChallengeRedirectsToLoginWithoutCookie(bool automatic)
+        {
+            var clock = new TestClock();
+            var server = CreateServer(options =>
+            {
+                options.LoginPath = new PathString("/login");
+                options.AutomaticAuthentication = automatic;
+                options.AccessDeniedPath = new PathString("/accessdenied");
+                options.SystemClock = clock;
+            },
+            SignInAsAlice);
+
+            var url = "http://example.com/challenge";
+            var transaction = await SendAsync(server, url);
+
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            var location = transaction.Response.Headers.Location;
+            location.LocalPath.ShouldBe("/login");
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task CookieForbidTurns401To403WithoutCookie(bool automatic)
+        {
+            var clock = new TestClock();
+            var server = CreateServer(options =>
+            {
+                options.AutomaticAuthentication = automatic;
+                options.SystemClock = clock;
+            },
+            SignInAsAlice);
+
+            var url = "http://example.com/forbid";
+            var transaction = await SendAsync(server, url);
+
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        }
+
         [Fact]
-        public async Task CookieTurns401ToAccessDeniedWhenSetAndIfAuthenticated()
+        public async Task CookieTurns401ToAccessDeniedWhenSetWithCookie()
         {
             var clock = new TestClock();
             var server = CreateServer(options =>
@@ -481,7 +528,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
 
-            var transaction2 = await SendAsync(server, "http://example.com/unauthorized", transaction1.CookieNameValue);
+            var transaction2 = await SendAsync(server, "http://example.com/challenge", transaction1.CookieNameValue);
 
             transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
 
@@ -490,7 +537,23 @@ namespace Microsoft.AspNet.Authentication.Cookies
         }
 
         [Fact]
-        public async Task CookieDoesNothingTo401IfNotAuthenticated()
+        public async Task CookieChallengeDoesNothingIfNotAuthenticated()
+        {
+            var clock = new TestClock();
+            var server = CreateServer(options =>
+            {
+                options.SystemClock = clock;
+            });
+
+            var transaction1 = await SendAsync(server, "http://example.com/testpath");
+
+            var transaction2 = await SendAsync(server, "http://example.com/challenge", transaction1.CookieNameValue);
+
+            transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        }
+
+        [Fact]
+        public async Task CookieChallengeWithUnauthorizedRedirectsToLoginIfNotAuthenticated()
         {
             var clock = new TestClock();
             var server = CreateServer(options =>
@@ -549,29 +612,33 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     {
                         res.StatusCode = 401;
                     }
+                    else if (req.Path == new PathString("/forbid")) // Simulate forbidden 
+                    {
+                        await context.Authentication.ForbidAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    }
+                    else if (req.Path == new PathString("/challenge"))
+                    {
+                        await context.Authentication.ChallengeAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    }
                     else if (req.Path == new PathString("/unauthorized"))
                     {
-                        // Simulate Authorization failure 
-                        var result = await context.Authentication.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                        context.Authentication.Challenge(CookieAuthenticationDefaults.AuthenticationScheme);
-                    }
-                    else if (req.Path == new PathString("/unauthorizedauto"))
-                    {
-                        // Simulate Authorization failure 
-                        context.Authentication.Challenge(CookieAuthenticationDefaults.AuthenticationScheme);
+                        await context.Authentication.ChallengeAsync(CookieAuthenticationDefaults.AuthenticationScheme, new AuthenticationProperties(), ChallengeBehavior.Unauthorized);
                     }
                     else if (req.Path == new PathString("/protected/CustomRedirect"))
                     {
-                        context.Authentication.Challenge(new AuthenticationProperties() { RedirectUri = "/CustomRedirect" });
+                        await context.Authentication.ChallengeAsync(new AuthenticationProperties() { RedirectUri = "/CustomRedirect" });
                     }
                     else if (req.Path == new PathString("/me"))
                     {
-                        Describe(res, new AuthenticationResult(context.User, new AuthenticationProperties(), new AuthenticationDescription()));
+                        var authContext = new AuthenticateContext(CookieAuthenticationDefaults.AuthenticationScheme);
+                        authContext.Authenticated(context.User, properties: null, description: null);
+                        Describe(res, authContext);
                     }
                     else if (req.Path.StartsWithSegments(new PathString("/me"), out remainder))
                     {
-                        var result = await context.Authentication.AuthenticateAsync(remainder.Value.Substring(1));
-                        Describe(res, result);
+                        var authContext = new AuthenticateContext(remainder.Value.Substring(1));
+                        await context.Authentication.AuthenticateAsync(authContext);
+                        Describe(res, authContext);
                     }
                     else if (req.Path == new PathString("/testpath") && testpath != null)
                     {
@@ -595,7 +662,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             return server;
         }
 
-        private static void Describe(HttpResponse res, AuthenticationResult result)
+        private static void Describe(HttpResponse res, AuthenticateContext result)
         {
             res.StatusCode = 200;
             res.ContentType = "text/xml";
@@ -606,7 +673,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             }
             if (result != null && result.Properties != null)
             {
-                xml.Add(result.Properties.Items.Select(extra => new XElement("extra", new XAttribute("type", extra.Key), new XAttribute("value", extra.Value))));
+                xml.Add(result.Properties.Select(extra => new XElement("extra", new XAttribute("type", extra.Key), new XAttribute("value", extra.Value))));
             }
             using (var memory = new MemoryStream())
             {

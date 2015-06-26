@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Authorization
 
         public IEnumerable<string> AllowedRoles { get; }
 
-        public override void Handle(AuthorizationContext context, RolesAuthorizationRequirement requirement)
+        protected override void Handle(AuthorizationContext context, RolesAuthorizationRequirement requirement)
         {
             if (context.User != null)
             {

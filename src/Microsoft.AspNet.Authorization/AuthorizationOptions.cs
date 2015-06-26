@@ -9,8 +9,7 @@ namespace Microsoft.AspNet.Authorization
 {
     public class AuthorizationOptions
     {
-        // TODO: make this case insensitive
-        private IDictionary<string, AuthorizationPolicy> PolicyMap { get; } = new Dictionary<string, AuthorizationPolicy>();
+        private IDictionary<string, AuthorizationPolicy> PolicyMap { get; } = new Dictionary<string, AuthorizationPolicy>(StringComparer.OrdinalIgnoreCase);
 
         public void AddPolicy([NotNull] string name, [NotNull] AuthorizationPolicy policy)
         {
