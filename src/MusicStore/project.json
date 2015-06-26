@@ -11,9 +11,10 @@
     "publishExclude": "*.cmd",
     "webroot": "wwwroot",
     "dependencies": {
-        "EntityFramework.SqlServer": "7.0.0-*",
         "EntityFramework.InMemory": "7.0.0-*",
+        "EntityFramework.SqlServer": "7.0.0-*",
         "Kestrel": "1.0.0-*",
+        "Microsoft.AspNet.Antiforgery": "1.0.0-*",
         "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
         "Microsoft.AspNet.Authentication.Facebook": "1.0.0-*",
         "Microsoft.AspNet.Authentication.Google": "1.0.0-*",

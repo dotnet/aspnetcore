@@ -8,7 +8,7 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }
 
-<form asp-anti-forgery="true">
+<form asp-antiforgery="true">
     <h2>Address And Payment</h2>
     <hr />
     <div asp-validation-summary="ValidationSummary.All" class="text-danger"></div>

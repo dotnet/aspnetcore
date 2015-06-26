@@ -58,7 +58,7 @@ namespace MusicStore.Controllers
 
             // Session initialization
             var cartId = "CartId_A";
-            httpContext.SetFeature<ISessionFeature>(new TestSessionFeature());
+            httpContext.Session = new TestSession();
             httpContext.Session.SetString("Session", cartId);
 
             // FormCollection initialization

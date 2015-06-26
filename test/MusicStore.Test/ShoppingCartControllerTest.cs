@@ -42,7 +42,7 @@ namespace MusicStore.Controllers
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
-            httpContext.SetFeature<ISessionFeature>(new TestSessionFeature());
+            httpContext.Session = new TestSession();
 
             var controller = new ShoppingCartController()
             {
@@ -68,7 +68,7 @@ namespace MusicStore.Controllers
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
-            httpContext.SetFeature<ISessionFeature>(new TestSessionFeature());
+            httpContext.Session = new TestSession();
             httpContext.Session.SetString("Session", "CartId_A");
 
             var controller = new ShoppingCartController()
@@ -96,7 +96,7 @@ namespace MusicStore.Controllers
             // Arrange
             var cartId = "CartId_A";
             var httpContext = new DefaultHttpContext();
-            httpContext.SetFeature<ISessionFeature>(new TestSessionFeature());
+            httpContext.Session = new TestSession();
             httpContext.Session.SetString("Session", cartId);
 
             var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
@@ -133,7 +133,7 @@ namespace MusicStore.Controllers
             // Arrange
             var albumId = 3;
             var httpContext = new DefaultHttpContext();
-            httpContext.SetFeature<ISessionFeature>(new TestSessionFeature());
+            httpContext.Session = new TestSession();
             httpContext.Session.SetString("Session", "CartId_A");
 
             // Creates the albums of AlbumId = 1 ~ 10.
@@ -172,7 +172,7 @@ namespace MusicStore.Controllers
             var httpContext = new DefaultHttpContext();
 
             // Session and cart initialization
-            httpContext.SetFeature<ISessionFeature>(new TestSessionFeature());
+            httpContext.Session = new TestSession();
             httpContext.Session.SetString("Session", cartId);
 
             // DbContext initialization

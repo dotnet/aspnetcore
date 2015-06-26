@@ -99,7 +99,7 @@ namespace MusicStore.Controllers
                 return Task.FromResult(0);
             }
 
-            public void Challenge(ChallengeContext context)
+            public Task ChallengeAsync(ChallengeContext context)
             {
                 throw new NotImplementedException();
             }
@@ -109,12 +109,12 @@ namespace MusicStore.Controllers
                 throw new NotImplementedException();
             }
 
-            public void SignIn(SignInContext context)
+            public Task SignInAsync(SignInContext context)
             {
                 throw new NotImplementedException();
             }
 
-            public void SignOut(SignOutContext context)
+            public Task SignOutAsync(SignOutContext context)
             {
                 throw new NotImplementedException();
             }

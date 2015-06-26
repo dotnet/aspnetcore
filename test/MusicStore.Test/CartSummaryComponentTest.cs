@@ -39,7 +39,7 @@ namespace MusicStore.Components
 
             // Session initialization
             var cartId = "CartId_A";
-            viewContext.HttpContext.SetFeature<ISessionFeature>(new TestSessionFeature());
+            viewContext.HttpContext.Session = new TestSession();
             viewContext.HttpContext.Session.SetString("Session", cartId);
 
             // DbContext initialization
