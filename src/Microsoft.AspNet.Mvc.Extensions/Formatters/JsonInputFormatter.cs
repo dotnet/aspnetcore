@@ -28,8 +28,8 @@ namespace Microsoft.AspNet.Mvc
             SupportedEncodings.Add(UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(UTF16EncodingLittleEndian);
 
-            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
-            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/json"));
+            SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationJson);
+            SupportedMediaTypes.Add(MediaTypeHeaderValues.TextJson);
         }
 
         /// <summary>

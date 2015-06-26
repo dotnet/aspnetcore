@@ -41,8 +41,8 @@ namespace Microsoft.AspNet.Mvc.Xml
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);
 
-            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/xml"));
-            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/xml"));
+            SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationXml);
+            SupportedMediaTypes.Add(MediaTypeHeaderValues.TextXml);
 
             WriterSettings = writerSettings;
 

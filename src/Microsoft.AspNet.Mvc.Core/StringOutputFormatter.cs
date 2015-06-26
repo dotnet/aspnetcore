@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc
         {
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);
-            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/plain"));
+            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/plain").CopyAsReadOnly());
         }
 
         public override bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)

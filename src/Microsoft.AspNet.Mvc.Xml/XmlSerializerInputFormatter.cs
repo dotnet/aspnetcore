@@ -32,8 +32,8 @@ namespace Microsoft.AspNet.Mvc.Xml
             SupportedEncodings.Add(UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(UTF16EncodingLittleEndian);
 
-            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/xml"));
-            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/xml"));
+            SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationXml);
+            SupportedMediaTypes.Add(MediaTypeHeaderValues.TextXml);
 
             WrapperProviderFactories = new List<IWrapperProviderFactory>();
             WrapperProviderFactories.Add(new SerializableErrorWrapperProviderFactory());

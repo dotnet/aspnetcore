@@ -48,9 +48,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 if (contentTypeHeader.Encoding == null)
                 {
-                    // 1. Do not modify the user supplied content type
-                    // 2. Parse here to handle parameters apart from charset
-                    contentTypeHeader = MediaTypeHeaderValue.Parse(contentTypeHeader.ToString());
+                    // Do not modify the user supplied content type, so copy it instead
+                    contentTypeHeader = contentTypeHeader.Copy();
                     contentTypeHeader.Encoding = Encoding.UTF8;
 
                     encoding = Encoding.UTF8;

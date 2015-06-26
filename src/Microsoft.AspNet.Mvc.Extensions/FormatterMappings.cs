@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc
         {
             ValidateContentType(contentType);
             format = RemovePeriodIfPresent(format);
-            _map[format] = MediaTypeHeaderValue.Parse(contentType.ToString());
+            _map[format] = contentType.CopyAsReadOnly();
         }
 
         /// <summary>

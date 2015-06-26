@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc
             // Clear all values and only include json-patch+json value.
             SupportedMediaTypes.Clear();
 
-            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json-patch+json"));
+            SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationJsonPatch);
         }
 
         /// <inheritdoc />
