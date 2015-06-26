@@ -435,16 +435,16 @@ namespace MusicStore.Controllers
         // POST: /Account/LogOff
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult LogOff()
+        public async Task<ActionResult> LogOff()
         {
-            SignInManager.SignOut();
+            await SignInManager.SignOutAsync();
 
             // TODO: Currently SignInManager.SignOut does not sign out OpenIdc and does not have a way to pass in a specific
             // AuthType to sign out.
             var appEnv = Context.RequestServices.GetService<IHostingEnvironment>();
             if (appEnv.EnvironmentName.StartsWith("OpenIdConnect"))
             {
-                Context.Authentication.SignOut("OpenIdConnect");
+                await Context.Authentication.SignOutAsync("OpenIdConnect");
             }
 
             return RedirectToAction("Index", "Home");

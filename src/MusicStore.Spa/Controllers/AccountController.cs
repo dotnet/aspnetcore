@@ -123,9 +123,9 @@ namespace MusicStore.Controllers
 
         [HttpPost("logoff")]
         [ValidateAntiForgeryToken]
-        public IActionResult LogOff()
+        public async Task<IActionResult> LogOff()
         {
-            SignInManager.SignOut();
+            await SignInManager.SignOutAsync();
             return RedirectToAction("Home", "Page");
         }
 
