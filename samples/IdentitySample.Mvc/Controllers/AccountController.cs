@@ -110,9 +110,9 @@ namespace IdentitySample.Controllers
         // POST: /Account/LogOff
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult LogOff()
+        public async Task<IActionResult> LogOff()
         {
-            SignInManager.SignOut();
+            await SignInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
         }
 

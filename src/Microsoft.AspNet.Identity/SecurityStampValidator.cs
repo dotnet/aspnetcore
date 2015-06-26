@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Identity
             else
             {
                 context.RejectPrincipal();
-                manager.SignOut();
+                await manager.SignOutAsync();
             }
         }
     }
