@@ -92,16 +92,17 @@ namespace Microsoft.AspNet.Session
                 _context = context;
                 _sessionKey = sessionKey;
                 _options = options;
-                context.Response.OnResponseStarting(OnResponseStartingCallback, state: this);
+                context.Response.OnStarting(OnStartingCallback, state: this);
             }
 
-            private static void OnResponseStartingCallback(object state)
+            private static Task OnStartingCallback(object state)
             {
                 var establisher = (SessionEstablisher)state;
                 if (establisher._shouldEstablishSession)
                 {
                     establisher.SetCookie();
                 }
+                return Task.FromResult(0);
             }
 
             private void SetCookie()
