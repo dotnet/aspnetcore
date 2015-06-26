@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Server.WebListener
             _features = new FeatureCollection();
             _authHandler = new AuthenticationHandler(requestContext);
             _enableResponseCaching = enableResponseCaching;
-            requestContext.Response.OnResponseStarting(OnStartDelegate, this);
+            requestContext.Response.OnStarting(OnStartDelegate, this);
             PopulateFeatures();
         }
 
@@ -378,14 +378,14 @@ namespace Microsoft.AspNet.Server.WebListener
             get { return Response.HasStarted; }
         }
 
-        void IHttpResponseFeature.OnResponseStarting(Func<object, Task> callback, object state)
+        void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
         {
-            Response.OnResponseStarting(callback, state);
+            Response.OnStarting(callback, state);
         }
 
-        void IHttpResponseFeature.OnResponseCompleted(Func<object, Task> callback, object state)
+        void IHttpResponseFeature.OnCompleted(Func<object, Task> callback, object state)
         {
-            Response.OnResponseCompleted(callback, state);
+            Response.OnCompleted(callback, state);
         }
 
         string IHttpResponseFeature.ReasonPhrase

@@ -48,8 +48,8 @@ namespace Microsoft.Net.Http.Server
         private long _expectedBodyLength;
         private BoundaryType _boundaryType;
         private HttpApi.HTTP_RESPONSE_V2 _nativeResponse;
-        private IList<Tuple<Func<object, Task>, object>> _onResponseStartingActions;
-        private IList<Tuple<Func<object, Task>, object>> _onResponseCompletedActions;
+        private IList<Tuple<Func<object, Task>, object>> _onStartingActions;
+        private IList<Tuple<Func<object, Task>, object>> _onCompletedActions;
 
         private RequestContext _requestContext;
         private bool _bufferingEnabled;
@@ -80,8 +80,8 @@ namespace Microsoft.Net.Http.Server
             _nativeResponse.Response_V1.Version.MajorVersion = 1;
             _nativeResponse.Response_V1.Version.MinorVersion = 1;
             _responseState = ResponseState.Created;
-            _onResponseStartingActions = new List<Tuple<Func<object, Task>, object>>();
-            _onResponseCompletedActions = new List<Tuple<Func<object, Task>, object>>();
+            _onStartingActions = new List<Tuple<Func<object, Task>, object>>();
+            _onCompletedActions = new List<Tuple<Func<object, Task>, object>>();
             _bufferingEnabled = _requestContext.Server.BufferResponses;
             _expectedBodyLength = 0;
             _nativeStream = null;
@@ -773,9 +773,9 @@ namespace Microsoft.Net.Http.Server
             _nativeStream.SwitchToOpaqueMode();
         }
 
-        public void OnResponseStarting(Func<object, Task> callback, object state)
+        public void OnStarting(Func<object, Task> callback, object state)
         {
-            var actions = _onResponseStartingActions;
+            var actions = _onStartingActions;
             if (actions == null)
             {
                 throw new InvalidOperationException("Response already started");
@@ -784,9 +784,9 @@ namespace Microsoft.Net.Http.Server
             actions.Add(new Tuple<Func<object, Task>, object>(callback, state));
         }
 
-        public void OnResponseCompleted(Func<object, Task> callback, object state)
+        public void OnCompleted(Func<object, Task> callback, object state)
         {
-            var actions = _onResponseCompletedActions;
+            var actions = _onCompletedActions;
             if (actions == null)
             {
                 throw new InvalidOperationException("Response already completed");
@@ -797,7 +797,7 @@ namespace Microsoft.Net.Http.Server
 
         private void NotifyOnSendingHeaders()
         {
-            var actions = Interlocked.Exchange(ref _onResponseStartingActions, null);
+            var actions = Interlocked.Exchange(ref _onStartingActions, null);
             if (actions == null)
             {
                 // Something threw the first time, do not try again.
@@ -813,7 +813,7 @@ namespace Microsoft.Net.Http.Server
 
         private void NotifyOnResponseCompleted()
         {
-            var actions = Interlocked.Exchange(ref _onResponseCompletedActions, null);
+            var actions = Interlocked.Exchange(ref _onCompletedActions, null);
             if (actions == null)
             {
                 // Something threw the first time, do not try again.
@@ -829,7 +829,7 @@ namespace Microsoft.Net.Http.Server
                 catch (Exception ex)
                 {
                     RequestContext.Logger.LogWarning(
-                        String.Format(Resources.Warning_ExceptionInOnResponseCompletedAction, nameof(OnResponseCompleted)),
+                        String.Format(Resources.Warning_ExceptionInOnResponseCompletedAction, nameof(OnCompleted)),
                         ex);
                 }
             }
