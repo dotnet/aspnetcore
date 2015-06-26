@@ -5,7 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authentication.DataHandler.Encoder;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Extensions;
 using Microsoft.AspNet.Http.Features.Authentication;
@@ -20,6 +23,8 @@ namespace Microsoft.AspNet.Authentication.OAuth
         where TOptions : OAuthAuthenticationOptions<TNotifications>
         where TNotifications : IOAuthAuthenticationNotifications
     {
+        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
+
         public OAuthAuthenticationHandler(HttpClient backchannel)
         {
             Backchannel = backchannel;
@@ -225,6 +230,62 @@ namespace Microsoft.AspNet.Authentication.OAuth
         {
             // OAuth2 3.3 space separated
             return string.Join(" ", Options.Scope);
+        }
+
+        protected void GenerateCorrelationId([NotNull] AuthenticationProperties properties)
+        {
+            var correlationKey = Constants.CorrelationPrefix + Options.AuthenticationScheme;
+
+            var nonceBytes = new byte[32];
+            CryptoRandom.GetBytes(nonceBytes);
+            var correlationId = TextEncodings.Base64Url.Encode(nonceBytes);
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps
+            };
+
+            properties.Items[correlationKey] = correlationId;
+
+            Response.Cookies.Append(correlationKey, correlationId, cookieOptions);
+        }
+
+        protected bool ValidateCorrelationId([NotNull] AuthenticationProperties properties)
+        {
+            var correlationKey = Constants.CorrelationPrefix + Options.AuthenticationScheme;
+            var correlationCookie = Request.Cookies[correlationKey];
+            if (string.IsNullOrWhiteSpace(correlationCookie))
+            {
+                Logger.LogWarning("{0} cookie not found.", correlationKey);
+                return false;
+            }
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps
+            };
+            Response.Cookies.Delete(correlationKey, cookieOptions);
+
+            string correlationExtra;
+            if (!properties.Items.TryGetValue(
+                correlationKey,
+                out correlationExtra))
+            {
+                Logger.LogWarning("{0} state property not found.", correlationKey);
+                return false;
+            }
+
+            properties.Items.Remove(correlationKey);
+
+            if (!string.Equals(correlationCookie, correlationExtra, StringComparison.Ordinal))
+            {
+                Logger.LogWarning("{0} correlation cookie and state property mismatch.", correlationKey);
+                return false;
+            }
+
+            return true;
         }
     }
 }

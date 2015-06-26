@@ -2,11 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Authentication.DataHandler.Encoder;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
@@ -19,8 +16,6 @@ namespace Microsoft.AspNet.Authentication
     /// </summary>
     public abstract class AuthenticationHandler : IAuthenticationHandler
     {
-        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
-
         private bool _finishCalled;
         private AuthenticationOptions _baseOptions;
 
@@ -277,62 +272,6 @@ namespace Microsoft.AspNet.Authentication
             {
                 await PriorHandler.ChallengeAsync(context);
             }
-        }
-
-        protected void GenerateCorrelationId([NotNull] AuthenticationProperties properties)
-        {
-            var correlationKey = Constants.CorrelationPrefix + BaseOptions.AuthenticationScheme;
-
-            var nonceBytes = new byte[32];
-            CryptoRandom.GetBytes(nonceBytes);
-            var correlationId = TextEncodings.Base64Url.Encode(nonceBytes);
-
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = Request.IsHttps
-            };
-
-            properties.Items[correlationKey] = correlationId;
-
-            Response.Cookies.Append(correlationKey, correlationId, cookieOptions);
-        }
-
-        protected bool ValidateCorrelationId([NotNull] AuthenticationProperties properties)
-        {
-            var correlationKey = Constants.CorrelationPrefix + BaseOptions.AuthenticationScheme;
-            var correlationCookie = Request.Cookies[correlationKey];
-            if (string.IsNullOrWhiteSpace(correlationCookie))
-            {
-                Logger.LogWarning("{0} cookie not found.", correlationKey);
-                return false;
-            }
-
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = Request.IsHttps
-            };
-            Response.Cookies.Delete(correlationKey, cookieOptions);
-
-            string correlationExtra;
-            if (!properties.Items.TryGetValue(
-                correlationKey,
-                out correlationExtra))
-            {
-                Logger.LogWarning("{0} state property not found.", correlationKey);
-                return false;
-            }
-
-            properties.Items.Remove(correlationKey);
-
-            if (!string.Equals(correlationCookie, correlationExtra, StringComparison.Ordinal))
-            {
-                Logger.LogWarning("{0} correlation cookie and state property mismatch.", correlationKey);
-                return false;
-            }
-
-            return true;
         }
 
         private void RegisterAuthenticationHandler()
