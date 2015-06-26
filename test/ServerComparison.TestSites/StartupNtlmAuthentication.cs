@@ -56,7 +56,7 @@ namespace ServerComparison.TestSites
                 serverInformation.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.NTLM | AuthenticationSchemes.AllowAnonymous;
             }
 
-            app.Use((context, next) =>
+            app.Use((context, next) => 
             {
                 if (context.Request.Path.Equals(new PathString("/Anonymous")))
                 {
@@ -71,8 +71,7 @@ namespace ServerComparison.TestSites
                     }
                     else
                     {
-                        context.Authentication.Challenge();
-                        return Task.FromResult(0);
+                        return context.Authentication.ChallengeAsync();
                     }
                 }
 
