@@ -430,7 +430,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var mockHttpContext = new Mock<DefaultHttpContext>();
-            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+            mockHttpContext.Setup(x => x.Response.OnCompletedDispose(It.IsAny<IDisposable>()));
             var uri = new Uri("/test/url", UriKind.Relative);
 
             var controller = new TestableController()
@@ -448,7 +448,7 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal(uri.OriginalString, result.Location);
             Assert.Same(input, result.Value);
             mockHttpContext.Verify(
-                x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()),
+                x => x.Response.OnCompletedDispose(It.IsAny<IDisposable>()),
                 Times.Once());
         }
 
@@ -517,7 +517,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var mockHttpContext = new Mock<DefaultHttpContext>();
-            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+            mockHttpContext.Setup(x => x.Response.OnCompletedDispose(It.IsAny<IDisposable>()));
 
             var controller = new TestableController()
             {
@@ -534,7 +534,7 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal("SampleAction", result.ActionName);
             Assert.Same(input, result.Value);
             mockHttpContext.Verify(
-                x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()),
+                x => x.Response.OnCompletedDispose(It.IsAny<IDisposable>()),
                 Times.Once());
         }
 
@@ -600,7 +600,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var mockHttpContext = new Mock<DefaultHttpContext>();
-            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+            mockHttpContext.Setup(x => x.Response.OnCompletedDispose(It.IsAny<IDisposable>()));
 
             var controller = new TestableController()
             {
@@ -617,7 +617,7 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal("SampleRoute", result.RouteName);
             Assert.Same(input, result.Value);
             mockHttpContext.Verify(
-                x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()),
+                x => x.Response.OnCompletedDispose(It.IsAny<IDisposable>()),
                 Times.Once());
         }
 
@@ -694,7 +694,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var mockHttpContext = new Mock<DefaultHttpContext>();
-            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+            mockHttpContext.Setup(x => x.Response.OnCompletedDispose(It.IsAny<IDisposable>()));
             var controller = new TestableController()
             {
                 ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
@@ -716,7 +716,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var mockHttpContext = new Mock<DefaultHttpContext>();
-            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+            mockHttpContext.Setup(x => x.Response.OnCompletedDispose(It.IsAny<IDisposable>()));
 
             var controller = new TestableController()
             {
@@ -733,7 +733,7 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal("application/pdf", result.ContentType.ToString());
             Assert.Equal("someDownloadName", result.FileDownloadName);
             mockHttpContext.Verify(
-                x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()),
+                x => x.Response.OnCompletedDispose(It.IsAny<IDisposable>()),
                 Times.Once());
         }
 
@@ -785,7 +785,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var mockHttpContext = new Mock<DefaultHttpContext>();
-            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+            mockHttpContext.Setup(x => x.Response.OnCompletedDispose(It.IsAny<IDisposable>()));
 
             var controller = new TestableController()
             {
@@ -801,7 +801,7 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
             Assert.Same(input, result.Value);
             mockHttpContext.Verify(
-                x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()),
+                x => x.Response.OnCompletedDispose(It.IsAny<IDisposable>()),
                 Times.Once());
         }
 
@@ -840,7 +840,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var mockHttpContext = new Mock<DefaultHttpContext>();
-            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+            mockHttpContext.Setup(x => x.Response.OnCompletedDispose(It.IsAny<IDisposable>()));
 
             var controller = new TestableController()
             {
@@ -856,7 +856,7 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
             Assert.Same(input, result.Value);
             mockHttpContext.Verify(
-                x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()),
+                x => x.Response.OnCompletedDispose(It.IsAny<IDisposable>()),
                 Times.Once());
         }
 
@@ -1053,7 +1053,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var mockHttpContext = new Mock<DefaultHttpContext>();
-            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+            mockHttpContext.Setup(x => x.Response.OnCompletedDispose(It.IsAny<IDisposable>()));
 
             var controller = new TestableController()
             {
@@ -1068,7 +1068,7 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.IsType<JsonResult>(result);
             Assert.Same(input, result.Value);
             mockHttpContext.Verify(
-                x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()),
+                x => x.Response.OnCompletedDispose(It.IsAny<IDisposable>()),
                 Times.Once());
         }
 
@@ -1077,7 +1077,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var mockHttpContext = new Mock<DefaultHttpContext>();
-            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+            mockHttpContext.Setup(x => x.Response.OnCompletedDispose(It.IsAny<IDisposable>()));
 
             var controller = new TestableController()
             {
@@ -1093,7 +1093,7 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.IsType<JsonResult>(result);
             Assert.Same(input, result.Value);
             mockHttpContext.Verify(
-                x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()),
+                x => x.Response.OnCompletedDispose(It.IsAny<IDisposable>()),
                 Times.Once());
         }
 

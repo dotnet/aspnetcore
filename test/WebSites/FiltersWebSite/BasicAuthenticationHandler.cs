@@ -13,15 +13,7 @@ namespace FiltersWebSite
 {
     public class BasicAuthenticationHandler : AuthenticationHandler<BasicOptions>
     {
-        protected override void ApplyResponseChallenge()
-        {
-        }
-
-        protected override void ApplyResponseGrant()
-        {
-        }
-
-        protected override AuthenticationTicket AuthenticateCore()
+        public override Task<AuthenticationTicket> AuthenticateAsync()
         {
             var principal = new ClaimsPrincipal();
             principal.AddIdentity(new ClaimsIdentity(
@@ -32,7 +24,8 @@ namespace FiltersWebSite
                     new Claim(ClaimTypes.NameIdentifier, "John")
                 },
                 Options.AuthenticationScheme));
-            return new AuthenticationTicket(principal, new AuthenticationProperties(), Options.AuthenticationScheme);
+            return Task.FromResult(new AuthenticationTicket(principal, 
+                new AuthenticationProperties(), Options.AuthenticationScheme));
         }
     }
 }

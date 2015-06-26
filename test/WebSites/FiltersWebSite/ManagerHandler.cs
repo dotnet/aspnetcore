@@ -10,7 +10,7 @@ namespace FiltersWebSite
 {
     public class ManagerHandler : AuthorizationHandler<OperationAuthorizationRequirement>
     {
-        public override void Handle(AuthorizationContext context, OperationAuthorizationRequirement requirement)
+        protected override void Handle(AuthorizationContext context, OperationAuthorizationRequirement requirement)
         {
             if (context.User.HasClaim("Manager", "yes"))
             {

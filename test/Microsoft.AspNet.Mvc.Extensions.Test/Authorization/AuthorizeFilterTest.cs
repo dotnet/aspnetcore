@@ -316,8 +316,8 @@ namespace Microsoft.AspNet.Mvc.Test
                 httpContext.Object.User = validUser;
             }
             httpContext.SetupGet(c => c.RequestServices).Returns(serviceProvider);
-            auth.Setup(c => c.AuthenticateAsync("Bearer")).ReturnsAsync(new AuthenticationResult(bearerPrincipal, new AuthenticationProperties(), new AuthenticationDescription()));
-            auth.Setup(c => c.AuthenticateAsync("Basic")).ReturnsAsync(new AuthenticationResult(basicPrincipal, new AuthenticationProperties(), new AuthenticationDescription()));
+            auth.Setup(c => c.AuthenticateAsync("Bearer")).ReturnsAsync(bearerPrincipal);
+            auth.Setup(c => c.AuthenticateAsync("Basic")).ReturnsAsync(basicPrincipal);
             auth.Setup(c => c.AuthenticateAsync("Fails")).ReturnsAsync(null);
 
             // AuthorizationContext

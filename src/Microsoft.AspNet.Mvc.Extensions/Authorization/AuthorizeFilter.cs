@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc
                 var newPrincipal = new ClaimsPrincipal();
                 foreach (var scheme in Policy.ActiveAuthenticationSchemes)
                 {
-                    var result = (await context.HttpContext.Authentication.AuthenticateAsync(scheme))?.Principal;
+                    var result = await context.HttpContext.Authentication.AuthenticateAsync(scheme);
                     if (result != null)
                     {
                         newPrincipal.AddIdentities(result.Identities);

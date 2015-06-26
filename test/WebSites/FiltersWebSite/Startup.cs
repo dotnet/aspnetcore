@@ -18,7 +18,11 @@ namespace FiltersWebSite
             services.ConfigureAuthorization(options =>
             {
                 // This policy cannot succeed since the claim is never added
-                options.AddPolicy("Impossible", policy => policy.RequireClaim("Never"));
+                options.AddPolicy("Impossible", policy =>
+                {
+                    policy.ActiveAuthenticationSchemes.Add("Interactive");
+                    policy.RequireClaim("Never");
+                });
                 options.AddPolicy("Api", policy =>
                 {
                     policy.ActiveAuthenticationSchemes.Add("Api");

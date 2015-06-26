@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Mvc
             var contentType = "text/html";
             var fileName = "Created.html";
             var mockHttpContext = new Mock<DefaultHttpContext>();
-            mockHttpContext.Setup(x => x.Response.OnResponseCompleted(It.IsAny<Action<object>>(), It.IsAny<object>()));
+            mockHttpContext.Setup(x => x.Response.OnCompletedDispose(It.IsAny<IDisposable>()));
             var controller = new TestabilityController()
             {
                 ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
