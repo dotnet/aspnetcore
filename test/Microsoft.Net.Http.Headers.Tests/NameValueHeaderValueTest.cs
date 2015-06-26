@@ -128,6 +128,22 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
+        public void CopyFromReadOnly_NameAndValue_CopiedAsNonReadOnly()
+        {
+            var pair0 = new NameValueHeaderValue("name", "value");
+            var pair1 = pair0.CopyAsReadOnly();
+            var pair2 = pair1.Copy();
+            Assert.NotSame(pair0, pair1);
+            Assert.Same(pair0.Name, pair1.Name);
+            Assert.Same(pair0.Value, pair1.Value);
+
+            // Change one value and verify the other is unchanged.
+            pair2.Value = "othervalue";
+            Assert.Equal("othervalue", pair2.Value);
+            Assert.Equal("value", pair1.Value);
+        }
+
+        [Fact]
         public void Value_CallSetterWithInvalidValues_Throw()
         {
             // Just verify that the setter calls the same validation the ctor invokes.

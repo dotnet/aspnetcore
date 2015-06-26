@@ -273,11 +273,6 @@ namespace Microsoft.Net.Http.Headers
         /// <returns>A deep copy.</returns>
         public MediaTypeHeaderValue Copy()
         {
-            if (IsReadOnly)
-            {
-                return this;
-            }
-
             var other = new MediaTypeHeaderValue();
             other._mediaType = _mediaType;
 

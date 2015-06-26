@@ -64,11 +64,6 @@ namespace Microsoft.Net.Http.Headers
         /// <returns>A copy.</returns>
         public NameValueHeaderValue Copy()
         {
-            if (IsReadOnly)
-            {
-                return this;
-            }
-
             return new NameValueHeaderValue()
             {
                 _name = _name,

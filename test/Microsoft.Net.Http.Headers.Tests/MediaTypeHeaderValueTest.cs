@@ -136,6 +136,29 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
+        public void CopyFromReadOnly_WithParameters_CopiedAsNonReadOnly()
+        {
+            var mediaType0 = new MediaTypeHeaderValue("text/plain");
+            mediaType0.Parameters.Add(new NameValueHeaderValue("name", "value"));
+            var mediaType1 = mediaType0.CopyAsReadOnly();
+            var mediaType2 = mediaType1.Copy();
+
+            Assert.NotSame(mediaType2, mediaType1);
+            Assert.Same(mediaType2.MediaType, mediaType1.MediaType);
+            Assert.True(mediaType1.IsReadOnly);
+            Assert.False(mediaType2.IsReadOnly);
+            Assert.NotSame(mediaType2.Parameters, mediaType1.Parameters);
+            Assert.Equal(mediaType2.Parameters.Count, mediaType1.Parameters.Count);
+            var pair2 = mediaType2.Parameters.First();
+            var pair1 = mediaType1.Parameters.First();
+            Assert.NotSame(pair2, pair1);
+            Assert.True(pair1.IsReadOnly);
+            Assert.False(pair2.IsReadOnly);
+            Assert.Same(pair2.Name, pair1.Name);
+            Assert.Same(pair2.Value, pair1.Value);
+        }
+
+        [Fact]
         public void MediaType_SetAndGetMediaType_MatchExpectations()
         {
             var mediaType = new MediaTypeHeaderValue("text/plain");
