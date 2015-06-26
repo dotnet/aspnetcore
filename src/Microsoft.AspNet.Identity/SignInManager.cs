@@ -423,7 +423,7 @@ namespace Microsoft.AspNet.Identity
             {
                 return null;
             }
-            // REVIEW: nuke this
+            // REVIEW: fix this wrap
             return new ExternalLoginInfo(auth.Principal, provider, providerKey, new AuthenticationDescription(auth.Description).Caption);
         }
         
