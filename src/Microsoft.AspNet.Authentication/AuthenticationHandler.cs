@@ -114,8 +114,14 @@ namespace Microsoft.AspNet.Authentication
         /// <returns>async completion</returns>
         internal async Task TeardownAsync()
         {
-            await FinishResponseOnce();
-            UnregisterAuthenticationHandler();
+            try
+            {
+                await FinishResponseOnce();
+            }
+            finally
+            {
+                UnregisterAuthenticationHandler();
+            }
         }
 
         /// <summary>
