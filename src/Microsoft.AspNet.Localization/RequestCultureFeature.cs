@@ -14,6 +14,7 @@ namespace Microsoft.AspNet.Localization
         /// Creates a new <see cref="RequestCultureFeature"/> with the specified <see cref="Localization.RequestCulture"/>.
         /// </summary>
         /// <param name="requestCulture">The <see cref="Localization.RequestCulture"/>.</param>
+        /// <param name="provider">The <see cref="IRequestCultureProvider"/>.</param>
         public RequestCultureFeature([NotNull] RequestCulture requestCulture, IRequestCultureProvider provider)
         {
             RequestCulture = requestCulture;
