@@ -48,66 +48,29 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
             return describeContext.Results.Select(description => new AuthenticationDescription(description));
         }
 
-        public override AuthenticationResult Authenticate([NotNull] string authenticationScheme)
+        public override async Task AuthenticateAsync([NotNull] AuthenticateContext context)
         {
             var handler = HttpAuthenticationFeature.Handler;
 
-            var authenticateContext = new AuthenticateContext(authenticationScheme);
             if (handler != null)
             {
-                handler.Authenticate(authenticateContext);
+                await handler.AuthenticateAsync(context);
             }
 
-            if (!authenticateContext.Accepted)
+            if (!context.Accepted)
             {
-                throw new InvalidOperationException($"The following authentication scheme was not accepted: {authenticationScheme}");
+                throw new InvalidOperationException($"The following authentication scheme was not accepted: {context.AuthenticationScheme}");
             }
-
-            if (authenticateContext.Principal == null)
-            {
-                return null;
-            }
-
-            return new AuthenticationResult(authenticateContext.Principal,
-                new AuthenticationProperties(authenticateContext.Properties),
-                new AuthenticationDescription(authenticateContext.Description));
         }
 
-        public override async Task<AuthenticationResult> AuthenticateAsync([NotNull] string authenticationScheme)
+        public override async Task ChallengeAsync([NotNull] string authenticationScheme, AuthenticationProperties properties, ChallengeBehavior behavior)
         {
             var handler = HttpAuthenticationFeature.Handler;
 
-            var authenticateContext = new AuthenticateContext(authenticationScheme);
+            var challengeContext = new ChallengeContext(authenticationScheme, properties?.Items, behavior);
             if (handler != null)
             {
-                await handler.AuthenticateAsync(authenticateContext);
-            }
-
-            // Verify all types ack'd
-            if (!authenticateContext.Accepted)
-            {
-                throw new InvalidOperationException($"The following authentication scheme was not accepted: {authenticationScheme}");
-            }
-
-            if (authenticateContext.Principal == null)
-            {
-                return null;
-            }
-
-            return new AuthenticationResult(authenticateContext.Principal,
-                new AuthenticationProperties(authenticateContext.Properties),
-                new AuthenticationDescription(authenticateContext.Description));
-        }
-
-        public override void Challenge(string authenticationScheme, AuthenticationProperties properties)
-        {
-            HttpResponseFeature.StatusCode = 401;
-            var handler = HttpAuthenticationFeature.Handler;
-
-            var challengeContext = new ChallengeContext(authenticationScheme, properties?.Items);
-            if (handler != null)
-            {
-                handler.Challenge(challengeContext);
+                await handler.ChallengeAsync(challengeContext);
             }
 
             // The default Challenge with no scheme is always accepted
@@ -117,43 +80,36 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
             }
         }
 
-        public override void SignIn([NotNull] string authenticationScheme, [NotNull] ClaimsPrincipal principal, AuthenticationProperties properties)
+        public override async Task SignInAsync([NotNull] string authenticationScheme, [NotNull] ClaimsPrincipal principal, AuthenticationProperties properties)
         {
             var handler = HttpAuthenticationFeature.Handler;
 
             var signInContext = new SignInContext(authenticationScheme, principal, properties?.Items);
             if (handler != null)
             {
-                handler.SignIn(signInContext);
+                await handler.SignInAsync(signInContext);
             }
 
-            // Verify all types ack'd
             if (!signInContext.Accepted)
             {
                 throw new InvalidOperationException($"The following authentication scheme was not accepted: {authenticationScheme}");
             }
         }
 
-        public override void SignOut(string authenticationScheme, AuthenticationProperties properties)
+        public override async Task SignOutAsync([NotNull] string authenticationScheme, AuthenticationProperties properties)
         {
             var handler = HttpAuthenticationFeature.Handler;
 
             var signOutContext = new SignOutContext(authenticationScheme, properties?.Items);
             if (handler != null)
             {
-                handler.SignOut(signOutContext);
+                await handler.SignOutAsync(signOutContext);
             }
 
-            // Verify all types ack'd
             if (!string.IsNullOrWhiteSpace(authenticationScheme) && !signOutContext.Accepted)
             {
                 throw new InvalidOperationException($"The following authentication scheme was not accepted: {authenticationScheme}");
             }
-        }
-
-        public override void SignOut(string authenticationScheme)
-        {
-            SignOut(authenticationScheme, properties: null);
         }
     }
 }

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Http.Features.Internal
 {
@@ -29,14 +30,14 @@ namespace Microsoft.AspNet.Http.Features.Internal
             get { return false; }
         }
 
-        public void OnResponseStarting(Action<object> callback, object state)
+        public void OnStarting(Func<object, Task> callback, object state)
         {
-            throw new NotSupportedException();
+            throw new NotImplementedException();
         }
 
-        public void OnResponseCompleted(Action<object> callback, object state)
+        public void OnCompleted(Func<object, Task> callback, object state)
         {
-            throw new NotSupportedException();
+            throw new NotImplementedException();
         }
     }
 }

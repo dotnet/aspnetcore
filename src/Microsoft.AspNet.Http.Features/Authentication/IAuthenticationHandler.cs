@@ -9,14 +9,12 @@ namespace Microsoft.AspNet.Http.Features.Authentication
     {
         void GetDescriptions(DescribeSchemesContext context);
 
-        void Authenticate(AuthenticateContext context);
-
         Task AuthenticateAsync(AuthenticateContext context);
 
-        void Challenge(ChallengeContext context);
+        Task ChallengeAsync(ChallengeContext context);
 
-        void SignIn(SignInContext context);
+        Task SignInAsync(SignInContext context);
 
-        void SignOut(SignOutContext context);
+        Task SignOutAsync(SignOutContext context);
     }
 }

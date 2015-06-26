@@ -18,50 +18,46 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
         public async Task AuthenticateWithNoAuthMiddlewareThrows()
         {
             var context = CreateContext();
-            Assert.Throws<InvalidOperationException>(() => context.Authentication.Authenticate("Foo"));
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await context.Authentication.AuthenticateAsync("Foo"));
         }
 
         [Fact]
-        public void ChallengeWithNoAuthMiddlewareMayThrow()
+        public async Task ChallengeWithNoAuthMiddlewareMayThrow()
         {
             var context = CreateContext();
-            context.Authentication.Challenge();
-            Assert.Equal(401, context.Response.StatusCode);
-
-            Assert.Throws<InvalidOperationException>(() => context.Authentication.Challenge("Foo"));
+            await context.Authentication.ChallengeAsync();
+            Assert.Equal(200, context.Response.StatusCode);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => context.Authentication.ChallengeAsync("Foo"));
         }
 
         [Fact]
-        public void SignInWithNoAuthMiddlewareThrows()
+        public async Task SignInWithNoAuthMiddlewareThrows()
         {
             var context = CreateContext();
-            Assert.Throws<InvalidOperationException>(() => context.Authentication.SignIn("Foo", new ClaimsPrincipal()));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => context.Authentication.SignInAsync("Foo", new ClaimsPrincipal()));
         }
 
         [Fact]
-        public void SignOutWithNoAuthMiddlewareMayThrow()
+        public async Task SignOutWithNoAuthMiddlewareMayThrow()
         {
             var context = CreateContext();
-            context.Authentication.SignOut();
-
-            Assert.Throws<InvalidOperationException>(() => context.Authentication.SignOut("Foo"));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => context.Authentication.SignOutAsync("Foo"));
         }
 
         [Fact]
-        public void SignInOutIn()
+        public async Task SignInOutIn()
         {
             var context = CreateContext();
             var handler = new AuthHandler();
             context.SetFeature<IHttpAuthenticationFeature>(new HttpAuthenticationFeature() { Handler = handler });
             var user = new ClaimsPrincipal();
-            context.Authentication.SignIn("ignored", user);
+            await context.Authentication.SignInAsync("ignored", user);
             Assert.True(handler.SignedIn);
-            context.Authentication.SignOut("ignored");
+            await context.Authentication.SignOutAsync("ignored");
             Assert.False(handler.SignedIn);
-            context.Authentication.SignIn("ignored", user);
+            await context.Authentication.SignInAsync("ignored", user);
             Assert.True(handler.SignedIn);
-            context.Authentication.SignOut("ignored", new AuthenticationProperties() { RedirectUri = "~/logout" });
+            await context.Authentication.SignOutAsync("ignored", new AuthenticationProperties() { RedirectUri = "~/logout" });
             Assert.False(handler.SignedIn);
         }
 
@@ -69,17 +65,12 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
         {
             public bool SignedIn { get; set; }
 
-            public void Authenticate(AuthenticateContext context)
-            {
-                throw new NotImplementedException();
-            }
-
             public Task AuthenticateAsync(AuthenticateContext context)
             {
                 throw new NotImplementedException();
             }
 
-            public void Challenge(ChallengeContext context)
+            public Task ChallengeAsync(ChallengeContext context)
             {
                 throw new NotImplementedException();
             }
@@ -89,16 +80,18 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
                 throw new NotImplementedException();
             }
 
-            public void SignIn(SignInContext context)
+            public Task SignInAsync(SignInContext context)
             {
                 SignedIn = true;
                 context.Accept();
+                return Task.FromResult(0);
             }
 
-            public void SignOut(SignOutContext context)
+            public Task SignOutAsync(SignOutContext context)
             {
                 SignedIn = false;
                 context.Accept();
+                return Task.FromResult(0);
             }
         }
 

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Http.Features
 {
@@ -14,7 +15,7 @@ namespace Microsoft.AspNet.Http.Features
         IDictionary<string, string[]> Headers { get; set; }
         Stream Body { get; set; }
         bool HasStarted { get; }
-        void OnResponseStarting(Action<object> callback, object state);
-        void OnResponseCompleted(Action<object> callback, object state);
+        void OnStarting(Func<object, Task> callback, object state);
+        void OnCompleted(Func<object, Task> callback, object state);
     }
 }

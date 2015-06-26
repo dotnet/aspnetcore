@@ -4,6 +4,8 @@
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Features.Authentication;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Authentication
 {
@@ -11,41 +13,61 @@ namespace Microsoft.AspNet.Http.Authentication
     {
         public abstract IEnumerable<AuthenticationDescription> GetAuthenticationSchemes();
 
-        public abstract AuthenticationResult Authenticate(string authenticationScheme);
+        public abstract Task AuthenticateAsync([NotNull] AuthenticateContext context);
 
-        public abstract Task<AuthenticationResult> AuthenticateAsync(string authenticationScheme);
-
-        public virtual void Challenge()
+        public virtual async Task<ClaimsPrincipal> AuthenticateAsync([NotNull] string authenticationScheme)
         {
-            Challenge(authenticationScheme: null, properties: null);
+            var context = new AuthenticateContext(authenticationScheme);
+            await AuthenticateAsync(context);
+            return context.Principal;
         }
 
-        public virtual void Challenge(AuthenticationProperties properties)
+        public virtual Task ChallengeAsync()
         {
-            Challenge(authenticationScheme: null, properties: properties);
+            return ChallengeAsync(properties: null);
         }
 
-        public virtual void Challenge(string authenticationScheme)
+        public virtual Task ChallengeAsync(AuthenticationProperties properties)
         {
-            Challenge(authenticationScheme: authenticationScheme, properties: null);
+            return ChallengeAsync(authenticationScheme: string.Empty, properties: properties);
         }
 
-        public abstract void Challenge(string authenticationScheme, AuthenticationProperties properties);
-
-        public void SignIn(string authenticationScheme, ClaimsPrincipal principal)
+        public virtual Task ChallengeAsync([NotNull] string authenticationScheme)
         {
-            SignIn(authenticationScheme, principal, properties: null);
+            return ChallengeAsync(authenticationScheme: authenticationScheme, properties: null);
         }
 
-        public abstract void SignIn(string authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties properties);
-
-        public virtual void SignOut()
+        // Leave it up to authentication handler to do the right thing for the challenge
+        public virtual Task ChallengeAsync([NotNull] string authenticationScheme, AuthenticationProperties properties)
         {
-            SignOut(authenticationScheme: null, properties: null);
+            return ChallengeAsync(authenticationScheme, properties, ChallengeBehavior.Automatic);
         }
 
-        public abstract void SignOut(string authenticationScheme);
+        public virtual Task SignInAsync([NotNull] string authenticationScheme, [NotNull] ClaimsPrincipal principal)
+        {
+            return SignInAsync(authenticationScheme, principal, properties: null);
+        }
 
-        public abstract void SignOut(string authenticationScheme, AuthenticationProperties properties);
+        public virtual Task ForbidAsync([NotNull] string authenticationScheme)
+        {
+            return ForbidAsync(authenticationScheme, properties: null);
+        }
+
+        // Deny access (typically a 403)
+        public virtual Task ForbidAsync([NotNull] string authenticationScheme, AuthenticationProperties properties)
+        {
+            return ChallengeAsync(authenticationScheme, properties, ChallengeBehavior.Forbidden);
+        }
+
+        public abstract Task ChallengeAsync([NotNull] string authenticationScheme, AuthenticationProperties properties, ChallengeBehavior behavior);
+
+        public abstract Task SignInAsync([NotNull] string authenticationScheme, [NotNull] ClaimsPrincipal principal, AuthenticationProperties properties);
+
+        public virtual Task SignOutAsync([NotNull] string authenticationScheme)
+        {
+            return SignOutAsync(authenticationScheme, properties: null);
+        }
+
+        public abstract Task SignOutAsync([NotNull] string authenticationScheme, AuthenticationProperties properties);
     }
 }

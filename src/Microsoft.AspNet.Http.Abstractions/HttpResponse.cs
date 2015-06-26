@@ -3,11 +3,20 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http
 {
     public abstract class HttpResponse
     {
+        private static readonly Func<object, Task> _callbackDelegate = callback => ((Func<Task>)callback)();
+        private static readonly Func<object, Task> _disposeDelegate = disposable =>
+        {
+            ((IDisposable)disposable).Dispose();
+            return Task.FromResult(0);
+        };
+
         public abstract HttpContext HttpContext { get; }
 
         public abstract int StatusCode { get; set; }
@@ -24,14 +33,17 @@ namespace Microsoft.AspNet.Http
 
         public abstract bool HasStarted { get; }
 
-        public abstract void OnResponseStarting(Action<object> callback, object state);
+        public abstract void OnStarting([NotNull] Func<object, Task> callback, object state);
 
-        public abstract void OnResponseCompleted(Action<object> callback, object state);
+        public virtual void OnStarting([NotNull] Func<Task> callback) => OnStarting(_callbackDelegate, callback);
 
-        public virtual void Redirect(string location)
-        {
-            Redirect(location, permanent: false);
-        }
+        public abstract void OnCompleted([NotNull] Func<object, Task> callback, object state);
+
+        public virtual void OnCompletedDispose([NotNull] IDisposable disposable) => OnCompleted(_disposeDelegate, disposable);
+
+        public virtual void OnCompleted([NotNull] Func<Task> callback) => OnCompleted(_callbackDelegate, callback);
+
+        public virtual void Redirect(string location) => Redirect(location, permanent: false);
 
         public abstract void Redirect(string location, bool permanent);
     }
