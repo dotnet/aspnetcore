@@ -15,6 +15,9 @@ using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Session
 {
+    /// <summary>
+    /// Enables the session state for the application.
+    /// </summary>
     public class SessionMiddleware
     {
         private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
@@ -25,6 +28,13 @@ namespace Microsoft.AspNet.Session
         private readonly ILogger _logger;
         private readonly ISessionStore _sessionStore;
 
+        /// <summary>
+        /// Creates a new <see cref="SessionMiddleware"/>.
+        /// </summary>
+        /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> representing the factory that used to create logger instances.</param>
+        /// <param name="sessionStore">The <see cref="ISessionStore"/> representing the session store.</param>
+        /// <param name="options">The session configuration options.</param>
         public SessionMiddleware(
             [NotNull] RequestDelegate next,
             [NotNull] ILoggerFactory loggerFactory,
@@ -38,6 +48,11 @@ namespace Microsoft.AspNet.Session
             _sessionStore.Connect();
         }
 
+        /// <summary>
+        /// Invokes the logic of the middleware.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
+        /// <returns>A <see cref="Task"/> that completes when the middleware has completed processing.</returns>
         public async Task Invoke(HttpContext context)
         {
             var isNewSessionKey = false;
