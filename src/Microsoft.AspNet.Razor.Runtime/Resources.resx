@@ -159,6 +159,9 @@
   <data name="TagHelperDescriptorFactory_Tag" xml:space="preserve">
     <value>Tag</value>
   </data>
+  <data name="TagHelperDescriptorFactory_InvalidAttributeNameAttribute" xml:space="preserve">
+    <value>Invalid tag helper bound property '{0}.{1}'. An '{2}' must not be associated with a property with no public setter unless its type implements '{3}'.</value>
+  </data>
   <data name="TagHelperDescriptorFactory_InvalidAttributeNameOrPrefixCharacter" xml:space="preserve">
     <value>Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with {2} '{3}' because {2} contains a '{4}' character.</value>
   </data>
@@ -168,7 +171,16 @@
   <data name="TagHelperDescriptorFactory_InvalidAttributeNameOrPrefixWhitespace" xml:space="preserve">
     <value>Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with a whitespace {2}.</value>
   </data>
-  <data name="TagHelperDescriptorFactory_InvalidAttributePrefix" xml:space="preserve">
+  <data name="TagHelperDescriptorFactory_InvalidAttributeNameNullOrEmpty" xml:space="preserve">
+    <value>Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with a null or empty name.</value>
+  </data>
+  <data name="TagHelperDescriptorFactory_InvalidAttributeNameNotNullOrEmpty" xml:space="preserve">
+    <value>Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must be null or empty if property has no public setter.</value>
+  </data>
+  <data name="TagHelperDescriptorFactory_InvalidAttributePrefixNull" xml:space="preserve">
+    <value>Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must not be null if property has no public setter and its type implements '{4}'.</value>
+  </data>
+  <data name="TagHelperDescriptorFactory_InvalidAttributePrefixNotNull" xml:space="preserve">
     <value>Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must be null unless property type implements '{4}'.</value>
   </data>
   <data name="TagHelperAttributeList_CannotAddWithNullName" xml:space="preserve">

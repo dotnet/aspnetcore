@@ -235,6 +235,22 @@ namespace Microsoft.AspNet.Razor.Runtime
         }
 
         /// <summary>
+        /// Invalid tag helper bound property '{0}.{1}'. An '{2}' must not be associated with a property with no public setter unless its type implements '{3}'.
+        /// </summary>
+        internal static string TagHelperDescriptorFactory_InvalidAttributeNameAttribute
+        {
+            get { return GetString("TagHelperDescriptorFactory_InvalidAttributeNameAttribute"); }
+        }
+
+        /// <summary>
+        /// Invalid tag helper bound property '{0}.{1}'. An '{2}' must not be associated with a property with no public setter unless its type implements '{3}'.
+        /// </summary>
+        internal static string FormatTagHelperDescriptorFactory_InvalidAttributeNameAttribute(object p0, object p1, object p2, object p3)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidAttributeNameAttribute"), p0, p1, p2, p3);
+        }
+
+        /// <summary>
         /// Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with {2} '{3}' because {2} contains a '{4}' character.
         /// </summary>
         internal static string TagHelperDescriptorFactory_InvalidAttributeNameOrPrefixCharacter
@@ -283,19 +299,67 @@ namespace Microsoft.AspNet.Razor.Runtime
         }
 
         /// <summary>
-        /// Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must be null unless property type implements '{4}'.
+        /// Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with a null or empty name.
         /// </summary>
-        internal static string TagHelperDescriptorFactory_InvalidAttributePrefix
+        internal static string TagHelperDescriptorFactory_InvalidAttributeNameNullOrEmpty
         {
-            get { return GetString("TagHelperDescriptorFactory_InvalidAttributePrefix"); }
+            get { return GetString("TagHelperDescriptorFactory_InvalidAttributeNameNullOrEmpty"); }
+        }
+
+        /// <summary>
+        /// Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with a null or empty name.
+        /// </summary>
+        internal static string FormatTagHelperDescriptorFactory_InvalidAttributeNameNullOrEmpty(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidAttributeNameNullOrEmpty"), p0, p1);
+        }
+
+        /// <summary>
+        /// Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must be null or empty if property has no public setter.
+        /// </summary>
+        internal static string TagHelperDescriptorFactory_InvalidAttributeNameNotNullOrEmpty
+        {
+            get { return GetString("TagHelperDescriptorFactory_InvalidAttributeNameNotNullOrEmpty"); }
+        }
+
+        /// <summary>
+        /// Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must be null or empty if property has no public setter.
+        /// </summary>
+        internal static string FormatTagHelperDescriptorFactory_InvalidAttributeNameNotNullOrEmpty(object p0, object p1, object p2, object p3)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidAttributeNameNotNullOrEmpty"), p0, p1, p2, p3);
+        }
+
+        /// <summary>
+        /// Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must not be null if property has no public setter and its type implements '{4}'.
+        /// </summary>
+        internal static string TagHelperDescriptorFactory_InvalidAttributePrefixNull
+        {
+            get { return GetString("TagHelperDescriptorFactory_InvalidAttributePrefixNull"); }
+        }
+
+        /// <summary>
+        /// Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must not be null if property has no public setter and its type implements '{4}'.
+        /// </summary>
+        internal static string FormatTagHelperDescriptorFactory_InvalidAttributePrefixNull(object p0, object p1, object p2, object p3, object p4)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidAttributePrefixNull"), p0, p1, p2, p3, p4);
         }
 
         /// <summary>
         /// Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must be null unless property type implements '{4}'.
         /// </summary>
-        internal static string FormatTagHelperDescriptorFactory_InvalidAttributePrefix(object p0, object p1, object p2, object p3, object p4)
+        internal static string TagHelperDescriptorFactory_InvalidAttributePrefixNotNull
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidAttributePrefix"), p0, p1, p2, p3, p4);
+            get { return GetString("TagHelperDescriptorFactory_InvalidAttributePrefixNotNull"); }
+        }
+
+        /// <summary>
+        /// Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must be null unless property type implements '{4}'.
+        /// </summary>
+        internal static string FormatTagHelperDescriptorFactory_InvalidAttributePrefixNotNull(object p0, object p1, object p2, object p3, object p4)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidAttributePrefixNotNull"), p0, p1, p2, p3, p4);
         }
 
         /// <summary>

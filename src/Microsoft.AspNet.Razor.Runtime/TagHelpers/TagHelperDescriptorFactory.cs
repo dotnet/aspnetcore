@@ -256,45 +256,72 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             bool designTime,
             ErrorSink errorSink)
         {
-            var accessibleProperties = type.GetRuntimeProperties().Where(IsAccessibleProperty);
             var attributeDescriptors = new List<TagHelperAttributeDescriptor>();
 
             // Keep indexer descriptors separate to avoid sorting the combined list later.
             var indexerDescriptors = new List<TagHelperAttributeDescriptor>();
 
+            var accessibleProperties = type.GetRuntimeProperties().Where(IsAccessibleProperty);
             foreach (var property in accessibleProperties)
             {
                 var attributeNameAttribute = property.GetCustomAttribute<HtmlAttributeNameAttribute>(inherit: false);
-                var descriptor = ToAttributeDescriptor(property, attributeNameAttribute, designTime);
-                if (ValidateTagHelperAttributeDescriptor(descriptor, type, errorSink))
+                var hasExplicitName =
+                    attributeNameAttribute != null && !string.IsNullOrEmpty(attributeNameAttribute.Name);
+                var attributeName = hasExplicitName ? attributeNameAttribute.Name : ToHtmlCase(property.Name);
+
+                TagHelperAttributeDescriptor mainDescriptor = null;
+                if (property.SetMethod?.IsPublic == true)
                 {
-                    bool isInvalid;
-                    var indexerDescriptor = ToIndexerAttributeDescriptor(
-                        property,
-                        attributeNameAttribute,
-                        parentType: type,
-                        errorSink: errorSink,
-                        defaultPrefix: descriptor.Name + "-",
-                        designTime: designTime,
-                        isInvalid: out isInvalid);
-
-                    if (indexerDescriptor != null &&
-                        !ValidateTagHelperAttributeDescriptor(indexerDescriptor, type, errorSink))
+                    mainDescriptor = ToAttributeDescriptor(property, attributeName, designTime);
+                    if (!ValidateTagHelperAttributeDescriptor(mainDescriptor, type, errorSink))
                     {
-                        isInvalid = true;
-                    }
-
-                    if (isInvalid)
-                    {
-                        // HtmlAttributeNameAttribute was not valid. Ignore this property completely.
+                        // HtmlAttributeNameAttribute.Name is invalid. Ignore this property completely.
                         continue;
                     }
+                }
+                else if (hasExplicitName)
+                {
+                    // Specified HtmlAttributeNameAttribute.Name though property has no public setter.
+                    errorSink.OnError(
+                        SourceLocation.Zero,
+                        Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameNotNullOrEmpty(
+                            type.FullName,
+                            property.Name,
+                            typeof(HtmlAttributeNameAttribute).FullName,
+                            nameof(HtmlAttributeNameAttribute.Name)));
+                    continue;
+                }
 
-                    attributeDescriptors.Add(descriptor);
-                    if (indexerDescriptor != null)
-                    {
-                        indexerDescriptors.Add(indexerDescriptor);
-                    }
+                bool isInvalid;
+                var indexerDescriptor = ToIndexerAttributeDescriptor(
+                    property,
+                    attributeNameAttribute,
+                    parentType: type,
+                    errorSink: errorSink,
+                    defaultPrefix: attributeName + "-",
+                    designTime: designTime,
+                    isInvalid: out isInvalid);
+                if (indexerDescriptor != null &&
+                    !ValidateTagHelperAttributeDescriptor(indexerDescriptor, type, errorSink))
+                {
+                    isInvalid = true;
+                }
+
+                if (isInvalid)
+                {
+                    // The property type or HtmlAttributeNameAttribute.DictionaryAttributePrefix (or perhaps the
+                    // HTML-casing of the property name) is invalid. Ignore this property completely.
+                    continue;
+                }
+
+                if (mainDescriptor != null)
+                {
+                    attributeDescriptors.Add(mainDescriptor);
+                }
+
+                if (indexerDescriptor != null)
+                {
+                    indexerDescriptors.Add(indexerDescriptor);
                 }
             }
 
@@ -309,9 +336,26 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Type parentType,
             ErrorSink errorSink)
         {
-            var nameOrPrefix = attributeDescriptor.IsIndexer ?
-                Resources.TagHelperDescriptorFactory_Prefix :
-                Resources.TagHelperDescriptorFactory_Name;
+            string nameOrPrefix;
+            if (attributeDescriptor.IsIndexer)
+            {
+                nameOrPrefix = Resources.TagHelperDescriptorFactory_Prefix;
+            }
+            else if (string.IsNullOrEmpty(attributeDescriptor.Name))
+            {
+                errorSink.OnError(
+                    SourceLocation.Zero,
+                    Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameNullOrEmpty(
+                        parentType.FullName,
+                        attributeDescriptor.PropertyName));
+
+                return false;
+            }
+            else
+            {
+                nameOrPrefix = Resources.TagHelperDescriptorFactory_Name;
+            }
+
             return ValidateTagHelperAttributeNameOrPrefix(
                 attributeDescriptor.Name,
                 parentType,
@@ -329,8 +373,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             if (string.IsNullOrEmpty(attributeNameOrPrefix))
             {
-                // HtmlAttributeNameAttribute validates Name is non-null and non-empty. Both are valid for
-                // DictionaryAttributePrefix. (Empty DictionaryAttributePrefix is a corner case which would bind every
+                // ValidateTagHelperAttributeDescriptor validates Name is non-null and non-empty. The empty string is
+                // valid for DictionaryAttributePrefix and null is impossible at this point because it means "don't
+                // create a descriptor". (Empty DictionaryAttributePrefix is a corner case which would bind every
                 // attribute of a target element. Likely not particularly useful but unclear what minimum length
                 // should be required and what scenarios a minimum length would break.)
                 return true;
@@ -388,13 +433,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         private static TagHelperAttributeDescriptor ToAttributeDescriptor(
             PropertyInfo property,
-            HtmlAttributeNameAttribute attributeNameAttribute,
+            string attributeName,
             bool designTime)
         {
-            var attributeName = attributeNameAttribute != null ?
-                                attributeNameAttribute.Name :
-                                ToHtmlCase(property.Name);
-
             return ToAttributeDescriptor(
                 property,
                 attributeName,
@@ -413,6 +454,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             out bool isInvalid)
         {
             isInvalid = false;
+            var hasPublicSetter = property.SetMethod?.IsPublic == true;
             var dictionaryTypeArguments = ClosedGenericMatcher.ExtractGenericInterface(
                     property.PropertyType,
                     typeof(IDictionary<,>))
@@ -426,13 +468,44 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     isInvalid = true;
                     errorSink.OnError(
                         SourceLocation.Zero,
-                        Resources.FormatTagHelperDescriptorFactory_InvalidAttributePrefix(
+                        Resources.FormatTagHelperDescriptorFactory_InvalidAttributePrefixNotNull(
                             parentType.FullName,
                             property.Name,
                             nameof(HtmlAttributeNameAttribute),
                             nameof(HtmlAttributeNameAttribute.DictionaryAttributePrefix),
                             "IDictionary<string, TValue>"));
                 }
+                else if (attributeNameAttribute != null && !hasPublicSetter)
+                {
+                    // Associated an HtmlAttributeNameAttribute with a non-dictionary property that lacks a public
+                    // setter.
+                    isInvalid = true;
+                    errorSink.OnError(
+                        SourceLocation.Zero,
+                        Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameAttribute(
+                            parentType.FullName,
+                            property.Name,
+                            nameof(HtmlAttributeNameAttribute),
+                            "IDictionary<string, TValue>"));
+                }
+
+                return null;
+            }
+            else if (!hasPublicSetter &&
+                attributeNameAttribute != null &&
+                !attributeNameAttribute.DictionaryAttributePrefixSet)
+            {
+                // Must set DictionaryAttributePrefix when using HtmlAttributeNameAttribute with a dictionary property
+                // that lacks a public setter.
+                isInvalid = true;
+                errorSink.OnError(
+                    SourceLocation.Zero,
+                    Resources.FormatTagHelperDescriptorFactory_InvalidAttributePrefixNull(
+                        parentType.FullName,
+                        property.Name,
+                        nameof(HtmlAttributeNameAttribute),
+                        nameof(HtmlAttributeNameAttribute.DictionaryAttributePrefix),
+                        "IDictionary<string, TValue>"));
 
                 return null;
             }
@@ -482,9 +555,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         private static bool IsAccessibleProperty(PropertyInfo property)
         {
-            // Accessible properties are those with public getters and setters and without [HtmlAttributeNotBound].
+            // Accessible properties are those with public getters and without [HtmlAttributeNotBound].
             return property.GetMethod?.IsPublic == true &&
-                property.SetMethod?.IsPublic == true &&
                 property.GetCustomAttribute<HtmlAttributeNotBoundAttribute>(inherit: false) == null;
         }
 

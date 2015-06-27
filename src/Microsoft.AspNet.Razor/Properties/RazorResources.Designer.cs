@@ -1287,22 +1287,6 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// A TagHelperChunkGenerator must only be used with TagHelperBlocks.
-        /// </summary>
-        internal static string TagHelpers_TagHelperCodeGeneartorMustBeAssociatedWithATagHelperBlock
-        {
-            get { return GetString("TagHelpers_TagHelperCodeGeneartorMustBeAssociatedWithATagHelperBlock"); }
-        }
-
-        /// <summary>
-        /// A TagHelperChunkGenerator must only be used with TagHelperBlocks.
-        /// </summary>
-        internal static string FormatTagHelpers_TagHelperCodeGeneartorMustBeAssociatedWithATagHelperBlock()
-        {
-            return GetString("TagHelpers_TagHelperCodeGeneartorMustBeAssociatedWithATagHelperBlock");
-        }
-
-        /// <summary>
         /// Directive '{0}' must have a value.
         /// </summary>
         internal static string ParseError_DirectiveMustHaveValue

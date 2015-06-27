@@ -14,22 +14,40 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         private string _dictionaryAttributePrefix;
 
         /// <summary>
+        /// Instantiates a new instance of the <see cref="HtmlAttributeNameAttribute"/> class with <see cref="Name"/>
+        /// equal to <c>null</c>.
+        /// </summary>
+        /// <remarks>
+        /// Associated property must not have a public setter and must be compatible with
+        /// <see cref="System.Collections.Generic.IDictionary{TKey, TValue}"/> where <c>TKey</c> is
+        /// <see cref="string"/>.
+        /// </remarks>
+        public HtmlAttributeNameAttribute()
+        {
+        }
+
+        /// <summary>
         /// Instantiates a new instance of the <see cref="HtmlAttributeNameAttribute"/> class.
         /// </summary>
-        /// <param name="name">HTML attribute name for the associated property.</param>
+        /// <param name="name">
+        /// HTML attribute name for the associated property. Must be <c>null</c> or empty if associated property does
+        /// not have a public setter and is compatible with
+        /// <see cref="System.Collections.Generic.IDictionary{TKey, TValue}"/> where <c>TKey</c> is
+        /// <see cref="string"/>. Otherwise must not be <c>null</c> or empty.
+        /// </param>
         public HtmlAttributeNameAttribute(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(name));
-            }
-
             Name = name;
         }
 
         /// <summary>
         /// HTML attribute name of the associated property.
         /// </summary>
+        /// <value>
+        /// <c>null</c> or empty if and only if associated property does not have a public setter and is compatible
+        /// with <see cref="System.Collections.Generic.IDictionary{TKey, TValue}"/> where <c>TKey</c> is
+        /// <see cref="string"/>.
+        /// </value>
         public string Name { get; }
 
         /// <summary>
@@ -42,9 +60,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <see cref="string"/>.
         /// </remarks>
         /// <value>
+        /// <para>
         /// If associated property is compatible with
         /// <see cref="System.Collections.Generic.IDictionary{TKey, TValue}"/>, default value is <c>Name + "-"</c>.
+        /// <see cref="Name"/> must not be <c>null</c> or empty in this case.
+        /// </para>
+        /// <para>
         /// Otherwise default value is <c>null</c>.
+        /// </para>
         /// </value>
         public string DictionaryAttributePrefix
         {
