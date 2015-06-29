@@ -6,6 +6,7 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +16,6 @@ namespace Microsoft.AspNet.WebSockets.Protocol
     // https://tools.ietf.org/html/rfc6455
     public class CommonWebSocket : WebSocket
     {
-        private readonly static Random Random = new Random();
         private readonly static byte[] PingBuffer = Encoding.ASCII.GetBytes("abcdefghijklmnopqrstuvwxyz");
 
         private readonly Stream _stream;
@@ -58,6 +58,22 @@ namespace Microsoft.AspNet.WebSockets.Protocol
                 _keepAliveTimer = new Timer(SendKeepAlive, this, keepAliveInterval, keepAliveInterval);
             }
         }
+
+        // NOTE(anurse): Normally we don't group fields and methods like this but I'd rather do this than have two sections of #ifs.
+#if NET45
+        private readonly static RandomNumberGenerator Random = new RNGCryptoServiceProvider();
+        private static void GetRandomBytes(byte[] buffer)
+        {
+            Random.GetBytes(buffer);
+        }
+#else
+        // No RandomNumberGenerator in CoreCLR :(. Use System.Random until it's available
+        private readonly static Random Random = new Random();
+        private static void GetRandomBytes(byte[] buffer)
+        {
+            Random.NextBytes(buffer);
+        }
+#endif
 
         public static CommonWebSocket CreateClientWebSocket(Stream stream, string subProtocol, TimeSpan keepAliveInterval, int receiveBufferSize, bool useZeroMask)
         {
@@ -107,8 +123,11 @@ namespace Microsoft.AspNet.WebSockets.Protocol
             {
                 return 0;
             }
-            // TODO: Doesn't include negative numbers so it's only 31 bits, not 32.
-            return Random.Next();
+
+            // Get 32-bits of randomness and convert it to an int
+            var buffer = new byte[sizeof(int)];
+            GetRandomBytes(buffer);
+            return BitConverter.ToInt32(buffer, 0);
         }
 
         public override async Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
