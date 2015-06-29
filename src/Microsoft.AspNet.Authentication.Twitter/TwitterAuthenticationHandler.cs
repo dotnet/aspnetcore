@@ -120,16 +120,13 @@ namespace Microsoft.AspNet.Authentication.Twitter
         }
         protected override async Task<bool> HandleUnauthorizedAsync([NotNull] ChallengeContext context)
         {
-            var requestPrefix = Request.Scheme + "://" + Request.Host;
-            var callBackUrl = requestPrefix + RequestPathBase + Options.CallbackPath;
-
             var properties = new AuthenticationProperties(context.Properties);
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
-                properties.RedirectUri = requestPrefix + Request.PathBase + Request.Path + Request.QueryString;
+                properties.RedirectUri = CurrentUri;
             }
 
-            var requestToken = await ObtainRequestTokenAsync(Options.ConsumerKey, Options.ConsumerSecret, callBackUrl, properties);
+            var requestToken = await ObtainRequestTokenAsync(Options.ConsumerKey, Options.ConsumerSecret, BuildRedirectUri(Options.CallbackPath), properties);
             if (requestToken.CallbackConfirmed)
             {
                 var twitterAuthenticationEndpoint = AuthenticationEndpoint + requestToken.Token;

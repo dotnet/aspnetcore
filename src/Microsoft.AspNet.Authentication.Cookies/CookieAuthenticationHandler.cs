@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             {
                 Domain = Options.CookieDomain,
                 HttpOnly = Options.CookieHttpOnly,
-                Path = Options.CookiePath ?? (RequestPathBase.HasValue ? RequestPathBase.ToString() : "/"),
+                Path = Options.CookiePath ?? (OriginalPathBase.HasValue ? OriginalPathBase.ToString() : "/"),
             };
             if (Options.CookieSecure == CookieSecureOption.SameAsRequest)
             {

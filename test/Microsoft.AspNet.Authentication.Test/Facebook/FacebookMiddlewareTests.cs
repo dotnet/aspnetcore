@@ -6,8 +6,10 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.WebEncoders;
 using Shouldly;
 using Xunit;
 
@@ -59,6 +61,67 @@ namespace Microsoft.AspNet.Authentication.Facebook
             transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
             var query = transaction.Response.Headers.Location.Query;
             query.ShouldContain("custom=test");
+        }
+
+        [Fact]
+        public async Task NestedMapWillNotAffectRedirect()
+        {
+            var server = CreateServer(app =>
+                app.Map("/base", map => {
+                    map.UseFacebookAuthentication();
+                    map.Map("/login", signoutApp => signoutApp.Run(context => context.Authentication.ChallengeAsync("Facebook", new AuthenticationProperties() { RedirectUri = "/" })));
+                }),
+                services =>
+                {
+                    services.AddAuthentication();
+                    services.ConfigureFacebookAuthentication(options =>
+                    {
+                        options.AppId = "Test App Id";
+                        options.AppSecret = "Test App Secret";
+                        options.SignInScheme = "External";
+                    });
+                },
+                handler: null);
+            var transaction = await server.SendAsync("http://example.com/base/login");
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            var location = transaction.Response.Headers.Location.AbsoluteUri;
+            location.ShouldContain("https://www.facebook.com/v2.2/dialog/oauth");
+            location.ShouldContain("response_type=code");
+            location.ShouldContain("client_id=");
+            location.ShouldContain("redirect_uri=" + UrlEncoder.Default.UrlEncode("http://example.com/base/signin-facebook"));
+            location.ShouldContain("scope=");
+            location.ShouldContain("state=");
+        }
+
+        [Fact]
+        public async Task MapWillNotAffectRedirect()
+        {
+            var server = CreateServer(
+                app =>
+                {
+                    app.UseFacebookAuthentication();
+                    app.Map("/login", signoutApp => signoutApp.Run(context => context.Authentication.ChallengeAsync("Facebook", new AuthenticationProperties() { RedirectUri = "/" })));
+                },
+                services =>
+                {
+                    services.AddAuthentication();
+                    services.ConfigureFacebookAuthentication(options =>
+                    {
+                        options.AppId = "Test App Id";
+                        options.AppSecret = "Test App Secret";
+                        options.SignInScheme = "External";
+                    });
+                },
+                handler: null);
+            var transaction = await server.SendAsync("http://example.com/login");
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            var location = transaction.Response.Headers.Location.AbsoluteUri;
+            location.ShouldContain("https://www.facebook.com/v2.2/dialog/oauth");
+            location.ShouldContain("response_type=code");
+            location.ShouldContain("client_id=");
+            location.ShouldContain("redirect_uri="+ UrlEncoder.Default.UrlEncode("http://example.com/signin-facebook"));
+            location.ShouldContain("scope=");
+            location.ShouldContain("state=");
         }
 
         [Fact]

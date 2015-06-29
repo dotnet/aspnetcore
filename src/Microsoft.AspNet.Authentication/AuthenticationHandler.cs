@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Authentication
             get { return Context.Response; }
         }
 
-        protected PathString RequestPathBase { get; private set; }
+        protected PathString OriginalPathBase { get; private set; }
 
         protected ILogger Logger { get; private set; }
 
@@ -48,11 +48,19 @@ namespace Microsoft.AspNet.Authentication
 
         public IAuthenticationHandler PriorHandler { get; set; }
 
+        protected string CurrentUri
+        {
+            get
+            {
+                return Request.Scheme + "://" + Request.Host + Request.PathBase + Request.Path + Request.QueryString;
+            }
+        }
+
         protected async Task BaseInitializeAsync([NotNull] AuthenticationOptions options, [NotNull] HttpContext context, [NotNull] ILogger logger, [NotNull] IUrlEncoder encoder)
         {
             _baseOptions = options;
             Context = context;
-            RequestPathBase = Request.PathBase;
+            OriginalPathBase = Request.PathBase;
             Logger = logger;
             UrlEncoder = encoder;
 
@@ -68,6 +76,11 @@ namespace Microsoft.AspNet.Authentication
                     SecurityHelper.AddUserPrincipal(Context, ticket.Principal);
                 }
             }
+        }
+
+        protected string BuildRedirectUri(string targetPath)
+        {
+            return Request.Scheme + "://" + Request.Host + OriginalPathBase + targetPath;
         }
 
         private static async Task OnStartingCallback(object state)
