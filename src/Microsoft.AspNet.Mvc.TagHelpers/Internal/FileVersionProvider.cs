@@ -48,6 +48,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         public string AddFileVersionToPath([NotNull] string path)
         {
             var resolvedPath = path;
+
+            var queryStringStartIndex = path.IndexOf('?');
+            if (queryStringStartIndex != -1)
+            {
+                resolvedPath = path.Substring(0, queryStringStartIndex);
+            }
+
+            Uri uri;
+            if (Uri.TryCreate(resolvedPath, UriKind.Absolute, out uri))
+            {
+                // Don't append version if the path is absolute.
+                return path;
+            }
+
             var fileInfo = _fileProvider.GetFileInfo(resolvedPath);
             if (!fileInfo.Exists)
             {
