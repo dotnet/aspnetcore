@@ -6,7 +6,6 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -103,7 +102,8 @@ namespace Microsoft.AspNet.WebSockets.Protocol
         // applications.
 #if NET45
         // Normally we don't group methods and fields like this but I want to centralize the #if :)
-        private static readonly RandomNumberGenerator _rng = new RNGCryptoServiceProvider();
+        // Same for using full namespace names.
+        private static readonly System.Security.Cryptography.RandomNumberGenerator _rng = new System.Security.Cryptography.RNGCryptoServiceProvider();
         private int GetNextMask()
         {
             if (_useZeroMask)
