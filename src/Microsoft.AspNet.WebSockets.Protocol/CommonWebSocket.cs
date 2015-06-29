@@ -6,6 +6,7 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace Microsoft.AspNet.WebSockets.Protocol
     public class CommonWebSocket : WebSocket
     {
         private readonly static byte[] PingBuffer = Encoding.ASCII.GetBytes("abcdefghijklmnopqrstuvwxyz");
+        private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 
         private readonly Stream _stream;
         private readonly string _subProtocl;
@@ -100,10 +102,6 @@ namespace Microsoft.AspNet.WebSockets.Protocol
         // the bytes that appear on the wire.  RFC 4086 [RFC4086] discusses what
         // entails a suitable source of entropy for security-sensitive
         // applications.
-#if NET45
-        // Normally we don't group methods and fields like this but I want to centralize the #if :)
-        // Same for using full namespace names.
-        private static readonly System.Security.Cryptography.RandomNumberGenerator _rng = new System.Security.Cryptography.RNGCryptoServiceProvider();
         private int GetNextMask()
         {
             if (_useZeroMask)
@@ -116,12 +114,6 @@ namespace Microsoft.AspNet.WebSockets.Protocol
             _rng.GetBytes(buffer);
             return BitConverter.ToInt32(buffer, 0);
         }
-#else
-        private int GetNextMask()
-        {
-            throw new PlatformNotSupportedException("The WebSocket client is not supported on this platform.");
-        }
-#endif
 
         public override async Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
         {
