@@ -59,22 +59,6 @@ namespace Microsoft.AspNet.WebSockets.Protocol
             }
         }
 
-        // NOTE(anurse): Normally we don't group fields and methods like this but I'd rather do this than have two sections of #ifs.
-#if NET45
-        private readonly static RandomNumberGenerator Random = new RNGCryptoServiceProvider();
-        private static void GetRandomBytes(byte[] buffer)
-        {
-            Random.GetBytes(buffer);
-        }
-#else
-        // No RandomNumberGenerator in CoreCLR :(. Use System.Random until it's available
-        private readonly static Random Random = new Random();
-        private static void GetRandomBytes(byte[] buffer)
-        {
-            Random.NextBytes(buffer);
-        }
-#endif
-
         public static CommonWebSocket CreateClientWebSocket(Stream stream, string subProtocol, TimeSpan keepAliveInterval, int receiveBufferSize, bool useZeroMask)
         {
             return new CommonWebSocket(stream, subProtocol, keepAliveInterval, receiveBufferSize, maskOutput: true, useZeroMask: useZeroMask, unmaskInput: false);
@@ -117,6 +101,9 @@ namespace Microsoft.AspNet.WebSockets.Protocol
         // the bytes that appear on the wire.  RFC 4086 [RFC4086] discusses what
         // entails a suitable source of entropy for security-sensitive
         // applications.
+#if NET45
+        // Normally we don't group methods and fields like this but I want to centralize the #if :)
+        private static readonly RandomNumberGenerator _rng = new RNGCryptoServiceProvider();
         private int GetNextMask()
         {
             if (_useZeroMask)
@@ -126,9 +113,15 @@ namespace Microsoft.AspNet.WebSockets.Protocol
 
             // Get 32-bits of randomness and convert it to an int
             var buffer = new byte[sizeof(int)];
-            GetRandomBytes(buffer);
+            _rng.GetBytes(buffer);
             return BitConverter.ToInt32(buffer, 0);
         }
+#else
+        private int GetNextMask()
+        {
+            throw new PlatformNotSupportedException("The WebSocket client is not supported on this platform.");
+        }
+#endif
 
         public override async Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
         {
