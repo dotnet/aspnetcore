@@ -4,8 +4,8 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Hosting.Internal;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Hosting.Server
 {
@@ -18,16 +18,12 @@ namespace Microsoft.AspNet.Hosting.Server
             _services = services;
         }
 
-        public IServerFactory LoadServerFactory(string serverFactoryIdentifier)
+        public IServerFactory LoadServerFactory([NotNull] string assemblyName)
         {
-            if (string.IsNullOrEmpty(serverFactoryIdentifier))
+            if (string.IsNullOrEmpty(assemblyName))
             {
-                throw new ArgumentException(string.Empty, nameof(serverFactoryIdentifier));
+                throw new ArgumentException(string.Empty, nameof(assemblyName));
             }
-
-            var nameParts = HostingUtilities.SplitTypeName(serverFactoryIdentifier);
-            var typeName = nameParts.Item1;
-            var assemblyName = nameParts.Item2;
 
             var assembly = Assembly.Load(new AssemblyName(assemblyName));
             if (assembly == null)
@@ -35,42 +31,16 @@ namespace Microsoft.AspNet.Hosting.Server
                 throw new Exception(string.Format("The assembly {0} failed to load.", assemblyName));
             }
 
-            Type type = null;
-            Type interfaceInfo;
-            if (string.IsNullOrEmpty(typeName))
+            var serverTypeInfo = assembly.DefinedTypes.Where(
+                t => t.ImplementedInterfaces.FirstOrDefault(interf => interf.Equals(typeof(IServerFactory))) != null)
+                .FirstOrDefault();
+
+            if (serverTypeInfo == null)
             {
-                foreach (var typeInfo in assembly.DefinedTypes)
-                {
-                    interfaceInfo = typeInfo.ImplementedInterfaces.FirstOrDefault(interf => interf.Equals(typeof(IServerFactory)));
-                    if (interfaceInfo != null)
-                    {
-                        type = typeInfo.AsType();
-                    }
-                }
-
-                if (type == null)
-                {
-                    throw new Exception(string.Format("The type {0} failed to load.", typeName ?? "<null>"));
-                }
-            }
-            else
-            {
-                type = assembly.GetType(typeName);
-
-                if (type == null)
-                {
-                    throw new Exception(String.Format("The type {0} failed to load.", typeName ?? "<null>"));
-                }
-
-                interfaceInfo = type.GetTypeInfo().ImplementedInterfaces.FirstOrDefault(interf => interf.Equals(typeof(IServerFactory)));
-
-                if (interfaceInfo == null)
-                {
-                    throw new Exception(string.Format("The type '{0}' does not implement the '{1}' interface.", type, typeof(IServerFactory).FullName));
-                }
+                throw new InvalidOperationException($"No server type found that implements IServerFactory in assembly: {assemblyName}.");
             }
 
-            return (IServerFactory)ActivatorUtilities.GetServiceOrCreateInstance(_services, type);
+            return (IServerFactory)ActivatorUtilities.GetServiceOrCreateInstance(_services, serverTypeInfo.AsType());
         }
     }
 }

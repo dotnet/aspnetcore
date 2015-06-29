@@ -5,6 +5,6 @@ namespace Microsoft.AspNet.Hosting.Server
 {
     public interface IServerLoader
     {
-        IServerFactory LoadServerFactory(string serverName);
+        IServerFactory LoadServerFactory(string assemblyName);
     }
 }

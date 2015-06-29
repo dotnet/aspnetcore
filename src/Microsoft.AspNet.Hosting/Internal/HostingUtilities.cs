@@ -10,19 +10,6 @@ namespace Microsoft.AspNet.Hosting.Internal
 {
     public static class HostingUtilities
     {
-        internal static Tuple<string, string> SplitTypeName(string identifier)
-        {
-            string typeName = null;
-            var assemblyName = identifier.Trim();
-            var parts = identifier.Split(new[] { ',' }, 2);
-            if (parts.Length == 2)
-            {
-                typeName = parts[0].Trim();
-                assemblyName = parts[1].Trim();
-            }
-            return new Tuple<string, string>(typeName, assemblyName);
-        }
-
         public static string GetWebRoot(string applicationBasePath)
         {
             var webroot = applicationBasePath;
