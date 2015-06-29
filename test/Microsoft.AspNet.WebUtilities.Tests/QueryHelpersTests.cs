@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
@@ -51,6 +51,64 @@ namespace Microsoft.AspNet.WebUtilities
             var collection = QueryHelpers.ParseQuery("?=value1&=");
             Assert.Equal(1, collection.Count);
             Assert.Equal(new[] { "value1", "" }, collection[""]);
+        }
+
+        [Theory]
+        [InlineData("http://contoso.com/", "http://contoso.com/?hello=world")]
+        [InlineData("http://contoso.com/someaction", "http://contoso.com/someaction?hello=world")]
+        [InlineData("http://contoso.com/someaction?q=test", "http://contoso.com/someaction?q=test&hello=world")]
+        [InlineData(
+            "http://contoso.com/someaction?q=test#anchor",
+            "http://contoso.com/someaction?q=test&hello=world#anchor")]
+        [InlineData("http://contoso.com/someaction#anchor", "http://contoso.com/someaction?hello=world#anchor")]
+        [InlineData("http://contoso.com/#anchor", "http://contoso.com/?hello=world#anchor")]
+        [InlineData(
+            "http://contoso.com/someaction?q=test#anchor?value",
+            "http://contoso.com/someaction?q=test&hello=world#anchor?value")]
+        [InlineData(
+            "http://contoso.com/someaction#anchor?stuff",
+            "http://contoso.com/someaction?hello=world#anchor?stuff")]
+        [InlineData(
+            "http://contoso.com/someaction?name?something",
+            "http://contoso.com/someaction?name?something&hello=world")]
+        [InlineData(
+            "http://contoso.com/someaction#name#something",
+            "http://contoso.com/someaction?hello=world#name#something")]
+        public void AddQueryStringWithKeyAndValue(string uri, string expectedUri)
+        {
+            var result = QueryHelpers.AddQueryString(uri, "hello", "world");
+            Assert.Equal(expectedUri, result);
+        }
+
+        [Theory]
+        [InlineData("http://contoso.com/", "http://contoso.com/?hello=world&some=text")]
+        [InlineData("http://contoso.com/someaction", "http://contoso.com/someaction?hello=world&some=text")]
+        [InlineData("http://contoso.com/someaction?q=1", "http://contoso.com/someaction?q=1&hello=world&some=text")]
+        [InlineData("http://contoso.com/some#action", "http://contoso.com/some?hello=world&some=text#action")]
+        [InlineData("http://contoso.com/some?q=1#action", "http://contoso.com/some?q=1&hello=world&some=text#action")]
+        [InlineData("http://contoso.com/#action", "http://contoso.com/?hello=world&some=text#action")]
+        [InlineData(
+            "http://contoso.com/someaction?q=test#anchor?value",
+            "http://contoso.com/someaction?q=test&hello=world&some=text#anchor?value")]
+        [InlineData(
+            "http://contoso.com/someaction#anchor?stuff",
+            "http://contoso.com/someaction?hello=world&some=text#anchor?stuff")]
+        [InlineData(
+            "http://contoso.com/someaction?name?something",
+            "http://contoso.com/someaction?name?something&hello=world&some=text")]
+        [InlineData(
+            "http://contoso.com/someaction#name#something",
+            "http://contoso.com/someaction?hello=world&some=text#name#something")]
+        public void AddQueryStringWithDictionary(string uri, string expectedUri)
+        {
+            var queryStrings = new Dictionary<string, string>()
+                        {
+                            { "hello", "world" },
+                            { "some", "text" }
+                        };
+
+            var result = QueryHelpers.AddQueryString(uri, queryStrings);
+            Assert.Equal(expectedUri, result);
         }
     }
 }

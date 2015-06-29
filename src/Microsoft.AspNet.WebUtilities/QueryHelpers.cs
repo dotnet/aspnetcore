@@ -20,8 +20,8 @@ namespace Microsoft.AspNet.WebUtilities
         /// <returns>The combined result.</returns>
         public static string AddQueryString([NotNull] string uri, [NotNull] string name, [NotNull] string value)
         {
-            bool hasQuery = uri.IndexOf('?') != -1;
-            return uri + (hasQuery ? "&" : "?") + UrlEncoder.Default.UrlEncode(name) + "=" + UrlEncoder.Default.UrlEncode(value);
+            return AddQueryString(
+                uri, new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>(name, value) });
         }
 
         /// <summary>
@@ -29,12 +29,31 @@ namespace Microsoft.AspNet.WebUtilities
         /// </summary>
         /// <param name="uri">The base uri.</param>
         /// <param name="queryString">A collection of name value query pairs to append.</param>
-        /// <returns>The combine result.</returns>
+        /// <returns>The combined result.</returns>
         public static string AddQueryString([NotNull] string uri, [NotNull] IDictionary<string, string> queryString)
         {
+            return AddQueryString(uri, (IEnumerable<KeyValuePair<string, string>>)queryString);
+        }
+
+        private static string AddQueryString(
+            [NotNull] string uri,
+            [NotNull] IEnumerable<KeyValuePair<string, string>> queryString)
+        {
+            var anchorIndex = uri.IndexOf('#');
+            var uriToBeAppended = uri;
+            var anchorText = "";
+            // If there is an anchor, then the query string must be inserted before its first occurance.
+            if (anchorIndex != -1)
+            {
+                anchorText = uri.Substring(anchorIndex);
+                uriToBeAppended = uri.Substring(0, anchorIndex);
+            }
+
+            var queryIndex = uriToBeAppended.IndexOf('?');
+            var hasQuery = queryIndex != -1;
+
             var sb = new StringBuilder();
-            sb.Append(uri);
-            bool hasQuery = uri.IndexOf('?') != -1;
+            sb.Append(uriToBeAppended);
             foreach (var parameter in queryString)
             {
                 sb.Append(hasQuery ? '&' : '?');
@@ -43,6 +62,8 @@ namespace Microsoft.AspNet.WebUtilities
                 sb.Append(UrlEncoder.Default.UrlEncode(parameter.Value));
                 hasQuery = true;
             }
+
+            sb.Append(anchorText);
             return sb.ToString();
         }
 
