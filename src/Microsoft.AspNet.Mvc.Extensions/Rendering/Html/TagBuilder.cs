@@ -77,16 +77,40 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return string.Empty;
             }
 
+            // If there are no invalid characters in the string, then we don't have to create the buffer.
+            var firstIndexOfInvalidCharacter = 1;
+            for (; firstIndexOfInvalidCharacter < name.Length; firstIndexOfInvalidCharacter++)
+            {
+                if (!Html401IdUtil.IsValidIdCharacter(name[firstIndexOfInvalidCharacter]))
+                {
+                    break;
+                }
+            }
+
             var firstChar = name[0];
-            if (!Html401IdUtil.IsAsciiLetter(firstChar))
+            var startsWithAsciiLetter = Html401IdUtil.IsAsciiLetter(firstChar);
+            if (!startsWithAsciiLetter)
             {
                 // The first character must be a letter according to the HTML 4.01 specification.
                 firstChar = 'z';
             }
 
+            if (firstIndexOfInvalidCharacter == name.Length && startsWithAsciiLetter)
+            {
+                return name;
+            }
+
             var stringBuffer = new StringBuilder(name.Length);
             stringBuffer.Append(firstChar);
-            for (var index = 1; index < name.Length; index++)
+
+            // Characters until 'firstIndexOfInvalidCharacter' have already been checked for validity.
+            // So just copying them. This avoids running them through Html401IdUtil.IsValidIdCharacter again.
+            for (var index = 1; index < firstIndexOfInvalidCharacter; index++)
+            {
+                stringBuffer.Append(name[index]);
+            }
+
+            for (var index = firstIndexOfInvalidCharacter; index < name.Length; index++)
             {
                 var thisChar = name[index];
                 if (Html401IdUtil.IsValidIdCharacter(thisChar))

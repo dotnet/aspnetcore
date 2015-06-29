@@ -116,5 +116,18 @@ namespace Microsoft.AspNet.Mvc.Core.Rendering
             // Assert
             Assert.Equal("HtmlEncode[[TestValue]]", tagBuilder.InnerHtml);
         }
+
+        [Theory]
+        [InlineData("HelloWorld", "HelloWorld")]
+        [InlineData("¡HelloWorld", "zHelloWorld")]
+        [InlineData("Hello¡World", "Hello-World")]
+        public void CreateSanitizedIdCreatesId(string input, string output)
+        {
+            // Arrange
+            var result = TagBuilder.CreateSanitizedId(input, "-");
+
+            // Assert
+            Assert.Equal(output, result);
+        }
     }
 }
