@@ -11,8 +11,7 @@ using Microsoft.AspNet.Diagnostics.Entity.Views;
 using Microsoft.AspNet.Http;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
-using Microsoft.Data.Entity.Relational;
-using Microsoft.Data.Entity.Relational.Migrations;
+using Microsoft.Data.Entity.Migrations;
 using Microsoft.Data.Entity.Storage;
 using Microsoft.Framework.Logging;
 

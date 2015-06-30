@@ -3,7 +3,7 @@
 
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
-using Microsoft.Data.Entity.Relational.Migrations;
+using Microsoft.Data.Entity.Migrations;
 using System;
 using System.Linq;
 using System.Reflection;
