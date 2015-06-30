@@ -9,7 +9,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Relational;
+using Microsoft.Data.Entity.Storage;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
