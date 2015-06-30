@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.OptionsModel;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc
@@ -20,8 +21,8 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="value">The value to format as JSON text.</param>
         public JsonViewComponentResult(object value)
-            : this(value, serializerSettings: SerializerSettingsProvider.CreateSerializerSettings())
         {
+            Value = value;
         }
 
         /// <summary>
@@ -47,10 +48,22 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="context">The <see cref="ViewComponentContext"/>.</param>
         public void Execute([NotNull] ViewComponentContext context)
         {
+            var serializerSettings = _serializerSettings;
+            if (serializerSettings == null)
+            {
+                serializerSettings = context
+                    .ViewContext
+                    .HttpContext
+                    .RequestServices
+                    .GetRequiredService<IOptions<MvcJsonOptions>>()
+                    .Options
+                    .SerializerSettings;
+            }
+
             using (var jsonWriter = new JsonTextWriter(context.Writer))
             {
                 jsonWriter.CloseOutput = false;
-                var jsonSerializer = JsonSerializer.Create(_serializerSettings);
+                var jsonSerializer = JsonSerializer.Create(serializerSettings);
                 jsonSerializer.Serialize(jsonWriter, Value);
             }
         }

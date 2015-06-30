@@ -1,12 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using Xunit;
@@ -109,15 +111,18 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal("application/json; charset=utf-8", context.Response.ContentType);
         }
 
-        private HttpContext GetHttpContext()
+        private static HttpContext GetHttpContext()
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Response.Body = new MemoryStream();
+            var services = new ServiceCollection();
+            services.AddOptions();
+            httpContext.RequestServices = services.BuildServiceProvider();
 
             return httpContext;
         }
 
-        private byte[] GetWrittenBytes(HttpContext context)
+        private static byte[] GetWrittenBytes(HttpContext context)
         {
             context.Response.Body.Seek(0, SeekOrigin.Begin);
             return Assert.IsType<MemoryStream>(context.Response.Body).ToArray();

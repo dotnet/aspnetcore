@@ -3,11 +3,13 @@
 
 using System.IO;
 using System.Text;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.DependencyInjection;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
@@ -17,7 +19,7 @@ namespace Microsoft.AspNet.Mvc
     public class JsonViewComponentResultTest
     {
         [Fact]
-        public void Execute_UsesFormatter_WithSpecifiedSerializerSettings()
+        public void Execute_UsesSerializer_WithSpecifiedSerializerSettings()
         {
             // Arrange
             var view = Mock.Of<IView>();
@@ -37,9 +39,27 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal("{\r\n  \"foo\": \"abcd\"\r\n}", Encoding.UTF8.GetString(buffer.ToArray()));
         }
 
+        [Fact]
+        public void Execute_UsesSerializerSettingsFromOptions_IfNotProvided()
+        {
+            // Arrange
+            var view = Mock.Of<IView>();
+            var buffer = new MemoryStream();
+            var viewComponentContext = GetViewComponentContext(view, buffer);
+
+            var result = new JsonViewComponentResult(new { foo = "abcd" });
+            viewComponentContext.ViewContext.HttpContext.Response.Body = buffer;
+
+            // Act
+            result.Execute(viewComponentContext);
+
+            // Assert
+            Assert.Equal("{\"foo\":\"abcd\"}", Encoding.UTF8.GetString(buffer.ToArray()));
+        }
+
         private static ViewComponentContext GetViewComponentContext(IView view, Stream stream)
         {
-            var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+            var actionContext = new ActionContext(GetHttpContext(), new RouteData(), new ActionDescriptor());
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
             var viewContext = new ViewContext(
                 actionContext,
@@ -58,6 +78,16 @@ namespace Microsoft.AspNet.Mvc
 
             var viewComponentContext = new ViewComponentContext(viewComponentDescriptor, new object[0], viewContext, writer);
             return viewComponentContext;
+        }
+
+        private static HttpContext GetHttpContext()
+        {
+            var httpContext = new DefaultHttpContext();
+            var services = new ServiceCollection();
+            services.AddOptions();
+            httpContext.RequestServices = services.BuildServiceProvider();
+
+            return httpContext;
         }
     }
 }

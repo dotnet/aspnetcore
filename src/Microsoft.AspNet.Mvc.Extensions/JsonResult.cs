@@ -3,8 +3,9 @@
 
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 
@@ -27,8 +28,8 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="value">The value to format as JSON.</param>
         public JsonResult(object value)
-            : this(value, serializerSettings: SerializerSettingsProvider.CreateSerializerSettings())
         {
+            Value = value;
         }
 
         /// <summary>
@@ -86,12 +87,23 @@ namespace Microsoft.AspNet.Mvc
                 response.StatusCode = StatusCode.Value;
             }
 
+            var serializerSettings = _serializerSettings;
+            if (serializerSettings == null)
+            {
+                serializerSettings = context
+                    .HttpContext
+                    .RequestServices
+                    .GetRequiredService<IOptions<MvcJsonOptions>>()
+                    .Options
+                    .SerializerSettings;
+            }
+
             using (var writer = new HttpResponseStreamWriter(response.Body, contentTypeHeader.Encoding))
             {
                 using (var jsonWriter = new JsonTextWriter(writer))
                 {
                     jsonWriter.CloseOutput = false;
-                    var jsonSerializer = JsonSerializer.Create(_serializerSettings);
+                    var jsonSerializer = JsonSerializer.Create(serializerSettings);
                     jsonSerializer.Serialize(jsonWriter, Value);
                 }
             }
