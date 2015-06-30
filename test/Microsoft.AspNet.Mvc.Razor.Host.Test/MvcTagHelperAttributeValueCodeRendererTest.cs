@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 propertyName: "SomeProperty",
                 typeName: propertyType,
                 isIndexer: false,
-                usageDescriptor: null);
+                designTimeDescriptor: null);
             var writer = new CSharpCodeWriter();
             var generatorContext = new ChunkGeneratorContext(
                 host: null,
