@@ -5,6 +5,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc;
+using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
 using MusicStore.Controllers;
 using MusicStore.Models;
@@ -22,8 +23,7 @@ namespace MusicStore.Components
 
             services.AddEntityFramework()
                       .AddInMemoryDatabase()
-                      .AddDbContext<MusicStoreContext>(options =>
-                            options.UseInMemoryDatabase());
+                      .AddDbContext<MusicStoreContext>(options => options.UseInMemoryDatabase());
 
             _serviceProvider = services.BuildServiceProvider();
         }

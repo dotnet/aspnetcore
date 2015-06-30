@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
+using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
 using MusicStore.Models;
 using Xunit;
@@ -18,8 +19,7 @@ namespace MusicStore.Components
             var services = new ServiceCollection();
             services.AddEntityFramework()
                       .AddInMemoryDatabase()
-                      .AddDbContext<MusicStoreContext>(options =>
-                            options.UseInMemoryDatabase()););
+                      .AddDbContext<MusicStoreContext>(options => options.UseInMemoryDatabase());
 
             _serviceProvider = services.BuildServiceProvider();
         }

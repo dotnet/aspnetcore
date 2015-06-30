@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Antiforgery;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
 using MusicStore.Models;
@@ -14,7 +15,7 @@ namespace MusicStore.Controllers
         public MusicStoreContext DbContext { get; set; }
 
         [FromServices]
-        public AntiForgery AntiForgery { get; set; }
+        public IAntiforgery Antiforgery { get; set; }
 
         //
         // GET: /ShoppingCart/
@@ -73,7 +74,7 @@ namespace MusicStore.Controllers
                 }
             }
 
-            AntiForgery.Validate(Context, new AntiForgeryTokenSet(formToken, cookieToken));
+            Antiforgery.ValidateTokens(Context, new AntiforgeryTokenSet(formToken, cookieToken));
 
             // Retrieve the current user's shopping cart
             var cart = ShoppingCart.GetCart(DbContext, Context);

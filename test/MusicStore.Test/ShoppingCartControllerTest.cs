@@ -3,16 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Antiforgery;
+using Microsoft.Data.Entity;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Session;
-using Microsoft.Framework.Caching.Distributed;
-using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Logging.Testing;
 using MusicStore.Models;
 using MusicStore.ViewModels;
 using Xunit;
@@ -29,8 +26,7 @@ namespace MusicStore.Controllers
 
             services.AddEntityFramework()
                       .AddInMemoryDatabase()
-                      .AddDbContext<MusicStoreContext>(options =>
-                            options.UseInMemoryDatabase()););
+                      .AddDbContext<MusicStoreContext>(options => options.UseInMemoryDatabase());
 
             services.AddMvc();
 
@@ -188,8 +184,8 @@ namespace MusicStore.Controllers
 
             // AntiForgery initialization
             serviceProviderFeature.RequestServices = _serviceProvider;
-            var antiForgery = serviceProviderFeature.RequestServices.GetRequiredService<AntiForgery>();
-            var tokens = antiForgery.GetTokens(httpContext, "testToken");
+            var antiForgery = serviceProviderFeature.RequestServices.GetRequiredService<IAntiforgery>();
+            var tokens = antiForgery.GetTokens(httpContext);
 
             // Header initialization for AntiForgery
             var headers = new KeyValuePair<string, string[]>(
@@ -201,7 +197,7 @@ namespace MusicStore.Controllers
             var controller = new ShoppingCartController()
             {
                 DbContext = dbContext,
-                AntiForgery = antiForgery,
+                Antiforgery = antiForgery,
             };
             controller.ActionContext.HttpContext = httpContext;
 

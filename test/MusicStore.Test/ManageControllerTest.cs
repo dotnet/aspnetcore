@@ -9,6 +9,7 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Mvc;
+using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
 using MusicStore.Models;
 using Xunit;
@@ -24,8 +25,7 @@ namespace MusicStore.Controllers
             var services = new ServiceCollection();
             services.AddEntityFramework()
                     .AddInMemoryDatabase()
-                    .AddDbContext<MusicStoreContext>(options =>
-                            options.UseInMemoryDatabase()););
+                    .AddDbContext<MusicStoreContext>(options => options.UseInMemoryDatabase());
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                     .AddEntityFrameworkStores<MusicStoreContext>();
