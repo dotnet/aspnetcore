@@ -12,7 +12,7 @@ namespace E2ETests
     // Uses ports ranging 5040 - 5049.
     public class OpenIdConnectTests
     {
-        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
+        [ConditionalTheory(Skip = "Temporarily skipped the test to fix potential product issue"), Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5040/")]
         // https://github.com/aspnet/Security/issues/223
