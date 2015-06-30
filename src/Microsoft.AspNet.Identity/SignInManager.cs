@@ -398,8 +398,8 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task<ExternalLoginInfo> GetExternalLoginInfoAsync(string expectedXsrf = null)
         {
             var auth = new AuthenticateContext(IdentityOptions.ExternalCookieAuthenticationScheme);
-            await Context.Authentication.AuthenticateAsync(IdentityOptions.ExternalCookieAuthenticationScheme);
-            if (auth == null || auth.Principal == null || auth.Properties == null || !auth.Properties.ContainsKey(LoginProviderKey))
+            await Context.Authentication.AuthenticateAsync(auth);
+            if (auth.Principal == null || auth.Properties == null || !auth.Properties.ContainsKey(LoginProviderKey))
             {
                 return null;
             }
