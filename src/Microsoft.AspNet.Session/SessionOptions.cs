@@ -5,6 +5,9 @@ using System;
 
 namespace Microsoft.AspNet.Session
 {
+    /// <summary>
+    /// Represents the session state options for the application.
+    /// </summary>
     public class SessionOptions
     {
         /// <summary>
