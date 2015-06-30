@@ -2,7 +2,7 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_DNVM_BUILDNUMBER="beta6-10394"
+_DNVM_BUILDNUMBER="beta6-10395"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
 _DNVM_RUNTIME_PACKAGE_NAME="dnx"
 _DNVM_RUNTIME_FRIENDLY_NAME=".NET Execution Environment"
@@ -14,7 +14,6 @@ _DNVM_VERSION_MANAGER_NAME=".NET Version Manager"
 _DNVM_DEFAULT_FEED="https://www.nuget.org/api/v2"
 _DNVM_DEFAULT_UNSTABLE_FEED="https://www.myget.org/F/aspnetvnext/api/v2"
 _DNVM_UPDATE_LOCATION="https://raw.githubusercontent.com/aspnet/Home/dev/dnvm.sh"
-_DNVM_HOME_VAR_NAME="DNX_HOME"
 
 if [ "$NO_COLOR" != "1" ]; then
     # ANSI Colors
@@ -47,6 +46,11 @@ if [ -z "$DNX_USER_HOME" ]; then
     eval DNX_USER_HOME="~/$_DNVM_RUNTIME_FOLDER_NAME"
 fi
 
+if [ -z "$DNX_HOME" ]; then
+    # Set to the user home value
+    DNX_HOME="$DNX_USER_HOME"
+fi
+
 _DNVM_USER_PACKAGES="$DNX_USER_HOME/runtimes"
 _DNVM_ALIAS_DIR="$DNX_USER_HOME/alias"
 _DNVM_DNVM_DIR="$DNX_USER_HOME/dnvm"
@@ -75,7 +79,7 @@ __dnvm_find_latest() {
         printf "%b\n" "${Red}$_DNVM_COMMAND_NAME needs curl to proceed. ${RCol}" >&2;
         return 1
     fi
-    
+
     if [[ $platform == "mono" ]]; then
         #dnx-mono
         local packageId="$_DNVM_RUNTIME_PACKAGE_NAME-$platform"
@@ -161,7 +165,7 @@ __dnvm_download() {
        printf "%b\n" "${Gre}$runtimeFullName already installed. ${RCol}"
         return 0
     fi
-    
+
     if ! __dnvm_has "curl"; then
        printf "%b\n" "${Red}$_DNVM_COMMAND_NAME needs curl to proceed. ${RCol}" >&2;
         return 1
@@ -273,15 +277,15 @@ __dnvm_description() {
    printf "%b\n" "${Yel}Current feed settings:${RCol}"
    printf "%b\n" "${Cya}Default Stable:${Yel} $_DNVM_DEFAULT_FEED"
    printf "%b\n" "${Cya}Default Unstable:${Yel} $_DNVM_DEFAULT_UNSTABLE_FEED"
-   
+
    local dnxStableOverride="<none>"
    [[ -n $DNX_FEED ]] && dnxStableOverride="$DNX_FEED"
 
    printf "%b\n" "${Cya}Current Stable Override:${Yel} $dnxStableOverride"
-   
+
    local dnxUnstableOverride="<none>"
    [[ -n $DNX_UNSTABLE_FEED ]] && dnxUnstableOverride="$DNX_UNSTABLE_FEED"
-    
+
    printf "%b\n" "${Cya}Current Unstable Override:${Yel} $dnxUnstableOverride${RCol}"
     echo ""
 
@@ -406,17 +410,17 @@ dnvm()
                 elif [[ $1 == "-arch" ]]; then
                     local arch=$2
                     shift
-                    
+
                     if [[ $arch != "x86" && $arch != "x64" ]]; then
                         printf "%b\n" "${Red}Architecture must be x86 or x64.${RCol}" 
                         return 1
                     fi
-                    
+
                     if [[ $arch == "x86" && $runtime == "coreclr" ]]; then
                         printf "%b\n" "${Red}Core CLR doesn't currently have a 32 bit build. You must use x64.${RCol}"
                         return 1
                     fi
-                    
+
                 elif [[ -n $1 ]]; then
                     [[ -n $versionOrAlias ]] && echo "Invalid option $1" && __dnvm_help && return 1
                     local versionOrAlias=$1
@@ -696,6 +700,9 @@ dnvm()
 
     return 0
 }
+
+# Add the home location's bin directory to the path
+export PATH="$DNX_HOME/bin:$PATH"
 
 # Generate the command function using the constant defined above.
 $_DNVM_COMMAND_NAME list default >/dev/null && $_DNVM_COMMAND_NAME use default >/dev/null || true
