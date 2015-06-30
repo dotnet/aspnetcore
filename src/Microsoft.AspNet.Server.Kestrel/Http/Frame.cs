@@ -260,7 +260,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             //_upgradeTask = callback(_callContext);
         }
 
-        byte[] _continueBytes = Encoding.ASCII.GetBytes("HTTP/1.1 100 Continue\r\n\r\n");
+        private static readonly ArraySegment<byte> _continueBytes = CreateAsciiByteArraySegment("HTTP/1.1 100 Continue\r\n\r\n");
+
+        private static ArraySegment<byte> CreateAsciiByteArraySegment(string text)
+        {
+            var bytes = Encoding.ASCII.GetBytes(text);
+            return new ArraySegment<byte>(bytes);
+        }
 
         public void ProduceContinue()
         {
@@ -272,7 +278,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
             {
                 SocketOutput.Write(
-                    new ArraySegment<byte>(_continueBytes, 0, _continueBytes.Length),
+                    _continueBytes,
                     (error, _) =>
                     {
                         if (error != null)
