@@ -15,17 +15,17 @@ namespace MusicStore.Mocks.Facebook
     /// </summary>
     internal class FacebookNotifications
     {
-        internal static async Task OnAuthenticated(FacebookAuthenticatedContext context)
+        internal static async Task OnAuthenticated(OAuthAuthenticatedContext context)
         {
             if (context.Principal != null)
             {
                 Helpers.ThrowIfConditionFailed(() => context.AccessToken == "ValidAccessToken", "");
-                Helpers.ThrowIfConditionFailed(() => context.Email == "AspnetvnextTest@test.com", "");
-                Helpers.ThrowIfConditionFailed(() => context.Id == "Id", "");
-                Helpers.ThrowIfConditionFailed(() => context.Link == "https://www.facebook.com/myLink", "");
-                Helpers.ThrowIfConditionFailed(() => context.Name == "AspnetvnextTest AspnetvnextTest", "");
-                Helpers.ThrowIfConditionFailed(() => context.UserName == "AspnetvnextTest.AspnetvnextTest.7", "");
-                Helpers.ThrowIfConditionFailed(() => context.User.SelectToken("id").ToString() == context.Id, "");
+                Helpers.ThrowIfConditionFailed(() => FacebookAuthenticationHelper.GetEmail(context.User) == "AspnetvnextTest@test.com", "");
+                Helpers.ThrowIfConditionFailed(() => FacebookAuthenticationHelper.GetId(context.User) == "Id", "");
+                Helpers.ThrowIfConditionFailed(() => FacebookAuthenticationHelper.GetLink(context.User) == "https://www.facebook.com/myLink", "");
+                Helpers.ThrowIfConditionFailed(() => FacebookAuthenticationHelper.GetName(context.User) == "AspnetvnextTest AspnetvnextTest", "");
+                Helpers.ThrowIfConditionFailed(() => FacebookAuthenticationHelper.GetUserName(context.User) == "AspnetvnextTest.AspnetvnextTest.7", "");
+                Helpers.ThrowIfConditionFailed(() => context.User.SelectToken("id").ToString() == FacebookAuthenticationHelper.GetId(context.User), "");
                 Helpers.ThrowIfConditionFailed(() => context.ExpiresIn.Value == TimeSpan.FromSeconds(100), "");
                 Helpers.ThrowIfConditionFailed(() => context.AccessToken == "ValidAccessToken", "");
                 context.Principal.Identities.First().AddClaim(new Claim("ManageStore", "false"));

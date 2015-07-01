@@ -15,19 +15,19 @@ namespace MusicStore.Mocks.MicrosoftAccount
     /// </summary>
     internal class MicrosoftAccountNotifications
     {
-        internal static async Task OnAuthenticated(MicrosoftAccountAuthenticatedContext context)
+        internal static async Task OnAuthenticated(OAuthAuthenticatedContext context)
         {
             if (context.Principal != null)
             {
                 Helpers.ThrowIfConditionFailed(() => context.AccessToken == "ValidAccessToken", "Access token is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.RefreshToken == "ValidRefreshToken", "Refresh token is not valid");
-                Helpers.ThrowIfConditionFailed(() => context.FirstName == "AspnetvnextTest", "Email is not valid");
-                Helpers.ThrowIfConditionFailed(() => context.LastName == "AspnetvnextTest", "Email is not valid");
-                Helpers.ThrowIfConditionFailed(() => context.Id == "fccf9a24999f4f4f", "Id is not valid");
-                Helpers.ThrowIfConditionFailed(() => context.Name == "AspnetvnextTest AspnetvnextTest", "Name is not valid");
+                Helpers.ThrowIfConditionFailed(() => MicrosoftAccountAuthenticationHelper.GetFirstName(context.User) == "AspnetvnextTest", "Email is not valid");
+                Helpers.ThrowIfConditionFailed(() => MicrosoftAccountAuthenticationHelper.GetLastName(context.User) == "AspnetvnextTest", "Email is not valid");
+                Helpers.ThrowIfConditionFailed(() => MicrosoftAccountAuthenticationHelper.GetId(context.User) == "fccf9a24999f4f4f", "Id is not valid");
+                Helpers.ThrowIfConditionFailed(() => MicrosoftAccountAuthenticationHelper.GetName(context.User) == "AspnetvnextTest AspnetvnextTest", "Name is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.ExpiresIn.Value == TimeSpan.FromSeconds(3600), "ExpiresIn is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.User != null, "User object is not valid");
-                Helpers.ThrowIfConditionFailed(() => context.Id == context.User.SelectToken("id").ToString(), "User id is not valid");
+                Helpers.ThrowIfConditionFailed(() => MicrosoftAccountAuthenticationHelper.GetId(context.User) == context.User.SelectToken("id").ToString(), "User id is not valid");
                 context.Principal.Identities.First().AddClaim(new Claim("ManageStore", "false"));
             }
 

@@ -3,6 +3,7 @@ using System;
 using Microsoft.AspNet.Authentication.Facebook;
 using Microsoft.AspNet.Authentication.Google;
 using Microsoft.AspNet.Authentication.MicrosoftAccount;
+using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Authentication.Twitter;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Builder;
@@ -85,7 +86,7 @@ namespace MusicStore
             {
                 options.AppId = "[AppId]";
                 options.AppSecret = "[AppSecret]";
-                options.Notifications = new FacebookAuthenticationNotifications()
+                options.Notifications = new OAuthAuthenticationNotifications()
                 {
                     OnAuthenticated = FacebookNotifications.OnAuthenticated,
                     OnReturnEndpoint = FacebookNotifications.OnReturnEndpoint,
@@ -103,7 +104,7 @@ namespace MusicStore
                 options.ClientId = "[ClientId]";
                 options.ClientSecret = "[ClientSecret]";
                 options.AccessType = "offline";
-                options.Notifications = new GoogleAuthenticationNotifications()
+                options.Notifications = new OAuthAuthenticationNotifications()
                 {
                     OnAuthenticated = GoogleNotifications.OnAuthenticated,
                     OnReturnEndpoint = GoogleNotifications.OnReturnEndpoint,

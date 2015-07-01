@@ -15,16 +15,16 @@ namespace MusicStore.Mocks.Google
     /// </summary>
     internal class GoogleNotifications
     {
-        internal static async Task OnAuthenticated(GoogleAuthenticatedContext context)
+        internal static async Task OnAuthenticated(OAuthAuthenticatedContext context)
         {
             if (context.Principal != null)
             {
                 Helpers.ThrowIfConditionFailed(() => context.AccessToken == "ValidAccessToken", "Access token is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.RefreshToken == "ValidRefreshToken", "Refresh token is not valid");
-                Helpers.ThrowIfConditionFailed(() => context.Email == "AspnetvnextTest@gmail.com", "Email is not valid");
-                Helpers.ThrowIfConditionFailed(() => context.Id == "106790274378320830963", "Id is not valid");
-                Helpers.ThrowIfConditionFailed(() => context.FamilyName == "AspnetvnextTest", "FamilyName is not valid");
-                Helpers.ThrowIfConditionFailed(() => context.Name == "AspnetvnextTest AspnetvnextTest", "Name is not valid");
+                Helpers.ThrowIfConditionFailed(() => GoogleAuthenticationHelper.GetEmail(context.User) == "AspnetvnextTest@gmail.com", "Email is not valid");
+                Helpers.ThrowIfConditionFailed(() => GoogleAuthenticationHelper.GetId(context.User) == "106790274378320830963", "Id is not valid");
+                Helpers.ThrowIfConditionFailed(() => GoogleAuthenticationHelper.GetFamilyName(context.User) == "AspnetvnextTest", "FamilyName is not valid");
+                Helpers.ThrowIfConditionFailed(() => GoogleAuthenticationHelper.GetName(context.User) == "AspnetvnextTest AspnetvnextTest", "Name is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.ExpiresIn.Value == TimeSpan.FromSeconds(1200), "ExpiresIn is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.User != null, "User object is not valid");
                 context.Principal.Identities.First().AddClaim(new Claim("ManageStore", "false"));
