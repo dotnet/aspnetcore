@@ -8,6 +8,7 @@ This file contains various queries that we use to track bugs.
  - [Chris's bugs](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+assignee%3ATratcher+milestone%3A1.0.0-beta6)
  - [Pawel's bugs](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+assignee%3Amoozzyk+milestone%3A1.0.0-beta6)
  - [Stephen's bugs](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+assignee%3Ahalter73+milestone%3A1.0.0-beta6)
+ - [Troy's bugs](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+assignee%3Atroydai+milestone%3A1.0.0-beta6)
  - [Victor's bugs](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+assignee%3Avictorhurdugaci+milestone%3A1.0.0-beta6)
  - [Kiran's bugs](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+assignee%3Akichalla+milestone%3A1.0.0-beta6)
  - [Kirthi's bugs](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+assignee%3Akirthik+milestone%3A1.0.0-beta6)
