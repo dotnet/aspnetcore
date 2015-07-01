@@ -21,6 +21,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.Http.Internal;
 using Xunit;
 using AuthenticationSchemes = Microsoft.Net.Http.Server.AuthenticationSchemes;
@@ -408,6 +409,78 @@ namespace Microsoft.AspNet.Server.WebListener
                 var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
+            }
+        }
+
+        [Theory]
+        [InlineData(AuthenticationSchemes.Kerberos)]
+        [InlineData(AuthenticationSchemes.Negotiate)]
+        [InlineData(AuthenticationSchemes.NTLM)]
+        // [InlineData(AuthenticationSchemes.Digest)]
+        [InlineData(AuthenticationSchemes.Basic)]
+        public async Task AuthTypes_Forbid_Forbidden(AuthenticationSchemes authType)
+        {
+            string address;
+            var authTypes = AuthenticationSchemes.AllowAnonymous | AuthenticationSchemes.Kerberos | AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /*AuthenticationSchemes.Digest |*/ AuthenticationSchemes.Basic;
+            using (Utilities.CreateHttpAuthServer(authTypes, out address, env =>
+            {
+                var context = new DefaultHttpContext((IFeatureCollection)env);
+                Assert.NotNull(context.User);
+                Assert.False(context.User.Identity.IsAuthenticated);
+                return context.Authentication.ForbidAsync(authType.ToString());
+            }))
+            {
+                var response = await SendRequestAsync(address);
+                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+                Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
+            }
+        }
+
+        [Theory]
+        [InlineData(AuthenticationSchemes.Kerberos)]
+        [InlineData(AuthenticationSchemes.Negotiate)]
+        [InlineData(AuthenticationSchemes.NTLM)]
+        // [InlineData(AuthenticationSchemes.Digest)] // Not implemented
+        // [InlineData(AuthenticationSchemes.Basic)] // Can't log in with UseDefaultCredentials
+        public async Task AuthTypes_ChallengeAuthenticatedAuthType_Forbidden(AuthenticationSchemes authType)
+        {
+            string address;
+            using (Utilities.CreateHttpAuthServer(authType, out address, env =>
+            {
+                var context = new DefaultHttpContext((IFeatureCollection)env);
+                Assert.NotNull(context.User);
+                Assert.True(context.User.Identity.IsAuthenticated);
+                return context.Authentication.ChallengeAsync(authType.ToString());
+            }))
+            {
+                var response = await SendRequestAsync(address, useDefaultCredentials: true);
+                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+                // for some reason Kerberos and Negotiate include a 2nd stage challenge.
+                // Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
+            }
+        }
+
+        [Theory]
+        [InlineData(AuthenticationSchemes.Kerberos)]
+        [InlineData(AuthenticationSchemes.Negotiate)]
+        [InlineData(AuthenticationSchemes.NTLM)]
+        // [InlineData(AuthenticationSchemes.Digest)] // Not implemented
+        // [InlineData(AuthenticationSchemes.Basic)] // Can't log in with UseDefaultCredentials
+        public async Task AuthTypes_UnathorizedAuthenticatedAuthType_Unauthorized(AuthenticationSchemes authType)
+        {
+            string address;
+            using (Utilities.CreateHttpAuthServer(authType, out address, env =>
+            {
+                var context = new DefaultHttpContext((IFeatureCollection)env);
+                Assert.NotNull(context.User);
+                Assert.True(context.User.Identity.IsAuthenticated);
+                return context.Authentication.ChallengeAsync(authType.ToString(), null, ChallengeBehavior.Unauthorized);
+            }))
+            {
+                var response = await SendRequestAsync(address, useDefaultCredentials: true);
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                Assert.Equal(1, response.Headers.WwwAuthenticate.Count);
+                Assert.Equal(authType.ToString(), response.Headers.WwwAuthenticate.First().Scheme);
             }
         }
 

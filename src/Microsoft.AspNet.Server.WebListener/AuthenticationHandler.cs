@@ -45,8 +45,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
         public Task AuthenticateAsync(AuthenticateContext context)
         {
-            var user = _requestContext.User;
-            var identity = user == null ? null : (ClaimsIdentity)user.Identity;
+            var identity = (ClaimsIdentity)_requestContext.User?.Identity;
 
             foreach (var authType in ListEnabledAuthSchemes())
             {
@@ -56,7 +55,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     if (identity != null && identity.IsAuthenticated
                         && string.Equals(authScheme, identity.AuthenticationType, StringComparison.Ordinal))
                     {
-                        context.Authenticated(new ClaimsPrincipal(user.Identity), properties: null, description: GetDescription(authScheme));
+                        context.Authenticated(new ClaimsPrincipal(identity), properties: null, description: GetDescription(authScheme));
                     }
                     else
                     {
@@ -73,12 +72,38 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 var authScheme = scheme.ToString();
                 // Not including any auth types means it's a blanket challenge for any auth type.
-                if (context.AuthenticationScheme == string.Empty ||
+                if (string.IsNullOrEmpty(context.AuthenticationScheme) ||
                     string.Equals(context.AuthenticationScheme, authScheme, StringComparison.Ordinal))
                 {
-                    _requestContext.Response.StatusCode = 401;
-                    _customChallenges |= scheme;
-                    context.Accept();
+                    switch (context.Behavior)
+                    {
+                        case ChallengeBehavior.Forbidden:
+                            _requestContext.Response.StatusCode = 403;
+                            context.Accept();
+                            break;
+                        case ChallengeBehavior.Unauthorized:
+                            _requestContext.Response.StatusCode = 401;
+                            _customChallenges |= scheme;
+                            context.Accept();
+                            break;
+                        case ChallengeBehavior.Automatic:
+                            var identity = (ClaimsIdentity)_requestContext.User?.Identity;
+                            if (identity != null && identity.IsAuthenticated
+                                && string.Equals(identity.AuthenticationType, context.AuthenticationScheme, StringComparison.Ordinal))
+                            {
+                                _requestContext.Response.StatusCode = 403;
+                                context.Accept();
+                            }
+                            else
+                            {
+                                _requestContext.Response.StatusCode = 401;
+                                _customChallenges |= scheme;
+                                context.Accept();
+                            }
+                            break;
+                        default:
+                            throw new NotSupportedException(context.Behavior.ToString());
+                    }
                 }
             }
             // A challenge was issued, it overrides any pre-set auth types.
@@ -97,13 +122,13 @@ namespace Microsoft.AspNet.Server.WebListener
 
         public Task SignInAsync(SignInContext context)
         {
-            // Not supported
+            // Not supported. AuthenticationManager will throw if !Accepted.
             return Task.FromResult(0);
         }
 
         public Task SignOutAsync(SignOutContext context)
         {
-            // Not supported
+            // Not supported. AuthenticationManager will throw if !Accepted.
             return Task.FromResult(0);
         }
 
