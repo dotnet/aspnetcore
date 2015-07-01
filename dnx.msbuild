@@ -415,9 +415,16 @@
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\PackageFeed.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\PackageUtilities.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Shims\ConsoleColor.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\SourceControl\SourceBuilder.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Reports.cs;
                                     $(PoliCheckPath)**\Microsoft.Framework.PackageManager.dll">
                 <term>Red</term>
                 <Justification>Color constant name</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\SourceControl\GitSourceControlProvider.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\SourceControl\SourceControlProviderFactory.cs">
+                <term>git</term>
+                <Justification>Refers to the source control product</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.Runtime\DependencyManagement\ProjectReferenceDependencyProvider.cs">
                 <term>sucks</term>
