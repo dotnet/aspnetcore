@@ -1,13 +1,9 @@
 ﻿#if TESTING
 using System;
-using Microsoft.AspNet.Authentication.Facebook;
-using Microsoft.AspNet.Authentication.Google;
-using Microsoft.AspNet.Authentication.MicrosoftAccount;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Authentication.Twitter;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity.EntityFramework;
@@ -136,7 +132,7 @@ namespace MusicStore
                 options.Caption = "MicrosoftAccount - Requires project changes";
                 options.ClientId = "[ClientId]";
                 options.ClientSecret = "[ClientSecret]";
-                options.Notifications = new MicrosoftAccountAuthenticationNotifications()
+                options.Notifications = new OAuthAuthenticationNotifications()
                 {
                     OnAuthenticated = MicrosoftAccountNotifications.OnAuthenticated,
                     OnReturnEndpoint = MicrosoftAccountNotifications.OnReturnEndpoint,
