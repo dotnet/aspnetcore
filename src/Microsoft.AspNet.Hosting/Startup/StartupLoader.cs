@@ -105,8 +105,23 @@ namespace Microsoft.AspNet.Hosting.Startup
         {
             var methodNameWithEnv = string.Format(CultureInfo.InvariantCulture, methodName, environmentName);
             var methodNameWithNoEnv = string.Format(CultureInfo.InvariantCulture, methodName, "");
-            var methodInfo = startupType.GetMethod(methodNameWithEnv, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)
-                ?? startupType.GetMethod(methodNameWithNoEnv, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+
+            var methods = startupType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+            var selectedMethods = methods.Where(method => method.Name.Equals(methodNameWithEnv)).ToList();
+            if (selectedMethods.Count > 1)
+            {
+                throw new InvalidOperationException(string.Format("Having multiple overloads of method '{0}' is not supported.", methodNameWithEnv));
+            }
+            if (selectedMethods.Count == 0)
+            {
+                selectedMethods = methods.Where(method => method.Name.Equals(methodNameWithNoEnv)).ToList();
+                if (selectedMethods.Count > 1)
+                {
+                    throw new InvalidOperationException(string.Format("Having multiple overloads of method '{0}' is not supported.", methodNameWithNoEnv));
+                }
+            }
+
+            var methodInfo = selectedMethods.FirstOrDefault();
             if (methodInfo == null)
             {
                 if (required)

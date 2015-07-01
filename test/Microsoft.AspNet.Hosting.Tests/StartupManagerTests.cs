@@ -84,6 +84,38 @@ namespace Microsoft.AspNet.Hosting.Tests
         }
 
         [Fact]
+        public void StartupWithTwoConfiguresThrows()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddInstance<IFakeStartupCallback>(this);
+            var services = serviceCollection.BuildServiceProvider();
+
+            var diagnosticMessages = new List<string>();
+            var hostingEnv = new HostingEnvironment { EnvironmentName = "TwoConfigures" };
+            var loader = new StartupLoader(services, hostingEnv);
+            var type = loader.FindStartupType("Microsoft.AspNet.Hosting.Tests", diagnosticMessages);
+
+            var ex = Assert.Throws<InvalidOperationException>(() => loader.LoadMethods(type, diagnosticMessages));
+            Assert.Equal("Having multiple overloads of method 'Configure' is not supported.", ex.Message);
+        }
+
+        [Fact]
+        public void StartupWithTwoConfigureServicesThrows()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddInstance<IFakeStartupCallback>(this);
+            var services = serviceCollection.BuildServiceProvider();
+
+            var diagnosticMessages = new List<string>();
+            var hostingEnv = new HostingEnvironment { EnvironmentName = "TwoConfigureServices" };
+            var loader = new StartupLoader(services, hostingEnv);
+            var type = loader.FindStartupType("Microsoft.AspNet.Hosting.Tests", diagnosticMessages);
+
+            var ex = Assert.Throws<InvalidOperationException>(() => loader.LoadMethods(type, diagnosticMessages));
+            Assert.Equal("Having multiple overloads of method 'ConfigureServices' is not supported.", ex.Message);
+        }
+
+        [Fact]
         public void StartupClassCanHandleConfigureServicesThatReturnsNull()
         {
             var serviceCollection = new ServiceCollection();
