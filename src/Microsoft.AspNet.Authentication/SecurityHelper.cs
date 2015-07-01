@@ -19,19 +19,18 @@ namespace Microsoft.AspNet.Authentication
         /// any empty unauthenticated identities from context.User
         /// </summary>
         /// <param name="identity"></param>
-        public static void AddUserPrincipal([NotNull] HttpContext context, [NotNull] ClaimsPrincipal principal)
+        public static ClaimsPrincipal MergeUserPrincipal([NotNull] ClaimsPrincipal existingPrincipal, [NotNull] ClaimsPrincipal additionalPrincipal)
         {
             var newPrincipal = new ClaimsPrincipal();
             // New principal identities go first
-            newPrincipal.AddIdentities(principal.Identities);
+            newPrincipal.AddIdentities(additionalPrincipal.Identities);
 
             // Then add any existing non empty or authenticated identities
-            var existingPrincipal = context.User;
             if (existingPrincipal != null)
             {
                 newPrincipal.AddIdentities(existingPrincipal.Identities.Where(i => i.IsAuthenticated || i.Claims.Count() > 0));
             }
-            context.User = newPrincipal;
+            return newPrincipal;
         }
     }
 }

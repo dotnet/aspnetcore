@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Authentication
             context.User.ShouldNotBe(null);
             context.User.Identity.IsAuthenticated.ShouldBe(false);
 
-            SecurityHelper.AddUserPrincipal(context, new GenericPrincipal(new GenericIdentity("Test1", "Alpha"), new string[0]));
+            context.User = SecurityHelper.MergeUserPrincipal(context.User, new GenericPrincipal(new GenericIdentity("Test1", "Alpha"), new string[0]));
 
             context.User.ShouldNotBe(null);
             context.User.Identity.AuthenticationType.ShouldBe("Alpha");
@@ -40,12 +40,12 @@ namespace Microsoft.AspNet.Authentication
             context.User.Identity.AuthenticationType.ShouldBe("Alpha");
             context.User.Identity.Name.ShouldBe("Test1");
 
-            SecurityHelper.AddUserPrincipal(context, new GenericPrincipal(new GenericIdentity("Test2", "Beta"), new string[0]));
+            context.User = SecurityHelper.MergeUserPrincipal(context.User, new GenericPrincipal(new GenericIdentity("Test2", "Beta"), new string[0]));
 
             context.User.Identity.AuthenticationType.ShouldBe("Beta");
             context.User.Identity.Name.ShouldBe("Test2");
 
-            SecurityHelper.AddUserPrincipal(context, new GenericPrincipal(new GenericIdentity("Test3", "Gamma"), new string[0]));
+            context.User = SecurityHelper.MergeUserPrincipal(context.User, new GenericPrincipal(new GenericIdentity("Test3", "Gamma"), new string[0]));
 
             context.User.Identity.AuthenticationType.ShouldBe("Gamma");
             context.User.Identity.Name.ShouldBe("Test3");
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Authentication
             newPrincipal.AddIdentity(newEmptyIdentity);
             newPrincipal.AddIdentity(identityTwo);
 
-            SecurityHelper.AddUserPrincipal(context, newPrincipal);
+            context.User = SecurityHelper.MergeUserPrincipal(context.User, newPrincipal);
 
             // Preserve newPrincipal order
             context.User.Identity.IsAuthenticated.ShouldBe(false);
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Authentication
             principal.Identities.Skip(3).First().ShouldBe(identityEmptyWithAuthType);
 
             // This merge should drop newEmptyIdentity since its empty
-            SecurityHelper.AddUserPrincipal(context, new GenericPrincipal(new GenericIdentity("Test3", "Gamma"), new string[0]));
+            context.User = SecurityHelper.MergeUserPrincipal(context.User, new GenericPrincipal(new GenericIdentity("Test3", "Gamma"), new string[0]));
 
             context.User.Identity.AuthenticationType.ShouldBe("Gamma");
             context.User.Identity.Name.ShouldBe("Test3");

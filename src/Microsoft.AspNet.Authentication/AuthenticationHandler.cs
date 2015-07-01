@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Authentication
                 var ticket = await AuthenticateOnceAsync();
                 if (ticket?.Principal != null)
                 {
-                    SecurityHelper.AddUserPrincipal(Context, ticket.Principal);
+                    Context.User = SecurityHelper.MergeUserPrincipal(Context.User, ticket.Principal);
                 }
             }
         }
