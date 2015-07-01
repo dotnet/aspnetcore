@@ -132,10 +132,6 @@ namespace Microsoft.AspNet.Diagnostics
                 Cookies = request.Cookies,
                 Headers = request.Headers
             };
-            
-            /* TODO:
-                model.Environment = context;
-            */
 
             var errorPage = new ErrorPage(model);
             return errorPage.ExecuteAsync(context);

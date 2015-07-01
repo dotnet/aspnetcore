@@ -91,22 +91,6 @@ namespace Microsoft.AspNet.Diagnostics
         }
 
         /// <summary>
-        /// Environment
-        /// </summary>
-        internal static string ErrorPageHtml_EnvironmentButton
-        {
-            get { return GetString("ErrorPageHtml_EnvironmentButton"); }
-        }
-
-        /// <summary>
-        /// Environment
-        /// </summary>
-        internal static string FormatErrorPageHtml_EnvironmentButton()
-        {
-            return GetString("ErrorPageHtml_EnvironmentButton");
-        }
-
-        /// <summary>
         /// Headers
         /// </summary>
         internal static string ErrorPageHtml_HeadersButton

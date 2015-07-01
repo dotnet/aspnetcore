@@ -133,10 +133,6 @@
     <value>Cookies</value>
     <comment>as in http request cookies</comment>
   </data>
-  <data name="ErrorPageHtml_EnvironmentButton" xml:space="preserve">
-    <value>Environment</value>
-    <comment>as in environment dictionary</comment>
-  </data>
   <data name="ErrorPageHtml_HeadersButton" xml:space="preserve">
     <value>Headers</value>
     <comment>as in http request headers</comment>
