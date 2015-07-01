@@ -22,7 +22,9 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// </summary>
         /// <param name="contractResolver">The <see cref="IContractResolver"/>.</param>
         /// <param name="logErrorAction">The <see cref="Action"/> for logging <see cref="JsonPatchError{TModel}"/>.</param>
-        public ObjectAdapter(IContractResolver contractResolver, Action<JsonPatchError<TModel>> logErrorAction)
+        public ObjectAdapter(
+            [NotNull] IContractResolver contractResolver,
+            Action<JsonPatchError<TModel>> logErrorAction)
         {
             ContractResolver = contractResolver;
             LogErrorAction = logErrorAction;
@@ -97,8 +99,8 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// because "a" does not exist.
         /// </summary>
         /// <param name="operation">The add operation.</param>
-        /// <param name="objectApplyTo">Object to apply the operation to.</param>
-        public void Add(Operation<TModel> operation, TModel objectToApplyTo)
+        /// <param name="objectToApplyTo">Object to apply the operation to.</param>
+        public void Add([NotNull] Operation<TModel> operation, [NotNull] TModel objectToApplyTo)
         {
             Add(operation.path, operation.value, objectToApplyTo, operation);
         }
@@ -107,7 +109,11 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// Add is used by various operations (eg: add, copy, ...), yet through different operations;
         /// This method allows code reuse yet reporting the correct operation on error
         /// </summary>
-        private void Add(string path, object value, TModel objectToApplyTo, Operation<TModel> operationToReport)
+        private void Add(
+            [NotNull] string path,
+            object value,
+            [NotNull] TModel objectToApplyTo,
+            [NotNull] Operation<TModel> operationToReport)
         {
             // add, in this implementation, does not just "add" properties - that's
             // technically impossible;  It can however be used to add items to arrays,
@@ -237,8 +243,8 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// location; i.e., a location cannot be moved into one of its children.
         /// </summary>
         /// <param name="operation">The move operation.</param>
-        /// <param name="objectApplyTo">Object to apply the operation to.</param>
-        public void Move(Operation<TModel> operation, TModel objectToApplyTo)
+        /// <param name="objectToApplyTo">Object to apply the operation to.</param>
+        public void Move([NotNull] Operation<TModel> operation, [NotNull] TModel objectToApplyTo)
         {
             // get value at from location
             object valueAtFromLocation = null;
@@ -322,8 +328,8 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// specified index are shifted one position to the left.
         /// </summary>
         /// <param name="operation">The remove operation.</param>
-        /// <param name="objectApplyTo">Object to apply the operation to.</param>
-        public void Remove(Operation<TModel> operation, TModel objectToApplyTo)
+        /// <param name="objectToApplyTo">Object to apply the operation to.</param>
+        public void Remove([NotNull] Operation<TModel> operation, [NotNull] TModel objectToApplyTo)
         {
             Remove(operation.path, objectToApplyTo, operation);
         }
@@ -332,7 +338,10 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// Remove is used by various operations (eg: remove, move, ...), yet through different operations;
         /// This method allows code reuse yet reporting the correct operation on error
         /// </summary>
-        private void Remove(string path, TModel objectToApplyTo, Operation<TModel> operationToReport)
+        private void Remove(
+            [NotNull] string path,
+            [NotNull] TModel objectToApplyTo,
+            [NotNull] Operation<TModel> operationToReport)
         {
             var removeFromList = false;
             var positionAsInteger = -1;
@@ -442,8 +451,8 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// for performance reasons (multiple checks of same requirements).
         /// </summary>
         /// <param name="operation">The replace operation.</param>
-        /// <param name="objectApplyTo">Object to apply the operation to.</param>
-        public void Replace(Operation<TModel> operation, TModel objectToApplyTo)
+        /// <param name="objectToApplyTo">Object to apply the operation to.</param>
+        public void Replace([NotNull] Operation<TModel> operation, [NotNull] TModel objectToApplyTo)
         {
             Remove(operation.path, objectToApplyTo, operation);
             Add(operation.path, operation.value, objectToApplyTo, operation);
@@ -470,8 +479,8 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         ///  the value specified in from for performance reasons (multiple checks of same requirements).
         /// </summary>
         /// <param name="operation">The copy operation.</param>
-        /// <param name="objectApplyTo">Object to apply the operation to.</param>
-        public void Copy(Operation<TModel> operation, TModel objectToApplyTo)
+        /// <param name="objectToApplyTo">Object to apply the operation to.</param>
+        public void Copy([NotNull] Operation<TModel> operation, [NotNull] TModel objectToApplyTo)
         {
             // get value at from location
             object valueAtFromLocation = null;
@@ -610,9 +619,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             }
         }
 
-        private JsonPatchProperty FindPropertyAndParent(
-            object targetObject,
-            string propertyPath)
+        private JsonPatchProperty FindPropertyAndParent(object targetObject, string propertyPath)
         {
             try
             {
@@ -674,7 +681,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             }
         }
 
-        private Type GetIListType([NotNull] Type type)
+        private Type GetIListType(Type type)
         {
             if (IsGenericListType(type))
             {
@@ -692,7 +699,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             return null;
         }
 
-        private bool IsGenericListType([NotNull] Type type)
+        private bool IsGenericListType(Type type)
         {
             if (type.GetTypeInfo().IsGenericType &&
                     type.GetGenericTypeDefinition() == typeof(IList<>))

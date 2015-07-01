@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Framework.Internal;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.JsonPatch.Operations
@@ -31,7 +32,7 @@ namespace Microsoft.AspNet.JsonPatch.Operations
 
         }
 
-        public OperationBase(string op, string path, string from)
+        public OperationBase([NotNull] string op, [NotNull] string path, string from)
         {
             this.op = op;
             this.path = path;
@@ -40,7 +41,7 @@ namespace Microsoft.AspNet.JsonPatch.Operations
 
         public bool ShouldSerializefrom()
         {
-            return (OperationType == Operations.OperationType.Move
+            return (OperationType == OperationType.Move
                 || OperationType == OperationType.Copy);
         }
     }

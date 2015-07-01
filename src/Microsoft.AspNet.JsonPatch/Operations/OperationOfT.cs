@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.JsonPatch.Adapters;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.JsonPatch.Operations
 {
@@ -13,19 +14,19 @@ namespace Microsoft.AspNet.JsonPatch.Operations
 
         }
 
-        public Operation(string op, string path, string from, object value)
+        public Operation([NotNull] string op, [NotNull] string path, string from, object value)
             : base(op, path, from)
         {
             this.value = value;
         }
 
-        public Operation(string op, string path, string from)
+        public Operation([NotNull] string op, [NotNull] string path, string from)
             : base(op, path, from)
         {
 
         }
 
-        public void Apply(TModel objectToApplyTo, IObjectAdapter<TModel> adapter)
+        public void Apply([NotNull] TModel objectToApplyTo, [NotNull] IObjectAdapter<TModel> adapter)
         {
             switch (OperationType)
             {
@@ -53,7 +54,7 @@ namespace Microsoft.AspNet.JsonPatch.Operations
 
         public bool ShouldSerializevalue()
         {
-            return (OperationType == Operations.OperationType.Add
+            return (OperationType == OperationType.Add
                 || OperationType == OperationType.Replace
                 || OperationType == OperationType.Test);
         }

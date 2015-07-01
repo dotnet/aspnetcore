@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.JsonPatch.Operations;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.JsonPatch.Exceptions
 {
@@ -27,14 +28,14 @@ namespace Microsoft.AspNet.JsonPatch.Exceptions
 
         }
 
-        public JsonPatchException(JsonPatchError<TModel> jsonPatchError)
+        public JsonPatchException([NotNull] JsonPatchError<TModel> jsonPatchError)
         {
             FailedOperation = jsonPatchError.Operation;
             _message = jsonPatchError.ErrorMessage;
             AffectedObject = jsonPatchError.AffectedObject;
         }
 
-        public JsonPatchException(JsonPatchError<TModel> jsonPatchError, Exception innerException)
+        public JsonPatchException([NotNull] JsonPatchError<TModel> jsonPatchError, Exception innerException)
             : this(jsonPatchError)
         {
             InnerException = innerException;

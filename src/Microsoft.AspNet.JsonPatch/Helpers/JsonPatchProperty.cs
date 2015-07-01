@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Framework.Internal;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNet.JsonPatch
@@ -13,7 +14,7 @@ namespace Microsoft.AspNet.JsonPatch
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
-        public JsonPatchProperty(JsonProperty property, object parent)
+        public JsonPatchProperty([NotNull] JsonProperty property, [NotNull] object parent)
         {
             Property = property;
             Parent = parent;
