@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             return false;
         }
 
-        public override async Task<AuthenticationTicket> AuthenticateAsync()
+        protected override async Task<AuthenticationTicket> AuthenticateAsync()
         {
             AuthenticationProperties properties = null;
             try

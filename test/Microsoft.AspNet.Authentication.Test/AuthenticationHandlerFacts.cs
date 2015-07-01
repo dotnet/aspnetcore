@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Authentication
                 Options.AuthenticationScheme = scheme;
             }
 
-            public override Task<AuthenticationTicket> AuthenticateAsync()
+            protected override Task<AuthenticationTicket> AuthenticateAsync()
             {
                 throw new NotImplementedException();
             }
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Authentication
                 Options.AutomaticAuthentication = auto;
             }
 
-            public override Task<AuthenticationTicket> AuthenticateAsync()
+            protected override Task<AuthenticationTicket> AuthenticateAsync()
             {
                 throw new NotImplementedException();
             }

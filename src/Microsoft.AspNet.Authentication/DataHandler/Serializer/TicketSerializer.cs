@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Authentication.DataHandler.Serializer
                 writer.Write(principal.Identities.Count());
                 foreach (var identity in principal.Identities)
                 {
-                    var authenticationType = string.IsNullOrWhiteSpace(identity.AuthenticationType) ? string.Empty : identity.AuthenticationType;
+                    var authenticationType = string.IsNullOrEmpty(identity.AuthenticationType) ? string.Empty : identity.AuthenticationType;
                     writer.Write(authenticationType);
                     WriteWithDefault(writer, identity.NameClaimType, DefaultValues.NameClaimType);
                     WriteWithDefault(writer, identity.RoleClaimType, DefaultValues.RoleClaimType);

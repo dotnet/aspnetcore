@@ -40,13 +40,18 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public AuthenticationProperties Properties { get; private set; }
 
         /// <summary>
+        /// If true, the cookie will be renewed
+        /// </summary>
+        public bool ShouldRenew { get; set; }
+
+        /// <summary>
         /// Called to replace the claims principal. The supplied principal will replace the value of the 
         /// Principal property, which determines the identity of the authenticated request.
         /// </summary>
         /// <param name="identity">The identity used as the replacement</param>
-        public void ReplacePrincipal(IPrincipal principal)
+        public void ReplacePrincipal(ClaimsPrincipal principal)
         {
-            Principal = new ClaimsPrincipal(principal);
+            Principal = principal;
         }
 
         /// <summary>

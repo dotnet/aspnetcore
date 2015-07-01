@@ -342,6 +342,129 @@ namespace Microsoft.AspNet.Authentication.Cookies
         }
 
         [Fact]
+        public async Task ExpiredCookieWithValidatorStillExpired()
+        {
+            var clock = new TestClock();
+            var server = CreateServer(options =>
+            {
+                options.SystemClock = clock;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                options.Notifications = new CookieAuthenticationNotifications
+                {
+                    OnValidatePrincipal = ctx =>
+                    {
+                        ctx.ShouldRenew = true;
+                        return Task.FromResult(0);
+                    }
+                };
+            },
+            context =>
+                context.Authentication.SignInAsync("Cookies",
+                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies")))));
+
+            var transaction1 = await SendAsync(server, "http://example.com/testpath");
+
+            clock.Add(TimeSpan.FromMinutes(11));
+
+            var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+            transaction2.SetCookie.ShouldBe(null);
+            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe(null);
+        }
+
+        [Fact]
+        public async Task CookieCanBeRenewedByValidator()
+        {
+            var clock = new TestClock();
+            var server = CreateServer(options =>
+            {
+                options.SystemClock = clock;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                options.SlidingExpiration = false;
+                options.Notifications = new CookieAuthenticationNotifications
+                {
+                    OnValidatePrincipal = ctx =>
+                    {
+                        ctx.ShouldRenew = true;
+                        return Task.FromResult(0);
+                    }
+                };
+            },
+            context =>
+                context.Authentication.SignInAsync("Cookies",
+                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies")))));
+
+            var transaction1 = await SendAsync(server, "http://example.com/testpath");
+
+            var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+            transaction2.SetCookie.ShouldNotBe(null);
+            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe("Alice");
+
+            clock.Add(TimeSpan.FromMinutes(5));
+
+            var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
+            transaction3.SetCookie.ShouldNotBe(null);
+            FindClaimValue(transaction3, ClaimTypes.Name).ShouldBe("Alice");
+
+            clock.Add(TimeSpan.FromMinutes(6));
+
+            var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+            transaction4.SetCookie.ShouldBe(null);
+            FindClaimValue(transaction4, ClaimTypes.Name).ShouldBe(null);
+
+            clock.Add(TimeSpan.FromMinutes(5));
+
+            var transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
+            transaction5.SetCookie.ShouldBe(null);
+            FindClaimValue(transaction5, ClaimTypes.Name).ShouldBe(null);
+        }
+
+        [Fact]
+        public async Task CookieCanBeRenewedByValidatorWithSlidingExpiry()
+        {
+            var clock = new TestClock();
+            var server = CreateServer(options =>
+            {
+                options.SystemClock = clock;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                options.Notifications = new CookieAuthenticationNotifications
+                {
+                    OnValidatePrincipal = ctx =>
+                    {
+                        ctx.ShouldRenew = true;
+                        return Task.FromResult(0);
+                    }
+                };
+            },
+            context =>
+                context.Authentication.SignInAsync("Cookies",
+                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies")))));
+
+            var transaction1 = await SendAsync(server, "http://example.com/testpath");
+
+            var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+            transaction2.SetCookie.ShouldNotBe(null);
+            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe("Alice");
+
+            clock.Add(TimeSpan.FromMinutes(5));
+
+            var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
+            transaction3.SetCookie.ShouldNotBe(null);
+            FindClaimValue(transaction3, ClaimTypes.Name).ShouldBe("Alice");
+
+            clock.Add(TimeSpan.FromMinutes(6));
+
+            var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction3.CookieNameValue);
+            transaction4.SetCookie.ShouldNotBe(null);
+            FindClaimValue(transaction4, ClaimTypes.Name).ShouldBe("Alice");
+
+            clock.Add(TimeSpan.FromMinutes(11));
+
+            var transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction4.CookieNameValue);
+            transaction5.SetCookie.ShouldBe(null);
+            FindClaimValue(transaction5, ClaimTypes.Name).ShouldBe(null);
+        }
+
+        [Fact]
         public async Task CookieExpirationCanBeOverridenInEvent()
         {
             var clock = new TestClock();
@@ -362,19 +485,18 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
 
             var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+            transaction2.SetCookie.ShouldBe(null);
+            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe("Alice");
 
             clock.Add(TimeSpan.FromMinutes(3));
 
             var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+            transaction3.SetCookie.ShouldBe(null);
+            FindClaimValue(transaction3, ClaimTypes.Name).ShouldBe("Alice");
 
             clock.Add(TimeSpan.FromMinutes(3));
 
             var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
-
-            transaction2.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe("Alice");
-            transaction3.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction3, ClaimTypes.Name).ShouldBe("Alice");
             transaction4.SetCookie.ShouldBe(null);
             FindClaimValue(transaction4, ClaimTypes.Name).ShouldBe(null);
         }
@@ -393,26 +515,25 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
 
             var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+            transaction2.SetCookie.ShouldBe(null);
+            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe("Alice");
 
             clock.Add(TimeSpan.FromMinutes(4));
 
             var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+            transaction3.SetCookie.ShouldBe(null);
+            FindClaimValue(transaction3, ClaimTypes.Name).ShouldBe("Alice");
 
             clock.Add(TimeSpan.FromMinutes(4));
 
             // transaction4 should arrive with a new SetCookie value
             var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+            transaction4.SetCookie.ShouldNotBe(null);
+            FindClaimValue(transaction4, ClaimTypes.Name).ShouldBe("Alice");
 
             clock.Add(TimeSpan.FromMinutes(4));
 
             Transaction transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction4.CookieNameValue);
-
-            transaction2.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe("Alice");
-            transaction3.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction3, ClaimTypes.Name).ShouldBe("Alice");
-            transaction4.SetCookie.ShouldNotBe(null);
-            FindClaimValue(transaction4, ClaimTypes.Name).ShouldBe("Alice");
             transaction5.SetCookie.ShouldBe(null);
             FindClaimValue(transaction5, ClaimTypes.Name).ShouldBe("Alice");
         }
@@ -427,10 +548,8 @@ namespace Microsoft.AspNet.Authentication.Cookies
             });
 
             var transaction = await SendAsync(server, "http://example.com/protected", ajaxRequest: true);
-
             transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
             var responded = transaction.Response.Headers.GetValues("X-Responded-JSON");
-
             responded.Count().ShouldBe(1);
             responded.Single().ShouldContain("\"location\"");
         }

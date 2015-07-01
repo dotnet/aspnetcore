@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
             return context.IsRequestCompleted;
         }
 
-        public override async Task<AuthenticationTicket> AuthenticateAsync()
+        protected override async Task<AuthenticationTicket> AuthenticateAsync()
         {
             AuthenticationProperties properties = null;
             try

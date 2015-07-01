@@ -52,6 +52,5 @@ namespace Microsoft.AspNet.Authentication.DataHandler.Encoder
                 readTicket.AuthenticationScheme.ShouldBe("Hello");
             }
         }
-
     }
 }
