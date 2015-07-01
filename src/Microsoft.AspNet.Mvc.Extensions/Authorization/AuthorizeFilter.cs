@@ -4,6 +4,7 @@
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Authorization;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
@@ -35,19 +36,19 @@ namespace Microsoft.AspNet.Mvc
             // Build a ClaimsPrincipal with the Policy's required authentication types
             if (Policy.ActiveAuthenticationSchemes != null && Policy.ActiveAuthenticationSchemes.Any())
             {
-                var newPrincipal = new ClaimsPrincipal();
+                ClaimsPrincipal newPrincipal = null;
                 foreach (var scheme in Policy.ActiveAuthenticationSchemes)
                 {
                     var result = await context.HttpContext.Authentication.AuthenticateAsync(scheme);
                     if (result != null)
                     {
-                        newPrincipal.AddIdentities(result.Identities);
+                        newPrincipal = SecurityHelper.MergeUserPrincipal(newPrincipal, result);
                     }
                 }
                 // If all schemes failed authentication, provide a default identity anyways
-                if (newPrincipal.Identity == null)
+                if (newPrincipal == null)
                 {
-                    newPrincipal.AddIdentity(new ClaimsIdentity());
+                    newPrincipal = new ClaimsPrincipal(new ClaimsIdentity());
                 }
                 context.HttpContext.User = newPrincipal;
             }
