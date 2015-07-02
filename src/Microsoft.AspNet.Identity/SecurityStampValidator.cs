@@ -30,7 +30,9 @@ namespace Microsoft.AspNet.Identity
             var user = await manager.ValidateSecurityStampAsync(context.Principal, userId);
             if (user != null)
             {
-                await manager.SignInAsync(user, context.Properties, authenticationMethod: null);
+                // REVIEW: note we lost login authenticaiton method
+                context.ReplacePrincipal(await manager.CreateUserPrincipalAsync(user));
+                context.ShouldRenew = true;
             }
             else
             {

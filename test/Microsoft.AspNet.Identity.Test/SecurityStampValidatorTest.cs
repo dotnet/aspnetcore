@@ -44,20 +44,22 @@ namespace Microsoft.AspNet.Identity.Test
             var httpContext = new Mock<HttpContext>();
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
+            var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationScheme);
+            id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
+            var principal = new ClaimsPrincipal(id);
+
             var properties = new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow, IsPersistent = isPersistent };
             var signInManager = new Mock<SignInManager<TestUser>>(userManager.Object,
                 contextAccessor.Object, claimsManager.Object, options.Object, null);
             signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsPrincipal>(), user.Id)).ReturnsAsync(user).Verifiable();
-            signInManager.Setup(s => s.SignInAsync(user, properties, null)).Returns(Task.FromResult(0)).Verifiable();
+            signInManager.Setup(s => s.CreateUserPrincipalAsync(user)).ReturnsAsync(principal).Verifiable();
             var services = new ServiceCollection();
             services.AddInstance(options.Object);
             services.AddInstance(signInManager.Object);
             services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<TestUser>());
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
-            var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationScheme);
-            id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
 
-            var ticket = new AuthenticationTicket(new ClaimsPrincipal(id), 
+            var ticket = new AuthenticationTicket(principal, 
                 properties, 
                 IdentityOptions.ApplicationCookieAuthenticationScheme);
             var context = new CookieValidatePrincipalContext(httpContext.Object, ticket, new CookieAuthenticationOptions());

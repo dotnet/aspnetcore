@@ -12,7 +12,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
-    <DevelopmentServerPort>5131</DevelopmentServerPort>
+    <DevelopmentServerPort>41532</DevelopmentServerPort>
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\DNX\Microsoft.DNX.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
