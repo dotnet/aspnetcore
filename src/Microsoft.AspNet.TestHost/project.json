@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "ASP.NET 5 web server for writing and running tests.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/hosting"
+    },
     "dependencies": {
         "Microsoft.AspNet.Hosting": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" }
