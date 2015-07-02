@@ -1,6 +1,10 @@
 {
     "description": "Runtime components for rendering Razor pages.",
     "version": "4.0.0-*",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/razor"
+    },
     "dependencies": {
         "Microsoft.AspNet.Razor": "4.0.0-*",
         "Microsoft.Framework.BufferEntryCollection.Sources": { "type": "build", "version": "1.0.0-*" },
