@@ -199,6 +199,18 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [Fact]
+        public async Task TwoUsersSamePasswordDifferentHash()
+        {
+            var manager = CreateManager();
+            var userA = new IdentityUser(Guid.NewGuid().ToString());
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(userA, "password"));
+            var userB = new IdentityUser(Guid.NewGuid().ToString());
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(userB, "password"));
+
+            Assert.NotEqual(userA.PasswordHash, userB.PasswordHash);
+        }
+
+        [Fact]
         public async Task AddUserToUnknownRoleFails()
         {
             var manager = CreateManager();
