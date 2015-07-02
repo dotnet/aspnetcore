@@ -4,7 +4,7 @@
     "repository": {
         "type": "git",
         "url": "git://github.com/aspnet/security"
-    },,
+    },
     "dependencies": {
         "Microsoft.AspNet.Authentication.OAuth": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" }
