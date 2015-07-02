@@ -1,5 +1,9 @@
 {
   "version": "3.0.0-*",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/identity"
+  },
   "dependencies": {
     "Microsoft.AspNet.Identity": "3.0.0-*",
     "EntityFramework.SqlServer": "7.0.0-*"
