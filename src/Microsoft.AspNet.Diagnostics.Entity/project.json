@@ -1,6 +1,10 @@
 {
     "version": "7.0.0-*",
     "description":  "ASP.NET 5 Middleware for Entity Framework error pages.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/diagnostics"
+    },
     "compilationOptions": {
         "warningsAsErrors": true
     },

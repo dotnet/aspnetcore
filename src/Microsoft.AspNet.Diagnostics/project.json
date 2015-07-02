@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "ASP.NET 5 Middleware for error handling, error pages, and diagnostics information.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/diagnostics"
+    },
     "dependencies": {
         "Microsoft.AspNet.Diagnostics.Abstractions": "1.0.0-*",
         "Microsoft.AspNet.Http.Extensions": "1.0.0-*",

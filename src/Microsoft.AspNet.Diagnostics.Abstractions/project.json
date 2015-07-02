@@ -1,6 +1,10 @@
 {
 	"version": "1.0.0-*",
 	"description": "ASP.NET 5 diagnostics middleware abstractions.",
+	"repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/diagnostics"
+    },
 	"compilationOptions": { "warningsAsErrors": true },
 	 "frameworks": {
         "dnx451": { },
