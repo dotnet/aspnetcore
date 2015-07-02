@@ -1,5 +1,9 @@
 ﻿{
     "version": "1.0.0-*",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aspnet/cors"
+    },
     "dependencies": {
         "Microsoft.AspNet.Cors.Core": "1.0.0-*",
         "Microsoft.AspNet.Http.Extensions": "1.0.0-*",

@@ -1,5 +1,9 @@
 {
     "version": "1.0.0-*",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aspnet/cors"
+    },
     "dependencies": {
          "Microsoft.Framework.Configuration.Abstractions": "1.0.0-*",
          "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
