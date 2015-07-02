@@ -67,6 +67,35 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.NotNull(retVal);
         }
 
+        [Theory]
+        [InlineData(typeof(byte))]
+        [InlineData(typeof(short))]
+        [InlineData(typeof(int))]
+        [InlineData(typeof(long))]
+        [InlineData(typeof(Guid))]
+        [InlineData(typeof(double))]
+        [InlineData(typeof(DayOfWeek))]
+        public async Task BindModel_CreatesError_WhenTypeConversionIsNull(Type destinationType)
+        {
+            // Arrange
+            var bindingContext = GetBindingContext(destinationType);
+            bindingContext.ValueProvider = new SimpleHttpValueProvider
+            {
+                { "theModelName", string.Empty }
+            };
+            var binder = new TypeConverterModelBinder();
+
+            // Act
+            var result = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.False(result.IsModelSet);
+            Assert.NotNull(result.ValidationNode);
+            var error = Assert.Single(bindingContext.ModelState["theModelName"].Errors);
+            Assert.Equal(error.ErrorMessage, "The value '' is invalid.", StringComparer.Ordinal);
+            Assert.Null(error.Exception);
+        }
+
         [Fact]
         public async Task BindModel_Error_FormatExceptionsTurnedIntoStringsInModelState()
         {
@@ -113,7 +142,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bindingContext = GetBindingContext(typeof(string));
             bindingContext.ValueProvider = new SimpleHttpValueProvider
             {
-                { "theModelName", "" }
+                { "theModelName", string.Empty }
             };
 
             var binder = new TypeConverterModelBinder();
@@ -144,7 +173,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             // Assert
             Assert.NotNull(retVal);
-            Assert.Equal(42, retVal.Model);;
+            Assert.Equal(42, retVal.Model);
             Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
         }
 
