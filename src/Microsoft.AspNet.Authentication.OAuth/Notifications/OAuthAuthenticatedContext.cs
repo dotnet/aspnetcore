@@ -52,6 +52,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
         {
             TokenResponse = tokens;
             Backchannel = backchannel;
+            User = user;
         }
 
         /// <summary>
