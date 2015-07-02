@@ -1,6 +1,10 @@
 {
   "description": "ASP.NET 5 middleware and abstractions for routing requests to application logic and for generating links.",
   "version": "1.0.0-*",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/routing"
+  },
   "compilationOptions": {
     "warningsAsErrors": "true"
   },
