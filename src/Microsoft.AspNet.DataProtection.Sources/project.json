@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "ASP.NET 5 Data Protection shared code.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/dataprotection"
+    },
     "dependencies": {
     },
     "frameworks": {

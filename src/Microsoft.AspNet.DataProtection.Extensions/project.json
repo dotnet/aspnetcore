@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "Additional APIs for ASP.NET 5 data protection.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/dataprotection"
+    },
     "dependencies": {
         "Microsoft.AspNet.DataProtection": "1.0.0-*",
         "Microsoft.AspNet.DataProtection.Sources": { "type": "build", "version": "" },
