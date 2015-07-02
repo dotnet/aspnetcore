@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "Managed web socket protocol parser.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/websockets"
+    },
     "dependencies": {
         "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" }
     },

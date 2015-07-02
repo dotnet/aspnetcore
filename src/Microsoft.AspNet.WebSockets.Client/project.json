@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "Client for communicating over web sockets.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/websockets"
+    },
     "dependencies": {
         "Microsoft.AspNet.WebSockets.Protocol": "1.0.0-*"
     },

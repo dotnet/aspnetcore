@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "ASP.NET 5 web socket middleware for use on top of opaque servers.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/websockets"
+    },
     "dependencies": {
         "Microsoft.AspNet.Http": "1.0.0-*",
         "Microsoft.AspNet.WebSockets.Protocol": "1.0.0-*"
