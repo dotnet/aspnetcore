@@ -1,6 +1,10 @@
 ﻿{
   "version": "1.0.0-*",
   "description": "ASP.NET 5 HTTP object model. HttpContext and family.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/httpabstractions"
+  },
   "dependencies": {
     "Microsoft.AspNet.Http.Features": "1.0.0-*",
     "Microsoft.Framework.ActivatorUtilities.Sources": { "type": "build", "version": "1.0.0-*" },

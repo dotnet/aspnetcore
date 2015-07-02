@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "Contains registration and configuration APIs for the core framework encoders.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/httpabstractions"
+    },
     "dependencies": {
         "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
         "Microsoft.Framework.OptionsModel": "1.0.0-*",

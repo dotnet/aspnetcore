@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "Contains core encoders for HTML, JavaScript strings, and URLs.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/httpabstractions"
+    },
     "compilationOptions": {
         "allowUnsafe": true
     },
