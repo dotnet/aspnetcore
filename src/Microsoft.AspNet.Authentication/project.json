@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "ASP.NET 5 common types used by the various authentication middleware.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/security"
+    },
     "dependencies": {
         "Microsoft.AspNet.DataProtection": "1.0.0-*",
         "Microsoft.AspNet.Http": "1.0.0-*",

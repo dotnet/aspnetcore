@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "ASP.NET 5 middleware that enables an application to receive a OAuth bearer token.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/security"
+    },
     "dependencies": {
         "Microsoft.AspNet.Authentication": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },

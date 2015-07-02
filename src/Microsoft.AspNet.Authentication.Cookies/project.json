@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "ASP.NET middleware that enables an application to use cookie based authentication, similar to ASP.NET's forms authentication.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/security"
+    },
     "dependencies": {
         "Microsoft.AspNet.Authentication": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
