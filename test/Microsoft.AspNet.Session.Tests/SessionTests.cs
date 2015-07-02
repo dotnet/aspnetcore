@@ -8,9 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Session;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Logging.Testing;
 using Microsoft.Net.Http.Headers;
@@ -289,6 +290,78 @@ namespace Microsoft.AspNet.Session
                 Assert.Contains("expired", sink.Writes[1].State.ToString());
                 Assert.Equal(LogLevel.Information, sink.Writes[0].LogLevel);
                 Assert.Equal(LogLevel.Warning, sink.Writes[1].LogLevel);
+            }
+        }
+
+        [Fact]
+        public async Task RefreshesSession_WhenSessionData_IsNotModified()
+        {
+            var clock = new TestClock();
+            using (var server = TestServer.Create(app =>
+            {
+                app.UseSession();
+                app.Run(context =>
+                {
+                    string responseData = string.Empty;
+                    if (context.Request.Path == new PathString("/AddDataToSession"))
+                    {
+                        context.Session.SetInt32("Key", 10);
+                        responseData = "added data to session";
+                    }
+                    else if (context.Request.Path == new PathString("/AccessSessionData"))
+                    {
+                        var value = context.Session.GetInt32("Key");
+                        responseData = (value == null) ? "No value found in session." : value.ToString();
+                    }
+                    else if (context.Request.Path == new PathString("/DoNotAccessSessionData"))
+                    {
+                        responseData = "did not access session data";
+                    }
+
+                    return context.Response.WriteAsync(responseData);
+                });
+            },
+            services =>
+            {
+                services.AddInstance(typeof(ILoggerFactory), new NullLoggerFactory());
+                services.AddCaching();
+                services.AddSession();
+                services.ConfigureSession(o => o.IdleTimeout = TimeSpan.FromMinutes(20));
+                services.Configure<MemoryCacheOptions>(o => o.Clock = clock);
+            }))
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync("AddDataToSession");
+                response.EnsureSuccessStatusCode();
+
+                client = server.CreateClient();
+                var cookie = SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()).First();
+                client.DefaultRequestHeaders.Add(
+                    "Cookie", new CookieHeaderValue(cookie.Name, cookie.Value).ToString());
+
+                for (var i = 0; i < 5; i++)
+                {
+                    clock.Add(TimeSpan.FromMinutes(10));
+                    await client.GetStringAsync("/DoNotAccessSessionData");
+                }
+
+                var data = await client.GetStringAsync("/AccessSessionData");
+                Assert.Equal("10", data);
+            }
+        }
+
+        private class TestClock : ISystemClock
+        {
+            public TestClock()
+            {
+                UtcNow = new DateTimeOffset(2013, 1, 1, 1, 0, 0, TimeSpan.Zero);
+            }
+
+            public DateTimeOffset UtcNow { get; private set; }
+
+            public void Add(TimeSpan timespan)
+            {
+                UtcNow = UtcNow.Add(timespan);
             }
         }
     }

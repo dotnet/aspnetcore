@@ -134,6 +134,10 @@ namespace Microsoft.AspNet.Session
                     stream.ToArray(),
                     new DistributedCacheEntryOptions().SetSlidingExpiration(_idleTimeout));
             }
+            else
+            {
+                await _cache.RefreshAsync(_sessionId);
+            }
         }
 
         // Format:
