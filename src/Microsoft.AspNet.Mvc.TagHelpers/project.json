@@ -1,6 +1,10 @@
 {
   "description": "Contains a default set of Tag Helpers for building ASP.NET MVC applications.",
   "version": "6.0.0-*",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/mvc"
+  },
   "compilationOptions": {
     "warningsAsErrors": true
   },

@@ -1,5 +1,9 @@
 {
   "version": "1.0.0-*",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/mvc"
+  },
   "dependencies": {
     "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
     "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" },

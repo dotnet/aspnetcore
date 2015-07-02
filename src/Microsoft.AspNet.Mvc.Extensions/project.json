@@ -1,6 +1,10 @@
 ﻿{
     "description": "Extensions to the core MVC runtime",
     "version": "6.0.0-*",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/mvc"
+    },
     "compilationOptions": {
         "warningsAsErrors": true
     },
