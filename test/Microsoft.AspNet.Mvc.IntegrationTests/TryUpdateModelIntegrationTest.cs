@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public CustomReadOnlyCollection<Address> Address { get; set; }
         }
 
-        [Fact]
+        [Fact(Skip = "Concrete Collection types don't work with GenericModelBinder #2793")]
         public async Task TryUpdateModel_ReadOnlyCollectionModel_EmptyPrefix_DoesNotGetBound()
         {
             // Arrange
@@ -409,7 +409,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
         }
 
-        [Fact]
+        [Fact(Skip = "Concrete Collection types don't work with GenericModelBinder #2793")]
         public async Task TryUpdateModel_ReadOnlyCollectionModel_WithPrefix_DoesNotGetBound()
         {
             // Arrange

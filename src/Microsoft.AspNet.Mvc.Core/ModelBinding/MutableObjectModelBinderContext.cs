@@ -9,6 +9,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         public ModelBindingContext ModelBindingContext { get; set; }
 
-        public IEnumerable<ModelMetadata> PropertyMetadata { get; set; }
+        public IReadOnlyList<ModelMetadata> PropertyMetadata { get; set; }
     }
 }

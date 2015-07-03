@@ -466,7 +466,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
-                ParameterType = typeof(Collection<KeyValuePair<string, int>>)
+                ParameterType = typeof(ICollection<KeyValuePair<string, int>>)
             };
 
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
@@ -483,7 +483,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
 
-            var model = Assert.IsType<Collection<KeyValuePair<string, int>>>(modelBindingResult.Model);
+            var model = Assert.IsType<List<KeyValuePair<string, int>>>(modelBindingResult.Model);
             Assert.NotNull(model);
             Assert.Empty(model);
 

@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var mutableObjectBinderContext = new MutableObjectBinderContext()
             {
                 ModelBindingContext = bindingContext,
-                PropertyMetadata = GetMetadataForProperties(bindingContext),
+                PropertyMetadata = GetMetadataForProperties(bindingContext).ToArray(),
             };
 
             if (!(await CanCreateModel(mutableObjectBinderContext)))
@@ -98,7 +98,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return true;
             }
 
-            // 2. Any of the model properties can be bound using a value provider.
+            // 2. If it is top level object and there are no properties to bind
+            if (isTopLevelObject && context.PropertyMetadata != null && context.PropertyMetadata.Count == 0)
+            {
+                return true;
+            }
+
+            // 3. Any of the model properties can be bound using a value provider.
             if (await CanValueBindAnyModelProperties(context))
             {
                 return true;
@@ -109,6 +115,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private async Task<bool> CanValueBindAnyModelProperties(MutableObjectBinderContext context)
         {
+            // If there are no properties on the model, there is nothing to bind. We are here means this is not a top 
+            // level object. So we return false.
+            if (context.PropertyMetadata == null || context.PropertyMetadata.Count == 0)
+            {
+                return false;
+            }
+
             // We want to check to see if any of the properties of the model can be bound using the value providers,
             // because that's all that MutableObjectModelBinder can handle.
             //
@@ -198,6 +211,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Simple types cannot use this binder
             if (!modelMetadata.IsComplexType)
+            {
+                return false;
+            }
+
+            if (modelMetadata.IsCollectionType)
             {
                 return false;
             }

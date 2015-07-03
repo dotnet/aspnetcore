@@ -12,5 +12,15 @@ namespace ModelBindingWebSite.Controllers
         {
             return c;
         }
+
+        public PersonWithNoProperties GetPerson(PersonWithNoProperties p)
+        {
+            return p;
+        }
+
+        public ArrayOfPersonWithNoProperties GetPeople(ArrayOfPersonWithNoProperties p)
+        {
+            return p;
+        }
     }
 }

@@ -693,6 +693,47 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Null(company.Employees);
         }
 
+        [Fact]
+        public async Task PocoGetsCreated_IfTopLevelNoProperties()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await
+                     client.GetAsync("http://localhost/Properties" +
+                     "/GetPerson");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var person = JsonConvert.DeserializeObject<PersonWithNoProperties>(
+                            await response.Content.ReadAsStringAsync());
+            Assert.NotNull(person);
+            Assert.Null(person.Name);
+        }
+
+        [Fact]
+        public async Task ArrayOfPocoGetsCreated_PoCoWithNoProperties()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await
+                     client.GetAsync("http://localhost/Properties" +
+                     "/GetPeople?people[0].Name=asdf");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var arrperson = JsonConvert.DeserializeObject<ArrayOfPersonWithNoProperties>(
+                            await response.Content.ReadAsStringAsync());
+            Assert.NotNull(arrperson);
+            Assert.NotNull(arrperson.people);
+            Assert.Equal(0, arrperson.people.Length);
+        }
+
         [Theory]
         [InlineData("http://localhost/Home/ActionWithPersonFromUrlWithPrefix/Javier/26")]
         [InlineData("http://localhost/Home/ActionWithPersonFromUrlWithoutPrefix/Javier/26")]

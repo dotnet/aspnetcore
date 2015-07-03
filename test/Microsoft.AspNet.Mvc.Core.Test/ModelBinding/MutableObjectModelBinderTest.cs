@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var mutableBinder = new TestableMutableObjectModelBinder();
             bindingContext.PropertyMetadata = mutableBinder.GetMetadataForProperties(
-                bindingContext.ModelBindingContext);
+                bindingContext.ModelBindingContext).ToArray();
 
             // Act
             var canCreate = await mutableBinder.CanCreateModel(bindingContext);
@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var mutableBinder = new TestableMutableObjectModelBinder();
             bindingContext.PropertyMetadata = mutableBinder.GetMetadataForProperties(
-                                                                bindingContext.ModelBindingContext);
+                                                                bindingContext.ModelBindingContext).ToArray();
 
             // Act
             var retModel = await mutableBinder.CanCreateModel(bindingContext);
@@ -217,6 +217,55 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal(valueAvailable, result);
         }
 
+        [Fact]
+        public async Task CanCreateModel_ReturnsFalse_IfNotIsTopLevelObjectAndModelHasNoProperties()
+        {
+            // Arrange
+            var bindingContext = new MutableObjectBinderContext
+            {
+                ModelBindingContext = new ModelBindingContext
+                {
+                    IsTopLevelObject = false,
+
+                    ModelMetadata = GetMetadataForType(typeof(PersonWithNoProperties))
+                }
+            };
+
+            var mutableBinder = new TestableMutableObjectModelBinder();
+            bindingContext.PropertyMetadata = mutableBinder.GetMetadataForProperties(
+                                                                bindingContext.ModelBindingContext).ToArray();
+
+            // Act
+            var canCreate = await mutableBinder.CanCreateModel(bindingContext);
+
+            // Assert
+            Assert.False(canCreate);
+        }
+
+        [Fact]
+        public async Task CanCreateModel_ReturnsTrue_IfIsTopLevelObjectAndModelHasNoProperties()
+        {
+            // Arrange
+            var bindingContext = new MutableObjectBinderContext
+            {
+                ModelBindingContext = new ModelBindingContext
+                {
+                    IsTopLevelObject = true,
+                    ModelMetadata = GetMetadataForType(typeof(PersonWithNoProperties))
+                },
+            };
+
+            var mutableBinder = new TestableMutableObjectModelBinder();
+            bindingContext.PropertyMetadata = mutableBinder.GetMetadataForProperties(
+                                                                bindingContext.ModelBindingContext).ToArray();
+
+            // Act
+            var retModel = await mutableBinder.CanCreateModel(bindingContext);
+
+            // Assert
+            Assert.True(retModel);
+        }
+
         [Theory]
         [InlineData(typeof(TypeWithNoBinderMetadata), false)]
         [InlineData(typeof(TypeWithNoBinderMetadata), true)]
@@ -251,7 +300,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var mutableBinder = new TestableMutableObjectModelBinder();
             bindingContext.PropertyMetadata = mutableBinder.GetMetadataForProperties(
-                                                                bindingContext.ModelBindingContext);
+                                                                bindingContext.ModelBindingContext).ToArray();
 
             // Act
             var retModel = await mutableBinder.CanCreateModel(bindingContext);
@@ -311,7 +360,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var mutableBinder = new TestableMutableObjectModelBinder();
             bindingContext.PropertyMetadata = mutableBinder.GetMetadataForProperties(
-                                                                bindingContext.ModelBindingContext);
+                                                                bindingContext.ModelBindingContext).ToArray();
 
             // Act
             var retModel = await mutableBinder.CanCreateModel(bindingContext);
@@ -354,7 +403,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var mutableBinder = new TestableMutableObjectModelBinder();
             bindingContext.PropertyMetadata = mutableBinder.GetMetadataForProperties(
-                                                                bindingContext.ModelBindingContext);
+                                                                bindingContext.ModelBindingContext).ToArray();
 
             // Act
             var retModel = await mutableBinder.CanCreateModel(bindingContext);
@@ -1751,6 +1800,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             [DefaultValue("default")]
             public string PropertyWithInitializedValueAndDefault { get; set; } = "preinitialized";
+        }
+
+        private class PersonWithNoProperties
+        {
+            public string name;
         }
 
         private class PersonWithBindExclusion
