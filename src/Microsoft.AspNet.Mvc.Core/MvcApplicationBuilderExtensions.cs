@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Builder
     /// <summary>
     /// Extension methods for <see cref="IApplicationBuilder"/> to add MVC to the request execution pipeline.
     /// </summary>
-    public static class BuilderExtensions
+    public static class MvcApplicationBuilderExtensions
     {
         /// <summary>
         /// Adds MVC to the <see cref="IApplicationBuilder"/> request execution pipeline.

@@ -8,7 +8,7 @@ using Microsoft.AspNet.Routing.Constraints;
 
 namespace Microsoft.AspNet.Builder
 {
-    public static class RouteBuilderExtensions
+    public static class WebApiCompatShimRouteBuilderExtensions
     {
         public static IRouteBuilder MapWebApiRoute(
             this IRouteBuilder routeCollectionBuilder,
