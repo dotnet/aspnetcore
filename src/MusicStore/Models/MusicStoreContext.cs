@@ -19,13 +19,8 @@ namespace MusicStore.Models
         protected override void OnModelCreating(ModelBuilder builder)
         {
             // TODO: Remove when explicit values insertion removed.
-            builder.Entity<Artist>()
-                .Property(a => a.ArtistId)
-                .StoreGeneratedPattern(StoreGeneratedPattern.None);
-
-            builder.Entity<Genre>()
-                .Property(g => g.GenreId)
-                .StoreGeneratedPattern(StoreGeneratedPattern.None);
+            builder.Entity<Artist>().Property(a => a.ArtistId).ValueGeneratedNever();
+            builder.Entity<Genre>().Property(g => g.GenreId).ValueGeneratedNever();
 
             //Deleting an album fails with this relation
             builder.Entity<Album>().Ignore(a => a.OrderDetails);
