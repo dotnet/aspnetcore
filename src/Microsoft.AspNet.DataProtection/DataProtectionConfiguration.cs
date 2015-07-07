@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.DataProtection
         /// Registrations are additive. The factory is registered as <see cref="ServiceLifetime.Singleton"/>.
         /// </remarks>
         public DataProtectionConfiguration AddKeyEscrowSink<TImplementation>()
-            where TImplementation : IKeyEscrowSink
+            where TImplementation : class, IKeyEscrowSink
         {
             Services.AddSingleton<IKeyEscrowSink, TImplementation>();
             return this;
