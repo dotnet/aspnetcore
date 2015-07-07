@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.StaticFiles
     /// </summary>
     public class FileExtensionContentTypeProvider : IContentTypeProvider
     {
-#region Extension mapping table
+        #region Extension mapping table
         /// <summary>
         /// Creates a new provider with a set of default mappings.
         /// </summary>
@@ -38,6 +38,7 @@ namespace Microsoft.AspNet.StaticFiles
                 { ".aif", "audio/x-aiff" },
                 { ".aifc", "audio/aiff" },
                 { ".aiff", "audio/aiff" },
+                { ".appcache", "text/cache-manifest" },
                 { ".application", "application/x-ms-application" },
                 { ".art", "image/x-jg" },
                 { ".asd", "application/octet-stream" },
@@ -143,6 +144,7 @@ namespace Microsoft.AspNet.StaticFiles
                 { ".jpeg", "image/jpeg" },
                 { ".jpg", "image/jpeg" },
                 { ".js", "application/javascript" },
+                { ".json", "application/json" },
                 { ".jsx", "text/jscript" },
                 { ".latex", "application/x-latex" },
                 { ".lit", "application/x-ms-reader" },
@@ -310,7 +312,8 @@ namespace Microsoft.AspNet.StaticFiles
                 { ".trm", "application/x-msterminal" },
                 { ".ts", "video/vnd.dlna.mpeg-tts" },
                 { ".tsv", "text/tab-separated-values" },
-                { ".ttf", "application/octet-stream" },
+                { ".ttc", "application/x-font-ttf" },
+                { ".ttf", "application/x-font-ttf" },
                 { ".tts", "video/vnd.dlna.mpeg-tts" },
                 { ".txt", "text/plain" },
                 { ".u32", "application/octet-stream" },
@@ -334,6 +337,7 @@ namespace Microsoft.AspNet.StaticFiles
                 { ".wcm", "application/vnd.ms-works" },
                 { ".wdb", "application/vnd.ms-works" },
                 { ".webm", "video/webm" },
+                { ".webp", "image/webp" },
                 { ".wks", "application/vnd.ms-works" },
                 { ".wm", "video/x-ms-wm" },
                 { ".wma", "audio/x-ms-wma" },
@@ -393,7 +397,7 @@ namespace Microsoft.AspNet.StaticFiles
             })
         {
         }
-#endregion
+        #endregion
 
         /// <summary>
         /// Creates a lookup engine using the provided mapping.
