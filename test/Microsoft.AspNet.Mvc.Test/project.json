@@ -3,7 +3,8 @@
     "warningsAsErrors": "true"
   },
   "dependencies": {
-    "Microsoft.AspNet.Mvc" : "6.0.0-*",
+    "Microsoft.AspNet.Mvc": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.Formatters.Xml": "6.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "commands": {

@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Xml;
+using Microsoft.AspNet.Mvc.Formatters.Xml;
 
 namespace FormatterWebSite
 {

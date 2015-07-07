@@ -233,7 +233,6 @@ namespace Microsoft.AspNet.Mvc.Core
                 var exceptionalAssebmlies = new string[]
                 {
                     "Microsoft.AspNet.Mvc.WebApiCompatShim",
-                    "Microsoft.AspNet.Mvc.Common"
                 };
 
                 var mvcAssemblies = assemblies
@@ -244,7 +243,7 @@ namespace Microsoft.AspNet.Mvc.Core
 
                 // The following assemblies are not reachable from Microsoft.AspNet.Mvc
                 mvcAssemblies.Add("Microsoft.AspNet.Mvc.TagHelpers");
-                mvcAssemblies.Add("Microsoft.AspNet.Mvc.Xml");
+                mvcAssemblies.Add("Microsoft.AspNet.Mvc.Formatters.Xml");
                 mvcAssemblies.Add("Microsoft.AspNet.PageExecutionInstrumentation.Interfaces");
 
                 return mvcAssemblies;

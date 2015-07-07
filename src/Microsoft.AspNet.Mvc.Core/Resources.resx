@@ -129,40 +129,6 @@
   <data name="ActionExecutor_UnexpectedTaskInstance" xml:space="preserve">
     <value>The method '{0}' on type '{1}' returned a Task instance even though it is not an asynchronous method.</value>
   </data>
-  <data name="ClaimUidExtractor_ClaimNotPresent" xml:space="preserve">
-    <value>A claim of type '{0}' was not present on the provided ClaimsIdentity.</value>
-  </data>
-  <data name="ReflectedActionFilterEndPoint_UnexpectedActionDescriptor" xml:space="preserve">
-    <value>The class ReflectedActionFilterEndPoint only supports ReflectedActionDescriptors.</value>
-  </data>
-  <data name="ViewComponent_AmbiguousTypeMatch" xml:space="preserve">
-    <value>The view component name '{0}' matched multiple types:{1}{2}</value>
-    <comment>{1} is the newline character</comment>
-  </data>
-  <data name="ViewComponent_AsyncMethod_ShouldReturnTask" xml:space="preserve">
-    <value>The async view component method '{0}' should be declared to return Task&lt;T&gt;.</value>
-  </data>
-  <data name="ViewComponent_MustReturnValue" xml:space="preserve">
-    <value>A view component must return a non-null value.</value>
-  </data>
-  <data name="ViewComponent_SyncMethod_ShouldReturnValue" xml:space="preserve">
-    <value>The view component method '{0}' should be declared to return a value.</value>
-  </data>
-  <data name="ViewComponent_CannotFindComponent" xml:space="preserve">
-    <value>A view component named '{0}' could not be found.</value>
-  </data>
-  <data name="ViewComponent_IViewComponentFactory_ReturnedNull" xml:space="preserve">
-    <value>An invoker could not be created for the view component '{0}'.</value>
-  </data>
-  <data name="ViewComponent_CannotFindMethod" xml:space="preserve">
-    <value>Could not find an '{0}' method matching the parameters.</value>
-  </data>
-  <data name="ViewComponent_CannotFindMethod_WithFallback" xml:space="preserve">
-    <value>Could not find an '{0}' or '{1}' method matching the parameters.</value>
-  </data>
-  <data name="ViewComponent_InvalidReturnValue" xml:space="preserve">
-    <value>View components only support returning {0}, {1} or {2}.</value>
-  </data>
   <data name="ActionContextAccessor_SetValueNotSupported" xml:space="preserve">
     <value>Replacing the action context is not supported.</value>
   </data>
@@ -187,62 +153,11 @@
   <data name="ArgumentPropertyUnexpectedType" xml:space="preserve">
     <value>Property '{0}' is of type '{1}', but this method requires a value of type '{2}'.</value>
   </data>
-  <data name="Common_PartialViewNotFound" xml:space="preserve">
-    <value>The partial view '{0}' was not found or no view engine supports the searched locations. The following locations were searched:{1}</value>
-  </data>
   <data name="Common_ValueNotValidForProperty" xml:space="preserve">
     <value>The value '{0}' is invalid.</value>
   </data>
-  <data name="Common_TriState_False" xml:space="preserve">
-    <value>False</value>
-  </data>
-  <data name="Common_TriState_NotSet" xml:space="preserve">
-    <value>Not Set</value>
-  </data>
-  <data name="Common_TriState_True" xml:space="preserve">
-    <value>True</value>
-  </data>
-  <data name="DynamicViewData_ViewDataNull" xml:space="preserve">
-    <value>ViewData value must not be null.</value>
-  </data>
-  <data name="ExpressionHelper_InvalidIndexerExpression" xml:space="preserve">
-    <value>The expression compiler was unable to evaluate the indexer expression '{0}' because it references the model parameter '{1}' which is unavailable.</value>
-  </data>
   <data name="Invalid_IncludePropertyExpression" xml:space="preserve">
     <value>The passed expression of expression node type '{0}' is invalid. Only simple member access expressions for model properties are supported.</value>
-  </data>
-  <data name="HtmlHelper_NullModelMetadata" xml:space="preserve">
-    <value>The IModelMetadataProvider was unable to provide metadata for expression '{0}'.</value>
-  </data>
-  <data name="HtmlHelper_NotContextualized" xml:space="preserve">
-    <value>Must call 'Contextualize' method before using this HtmlHelper instance.</value>
-  </data>
-  <data name="HtmlHelper_MissingSelectData" xml:space="preserve">
-    <value>There is no ViewData item of type '{0}' that has the key '{1}'.</value>
-  </data>
-  <data name="HtmlHelper_SelectExpressionNotEnumerable" xml:space="preserve">
-    <value>The parameter '{0}' must evaluate to an IEnumerable when multiple selection is allowed.</value>
-  </data>
-  <data name="HtmlHelper_TypeNotSupported_ForGetEnumSelectList" xml:space="preserve">
-    <value>The type '{0}' is not supported. Type must be an {1} that does not have an associated {2}.</value>
-  </data>
-  <data name="HtmlHelper_WrongSelectDataType" xml:space="preserve">
-    <value>The ViewData item that has the key '{0}' is of type '{1}' but must be of type '{2}'.</value>
-  </data>
-  <data name="Templates_TypeMustImplementIEnumerable" xml:space="preserve">
-    <value>The '{0}' template was used with an object of type '{1}', which does not implement '{2}'.</value>
-  </data>
-  <data name="TemplateHelpers_TemplateLimitations" xml:space="preserve">
-    <value>Templates can be used only with field access, property access, single-dimension array index, or single-parameter custom indexer expressions.</value>
-  </data>
-  <data name="TemplateHelpers_NoTemplate" xml:space="preserve">
-    <value>Unable to locate an appropriate template for type {0}.</value>
-  </data>
-  <data name="ViewData_ModelCannotBeNull" xml:space="preserve">
-    <value>The model item passed is null, but this ViewDataDictionary instance requires a non-null model item of type '{0}'.</value>
-  </data>
-  <data name="ViewData_WrongTModelType" xml:space="preserve">
-    <value>The model item passed into the ViewDataDictionary is of type '{0}', but this ViewDataDictionary instance requires a model item of type '{1}'.</value>
   </data>
   <data name="NoRoutesMatched" xml:space="preserve">
     <value>No route matches the supplied values.</value>
@@ -253,38 +168,14 @@
   <data name="AsyncResultFilter_InvalidShortCircuit" xml:space="preserve">
     <value>If an {0} cancels execution by setting the {1} property of {2} to 'true', then it cannot call the next filter by invoking {3}.</value>
   </data>
-  <data name="ViewEngine_PartialViewNotFound" xml:space="preserve">
-    <value>The partial view '{0}' was not found. The following locations were searched:{1}</value>
-  </data>
-  <data name="ViewEngine_ViewNotFound" xml:space="preserve">
-    <value>The view '{0}' was not found. The following locations were searched:{1}.</value>
-  </data>
   <data name="AuthorizeAttribute_AuthorizationServiceMustBeDefined" xml:space="preserve">
     <value>Unable to locate an implementation of IAuthorizationService.</value>
   </data>
   <data name="AuthorizeAttribute_OnAuthorizationNotImplemented" xml:space="preserve">
     <value>OnAuthorization is not implemented by this filter, use OnAuthorizationAsync instead.</value>
   </data>
-  <data name="HtmlHelper_TextAreaParameterOutOfRange" xml:space="preserve">
-    <value>The value must be greater than or equal to zero.</value>
-  </data>
   <data name="FilterFactoryAttribute_TypeMustImplementIFilter" xml:space="preserve">
     <value>The type provided to '{0}' must implement '{1}'.</value>
-  </data>
-  <data name="UnobtrusiveJavascript_ValidationParameterCannotBeEmpty" xml:space="preserve">
-    <value>Validation parameter names in unobtrusive client validation rules cannot be empty. Client rule type: {0}</value>
-  </data>
-  <data name="UnobtrusiveJavascript_ValidationParameterMustBeLegal" xml:space="preserve">
-    <value>Validation parameter names in unobtrusive client validation rules must start with a lowercase letter and consist of only lowercase letters or digits. Validation parameter name: {0}, client rule type: {1}</value>
-  </data>
-  <data name="UnobtrusiveJavascript_ValidationTypeCannotBeEmpty" xml:space="preserve">
-    <value>Validation type names in unobtrusive client validation rules cannot be empty. Client rule type: {0}</value>
-  </data>
-  <data name="UnobtrusiveJavascript_ValidationTypeMustBeLegal" xml:space="preserve">
-    <value>Validation type names in unobtrusive client validation rules must consist of only lowercase letters. Invalid name: "{0}", client rule type: {1}</value>
-  </data>
-  <data name="UnobtrusiveJavascript_ValidationTypeMustBeUnique" xml:space="preserve">
-    <value>Validation type names in unobtrusive client validation rules must be unique. The following validation type was seen more than once: {0}</value>
   </data>
   <data name="ActionResult_ActionReturnValueCannotBeNull" xml:space="preserve">
     <value>Cannot return null from an action method with a return type of '{0}'.</value>
@@ -355,15 +246,6 @@
     <value>Error {0}:{1}{2}</value>
     <comment>{0} is the error number, {1} is Environment.NewLine {2} is the  error message</comment>
   </data>
-  <data name="TemplatedViewLocationExpander_NoReplacementToken" xml:space="preserve">
-    <value>Could not find a replacement for view expansion token '{0}'.</value>
-  </data>
-  <data name="TemplatedExpander_PopulateValuesMustBeInvokedFirst" xml:space="preserve">
-    <value>{0} must be executed before {1} can be invoked.</value>
-  </data>
-  <data name="TemplatedExpander_ValueFactoryCannotReturnNull" xml:space="preserve">
-    <value>The result of value factory cannot be null.</value>
-  </data>
   <data name="AttributeRoute_MixedAttributeAndConventionallyRoutedActions_ForMethod" xml:space="preserve">
     <value>A method '{0}' must not define attribute routed actions and non attribute routed actions at the same time:{1}{2}{1}{1}Use 'AcceptVerbsAttribute' to create a single route that allows multiple HTTP verbs and defines a route, or set a route template in all attributes that constrain HTTP verbs.</value>
     <comment>{0} is the MethodInfo.FullName, {1} is Environment.NewLine, {2} is the formatted list of actions defined by that method info.</comment>
@@ -381,9 +263,6 @@
   <data name="FileResult_InvalidPath" xml:space="preserve">
     <value>Could not find file: {0}</value>
     <comment>{0} is the value for the provided path</comment>
-  </data>
-  <data name="ViewComponent_AmbiguousTypeMatch_Item" xml:space="preserve">
-    <value>Type: '{0}' - Name: '{1}'</value>
   </data>
   <data name="SerializableError_DefaultError" xml:space="preserve">
     <value>The input was not valid.</value>
@@ -405,12 +284,6 @@
   </data>
   <data name="ControllerFactory_PropertyCannotBeActivated" xml:space="preserve">
     <value>The property '{0}' on controller '{1}' cannot be activated.</value>
-  </data>
-  <data name="RemoteAttribute_NoUrlFound" xml:space="preserve">
-    <value>No URL for remote validation could be found.</value>
-  </data>
-  <data name="RemoteAttribute_RemoteValidationFailed" xml:space="preserve">
-    <value>'{0}' is invalid.</value>
   </data>
   <data name="CacheProfileNotFound" xml:space="preserve">
     <value>The '{0}' cache profile is not defined.</value>

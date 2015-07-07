@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ContentNegotiationWebSite;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Mvc.Xml;
+using Microsoft.AspNet.Mvc.Formatters.Xml;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;

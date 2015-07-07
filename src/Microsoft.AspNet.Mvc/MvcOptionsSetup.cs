@@ -23,13 +23,10 @@ namespace Microsoft.AspNet.Mvc
         public static void ConfigureMvc(MvcOptions options)
         {
             options.ModelMetadataDetailsProviders.Add(new DataAnnotationsMetadataProvider());
-            options.ModelMetadataDetailsProviders.Add(new DataMemberRequiredBindingMetadataProvider());
-
             options.ModelValidatorProviders.Add(new DataAnnotationsModelValidatorProvider());
 
-            options.ValidationExcludeFilters.Add(typeof(XObject));
             options.ValidationExcludeFilters.Add(typeof(JToken));
-            options.ValidationExcludeFilters.Add(typeFullName: "System.Xml.XmlNode");
+            
         }
     }
 }

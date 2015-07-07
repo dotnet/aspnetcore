@@ -3,7 +3,7 @@
 
 using System;
 using XmlFormattersWebSite.Models;
-using Microsoft.AspNet.Mvc.Xml;
+using Microsoft.AspNet.Mvc.Formatters.Xml;
 
 namespace XmlFormattersWebSite
 {

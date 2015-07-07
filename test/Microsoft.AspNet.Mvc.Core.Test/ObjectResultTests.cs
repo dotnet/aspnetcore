@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Xml;
+using Microsoft.AspNet.Mvc.Formatters.Xml;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.AspNet.WebUtilities;

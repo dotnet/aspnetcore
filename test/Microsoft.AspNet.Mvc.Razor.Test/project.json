@@ -1,38 +1,43 @@
 {
-  "compile": [
-    "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileProvider.cs",
-    "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileInfo.cs",
-    "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileTrigger.cs"
-  ],
-  "dependencies": {
-    "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.TestCommon": { "version": "6.0.0-*", "type": "build" },
-    "Microsoft.AspNet.Testing": "1.0.0-*",
-    "Microsoft.Framework.DependencyInjection": "1.0.0-*",
-    "Microsoft.Framework.WebEncoders.Testing": "1.0.0-*",
-    "Microsoft.Framework.Runtime": "1.0.0-*",
-    "xunit.runner.aspnet": "2.0.0-aspnet-*"
-  },
-  "commands": {
-    "test": "xunit.runner.aspnet"
-  },
-  "frameworks": {
-    "dnx451": {
-      "dependencies": {
-        "Moq": "4.2.1312.1622"
-      }
-    }
-  },
-  "exclude": [
-    "wwwroot",
-    "node_modules",
-    "bower_components"
-  ],
-  "packExclude": [
-    "node_modules",
-    "bower_components",
-    "**.kproj",
-    "**.user",
-    "**.vspscc"
-  ]
+    "compile": [
+        "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileProvider.cs",
+        "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileInfo.cs",
+        "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileTrigger.cs"
+    ],
+    "dependencies": {
+        "Microsoft.AspNet.Mvc.DataAnnotations": "6.0.0-*",
+        "Microsoft.AspNet.Mvc.Formatters.Xml": "6.0.0-*",
+        "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
+        "Microsoft.AspNet.Mvc.TestCommon": {
+            "version": "6.0.0-*",
+            "type": "build"
+        },
+        "Microsoft.AspNet.Testing": "1.0.0-*",
+        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+        "Microsoft.Framework.WebEncoders.Testing": "1.0.0-*",
+        "Microsoft.Framework.Runtime": "1.0.0-*",
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    },
+    "commands": {
+        "test": "xunit.runner.aspnet"
+    },
+    "frameworks": {
+        "dnx451": {
+            "dependencies": {
+                "Moq": "4.2.1312.1622"
+            }
+        }
+    },
+    "exclude": [
+        "wwwroot",
+        "node_modules",
+        "bower_components"
+    ],
+    "packExclude": [
+        "node_modules",
+        "bower_components",
+        "**.kproj",
+        "**.user",
+        "**.vspscc"
+    ]
 }

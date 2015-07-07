@@ -33,11 +33,14 @@ namespace Microsoft.AspNet.Mvc
             "Microsoft.AspNet.Mvc.Abstractions",
             "Microsoft.AspNet.Mvc.ApiExplorer",
             "Microsoft.AspNet.Mvc.Core",
-            "Microsoft.AspNet.Mvc.Extensions",
+            "Microsoft.AspNet.Mvc.Cors",
+            "Microsoft.AspNet.Mvc.DataAnnotations",
+            "Microsoft.AspNet.Mvc.Formatters.Json",
+            "Microsoft.AspNet.Mvc.Formatters.Xml",
             "Microsoft.AspNet.Mvc.Razor",
             "Microsoft.AspNet.Mvc.Razor.Host",
             "Microsoft.AspNet.Mvc.TagHelpers",
-            "Microsoft.AspNet.Mvc.Xml",
+            "Microsoft.AspNet.Mvc.ViewFeatures",
             "Microsoft.AspNet.PageExecutionInstrumentation.Interfaces",
         };
 

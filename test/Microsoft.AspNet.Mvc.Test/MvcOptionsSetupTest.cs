@@ -183,6 +183,7 @@ namespace Microsoft.AspNet.Mvc
             // Act
             setup1.Configure(mvcOptions);
             setup2.Configure(mvcOptions);
+            mvcOptions.AddXmlDataContractSerializerFormatter();
 
             // Assert
             Assert.Equal(8, mvcOptions.ValidationExcludeFilters.Count);
@@ -214,14 +215,14 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(formCollectionFilter.ExcludedType, typeof(Http.IFormCollection));
 
             Assert.IsType(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i]);
+            var jTokenFilter
+                = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++]);
+            Assert.Equal(jTokenFilter.ExcludedType, typeof(JToken));
+
+            Assert.IsType(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i]);
             var xObjectFilter
                 = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++]);
             Assert.Equal(xObjectFilter.ExcludedType, typeof(XObject));
-
-            Assert.IsType(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i]);
-            var jTokenFilter 
-                = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++]);
-            Assert.Equal(jTokenFilter.ExcludedType, typeof(JToken));
 
             Assert.IsType(typeof(DefaultTypeNameBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i]);
             var xmlNodeFilter = 
