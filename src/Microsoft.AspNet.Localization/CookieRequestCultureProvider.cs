@@ -17,6 +17,11 @@ namespace Microsoft.AspNet.Localization
         private static readonly char[] _cookieSeparator = new[] { '|' };
         private static readonly string _culturePrefix = "c=";
         private static readonly string _uiCulturePrefix = "uic=";
+        
+        /// <summary>
+        /// Represent the default cookie name used to track the user's preferred culture information, which is "ASPNET_CULTURE".
+        /// </summary>
+        public static readonly string DefaultCookieName = "ASPNET_CULTURE";
 
         /// <summary>
         /// The name of the cookie that contains the user's preferred culture information.
@@ -40,11 +45,6 @@ namespace Microsoft.AspNet.Localization
 
             return Task.FromResult(requestCulture);
         }
-
-        /// <summary>
-        /// The default name of the cookie used to track the user's preferred culture information.
-        /// </summary>
-        public static string DefaultCookieName { get; } = "ASPNET_CULTURE";
 
         /// <summary>
         /// Creates a string representation of a <see cref="RequestCulture"/> for placement in a cookie.
