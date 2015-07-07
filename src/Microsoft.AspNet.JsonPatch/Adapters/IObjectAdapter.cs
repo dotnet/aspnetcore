@@ -7,14 +7,13 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
 {
     /// <summary>
     /// Defines the operations that can be performed on a JSON patch document.
-    /// </summary>
-    /// <typeparam name="TModel">The type of the model.</typeparam>
-    public interface IObjectAdapter<TModel> where TModel : class
+    /// </summary>  
+    public interface IObjectAdapter    
     {
-        void Add(Operation<TModel> operation, TModel objectToApplyTo);
-        void Copy(Operation<TModel> operation, TModel objectToApplyTo);
-        void Move(Operation<TModel> operation, TModel objectToApplyTo);
-        void Remove(Operation<TModel> operation, TModel objectToApplyTo);
-        void Replace(Operation<TModel> operation, TModel objectToApplyTo);
+        void Add(Operation operation, object objectToApplyTo);
+        void Copy(Operation operation, object objectToApplyTo);
+        void Move(Operation operation, object objectToApplyTo);
+        void Remove(Operation operation, object objectToApplyTo);
+        void Replace(Operation operation, object objectToApplyTo);
     }
 }

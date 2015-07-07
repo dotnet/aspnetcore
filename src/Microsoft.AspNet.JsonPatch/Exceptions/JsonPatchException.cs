@@ -3,42 +3,36 @@
 
 using System;
 using Microsoft.AspNet.JsonPatch.Operations;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.JsonPatch.Exceptions
 {
-    public class JsonPatchException<TModel> : JsonPatchException where TModel : class
+    public class JsonPatchException : Exception 
     {
-        public Operation<TModel> FailedOperation { get; private set; }
-        public new TModel AffectedObject { get; private set; }
-
-        private string _message = string.Empty;
-
-        public override string Message
-        {
-            get
-            {
-                return _message;
-            }
-
-        }
+        public Operation FailedOperation { get; private set; }
+        public object AffectedObject { get; private set; }
+ 
 
         public JsonPatchException()
         {
 
         }
 
-        public JsonPatchException([NotNull] JsonPatchError<TModel> jsonPatchError)
+        public JsonPatchException(JsonPatchError jsonPatchError, Exception innerException)
+            : base(jsonPatchError.ErrorMessage, innerException)
         {
             FailedOperation = jsonPatchError.Operation;
-            _message = jsonPatchError.ErrorMessage;
             AffectedObject = jsonPatchError.AffectedObject;
         }
 
-        public JsonPatchException([NotNull] JsonPatchError<TModel> jsonPatchError, Exception innerException)
-            : this(jsonPatchError)
+        public JsonPatchException(JsonPatchError jsonPatchError)
+          : this(jsonPatchError, null)          
         {
-            InnerException = innerException;
+        } 
+
+        public JsonPatchException(string message, Exception innerException)
+            : base (message, innerException)
+        {
+           
         }
     }
 }

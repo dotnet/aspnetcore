@@ -15,16 +15,16 @@ using Newtonsoft.Json.Serialization;
 namespace Microsoft.AspNet.JsonPatch.Adapters
 {
     /// <inheritdoc />
-    public class ObjectAdapter<TModel> : IObjectAdapter<TModel> where TModel : class
+    public class ObjectAdapter : IObjectAdapter
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="ObjectAdapter{TModel}"/>.
+        /// Initializes a new instance of <see cref="ObjectAdapter"/>.
         /// </summary>
         /// <param name="contractResolver">The <see cref="IContractResolver"/>.</param>
-        /// <param name="logErrorAction">The <see cref="Action"/> for logging <see cref="JsonPatchError{TModel}"/>.</param>
+        /// <param name="logErrorAction">The <see cref="Action"/> for logging <see cref="JsonPatchError"/>.</param>
         public ObjectAdapter(
             [NotNull] IContractResolver contractResolver,
-            Action<JsonPatchError<TModel>> logErrorAction)
+            Action<JsonPatchError> logErrorAction)
         {
             ContractResolver = contractResolver;
             LogErrorAction = logErrorAction;
@@ -36,9 +36,9 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         public IContractResolver ContractResolver { get; }
 
         /// <summary>
-        /// Action for logging <see cref="JsonPatchError{TModel}"/>.
+        /// Action for logging <see cref="JsonPatchError"/>.
         /// </summary>
-        public Action<JsonPatchError<TModel>> LogErrorAction { get; }
+        public Action<JsonPatchError> LogErrorAction { get; }
 
         /// <summary>
         /// The "add" operation performs one of the following functions,
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// </summary>
         /// <param name="operation">The add operation.</param>
         /// <param name="objectToApplyTo">Object to apply the operation to.</param>
-        public void Add([NotNull] Operation<TModel> operation, [NotNull] TModel objectToApplyTo)
+        public void Add([NotNull] Operation operation, [NotNull] object objectToApplyTo)
         {
             Add(operation.path, operation.value, objectToApplyTo, operation);
         }
@@ -112,8 +112,8 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         private void Add(
             [NotNull] string path,
             object value,
-            [NotNull] TModel objectToApplyTo,
-            [NotNull] Operation<TModel> operationToReport)
+            [NotNull] object objectToApplyTo,
+            [NotNull] Operation operationToReport)
         {
             // add, in this implementation, does not just "add" properties - that's
             // technically impossible;  It can however be used to add items to arrays,
@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                         }
                         else
                         {
-                            LogError(new JsonPatchError<TModel>(
+                            LogError(new JsonPatchError(
                                 objectToApplyTo,
                                 operationToReport,
                                 Resources.FormatInvalidIndexForArrayProperty(operationToReport.op, path)));
@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                 }
                 else
                 {
-                    LogError(new JsonPatchError<TModel>(
+                    LogError(new JsonPatchError(
                         objectToApplyTo,
                         operationToReport,
                         Resources.FormatInvalidIndexForArrayProperty(operationToReport.op, path)));
@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// </summary>
         /// <param name="operation">The move operation.</param>
         /// <param name="objectToApplyTo">Object to apply the operation to.</param>
-        public void Move([NotNull] Operation<TModel> operation, [NotNull] TModel objectToApplyTo)
+        public void Move([NotNull] Operation operation, [NotNull] object objectToApplyTo)
         {
             // get value at from location
             object valueAtFromLocation = null;
@@ -281,7 +281,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
 
                     if (array.Count <= positionAsInteger)
                     {
-                        LogError(new JsonPatchError<TModel>(
+                        LogError(new JsonPatchError(
                             objectToApplyTo,
                             operation,
                             Resources.FormatInvalidIndexForArrayProperty(operation.op, operation.from)));
@@ -293,7 +293,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                 }
                 else
                 {
-                    LogError(new JsonPatchError<TModel>(
+                    LogError(new JsonPatchError(
                         objectToApplyTo,
                         operation,
                         Resources.FormatInvalidPathForArrayProperty(operation.op, operation.from)));
@@ -329,7 +329,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// </summary>
         /// <param name="operation">The remove operation.</param>
         /// <param name="objectToApplyTo">Object to apply the operation to.</param>
-        public void Remove([NotNull] Operation<TModel> operation, [NotNull] TModel objectToApplyTo)
+        public void Remove([NotNull] Operation operation, [NotNull] object objectToApplyTo)
         {
             Remove(operation.path, objectToApplyTo, operation);
         }
@@ -340,8 +340,8 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// </summary>
         private void Remove(
             [NotNull] string path,
-            [NotNull] TModel objectToApplyTo,
-            [NotNull] Operation<TModel> operationToReport)
+            [NotNull] object objectToApplyTo,
+            [NotNull] Operation operationToReport)
         {
             var removeFromList = false;
             var positionAsInteger = -1;
@@ -397,7 +397,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                         }
                         else
                         {
-                            LogError(new JsonPatchError<TModel>(
+                            LogError(new JsonPatchError(
                                 objectToApplyTo,
                                 operationToReport,
                                 Resources.FormatInvalidIndexForArrayProperty(operationToReport.op, path)));
@@ -408,7 +408,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                 }
                 else
                 {
-                    LogError(new JsonPatchError<TModel>(
+                    LogError(new JsonPatchError(
                         objectToApplyTo,
                         operationToReport,
                         Resources.FormatInvalidPathForArrayProperty(operationToReport.op, path)));
@@ -452,7 +452,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// </summary>
         /// <param name="operation">The replace operation.</param>
         /// <param name="objectToApplyTo">Object to apply the operation to.</param>
-        public void Replace([NotNull] Operation<TModel> operation, [NotNull] TModel objectToApplyTo)
+        public void Replace([NotNull] Operation operation, [NotNull] object objectToApplyTo)
         {
             Remove(operation.path, objectToApplyTo, operation);
             Add(operation.path, operation.value, objectToApplyTo, operation);
@@ -480,7 +480,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// </summary>
         /// <param name="operation">The copy operation.</param>
         /// <param name="objectToApplyTo">Object to apply the operation to.</param>
-        public void Copy([NotNull] Operation<TModel> operation, [NotNull] TModel objectToApplyTo)
+        public void Copy([NotNull] Operation operation, [NotNull] object objectToApplyTo)
         {
             // get value at from location
             object valueAtFromLocation = null;
@@ -518,7 +518,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
 
                     if (array.Count <= positionAsInteger)
                     {
-                        LogError(new JsonPatchError<TModel>(
+                        LogError(new JsonPatchError(
                             objectToApplyTo,
                             operation,
                             Resources.FormatInvalidIndexForArrayProperty(operation.op, operation.from)));
@@ -530,7 +530,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                 }
                 else
                 {
-                    LogError(new JsonPatchError<TModel>(
+                    LogError(new JsonPatchError(
                         objectToApplyTo,
                         operation,
                         Resources.FormatInvalidPathForArrayProperty(operation.op, operation.from)));
@@ -551,13 +551,13 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
 
         private bool CheckIfPropertyExists(
             JsonPatchProperty patchProperty,
-            TModel objectToApplyTo,
-            Operation<TModel> operation,
+            object objectToApplyTo,
+            Operation operation,
             string propertyPath)
         {
             if (patchProperty == null)
             {
-                LogError(new JsonPatchError<TModel>(
+                LogError(new JsonPatchError(
                     objectToApplyTo,
                     operation,
                     Resources.FormatPropertyDoesNotExist(propertyPath)));
@@ -567,7 +567,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
 
             if (patchProperty.Property.Ignored)
             {
-                LogError(new JsonPatchError<TModel>(
+                LogError(new JsonPatchError(
                     objectToApplyTo,
                     operation,
                     Resources.FormatCannotUpdateProperty(propertyPath)));
@@ -590,13 +590,13 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
 
         private bool CheckIfPropertyCanBeSet(
             ConversionResult result,
-            TModel objectToApplyTo,
-            Operation<TModel> operation,
+            object objectToApplyTo,
+            Operation operation,
             string path)
         {
             if (!result.CanBeConverted)
             {
-                LogError(new JsonPatchError<TModel>(
+                LogError(new JsonPatchError(
                     objectToApplyTo,
                     operation,
                     Resources.FormatInvalidValueForProperty(result.ConvertedInstance, path)));
@@ -607,7 +607,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             return true;
         }
 
-        private void LogError(JsonPatchError<TModel> jsonPatchError)
+        private void LogError(JsonPatchError jsonPatchError)
         {
             if (LogErrorAction != null)
             {
@@ -615,7 +615,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             }
             else
             {
-                throw new JsonPatchException<TModel>(jsonPatchError);
+                throw new JsonPatchException(jsonPatchError);
             }
         }
 

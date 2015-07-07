@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.JsonPatch.Operations
 
         }
 
-        public void Apply([NotNull] TModel objectToApplyTo, [NotNull] IObjectAdapter<TModel> adapter)
+        public void Apply([NotNull] TModel objectToApplyTo, [NotNull] IObjectAdapter adapter)
         {
             switch (OperationType)
             {

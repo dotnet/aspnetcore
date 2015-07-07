@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.JsonPatch.Converters
                 var targetOperations = Activator.CreateInstance(concreteList);
 
                 //Create a new reader for this jObject, and set all properties to match the original reader.
-                JsonReader jObjectReader = jObject.CreateReader();
+                var jObjectReader = jObject.CreateReader();
                 jObjectReader.Culture = reader.Culture;
                 jObjectReader.DateParseHandling = reader.DateParseHandling;
                 jObjectReader.DateTimeZoneHandling = reader.DateTimeZoneHandling;

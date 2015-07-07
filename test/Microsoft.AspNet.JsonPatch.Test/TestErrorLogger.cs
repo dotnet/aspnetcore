@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.JsonPatch.Test
     {
         public string ErrorMessage { get; set; }
 
-        public void LogErrorMessage(JsonPatchError<T> patchError)
+        public void LogErrorMessage(JsonPatchError patchError)
         {
             ErrorMessage = patchError.ErrorMessage;
         }
