@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNet.Mvc
 {
-    public interface IFilter
+    public interface IFilterMetadata
     {
     }
 }

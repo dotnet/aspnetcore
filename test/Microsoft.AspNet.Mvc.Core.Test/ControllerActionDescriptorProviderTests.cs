@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var globalFilter = new MyFilterAttribute(1);
-            var provider = GetProvider(typeof(FiltersController).GetTypeInfo(), new IFilter[]
+            var provider = GetProvider(typeof(FiltersController).GetTypeInfo(), new IFilterMetadata[]
             {
                 globalFilter,
             });
@@ -379,7 +379,7 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var filter = new MyFilterAttribute(1);
-            var provider = GetProvider(typeof(PersonController).GetTypeInfo(), new IFilter[]
+            var provider = GetProvider(typeof(PersonController).GetTypeInfo(), new IFilterMetadata[]
             {
                 filter,
             });
@@ -1447,7 +1447,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
         private ControllerActionDescriptorProvider GetProvider(
             TypeInfo controllerTypeInfo,
-            IEnumerable<IFilter> filters = null)
+            IEnumerable<IFilterMetadata> filters = null)
         {
             var options = new MockMvcOptionsAccessor();
             if (filters != null)
@@ -1614,7 +1614,7 @@ namespace Microsoft.AspNet.Mvc.Test
             }
         }
 
-        private class MyFilterAttribute : Attribute, IFilter
+        private class MyFilterAttribute : Attribute, IFilterMetadata
         {
             public MyFilterAttribute(int value)
             {

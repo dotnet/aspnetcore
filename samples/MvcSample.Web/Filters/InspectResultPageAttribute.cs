@@ -10,7 +10,7 @@ namespace MvcSample.Web.Filters
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class InspectResultPageAttribute : Attribute, IFilterFactory
     {
-        public IFilter CreateInstance(IServiceProvider serviceProvider)
+        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
             return new InspectResultPageFilter();
         }

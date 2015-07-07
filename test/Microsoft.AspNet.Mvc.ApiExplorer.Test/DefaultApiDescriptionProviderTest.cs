@@ -1377,7 +1377,7 @@ namespace Microsoft.AspNet.Mvc.Description
             }
         }
 
-        private class ContentTypeAttribute : Attribute, IFilter, IApiResponseMetadataProvider
+        private class ContentTypeAttribute : Attribute, IFilterMetadata, IApiResponseMetadataProvider
         {
             public ContentTypeAttribute(string mediaType)
             {

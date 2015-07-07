@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc
 
         public int Order { get; set; }
 
-        public IFilter CreateInstance([NotNull] IServiceProvider serviceProvider)
+        public IFilterMetadata CreateInstance([NotNull] IServiceProvider serviceProvider)
         {
             if (_factory == null)
             {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc
                 _factory = ActivatorUtilities.CreateFactory(ImplementationType, argumentTypes ?? Type.EmptyTypes);
             }
 
-            return (IFilter)_factory(serviceProvider, Arguments);
+            return (IFilterMetadata)_factory(serviceProvider, Arguments);
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc
         public void Add_UsesTypeFilterAttribute()
         {
             // Arrange
-            var collection = new Collection<IFilter>();
+            var collection = new Collection<IFilterMetadata>();
 
             // Act
             var added = collection.Add(typeof(MyFilter));
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc
         public void Add_WithOrder_SetsOrder()
         {
             // Arrange
-            var collection = new Collection<IFilter>();
+            var collection = new Collection<IFilterMetadata>();
 
             // Act
             var added = collection.Add(typeof(MyFilter), 17);
@@ -41,11 +41,11 @@ namespace Microsoft.AspNet.Mvc
         public void Add_ThrowsOnNonIFilter()
         {
             // Arrange
-            var collection = new Collection<IFilter>();
+            var collection = new Collection<IFilterMetadata>();
 
             var expectedMessage =
                 "The type 'Microsoft.AspNet.Mvc.FilterCollectionExtensionsTest+NonFilter' must derive from " +
-                "'Microsoft.AspNet.Mvc.IFilter'." + Environment.NewLine +
+                $"'{typeof(IFilterMetadata).FullName}'." + Environment.NewLine +
                 "Parameter name: filterType";
 
             // Act & Assert
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc
         public void AddService_UsesServiceFilterAttribute()
         {
             // Arrange
-            var collection = new Collection<IFilter>();
+            var collection = new Collection<IFilterMetadata>();
 
             // Act
             var added = collection.AddService(typeof(MyFilter));
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc
         public void AddService_SetsOrder()
         {
             // Arrange
-            var collection = new Collection<IFilter>();
+            var collection = new Collection<IFilterMetadata>();
 
             // Act
             var added = collection.AddService(typeof(MyFilter), 17);
@@ -87,11 +87,11 @@ namespace Microsoft.AspNet.Mvc
         public void AddService_ThrowsOnNonIFilter()
         {
             // Arrange
-            var collection = new Collection<IFilter>();
+            var collection = new Collection<IFilterMetadata>();
 
             var expectedMessage =
                 "The type 'Microsoft.AspNet.Mvc.FilterCollectionExtensionsTest+NonFilter' must derive from " +
-                "'Microsoft.AspNet.Mvc.IFilter'." + Environment.NewLine +
+                $"'{typeof(IFilterMetadata).FullName}'." + Environment.NewLine +
                 "Parameter name: filterType";
 
             // Act & Assert
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(expectedMessage, ex.Message);
         }
 
-        private class MyFilter : IFilter, IOrderedFilter
+        private class MyFilter : IFilterMetadata, IOrderedFilter
         {
             public int Order
             {

@@ -373,9 +373,9 @@ namespace Microsoft.AspNet.Mvc
 
         private static void AddActionFilters(
             ControllerActionDescriptor actionDescriptor,
-            IEnumerable<IFilter> actionFilters,
-            IEnumerable<IFilter> controllerFilters,
-            IEnumerable<IFilter> globalFilters)
+            IEnumerable<IFilterMetadata> actionFilters,
+            IEnumerable<IFilterMetadata> controllerFilters,
+            IEnumerable<IFilterMetadata> globalFilters)
         {
             actionDescriptor.FilterDescriptors =
                 actionFilters.Select(f => new FilterDescriptor(f, FilterScope.Action))

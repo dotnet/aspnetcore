@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNet.Mvc
 {
-    public interface IOrderedFilter : IFilter
+    public interface IOrderedFilter : IFilterMetadata
     {
         /// <summary>
         /// Gets the order value for determining the order of execution of filters. Filters execute in

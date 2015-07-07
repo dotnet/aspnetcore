@@ -6,7 +6,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public interface IAsyncExceptionFilter : IFilter
+    public interface IAsyncExceptionFilter : IFilterMetadata
     {
         Task OnExceptionAsync([NotNull] ExceptionContext context);
     }

@@ -19,8 +19,8 @@ namespace Microsoft.AspNet.Mvc
         /// Creates a new <see cref="ResourceExecutedContext"/>.
         /// </summary>
         /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
-        /// <param name="filters">The list of <see cref="IFilter"/> instances.</param>
-        public ResourceExecutedContext(ActionContext actionContext, IList<IFilter> filters)
+        /// <param name="filters">The list of <see cref="IFilterMetadata"/> instances.</param>
+        public ResourceExecutedContext(ActionContext actionContext, IList<IFilterMetadata> filters)
             : base(actionContext, filters)
         {
         }

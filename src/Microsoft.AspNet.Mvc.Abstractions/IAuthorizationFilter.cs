@@ -5,7 +5,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public interface IAuthorizationFilter : IFilter
+    public interface IAuthorizationFilter : IFilterMetadata
     {
         void OnAuthorization([NotNull] AuthorizationContext context);
     }

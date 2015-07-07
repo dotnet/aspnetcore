@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var skipStatusCodeAttribute = new SkipStatusCodePagesAttribute();
-            var resourceExecutingContext = CreateResourceExecutingContext(new IFilter[] { skipStatusCodeAttribute });
+            var resourceExecutingContext = CreateResourceExecutingContext(new IFilterMetadata[] { skipStatusCodeAttribute });
             var statusCodePagesFeature = new TestStatusCodeFeature();
             resourceExecutingContext.HttpContext.SetFeature<IStatusCodePagesFeature>(statusCodePagesFeature);
 
@@ -31,13 +31,13 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var skipStatusCodeAttribute = new SkipStatusCodePagesAttribute();
-            var resourceExecutingContext = CreateResourceExecutingContext(new IFilter[] { skipStatusCodeAttribute });
+            var resourceExecutingContext = CreateResourceExecutingContext(new IFilterMetadata[] { skipStatusCodeAttribute });
 
             // Act
             skipStatusCodeAttribute.OnResourceExecuting(resourceExecutingContext);
         }
 
-        private static ResourceExecutingContext CreateResourceExecutingContext(IFilter[] filters)
+        private static ResourceExecutingContext CreateResourceExecutingContext(IFilterMetadata[] filters)
         {
             return new ResourceExecutingContext(
                 CreateActionContext(),

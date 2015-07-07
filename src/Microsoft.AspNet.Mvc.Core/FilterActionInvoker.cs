@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.Core
         private readonly ILogger _logger;
         private readonly int _maxModelValidationErrors;
 
-        private IFilter[] _filters;
+        private IFilterMetadata[] _filters;
         private FilterCursor _cursor;
 
         private AuthorizationContext _authorizationContext;
@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.Mvc.Core
             }
         }
 
-        private IFilter[] GetFilters()
+        private IFilterMetadata[] GetFilters()
         {
             var context = new FilterProviderContext(
                 ActionContext,
@@ -759,16 +759,16 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             private FilterStage _stage;
             private int _index;
-            private readonly IFilter[] _filters;
+            private readonly IFilterMetadata[] _filters;
 
-            public FilterCursor(FilterStage stage, int index, IFilter[] filters)
+            public FilterCursor(FilterStage stage, int index, IFilterMetadata[] filters)
             {
                 _stage = stage;
                 _index = index;
                 _filters = filters;
             }
 
-            public FilterCursor(IFilter[] filters)
+            public FilterCursor(IFilterMetadata[] filters)
             {
                 _stage = FilterStage.Undefined;
                 _index = 0;

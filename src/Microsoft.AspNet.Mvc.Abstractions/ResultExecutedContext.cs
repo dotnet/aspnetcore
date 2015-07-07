@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc
 
         public ResultExecutedContext(
             [NotNull] ActionContext actionContext,
-            [NotNull] IList<IFilter> filters,
+            [NotNull] IList<IFilterMetadata> filters,
             [NotNull] IActionResult result,
             object controller)
             : base(actionContext, filters)

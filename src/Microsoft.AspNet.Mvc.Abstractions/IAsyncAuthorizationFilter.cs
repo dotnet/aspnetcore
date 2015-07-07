@@ -6,7 +6,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public interface IAsyncAuthorizationFilter : IFilter
+    public interface IAsyncAuthorizationFilter : IFilterMetadata
     {
         Task OnAuthorizationAsync([NotNull] AuthorizationContext context);
     }

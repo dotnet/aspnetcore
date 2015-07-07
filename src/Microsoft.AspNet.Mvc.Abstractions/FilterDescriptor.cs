@@ -6,10 +6,10 @@ using Microsoft.Framework.Internal;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Descriptor for an <see cref="IFilter"/>.
+    /// Descriptor for an <see cref="IFilterMetadata"/>.
     /// </summary>
     /// <remarks>
-    /// <see cref="FilterDescriptor"/> describes an <see cref="IFilter"/> with an order and scope.
+    /// <see cref="FilterDescriptor"/> describes an <see cref="IFilterMetadata"/> with an order and scope.
     ///
     /// Order and scope control the execution order of filters. Filters with a higher value of Order execute
     /// later in the pipeline.
@@ -26,14 +26,14 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Creates a new <see cref="FilterDescriptor"/>.
         /// </summary>
-        /// <param name="filter">The <see cref="IFilter"/>.</param>
+        /// <param name="filter">The <see cref="IFilterMetadata"/>.</param>
         /// <param name="filterScope">The filter scope.</param>
         /// <remarks>
         /// If the <paramref name="filter"/> implements <see cref="IOrderedFilter"/>, then the value of
         /// <see cref="Order"/> will be taken from <see cref="IOrderedFilter.Order"/>. Otherwise the value
         /// of <see cref="Order"/> will default to <c>0</c>.
         /// </remarks>
-        public FilterDescriptor([NotNull] IFilter filter, int filterScope)
+        public FilterDescriptor([NotNull] IFilterMetadata filter, int filterScope)
         {
             Filter = filter;
             Scope = filterScope;
@@ -47,9 +47,9 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// The <see cref="IFilter"/> instance.
+        /// The <see cref="IFilterMetadata"/> instance.
         /// </summary>
-        public IFilter Filter { get; private set; }
+        public IFilterMetadata Filter { get; private set; }
 
         /// <summary>
         /// The filter order.

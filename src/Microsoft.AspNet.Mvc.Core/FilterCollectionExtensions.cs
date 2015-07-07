@@ -15,43 +15,43 @@ namespace Microsoft.AspNet.Mvc
     public static class FilterCollectionExtensions
     {
         /// <summary>
-        /// Adds a type representing an <see cref="IFilter"/> to a filter collection.
+        /// Adds a type representing an <see cref="IFilterMetadata"/> to a filter collection.
         /// </summary>
-        /// <param name="filters">A collection of <see cref="IFilter"/>.</param>
-        /// <param name="filterType">Type representing an <see cref="IFilter"/>.</param>
-        /// <returns>An <see cref="IFilter"/> representing the added type.</returns>
+        /// <param name="filters">A collection of <see cref="IFilterMetadata"/>.</param>
+        /// <param name="filterType">Type representing an <see cref="IFilterMetadata"/>.</param>
+        /// <returns>An <see cref="IFilterMetadata"/> representing the added type.</returns>
         /// <remarks>
         /// Filter instances will be created using
         /// <see cref="Microsoft.Framework.DependencyInjection.ActivatorUtilities"/>.
-        /// Use <see cref="AddService(ICollection{IFilter}, Type)"/> to register a service as a filter.
+        /// Use <see cref="AddService(ICollection{IFilterMetadata}, Type)"/> to register a service as a filter.
         /// </remarks>
-        public static IFilter Add(
-            [NotNull] this ICollection<IFilter> filters,
+        public static IFilterMetadata Add(
+            [NotNull] this ICollection<IFilterMetadata> filters,
             [NotNull] Type filterType)
         {
             return Add(filters, filterType, order: 0);
         }
 
         /// <summary>
-        /// Adds a type representing an <see cref="IFilter"/> to a filter collection.
+        /// Adds a type representing an <see cref="IFilterMetadata"/> to a filter collection.
         /// </summary>
-        /// <param name="filters">A collection of <see cref="IFilter"/>.</param>
-        /// <param name="filterType">Type representing an <see cref="IFilter"/>.</param>
+        /// <param name="filters">A collection of <see cref="IFilterMetadata"/>.</param>
+        /// <param name="filterType">Type representing an <see cref="IFilterMetadata"/>.</param>
         /// <param name="order">The order of the added filter.</param>
-        /// <returns>An <see cref="IFilter"/> representing the added type.</returns>
+        /// <returns>An <see cref="IFilterMetadata"/> representing the added type.</returns>
         /// <remarks>
         /// Filter instances will be created using
         /// <see cref="Microsoft.Framework.DependencyInjection.ActivatorUtilities"/>.
-        /// Use <see cref="AddService(ICollection{IFilter}, Type)"/> to register a service as a filter.
+        /// Use <see cref="AddService(ICollection{IFilterMetadata}, Type)"/> to register a service as a filter.
         /// </remarks>
-        public static IFilter Add(
-            [NotNull] this ICollection<IFilter> filters,
+        public static IFilterMetadata Add(
+            [NotNull] this ICollection<IFilterMetadata> filters,
             [NotNull] Type filterType,
             int order)
         {
-            if (!typeof(IFilter).IsAssignableFrom(filterType))
+            if (!typeof(IFilterMetadata).IsAssignableFrom(filterType))
             {
-                var message = Resources.FormatTypeMustDeriveFromType(filterType.FullName, typeof(IFilter).FullName);
+                var message = Resources.FormatTypeMustDeriveFromType(filterType.FullName, typeof(IFilterMetadata).FullName);
                 throw new ArgumentException(message, nameof(filterType));
             }
 
@@ -61,43 +61,43 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Adds a type representing an <see cref="IFilter"/> to a filter collection.
+        /// Adds a type representing an <see cref="IFilterMetadata"/> to a filter collection.
         /// </summary>
-        /// <param name="filters">A collection of <see cref="IFilter"/>.</param>
-        /// <param name="filterType">Type representing an <see cref="IFilter"/>.</param>
-        /// <returns>An <see cref="IFilter"/> representing the added service type.</returns>
+        /// <param name="filters">A collection of <see cref="IFilterMetadata"/>.</param>
+        /// <param name="filterType">Type representing an <see cref="IFilterMetadata"/>.</param>
+        /// <returns>An <see cref="IFilterMetadata"/> representing the added service type.</returns>
         /// <remarks>
         /// Filter instances will created through dependency injection. Use
-        /// <see cref="AddService(ICollection{IFilter}, Type)"/> to register a service that will be created via
+        /// <see cref="AddService(ICollection{IFilterMetadata}, Type)"/> to register a service that will be created via
         /// type activation.
         /// </remarks>
-        public static IFilter AddService(
-            [NotNull] this ICollection<IFilter> filters,
+        public static IFilterMetadata AddService(
+            [NotNull] this ICollection<IFilterMetadata> filters,
             [NotNull] Type filterType)
         {
             return AddService(filters, filterType, order: 0);
         }
 
         /// <summary>
-        /// Adds a type representing an <see cref="IFilter"/> to a filter collection.
+        /// Adds a type representing an <see cref="IFilterMetadata"/> to a filter collection.
         /// </summary>
-        /// <param name="filters">A collection of <see cref="IFilter"/>.</param>
-        /// <param name="filterType">Type representing an <see cref="IFilter"/>.</param>
+        /// <param name="filters">A collection of <see cref="IFilterMetadata"/>.</param>
+        /// <param name="filterType">Type representing an <see cref="IFilterMetadata"/>.</param>
         /// <param name="order">The order of the added filter.</param>
-        /// <returns>An <see cref="IFilter"/> representing the added service type.</returns>
+        /// <returns>An <see cref="IFilterMetadata"/> representing the added service type.</returns>
         /// <remarks>
         /// Filter instances will created through dependency injection. Use
-        /// <see cref="AddService(ICollection{IFilter}, Type)"/> to register a service that will be created via
+        /// <see cref="AddService(ICollection{IFilterMetadata}, Type)"/> to register a service that will be created via
         /// type activation.
         /// </remarks>
-        public static IFilter AddService(
-            [NotNull] this ICollection<IFilter> filters,
+        public static IFilterMetadata AddService(
+            [NotNull] this ICollection<IFilterMetadata> filters,
             [NotNull] Type filterType,
             int order)
         {
-            if (!typeof(IFilter).GetTypeInfo().IsAssignableFrom(filterType.GetTypeInfo()))
+            if (!typeof(IFilterMetadata).GetTypeInfo().IsAssignableFrom(filterType.GetTypeInfo()))
             {
-                var message = Resources.FormatTypeMustDeriveFromType(filterType.FullName, typeof(IFilter).FullName);
+                var message = Resources.FormatTypeMustDeriveFromType(filterType.FullName, typeof(IFilterMetadata).FullName);
                 throw new ArgumentException(message, nameof(filterType));
             }
 

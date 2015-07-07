@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc
                     NoStore = true,
                     Duration = null
                 });
-            var context = GetActionExecutingContext(new List<IFilter> { cache });
+            var context = GetActionExecutingContext(new List<IFilterMetadata> { cache });
 
             // Act
             cache.OnActionExecuting(context);
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc
                     Duration = null
                 });
 
-            var context = GetActionExecutingContext(new List<IFilter> { cache });
+            var context = GetActionExecutingContext(new List<IFilterMetadata> { cache });
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => cache.OnActionExecuting(context));
@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.Mvc
         public void OnActionExecuting_CanSetCacheControlHeaders(ResponseCacheFilter cache, string output)
         {
             // Arrange
-            var context = GetActionExecutingContext(new List<IFilter> { cache });
+            var context = GetActionExecutingContext(new List<IFilterMetadata> { cache });
 
             // Act
             cache.OnActionExecuting(context);
@@ -199,7 +199,7 @@ namespace Microsoft.AspNet.Mvc
             ResponseCacheFilter cache, string output)
         {
             // Arrange
-            var context = GetActionExecutingContext(new List<IFilter> { cache });
+            var context = GetActionExecutingContext(new List<IFilterMetadata> { cache });
 
             // Act
             cache.OnActionExecuting(context);
@@ -269,7 +269,7 @@ namespace Microsoft.AspNet.Mvc
         public void ResponseCacheCanSetVary(ResponseCacheFilter cache, string varyOutput, string cacheControlOutput)
         {
             // Arrange
-            var context = GetActionExecutingContext(new List<IFilter> { cache });
+            var context = GetActionExecutingContext(new List<IFilterMetadata> { cache });
 
             // Act
             cache.OnActionExecuting(context);
@@ -288,7 +288,7 @@ namespace Microsoft.AspNet.Mvc
                 {
                     Duration = 0, Location = ResponseCacheLocation.None, NoStore = true, VaryByHeader = null
                 });
-            var context = GetActionExecutingContext(new List<IFilter> { cache });
+            var context = GetActionExecutingContext(new List<IFilterMetadata> { cache });
 
             // Act
             cache.OnActionExecuting(context);
@@ -302,7 +302,7 @@ namespace Microsoft.AspNet.Mvc
         public void IsOverridden_ReturnsTrueForAllButLastFilter()
         {
             // Arrange
-            var caches = new List<IFilter>();
+            var caches = new List<IFilterMetadata>();
             caches.Add(new ResponseCacheFilter(
                 new CacheProfile
                 {
@@ -333,7 +333,7 @@ namespace Microsoft.AspNet.Mvc
                     Duration = 10
                 });
             cache.Duration = 20;
-            var context = GetActionExecutingContext(new List<IFilter> { cache });
+            var context = GetActionExecutingContext(new List<IFilterMetadata> { cache });
 
             // Act
             cache.OnActionExecuting(context);
@@ -353,7 +353,7 @@ namespace Microsoft.AspNet.Mvc
                     Location = ResponseCacheLocation.None
                 });
             cache.Location = ResponseCacheLocation.Client;
-            var context = GetActionExecutingContext(new List<IFilter> { cache });
+            var context = GetActionExecutingContext(new List<IFilterMetadata> { cache });
 
             // Act
             cache.OnActionExecuting(context);
@@ -373,7 +373,7 @@ namespace Microsoft.AspNet.Mvc
                 });
             cache.NoStore = false;
             cache.Duration = 10;
-            var context = GetActionExecutingContext(new List<IFilter> { cache });
+            var context = GetActionExecutingContext(new List<IFilterMetadata> { cache });
 
             // Act
             cache.OnActionExecuting(context);
@@ -393,7 +393,7 @@ namespace Microsoft.AspNet.Mvc
                     VaryByHeader = "Accept"
                 });
             cache.VaryByHeader = "Test";
-            var context = GetActionExecutingContext(new List<IFilter> { cache });
+            var context = GetActionExecutingContext(new List<IFilterMetadata> { cache });
 
             // Act
             cache.OnActionExecuting(context);
@@ -402,11 +402,11 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal("Test", context.HttpContext.Response.Headers.Get("Vary"));
         }
 
-        private ActionExecutingContext GetActionExecutingContext(List<IFilter> filters = null)
+        private ActionExecutingContext GetActionExecutingContext(List<IFilterMetadata> filters = null)
         {
             return new ActionExecutingContext(
                 new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
-                filters ?? new List<IFilter>(),
+                filters ?? new List<IFilterMetadata>(),
                 new Dictionary<string, object>(),
                 new object());
         }

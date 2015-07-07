@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc
         public MvcOptions()
         {
             Conventions = new List<IApplicationModelConvention>();
-            Filters = new List<IFilter>();
+            Filters = new List<IFilterMetadata>();
             InputFormatters = new List<IInputFormatter>();
             OutputFormatters = new List<IOutputFormatter>();
             ModelBinders = new List<IModelBinder>();
@@ -31,10 +31,10 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Gets a list of <see cref="IFilter"/> which are used to construct filters that
+        /// Gets a list of <see cref="IFilterMetadata"/> which are used to construct filters that
         /// apply to all actions.
         /// </summary>
-        public ICollection<IFilter> Filters { get; }
+        public ICollection<IFilterMetadata> Filters { get; }
 
         /// <summary>
         /// Gets a list of <see cref="IOutputFormatter"/>s that are used by this application.

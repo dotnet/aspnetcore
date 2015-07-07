@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var actionContext = new ActionContext(ctx, new RouteData(), actionDescriptor: null);
 
-            return new AuthorizationContext(actionContext, Enumerable.Empty<IFilter>().ToList());
+            return new AuthorizationContext(actionContext, Enumerable.Empty<IFilterMetadata>().ToList());
         }
     }
 }

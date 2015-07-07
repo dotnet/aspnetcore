@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Mvc
     /// <summary>
     ///  A filter which produces a desired content type for the current request. 
     /// </summary>
-    public interface IFormatFilter : IFilter
+    public interface IFormatFilter : IFilterMetadata
     {
         /// <summary>
         /// format value in the current request. <c>null</c> if format not present in the current request.

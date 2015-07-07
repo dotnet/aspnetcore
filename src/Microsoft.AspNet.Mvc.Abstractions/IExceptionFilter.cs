@@ -5,7 +5,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public interface IExceptionFilter : IFilter
+    public interface IExceptionFilter : IFilterMetadata
     {
         void OnException([NotNull] ExceptionContext context);
     }

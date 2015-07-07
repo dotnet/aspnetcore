@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc
     /// A filter which surrounds execution of model binding, the action (and filters) and the action result
     /// (and filters).
     /// </summary>
-    public interface IResourceFilter : IFilter
+    public interface IResourceFilter : IFilterMetadata
     {
         /// <summary>
         /// Executes the resource filter. Called before execution of the remainder of the pipeline.

@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             }
         }
 
-        private class MyFilterAttribute : Attribute, IFilter
+        private class MyFilterAttribute : Attribute, IFilterMetadata
         {
         }
 

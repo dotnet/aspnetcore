@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.Filters
         public void DefaultFilterProvider_UsesFilter_WhenItsNotIFilterFactory()
         {
             // Arrange
-            var filter = Mock.Of<IFilter>();
+            var filter = Mock.Of<IFilterMetadata>();
 
             var context = CreateFilterContext(new List<FilterItem>()
             {
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.Filters
         public void DefaultFilterProvider_UsesFilterFactory()
         {
             // Arrange
-            var filter = Mock.Of<IFilter>();
+            var filter = Mock.Of<IFilterMetadata>();
 
             var filterFactory = new Mock<IFilterFactory>();
             filterFactory
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.Filters
         public void DefaultFilterProvider_UsesFilterFactory_WithOrder()
         {
             // Arrange
-            var filter = Mock.Of<IFilter>();
+            var filter = Mock.Of<IFilterMetadata>();
 
             var filterFactory = new Mock<IFilterFactory>();
             filterFactory
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.Filters
             var filterFactory = new Mock<IFilterFactory>();
             filterFactory
                 .Setup(ff => ff.CreateInstance(It.IsAny<IServiceProvider>()))
-                .Returns(filter.As<IFilter>().Object);
+                .Returns(filter.As<IFilterMetadata>().Object);
 
             var context = CreateFilterContext(new List<FilterItem>()
             {

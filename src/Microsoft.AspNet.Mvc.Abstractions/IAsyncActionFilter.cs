@@ -6,7 +6,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public interface IAsyncActionFilter : IFilter
+    public interface IAsyncActionFilter : IFilterMetadata
     {
         Task OnActionExecutionAsync([NotNull] ActionExecutingContext context, [NotNull] ActionExecutionDelegate next);
     }

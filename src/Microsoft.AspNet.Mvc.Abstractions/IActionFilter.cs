@@ -5,7 +5,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public interface IActionFilter : IFilter
+    public interface IActionFilter : IFilterMetadata
     {
         void OnActionExecuting([NotNull] ActionExecutingContext context);
 

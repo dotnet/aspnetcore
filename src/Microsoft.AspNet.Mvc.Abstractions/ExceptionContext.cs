@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc
         private Exception _exception;
         private ExceptionDispatchInfo _exceptionDispatchInfo;
 
-        public ExceptionContext([NotNull] ActionContext actionContext, [NotNull] IList<IFilter> filters)
+        public ExceptionContext([NotNull] ActionContext actionContext, [NotNull] IList<IFilterMetadata> filters)
             : base(actionContext, filters)
         {
         }

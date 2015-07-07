@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc
             Descriptor = descriptor;
         }
 
-        public FilterItem([NotNull] FilterDescriptor descriptor, [NotNull] IFilter filter)
+        public FilterItem([NotNull] FilterDescriptor descriptor, [NotNull] IFilterMetadata filter)
             : this(descriptor)
         {
             Filter = filter;
@@ -23,6 +23,6 @@ namespace Microsoft.AspNet.Mvc
 
         public FilterDescriptor Descriptor { get; set; }
 
-        public IFilter Filter { get; set; }
+        public IFilterMetadata Filter { get; set; }
     }
 }

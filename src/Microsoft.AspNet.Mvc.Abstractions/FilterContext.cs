@@ -10,12 +10,12 @@ namespace Microsoft.AspNet.Mvc
     {
         public FilterContext(
             [NotNull] ActionContext actionContext,
-            [NotNull] IList<IFilter> filters)
+            [NotNull] IList<IFilterMetadata> filters)
             : base(actionContext)
         {
             Filters = filters;
         }
 
-        public virtual IList<IFilter> Filters { get; private set; }
+        public virtual IList<IFilterMetadata> Filters { get; private set; }
     }
 }

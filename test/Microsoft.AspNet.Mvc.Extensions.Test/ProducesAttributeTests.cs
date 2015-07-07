@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var mediaType1 = MediaTypeHeaderValue.Parse("application/json");
             var mediaType2 = MediaTypeHeaderValue.Parse("text/json;charset=utf-8");
             var producesContentAttribute = new ProducesAttribute("application/json", "text/json;charset=utf-8");
-            var resultExecutingContext = CreateResultExecutingContext(new IFilter[] { producesContentAttribute });
+            var resultExecutingContext = CreateResultExecutingContext(new IFilterMetadata[] { producesContentAttribute });
             var next = new ResultExecutionDelegate(
                             () => Task.FromResult(CreateResultExecutedContext(resultExecutingContext)));
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.Test
             formatFilter.Setup(f => f.IsActive)
                 .Returns(false);
 
-            var filters = new IFilter[] { producesContentAttribute, formatFilter.Object };
+            var filters = new IFilterMetadata[] { producesContentAttribute, formatFilter.Object };
             var resultExecutingContext = CreateResultExecutingContext(filters);
 
             var next = new ResultExecutionDelegate(
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.Test
             formatFilter.Setup(f => f.IsActive)
                 .Returns(true);
 
-            var filters = new IFilter[] { producesContentAttribute, formatFilter.Object };
+            var filters = new IFilterMetadata[] { producesContentAttribute, formatFilter.Object };
             var resultExecutingContext = CreateResultExecutingContext(filters);
 
             var next = new ResultExecutionDelegate(
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Mvc.Test
             return new ResultExecutedContext(context, context.Filters, context.Result, context.Controller);
         }
 
-        private static ResultExecutingContext CreateResultExecutingContext(IFilter[] filters)
+        private static ResultExecutingContext CreateResultExecutingContext(IFilterMetadata[] filters)
         {
             return new ResultExecutingContext(
                 CreateActionContext(),

@@ -22,16 +22,16 @@ namespace Microsoft.AspNet.Mvc
 
         public int Order { get; set; }
 
-        public IFilter CreateInstance([NotNull] IServiceProvider serviceProvider)
+        public IFilterMetadata CreateInstance([NotNull] IServiceProvider serviceProvider)
         {
             var service = serviceProvider.GetRequiredService(ServiceType);
 
-            var filter = service as IFilter;
+            var filter = service as IFilterMetadata;
             if (filter == null)
             {
                 throw new InvalidOperationException(Resources.FormatFilterFactoryAttribute_TypeMustImplementIFilter(
                     typeof(ServiceFilterAttribute).Name,
-                    typeof(IFilter).Name));
+                    typeof(IFilterMetadata).Name));
             }
 
             return filter;

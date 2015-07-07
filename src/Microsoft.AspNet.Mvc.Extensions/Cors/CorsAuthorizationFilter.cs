@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private bool IsClosestToAction(IEnumerable<IFilter> filters)
+        private bool IsClosestToAction(IEnumerable<IFilterMetadata> filters)
         {
             // If there are multiple ICorsAuthorizationFilter which are defined at the class and
             // at the action level, the one closest to the action overrides the others. 

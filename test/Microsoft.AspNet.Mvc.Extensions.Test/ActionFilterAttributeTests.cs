@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 .Setup(f => f.OnActionExecuted(It.IsAny<ActionExecutedContext>()))
                 .Verifiable();
 
-            var context = CreateActionExecutingContext(mock.As<IFilter>().Object);
+            var context = CreateActionExecutingContext(mock.As<IFilterMetadata>().Object);
             var next = new ActionExecutionDelegate(() => Task.FromResult(CreateActionExecutedContext(context)));
 
             // Act
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 .Setup(f => f.OnActionExecuted(It.IsAny<ActionExecutedContext>()))
                 .Verifiable();
 
-            var context = CreateActionExecutingContext(mock.As<IFilter>().Object);
+            var context = CreateActionExecutingContext(mock.As<IFilterMetadata>().Object);
             var next = new ActionExecutionDelegate(() => { throw null; }); // This won't run
 
             // Act
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 .Setup(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>()))
                 .Verifiable();
 
-            var context = CreateResultExecutingContext(mock.As<IFilter>().Object);
+            var context = CreateResultExecutingContext(mock.As<IFilterMetadata>().Object);
             var next = new ResultExecutionDelegate(() => Task.FromResult(CreateResultExecutedContext(context)));
 
             // Act
@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 .Setup(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>()))
                 .Verifiable();
 
-            var context = CreateResultExecutingContext(mock.As<IFilter>().Object);
+            var context = CreateResultExecutingContext(mock.As<IFilterMetadata>().Object);
             var next = new ResultExecutionDelegate(() => Task.FromResult(CreateResultExecutedContext(context)));
 
             // Act
@@ -206,7 +206,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 .Setup(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>()))
                 .Verifiable();
 
-            var context = CreateResultExecutingContext(mock.As<IFilter>().Object);
+            var context = CreateResultExecutingContext(mock.As<IFilterMetadata>().Object);
             var next = new ResultExecutionDelegate(() => { throw null; }); // This won't run
 
             // Act
@@ -222,11 +222,11 @@ namespace Microsoft.AspNet.Mvc.Test
                 .Verify(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>()), Times.Never());
         }
 
-        private static ActionExecutingContext CreateActionExecutingContext(IFilter filter)
+        private static ActionExecutingContext CreateActionExecutingContext(IFilterMetadata filter)
         {
             return new ActionExecutingContext(
                 CreateActionContext(),
-                new IFilter[] { filter, },
+                new IFilterMetadata[] { filter, },
                 new Dictionary<string, object>(),
                 controller: new object());
         }
@@ -239,11 +239,11 @@ namespace Microsoft.AspNet.Mvc.Test
             };
         }
 
-        private static ResultExecutingContext CreateResultExecutingContext(IFilter filter)
+        private static ResultExecutingContext CreateResultExecutingContext(IFilterMetadata filter)
         {
             return new ResultExecutingContext(
                 CreateActionContext(),
-                new IFilter[] { filter, },
+                new IFilterMetadata[] { filter, },
                 new NoOpResult(),
                 controller: new object());
         }

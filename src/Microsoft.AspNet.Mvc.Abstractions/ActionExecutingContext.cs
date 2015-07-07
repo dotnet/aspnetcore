@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc
     {
         public ActionExecutingContext(
             [NotNull] ActionContext actionContext,
-            [NotNull] IList<IFilter> filters,
+            [NotNull] IList<IFilterMetadata> filters,
             [NotNull] IDictionary<string, object> actionArguments,
             object controller)
             : base(actionContext, filters)

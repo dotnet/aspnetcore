@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Mvc
             var tempData = new Mock<ITempDataDictionary>();
             tempData.Setup(t => t.Save()).Verifiable();
 
-            var invoker = CreateInvoker(Mock.Of<IFilter>(), actionThrows: false, tempData: tempData.Object);
+            var invoker = CreateInvoker(Mock.Of<IFilterMetadata>(), actionThrows: false, tempData: tempData.Object);
 
             // Act
             await invoker.InvokeAsync();
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Mvc
             var tempData = new Mock<ITempDataDictionary>();
             tempData.Setup(t => t.Save()).Verifiable();
 
-            var invoker = CreateInvoker(Mock.Of<IFilter>(), actionThrows: true, tempData: tempData.Object);
+            var invoker = CreateInvoker(Mock.Of<IFilterMetadata>(), actionThrows: true, tempData: tempData.Object);
 
             // Act & Assert
             await Assert.ThrowsAsync(_actionException.GetType(), async () => await invoker.InvokeAsync());
@@ -216,7 +216,7 @@ namespace Microsoft.AspNet.Mvc
                 .Returns<ExceptionContext>((context) => Task.FromResult(true))
                 .Verifiable();
 
-            var invoker = CreateInvoker(new IFilter[] { filter1.Object, filter2.Object }, actionThrows: true);
+            var invoker = CreateInvoker(new IFilterMetadata[] { filter1.Object, filter2.Object }, actionThrows: true);
 
             // Act
             await invoker.InvokeAsync();
@@ -263,7 +263,7 @@ namespace Microsoft.AspNet.Mvc
 
             var resultFilter = new Mock<IResultFilter>(MockBehavior.Strict);
 
-            var invoker = CreateInvoker(new IFilter[] { filter.Object, resultFilter.Object }, actionThrows: true);
+            var invoker = CreateInvoker(new IFilterMetadata[] { filter.Object, resultFilter.Object }, actionThrows: true);
 
             // Act
             await invoker.InvokeAsync();
@@ -352,7 +352,7 @@ namespace Microsoft.AspNet.Mvc
 
             var filter2 = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
 
-            var invoker = CreateInvoker(new IFilter[] { filter1.Object, filter2.Object });
+            var invoker = CreateInvoker(new IFilterMetadata[] { filter1.Object, filter2.Object });
 
             // Act
             await invoker.InvokeAsync();
@@ -393,7 +393,7 @@ namespace Microsoft.AspNet.Mvc
             var actionFilter = new Mock<IActionFilter>(MockBehavior.Strict);
             var resultFilter = new Mock<IResultFilter>(MockBehavior.Strict);
 
-            var invoker = CreateInvoker(new IFilter[]
+            var invoker = CreateInvoker(new IFilterMetadata[]
             {
                 exceptionFilter.Object,
                 authorizationFilter1.Object,
@@ -430,7 +430,7 @@ namespace Microsoft.AspNet.Mvc
 
             var resultFilter = new Mock<IResultFilter>(MockBehavior.Strict);
 
-            var invoker = CreateInvoker(new IFilter[] { authorizationFilter.Object, resultFilter.Object });
+            var invoker = CreateInvoker(new IFilterMetadata[] { authorizationFilter.Object, resultFilter.Object });
 
             // Act
             await invoker.InvokeAsync();
@@ -521,7 +521,7 @@ namespace Microsoft.AspNet.Mvc
             resultFilter.Setup(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>())).Verifiable();
             resultFilter.Setup(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>())).Verifiable();
 
-            var invoker = CreateInvoker(new IFilter[]
+            var invoker = CreateInvoker(new IFilterMetadata[]
             {
                 actionFilter1.Object,
                 actionFilter2.Object,
@@ -577,7 +577,7 @@ namespace Microsoft.AspNet.Mvc
             resultFilter.Setup(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>())).Verifiable();
             resultFilter.Setup(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>())).Verifiable();
 
-            var invoker = CreateInvoker(new IFilter[]
+            var invoker = CreateInvoker(new IFilterMetadata[]
             {
                 actionFilter1.Object,
                 actionFilter2.Object,
@@ -632,7 +632,7 @@ namespace Microsoft.AspNet.Mvc
             resultFilter.Setup(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>())).Verifiable();
             resultFilter.Setup(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>())).Verifiable();
 
-            var invoker = CreateInvoker(new IFilter[]
+            var invoker = CreateInvoker(new IFilterMetadata[]
             {
                 actionFilter1.Object,
                 actionFilter2.Object,
@@ -788,7 +788,7 @@ namespace Microsoft.AspNet.Mvc
                 .Callback<ActionExecutedContext>(c => { throw exception; })
                 .Verifiable();
 
-            var invoker = CreateInvoker(new IFilter[] { filter1.Object, filter2.Object });
+            var invoker = CreateInvoker(new IFilterMetadata[] { filter1.Object, filter2.Object });
 
             // Act
             await invoker.InvokeAsync();
@@ -832,7 +832,7 @@ namespace Microsoft.AspNet.Mvc
             resultFilter.Setup(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>())).Verifiable();
             resultFilter.Setup(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>())).Verifiable();
 
-            var invoker = CreateInvoker(new IFilter[] { actionFilter.Object, resultFilter.Object }, actionThrows: true);
+            var invoker = CreateInvoker(new IFilterMetadata[] { actionFilter.Object, resultFilter.Object }, actionThrows: true);
 
             // Act
             await invoker.InvokeAsync();
@@ -911,7 +911,7 @@ namespace Microsoft.AspNet.Mvc
 
             var filter3 = new Mock<IResultFilter>(MockBehavior.Strict);
 
-            var invoker = CreateInvoker(new IFilter[] { filter1.Object, filter2.Object, filter3.Object });
+            var invoker = CreateInvoker(new IFilterMetadata[] { filter1.Object, filter2.Object, filter3.Object });
 
             // Act
             await invoker.InvokeAsync();
@@ -951,7 +951,7 @@ namespace Microsoft.AspNet.Mvc
 
             var filter3 = new Mock<IResultFilter>(MockBehavior.Strict);
 
-            var invoker = CreateInvoker(new IFilter[] { filter1.Object, filter2.Object, filter3.Object });
+            var invoker = CreateInvoker(new IFilterMetadata[] { filter1.Object, filter2.Object, filter3.Object });
 
             // Act
             await invoker.InvokeAsync();
@@ -993,7 +993,7 @@ namespace Microsoft.AspNet.Mvc
 
             var filter3 = new Mock<IResultFilter>(MockBehavior.Strict);
 
-            var invoker = CreateInvoker(new IFilter[] { filter1.Object, filter2.Object, filter3.Object });
+            var invoker = CreateInvoker(new IFilterMetadata[] { filter1.Object, filter2.Object, filter3.Object });
 
             // Act
             await invoker.InvokeAsync();
@@ -1187,7 +1187,7 @@ namespace Microsoft.AspNet.Mvc
 
             var resultFilter3 = new Mock<IResultFilter>(MockBehavior.Strict);
 
-            var invoker = CreateInvoker(new IFilter[] { resultFilter1.Object, resultFilter2.Object, resultFilter3.Object });
+            var invoker = CreateInvoker(new IFilterMetadata[] { resultFilter1.Object, resultFilter2.Object, resultFilter3.Object });
 
             // Act
             await invoker.InvokeAsync();
@@ -1229,7 +1229,7 @@ namespace Microsoft.AspNet.Mvc
 
             var resultFilter3 = new Mock<IResultFilter>(MockBehavior.Strict);
 
-            var invoker = CreateInvoker(new IFilter[] { resultFilter1.Object, resultFilter2.Object, resultFilter3.Object });
+            var invoker = CreateInvoker(new IFilterMetadata[] { resultFilter1.Object, resultFilter2.Object, resultFilter3.Object });
 
             // Act
             await invoker.InvokeAsync();
@@ -1257,7 +1257,7 @@ namespace Microsoft.AspNet.Mvc
                 })
                 .Verifiable();
 
-            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object });
+            var invoker = CreateInvoker(new IFilterMetadata[] { resourceFilter.Object });
 
             // Act
             await invoker.InvokeAsync();
@@ -1346,7 +1346,7 @@ namespace Microsoft.AspNet.Mvc
                     c.Result = expected;
                 });
 
-            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object, actionFilter.Object });
+            var invoker = CreateInvoker(new IFilterMetadata[] { resourceFilter.Object, actionFilter.Object });
 
             // Act
             await invoker.InvokeAsync();
@@ -1383,7 +1383,7 @@ namespace Microsoft.AspNet.Mvc
                     c.Result = expected;
                 });
 
-            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object, exceptionFilter.Object }, actionThrows: true);
+            var invoker = CreateInvoker(new IFilterMetadata[] { resourceFilter.Object, exceptionFilter.Object }, actionThrows: true);
 
             // Act
             await invoker.InvokeAsync();
@@ -1422,7 +1422,7 @@ namespace Microsoft.AspNet.Mvc
                     c.Result = expected;
                 });
 
-            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object, resultFilter.Object });
+            var invoker = CreateInvoker(new IFilterMetadata[] { resourceFilter.Object, resultFilter.Object });
 
             // Act
             await invoker.InvokeAsync();
@@ -1450,7 +1450,7 @@ namespace Microsoft.AspNet.Mvc
                 })
                 .Verifiable();
 
-            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object }, actionThrows: true);
+            var invoker = CreateInvoker(new IFilterMetadata[] { resourceFilter.Object }, actionThrows: true);
 
             // Act
             await invoker.InvokeAsync();
@@ -1489,7 +1489,7 @@ namespace Microsoft.AspNet.Mvc
                     throw expected;
                 });
 
-            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object, actionFilter.Object });
+            var invoker = CreateInvoker(new IFilterMetadata[] { resourceFilter.Object, actionFilter.Object });
 
             // Act
             await invoker.InvokeAsync();
@@ -1528,7 +1528,7 @@ namespace Microsoft.AspNet.Mvc
                     throw expected;
                 });
 
-            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object, exceptionFilter.Object }, actionThrows: true);
+            var invoker = CreateInvoker(new IFilterMetadata[] { resourceFilter.Object, exceptionFilter.Object }, actionThrows: true);
 
             // Act
             await invoker.InvokeAsync();
@@ -1567,7 +1567,7 @@ namespace Microsoft.AspNet.Mvc
                     throw expected;
                 });
 
-            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object, resultFilter.Object });
+            var invoker = CreateInvoker(new IFilterMetadata[] { resourceFilter.Object, resultFilter.Object });
 
             // Act
             await invoker.InvokeAsync();
@@ -1600,7 +1600,7 @@ namespace Microsoft.AspNet.Mvc
                 })
                 .Verifiable();
 
-            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object }, actionThrows: true);
+            var invoker = CreateInvoker(new IFilterMetadata[] { resourceFilter.Object }, actionThrows: true);
 
             // Act
             await invoker.InvokeAsync();
@@ -1636,7 +1636,7 @@ namespace Microsoft.AspNet.Mvc
                 })
                 .Verifiable();
 
-            var invoker = CreateInvoker(new IFilter[] { resourceFilter1.Object, resourceFilter2.Object }, actionThrows: true);
+            var invoker = CreateInvoker(new IFilterMetadata[] { resourceFilter1.Object, resourceFilter2.Object }, actionThrows: true);
 
             // Act
             var exception = await Assert.ThrowsAsync<DataMisalignedException>(invoker.InvokeAsync);
@@ -1672,7 +1672,7 @@ namespace Microsoft.AspNet.Mvc
                 })
                 .Verifiable();
 
-            var invoker = CreateInvoker(new IFilter[] { resourceFilter1.Object, resourceFilter2.Object }, actionThrows: true);
+            var invoker = CreateInvoker(new IFilterMetadata[] { resourceFilter1.Object, resourceFilter2.Object }, actionThrows: true);
 
             // Act
             var exception = await Assert.ThrowsAsync<DataMisalignedException>(invoker.InvokeAsync);
@@ -1708,7 +1708,7 @@ namespace Microsoft.AspNet.Mvc
                 })
                 .Verifiable();
 
-            var invoker = CreateInvoker(new IFilter[] { resourceFilter1.Object, resourceFilter2.Object }, actionThrows: true);
+            var invoker = CreateInvoker(new IFilterMetadata[] { resourceFilter1.Object, resourceFilter2.Object }, actionThrows: true);
 
             // Act
             var exception = await Assert.ThrowsAsync<DataMisalignedException>(invoker.InvokeAsync);
@@ -1755,7 +1755,7 @@ namespace Microsoft.AspNet.Mvc
             var resultFilter = new Mock<IAsyncResultFilter>(MockBehavior.Strict);
 
             var invoker = CreateInvoker(
-                new IFilter[]
+                new IFilterMetadata[]
                 {
                     resourceFilter1.Object, // This filter should see the result retured from resourceFilter2
                     resourceFilter2.Object, // This filter will short circuit
@@ -1808,7 +1808,7 @@ namespace Microsoft.AspNet.Mvc
             var resultFilter = new Mock<IAsyncResultFilter>(MockBehavior.Strict);
 
             var invoker = CreateInvoker(
-                new IFilter[]
+                new IFilterMetadata[]
                 {
                     resourceFilter1.Object, // This filter should see the result retured from resourceFilter2
                     resourceFilter2.Object,
@@ -1848,7 +1848,7 @@ namespace Microsoft.AspNet.Mvc
                     context = await next();
                 });
 
-            var invoker = CreateInvoker(new IFilter[] { resourceFilter.Object, });
+            var invoker = CreateInvoker(new IFilterMetadata[] { resourceFilter.Object, });
 
             // Act
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(invoker.InvokeAsync);
@@ -1878,7 +1878,7 @@ namespace Microsoft.AspNet.Mvc
                     c.Result = _result;
                 });
 
-            var invoker = CreateInvoker(new IFilter[] { authorizationFilter.Object, resourceFilter.Object, });
+            var invoker = CreateInvoker(new IFilterMetadata[] { authorizationFilter.Object, resourceFilter.Object, });
 
             // Act
             await invoker.InvokeAsync();
@@ -1976,7 +1976,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private TestControllerActionInvoker CreateInvoker(
-            IFilter filter,
+            IFilterMetadata filter,
             bool actionThrows = false,
             ITempDataDictionary tempData = null,
             int maxAllowedErrorsInModelState = 200)
@@ -1985,7 +1985,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         private TestControllerActionInvoker CreateInvoker(
-            IFilter[] filters,
+            IFilterMetadata[] filters,
             bool actionThrows = false,
             ITempDataDictionary tempData = null,
             int maxAllowedErrorsInModelState = 200)

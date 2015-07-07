@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         public int Order { get; set; }
 
-        public IFilter CreateInstance([NotNull] IServiceProvider serviceProvider)
+        public IFilterMetadata CreateInstance([NotNull] IServiceProvider serviceProvider)
         {
             var optionsAccessor = serviceProvider.GetRequiredService<IOptions<MvcCacheOptions>>();
 

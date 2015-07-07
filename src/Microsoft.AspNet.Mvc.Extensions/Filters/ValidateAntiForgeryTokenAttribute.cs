@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc
     {
         public int Order { get; set; }
 
-        public IFilter CreateInstance(IServiceProvider serviceProvider)
+        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
             var antiforgery = serviceProvider.GetRequiredService<IAntiforgery>();
             return new ValidateAntiforgeryTokenAuthorizationFilter(antiforgery);

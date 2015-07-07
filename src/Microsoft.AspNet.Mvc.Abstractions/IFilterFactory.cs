@@ -6,8 +6,8 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public interface IFilterFactory : IFilter
+    public interface IFilterFactory : IFilterMetadata
     {
-        IFilter CreateInstance([NotNull] IServiceProvider serviceProvider);
+        IFilterMetadata CreateInstance([NotNull] IServiceProvider serviceProvider);
     }
 }

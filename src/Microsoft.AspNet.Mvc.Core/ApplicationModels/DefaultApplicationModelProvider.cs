@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     public class DefaultApplicationModelProvider : IApplicationModelProvider
     {
-        private readonly ICollection<IFilter> _globalFilters;
+        private readonly ICollection<IFilterMetadata> _globalFilters;
 
         public DefaultApplicationModelProvider(IOptions<MvcOptions> mvcOptionsAccessor)
         {
@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                     typeInfo.Name;
 
             AddRange(controllerModel.ActionConstraints, attributes.OfType<IActionConstraintMetadata>());
-            AddRange(controllerModel.Filters, attributes.OfType<IFilter>());
+            AddRange(controllerModel.Filters, attributes.OfType<IFilterMetadata>());
             AddRange(controllerModel.RouteConstraints, attributes.OfType<IRouteConstraintProvider>());
 
             var apiVisibility = attributes.OfType<IApiDescriptionVisibilityProvider>().FirstOrDefault();
@@ -503,7 +503,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var actionModel = new ActionModel(methodInfo, attributes);
 
             AddRange(actionModel.ActionConstraints, attributes.OfType<IActionConstraintMetadata>());
-            AddRange(actionModel.Filters, attributes.OfType<IFilter>());
+            AddRange(actionModel.Filters, attributes.OfType<IFilterMetadata>());
 
             var actionName = attributes.OfType<ActionNameAttribute>().FirstOrDefault();
             if (actionName?.Name != null)

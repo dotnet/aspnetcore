@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             ApiExplorer = new ApiExplorerModel();
             Attributes = new List<object>(attributes);
             ActionConstraints = new List<IActionConstraintMetadata>();
-            Filters = new List<IFilter>();
+            Filters = new List<IFilterMetadata>();
             HttpMethods = new List<string>();
             Parameters = new List<ParameterModel>();
             RouteConstraints = new List<IRouteConstraintProvider>();
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             // These are just metadata, safe to create new collections
             ActionConstraints = new List<IActionConstraintMetadata>(other.ActionConstraints);
             Attributes = new List<object>(other.Attributes);
-            Filters = new List<IFilter>(other.Filters);
+            Filters = new List<IFilterMetadata>(other.Filters);
             HttpMethods = new List<string>(other.HttpMethods);
             Properties = new Dictionary<object, object>(other.Properties);
 
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
         public ControllerModel Controller { get; set; }
 
-        public IList<IFilter> Filters { get; private set; }
+        public IList<IFilterMetadata> Filters { get; private set; }
 
         public IList<string> HttpMethods { get; private set; }
 

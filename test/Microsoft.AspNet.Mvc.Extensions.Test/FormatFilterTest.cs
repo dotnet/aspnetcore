@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc
             var mockObjects = new MockObjects(format, place);
 
             var resultExecutingContext = mockObjects.CreateResultExecutingContext();
-            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { });
+            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { });
 
             var filter = new FormatFilter(mockObjects.IOptions, mockObjects.ScopedInstance);
 
@@ -82,13 +82,13 @@ namespace Microsoft.AspNet.Mvc
 
             var resultExecutingContext = new ResultExecutingContext(
                 ac,
-                new IFilter[] { },
+                new IFilterMetadata[] { },
                 new ObjectResult("Hello!"),
                 controller: new object());
 
             var resourceExecutingContext = new ResourceExecutingContext(
                 ac,
-                new IFilter[] { });
+                new IFilterMetadata[] { });
 
             var filter = new FormatFilter(mockObjects.IOptions, mockObjects.ScopedInstance);
 
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc
 
             var mockObjects = new MockObjects(format, place);
             var resultExecutingContext = mockObjects.CreateResultExecutingContext();
-            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { });
+            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { });
 
             mockObjects.MockFormatterMappingOptions.FormatterMappings.SetMediaTypeMappingForFormat(
                 format,
@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var mockObjects = new MockObjects(format, place);
-            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { });
+            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { });
 
             var filter = new FormatFilter(mockObjects.IOptions, mockObjects.ScopedInstance);
 
@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var mockObjects = new MockObjects();
-            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { });
+            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { });
 
             var filter = new FormatFilter(mockObjects.IOptions, mockObjects.ScopedInstance);
 
@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var produces = new ProducesAttribute(contentType, new string[] { "application/foo", "text/bar" });
             var mockObjects = new MockObjects(format, place);
-            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { produces });
+            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { produces });
 
             var filter = new FormatFilter(mockObjects.IOptions, mockObjects.ScopedInstance);
 
@@ -199,7 +199,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var produces = new ProducesAttribute("application/xml;version=1", new string[] { });
             var mockObjects = new MockObjects("xml", FormatSource.RouteData);
-            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { produces });
+            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { produces });
 
             mockObjects.MockFormatterMappingOptions.FormatterMappings.SetMediaTypeMappingForFormat(
                 "xml",
@@ -220,7 +220,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var produces = new ProducesAttribute("application/xml", new string[] { });
             var mockObjects = new MockObjects("xml", FormatSource.RouteData);
-            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { produces });
+            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { produces });
 
             mockObjects.MockFormatterMappingOptions.FormatterMappings.SetMediaTypeMappingForFormat(
                 "xml",
@@ -246,7 +246,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var produces = new ProducesAttribute("application/xml", new string[] { "application/foo", "text/bar" });
             var mockObjects = new MockObjects(format, place);
-            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { produces });
+            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { produces });
 
             mockObjects.MockFormatterMappingOptions.FormatterMappings.SetMediaTypeMappingForFormat(
                 "xml",
@@ -270,7 +270,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var mockObjects = new MockObjects(format, place);
-            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilter[] { });
+            var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { });
             var filter = new FormatFilter(mockObjects.IOptions, mockObjects.ScopedInstance);
 
             // Act
@@ -335,7 +335,7 @@ namespace Microsoft.AspNet.Mvc
                 Initialize(httpContext, format, place);
             }
 
-            public ResourceExecutingContext CreateResourceExecutingContext(IFilter[] filters)
+            public ResourceExecutingContext CreateResourceExecutingContext(IFilterMetadata[] filters)
             {
                 var context = new ResourceExecutingContext(
                     MockActionContext,
@@ -347,7 +347,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 return new ResultExecutingContext(
                     MockActionContext,
-                    new IFilter[] { },
+                    new IFilterMetadata[] { },
                     new ObjectResult("Some Value"),
                     controller: new object());
             }

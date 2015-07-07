@@ -329,7 +329,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             var authorizationContext = new AuthorizationContext(
                 actionContext,
-                Enumerable.Empty<IFilter>().ToList()
+                Enumerable.Empty<IFilterMetadata>().ToList()
             );
 
             return authorizationContext;

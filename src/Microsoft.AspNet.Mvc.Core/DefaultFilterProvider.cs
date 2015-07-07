@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.Filters
             }
         }
 
-        private void ApplyFilterToContainer(object actualFilter, IFilter filterMetadata)
+        private void ApplyFilterToContainer(object actualFilter, IFilterMetadata filterMetadata)
         {
             Debug.Assert(actualFilter != null, "actualFilter should not be null");
             Debug.Assert(filterMetadata != null, "filterMetadata should not be null");

@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         {
             ApiExplorer = new ApiExplorerModel();
             Controllers = new List<ControllerModel>();
-            Filters = new List<IFilter>();
+            Filters = new List<IFilterMetadata>();
             Properties = new Dictionary<object, object>();
         }
 
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
         public IList<ControllerModel> Controllers { get; private set; }
 
-        public IList<IFilter> Filters { get; private set; }
+        public IList<IFilterMetadata> Filters { get; private set; }
 
         /// <summary>
         /// Gets a set of properties associated with all actions.

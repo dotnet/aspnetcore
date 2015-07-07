@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc
     /// A filter which surrounds execution of model binding, the action (and filters) and the action result
     /// (and filters).
     /// </summary>
-    public interface IAsyncResourceFilter : IFilter
+    public interface IAsyncResourceFilter : IFilterMetadata
     {
         /// <summary>
         /// Executes the resource filter.

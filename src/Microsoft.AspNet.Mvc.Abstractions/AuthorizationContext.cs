@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc
     {
         public AuthorizationContext(
             [NotNull] ActionContext actionContext,
-            [NotNull] IList<IFilter> filters)
+            [NotNull] IList<IFilterMetadata> filters)
             : base(actionContext, filters)
         {
         }
