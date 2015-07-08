@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Cors.Core;
-using Microsoft.AspNet.WebUtilities;
+using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc

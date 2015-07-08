@@ -3,13 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.WebUtilities;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Testing;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.DependencyInjection;

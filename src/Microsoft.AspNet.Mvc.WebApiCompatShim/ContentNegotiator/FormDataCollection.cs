@@ -4,8 +4,6 @@
 #if DNXCORE50
 
 using Microsoft.AspNet.WebUtilities;
-using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 

@@ -12,7 +12,6 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Formatters.Xml;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;

@@ -15,7 +15,6 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
-using Microsoft.AspNet.WebUtilities;
 #if DNX451
 using Moq;
 #endif

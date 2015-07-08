@@ -9,7 +9,6 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
-using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Moq;

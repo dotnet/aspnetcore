@@ -6,11 +6,11 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.WebUtilities;
 using Newtonsoft.Json;
 using Xunit;
 

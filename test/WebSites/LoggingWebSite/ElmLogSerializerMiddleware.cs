@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Elm;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.WebUtilities;
 using Newtonsoft.Json;
 
 namespace LoggingWebSite
