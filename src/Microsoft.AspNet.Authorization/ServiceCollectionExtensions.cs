@@ -14,7 +14,7 @@ namespace Microsoft.Framework.DependencyInjection
         {
             services.AddOptions();
             services.TryAdd(ServiceDescriptor.Transient<IAuthorizationService, DefaultAuthorizationService>());
-            services.AddTransient<IAuthorizationHandler, PassThroughAuthorizationHandler>();
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IAuthorizationHandler, PassThroughAuthorizationHandler>());
             return services;
         }
 
