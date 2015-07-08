@@ -11,6 +11,7 @@
         "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
         "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
+        "Microsoft.Framework.SecurityHelper.Sources": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Framework.OptionsModel": "1.0.0-*",
         "Microsoft.Framework.WebEncoders": "1.0.0-*"
     },
