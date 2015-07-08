@@ -4,11 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.Caching.Distributed;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
@@ -350,6 +353,128 @@ namespace Microsoft.AspNet.Session
             }
         }
 
+        [Fact]
+        public async Task SessionFeature_IsUnregistered_WhenResponseGoingOut()
+        {
+            using (var server = TestServer.Create(app =>
+            {
+                app.Use(async (httpContext, next) =>
+                {
+                    await next();
+
+                    Assert.Null(httpContext.GetFeature<ISessionFeature>());
+                });
+
+                app.UseSession();
+
+                app.Run(context =>
+                {
+                    context.Session.SetString("key", "value");
+                    return Task.FromResult(0);
+                });
+            },
+            services =>
+            {
+                services.AddCaching();
+                services.AddSession();
+            }))
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync(string.Empty);
+                response.EnsureSuccessStatusCode();
+            }
+        }
+
+        [Fact]
+        public async Task SessionFeature_IsUnregistered_WhenResponseGoingOut_AndAnUnhandledExcetionIsThrown()
+        {
+            using (var server = TestServer.Create(app =>
+            {
+                app.Use(async (httpContext, next) =>
+                {
+                    var exceptionThrown = false;
+                    try
+                    {
+                        await next();
+                    }
+                    catch
+                    {
+                        exceptionThrown = true;
+                    }
+
+                    Assert.True(exceptionThrown);
+                    Assert.Null(httpContext.GetFeature<ISessionFeature>());
+                });
+
+                app.UseSession();
+
+                app.Run(context =>
+                {
+                    throw new InvalidOperationException("An error occurred.");
+                });
+            },
+            services =>
+            {
+                services.AddCaching();
+                services.AddSession();
+            }))
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync(string.Empty);
+            }
+        }
+
+        [Fact]
+        public async Task SessionMiddleware_DoesNotStart_IfUnderlyingStoreIsUnavailable()
+        {
+            // Arrange, Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                using (var server = TestServer.Create(app =>
+                {
+                    app.UseSession();
+                },
+                services =>
+                {
+                    services.AddSingleton<IDistributedCache, TestDistributedCache>();
+                    services.AddSession();
+                }))
+                {
+                    var client = server.CreateClient();
+                    await client.GetAsync(string.Empty);
+                }
+            });
+
+            Assert.Equal("Error connecting database.", exception.Message);
+        }
+
+        [Fact]
+        public async Task SessionKeys_AreCaseSensitive()
+        {
+            using (var server = TestServer.Create(app =>
+            {
+                app.UseSession();
+                app.Run(context =>
+                {
+                    context.Session.SetString("KEY", "VALUE");
+                    context.Session.SetString("key", "value");
+                    Assert.Equal("VALUE", context.Session.GetString("KEY"));
+                    Assert.Equal("value", context.Session.GetString("key"));
+                    return Task.FromResult(0);
+                });
+            },
+            services =>
+            {
+                services.AddCaching();
+                services.AddSession();
+            }))
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync(string.Empty);
+                response.EnsureSuccessStatusCode();
+            }
+        }
+
         private class TestClock : ISystemClock
         {
             public TestClock()
@@ -362,6 +487,59 @@ namespace Microsoft.AspNet.Session
             public void Add(TimeSpan timespan)
             {
                 UtcNow = UtcNow.Add(timespan);
+            }
+        }
+
+        private class TestDistributedCache : IDistributedCache
+        {
+            public void Connect()
+            {
+                throw new InvalidOperationException("Error connecting database.");
+            }
+
+            public Task ConnectAsync()
+            {
+                throw new InvalidOperationException("Error connecting database.");
+            }
+
+            public byte[] Get(string key)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<byte[]> GetAsync(string key)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Refresh(string key)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task RefreshAsync(string key)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Remove(string key)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task RemoveAsync(string key)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options)
+            {
+                throw new NotImplementedException();
             }
         }
     }
