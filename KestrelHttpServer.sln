@@ -26,6 +26,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8A3D00B8-1CCF-4BE6-A060-11104CE2D9CE}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "LargeResponseApp", "samples\LargeResponseApp\LargeResponseApp.xproj", "{B35D4D31-E74C-4646-8A11-7A7A40F0021E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.Kestrel.GeneratedCode", "src\Microsoft.AspNet.Server.Kestrel.GeneratedCode\Microsoft.AspNet.Server.Kestrel.GeneratedCode.xproj", "{BD2D4D29-1BD9-40D0-BB31-337D5416B63C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +54,10 @@ Global
 		{B35D4D31-E74C-4646-8A11-7A7A40F0021E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B35D4D31-E74C-4646-8A11-7A7A40F0021E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B35D4D31-E74C-4646-8A11-7A7A40F0021E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD2D4D29-1BD9-40D0-BB31-337D5416B63C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD2D4D29-1BD9-40D0-BB31-337D5416B63C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD2D4D29-1BD9-40D0-BB31-337D5416B63C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD2D4D29-1BD9-40D0-BB31-337D5416B63C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -63,5 +68,6 @@ Global
 		{2C3CB3DC-EEBF-4F52-9E1C-4F2F972E76C3} = {8A3D00B8-1CCF-4BE6-A060-11104CE2D9CE}
 		{30B7617E-58EF-4382-B3EA-5B2E718CF1A6} = {2D5D5227-4DBD-499A-96B1-76A36B03B750}
 		{B35D4D31-E74C-4646-8A11-7A7A40F0021E} = {8A3D00B8-1CCF-4BE6-A060-11104CE2D9CE}
+		{BD2D4D29-1BD9-40D0-BB31-337D5416B63C} = {2D5D5227-4DBD-499A-96B1-76A36B03B750}
 	EndGlobalSection
 EndGlobal
