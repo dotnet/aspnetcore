@@ -8,6 +8,7 @@ using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Moq;
@@ -125,7 +126,14 @@ namespace Microsoft.AspNet.Mvc
                         typeof(IConfigureOptions<MvcOptions>),
                         new Type[]
                         {
-                            typeof(CoreMvcOptionsSetup),
+                            typeof(MvcCoreMvcOptionsSetup),
+                        }
+                    },
+                    {
+                        typeof(IConfigureOptions<RouteOptions>),
+                        new Type[]
+                        {
+                            typeof(MvcCoreRouteOptionsSetup),
                         }
                     },
                     {

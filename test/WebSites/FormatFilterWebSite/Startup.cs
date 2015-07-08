@@ -24,7 +24,7 @@ namespace FormatFilterWebSite
                 var customFormatter = new CustomFormatter("application/custom");
                 options.OutputFormatters.Add(customFormatter);
             });
-            services.ConfigureMvcFormatterMappings(options => 
+            services.ConfigureMvc(options => 
             {
                 options.FormatterMappings.SetMediaTypeMappingForFormat(
                     "custom",

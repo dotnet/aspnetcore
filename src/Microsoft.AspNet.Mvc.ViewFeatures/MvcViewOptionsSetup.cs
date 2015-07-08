@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
@@ -20,9 +19,6 @@ namespace Microsoft.AspNet.Mvc
 
         public static void ConfigureMvc(MvcViewOptions options)
         {
-            // Set up ViewEngines
-            options.ViewEngines.Add(typeof(RazorViewEngine));
-
             // Set up client validators
             options.ClientModelValidatorProviders.Add(new DefaultClientModelValidatorProvider());
             options.ClientModelValidatorProviders.Add(new DataAnnotationsClientModelValidatorProvider());

@@ -3,20 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ApiExplorer;
-using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.AspNet.Mvc.Razor.Compilation;
-using Microsoft.AspNet.Mvc.Razor.Directives;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.ViewComponents;
-using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -24,35 +15,28 @@ namespace Microsoft.Framework.DependencyInjection
     {
         public static IServiceCollection AddMvc([NotNull] this IServiceCollection services)
         {
-            services.AddMinimalMvc();
+            var builder = services.AddMvcCore();
 
-            ConfigureDefaultServices(services);
-
-            AddMvcServices(services);
+            builder.AddApiExplorer();
+            builder.AddAuthorization();
+            builder.AddCors();
+            builder.AddDataAnnotations();
+            builder.AddFormatterMappings();
+            builder.AddJsonFormatters();
+            builder.AddViews();
+            builder.AddRazorViewEngine();
 
             return services;
         }
 
         /// <summary>
-        /// Configures a set of <see cref="MvcFormatterMappingOptions"/> for the application.
+        /// Configures a set of <see cref="MvcViewOptions"/> for the application.
         /// </summary>
         /// <param name="services">The services available in the application.</param>
-        /// <param name="setupAction">The <see cref="MvcCacheOptions"/> which need to be configured.</param>
-        public static void ConfigureMvcCaching(
+        /// <param name="setupAction">The <see cref="MvcViewOptions"/> which need to be configured.</param>
+        public static void ConfigureMvcViews(
             [NotNull] this IServiceCollection services,
-            [NotNull] Action<MvcCacheOptions> setupAction)
-        {
-            services.Configure(setupAction);
-        }
-
-        /// <summary>
-        /// Configures a set of <see cref="MvcFormatterMappingOptions"/> for the application.
-        /// </summary>
-        /// <param name="services">The services available in the application.</param>
-        /// <param name="setupAction">The <see cref="MvcFormatterMappingOptions"/> which need to be configured.</param>
-        public static void ConfigureMvcFormatterMappings(
-            [NotNull] this IServiceCollection services,
-            [NotNull] Action<MvcFormatterMappingOptions> setupAction)
+            [NotNull] Action<MvcViewOptions> setupAction)
         {
             services.Configure(setupAction);
         }
@@ -65,18 +49,6 @@ namespace Microsoft.Framework.DependencyInjection
         public static void ConfigureMvcJson(
             [NotNull] this IServiceCollection services,
             [NotNull] Action<MvcJsonOptions> setupAction)
-        {
-            services.Configure(setupAction);
-        }
-
-        /// <summary>
-        /// Configures a set of <see cref="MvcViewOptions"/> for the application.
-        /// </summary>
-        /// <param name="services">The services available in the application.</param>
-        /// <param name="setupAction">The <see cref="MvcViewOptions"/> which need to be configured.</param>
-        public static void ConfigureMvcViews(
-            [NotNull] this IServiceCollection services,
-            [NotNull] Action<MvcViewOptions> setupAction)
         {
             services.Configure(setupAction);
         }
@@ -129,116 +101,6 @@ namespace Microsoft.Framework.DependencyInjection
             return WithControllersAsServices(services, controllerTypes.Select(type => type.AsType()));
         }
 
-        // To enable unit testing
-        internal static void AddMvcServices(IServiceCollection services)
-        {
-            // Options - all of these are multi-registration
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, MvcOptionsSetup>());
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, JsonMvcOptionsSetup>());
-            services.TryAddEnumerable(
-                ServiceDescriptor
-                .Transient<IConfigureOptions<MvcFormatterMappingOptions>, JsonMvcFormatterMappingOptionsSetup>());
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IConfigureOptions<MvcViewOptions>, MvcViewOptionsSetup>());
-            services.TryAddEnumerable(
-                ServiceDescriptor
-                .Transient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>());
-
-            // Cors
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IApplicationModelProvider, CorsApplicationModelProvider>());
-            services.TryAddTransient<CorsAuthorizationFilter, CorsAuthorizationFilter>();
-
-            // Auth
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IApplicationModelProvider, AuthorizationApplicationModelProvider>());
-
-            // Support for activating ViewDataDictionary
-            services.TryAddEnumerable(
-                ServiceDescriptor
-                    .Transient<IControllerPropertyActivator, ViewDataDictionaryControllerPropertyActivator>());
-
-            // Formatter Mappings
-            services.TryAddTransient<FormatFilter, FormatFilter>();
-
-            // JsonOutputFormatter should use the SerializerSettings on MvcOptions
-            services.TryAdd(ServiceDescriptor.Singleton<JsonOutputFormatter>(serviceProvider =>
-            {
-                var options = serviceProvider.GetRequiredService<IOptions<MvcJsonOptions>>().Options;
-                return new JsonOutputFormatter(options.SerializerSettings);
-            }));
-
-            // Razor, Views and runtime compilation
-
-            // The provider is inexpensive to initialize and provides ViewEngines that may require request
-            // specific services.
-            services.TryAddScoped<ICompositeViewEngine, CompositeViewEngine>();
-
-            // Caches view locations that are valid for the lifetime of the application.
-            services.TryAddSingleton<IViewLocationCache, DefaultViewLocationCache>();
-            services.TryAdd(ServiceDescriptor.Singleton<IChunkTreeCache>(serviceProvider =>
-            {
-                var cachedFileProvider = serviceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>();
-                return new DefaultChunkTreeCache(cachedFileProvider.Options.FileProvider);
-            }));
-
-            // The host is designed to be discarded after consumption and is very inexpensive to initialize.
-            services.TryAddTransient<IMvcRazorHost, MvcRazorHost>();
-
-            // Caches compilation artifacts across the lifetime of the application.
-            services.TryAddSingleton<ICompilerCache, CompilerCache>();
-
-            // This caches compilation related details that are valid across the lifetime of the application
-            // and is required to be a singleton.
-            services.TryAddSingleton<ICompilationService, RoslynCompilationService>();
-
-            // Both the compiler cache and roslyn compilation service hold on the compilation related
-            // caches. RazorCompilation service is just an adapter service, and it is transient to ensure
-            // the IMvcRazorHost dependency does not maintain state.
-            services.TryAddTransient<IRazorCompilationService, RazorCompilationService>();
-
-            // The ViewStartProvider needs to be able to consume scoped instances of IRazorPageFactory
-            services.TryAddScoped<IViewStartProvider, ViewStartProvider>();
-            services.TryAddTransient<IRazorViewFactory, RazorViewFactory>();
-            services.TryAddSingleton<IRazorPageActivator, RazorPageActivator>();
-
-            // Virtual path view factory needs to stay scoped so views can get get scoped services.
-            services.TryAddScoped<IRazorPageFactory, VirtualPathRazorPageFactory>();
-
-            // View and rendering helpers
-            services.TryAddTransient<IHtmlHelper, HtmlHelper>();
-            services.TryAddTransient(typeof(IHtmlHelper<>), typeof(HtmlHelper<>));
-            services.TryAddSingleton<IJsonHelper, JsonHelper>();
-
-            // Only want one ITagHelperActivator so it can cache Type activation information. Types won't conflict.
-            services.TryAddSingleton<ITagHelperActivator, DefaultTagHelperActivator>();
-
-            // Consumed by the Cache tag helper to cache results across the lifetime of the application.
-            services.TryAddSingleton<IMemoryCache, MemoryCache>();
-
-            // DefaultHtmlGenerator is pretty much stateless but depends on IUrlHelper, which is scoped.
-            // Therefore it too is scoped.
-            services.TryAddScoped<IHtmlGenerator, DefaultHtmlGenerator>();
-
-            // These do caching so they should stay singleton
-            services.TryAddSingleton<IViewComponentSelector, DefaultViewComponentSelector>();
-            services.TryAddSingleton<IViewComponentActivator, DefaultViewComponentActivator>();
-            services.TryAddSingleton<
-                IViewComponentDescriptorCollectionProvider, 
-                DefaultViewComponentDescriptorCollectionProvider>();
-
-            services.TryAddTransient<IViewComponentDescriptorProvider, DefaultViewComponentDescriptorProvider>();
-            services.TryAddSingleton<IViewComponentInvokerFactory, DefaultViewComponentInvokerFactory>();
-            services.TryAddTransient<IViewComponentHelper, DefaultViewComponentHelper>();
-
-            // Api Description
-            services.TryAddSingleton<IApiDescriptionGroupCollectionProvider, ApiDescriptionGroupCollectionProvider>();
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IApiDescriptionProvider, DefaultApiDescriptionProvider>());
-        }
-
         /// <summary>
         /// Adds Mvc localization to the application.
         /// </summary>
@@ -265,15 +127,6 @@ namespace Microsoft.Framework.DependencyInjection
             });
 
             return services;
-        }
-
-        private static void ConfigureDefaultServices(IServiceCollection services)
-        {
-            services.AddDataProtection();
-            services.AddAntiforgery();
-            services.AddCors();
-            services.AddAuthorization();
-            services.AddWebEncoders();
         }
     }
 }

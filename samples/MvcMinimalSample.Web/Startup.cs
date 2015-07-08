@@ -3,6 +3,8 @@
 
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Net.Http.Headers;
+using Newtonsoft.Json;
 
 namespace MvcMinimalSample.Web
 {
@@ -10,7 +12,12 @@ namespace MvcMinimalSample.Web
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMinimalMvc();
+            // Example 1
+            services
+                .AddMvcCore()
+                .AddAuthorization()
+                .AddFormatterMappings(m => m.SetMediaTypeMappingForFormat("js", new MediaTypeHeaderValue("application/json")))
+                .AddJsonFormatters(j => j.Formatting = Formatting.Indented);
         }
 
         public void Configure(IApplicationBuilder app)

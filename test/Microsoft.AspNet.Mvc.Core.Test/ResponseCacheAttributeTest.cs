@@ -18,7 +18,8 @@ namespace Microsoft.AspNet.Mvc
         public void CreateInstance_SelectsTheAppropriateCacheProfile(string profileName)
         {
             // Arrange
-            var responseCache = new ResponseCacheAttribute() {
+            var responseCache = new ResponseCacheAttribute()
+            {
                 CacheProfileName = profileName
             };
             var cacheProfiles = new Dictionary<string, CacheProfile>();
@@ -173,29 +174,27 @@ namespace Microsoft.AspNet.Mvc
             cacheProfiles.Add("Test", new CacheProfile { NoStore = false });
 
             // Act
-	        var filter = responseCache.CreateInstance(GetServiceProvider(cacheProfiles));
+            var filter = responseCache.CreateInstance(GetServiceProvider(cacheProfiles));
 
-			// Assert
-	        Assert.NotNull(filter);
+            // Assert
+            Assert.NotNull(filter);
         }
 
         private IServiceProvider GetServiceProvider(Dictionary<string, CacheProfile> cacheProfiles)
         {
             var serviceProvider = new Mock<IServiceProvider>();
-            var optionsAccessor = new Mock<IOptions<MvcCacheOptions>>();
-            var options = new MvcCacheOptions();
+            var optionsAccessor = new TestOptionsManager<MvcOptions>();
             if (cacheProfiles != null)
             {
                 foreach (var p in cacheProfiles)
                 {
-                    options.CacheProfiles.Add(p.Key, p.Value);
+                    optionsAccessor.Options.CacheProfiles.Add(p.Key, p.Value);
                 }
             }
 
-            optionsAccessor.SetupGet(o => o.Options).Returns(options);
             serviceProvider
-                .Setup(s => s.GetService(typeof(IOptions<MvcCacheOptions>)))
-                .Returns(optionsAccessor.Object);
+                .Setup(s => s.GetService(typeof(IOptions<MvcOptions>)))
+                .Returns(optionsAccessor);
 
             return serviceProvider.Object;
         }

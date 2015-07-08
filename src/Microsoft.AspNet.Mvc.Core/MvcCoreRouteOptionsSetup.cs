@@ -9,9 +9,9 @@ namespace Microsoft.AspNet.Mvc
     /// <summary>
     /// Sets up MVC default options for <see cref="RouteOptions"/>.
     /// </summary>
-    public class MvcRouteOptionsSetup : ConfigureOptions<RouteOptions>
+    public class MvcCoreRouteOptionsSetup : ConfigureOptions<RouteOptions>
     {
-        public MvcRouteOptionsSetup()
+        public MvcCoreRouteOptionsSetup()
             : base(ConfigureRouting)
         {
             Order = DefaultOrder.DefaultFrameworkSortOrder;

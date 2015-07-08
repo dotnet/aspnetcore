@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="options">The <see cref="IOptions{MvcOptions}"/></param>
         /// <param name="actionContext">The <see cref="IScopedInstance{ActionContext}"/></param>
-        public FormatFilter(IOptions<MvcFormatterMappingOptions> options, IScopedInstance<ActionContext> actionContext)
+        public FormatFilter(IOptions<MvcOptions> options, IScopedInstance<ActionContext> actionContext)
         {
             IsActive = true;
             Format = GetFormat(actionContext.Value);

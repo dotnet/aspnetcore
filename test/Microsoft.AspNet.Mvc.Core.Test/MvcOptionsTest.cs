@@ -6,13 +6,24 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class MvcCacheOptionsTest
+    public class MvcOptionsTest
     {
+        [Fact]
+        public void MaxValidationError_ThrowsIfValueIsOutOfRange()
+        {
+            // Arrange
+            var options = new MvcOptions();
+
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => options.MaxModelValidationErrors = -1);
+            Assert.Equal("value", ex.ParamName);
+        }
+
         [Fact]
         public void ThrowsWhenMultipleCacheProfilesWithSameNameAreAdded()
         {
             // Arrange
-            var options = new MvcCacheOptions();
+            var options = new MvcOptions();
             options.CacheProfiles.Add("HelloWorld", new CacheProfile { Duration = 10 });
 
             // Act & Assert

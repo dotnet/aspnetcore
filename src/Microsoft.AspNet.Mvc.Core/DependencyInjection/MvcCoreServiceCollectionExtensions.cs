@@ -20,13 +20,26 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class MvcCoreServiceCollectionExtensions
     {
-        public static IServiceCollection AddMinimalMvc([NotNull] this IServiceCollection services)
+        public static IMvcBuilder AddMvcCore([NotNull] this IServiceCollection services)
         {
             ConfigureDefaultServices(services);
 
             AddMvcCoreServices(services);
 
-            return services;
+            return new MvcBuilder() { Services = services, };
+        }
+
+        public static IMvcBuilder AddMvcCore(
+            [NotNull] this IServiceCollection services,
+            [NotNull] Action<MvcOptions> setupAction)
+        {
+            ConfigureDefaultServices(services);
+
+            AddMvcCoreServices(services);
+
+            services.Configure(setupAction);
+
+            return new MvcBuilder() { Services = services, };
         }
 
         /// <summary>
@@ -48,7 +61,9 @@ namespace Microsoft.Framework.DependencyInjection
             // Options
             //
             services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, CoreMvcOptionsSetup>());
+                ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, MvcCoreMvcOptionsSetup>());
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IConfigureOptions<RouteOptions>, MvcCoreRouteOptionsSetup>());
 
             //
             // Action Discovery
@@ -138,9 +153,11 @@ namespace Microsoft.Framework.DependencyInjection
             services.AddOptions();
             services.AddRouting();
             services.AddNotifier();
+        }
 
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IConfigureOptions<RouteOptions>, MvcRouteOptionsSetup>());
+        private class MvcBuilder : IMvcBuilder
+        {
+            public IServiceCollection Services { get; set; }
         }
     }
 }

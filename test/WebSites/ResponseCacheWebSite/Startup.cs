@@ -13,7 +13,7 @@ namespace ResponseCacheWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.ConfigureMvcCaching(options =>
+            services.ConfigureMvc(options =>
             {
                 options.CacheProfiles.Add(
                     "PublicCache30Sec", new CacheProfile

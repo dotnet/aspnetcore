@@ -19,8 +19,10 @@ namespace Microsoft.AspNet.Mvc
 
         public MvcOptions()
         {
+            CacheProfiles = new Dictionary<string, CacheProfile>(StringComparer.OrdinalIgnoreCase);
             Conventions = new List<IApplicationModelConvention>();
             Filters = new List<IFilterMetadata>();
+            FormatterMappings = new FormatterMappings();
             InputFormatters = new List<IInputFormatter>();
             OutputFormatters = new List<IOutputFormatter>();
             ModelBinders = new List<IModelBinder>();
@@ -31,25 +33,33 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
+        /// Gets a Dictionary of CacheProfile Names, <see cref="CacheProfile"/> which are pre-defined settings for
+        /// <see cref="ResponseCacheFilter"/>.
+        /// </summary>
+        public IDictionary<string, CacheProfile> CacheProfiles { get; }
+
+        /// <summary>
+        /// Gets a list of <see cref="IApplicationModelConvention"/> instances that will be applied to
+        /// the <see cref="ApplicationModel"/> when discovering actions.
+        /// </summary>
+        public IList<IApplicationModelConvention> Conventions { get; }
+
+        /// <summary>
         /// Gets a list of <see cref="IFilterMetadata"/> which are used to construct filters that
         /// apply to all actions.
         /// </summary>
         public ICollection<IFilterMetadata> Filters { get; }
 
         /// <summary>
-        /// Gets a list of <see cref="IOutputFormatter"/>s that are used by this application.
+        /// Used to specify mapping between the URL Format and corresponding
+        /// <see cref="Net.Http.Headers.MediaTypeHeaderValue"/>.
         /// </summary>
-        public IList<IOutputFormatter> OutputFormatters { get; }
+        public FormatterMappings FormatterMappings { get; }
 
         /// <summary>
         /// Gets a list of <see cref="IInputFormatter"/>s that are used by this application.
         /// </summary>
         public IList<IInputFormatter> InputFormatters { get; }
-
-        /// <summary>
-        /// Gets a list of <see cref="IModelBinder"/>s used by this application.
-        /// </summary>
-        public IList<IModelBinder> ModelBinders { get; }
 
         /// <summary>
         /// Gets or sets the maximum number of validation errors that are allowed by this application before further
@@ -70,26 +80,9 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Gets a list of <see cref="IModelValidatorProvider"/>s used by this application.
+        /// Gets a list of <see cref="IModelBinder"/>s used by this application.
         /// </summary>
-        public IList<IModelValidatorProvider> ModelValidatorProviders { get; }
-
-        /// <summary>
-        /// Gets a list of <see cref="IValueProviderFactory"/> used by this application.
-        /// </summary>
-        public IList<IValueProviderFactory> ValueProviderFactories { get; }
-
-        /// <summary>
-        /// Gets a list of <see cref="IApplicationModelConvention"/> instances that will be applied to
-        /// the <see cref="ApplicationModel"/> when discovering actions.
-        /// </summary>
-        public IList<IApplicationModelConvention> Conventions { get; }
-
-        /// <summary>
-        /// Gets or sets the flag which causes content negotiation to ignore Accept header 
-        /// when it contains the media type */*. <see langword="false"/> by default.
-        /// </summary>
-        public bool RespectBrowserAcceptHeader { get; set; }
+        public IList<IModelBinder> ModelBinders { get; }
 
         /// <summary>
         /// Gets a list of <see cref="IMetadataDetailsProvider"/> instances that will be used to 
@@ -107,8 +100,29 @@ namespace Microsoft.AspNet.Mvc
         public IList<IMetadataDetailsProvider> ModelMetadataDetailsProviders { get; }
 
         /// <summary>
+        /// Gets a list of <see cref="IModelValidatorProvider"/>s used by this application.
+        /// </summary>
+        public IList<IModelValidatorProvider> ModelValidatorProviders { get; }
+
+        /// <summary>
+        /// Gets a list of <see cref="IOutputFormatter"/>s that are used by this application.
+        /// </summary>
+        public IList<IOutputFormatter> OutputFormatters { get; }
+
+        /// <summary>
+        /// Gets or sets the flag which causes content negotiation to ignore Accept header 
+        /// when it contains the media type */*. <see langword="false"/> by default.
+        /// </summary>
+        public bool RespectBrowserAcceptHeader { get; set; }
+
+        /// <summary>
         /// Gets a list of <see cref="IExcludeTypeValidationFilter"/>s that are used by this application.
         /// </summary>
         public IList<IExcludeTypeValidationFilter> ValidationExcludeFilters { get; }
+
+        /// <summary>
+        /// Gets a list of <see cref="IValueProviderFactory"/> used by this application.
+        /// </summary>
+        public IList<IValueProviderFactory> ValueProviderFactories { get; }
     }
 }

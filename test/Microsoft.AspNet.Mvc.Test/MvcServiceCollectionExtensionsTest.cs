@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Antiforgery;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.ApplicationModels;
@@ -12,6 +14,7 @@ using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.MvcServiceCollectionExtensionsTestControllers;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Moq;
@@ -106,7 +109,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             // Act
-            MvcServiceCollectionExtensions.AddMvcServices(services);
+            services.AddMvc();
 
             // Assert
             foreach (var serviceType in MutliRegistrationServiceTypes)
@@ -134,7 +137,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             // Act
-            MvcServiceCollectionExtensions.AddMvcServices(services);
+            services.AddMvc();
 
             // Assert
             foreach (var singleRegistrationType in SingleRegistrationServiceTypes)
@@ -150,8 +153,8 @@ namespace Microsoft.AspNet.Mvc
             var services = new ServiceCollection();
 
             // Act
-            MvcServiceCollectionExtensions.AddMvcServices(services);
-            MvcServiceCollectionExtensions.AddMvcServices(services);
+            services.AddMvc();
+            services.AddMvc();
 
             // Assert
             var singleRegistrationServiceTypes = SingleRegistrationServiceTypes;
@@ -161,6 +164,10 @@ namespace Microsoft.AspNet.Mvc
                 {
                     // 'single-registration' services should only have one implementation registered.
                     AssertServiceCountEquals(services, service.ServiceType, 1);
+                }
+                else if (service.ImplementationType != null && !service.ImplementationType.Assembly.FullName.Contains("Mvc"))
+                {
+                    // Ignore types that don't come from MVC
                 }
                 else
                 {
@@ -175,11 +182,12 @@ namespace Microsoft.AspNet.Mvc
             get
             {
                 var services = new ServiceCollection();
-                MvcServiceCollectionExtensions.AddMvcServices(services);
+                services.AddMvc();
 
                 var multiRegistrationServiceTypes = MutliRegistrationServiceTypes;
                 return services
                     .Where(sd => !multiRegistrationServiceTypes.Keys.Contains(sd.ServiceType))
+                    .Where(sd => sd.ServiceType.Assembly.FullName.Contains("Mvc"))
                     .Select(sd => sd.ServiceType);
             }
         }
@@ -194,15 +202,16 @@ namespace Microsoft.AspNet.Mvc
                         typeof(IConfigureOptions<MvcOptions>),
                         new Type[]
                         {
-                            typeof(MvcOptionsSetup),
-                            typeof(JsonMvcOptionsSetup),
+                            typeof(MvcCoreMvcOptionsSetup),
+                            typeof(MvcDataAnnotationsMvcOptionsSetup),
+                            typeof(MvcJsonMvcOptionsSetup),
                         }
                     },
                     {
-                        typeof(IConfigureOptions<MvcFormatterMappingOptions>),
+                        typeof(IConfigureOptions<RouteOptions>),
                         new Type[]
                         {
-                            typeof(JsonMvcFormatterMappingOptionsSetup),
+                            typeof(MvcCoreRouteOptionsSetup),
                         }
                     },
                     {
@@ -210,6 +219,7 @@ namespace Microsoft.AspNet.Mvc
                         new Type[]
                         {
                             typeof(MvcViewOptionsSetup),
+                            typeof(MvcRazorMvcViewOptionsSetup),
                         }
                     },
                     {
@@ -219,17 +229,39 @@ namespace Microsoft.AspNet.Mvc
                             typeof(RazorViewEngineOptionsSetup),
                         }
                     },
-                    {
-                        typeof(IApiDescriptionProvider),
+                                        {
+                        typeof(IActionConstraintProvider),
                         new Type[]
                         {
-                            typeof(DefaultApiDescriptionProvider),
+                            typeof(DefaultActionConstraintProvider),
+                        }
+                    },
+                    {
+                        typeof(IActionDescriptorProvider),
+                        new Type[]
+                        {
+                            typeof(ControllerActionDescriptorProvider),
+                        }
+                    },
+                    {
+                        typeof(IActionInvokerProvider),
+                        new Type[]
+                        {
+                            typeof(ControllerActionInvokerProvider),
+                        }
+                    },
+                    {
+                        typeof(IFilterProvider),
+                        new Type[]
+                        {
+                            typeof(DefaultFilterProvider),
                         }
                     },
                     {
                         typeof(IControllerPropertyActivator),
                         new Type[]
                         {
+                            typeof(DefaultControllerPropertyActivator),
                             typeof(ViewDataDictionaryControllerPropertyActivator),
                         }
                     },
@@ -237,8 +269,16 @@ namespace Microsoft.AspNet.Mvc
                         typeof(IApplicationModelProvider),
                         new Type[]
                         {
+                            typeof(DefaultApplicationModelProvider),
                             typeof(CorsApplicationModelProvider),
                             typeof(AuthorizationApplicationModelProvider),
+                        }
+                    },
+                    {
+                        typeof(IApiDescriptionProvider),
+                        new Type[]
+                        {
+                            typeof(DefaultApiDescriptionProvider),
                         }
                     },
                 };

@@ -2,13 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class JsonMvcOptionsSetup : ConfigureOptions<MvcOptions>
+    public class MvcJsonMvcOptionsSetup : ConfigureOptions<MvcOptions>
     {
-        public JsonMvcOptionsSetup(IOptions<MvcJsonOptions> jsonOptions)
+        public MvcJsonMvcOptionsSetup(IOptions<MvcJsonOptions> jsonOptions)
             : base((_) => ConfigureMvc(_, jsonOptions.Options.SerializerSettings))
         {
             Order = DefaultOrder.DefaultFrameworkSortOrder + 10;
@@ -20,6 +22,10 @@ namespace Microsoft.AspNet.Mvc
 
             options.InputFormatters.Add(new JsonInputFormatter(serializerSettings));
             options.InputFormatters.Add(new JsonPatchInputFormatter(serializerSettings));
+
+            options.FormatterMappings.SetMediaTypeMappingForFormat("json", MediaTypeHeaderValue.Parse("application/json"));
+
+            options.ValidationExcludeFilters.Add(typeof(JToken));
         }
     }
 }

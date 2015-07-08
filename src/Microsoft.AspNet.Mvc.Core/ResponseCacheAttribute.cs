@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Mvc
 
         public IFilterMetadata CreateInstance([NotNull] IServiceProvider serviceProvider)
         {
-            var optionsAccessor = serviceProvider.GetRequiredService<IOptions<MvcCacheOptions>>();
+            var optionsAccessor = serviceProvider.GetRequiredService<IOptions<MvcOptions>>();
 
             CacheProfile selectedProfile = null;
             if (CacheProfileName != null)

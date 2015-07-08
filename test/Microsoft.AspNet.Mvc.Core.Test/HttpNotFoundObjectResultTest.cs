@@ -111,9 +111,7 @@ namespace Microsoft.AspNet.Mvc
 
         private static IServiceProvider GetServiceProvider()
         {
-            var optionsSetup = new MvcOptionsSetup();
             var options = new MvcOptions();
-            optionsSetup.Configure(options);
             var optionsAccessor = new Mock<IOptions<MvcOptions>>();
             optionsAccessor.SetupGet(o => o.Options).Returns(options);
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
@@ -12,9 +13,9 @@ namespace Microsoft.AspNet.Mvc
     /// <summary>
     /// Sets up default options for <see cref="MvcOptions"/>.
     /// </summary>
-    public class CoreMvcOptionsSetup : ConfigureOptions<MvcOptions>
+    public class MvcCoreMvcOptionsSetup : ConfigureOptions<MvcOptions>
     {
-        public CoreMvcOptionsSetup()
+        public MvcCoreMvcOptionsSetup()
             : base(ConfigureMvc)
         {
             Order = DefaultOrder.DefaultFrameworkSortOrder;
@@ -60,8 +61,8 @@ namespace Microsoft.AspNet.Mvc
 
             // Any 'known' types that we bind should be marked as excluded from validation.
             options.ValidationExcludeFilters.Add(typeof(System.Threading.CancellationToken));
-            options.ValidationExcludeFilters.Add(typeof(Http.IFormFile));
-            options.ValidationExcludeFilters.Add(typeof(Http.IFormCollection));
+            options.ValidationExcludeFilters.Add(typeof(IFormFile));
+            options.ValidationExcludeFilters.Add(typeof(IFormCollection));
         }
     }
 }
