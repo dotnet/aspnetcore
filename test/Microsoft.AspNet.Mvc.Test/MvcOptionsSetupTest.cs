@@ -219,10 +219,10 @@ namespace Microsoft.AspNet.Mvc
                 = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++]);
             Assert.Equal(jTokenFilter.ExcludedType, typeof(JToken));
 
-            Assert.IsType(typeof(DefaultTypeBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i]);
+            Assert.IsType(typeof(DefaultTypeNameBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i]);
             var xObjectFilter
-                = Assert.IsType<DefaultTypeBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++]);
-            Assert.Equal(xObjectFilter.ExcludedType, typeof(XObject));
+                = Assert.IsType<DefaultTypeNameBasedExcludeFilter>(mvcOptions.ValidationExcludeFilters[i++]);
+            Assert.Equal(xObjectFilter.ExcludedTypeName, typeof(XObject).FullName);
 
             Assert.IsType(typeof(DefaultTypeNameBasedExcludeFilter), mvcOptions.ValidationExcludeFilters[i]);
             var xmlNodeFilter = 
